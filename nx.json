@@ -29,5 +29,12 @@
       }
     ]
   },
-  "defaultProject": "mobile-ui"
+  "defaultProject": "mobile-ui",
+  "generators": {
+    "@nrwl/react": {
+      "application": {
+        "babel": true
+      }
+    }
+  }
 }

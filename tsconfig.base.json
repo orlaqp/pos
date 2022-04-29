@@ -16,6 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@pos/back-office": ["libs/back-office/src/index.ts"],
+      "@pos/models": ["libs/models/src/index.ts"],
       "@pos/sales": ["libs/sales/src/index.ts"]
     }
   },

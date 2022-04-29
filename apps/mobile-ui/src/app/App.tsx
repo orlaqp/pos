@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -23,10 +23,33 @@ import NxCloud from './icons/nx-cloud.svg';
 import GitHub from './icons/github.svg';
 import Terminal from './icons/terminal.svg';
 import Heart from './icons/heart.svg';
+import { DataStore } from '@aws-amplify/datastore';
+import { Store } from '@pos/models';
+
+const createStore = async () => {
+    await DataStore.save(
+        new Store({
+            name: 'Store 1',
+            address: 'address 1',
+            city: 'Miami',
+            country: 'USA',
+            email: 'email@address.com',
+            phone: '123-123-1234',
+            state: 'FL'
+        })
+    );
+
+    const stores = await DataStore.query(Store);
+    console.log(stores);
+}
 
 export const App = () => {
   const [whatsNextYCoord, setWhatsNextYCoord] = useState<number>(0);
   const scrollViewRef = useRef<null | ScrollView>(null);
+
+  useEffect(() => {
+      createStore()
+  }, []);
 
   return (
     <>
