@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "serviceConfiguration": {
+    "apiName": "pos",
+    "serviceName": "AppSync",
+    "gqlSchemaPath": "/Users/orlaqp/development/martinez-distribution/pos/apps/mobile-ui/amplify/backend/api/pos/schema.graphql",
+    "defaultAuthType": {
+      "mode": "API_KEY",
+      "expirationTime": 7
+    },
+    "conflictResolution": {
+      "defaultResolutionStrategy": {
+        "type": "AUTOMERGE"
+      }
+    }
+  }
+}

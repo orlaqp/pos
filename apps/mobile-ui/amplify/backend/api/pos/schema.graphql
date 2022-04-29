@@ -1,0 +1,116 @@
+type Brand @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+}
+
+type Category @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+  description: String
+  code: String
+  color: String
+}
+
+type Customer @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  firstName: String
+  lastName: String
+  middleName: String
+  dob: AWSDate
+  phone: String
+  email: String
+}
+
+type Order @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  orderNo: String
+  subtotal: Float
+  tax: Float
+  total: Float
+  status: OrderStatus
+  OrderItems: [OrderLine] @hasMany(indexName: "byOrder", fields: ["id"])
+  Customer: Customer @hasOne
+}
+
+type OrderLine @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  Product: Product @hasOne
+  quantity: Float
+  tax: Float
+  discountType: String
+  discountValue: Float
+  orderID: ID! @index(name: "byOrder")
+}
+
+enum OrderStatus {
+  CREATED
+  CANCELLED
+  PAID
+  ONHOLD
+}
+
+type Product @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String!
+  description: String
+  price: Float!
+  tags: String
+  cost: Float
+  sku: Boolean
+  trackStock: String
+  Category: Category @hasOne
+  UnitOfMeasure: UnitOfMeasure @hasOne
+  Brand: Brand @hasOne
+  isActive: Boolean
+  deleted: Boolean
+  barcode: String
+}
+
+type PurchaseOrder @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  Supplier: Supplier @hasOne
+  purchaseDate: AWSDateTime
+  amount: Float
+}
+
+type PurchaseOrderLine @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  Product: Product @hasOne
+  unitPrice: Float
+  quantity: Float
+}
+
+type Store @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+  address: String
+  city: String
+  state: String
+  country: String
+  phone: String
+  email: String
+}
+
+type Supplier @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  code: String
+  name: String
+}
+
+type Stock @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  Product: Product @hasOne
+  quantity: Float
+  updatedAt: AWSDateTime
+}
+
+type Tag @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+}
+
+type UnitOfMeasure @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+  description: String
+}

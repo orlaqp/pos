@@ -1,0 +1,23 @@
+{
+  "root": "libs/sales",
+  "sourceRoot": "libs/sales/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/sales/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/sales"],
+      "options": {
+        "jestConfig": "libs/sales/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

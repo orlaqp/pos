@@ -14,7 +14,10 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@pos/back-office": ["libs/back-office/src/index.ts"],
+      "@pos/sales": ["libs/sales/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
