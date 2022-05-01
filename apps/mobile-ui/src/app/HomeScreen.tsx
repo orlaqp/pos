@@ -3,25 +3,22 @@ import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 
 export const HomeScreen = () => {
-  const styles = useStyles();
-  console.log('Running home screen');
   
   return (
-    <View style={styles.appContainer}>
-        <Text>Home</Text>
+    <View>
+        <Text>Home 4</Text>
       <Button title="My button" />
     </View>
   );
 };
 
-const useStyles = () => {
-  const myTheme = useTheme();
+// const useStyles = () => {
+//   const myTheme = useTheme();
 
-  return StyleSheet.create({
-    appContainer: {
-      display: 'flex',
-      height: '100%',
-      backgroundColor: myTheme.theme.colors.background,
-    },
-  });
-};
+//   return StyleSheet.create({
+//     appContainer: {
+//       flex: 1,
+//       backgroundColor: myTheme.theme.colors.background,
+//     },
+//   });
+// };

@@ -1,0 +1,23 @@
+{
+  "root": "libs/auth/native-feature",
+  "sourceRoot": "libs/auth/native-feature/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/auth/native-feature/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/auth/native-feature"],
+      "options": {
+        "jestConfig": "libs/auth/native-feature/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

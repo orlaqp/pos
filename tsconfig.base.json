@@ -15,9 +15,11 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@pos/auth/native-feature": ["libs/auth/native-feature/src/index.ts"],
       "@pos/back-office": ["libs/back-office/src/index.ts"],
       "@pos/models": ["libs/models/src/index.ts"],
-      "@pos/sales": ["libs/sales/src/index.ts"]
+      "@pos/sales": ["libs/sales/src/index.ts"],
+      "@pos/theme/native": ["libs/theme/native/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

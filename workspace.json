@@ -1,10 +1,12 @@
 {
   "version": 2,
   "projects": {
+    "auth-native-feature": "libs/auth/native-feature",
     "back-office": "libs/back-office",
     "mobile-ui": "apps/mobile-ui",
     "mobile-ui-e2e": "apps/mobile-ui-e2e",
     "models": "libs/models",
-    "sales": "libs/sales"
+    "sales": "libs/sales",
+    "theme-native": "libs/theme/native"
   }
 }
