@@ -17,8 +17,14 @@
     "paths": {
       "@pos/auth/native-feature": ["libs/auth/native-feature/src/index.ts"],
       "@pos/back-office": ["libs/back-office/src/index.ts"],
+      "@pos/categories/native-feature": [
+        "libs/categories/native-feature/src/index.ts"
+      ],
       "@pos/models": ["libs/models/src/index.ts"],
-      "@pos/sales": ["libs/sales/src/index.ts"],
+      "@pos/products/native-feature": [
+        "libs/products/native-feature/src/index.ts"
+      ],
+      "@pos/sales/native-feature": ["libs/sales/native-feature/src/index.ts"],
       "@pos/theme/native": ["libs/theme/native/src/index.ts"]
     }
   },

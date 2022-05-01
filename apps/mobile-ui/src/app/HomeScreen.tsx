@@ -1,3 +1,4 @@
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme, Button, Card } from '@rneui/themed';
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
@@ -9,7 +10,11 @@ interface PathDetails {
   icon: string;
 }
 
-export const HomeScreen = () => {
+interface HomeScreenProps {
+    navigation: NativeStackNavigationProp<any>;
+}
+
+export const HomeScreen = (props: HomeScreenProps) => {
   const theme = useTheme();
   const styles = useStyles();
   const paths: PathDetails[] = [
@@ -17,12 +22,13 @@ export const HomeScreen = () => {
     { title: 'Payments', path: 'Payments', icon: 'cash' },
     { title: 'Back Office', path: 'BackOffice', icon: 'barcode' },
   ];
+  const goto = (details: PathDetails) => props.navigation.navigate(details.path);
 
   return (
     <View style={[styles.container, styles.centered]}>
       <View style={{ flexDirection: 'row' }}>
         {paths.map((p) => (
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => goto(p)}>
             <View style={[styles.bigButton, styles.centered]}>
               <Icon
                 name={p.icon}

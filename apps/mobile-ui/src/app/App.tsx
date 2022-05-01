@@ -1,16 +1,17 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 import React from 'react';
-import { StyleSheet, View, Image } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { DataStore } from '@aws-amplify/datastore';
 import { Store } from '@pos/models';
 
-import { Text, ThemeProvider, useTheme } from '@rneui/themed';
+import { ThemeProvider } from '@rneui/themed';
 import { HomeScreen } from './HomeScreen';
 import { LoginScreen } from '@pos/auth/native-feature';
-import { theme } from './theme';
+import { SalesScreen } from '@pos/sales/native-feature';
+import { theme } from '@pos/theme/native';
 
 
 const createStore = async () => {
@@ -51,6 +52,7 @@ export const App = () => {
           >
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Sales" component={SalesScreen} />
           </Stack.Navigator>
           
       </ThemeProvider>

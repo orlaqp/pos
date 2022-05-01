@@ -1,5 +1,5 @@
 module.exports = {
-  displayName: 'sales',
+  displayName: 'sales-native-feature',
   preset: 'react-native',
   testRunner: 'jest-jasmine2',
   resolver: '@nrwl/jest/plugins/resolver',

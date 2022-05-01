@@ -1,6 +1,6 @@
 {
-  "root": "libs/sales",
-  "sourceRoot": "libs/sales/src",
+  "root": "libs/sales/native-feature",
+  "sourceRoot": "libs/sales/native-feature/src",
   "projectType": "library",
   "tags": [],
   "targets": {
@@ -8,14 +8,14 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["libs/sales/**/*.{ts,tsx,js,jsx}"]
+        "lintFilePatterns": ["libs/sales/native-feature/**/*.{ts,tsx,js,jsx}"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/sales"],
+      "outputs": ["coverage/libs/sales/native-feature"],
       "options": {
-        "jestConfig": "libs/sales/jest.config.js",
+        "jestConfig": "libs/sales/native-feature/jest.config.js",
         "passWithNoTests": true
       }
     }
