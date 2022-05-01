@@ -1,24 +1,76 @@
-import { useTheme, Button } from '@rneui/themed';
+import { useTheme, Button, Card } from '@rneui/themed';
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
+interface PathDetails {
+  title: string;
+  path: string;
+  icon: string;
+}
 
 export const HomeScreen = () => {
-  
+  const theme = useTheme();
+  const styles = useStyles();
+  const paths: PathDetails[] = [
+    { title: 'Sales', path: 'Sales', icon: 'cart' },
+    { title: 'Payments', path: 'Payments', icon: 'cash' },
+    { title: 'Back Office', path: 'BackOffice', icon: 'barcode' },
+  ];
+
   return (
-    <View>
-        <Text>Home 4</Text>
-      <Button title="My button" />
+    <View style={[styles.container, styles.centered]}>
+      <View style={{ flexDirection: 'row' }}>
+        {paths.map((p) => (
+          <TouchableOpacity>
+            <View style={[styles.bigButton, styles.centered]}>
+              <Icon
+                name={p.icon}
+                size={60}
+                color={theme.theme.colors.divider}
+              />
+              <Text style={{ color: theme.theme.colors.black }}>{p.title}</Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 };
 
-// const useStyles = () => {
-//   const myTheme = useTheme();
+const useStyles = () => {
+  const theme = useTheme();
 
-//   return StyleSheet.create({
-//     appContainer: {
-//       flex: 1,
-//       backgroundColor: myTheme.theme.colors.background,
-//     },
-//   });
-// };
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.theme.colors.background,
+    },
+    centered: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    icon: {
+      color: theme.theme.colors.white,
+    },
+    bigButton: {
+        backgroundColor: theme.theme.colors.grey5,
+      borderColor: theme.theme.colors.greyOutline,
+      borderStyle: 'solid',
+      borderWidth: 1,
+      borderRadius: 10,
+      margin: 15,
+      padding: 20,
+      minWidth: 150,
+      minHeight: 150,
+    //   shadowColor: '#ccc',
+    //   shadowOffset: {
+    //     width: 0,
+    //     height: 1,
+    //   },
+    //   shadowOpacity: 0.22,
+    //   shadowRadius: 2.22,
+    //   elevation: 3,
+    },
+  });
+};

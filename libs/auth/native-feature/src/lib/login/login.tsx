@@ -2,14 +2,19 @@ import React from 'react';
 
 import { View, StyleSheet, Image } from 'react-native';
 import { useTheme, Button, Input, Card, Text } from '@rneui/themed';
-import logo from './logo.png';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import logo from '../assets/logo.png';
 
 /* eslint-disable-next-line */
-export interface LoginProps {}
+export interface LoginProps {
+    navigation: NativeStackNavigationProp<any>;
+}
 
 export function LoginScreen(props: LoginProps) {
   const styles = useStyles();
-  
+  const gotoHome = () => props.navigation.replace('Home');
+
 //   debugger;
   return (
     <View style={[styles.container, styles.centered]}>
@@ -19,7 +24,7 @@ export function LoginScreen(props: LoginProps) {
         </View>
         <Input placeholder="Username" style={styles.topMargin} />
         <Input placeholder="Password" style={styles.topMargin} secureTextEntry={true} />
-        <Button title="Login" containerStyle={styles.topMargin} raised={true} />
+        <Button title="Login" containerStyle={styles.topMargin} raised={true} onPress={gotoHome} />
       </View>
     </View>
   );
@@ -44,8 +49,8 @@ const useStyles = () => {
         marginTop: 20
     },
     logo: {
-        width: 100,
-        height: 100
+        width: 150,
+        height: 150
     }
   });
 };
