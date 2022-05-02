@@ -9,7 +9,7 @@ import { Store } from '@pos/models';
 
 import { ThemeProvider } from '@rneui/themed';
 import { HomeScreen } from './HomeScreen';
-import { LoginScreen } from '@pos/auth/native-feature';
+import { LoginScreen, SignUpScreen } from '@pos/auth/native-feature';
 import { SalesScreen } from '@pos/sales/native-feature';
 import { theme } from '@pos/theme/native';
 
@@ -50,7 +50,7 @@ export const App = () => {
             }}
           >
             <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Login" component={SignUpScreen} />
             <Stack.Screen name="Sales" component={SalesScreen} />
           </Stack.Navigator>
           

@@ -1,6 +1,7 @@
 {
   "version": 2,
   "projects": {
+    "auth-data-access": "libs/auth/data-access",
     "auth-native-feature": "libs/auth/native-feature",
     "back-office": "libs/back-office",
     "categories-native-feature": "libs/categories/native-feature",
