@@ -1,3 +1,4 @@
+import { useSharedStyles } from '@pos/theme/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme, Button, Card } from '@rneui/themed';
 import React from 'react';
@@ -16,6 +17,7 @@ interface HomeScreenProps {
 
 export const HomeScreen = (props: HomeScreenProps) => {
   const theme = useTheme();
+  const sharedStyles = useSharedStyles();
   const styles = useStyles();
   const paths: PathDetails[] = [
     { title: 'Sales', path: 'Sales', icon: 'cart' },
@@ -25,11 +27,11 @@ export const HomeScreen = (props: HomeScreenProps) => {
   const goto = (details: PathDetails) => props.navigation.navigate(details.path);
 
   return (
-    <View style={[styles.container, styles.centered]}>
+    <View style={[sharedStyles.page, sharedStyles.centered]}>
       <View style={{ flexDirection: 'row' }}>
         {paths.map((p) => (
           <TouchableOpacity onPress={() => goto(p)}>
-            <View style={[styles.bigButton, styles.centered]}>
+            <View style={[styles.bigButton, sharedStyles.centered]}>
               <Icon
                 name={p.icon}
                 size={60}
@@ -48,14 +50,6 @@ const useStyles = () => {
   const theme = useTheme();
 
   return StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.theme.colors.background,
-    },
-    centered: {
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     icon: {
       color: theme.theme.colors.white,
     },

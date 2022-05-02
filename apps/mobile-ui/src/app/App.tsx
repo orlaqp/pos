@@ -34,7 +34,6 @@ const createStore = async () => {
 const Stack = createNativeStackNavigator();
 
 export const App = () => {
-  const styles = useStyles(theme);
   return (
     <NavigationContainer>
       <ThemeProvider theme={theme}>
@@ -58,15 +57,6 @@ export const App = () => {
       </ThemeProvider>
     </NavigationContainer>
   );
-};
-
-const useStyles = (theme) => {
-  return StyleSheet.create({
-    appContainer: {
-      flex: 1,
-      backgroundColor: theme.darkColors.background,
-    },
-  });
 };
 
 export default App;
