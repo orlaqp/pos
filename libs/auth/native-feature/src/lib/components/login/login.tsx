@@ -5,6 +5,7 @@ import { useTheme, Button, Input, Card, Text } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import logo from '../assets/logo.png';
+import { Link } from '@react-navigation/native';
 
 /* eslint-disable-next-line */
 export interface LoginProps {
@@ -24,7 +25,9 @@ export function LoginScreen(props: LoginProps) {
         </View>
         <Input placeholder="Username" style={styles.topMargin} />
         <Input placeholder="Password" style={styles.topMargin} secureTextEntry={true} />
-        <Button title="Login" containerStyle={styles.topMargin} raised={true} onPress={gotoHome} />
+        <Button title="Login" type='outline' containerStyle={styles.topMargin} onPress={gotoHome} />
+        <Text style={styles.signUpText}>Or if you do not have an account yet please click: <Link style={styles.signUpLink} to={{ screen: 'Signup' }}>HERE</Link></Text>
+        
       </View>
     </View>
   );
@@ -41,6 +44,16 @@ const useStyles = () => {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    signUpText: {
+        textAlign: 'center',
+        fontSize: 18,
+        marginTop: 45,
+    },
+    signUpLink: {
+        fontSize: 18,
+        textAlign: 'center',
+        color: theme.theme.colors.primary,
     },
     bottomMargin: {
         marginBottom: 50,

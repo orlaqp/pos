@@ -2,17 +2,15 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { DataStore } from '@aws-amplify/datastore';
 import { Store } from '@pos/models';
 
 import { ThemeProvider } from '@rneui/themed';
-import { HomeScreen } from './HomeScreen';
-import { LoginScreen, SignUpScreen } from '@pos/auth/native-feature';
-import { SalesScreen } from '@pos/sales/native-feature';
 import { theme } from '@pos/theme/native';
-
+import { Provider } from 'react-redux';
+import { store } from '@pos/store';
+import Navigation from './navigation';
 
 const createStore = async () => {
   await DataStore.save(
@@ -31,31 +29,16 @@ const createStore = async () => {
   console.log(stores);
 };
 
-const Stack = createNativeStackNavigator();
 
 export const App = () => {
   return (
-    <NavigationContainer>
-      <ThemeProvider theme={theme}>
-          <Stack.Navigator
-            initialRouteName="Login"
-            screenOptions={{
-                title: '',
-                headerStyle: {
-                    backgroundColor: theme.darkColors.background,
-                },
-                headerTitleStyle: {
-                    color: theme.darkColors.grey0
-                }
-            }}
-          >
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="Login" component={SignUpScreen} />
-            <Stack.Screen name="Sales" component={SalesScreen} />
-          </Stack.Navigator>
-          
-      </ThemeProvider>
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <ThemeProvider theme={theme}>
+          <Navigation />
+        </ThemeProvider>
+      </NavigationContainer>
+    </Provider>
   );
 };
 

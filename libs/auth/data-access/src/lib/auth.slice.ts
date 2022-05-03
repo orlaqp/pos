@@ -20,15 +20,19 @@ export interface UserEntity {
 export interface AuthState {
   user?: UserEntity;
   error?: string;
-  signupStatus?: 'in-progress' | 'completed' | 'error';
-  signinStatus?: 'in-progress' | 'completed' | 'error';
+  isSignedIn: boolean;
 }
 
 export const signUp = createAsyncThunk(
   'auth/signUpStatus',
   async (req: SignUpRequest, thunkAPI) => {
-      
-    
+    const res = await Auth.signUp({
+        username: req.email,
+        password: req.password,
+        attributes: {
+          name: req.name,
+        },
+    });
     return ;
   }
 );
@@ -36,30 +40,31 @@ export const signUp = createAsyncThunk(
 export const initialAuthState: AuthState = {
   user: undefined,
   error: undefined,
+  isSignedIn: false,
 };
 
 export const authSlice = createSlice({
   name: AUTH_FEATURE_KEY,
   initialState: initialAuthState,
   reducers: {
-    
+    loginRequired: (state) => { state.isSignedIn = false }
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(signUp.pending, (state: AuthState) => {
-        state.signupStatus = 'loading';
-      })
-      .addCase(
-        signUp.fulfilled,
-        (state: AuthState, action: PayloadAction<UserEntity[]>) => {
-          authAdapter.setAll(state, action.payload);
-          state.signupStatus = 'loaded';
-        }
-      )
-      .addCase(signUp.rejected, (state: AuthState, action) => {
-        state.signupStatus = 'error';
-        state.error = action.error.message;
-      });
+    // builder
+    //   .addCase(signUp.pending, (state: AuthState) => {
+    //     state.signupStatus = 'loading';
+    //   })
+    //   .addCase(
+    //     signUp.fulfilled,
+    //     (state: AuthState, action: PayloadAction<UserEntity[]>) => {
+    //       authAdapter.setAll(state, action.payload);
+    //       state.signupStatus = 'loaded';
+    //     }
+    //   )
+    //   .addCase(signUp.rejected, (state: AuthState, action) => {
+    //     state.signupStatus = 'error';
+    //     state.error = action.error.message;
+    //   });
   },
 });
 
@@ -102,11 +107,11 @@ export const authActions = authSlice.actions;
  *
  * See: https://react-redux.js.org/next/api/hooks#useselector
  */
-const { selectAll, selectEntities } = authAdapter.getSelectors();
+// const { selectAll, selectEntities } = authAdapter.getSelectors();
 
 export const getAuthState = (rootState: unknown): AuthState =>
   rootState[AUTH_FEATURE_KEY];
 
-export const selectAllAuth = createSelector(getAuthState, selectAll);
+// export const selectAllAuth = createSelector(getAuthState, selectAll);
 
-export const selectAuthEntities = createSelector(getAuthState, selectEntities);
+// export const selectAuthEntities = createSelector(getAuthState, selectEntities);

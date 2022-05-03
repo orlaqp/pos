@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { View, StyleSheet, Image } from 'react-native';
-import { useTheme, Button, Input, Card, Text } from '@rneui/themed';
+import { useTheme, Button } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Auth } from 'aws-amplify';
@@ -9,6 +9,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { UiActionMessage, UIAlert, UIInput } from '@pos/shared/ui-native';
 
 import logo from '../../assets/logo.png';
+import { useDispatch } from 'react-redux';
 export interface SignupProps {
   navigation: NativeStackNavigationProp<any>;
 }
@@ -22,8 +23,9 @@ type SignUpModel = {
 
 export function SignUpScreen(props: SignupProps) {
   const styles = useStyles();
+  const dispatch = useDispatch();
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(true);
+  const [success, setSuccess] = useState(false);
 
   const formMethods = useForm<SignUpModel>({
     defaultValues: {
@@ -35,7 +37,6 @@ export function SignUpScreen(props: SignupProps) {
   });
 
   async function onSubmit(model: SignUpModel) {
-    console.log('form submitted', model);
     setError(null);
 
     try {
@@ -66,9 +67,9 @@ export function SignUpScreen(props: SignupProps) {
           {error && <UIAlert message={error} type="error" />}
           {success && 
             <UiActionMessage
-                message='Congratulation! Your account was successfully created. Please click the button below to login with your credentials'
+                message='Congratulations! Your account was successfully created. Please click the button below to login with your credentials'
                 actionTitle='Login'
-                action={() => alert()}
+                action={() => props.navigation.navigate('Login')}
             />
           }
           {!success && (
@@ -80,7 +81,7 @@ export function SignUpScreen(props: SignupProps) {
               />
               <UIInput
                 name="email"
-                placeholder="Username"
+                placeholder="Email Address"
                 style={styles.topMargin}
               />
               <UIInput

@@ -11,6 +11,7 @@
     "products-native-feature": "libs/products/native-feature",
     "sales-native-feature": "libs/sales/native-feature",
     "shared-ui-native": "libs/shared/ui-native",
+    "store": "libs/store",
     "theme-native": "libs/theme/native"
   }
 }
