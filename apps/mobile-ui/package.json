@@ -19,6 +19,8 @@
     "react-native-svg": "*",
     "react-native-vector-icons": "^9.1.0",
     "aws-amplify": "*",
-    "react-hook-form": "*"
+    "react-hook-form": "*",
+    "react-redux": "*",
+    "@reduxjs/toolkit": "*"
   }
 }

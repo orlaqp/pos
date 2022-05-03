@@ -7,12 +7,7 @@ import {
 import { Auth } from 'aws-amplify';
 import { CognitoUser } from '@aws-amplify/auth';
 
-
 export const AUTH_FEATURE_KEY = 'auth';
-
-/*
- * Update these interfaces according to your requirements.
- */
 export interface User {
   email: string;
   name: string;
@@ -22,7 +17,7 @@ export interface User {
 export interface AuthState {
   user?: User;
   error?: string;
-  signInStatus: 'inProgress' | 'complete' | 'error';
+  signInStatus: 'not-started' | 'inProgress' | 'complete' | 'error';
   isSignedIn: boolean;
 }
 
@@ -36,6 +31,7 @@ export const signIn = createAsyncThunk(
 export const initialAuthState: AuthState = {
   user: undefined,
   error: undefined,
+  signInStatus: 'not-started',
   isSignedIn: false,
 };
 
@@ -73,43 +69,6 @@ export const authSlice = createSlice({
  * Export reducer for store configuration.
  */
 export const authReducer = authSlice.reducer;
-
-/*
- * Export action creators to be dispatched. For use with the `useDispatch` hook.
- *
- * e.g.
- * ```
- * import React, { useEffect } from 'react';
- * import { useDispatch } from 'react-redux';
- *
- * // ...
- *
- * const dispatch = useDispatch();
- * useEffect(() => {
- *   dispatch(authActions.add({ id: 1 }))
- * }, [dispatch]);
- * ```
- *
- * See: https://react-redux.js.org/next/api/hooks#usedispatch
- */
-export const authActions = authSlice.actions;
-
-/*
- * Export selectors to query state. For use with the `useSelector` hook.
- *
- * e.g.
- * ```
- * import { useSelector } from 'react-redux';
- *
- * // ...
- *
- * const entities = useSelector(selectAllAuth);
- * ```
- *
- * See: https://react-redux.js.org/next/api/hooks#useselector
- */
-// const { selectAll, selectEntities } = authAdapter.getSelectors();
-
 export const getAuthState = (rootState: unknown): AuthState =>
   rootState[AUTH_FEATURE_KEY];
 

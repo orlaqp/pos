@@ -1,16 +1,19 @@
+
 import React from 'react';
-import { Auth } from 'aws-amplify';
 
 import { View, StyleSheet, Image } from 'react-native';
-import { useTheme, Button, Input, Card, Text } from '@rneui/themed';
+import { useTheme, Button, Text } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import logo from '../assets/logo.png';
 import { Link } from '@react-navigation/native';
 import { FormProvider, useForm } from 'react-hook-form';
-import { UIInput } from '@pos/shared/ui-native';
-import { useDispatch } from 'react-redux';
+import { UIInput, UIAlert } from '@pos/shared/ui-native';
+import { useDispatch, useSelector } from 'react-redux';
 import { signIn } from '@pos/auth/data-access';
+import { RootState } from '@pos/store';
+
+
+import logo from '../assets/logo.png';
 
 /* eslint-disable-next-line */
 export interface LoginProps {
@@ -25,6 +28,8 @@ type SignInModel = {
 export function LoginScreen(props: LoginProps) {
   const styles = useStyles();
   const dispatch = useDispatch();
+  const error = useSelector((state: RootState) => state.auth.error);
+  const loading = useSelector((state: RootState) => state.auth.signInStatus === 'inProgress');
   const formMethods = useForm<SignInModel>({
     defaultValues: {
       email: '',
@@ -44,6 +49,7 @@ export function LoginScreen(props: LoginProps) {
           <View style={[styles.centered, styles.bottomMargin]}>
             <Image source={logo} style={styles.logo} />
           </View>
+          {error && <UIAlert message={error} type="error" />}
           <UIInput name="email" placeholder="Username" style={styles.topMargin} />
           <UIInput
             name="password"
@@ -56,9 +62,10 @@ export function LoginScreen(props: LoginProps) {
             type="outline"
             containerStyle={styles.topMargin}
             onPress={formMethods.handleSubmit(login)}
+            loading={loading}
           />
           <Text style={styles.signUpText}>
-            Or if you do not have an account yet please click:{' '}
+            Or if you do not have an account yet please click{' '}
             <Link style={styles.signUpLink} to={{ screen: 'Signup' }}>
               HERE
             </Link>
