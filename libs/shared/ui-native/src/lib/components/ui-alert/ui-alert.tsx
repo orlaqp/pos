@@ -27,7 +27,7 @@ const useStyles = () => {
       borderRadius: 5,
     },
     message: {
-      color: 'white',
+      color: theme.theme.colors.black,
       fontSize: 14,
     },
     success: {
