@@ -26,6 +26,7 @@
         "libs/products/native-feature/src/index.ts"
       ],
       "@pos/sales/native-feature": ["libs/sales/native-feature/src/index.ts"],
+      "@pos/shared/ui-native": ["libs/shared/ui-native/src/index.ts"],
       "@pos/theme/native": ["libs/theme/native/src/index.ts"]
     }
   },

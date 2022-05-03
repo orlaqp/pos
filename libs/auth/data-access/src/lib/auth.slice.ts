@@ -1,10 +1,12 @@
+import { SignUpRequest } from './definitions';
 import {
   createAsyncThunk,
   createSelector,
   createSlice,
-  EntityState,
   PayloadAction,
 } from '@reduxjs/toolkit';
+import { Auth } from 'aws-amplify';
+
 
 export const AUTH_FEATURE_KEY = 'auth';
 
@@ -18,13 +20,16 @@ export interface UserEntity {
 export interface AuthState {
   user?: UserEntity;
   error?: string;
-  signupStatus?: 'creating' | 'created' | 'error';
+  signupStatus?: 'in-progress' | 'completed' | 'error';
+  signinStatus?: 'in-progress' | 'completed' | 'error';
 }
 
 export const signUp = createAsyncThunk(
   'auth/signUpStatus',
-  async (_, thunkAPI) => {
-    return Promise.resolve([]);
+  async (req: SignUpRequest, thunkAPI) => {
+      
+    
+    return ;
   }
 );
 

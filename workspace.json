@@ -10,6 +10,7 @@
     "models": "libs/models",
     "products-native-feature": "libs/products/native-feature",
     "sales-native-feature": "libs/sales/native-feature",
+    "shared-ui-native": "libs/shared/ui-native",
     "theme-native": "libs/theme/native"
   }
 }
