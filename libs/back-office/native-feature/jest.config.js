@@ -1,5 +1,5 @@
 module.exports = {
-  displayName: 'back-office',
+  displayName: 'back-office-native-feature',
   preset: 'react-native',
   testRunner: 'jest-jasmine2',
   resolver: '@nrwl/jest/plugins/resolver',

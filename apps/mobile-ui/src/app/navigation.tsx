@@ -8,6 +8,7 @@ import { theme } from '@pos/theme/native';
 import { View, Text } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@pos/store';
+import { BackOffice } from '@pos/back-office/native-feature';
 
 /* eslint-disable-next-line */
 export interface NavigationProps {}
@@ -32,6 +33,7 @@ export function Navigation(props: NavigationProps) {
         <>
             <Stack.Screen name="Home" component={HomeScreen} options={{ title: '' }} />
             <Stack.Screen name="Sales" component={SalesScreen} options={{ title: '' }} />
+            <Stack.Screen name="BackOffice" component={BackOffice} options={{ title: '' }} />
         </>
     ) : (
         <>

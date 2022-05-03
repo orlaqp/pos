@@ -17,7 +17,9 @@
     "paths": {
       "@pos/auth/data-access": ["libs/auth/data-access/src/index.ts"],
       "@pos/auth/native-feature": ["libs/auth/native-feature/src/index.ts"],
-      "@pos/back-office": ["libs/back-office/src/index.ts"],
+      "@pos/back-office/native-feature": [
+        "libs/back-office/native-feature/src/index.ts"
+      ],
       "@pos/categories/native-feature": [
         "libs/categories/native-feature/src/index.ts"
       ],
