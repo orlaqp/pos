@@ -9,7 +9,6 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { UiActionMessage, UIAlert, UIInput } from '@pos/shared/ui-native';
 
 import logo from '../../assets/logo.png';
-import { useDispatch } from 'react-redux';
 export interface SignupProps {
   navigation: NativeStackNavigationProp<any>;
 }
@@ -23,7 +22,6 @@ type SignUpModel = {
 
 export function SignUpScreen(props: SignupProps) {
   const styles = useStyles();
-  const dispatch = useDispatch();
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
