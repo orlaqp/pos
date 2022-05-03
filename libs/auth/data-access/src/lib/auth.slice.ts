@@ -1,11 +1,11 @@
-import { SignUpRequest } from './definitions';
+import { SignInRequest } from './definitions';
 import {
   createAsyncThunk,
-  createSelector,
   createSlice,
   PayloadAction,
 } from '@reduxjs/toolkit';
 import { Auth } from 'aws-amplify';
+import { CognitoUser } from '@aws-amplify/auth';
 
 
 export const AUTH_FEATURE_KEY = 'auth';
@@ -13,27 +13,23 @@ export const AUTH_FEATURE_KEY = 'auth';
 /*
  * Update these interfaces according to your requirements.
  */
-export interface UserEntity {
-  id: number;
+export interface User {
+  email: string;
+  name: string;
+  sub: string;
 }
 
 export interface AuthState {
-  user?: UserEntity;
+  user?: User;
   error?: string;
+  signInStatus: 'inProgress' | 'complete' | 'error';
   isSignedIn: boolean;
 }
 
-export const signUp = createAsyncThunk(
-  'auth/signUpStatus',
-  async (req: SignUpRequest, thunkAPI) => {
-    const res = await Auth.signUp({
-        username: req.email,
-        password: req.password,
-        attributes: {
-          name: req.name,
-        },
-    });
-    return ;
+export const signIn = createAsyncThunk(
+  'auth/signInStatus',
+  async (req: SignInRequest, thunkAPI) => {
+    return Auth.signIn(req.email, req.password);
   }
 );
 
@@ -50,21 +46,26 @@ export const authSlice = createSlice({
     loginRequired: (state) => { state.isSignedIn = false }
   },
   extraReducers: (builder) => {
-    // builder
-    //   .addCase(signUp.pending, (state: AuthState) => {
-    //     state.signupStatus = 'loading';
-    //   })
-    //   .addCase(
-    //     signUp.fulfilled,
-    //     (state: AuthState, action: PayloadAction<UserEntity[]>) => {
-    //       authAdapter.setAll(state, action.payload);
-    //       state.signupStatus = 'loaded';
-    //     }
-    //   )
-    //   .addCase(signUp.rejected, (state: AuthState, action) => {
-    //     state.signupStatus = 'error';
-    //     state.error = action.error.message;
-    //   });
+    builder
+      .addCase(signIn.pending, (state: AuthState) => {
+        state.signInStatus = 'inProgress';
+      })
+      .addCase(
+        signIn.fulfilled,
+        (state: AuthState, action: PayloadAction<CognitoUser>) => {
+          state.signInStatus = 'complete';
+          const attrs = (action.payload as any).attributes;
+          state.user = {
+              email: attrs.email,
+              name: attrs.name,
+              sub: attrs.sub,
+          };
+        }
+      )
+      .addCase(signIn.rejected, (state: AuthState, action) => {
+        state.signInStatus = 'error';
+        state.error = action.error.message;
+      });
   },
 });
 

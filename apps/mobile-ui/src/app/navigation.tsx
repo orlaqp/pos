@@ -15,7 +15,7 @@ export interface NavigationProps {}
 const Stack = createNativeStackNavigator();
 
 export function Navigation(props: NavigationProps) {
-    const isSignedIn = useSelector((state: RootState) => state.auth.isSignedIn);
+    const user = useSelector((state: RootState) => state.auth.user);
   return (
     <Stack.Navigator
       screenOptions={{
@@ -28,7 +28,7 @@ export function Navigation(props: NavigationProps) {
         },
       }}
     >
-    { isSignedIn ? (
+    { user ? (
         <>
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Sales" component={SalesScreen} />
