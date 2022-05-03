@@ -24,7 +24,14 @@ export interface AuthState {
 export const signIn = createAsyncThunk(
   'auth/signInStatus',
   async (req: SignInRequest, thunkAPI) => {
-    return Auth.signIn(req.email, req.password);
+    // return Auth.signIn(req.email, req.password);
+    return {
+        attributes: {
+            email: '',
+            name: 'attrs.name',
+            sub: 'attrs.sub',
+        }
+    } as any;
   }
 );
 

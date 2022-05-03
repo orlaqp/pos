@@ -16,5 +16,8 @@ export const useSharedStyles = () => {
             flexDirection: "row",
             flexWrap: "wrap",
         },
+        column: {
+            flexDirection: "column",
+        },
     });
 } 

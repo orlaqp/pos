@@ -5,9 +5,9 @@ import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import emptyCart from '../assets/empty-cart.png';
-import payment from '../assets/payment.png';
-import calculator from '../assets/calculator.png';
+import emptyCart from '../../assets/empty-cart.png';
+import payment from '../../assets/payment.png';
+import chart from '../../assets/chart.png';
 
 interface PathDetails {
   title: string;
@@ -27,7 +27,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
   const paths: PathDetails[] = [
     { title: 'Sales', path: 'Sales', image: emptyCart },
     { title: 'Payments', path: 'Payments', image: payment },
-    { title: 'Back Office', path: 'BackOffice', image: calculator },
+    { title: 'Back Office', path: 'BackOffice', image: chart },
   ];
   const goto = (details: PathDetails) => props.navigation.navigate(details.path);
   
@@ -35,7 +35,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
     <View style={[sharedStyles.page, sharedStyles.centered]}>
       <View style={{ flexDirection: 'row' }}>
         {paths.map((p) => (
-          <TouchableOpacity onPress={() => goto(p)}>
+          <TouchableOpacity onPress={() => goto(p)} key={p.title}>
             <View style={[styles.bigButton, sharedStyles.centered]}>
               { p.image &&
               <Image source={p.image} style={{ width: 150, height: 150 }} />

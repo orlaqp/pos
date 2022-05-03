@@ -1,0 +1,14 @@
+{
+  "resourceName": "assets",
+  "policyUUID": "6f5affcd",
+  "bucketName": "pos-assets-667d29297354387b6c48c731f59df31",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}
