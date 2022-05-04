@@ -1,7 +1,8 @@
 import { Category } from '@pos/models';
 import { useSharedStyles } from '@pos/theme/native';
 import { useTheme } from '@rneui/themed';
-import React from 'react';
+import { Storage } from 'aws-amplify';
+import React, { useEffect, useState } from 'react';
 
 import {
   View,
@@ -9,6 +10,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from 'react-native';
 
 const categories: Category[] = [
@@ -38,9 +40,33 @@ export interface CategorySelectionProps {}
 export function CategorySelection(props: CategorySelectionProps) {
   const theme = useTheme();
   const styles = useStyles();
+  const [uri, setUri] = useState(undefined);
+  const imageKey = 'category-5E7F1392-DE4A-427D-A3B3-C36F8BFF4CA6.png';
+
+  useEffect(() => {
+    const fetchImageUri = async () => {
+        const image = await Storage.get(imageKey);
+        setUri(image as any);
+    }
+
+    fetchImageUri();
+  }, []);
+
+  
+  
   return (
-      
+
     <ScrollView horizontal={true}>
+        <TouchableOpacity style={styles.container}>
+          <View style={styles.centered}>
+            {/* <View style={[styles.categoryBtn, { backgroundColor: c.color }]} /> */}
+            <Image source={{ uri }} style={styles.picture} />
+            <Text style={{ color: theme.theme.colors.black, marginBottom: 25 }}>
+              Meat
+            </Text>
+          </View>
+        </TouchableOpacity>
+
       {categories.map((c) => (
         <TouchableOpacity style={styles.container}>
           <View style={styles.centered}>
@@ -70,6 +96,7 @@ const useStyles = () => {
         height: 80,
         borderRadius: 4,
       },
+      picture: {marginBottom: 15,  width: 75, height: 75}
     }),
   };
 };

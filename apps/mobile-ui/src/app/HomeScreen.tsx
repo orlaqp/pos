@@ -29,7 +29,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
     { title: 'Payments', path: 'Payments', image: payment },
     { title: 'Back Office', path: 'BackOffice', image: chart },
   ];
-  const goto = (details: PathDetails) => props.navigation.navigate(details.path);
+  const goto = (details: PathDetails) => props.navigation.replace(details.path);
   
   return (
     <View style={[sharedStyles.page, sharedStyles.centered]}>
@@ -57,8 +57,8 @@ const useStyles = () => {
       color: theme.theme.colors.white,
     },
     bigButton: {
-        // backgroundColor: theme.theme.colors.grey5,
-      borderColor: theme.theme.colors.divider,
+      backgroundColor: `${theme.theme.colors.grey5}33`,
+    //   borderColor: theme.theme.colors.divider,
       borderStyle: 'solid',
       borderWidth: 1,
       borderRadius: 10,

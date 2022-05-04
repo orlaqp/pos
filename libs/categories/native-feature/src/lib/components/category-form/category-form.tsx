@@ -12,24 +12,26 @@ export interface CategoryFormProps {}
 export function CategoryForm(props: CategoryFormProps) {
     const launchLibrary = async () => {
         try {
-            // const res = await launchImageLibrary({ mediaType: 'photo', selectionLimit: 1 });
-            // const asset = res.assets?.at(0);
+            const res = await launchImageLibrary({ mediaType: 'photo', selectionLimit: 1 });
+            const asset = res.assets?.at(0);
 
-            // if (!asset?.uri) return
-            // console.log('asset', asset);
+            if (!asset?.uri) return
+            console.log('asset', asset);
 
-            // const response = await fetch(asset?.uri);
-            // console.log('fetch response', response);
+            const response = await fetch(asset?.uri);
+            console.log('fetch response', response);
             
-            // const blob = await response.blob();
-            // console.log('blob');
+            const blob = await response.blob();
+            console.log('blob');
             
-            const putRes = await Storage.put('keyName.txt', 'some value', {
-                level: 'public'
-            });
+            const key = `category-${asset?.fileName}`;
+            const putRes = await Storage.put(key, blob);
             console.log('put response', putRes);
-            
             console.log(putRes.key);
+
+            const signedUrl = await Storage.get(key, { download: false })
+            console.log('Signed URL', signedUrl);
+            
         } catch (error) {
             console.error('error', error);
         }
