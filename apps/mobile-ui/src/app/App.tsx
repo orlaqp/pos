@@ -14,6 +14,9 @@ import { Provider } from 'react-redux';
 import { store } from '@pos/store';
 import Navigation from './navigation';
 
+// ICONS
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
 const createStore = async () => {
   await DataStore.save(
     new Store({

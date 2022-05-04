@@ -3,7 +3,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme, Button, Card } from '@rneui/themed';
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import emptyCart from '../../assets/empty-cart.png';
 import payment from '../../assets/payment.png';

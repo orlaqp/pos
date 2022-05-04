@@ -1,9 +1,8 @@
-import { CategoryForm } from '@pos/categories/native-feature';
-import { useSharedStyles } from '@pos/theme/native';
 import React from 'react';
+import { useSharedStyles } from '@pos/theme/native';
 
 import { View, Text, StyleSheet } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Sidebar from '../sidebar/sidebar';
 
 /* eslint-disable-next-line */
@@ -33,13 +32,14 @@ const useStyles = () => {
     ...sharedStyles,
     ...StyleSheet.create({
       leftSide: {
-        flex: 2,
+        flex: 3,
       },
       rightSide: {
           ...sharedStyles.darkerGrayBackground,
           ...sharedStyles.rounded,
-        flex: 10,
-        marginLeft: 20
+        flex: 9,
+        marginLeft: 20,
+        height: '100%'
       },
     }),
   };
