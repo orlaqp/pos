@@ -38,8 +38,8 @@ export function CategoryForm(props: CategoryFormProps) {
     }
   return (
     <View>
-      <Text>Welcome to category-form!</Text>
-        <Button title='Launch image Library' onPress={launchLibrary} />
+      
+        
     </View>
   );
 }

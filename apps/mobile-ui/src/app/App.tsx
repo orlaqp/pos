@@ -1,5 +1,7 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 import React from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 
@@ -29,13 +31,14 @@ const createStore = async () => {
   console.log(stores);
 };
 
-
 export const App = () => {
   return (
     <Provider store={store}>
       <NavigationContainer>
         <ThemeProvider theme={theme}>
-          <Navigation />
+          <SafeAreaProvider>
+            <Navigation />
+          </SafeAreaProvider>
         </ThemeProvider>
       </NavigationContainer>
     </Provider>

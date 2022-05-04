@@ -20,7 +20,6 @@ export function Navigation(props: NavigationProps) {
   return (
     <Stack.Navigator
       screenOptions={{
-        TITLE: '',
         headerStyle: {
           backgroundColor: theme.darkColors.background,
         },
@@ -31,14 +30,14 @@ export function Navigation(props: NavigationProps) {
     >
     { user ? (
         <>
-            <Stack.Screen name="Home" component={HomeScreen} options={{ title: '' }} />
-            <Stack.Screen name="Sales" component={SalesScreen} options={{ title: '' }} />
-            <Stack.Screen name="BackOffice" component={BackOffice} options={{ title: '' }} />
+            <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Sales" component={SalesScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="BackOffice" component={BackOffice} options={{ headerShown: false }} />
         </>
     ) : (
         <>
-            <Stack.Screen name="Login" component={LoginScreen} options={{ title: '' }} />
-            <Stack.Screen name="Signup" component={SignUpScreen} options={{ title: '' }} />
+            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Signup" component={SignUpScreen} options={{ headerShown: false }} />
         </>
     ) }
     </Stack.Navigator>

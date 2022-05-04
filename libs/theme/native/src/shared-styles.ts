@@ -1,6 +1,8 @@
 import { useTheme } from '@rneui/themed';
 import { StyleSheet } from 'react-native';
 
+
+
 export const useSharedStyles = () => {
     const theme = useTheme();
     return StyleSheet.create({
@@ -19,5 +21,11 @@ export const useSharedStyles = () => {
         column: {
             flexDirection: "column",
         },
+        darkerGrayBackground: {
+            backgroundColor: `${theme.theme.colors.grey5}55`,
+        },
+        rounded: {
+            borderRadius: 5
+        }
     });
 } 
