@@ -6,7 +6,7 @@ import { useTheme, Button, Text, Input } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Link } from '@react-navigation/native';
-import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 import { UIInput, UIAlert } from '@pos/shared/ui-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { signIn } from '@pos/auth/data-access';
@@ -57,7 +57,14 @@ export function LoginScreen(props: LoginProps) {
             placeholder='Email address'
             keyboardType='email-address'
             style={styles.topMargin}
-            rules={{ required: 'Email address is required'}}
+            rules={{
+                required: 'Email address is required',
+                // eslint-disable-next-line no-useless-escape
+                pattern: { 
+                    value: /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                    message: 'Email address is invalid'
+                }
+            }}
           />
           <UIInput
             name="password"

@@ -44,7 +44,8 @@ export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
              fieldState: { isTouched, isDirty, error }
             }) => (            
            <Input 
-           ref={ref}           
+           ref={ref}   
+           {...restOfProps}        
            placeholder="Enter your name here"
             value={value}
             onBlur={onBlur}
