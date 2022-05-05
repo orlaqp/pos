@@ -1,49 +1,51 @@
 import React from 'react';
-import { ListItem } from '@rneui/themed';
+import { Icon, ListItem } from '@rneui/themed';
 import { useState } from 'react';
 
 import { View } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-// import Ant from 'react-native-vector-icons/AntDesign';
 
 const list = [
   {
     title: 'Dashboard',
-    icon: 'monitor-dashboard',
-  },
-  {
-    title: 'Reports',
-    icon: 'bar-chart',
-    children: []
-  },
-  {
-    title: 'Inventory',
-    icon: 'inventory',
-    children: []
-  },
-  {
-    title: 'Products',
-    icon: 'barcode',
-    children: []
-  },
-  {
-    title: 'Users',
-    icon: 'av-timer',
-    children: []
+    icon: 'view-dashboard-outline',
   },
   {
     title: 'Customers',
-    icon: 'av-timer',
-    children: []
+    icon: 'account-box-multiple-outline'
   },
   {
-    title: 'Location & Devices',
-    icon: 'av-timer',
-    children: []
+    title: 'Reports',
+    icon: 'clipboard-list-outline',
+    children: [],
+  },
+  {
+    title: 'Inventory',
+    icon: 'warehouse',
+    children: [
+        {
+            title: 'Receive ',
+            icon: 'warehouse'
+        },
+        {
+            title: 'Count',
+            icon: 'warehouse'
+        },
+    ],
+  },
+  {
+    title: 'Products',
+    icon: 'qrcode',
+    children: [],
+  },
+  {
+    title: 'Users',
+    icon: 'account-group-outline',
+    children: [],
   },
   {
     title: 'Settings',
-    icon: 'flight-takeoff',
+    icon: 'cog-outline',
+    children: [],
   },
 ];
 
@@ -56,37 +58,44 @@ export function Sidebar(props: SidebarProps) {
   const [expanded, setExpanded] = useState(false);
   return (
     <View>
-      {list.map((item, i) => (
-        <ListItem key={i}>
-          <Icon name={item.icon} />
-          <ListItem.Content>
-            <ListItem.Title>{item.title}</ListItem.Title>
-          </ListItem.Content>
-          {/* <ListItem.Chevron /> */}
-        </ListItem>
-      ))}
-      <ListItem.Accordion
-        content={
-          <>
-            <Icon name="place" size={30} />
-            <ListItem.Content>
-              <ListItem.Title>List Accordion</ListItem.Title>
-            </ListItem.Content>
-          </>
-        }
-        isExpanded={expanded}
-        onPress={() => {
-          setExpanded(!expanded);
-        }}
-      >
-        <ListItem key={1} bottomDivider>
-          <ListItem.Content>
-            <ListItem.Title>{'Title'}</ListItem.Title>
-            <ListItem.Subtitle>{'Subtitle'}</ListItem.Subtitle>
-          </ListItem.Content>
-          <ListItem.Chevron />
-        </ListItem>
-      </ListItem.Accordion>
+      {list.map((item, i) => {
+        if (!item.children)
+          return (
+            <ListItem key={i}>
+              <Icon name={item.icon} type="material-community" />
+              <ListItem.Content>
+                <ListItem.Title>{item.title}</ListItem.Title>
+              </ListItem.Content>
+            </ListItem>
+          );
+        else
+          return (
+            <ListItem.Accordion
+              content={
+                <>
+                  <Icon name={item.icon} type="material-community" />
+                  <ListItem.Content style={{ marginLeft: 20 }}>
+                    <ListItem.Title>{item.title}</ListItem.Title>
+                  </ListItem.Content>
+                </>
+              }
+              isExpanded={expanded}
+              onPress={() => {
+                setExpanded(!expanded);
+              }}
+            >
+              {item.children.map((c) => (
+                <ListItem key={`${i}-${c}`} style={{marginLeft: 40}}>
+                  <ListItem.Content>
+                    <ListItem.Title>{c.title}</ListItem.Title>
+                    {/* <ListItem.Subtitle>{'Subtitle'}</ListItem.Subtitle> */}
+                  </ListItem.Content>
+                  <ListItem.Chevron />
+                </ListItem>
+              ))}
+            </ListItem.Accordion>
+          );
+      })}
     </View>
   );
 }

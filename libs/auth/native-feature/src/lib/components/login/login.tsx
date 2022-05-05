@@ -2,11 +2,11 @@
 import React from 'react';
 
 import { View, StyleSheet, Image } from 'react-native';
-import { useTheme, Button, Text } from '@rneui/themed';
+import { useTheme, Button, Text, Input } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Link } from '@react-navigation/native';
-import { FormProvider, useForm } from 'react-hook-form';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { UIInput, UIAlert } from '@pos/shared/ui-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { signIn } from '@pos/auth/data-access';
@@ -31,6 +31,7 @@ export function LoginScreen(props: LoginProps) {
   const error = useSelector((state: RootState) => state.auth.error);
   const loading = useSelector((state: RootState) => state.auth.signInStatus === 'inProgress');
   const formMethods = useForm<SignInModel>({
+      mode: 'onChange',
     defaultValues: {
       email: '',
       password: '',
@@ -50,13 +51,22 @@ export function LoginScreen(props: LoginProps) {
             <Image source={logo} style={styles.logo} />
           </View>
           {error && <UIAlert message={error} type="error" />}
-          <UIInput name="email" placeholder="Username" style={styles.topMargin} />
+
+          <UIInput
+            name='email'
+            placeholder='Email address'
+            keyboardType='email-address'
+            style={styles.topMargin}
+            rules={{ required: 'Email address is required'}}
+          />
           <UIInput
             name="password"
             placeholder="Password"
             style={styles.topMargin}
             secureTextEntry={true}
+            rules={{ required: 'Password is required' }}
           />
+          
           <Button
             title="Login"
             type="outline"

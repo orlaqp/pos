@@ -12,6 +12,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const categories: Category[] = [
   new Category({ code: '1', color: '#2962FF', name: 'Beverages' }),
@@ -45,18 +46,16 @@ export function CategorySelection(props: CategorySelectionProps) {
 
   useEffect(() => {
     const fetchImageUri = async () => {
-        const image = await Storage.get(imageKey);
-        setUri(image as any);
-    }
+      const image = await Storage.get(imageKey);
+      setUri(image as any);
+    };
 
     fetchImageUri();
   }, []);
 
-  
-  
   return (
-
-    <ScrollView horizontal={true}>
+    <SafeAreaView style={styles.page}>
+      <ScrollView horizontal={true}>
         <TouchableOpacity style={styles.container}>
           <View style={styles.centered}>
             {/* <View style={[styles.categoryBtn, { backgroundColor: c.color }]} /> */}
@@ -67,17 +66,22 @@ export function CategorySelection(props: CategorySelectionProps) {
           </View>
         </TouchableOpacity>
 
-      {categories.map((c) => (
-        <TouchableOpacity style={styles.container}>
-          <View style={styles.centered}>
-            <View style={[styles.categoryBtn, { backgroundColor: c.color }]} />
-            <Text style={{ color: theme.theme.colors.black, marginBottom: 25 }}>
-              {c.name}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+        {categories.map((c) => (
+          <TouchableOpacity style={styles.container}>
+            <View style={styles.centered}>
+              <View
+                style={[styles.categoryBtn, { backgroundColor: c.color }]}
+              />
+              <Text
+                style={{ color: theme.theme.colors.black, marginBottom: 25 }}
+              >
+                {c.name}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -96,7 +100,7 @@ const useStyles = () => {
         height: 80,
         borderRadius: 4,
       },
-      picture: {marginBottom: 15,  width: 75, height: 75}
+      picture: { marginBottom: 15, width: 75, height: 75 },
     }),
   };
 };
