@@ -13,7 +13,7 @@ export function SingleItem({ chevron, item , selected, setSelected}: SingleItemP
     const theme = useTheme();
     return <ListItem key={item.id} onPress={() => setSelected(item)}>
         { item.icon && 
-        <Icon name={item.icon} type="material-community" />
+        <Icon name={item.icon} type="material-community" color={theme.theme.colors.grey3} />
         }
         <ListItem.Content>
         <ListItem.Title style={[

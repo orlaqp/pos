@@ -31,7 +31,7 @@ export function BackOffice(props: BackOfficeProps) {
           </ScrollView>
         </View>
         <View style={styles.rightSide}>
-          <Text style={{ color: 'yellow' }}>Right side</Text>
+          
         </View>
       </View>
     </SafeAreaView>

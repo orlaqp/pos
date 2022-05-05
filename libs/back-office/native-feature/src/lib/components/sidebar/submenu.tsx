@@ -21,7 +21,7 @@ export function Submenu({
     <ListItem.Accordion
       content={
         <>
-          {item.icon && <Icon name={item.icon} type="material-community" />}
+          {item.icon && <Icon name={item.icon} type="material-community" color={theme.theme.colors.grey3} />}
           <ListItem.Content style={{ marginLeft: 20 }}>
             <ListItem.Title
               style={{
