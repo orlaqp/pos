@@ -82,7 +82,7 @@ export function LoginScreen(props: LoginProps) {
             loading={loading}
           />
           <Text style={styles.signUpText}>
-            Or if you do not have an account yet please click{' '}
+            If you need a new account click{' '}
             <Link style={styles.signUpLink} to={{ screen: 'Signup' }}>
               HERE
             </Link>
