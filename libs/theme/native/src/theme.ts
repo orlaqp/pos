@@ -17,4 +17,7 @@ export const theme = createTheme({
     // Button: {
     //     raised: true,
     // },
-});
+    // Input: {
+    //     inputContainerStyle: { borderWidth: 1 }
+    // }
+}); 

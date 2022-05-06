@@ -21,7 +21,8 @@ export const categoriesAdapter = createEntityAdapter<Category>();
 export const fetchCategories = createAsyncThunk(
   'categories/fetchStatus',
   async (_, thunkAPI) => {
-    return DataStore.query(Category);
+    const res = await DataStore.query(Category);
+    return res;
   }
 );
 

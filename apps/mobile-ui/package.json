@@ -24,6 +24,7 @@
     "react-native-url-polyfill": "^1.3.0",
     "react-native-vector-icons": "^9.1.0",
     "react-redux": "*",
-    "@react-navigation/drawer": "*"
+    "@react-navigation/drawer": "*",
+    "@react-native-community/netinfo": "*"
   }
 }

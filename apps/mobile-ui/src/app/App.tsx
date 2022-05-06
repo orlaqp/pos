@@ -18,23 +18,24 @@ import Navigation from './navigation';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const createStore = async () => {
-  await DataStore.save(
-    new Store({
-      name: 'Store 1',
-      address: 'address 1',
-      city: 'Miami',
-      country: 'USA',
-      email: 'email@address.com',
-      phone: '123-123-1234',
-      state: 'FL',
-    })
-  );
+//   await DataStore.save(
+//     new Store({
+//       name: 'Store 1',
+//       address: 'address 1',
+//       city: 'Miami',
+//       country: 'USA',
+//       email: 'email@address.com',
+//       phone: '123-123-1234',
+//       state: 'FL',
+//     })
+//   );
 
   const stores = await DataStore.query(Store);
   console.log(stores);
 };
 
 export const App = () => {
+    createStore();
   return (
     <Provider store={store}>
       <NavigationContainer>
