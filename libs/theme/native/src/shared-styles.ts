@@ -10,6 +10,11 @@ export const useSharedStyles = () => {
             flex: 1,
             backgroundColor: theme.theme.colors.background,
         },
+        detailsPage: {
+            flex: 1,
+            flexDirection: 'column',
+            backgroundColor: theme.theme.colors.background,
+        },
         centered: {
             alignItems: 'center',
             justifyContent: 'center',
@@ -21,11 +26,12 @@ export const useSharedStyles = () => {
         column: {
             flexDirection: "column",
         },
-        darkerGrayBackground: {
-            backgroundColor: `${theme.theme.colors.grey5}55`,
-        },
         rounded: {
             borderRadius: 5
-        }
+        },
+        darkerGrayBackground: {
+            backgroundColor: `${theme.theme.colors.grey5}22`,
+        },
+
     });
 } 
