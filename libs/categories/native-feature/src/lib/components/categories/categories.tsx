@@ -5,6 +5,9 @@ import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { Input } from '@rneui/base';
 import { Category } from '@pos/models';
 import { ScrollView } from 'react-native-gesture-handler';
+import { UIEmptyState, UISpinner } from '@pos/shared/ui-native';
+import { useSelector } from 'react-redux';
+import { RootState } from '@pos/store';
 
 const categories: Category[] = [
   new Category({
@@ -162,41 +165,51 @@ export interface CategoriesProps {}
 export function Categories(props: CategoriesProps) {
   const theme = useTheme();
   const styles = useStyles();
+  const loadingStatus = useSelector((state: RootState) => state.categories.loadingStatus);
+  const categories = useSelector((state: RootState) => state.categories.entities);
+
+
   return (
-    <View style={styles.detailsPage}>
-      <View style={styles.header}>
-        <View style={{ flex: 5 }}>
-          <Input
-            placeholder="type to search ..."
-            containerStyle={{
-              backgroundColor: theme.theme.colors.searchBg,
-              borderRadius: 20,
-            }}
-            inputContainerStyle={{ borderBottomWidth: 0, paddingLeft: 10 }}
-            inputStyle={{ color: theme.theme.colors.grey1 }}
-            rightIcon={{
-              name: 'magnify',
-              type: 'material-community',
-              color: theme.theme.colors.grey2,
-            }}
-            renderErrorMessage={false}
-          />
-        </View>
-        <View style={{ flex: 1, alignItems: 'flex-end', marginRight: 20 }}>
-          <FAB
-            icon={{ name: 'add', color: 'white' }}
-            color={theme.theme.colors.primary}
-          />
-        </View>
-      </View>
-      <View style={styles.content}>
-        <ScrollView>
-            <FlatList data={categories} renderItem={({ item }) => (
-                <TableRow item={item} />
-            )} />
-        </ScrollView>
-      </View>
-    </View>
+      <UISpinner size='large' message='Loading categories ...' />
+    //   <UIEmptyState
+    //     text='It seems that you do not have any categories defined yet. Click below to fix that :-)'
+    //     actionText='Add your first!'
+    //     action={() => alert('hello')}
+    //   />
+    // <View style={styles.detailsPage}>
+    //   <View style={styles.header}>
+    //     <View style={{ flex: 5 }}>
+    //       <Input
+    //         placeholder="type to search ..."
+    //         containerStyle={{
+    //           backgroundColor: theme.theme.colors.searchBg,
+    //           borderRadius: 20,
+    //         }}
+    //         inputContainerStyle={{ borderBottomWidth: 0, paddingLeft: 10 }}
+    //         inputStyle={{ color: theme.theme.colors.grey1 }}
+    //         rightIcon={{
+    //           name: 'magnify',
+    //           type: 'material-community',
+    //           color: theme.theme.colors.grey2,
+    //         }}
+    //         renderErrorMessage={false}
+    //       />
+    //     </View>
+    //     <View style={{ flex: 1, alignItems: 'flex-end', marginRight: 20 }}>
+    //       <FAB
+    //         icon={{ name: 'add', color: 'white' }}
+    //         color={theme.theme.colors.primary}
+    //       />
+    //     </View>
+    //   </View>
+    //   <View style={styles.content}>
+    //     <ScrollView>
+    //         <FlatList data={categories} renderItem={({ item }) => (
+    //             <TableRow item={item} />
+    //         )} />
+    //     </ScrollView>
+    //   </View>
+    // </View>
   );
 }
 

@@ -20,6 +20,9 @@
       "@pos/back-office/native-feature": [
         "libs/back-office/native-feature/src/index.ts"
       ],
+      "@pos/categories/data-access": [
+        "libs/categories/data-access/src/index.ts"
+      ],
       "@pos/categories/native-feature": [
         "libs/categories/native-feature/src/index.ts"
       ],
