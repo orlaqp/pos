@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, FAB, useTheme } from '@rneui/themed';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { Input } from '@rneui/base';
 import { Category } from '@pos/models';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -108,6 +108,54 @@ const categories: Category[] = [
   }),
 ];
 
+export interface TableRowProps {
+  item: Category;
+}
+
+export function TableRow({ item }: TableRowProps) {
+  const theme = useTheme();
+  const styles = useStyles();
+  return (
+    <View style={styles.dataRow}>
+      <View style={{ flex: 1 }}>
+        <View
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: 25,
+            backgroundColor: item.color!,
+          }}
+        />
+      </View>
+      <View style={{ flex: 5 }}>
+        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.description}>{item.description}</Text>
+      </View>
+      <View
+        style={{
+          flex: 2,
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+        }}
+      >
+        <Button
+          type="clear"
+          title="Edit"
+          icon={{ name: 'pencil-outline', type: 'material-community' }}
+        />
+        <Button
+          type="clear"
+          icon={{
+            name: 'trash-can',
+            type: 'material-community',
+            color: theme.theme.colors.error,
+          }}
+        />
+      </View>
+    </View>
+  );
+}
+
 /* eslint-disable-next-line */
 export interface CategoriesProps {}
 
@@ -143,45 +191,9 @@ export function Categories(props: CategoriesProps) {
       </View>
       <View style={styles.content}>
         <ScrollView>
-          {categories?.map((c) => (
-            <View style={styles.dataRow}>
-              <View style={{ flex: 1 }}>
-                <View
-                  style={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 25,
-                    backgroundColor: c.color!,
-                  }}
-                />
-              </View>
-              <View style={{ flex: 5 }}>
-                <Text style={styles.name}>{c.name}</Text>
-                <Text style={styles.description}>{c.description}</Text>
-              </View>
-              <View
-                style={{
-                  flex: 2,
-                  flexDirection: 'row',
-                  justifyContent: 'flex-end',
-                }}
-              >
-                <Button
-                  type="clear"
-                  title="Edit"
-                  icon={{ name: 'pencil-outline', type: 'material-community' }}
-                />
-                <Button
-                  type="clear"
-                  icon={{
-                    name: 'trash-can',
-                    type: 'material-community',
-                    color: theme.theme.colors.error,
-                  }}
-                />
-              </View>
-            </View>
-          ))}
+            <FlatList data={categories} renderItem={({ item }) => (
+                <TableRow item={item} />
+            )} />
         </ScrollView>
       </View>
     </View>
