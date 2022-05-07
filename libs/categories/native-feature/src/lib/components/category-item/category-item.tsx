@@ -3,12 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
-import { Category } from '@pos/models';
 import { AssetsService } from 'libs/shared/ui-native/src/lib/components/ui-file-upload/assets.service';
+import { CategoryEntity } from '@pos/categories/data-access';
 
 /* eslint-disable-next-line */
 export interface CategoryItemProps {
-    item: Category;
+    item: CategoryEntity;
 }
 
 export function CategoryItem({ item }: CategoryItemProps) {

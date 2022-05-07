@@ -17,7 +17,7 @@ export function Categories() {
   return (
     <StackNavigation Stack={Stack}>
         <Stack.Screen name="Category List"  component={CategoryList} />
-        <Stack.Screen name="Category Form" component={withHorizontallyCenteredPage(CategoryForm)} />
+        <Stack.Screen name="Category Form" component={CategoryForm} />
     </StackNavigation>
   );
 }

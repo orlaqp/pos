@@ -19,6 +19,9 @@ export const useSharedStyles = () => {
             alignItems: 'center',
             justifyContent: 'center',
         },
+        centeredHorizontally: {
+            alignItems: 'center'
+        },
         row: {
             flexDirection: "row",
             flexWrap: "wrap",
