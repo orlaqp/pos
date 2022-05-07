@@ -5,7 +5,7 @@ import { useSharedStyles } from '@pos/theme/native';
 import { useTheme } from '@rneui/themed';
 import { StyleSheet } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StackNavigation, withCenteredPage, withPage } from '@pos/shared/ui-native';
+import { StackNavigation, withCenteredPage, withHorizontallyCenteredPage, withPage } from '@pos/shared/ui-native';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,7 +17,7 @@ export function Categories() {
   return (
     <StackNavigation Stack={Stack}>
         <Stack.Screen name="Category List"  component={CategoryList} />
-        <Stack.Screen name="Category Form" component={withCenteredPage(CategoryForm)} />
+        <Stack.Screen name="Category Form" component={withHorizontallyCenteredPage(CategoryForm)} />
     </StackNavigation>
   );
 }

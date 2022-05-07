@@ -10,27 +10,37 @@ import {
 } from '@pos/shared/ui-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Category } from '@pos/models';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Route } from '@react-navigation/native';
+
+export interface CategoryFormParams {
+    [name: string]: object | undefined;
+    category: Category;
+}
 
 /* eslint-disable-next-line */
-export interface CategoryFormProps {}
+export interface CategoryFormProps {
+    navigation: NativeStackNavigationProp<CategoryFormParams>;
+    route: Route<string, CategoryFormParams>;
+}
 
-export function CategoryForm(props: CategoryFormProps) {
-    const [picturePath, setPicturePath] = useState();
+export function CategoryForm({ navigation, route }: CategoryFormProps) {
+    const category = route?.params.category;
 
     const formMethods = useForm<Category>({
         mode: 'onChange',
         defaultValues: {
-            name: '',
-            description: '',
-            color: '',
-            // picture: ''
+            name: category?.name,
+            description: category?.description,
+            color: category?.color,
+            picture: category?.picture
         },
     });
 
     return (
         <FormProvider {...formMethods}>
-            <View style={{ width: '75%', flexDirection: 'column' }}>
-                <UiFileUpload fileKey='categories/EBE3E047-F2E4-47BE-9C0A-83BD271F1703.png' />
+            <View style={{ width: '60%', flexDirection: 'column', marginTop: 50 }}>
+                <UiFileUpload imageKey={formMethods.getValues().picture} />
                 <UIVerticalSpacer size="large" />
                 <UIInput
                     name="name"

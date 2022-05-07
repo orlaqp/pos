@@ -17,6 +17,7 @@ interface PathDetails {
 
 interface HomeScreenProps {
     navigation: NativeStackNavigationProp<any>;
+    
 }
 
 export const HomeScreen = (props: HomeScreenProps) => {

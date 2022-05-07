@@ -76,6 +76,7 @@ export declare class Category {
   readonly description?: string | null;
   readonly code?: string | null;
   readonly color?: string | null;
+  readonly picture?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Category, CategoryMetaData>);

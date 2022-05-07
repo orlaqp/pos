@@ -11,3 +11,4 @@ export * from './lib/components/ui-vertical-spacer/ui-vertical-spacer';
 
 export * from './lib/hocs/with-page/with-page';
 export * from './lib/hocs/with-centered-page/with-centered-page';
+export * from './lib/hocs/with-horizontally-centered-page/with-horizontally-centered-page';

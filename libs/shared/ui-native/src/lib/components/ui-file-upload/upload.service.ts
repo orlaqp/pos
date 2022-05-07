@@ -1,12 +1,27 @@
 import { Storage } from 'aws-amplify';
 import { launchImageLibrary, MediaType } from 'react-native-image-picker';
 
-export const uploadAsset = async (mediaType: MediaType, keyPrefix: string): Promise<string | null> => {
+export interface UploadResponse {
+    cancel?: boolean;
+    errorMessage?: string;
+    key?: string;
+}
+
+export const uploadAsset = async (mediaType: MediaType, keyPrefix: string): Promise<UploadResponse | null> => {
     try {
         const res = await launchImageLibrary({
             mediaType: mediaType || 'photo',
             selectionLimit: 1,
         });
+
+        if (res.didCancel) {
+            return { cancel: true };
+        }
+
+        if (res.errorCode) {
+            return { errorMessage: res.errorMessage };
+        }
+
         const asset = res.assets?.at(0);
 
         if (!asset?.uri) return null;
@@ -23,13 +38,17 @@ export const uploadAsset = async (mediaType: MediaType, keyPrefix: string): Prom
         console.log('put response', putRes);
         console.log(putRes.key);
 
-        return key;
-    } catch (error) {
+        return { key, cancel: false };
+    } catch (error: any) {
         console.error('error', error);
-        return null;
+        return { errorMessage: error.message };
     }
 };
 
 export const getAssetUri = (key: string) => {
     return Storage.get(key, { download: false });
+}
+
+export const deleteAsset = (key: string) => {
+    return Storage.remove(key);
 }

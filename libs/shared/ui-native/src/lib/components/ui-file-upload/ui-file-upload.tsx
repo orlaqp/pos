@@ -9,7 +9,7 @@ import {
     ImageSourcePropType,
     TouchableOpacity,
 } from 'react-native';
-import { getAssetUri, uploadAsset } from './upload.service';
+import { deleteAsset, getAssetUri, uploadAsset } from './upload.service';
 import UISpinner from '../ui-spinner/ui-spinner';
 import { cancellablePromise } from '@pos/shared/utils';
 
@@ -22,31 +22,39 @@ const fakePromise = () => {
 /* eslint-disable-next-line */
 export interface UiFileUploadProps {
     message?: string;
-    fileKey?: string;
+    imageKey: string | null | undefined;
     width?: number;
     height?: number;
 }
 
 export function UiFileUpload({
     message,
-    fileKey,
+    imageKey,
     height,
     width,
 }: UiFileUploadProps) {
+    
     const theme = useTheme();
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
-    const [s3Key, setS3Key] = useState<string | undefined>(fileKey);
-    const [imageUri, setImageUri] = useState<string | undefined>(fileKey);
+    const [s3Key, setS3Key] = useState<string | null | undefined>(imageKey);
+    const [imageUri, setImageUri] = useState<string | null | undefined>();
+
+    const deleteImage = async () => {
+        if (!s3Key) return;
+
+        setBusy(true);
+        await deleteAsset(s3Key);
+        setS3Key(null);
+        setBusy(false);
+    }
 
     useEffect(() => {
-        setBusy(true);
         if (!s3Key) return setImageUri(undefined);
+        setBusy(true);
         const { promise, cancel } = cancellablePromise<string>(getAssetUri(s3Key));
 
         promise.then((uri: string) => {
-            console.log('Setting image URI: ' + uri);
-            
             setImageUri(uri);
             setBusy(false);
         });
@@ -56,14 +64,18 @@ export function UiFileUpload({
 
     const processUpload = async () => {
         setBusy(true);
-        const key = await uploadAsset('photo', 'categories');
+        const res = await uploadAsset('photo', 'categories');
 
-        if (!key) {
+        if (!res) {
             return alert(
                 `There was an error uploading your picture. Please try again later or contact support`
             );
         }
-        setS3Key(key);
+
+        if (!res.cancel) {
+            setS3Key(res.key);
+        }
+
         setBusy(false);
     };
 
@@ -110,6 +122,14 @@ export function UiFileUpload({
                     </>
                 )}
             </TouchableOpacity>
+            { imageUri && 
+            <TouchableOpacity
+                style={{ position: 'absolute', left: (width || 125) - 14 }}
+                onPress={() => deleteImage()}
+            >
+                <Icon name='close-circle' type='material-community' size={32} />
+            </TouchableOpacity>
+            }
         </View>
     );
 }

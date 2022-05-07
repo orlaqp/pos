@@ -55,13 +55,13 @@ const useStyles = () => {
     ...sharedStyles,
     ...StyleSheet.create({
       leftSide: {
-        flex: 3,
+        flex: 2,
         flexDirection: 'column',
       },
       rightSide: {
         ...sharedStyles.darkerGrayBackground,
         ...sharedStyles.rounded,
-        flex: 10,
+        flex: 9,
         marginLeft: 10,
         height: '100%',
         marginBottom: 10
