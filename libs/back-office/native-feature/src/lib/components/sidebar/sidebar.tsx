@@ -83,10 +83,11 @@ export function Sidebar(props: SidebarProps) {
     <View>
       {list.map((item, i) => {
         if (!item.children)
-          return <SingleItem key={item.id} item={item} selected={selected} setSelected={setSelected} />;
+          return <SingleItem key={item.id} fileKey={item.id} item={item} selected={selected} setSelected={setSelected} />;
         else
           return <Submenu
             key={item.id}
+            fileKey={item.id}
             item={item}
             selected={selected}
             setSelected={setSelected}

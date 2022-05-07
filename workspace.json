@@ -1,18 +1,19 @@
 {
-  "version": 2,
-  "projects": {
-    "auth-data-access": "libs/auth/data-access",
-    "auth-native-feature": "libs/auth/native-feature",
-    "back-office-native-feature": "libs/back-office/native-feature",
-    "categories-data-access": "libs/categories/data-access",
-    "categories-native-feature": "libs/categories/native-feature",
-    "mobile-ui": "apps/mobile-ui",
-    "mobile-ui-e2e": "apps/mobile-ui-e2e",
-    "models": "libs/models",
-    "products-native-feature": "libs/products/native-feature",
-    "sales-native-feature": "libs/sales/native-feature",
-    "shared-ui-native": "libs/shared/ui-native",
-    "store": "libs/store",
-    "theme-native": "libs/theme/native"
-  }
+    "version": 2,
+    "projects": {
+        "auth-data-access": "libs/auth/data-access",
+        "auth-native-feature": "libs/auth/native-feature",
+        "back-office-native-feature": "libs/back-office/native-feature",
+        "categories-data-access": "libs/categories/data-access",
+        "categories-native-feature": "libs/categories/native-feature",
+        "mobile-ui": "apps/mobile-ui",
+        "mobile-ui-e2e": "apps/mobile-ui-e2e",
+        "models": "libs/models",
+        "products-native-feature": "libs/products/native-feature",
+        "sales-native-feature": "libs/sales/native-feature",
+        "shared-ui-native": "libs/shared/ui-native",
+        "shared-utils": "libs/shared/utils",
+        "store": "libs/store",
+        "theme-native": "libs/theme/native"
+    }
 }

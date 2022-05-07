@@ -30,7 +30,7 @@ export function CategoryForm(props: CategoryFormProps) {
     return (
         <FormProvider {...formMethods}>
             <View style={{ width: '75%', flexDirection: 'column' }}>
-                <UiFileUpload />
+                <UiFileUpload fileKey='categories/EBE3E047-F2E4-47BE-9C0A-83BD271F1703.png' />
                 <UIVerticalSpacer size="large" />
                 <UIInput
                     name="name"

@@ -7,10 +7,10 @@ import Sidebar from '../sidebar/sidebar';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useTheme } from '@rneui/themed';
 
-import Logo from '../../assets/logo.png';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Categories } from '@pos/categories/native-feature';
-import { withStackNavigation } from '@pos/shared/ui-native';
+
+import Logo from '../../assets/logo.png';
 
 const Stack = createNativeStackNavigator();
 

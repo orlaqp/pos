@@ -42,7 +42,7 @@ export function Submenu({
     >
       <View style={{ marginLeft: 20 }}>
         {item.children?.map((c, idx) => (
-          <SingleItem chevron item={c} selected={selected} setSelected={setSelected} />
+          <SingleItem key={c.id} chevron item={c} selected={selected} setSelected={setSelected} />
         ))}
       </View>
     </ListItem.Accordion>

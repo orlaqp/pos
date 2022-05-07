@@ -3,6 +3,7 @@ import { Icon, ListItem, useTheme } from '@rneui/themed';
 import { SidebarItem } from './definitions';
 
 export interface SingleItemProps {
+    key: string;
     chevron?: boolean;
     item: SidebarItem;
     selected: SidebarItem | null;
@@ -11,7 +12,7 @@ export interface SingleItemProps {
 
 export function SingleItem({ chevron, item , selected, setSelected}: SingleItemProps) {
     const theme = useTheme();
-    return <ListItem key={item.id} onPress={() => setSelected(item)}>
+    return <ListItem fileKey={item.id} onPress={() => setSelected(item)}>
         { item.icon && 
         <Icon name={item.icon} type="material-community" color={theme.theme.colors.grey3} />
         }

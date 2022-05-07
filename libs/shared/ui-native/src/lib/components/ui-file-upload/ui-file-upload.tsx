@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { getAssetUri, uploadAsset } from './upload.service';
 import UISpinner from '../ui-spinner/ui-spinner';
+import { cancellablePromise } from '@pos/shared/utils';
 
 const fakePromise = () => {
     return new Promise((resolve, reject) => {
@@ -21,36 +22,36 @@ const fakePromise = () => {
 /* eslint-disable-next-line */
 export interface UiFileUploadProps {
     message?: string;
-    key?: string;
+    fileKey?: string;
     width?: number;
     height?: number;
 }
 
 export function UiFileUpload({
     message,
-    key,
+    fileKey,
     height,
     width,
 }: UiFileUploadProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
-    const [s3Key, setS3Key] = useState<string | undefined>(key);
-    const [imageUri, setImageUri] = useState<string | undefined>(key);
+    const [s3Key, setS3Key] = useState<string | undefined>(fileKey);
+    const [imageUri, setImageUri] = useState<string | undefined>(fileKey);
 
     useEffect(() => {
-        async function fetchImageUri() {
-            console.log('Fetching image uri for: ' + s3Key);
-            
-            if (!s3Key) return setImageUri(undefined);
+        setBusy(true);
+        if (!s3Key) return setImageUri(undefined);
+        const { promise, cancel } = cancellablePromise<string>(getAssetUri(s3Key));
 
-            const uri = await getAssetUri(s3Key);
-            console.log(`Uri: ${uri}`);
+        promise.then((uri: string) => {
+            console.log('Setting image URI: ' + uri);
             
             setImageUri(uri);
-        }
+            setBusy(false);
+        });
 
-        fetchImageUri();
+        return cancel;
     }, [s3Key])
 
     const processUpload = async () => {
