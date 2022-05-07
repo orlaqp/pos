@@ -5,7 +5,8 @@ import { TextInput } from 'react-native'
 
 type Props = React.ComponentProps<typeof TextInput> & {
   name: string
-  rules: RegisterOptions
+  placeholder: string;
+  rules?: RegisterOptions
   validationLength?: number
   formatter?: (oldValue: string, newValue: string) => string
   onValid?: () => void
@@ -46,7 +47,7 @@ export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
            <Input 
            ref={ref}   
            {...restOfProps}        
-           placeholder="Enter your name here"
+           placeholder={props.placeholder}
             value={value}
             onBlur={onBlur}
             onChangeText={(value) => onChange(value)}

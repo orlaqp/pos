@@ -26,7 +26,7 @@ export function BackOffice(props: BackOfficeProps) {
       <View style={[styles.page, styles.row]}>
         <View style={styles.leftSide}>
           <ScrollView>
-            <View style={{ alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+            <View style={{ alignItems: 'flex-start', marginLeft: 60, marginBottom: 20 }}>
               <Image source={Logo} style={styles.logo} />
               <Text style={{ color: 'white' }}>Orlando Quero</Text>
             </View>
