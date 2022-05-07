@@ -9,6 +9,109 @@ import {
 } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
 
+const categories_old: Category[] = [
+    new Category({
+      code: '1',
+      color: '#2962FF',
+      name: 'Beverages',
+      description: 'Beverages, soft drinks, Coca Cola',
+    }),
+    new Category({
+      code: '2',
+      color: '#AA00FF',
+      name: 'Bread',
+      description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
+    }),
+    new Category({
+      code: '3',
+      color: '#D32F2F',
+      name: 'Meat',
+      description:
+        'officia adipisci a recusandae assumenda inventore quidem sapiente molestiae. Cum, accusamus.',
+    }),
+    new Category({
+      code: '4',
+      color: '#F5F5F5',
+      name: 'Dairy',
+      description:
+        'Veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo',
+    }),
+    new Category({
+      code: '5',
+      color: '#4DD0E1',
+      name: 'Canned',
+      description:
+        'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    }),
+    new Category({
+      code: '1',
+      color: '#2962FF',
+      name: 'Beverages',
+      description: 'Beverages, soft drinks, Coca Cola',
+    }),
+    new Category({
+      code: '2',
+      color: '#AA00FF',
+      name: 'Bread',
+      description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
+    }),
+    new Category({
+      code: '3',
+      color: '#D32F2F',
+      name: 'Meat',
+      description:
+        'officia adipisci a recusandae assumenda inventore quidem sapiente molestiae. Cum, accusamus.',
+    }),
+    new Category({
+      code: '4',
+      color: '#F5F5F5',
+      name: 'Dairy',
+      description:
+        'Veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo',
+    }),
+    new Category({
+      code: '5',
+      color: '#4DD0E1',
+      name: 'Canned',
+      description:
+        'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    }),
+    new Category({
+      code: '1',
+      color: '#2962FF',
+      name: 'Beverages',
+      description: 'Beverages, soft drinks, Coca Cola',
+    }),
+    new Category({
+      code: '2',
+      color: '#AA00FF',
+      name: 'Bread',
+      description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
+    }),
+    new Category({
+      code: '3',
+      color: '#D32F2F',
+      name: 'Meat',
+      description:
+        'officia adipisci a recusandae assumenda inventore quidem sapiente molestiae. Cum, accusamus.',
+    }),
+    new Category({
+      code: '4',
+      color: '#F5F5F5',
+      name: 'Dairy',
+      description:
+        'Veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo',
+    }),
+    new Category({
+      code: '5',
+      color: '#4DD0E1',
+      name: 'Canned',
+      description:
+        'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    }),
+  ];
+  
+
 export const CATEGORIES_FEATURE_KEY = 'categories';
 
 export interface CategoriesState extends EntityState<Category> {

@@ -5,11 +5,12 @@ import { View, Text, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Sidebar from '../sidebar/sidebar';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Divider, useTheme } from '@rneui/themed';
+import { useTheme } from '@rneui/themed';
 
 import Logo from '../../assets/logo.png';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Categories, CategorySelection } from '@pos/categories/native-feature';
+import { Categories } from '@pos/categories/native-feature';
+import { withStackNavigation } from '@pos/shared/ui-native';
 
 const Stack = createNativeStackNavigator();
 
@@ -37,7 +38,7 @@ export function BackOffice(props: BackOfficeProps) {
         {/* <Divider color={theme.theme.colors.grey5} style={{ marginBottom: 20 }} orientation='vertical' /> */}
 
         <View style={styles.rightSide}>
-          <Stack.Navigator screenOptions={{ headerStyle: styles.navHeader, headerTitleStyle: styles.headerTitle }}>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Categories" component={Categories} />
           </Stack.Navigator>
         </View>

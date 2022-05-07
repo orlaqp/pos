@@ -1,40 +1,44 @@
 {
-  "compileOnSave": false,
-  "compilerOptions": {
-    "rootDir": ".",
-    "sourceMap": true,
-    "declaration": false,
-    "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "importHelpers": true,
-    "target": "es2015",
-    "module": "esnext",
-    "lib": ["es2017", "dom"],
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@pos/auth/data-access": ["libs/auth/data-access/src/index.ts"],
-      "@pos/auth/native-feature": ["libs/auth/native-feature/src/index.ts"],
-      "@pos/back-office/native-feature": [
-        "libs/back-office/native-feature/src/index.ts"
-      ],
-      "@pos/categories/data-access": [
-        "libs/categories/data-access/src/index.ts"
-      ],
-      "@pos/categories/native-feature": [
-        "libs/categories/native-feature/src/index.ts"
-      ],
-      "@pos/models": ["libs/models/src/index.ts"],
-      "@pos/products/native-feature": [
-        "libs/products/native-feature/src/index.ts"
-      ],
-      "@pos/sales/native-feature": ["libs/sales/native-feature/src/index.ts"],
-      "@pos/shared/ui-native": ["libs/shared/ui-native/src/index.ts"],
-      "@pos/store": ["libs/store/src/index.ts"],
-      "@pos/theme/native": ["libs/theme/native/src/index.ts"]
-    }
-  },
-  "exclude": ["node_modules", "tmp"]
+    "compileOnSave": false,
+    "compilerOptions": {
+        "rootDir": ".",
+        "sourceMap": true,
+        "declaration": false,
+        "moduleResolution": "node",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "importHelpers": true,
+        "target": "es2015",
+        "module": "esnext",
+        "lib": ["es2017", "dom"],
+        "skipLibCheck": true,
+        "skipDefaultLibCheck": true,
+        "baseUrl": ".",
+        "paths": {
+            "@pos/auth/data-access": ["libs/auth/data-access/src/index.ts"],
+            "@pos/auth/native-feature": [
+                "libs/auth/native-feature/src/index.ts"
+            ],
+            "@pos/back-office/native-feature": [
+                "libs/back-office/native-feature/src/index.ts"
+            ],
+            "@pos/categories/data-access": [
+                "libs/categories/data-access/src/index.ts"
+            ],
+            "@pos/categories/native-feature": [
+                "libs/categories/native-feature/src/index.ts"
+            ],
+            "@pos/models": ["libs/models/src/index.ts"],
+            "@pos/products/native-feature": [
+                "libs/products/native-feature/src/index.ts"
+            ],
+            "@pos/sales/native-feature": [
+                "libs/sales/native-feature/src/index.ts"
+            ],
+            "@pos/shared/ui-native": ["libs/shared/ui-native/src/index.ts"],
+            "@pos/store": ["libs/store/src/index.ts"],
+            "@pos/theme/native": ["libs/theme/native/src/index.ts"]
+        }
+    },
+    "exclude": ["node_modules", "tmp"]
 }
