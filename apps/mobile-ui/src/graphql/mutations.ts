@@ -61,6 +61,7 @@ export const createCategory = /* GraphQL */ `
       description
       code
       color
+      picture
       createdAt
       updatedAt
       _version
@@ -80,6 +81,7 @@ export const updateCategory = /* GraphQL */ `
       description
       code
       color
+      picture
       createdAt
       updatedAt
       _version
@@ -99,6 +101,7 @@ export const deleteCategory = /* GraphQL */ `
       description
       code
       color
+      picture
       createdAt
       updatedAt
       _version
@@ -433,6 +436,7 @@ export const createProduct = /* GraphQL */ `
         description
         code
         color
+        picture
         createdAt
         updatedAt
         _version
@@ -492,6 +496,7 @@ export const updateProduct = /* GraphQL */ `
         description
         code
         color
+        picture
         createdAt
         updatedAt
         _version
@@ -551,6 +556,7 @@ export const deleteProduct = /* GraphQL */ `
         description
         code
         color
+        picture
         createdAt
         updatedAt
         _version

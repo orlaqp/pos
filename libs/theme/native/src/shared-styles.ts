@@ -32,6 +32,8 @@ export const useSharedStyles = () => {
         darkerGrayBackground: {
             backgroundColor: `${theme.theme.colors.grey5}22`,
         },
-
+        darkBackground: {
+            backgroundColor: `${theme.theme.colors.searchBg}44`
+        }
     });
 } 

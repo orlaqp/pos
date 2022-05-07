@@ -9,6 +9,7 @@ type Category @model @auth(rules: [{allow: public}]) {
   description: String
   code: String
   color: String
+  picture: String
 }
 
 type Customer @model @auth(rules: [{allow: public}]) {

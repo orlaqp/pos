@@ -71,6 +71,7 @@ export const getCategory = /* GraphQL */ `
       description
       code
       color
+      picture
       createdAt
       updatedAt
       _version
@@ -92,6 +93,7 @@ export const listCategories = /* GraphQL */ `
         description
         code
         color
+        picture
         createdAt
         updatedAt
         _version
@@ -122,6 +124,7 @@ export const syncCategories = /* GraphQL */ `
         description
         code
         color
+        picture
         createdAt
         updatedAt
         _version
@@ -417,6 +420,7 @@ export const getProduct = /* GraphQL */ `
         description
         code
         color
+        picture
         createdAt
         updatedAt
         _version
