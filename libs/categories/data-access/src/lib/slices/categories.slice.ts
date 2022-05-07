@@ -129,6 +129,14 @@ export const fetchCategories = createAsyncThunk(
   }
 );
 
+export const addCategory = createAsyncThunk(
+    'categories/addStatus',
+    async (category: Category, thunkAPI) => {
+      const res = await DataStore.save(category);
+      return res;
+    }
+);
+
 export const initialCategoriesState: CategoriesState =
   categoriesAdapter.getInitialState({
     loadingStatus: 'not loaded',

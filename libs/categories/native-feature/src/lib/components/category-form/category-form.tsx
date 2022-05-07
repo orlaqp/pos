@@ -12,6 +12,9 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { Category } from '@pos/models';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Route } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { add } from 'react-native-reanimated';
+import { CategoryService } from '@pos/categories/data-access';
 
 export interface CategoryFormParams {
     [name: string]: object | undefined;
@@ -26,8 +29,19 @@ export interface CategoryFormProps {
 
 export function CategoryForm({ navigation, route }: CategoryFormProps) {
     const category = route?.params.category;
+    const dispatch = useDispatch();
+    const [busy, setBusy] = useState<boolean>(false);
 
-    const formMethods = useForm<Category>({
+    const save = async () => {
+        setBusy(true);
+        if (!category.id) {
+            const values = form.getValues();
+            await CategoryService.save(new Category({...values}));
+        }
+        setBusy(false);
+    }
+
+    const form = useForm<Category>({
         mode: 'onChange',
         defaultValues: {
             name: category?.name,
@@ -38,9 +52,9 @@ export function CategoryForm({ navigation, route }: CategoryFormProps) {
     });
 
     return (
-        <FormProvider {...formMethods}>
+        <FormProvider {...form}>
             <View style={{ width: '60%', flexDirection: 'column', marginTop: 50 }}>
-                <UiFileUpload imageKey={formMethods.getValues().picture} />
+                <UiFileUpload imageKey={form.getValues().picture} />
                 <UIVerticalSpacer size="large" />
                 <UIInput
                     name="name"
@@ -56,7 +70,8 @@ export function CategoryForm({ navigation, route }: CategoryFormProps) {
                 />
                 <UIVerticalSpacer size='small' />
                 <UIActions
-                    submitAction={() => alert('saving')}
+                    busy={busy}
+                    submitAction={form.handleSubmit(save)}
                     cancelAction={() => alert('cancel')}
                 />
             </View>
