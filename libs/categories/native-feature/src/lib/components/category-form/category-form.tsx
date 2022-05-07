@@ -14,7 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Route } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 import { add } from 'react-native-reanimated';
-import { categoriesActions, CategoryService } from '@pos/categories/data-access';
+import { categoriesActions, CategoryEntity, CategoryService } from '@pos/categories/data-access';
 
 export interface CategoryFormParams {
     [name: string]: object | undefined;
@@ -39,9 +39,11 @@ export function CategoryForm({ navigation, route }: CategoryFormProps) {
     const save = async () => {
         setBusy(true);
         if (!category?.id) {
-            const values = form.getValues();
-            const newCategory = await CategoryService.save(new Category({...values}));
-            dispatch(categoriesActions.add(newCategory));
+            const cat: CategoryEntity = form.getValues();
+            const newCategory = await CategoryService.save(cat);
+            cat.createdAt = newCategory.createdAt;
+            cat.updatedAt = newCategory.updatedAt;
+            dispatch(categoriesActions.add(cat));
             navigation.goBack();
         }
         setBusy(false);

@@ -1,4 +1,3 @@
-import { Category } from '@pos/models';
 import {
     createAsyncThunk,
     createEntityAdapter,
@@ -8,133 +7,42 @@ import {
     PayloadAction,
 } from '@reduxjs/toolkit';
 import { CategoryService } from '../category.service';
-import { DataStore } from 'aws-amplify';
-
-const categories_old: Category[] = [
-    new Category({
-      code: '1',
-      color: '#2962FF',
-      name: 'Beverages',
-      description: 'Beverages, soft drinks, Coca Cola',
-    }),
-    new Category({
-      code: '2',
-      color: '#AA00FF',
-      name: 'Bread',
-      description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
-    }),
-    new Category({
-      code: '3',
-      color: '#D32F2F',
-      name: 'Meat',
-      description:
-        'officia adipisci a recusandae assumenda inventore quidem sapiente molestiae. Cum, accusamus.',
-    }),
-    new Category({
-      code: '4',
-      color: '#F5F5F5',
-      name: 'Dairy',
-      description:
-        'Veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo',
-    }),
-    new Category({
-      code: '5',
-      color: '#4DD0E1',
-      name: 'Canned',
-      description:
-        'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-    }),
-    new Category({
-      code: '1',
-      color: '#2962FF',
-      name: 'Beverages',
-      description: 'Beverages, soft drinks, Coca Cola',
-    }),
-    new Category({
-      code: '2',
-      color: '#AA00FF',
-      name: 'Bread',
-      description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
-    }),
-    new Category({
-      code: '3',
-      color: '#D32F2F',
-      name: 'Meat',
-      description:
-        'officia adipisci a recusandae assumenda inventore quidem sapiente molestiae. Cum, accusamus.',
-    }),
-    new Category({
-      code: '4',
-      color: '#F5F5F5',
-      name: 'Dairy',
-      description:
-        'Veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo',
-    }),
-    new Category({
-      code: '5',
-      color: '#4DD0E1',
-      name: 'Canned',
-      description:
-        'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-    }),
-    new Category({
-      code: '1',
-      color: '#2962FF',
-      name: 'Beverages',
-      description: 'Beverages, soft drinks, Coca Cola',
-    }),
-    new Category({
-      code: '2',
-      color: '#AA00FF',
-      name: 'Bread',
-      description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
-    }),
-    new Category({
-      code: '3',
-      color: '#D32F2F',
-      name: 'Meat',
-      description:
-        'officia adipisci a recusandae assumenda inventore quidem sapiente molestiae. Cum, accusamus.',
-    }),
-    new Category({
-      code: '4',
-      color: '#F5F5F5',
-      name: 'Dairy',
-      description:
-        'Veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo',
-    }),
-    new Category({
-      code: '5',
-      color: '#4DD0E1',
-      name: 'Canned',
-      description:
-        'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-    }),
-  ];
-  
 
 export const CATEGORIES_FEATURE_KEY = 'categories';
 
-export interface CategoriesState extends EntityState<Category> {
+export type CategoryEntity = {
+    id?: string,
+    name?: string | null,
+    description?: string | null,
+    code?: string | null,
+    color?: string | null,
+    picture?: string | null,
+    createdAt?: string | null | undefined,
+    updatedAt?: string | null | undefined,
+};
+
+export interface CategoriesState extends EntityState<CategoryEntity> {
   loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
   error?: string;
 }
 
-export const categoriesAdapter = createEntityAdapter<Category>();
+export const categoriesAdapter = createEntityAdapter<CategoryEntity>();
 
 export const fetchCategories = createAsyncThunk(
   'categories/fetchStatus',
   async (_, thunkAPI) => {
-    return CategoryService.getAll();
+    const categories = await CategoryService.getAll();
+    return categories.map(c => ({
+        id: c.id,
+        name: c.name,
+        description: c.description,
+        code: c.code,
+        color: c.color,
+        picture: c.picture,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt
+    }))
   }
-);
-
-export const addCategory = createAsyncThunk(
-    'categories/addStatus',
-    async (category: Category, thunkAPI) => {
-      const res = await DataStore.save(category);
-      return res;
-    }
 );
 
 export const initialCategoriesState: CategoriesState =
@@ -156,7 +64,7 @@ export const categoriesSlice = createSlice({
       })
       .addCase(
         fetchCategories.fulfilled,
-        (state: CategoriesState, action: PayloadAction<Category[]>) => {
+        (state: CategoriesState, action: PayloadAction<CategoryEntity[]>) => {
           categoriesAdapter.setAll(state, action.payload);
           state.loadingStatus = 'loaded';
         }
