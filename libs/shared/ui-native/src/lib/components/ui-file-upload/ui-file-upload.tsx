@@ -9,10 +9,9 @@ import {
     ImageSourcePropType,
     TouchableOpacity,
 } from 'react-native';
-import { deleteAsset, getAssetUri, uploadAsset } from './upload.service';
+import { AssetsService } from './assets.service';
 import UISpinner from '../ui-spinner/ui-spinner';
 import { cancellablePromise } from '@pos/shared/utils';
-import { produceWithPatches } from '@reduxjs/toolkit/node_modules/immer';
 
 const fakePromise = () => {
     return new Promise((resolve, reject) => {
@@ -49,7 +48,7 @@ export function UiFileUpload({
         if (!s3Key) return;
 
         setBusy(true);
-        await deleteAsset(s3Key);
+        await AssetsService.deleteAsset(s3Key);
         
         if (onAssetRemoved) onAssetRemoved(s3Key);
 
@@ -60,7 +59,7 @@ export function UiFileUpload({
     useEffect(() => {
         if (!s3Key) return setImageUri(undefined);
         setBusy(true);
-        const { promise, cancel } = cancellablePromise<string>(getAssetUri(s3Key));
+        const { promise, cancel } = cancellablePromise<string>(AssetsService.getAssetUri(s3Key));
 
         promise.then((uri: string) => {
             setImageUri(uri);
@@ -72,7 +71,7 @@ export function UiFileUpload({
 
     const processUpload = async () => {
         setBusy(true);
-        const res = await uploadAsset('photo', 'categories');
+        const res = await AssetsService.uploadAsset('photo', 'categories');
 
         if (!res) {
             return alert(

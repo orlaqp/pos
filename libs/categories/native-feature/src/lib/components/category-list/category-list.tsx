@@ -1,65 +1,15 @@
 import React, { useEffect } from 'react';
 import { fetchCategories } from '@pos/categories/data-access';
-import { Category } from '@pos/models';
 import { UIEmptyState, UISearchInput, UISpinner } from '@pos/shared/ui-native';
 import { RootState } from '@pos/store';
 import { useSharedStyles } from '@pos/theme/native';
-import { Button, FAB, useTheme } from '@rneui/themed';
+import { FAB, useTheme } from '@rneui/themed';
 
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import CategoryItem from '../category-item/category-item';
 
-export interface TableRowProps {
-    item: Category;
-}
-
-export function CategoryRow({ item }: TableRowProps) {
-    const theme = useTheme();
-    const styles = useStyles();
-    return (
-        <View style={styles.dataRow}>
-            <View style={{ flex: 1 }}>
-                <View
-                    style={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: 25,
-                        backgroundColor: item.color!,
-                    }}
-                />
-            </View>
-            <View style={{ flex: 5 }}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.description}>{item.description}</Text>
-            </View>
-            <View
-                style={{
-                    flex: 2,
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                }}
-            >
-                <Button
-                    type="clear"
-                    title="Edit"
-                    icon={{
-                        name: 'pencil-outline',
-                        type: 'material-community',
-                    }}
-                />
-                <Button
-                    type="clear"
-                    icon={{
-                        name: 'trash-can',
-                        type: 'material-community',
-                        color: theme.theme.colors.error,
-                    }}
-                />
-            </View>
-        </View>
-    );
-}
 /* eslint-disable-next-line */
 export interface CategoryListProps {
     navigation: NativeStackNavigationProp<any>;
@@ -104,6 +54,7 @@ export function CategoryList({ navigation }: CategoryListProps) {
                     <FAB
                         icon={{ name: 'add', color: 'white' }}
                         color={theme.theme.colors.primary}
+                        onPress={() => navigation.navigate('Category Form')}
                     />
                 </View>
             </View>
@@ -112,7 +63,7 @@ export function CategoryList({ navigation }: CategoryListProps) {
                 <FlatList
                     data={Object.keys(categories)}
                     renderItem={({ item }) => (
-                        <CategoryRow item={categories[item]!} />
+                        <CategoryItem item={categories[item]!} />
                     )}
                 />
                 {/* </ScrollView> */}
@@ -137,22 +88,6 @@ const useStyles = () => {
                 padding: 20,
             },
             columnHeader: {
-                color: theme.theme.colors.grey3,
-            },
-            dataRow: {
-                ...sharedStyles.row,
-                padding: 20,
-                backgroundColor: `${theme.theme.colors.searchBg}44`,
-                borderRadius: 10,
-                marginBottom: 10,
-            },
-            name: {
-                fontSize: 18,
-                color: theme.theme.colors.grey0,
-                marginBottom: 5,
-            },
-            description: {
-                fontSize: 14,
                 color: theme.theme.colors.grey3,
             },
         }),

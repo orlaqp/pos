@@ -1,12 +1,13 @@
 import { Category } from '@pos/models';
 import {
-  createAsyncThunk,
-  createEntityAdapter,
-  createSelector,
-  createSlice,
-  EntityState,
-  PayloadAction,
+    createAsyncThunk,
+    createEntityAdapter,
+    createSelector,
+    createSlice,
+    EntityState,
+    PayloadAction,
 } from '@reduxjs/toolkit';
+import { CategoryService } from '../category.service';
 import { DataStore } from 'aws-amplify';
 
 const categories_old: Category[] = [
@@ -124,9 +125,7 @@ export const categoriesAdapter = createEntityAdapter<Category>();
 export const fetchCategories = createAsyncThunk(
   'categories/fetchStatus',
   async (_, thunkAPI) => {
-    const res = await DataStore.query(Category);
-    debugger;
-    return res;
+    return CategoryService.getAll();
   }
 );
 

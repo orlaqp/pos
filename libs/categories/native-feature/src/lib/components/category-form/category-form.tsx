@@ -41,7 +41,8 @@ export function CategoryForm({ navigation, route }: CategoryFormProps) {
         if (!category?.id) {
             const values = form.getValues();
             const newCategory = await CategoryService.save(new Category({...values}));
-            dispatch(categoriesActions.add(newCategory))
+            dispatch(categoriesActions.add(newCategory));
+            navigation.goBack();
         }
         setBusy(false);
     }
