@@ -125,6 +125,7 @@ export const fetchCategories = createAsyncThunk(
   'categories/fetchStatus',
   async (_, thunkAPI) => {
     const res = await DataStore.query(Category);
+    debugger;
     return res;
   }
 );

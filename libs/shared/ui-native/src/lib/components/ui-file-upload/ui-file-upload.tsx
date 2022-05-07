@@ -12,6 +12,7 @@ import {
 import { deleteAsset, getAssetUri, uploadAsset } from './upload.service';
 import UISpinner from '../ui-spinner/ui-spinner';
 import { cancellablePromise } from '@pos/shared/utils';
+import { produceWithPatches } from '@reduxjs/toolkit/node_modules/immer';
 
 const fakePromise = () => {
     return new Promise((resolve, reject) => {
@@ -25,6 +26,8 @@ export interface UiFileUploadProps {
     imageKey: string | null | undefined;
     width?: number;
     height?: number;
+    onAssetUploaded?: (key: string) => void;
+    onAssetRemoved?: (key: string) => void;
 }
 
 export function UiFileUpload({
@@ -32,6 +35,8 @@ export function UiFileUpload({
     imageKey,
     height,
     width,
+    onAssetUploaded,
+    onAssetRemoved
 }: UiFileUploadProps) {
     
     const theme = useTheme();
@@ -45,6 +50,9 @@ export function UiFileUpload({
 
         setBusy(true);
         await deleteAsset(s3Key);
+        
+        if (onAssetRemoved) onAssetRemoved(s3Key);
+
         setS3Key(null);
         setBusy(false);
     }
@@ -68,12 +76,14 @@ export function UiFileUpload({
 
         if (!res) {
             return alert(
-                `There was an error uploading your picture. Please try again later or contact support`
+                `There was an error uploading your picture.
+                 Please try again later or contact support`
             );
         }
 
-        if (!res.cancel) {
+        if (!res.cancel && res.key) {
             setS3Key(res.key);
+            if (onAssetUploaded) onAssetUploaded(res.key);
         }
 
         setBusy(false);

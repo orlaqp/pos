@@ -14,7 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Route } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 import { add } from 'react-native-reanimated';
-import { CategoryService } from '@pos/categories/data-access';
+import { categoriesActions, CategoryService } from '@pos/categories/data-access';
 
 export interface CategoryFormParams {
     [name: string]: object | undefined;
@@ -32,11 +32,16 @@ export function CategoryForm({ navigation, route }: CategoryFormProps) {
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
 
+    const updatePicture = (key: string) => {
+        form.setValue('picture', key);
+    }
+
     const save = async () => {
         setBusy(true);
-        if (!category.id) {
+        if (!category?.id) {
             const values = form.getValues();
-            await CategoryService.save(new Category({...values}));
+            const newCategory = await CategoryService.save(new Category({...values}));
+            dispatch(categoriesActions.add(newCategory))
         }
         setBusy(false);
     }
@@ -51,10 +56,16 @@ export function CategoryForm({ navigation, route }: CategoryFormProps) {
         },
     });
 
+    form.control.register('picture', { required: true });
+
     return (
         <FormProvider {...form}>
             <View style={{ width: '60%', flexDirection: 'column', marginTop: 50 }}>
-                <UiFileUpload imageKey={form.getValues().picture} />
+                <UiFileUpload
+                    imageKey={form.getValues().picture}
+                    onAssetUploaded={updatePicture}
+                    onAssetRemoved={updatePicture}
+                />
                 <UIVerticalSpacer size="large" />
                 <UIInput
                     name="name"

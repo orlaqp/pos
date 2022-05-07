@@ -33,8 +33,8 @@ export function LoginScreen(props: LoginProps) {
   const formMethods = useForm<SignInModel>({
       mode: 'onChange',
     defaultValues: {
-      email: '',
-      password: '',
+      email: 'orlaqp@gmail.com',
+      password: '12345678',
     },
   });
 
@@ -54,6 +54,7 @@ export function LoginScreen(props: LoginProps) {
 
           <UIInput
             name='email'
+            autoCapitalize='none'
             placeholder='Email address'
             keyboardType='email-address'
             style={styles.topMargin}

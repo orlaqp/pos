@@ -25,6 +25,7 @@
     "react-native-vector-icons": "^9.1.0",
     "react-redux": "*",
     "@react-navigation/drawer": "*",
-    "@react-native-community/netinfo": "*"
+    "@react-native-community/netinfo": "*",
+    "react-native-reanimated": "*"
   }
 }
