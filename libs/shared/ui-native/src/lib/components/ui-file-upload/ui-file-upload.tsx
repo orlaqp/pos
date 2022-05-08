@@ -133,7 +133,7 @@ export function UiFileUpload({
             </TouchableOpacity>
             { imageUri && 
             <TouchableOpacity
-                style={{ position: 'absolute', left: (width || 125) - 14 }}
+                style={{ position: 'absolute', top: -12, left: (width || 125) - 14 }}
                 onPress={() => deleteImage()}
             >
                 <Icon name='close-circle' type='material-community' size={32} />

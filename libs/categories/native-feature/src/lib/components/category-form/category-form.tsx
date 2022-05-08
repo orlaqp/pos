@@ -42,6 +42,11 @@ export function CategoryForm({ navigation, route }: CategoryFormProps) {
     const save = async () => {
         setBusy(true);
         const cat: CategoryEntity = form.getValues();
+        
+        if (!cat.id) {
+            delete cat.id;
+        }
+
         await CategoryService.save(dispatch, cat);
         navigation.goBack();
         setBusy(false);
@@ -60,6 +65,7 @@ export function CategoryForm({ navigation, route }: CategoryFormProps) {
 
     // TODO: Not sure if make this mandatory
     // form.control.register('picture', { required: true });
+    form.control.register('id', { required: false });
 
     return (
         <View style={[styles.page, styles.centeredHorizontally]}>

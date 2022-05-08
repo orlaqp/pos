@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { View, Text, Image, StyleSheet, Alert } from 'react-native';
+import { View, Text, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { AssetsService } from 'libs/shared/ui-native/src/lib/components/ui-file-upload/assets.service';
@@ -19,10 +19,14 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
     const styles = useStyles();
     const dispatch = useDispatch();
     const [uri, setUri] = useState<string | undefined>();
+    const [busy, setBusy] = useState<boolean>(false);
 
     const deleteItem = async () => {
+        setBusy(true);
         await CategoryService.delete(item.id);
+        setBusy(false);
         dispatch(categoriesActions.remove(item.id));
+
     }
 
     const editItem = () => {
@@ -53,6 +57,9 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
 
     return (
         <View style={styles.dataRow}>
+            { busy &&
+            <ActivityIndicator size='small' />
+            }
             <Image 
                 source={{ uri }}
                 // style={{ width: width || 95, height: height || 115 }}

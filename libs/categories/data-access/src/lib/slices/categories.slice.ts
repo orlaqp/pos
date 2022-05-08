@@ -13,7 +13,7 @@ import { CategoryService } from '../category.service';
 export const CATEGORIES_FEATURE_KEY = 'categories';
 
 export type CategoryEntity = {
-    id: string,
+    id?: string,
     name?: string | null,
     description?: string | null,
     code?: string | null,
