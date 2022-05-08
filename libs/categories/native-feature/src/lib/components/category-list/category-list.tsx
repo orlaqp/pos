@@ -59,14 +59,12 @@ export function CategoryList({ navigation }: CategoryListProps) {
                 </View>
             </View>
             <View style={styles.content}>
-                {/* <ScrollView> */}
                 <FlatList
                     data={Object.keys(categories)}
                     renderItem={({ item }) => (
                         <CategoryItem navigation={navigation} item={categories[item]!} />
                     )}
                 />
-                {/* </ScrollView> */}
             </View>
         </View>
     );

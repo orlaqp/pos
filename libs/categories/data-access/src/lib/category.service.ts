@@ -6,7 +6,14 @@ import { categoriesActions, CategoryEntity } from './slices/categories.slice';
 
 export class CategoryService {
     static async save(dispatch: Dispatch<any>, category: CategoryEntity) {
-        const cat = new Category(category);
+        let cat: Category | undefined;
+
+        if (category.id)
+            cat = await DataStore.query(Category, category.id);
+
+        // TODO: fomosh this
+
+        // const cat = new Category(category);
         await DataStore.save(cat);
 
         return category.id

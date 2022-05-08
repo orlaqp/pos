@@ -40,6 +40,7 @@ export function CategoryForm({ navigation, route }: CategoryFormProps) {
     };
 
     const save = async () => {
+        debugger;
         setBusy(true);
         const cat: CategoryEntity = form.getValues();
         

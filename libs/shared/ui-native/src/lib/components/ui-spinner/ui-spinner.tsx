@@ -2,21 +2,19 @@ import React from 'react';
 import { useSharedStyles } from '@pos/theme/native';
 import { useTheme, Text } from '@rneui/themed';
 
-import { View, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 
-/* eslint-disable-next-line */
 export interface UISpinnerProps {
     size?: 'large' | 'small';
     message?: string;
 }
 
 export function UISpinner({ size, message }: UISpinnerProps) {
-  const theme = useTheme();
   const styles = useStyles();
   const spinnerSize = size || 'small';
 
   return (
-    <View style={[styles.page, styles.centered]}>
+    <View style={[styles.centered]}>
       <ActivityIndicator size={spinnerSize} />
       { message && <Text style={styles.text}>{message}</Text> }
     </View>

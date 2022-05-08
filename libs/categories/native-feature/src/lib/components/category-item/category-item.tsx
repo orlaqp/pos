@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-import { View, Text, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
-import { AssetsService } from 'libs/shared/ui-native/src/lib/components/ui-file-upload/assets.service';
 import { categoriesActions, CategoryEntity, CategoryService } from '@pos/categories/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { UIS3Image } from '@pos/shared/ui-native';
 
 /* eslint-disable-next-line */
 export interface CategoryItemProps {
@@ -18,10 +18,11 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
     const theme = useTheme();
     const styles = useStyles();
     const dispatch = useDispatch();
-    const [uri, setUri] = useState<string | undefined>();
     const [busy, setBusy] = useState<boolean>(false);
 
     const deleteItem = async () => {
+        if (!item.id) return;
+
         setBusy(true);
         await CategoryService.delete(item.id);
         setBusy(false);
@@ -44,32 +45,12 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
         );
     }
 
-    useEffect(() => {
-        async function getImageUri() {
-            if (!item.picture) {
-                return setUri(undefined);
-            }
-            setUri(await AssetsService.getAssetUri(item.picture));
-        }
-
-        getImageUri();
-    }, [item])
-
     return (
         <View style={styles.dataRow}>
             { busy &&
             <ActivityIndicator size='small' />
             }
-            <Image 
-                source={{ uri }}
-                // style={{ width: width || 95, height: height || 115 }}
-                resizeMode='contain'
-                style={{
-                    flex: 1.3,
-                    height: 2*25,
-                    width: 2*100,
-                }}
-            />
+            <UIS3Image s3Key={item.picture} width={50} height={50} />
             <View style={{ flex: 5 }}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.description}>{item.description}</Text>
