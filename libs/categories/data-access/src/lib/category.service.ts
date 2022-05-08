@@ -13,4 +13,13 @@ export class CategoryService {
     static getAll() {
         return DataStore.query(Category);
     }
+
+    static async delete(id: string) {
+        const item = await DataStore.query(Category, id);
+        if (!item) {
+            return console.error(`Cateogry Id: ${id} not found`);
+        }
+
+        return DataStore.delete(item);
+    }
 }

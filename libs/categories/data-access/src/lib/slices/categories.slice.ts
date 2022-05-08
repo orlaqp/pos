@@ -1,3 +1,5 @@
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { RootState } from '@pos/store';
 import {
     createAsyncThunk,
     createEntityAdapter,
@@ -11,7 +13,7 @@ import { CategoryService } from '../category.service';
 export const CATEGORIES_FEATURE_KEY = 'categories';
 
 export type CategoryEntity = {
-    id?: string,
+    id: string,
     name?: string | null,
     description?: string | null,
     code?: string | null,
@@ -117,7 +119,7 @@ export const categoriesActions = categoriesSlice.actions;
  */
 const { selectAll, selectEntities } = categoriesAdapter.getSelectors();
 
-export const getCategoriesState = (rootState: unknown): CategoriesState =>
+export const getCategoriesState = (rootState: RootState): CategoriesState =>
   rootState[CATEGORIES_FEATURE_KEY];
 
 export const selectAllCategories = createSelector(

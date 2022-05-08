@@ -65,7 +65,8 @@ export function CategoryForm({ navigation, route }: CategoryFormProps) {
         },
     });
 
-    form.control.register('picture', { required: true });
+    // TODO: Not sure if make this mandatory
+    // form.control.register('picture', { required: true });
 
     return (
         <View style={[styles.page, styles.centeredHorizontally]}>

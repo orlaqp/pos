@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, Alert } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { AssetsService } from 'libs/shared/ui-native/src/lib/components/ui-file-upload/assets.service';
-import { CategoryEntity } from '@pos/categories/data-access';
+import { categoriesActions, CategoryEntity, CategoryService } from '@pos/categories/data-access';
+import { useDispatch } from 'react-redux';
 
 /* eslint-disable-next-line */
 export interface CategoryItemProps {
@@ -14,7 +15,24 @@ export interface CategoryItemProps {
 export function CategoryItem({ item }: CategoryItemProps) {
     const theme = useTheme();
     const styles = useStyles();
+    const dispatch = useDispatch();
     const [uri, setUri] = useState<string | undefined>();
+
+    const deleteItem = async () => {
+        await CategoryService.delete(item.id);
+        dispatch(categoriesActions.remove(item.id));
+    }
+
+    const confirmDeletion = () => {
+        Alert.alert(
+            'Are you sure?',
+            'You will not be able to undo this operation',
+            [
+                { text: 'No' },
+                { text: 'Yes', onPress: () => deleteItem() },
+            ]
+        );
+    }
 
     useEffect(() => {
         async function getImageUri() {
@@ -65,6 +83,7 @@ export function CategoryItem({ item }: CategoryItemProps) {
                         type: 'material-community',
                         color: theme.theme.colors.error,
                     }}
+                    onPress={confirmDeletion}
                 />
             </View>
         </View>
