@@ -60,7 +60,6 @@ export const authSlice = createSlice({
             .addCase(
                 signIn.fulfilled,
                 (state: AuthState, action: PayloadAction<User>) => {
-                    debugger;
                     state.signInStatus = 'complete';
                     state.user = action.payload;
                 }

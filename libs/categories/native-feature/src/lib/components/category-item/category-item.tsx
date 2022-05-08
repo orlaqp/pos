@@ -6,13 +6,15 @@ import { Button, useTheme } from '@rneui/themed';
 import { AssetsService } from 'libs/shared/ui-native/src/lib/components/ui-file-upload/assets.service';
 import { categoriesActions, CategoryEntity, CategoryService } from '@pos/categories/data-access';
 import { useDispatch } from 'react-redux';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 /* eslint-disable-next-line */
 export interface CategoryItemProps {
     item: CategoryEntity;
+    navigation: NativeStackNavigationProp<any>;
 }
 
-export function CategoryItem({ item }: CategoryItemProps) {
+export function CategoryItem({ item, navigation }: CategoryItemProps) {
     const theme = useTheme();
     const styles = useStyles();
     const dispatch = useDispatch();
@@ -21,6 +23,10 @@ export function CategoryItem({ item }: CategoryItemProps) {
     const deleteItem = async () => {
         await CategoryService.delete(item.id);
         dispatch(categoriesActions.remove(item.id));
+    }
+
+    const editItem = () => {
+        navigation.navigate('Category Form', { category: item })
     }
 
     const confirmDeletion = () => {
@@ -75,6 +81,7 @@ export function CategoryItem({ item }: CategoryItemProps) {
                         name: 'pencil-outline',
                         type: 'material-community',
                     }}
+                    onPress={editItem}
                 />
                 <Button
                     type="clear"

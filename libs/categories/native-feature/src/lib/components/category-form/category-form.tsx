@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useTheme } from '@rneui/themed';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import {
     UIActions,
@@ -13,7 +12,6 @@ import { Category } from '@pos/models';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Route } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
-import { add } from 'react-native-reanimated';
 import {
     categoriesActions,
     CategoryEntity,
@@ -43,21 +41,16 @@ export function CategoryForm({ navigation, route }: CategoryFormProps) {
 
     const save = async () => {
         setBusy(true);
-        if (!category?.id) {
-            debugger;
-            const cat: CategoryEntity = form.getValues();
-            const newCategory = await CategoryService.save(cat);
-            cat.createdAt = newCategory.createdAt;
-            cat.updatedAt = newCategory.updatedAt;
-            dispatch(categoriesActions.add(cat));
-            navigation.goBack();
-        }
+        const cat: CategoryEntity = form.getValues();
+        await CategoryService.save(dispatch, cat);
+        navigation.goBack();
         setBusy(false);
     };
 
     const form = useForm<Category>({
         mode: 'onChange',
         defaultValues: {
+            id: category?.id,
             name: category?.name,
             description: category?.description,
             color: category?.color,

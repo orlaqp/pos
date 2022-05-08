@@ -1,13 +1,17 @@
 import { Category } from '@pos/models';
+import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
-import { CategoryEntity } from './slices/categories.slice';
-
-
+import { categoriesActions, CategoryEntity } from './slices/categories.slice';
 
 export class CategoryService {
-    static save(category: CategoryEntity) {
+    static async save(dispatch: Dispatch<any>, category: CategoryEntity) {
+        debugger;
         const cat = new Category(category);
-        return DataStore.save(cat);
+        await DataStore.save(cat);
+
+        return category.id
+            ? dispatch(categoriesActions.update({ id: category.id, changes: category }))
+            : dispatch(categoriesActions.add(cat));
     }
 
     static getAll() {

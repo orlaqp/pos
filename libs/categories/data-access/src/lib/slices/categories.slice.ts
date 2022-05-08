@@ -58,6 +58,7 @@ export const categoriesSlice = createSlice({
   reducers: {
     add: categoriesAdapter.addOne,
     remove: categoriesAdapter.removeOne,
+    update: categoriesAdapter.updateOne,
   },
   extraReducers: (builder) => {
     builder

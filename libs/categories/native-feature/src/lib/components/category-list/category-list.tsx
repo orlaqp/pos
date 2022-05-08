@@ -63,7 +63,7 @@ export function CategoryList({ navigation }: CategoryListProps) {
                 <FlatList
                     data={Object.keys(categories)}
                     renderItem={({ item }) => (
-                        <CategoryItem item={categories[item]!} />
+                        <CategoryItem navigation={navigation} item={categories[item]!} />
                     )}
                 />
                 {/* </ScrollView> */}
