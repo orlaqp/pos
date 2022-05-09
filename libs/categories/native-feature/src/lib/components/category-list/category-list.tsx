@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import { fetchCategories } from '@pos/categories/data-access';
+import { categoriesActions, fetchCategories, selectFilteredList, selectIsEmpty, selectLoadingStatus } from '@pos/categories/data-access';
 import { UIEmptyState, UISearchInput, UISpinner } from '@pos/shared/ui-native';
-import { RootState } from '@pos/store';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, FAB, useTheme } from '@rneui/themed';
 
@@ -19,12 +18,18 @@ export function CategoryList({ navigation }: CategoryListProps) {
     const theme = useTheme();
     const styles = useStyles();
     const dispatch = useDispatch();
-    const loadingStatus = useSelector(
-        (state: RootState) => state.categories.loadingStatus
-    );
-    const categories = useSelector(
-        (state: RootState) => state.categories.entities
-    );
+    const isEmpty = useSelector(selectIsEmpty);
+    const loadingStatus = useSelector(selectLoadingStatus);
+    const categories = useSelector(selectFilteredList);
+
+    const createNew = () => {
+        dispatch(categoriesActions.clearSelection());
+        navigation.navigate('Category Form');
+    }
+
+    const filterList = (query: string) => {
+        dispatch(categoriesActions.filter(query));
+    }
 
     useEffect(() => {
         if (loadingStatus === 'not loaded') dispatch(fetchCategories());
@@ -33,7 +38,7 @@ export function CategoryList({ navigation }: CategoryListProps) {
     if (loadingStatus === 'loading' || loadingStatus === 'not loaded')
         return <UISpinner size="large" message="Loading categories ..." />;
 
-    if (loadingStatus === 'loaded' && !Object.keys(categories).length)
+    if (loadingStatus === 'loaded' && isEmpty)
         return (
             <UIEmptyState
                 text="It seems that you do not have any categories defined yet. Click below to fix that :-)"
@@ -46,7 +51,7 @@ export function CategoryList({ navigation }: CategoryListProps) {
         <View style={styles.detailsPage}>
             <View style={styles.header}>
                 <View style={{ flex: 5 }}>
-                    <UISearchInput />
+                    <UISearchInput onChange={filterList} />
                 </View>
                 <Button
                     type="clear"
@@ -64,11 +69,12 @@ export function CategoryList({ navigation }: CategoryListProps) {
                     <FAB
                         icon={{ name: 'add', color: 'white' }}
                         color={theme.theme.colors.primary}
-                        onPress={() => navigation.navigate('Category Form')}
+                        onPress={createNew}
                     />
                 </View>
             </View>
             <View style={styles.content}>
+                { categories && 
                 <FlatList
                     data={Object.keys(categories)}
                     renderItem={({ item }) => (
@@ -78,6 +84,7 @@ export function CategoryList({ navigation }: CategoryListProps) {
                         />
                     )}
                 />
+                }
             </View>
         </View>
     );

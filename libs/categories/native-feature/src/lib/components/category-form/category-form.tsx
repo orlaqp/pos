@@ -10,13 +10,12 @@ import {
 import { FormProvider, useForm } from 'react-hook-form';
 import { Category } from '@pos/models';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Route } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
-    categoriesActions,
     CategoryEntity,
     CategoryService,
 } from '@pos/categories/data-access';
+import { RootState } from '@pos/store';
 
 export interface CategoryFormParams {
     [name: string]: object | undefined;
@@ -26,11 +25,10 @@ export interface CategoryFormParams {
 /* eslint-disable-next-line */
 export interface CategoryFormProps {
     navigation: NativeStackNavigationProp<CategoryFormParams>;
-    route: Route<string, CategoryFormParams>;
 }
 
-export function CategoryForm({ navigation, route }: CategoryFormProps) {
-    const category = route?.params?.category;
+export function CategoryForm({ navigation }: CategoryFormProps) {
+    const category = useSelector((state: RootState) => state.categories.selected);
     const dispatch = useDispatch();
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);

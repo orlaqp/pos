@@ -31,7 +31,8 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
     }
 
     const editItem = () => {
-        navigation.navigate('Category Form', { category: item })
+        dispatch(categoriesActions.select(item));
+        navigation.navigate('Category Form');
     }
 
     const confirmDeletion = () => {

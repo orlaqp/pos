@@ -5,6 +5,7 @@ import {
     createEntityAdapter,
     createSelector,
     createSlice,
+    Dictionary,
     EntityState,
     PayloadAction,
 } from '@reduxjs/toolkit';
@@ -26,6 +27,9 @@ export type CategoryEntity = {
 export interface CategoriesState extends EntityState<CategoryEntity> {
   loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
   error?: string;
+  selected?: CategoryEntity;
+  filterQuery?: string;
+  filteredList?: Dictionary<CategoryEntity>;
 }
 
 export const categoriesAdapter = createEntityAdapter<CategoryEntity>();
@@ -50,6 +54,9 @@ export const fetchCategories = createAsyncThunk(
 export const initialCategoriesState: CategoriesState =
   categoriesAdapter.getInitialState({
     loadingStatus: 'not loaded',
+    selected: undefined,
+    filterQuery: undefined,
+    filteredList: undefined
   });
 
 export const categoriesSlice = createSlice({
@@ -59,6 +66,17 @@ export const categoriesSlice = createSlice({
     add: categoriesAdapter.addOne,
     remove: categoriesAdapter.removeOne,
     update: categoriesAdapter.updateOne,
+    select: (state: CategoriesState, action: PayloadAction<CategoryEntity>) => {
+        state.selected = action.payload;
+    },
+    clearSelection: (state: CategoriesState) => {
+        state.selected = undefined;
+    },
+    filter: (state: CategoriesState, action: PayloadAction<string>) => {
+        filterList(state, action.payload);
+        state.filterQuery = action.payload;
+    }
+    
   },
   extraReducers: (builder) => {
     builder
@@ -69,6 +87,7 @@ export const categoriesSlice = createSlice({
         fetchCategories.fulfilled,
         (state: CategoriesState, action: PayloadAction<CategoryEntity[]>) => {
           categoriesAdapter.setAll(state, action.payload);
+          filterList(state, state.filterQuery);
           state.loadingStatus = 'loaded';
         }
       )
@@ -132,3 +151,46 @@ export const selectCategoriesEntities = createSelector(
   getCategoriesState,
   selectEntities
 );
+
+export const selectLoadingStatus = createSelector(
+    getCategoriesState,
+    (state: CategoriesState) => state.loadingStatus
+)
+
+export const selectIsEmpty = createSelector(
+    getCategoriesState,
+    (state: CategoriesState) => state.ids.length === 0
+)
+
+export const selectFilteredList = createSelector(
+    getCategoriesState,
+    (state: CategoriesState) => state.filteredList
+)
+
+
+
+
+function filterList(state: CategoriesState, query?: string) {
+    console.log('Query', query);
+    
+    const filteredList: Dictionary<CategoryEntity> = {};
+    
+    if (!query) {
+        state.filteredList = state.entities;
+        return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    
+    // const queryString = query || state.filterQuery;
+    
+    state.ids.forEach(id => {
+        if (state.entities[id]?.name?.toLowerCase().indexOf(lowerQuery) === -1)
+            return;
+
+        filteredList[id] = state.entities[id];
+    });
+
+    state.filteredList = filteredList;
+}
+

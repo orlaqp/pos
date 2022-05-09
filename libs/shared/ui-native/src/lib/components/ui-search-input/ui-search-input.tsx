@@ -1,16 +1,16 @@
-import { Input, useTheme } from '@rneui/themed';
 import React from 'react';
 
-import { View, Text } from 'react-native';
+import { Input, useTheme } from '@rneui/themed';
+export interface UiSearchInputProps {
+    onChange: (query: string) => unknown;
+}
 
-/* eslint-disable-next-line */
-export interface UiSearchInputProps {}
-
-export function UISearchInput(props: UiSearchInputProps) {
+export function UISearchInput({ onChange }: UiSearchInputProps) {
     const theme = useTheme();
   return (
     <Input
       placeholder="type to search ..."
+      onChangeText={onChange}
       containerStyle={{
         backgroundColor: theme.theme.colors.searchBg,
         borderRadius: 20,
