@@ -3,9 +3,9 @@ import { fetchCategories } from '@pos/categories/data-access';
 import { UIEmptyState, UISearchInput, UISpinner } from '@pos/shared/ui-native';
 import { RootState } from '@pos/store';
 import { useSharedStyles } from '@pos/theme/native';
-import { FAB, useTheme } from '@rneui/themed';
+import { Button, FAB, useTheme } from '@rneui/themed';
 
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, StyleSheet, FlatList } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import CategoryItem from '../category-item/category-item';
@@ -48,6 +48,16 @@ export function CategoryList({ navigation }: CategoryListProps) {
                 <View style={{ flex: 5 }}>
                     <UISearchInput />
                 </View>
+                <Button
+                    type="clear"
+                    icon={{
+                        name: 'refresh',
+                        type: 'material-community',
+                        color: theme.theme.colors.grey2,
+                    }}
+                    style={{ top: 4, left: 15 }}
+                    onPress={() => dispatch(fetchCategories())}
+                />
                 <View
                     style={{ flex: 1, alignItems: 'flex-end', marginRight: 20 }}
                 >
@@ -62,7 +72,10 @@ export function CategoryList({ navigation }: CategoryListProps) {
                 <FlatList
                     data={Object.keys(categories)}
                     renderItem={({ item }) => (
-                        <CategoryItem navigation={navigation} item={categories[item]!} />
+                        <CategoryItem
+                            navigation={navigation}
+                            item={categories[item]!}
+                        />
                     )}
                 />
             </View>

@@ -6,16 +6,13 @@ import { categoriesActions, CategoryEntity } from './slices/categories.slice';
 
 export class CategoryService {
     static async save(dispatch: Dispatch<any>, category: CategoryEntity) {
-        let cat: Category | undefined;
-
         if (!category.id) {
             const cat = new Category(category);
             await DataStore.save(cat);
             return dispatch(categoriesActions.add(cat));
         }
-
         
-        cat = await DataStore.query(Category, category.id);
+        const cat = await DataStore.query(Category, category.id);
 
         if (!cat) {
             return console.log(`It seems that category: ${category.id} has been removed`);

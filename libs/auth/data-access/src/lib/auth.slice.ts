@@ -5,7 +5,8 @@ import {
     PayloadAction,
 } from '@reduxjs/toolkit';
 import { Auth } from 'aws-amplify';
-import { CognitoUser } from '@aws-amplify/auth';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { RootState } from '@pos/store';
 
 export const AUTH_FEATURE_KEY = 'auth';
 export interface User {
@@ -75,7 +76,7 @@ export const authSlice = createSlice({
  * Export reducer for store configuration.
  */
 export const authReducer = authSlice.reducer;
-export const getAuthState = (rootState: unknown): AuthState =>
+export const getAuthState = (rootState: RootState): AuthState =>
     rootState[AUTH_FEATURE_KEY];
 
 // export const selectAllAuth = createSelector(getAuthState, selectAll);
