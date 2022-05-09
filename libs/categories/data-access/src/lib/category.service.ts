@@ -8,17 +8,30 @@ export class CategoryService {
     static async save(dispatch: Dispatch<any>, category: CategoryEntity) {
         let cat: Category | undefined;
 
-        if (category.id)
-            cat = await DataStore.query(Category, category.id);
+        if (!category.id) {
+            const cat = new Category(category);
+            await DataStore.save(cat);
+            return dispatch(categoriesActions.add(cat));
+        }
 
-        // TODO: fomosh this
+        
+        cat = await DataStore.query(Category, category.id);
 
-        // const cat = new Category(category);
-        await DataStore.save(cat);
+        if (!cat) {
+            return console.log(`It seems that category: ${category.id} has been removed`);
+        }
 
-        return category.id
-            ? dispatch(categoriesActions.update({ id: category.id, changes: category }))
-            : dispatch(categoriesActions.add(cat));
+        await DataStore.save(
+            Category.copyOf(cat, updated => {
+                updated.code = category.code;
+                updated.color = category.color;
+                updated.description = category.description;
+                updated.name = category.name;
+                updated.picture = category.picture;
+            })
+        );
+        
+        return dispatch(categoriesActions.update({ id: category.id, changes: category }));
     }
 
     static getAll() {
