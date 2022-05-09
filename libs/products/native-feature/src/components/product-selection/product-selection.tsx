@@ -1,7 +1,7 @@
-import { Product } from '@pos/models';
+import React from 'react';
 import { useSharedStyles } from '@pos/theme/native';
 import { useTheme, Text } from '@rneui/themed';
-import React from 'react';
+import { Product } from '@pos/shared/models';
 
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 

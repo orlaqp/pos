@@ -28,7 +28,7 @@
             "@pos/categories/native-feature": [
                 "libs/categories/native-feature/src/index.ts"
             ],
-            "@pos/models": ["libs/models/src/index.ts"],
+            "@pos/shared/models": ["libs/shared/models/src/index.ts"],
             "@pos/products/native-feature": [
                 "libs/products/native-feature/src/index.ts"
             ],

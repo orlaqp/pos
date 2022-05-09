@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+
+import { Alert, View } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import {
     UIActions,
@@ -8,7 +9,6 @@ import {
     UIVerticalSpacer,
 } from '@pos/shared/ui-native';
 import { FormProvider, useForm } from 'react-hook-form';
-import { Category } from '@pos/models';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -16,6 +16,7 @@ import {
     CategoryService,
 } from '@pos/categories/data-access';
 import { RootState } from '@pos/store';
+import { Category } from '@pos/shared/models';
 
 export interface CategoryFormParams {
     [name: string]: object | undefined;
@@ -61,6 +62,17 @@ export function CategoryForm({ navigation }: CategoryFormProps) {
         },
     });
 
+    const confirmCancel = () => {
+        Alert.alert(
+            'Are you sure?',
+            'You will not be able to undo this operation',
+            [
+                { text: 'No' },
+                { text: 'Yes', onPress: () => navigation.goBack() },
+            ]
+        );
+    }
+
     // TODO: Not sure if make this mandatory
     // form.control.register('picture', { required: true });
     form.control.register('id', { required: false });
@@ -97,7 +109,7 @@ export function CategoryForm({ navigation }: CategoryFormProps) {
                     <UIActions
                         busy={busy}
                         submitAction={form.handleSubmit(save)}
-                        cancelAction={() => alert('cancel')}
+                        cancelAction={confirmCancel}
                     />
                 </View>
             </FormProvider>

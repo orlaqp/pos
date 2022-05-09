@@ -8,7 +8,7 @@
         "categories-native-feature": "libs/categories/native-feature",
         "mobile-ui": "apps/mobile-ui",
         "mobile-ui-e2e": "apps/mobile-ui-e2e",
-        "models": "libs/models",
+        "models": "libs/shared/models",
         "products-native-feature": "libs/products/native-feature",
         "sales-native-feature": "libs/sales/native-feature",
         "shared-ui-native": "libs/shared/ui-native",

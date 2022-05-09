@@ -13,3 +13,5 @@ export * from './lib/components/ui-s3-image/ui-s3-image';
 export * from './lib/hocs/with-page/with-page';
 export * from './lib/hocs/with-centered-page/with-centered-page';
 export * from './lib/hocs/with-horizontally-centered-page/with-horizontally-centered-page';
+
+export * from './lib/components/ui-file-upload/assets.service';

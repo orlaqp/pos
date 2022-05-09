@@ -1,5 +1,5 @@
-import { AssetsService } from './../../../../shared/ui-native/src/lib/components/ui-file-upload/assets.service';
-import { Category } from '@pos/models';
+import { Category } from '@pos/shared/models';
+import { AssetsService } from '@pos/shared/ui-native';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
 import { categoriesActions, CategoryEntity } from './slices/categories.slice';

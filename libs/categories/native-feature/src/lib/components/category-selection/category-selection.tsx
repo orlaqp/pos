@@ -1,8 +1,9 @@
-import { Category } from '@pos/models';
+import React, { useEffect, useState } from 'react';
+
 import { useSharedStyles } from '@pos/theme/native';
 import { useTheme } from '@rneui/themed';
 import { Storage } from 'aws-amplify';
-import React, { useEffect, useState } from 'react';
+import { Category } from '@pos/shared/models';
 
 import {
   View,
@@ -14,26 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const categories: Category[] = [
-  new Category({ code: '1', color: '#2962FF', name: 'Beverages' }),
-  new Category({ code: '2', color: '#AA00FF', name: 'Bread' }),
-  new Category({ code: '3', color: '#D32F2F', name: 'Meat' }),
-  new Category({ code: '4', color: '#F5F5F5', name: 'Dairy' }),
-  new Category({ code: '5', color: '#4DD0E1', name: 'Canned' }),
-  new Category({ code: '1', color: '#2962FF', name: 'Beverages' }),
-  new Category({ code: '2', color: '#AA00FF', name: 'Bread' }),
-  new Category({ code: '3', color: '#D32F2F', name: 'Meat' }),
-  new Category({ code: '4', color: '#F5F5F5', name: 'Dairy' }),
-  new Category({ code: '5', color: '#4DD0E1', name: 'Canned' }),
-  new Category({ code: '2', color: '#AA00FF', name: 'Bread' }),
-  new Category({ code: '3', color: '#D32F2F', name: 'Meat' }),
-  new Category({ code: '4', color: '#F5F5F5', name: 'Dairy' }),
-  new Category({ code: '5', color: '#4DD0E1', name: 'Canned' }),
-  new Category({ code: '2', color: '#AA00FF', name: 'Bread' }),
-  new Category({ code: '3', color: '#D32F2F', name: 'Meat' }),
-  new Category({ code: '4', color: '#F5F5F5', name: 'Dairy' }),
-  new Category({ code: '5', color: '#4DD0E1', name: 'Canned' }),
-];
+const categories: Category[] = [];
 
 /* eslint-disable-next-line */
 export interface CategorySelectionProps {}
@@ -70,7 +52,7 @@ export function CategorySelection(props: CategorySelectionProps) {
           <TouchableOpacity style={styles.container}>
             <View style={styles.centered}>
               <View
-                style={[styles.categoryBtn, { backgroundColor: c.color }]}
+                style={[styles.categoryBtn]}
               />
               <Text
                 style={{ color: theme.theme.colors.black, marginBottom: 25 }}
