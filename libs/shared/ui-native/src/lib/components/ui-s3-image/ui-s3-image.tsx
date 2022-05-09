@@ -1,9 +1,8 @@
-import { useSharedStyles } from '@pos/theme/native';
 import React, { useEffect, useState } from 'react';
 
 import { ActivityIndicator, Image, View } from 'react-native';
-import { serialize } from 'v8';
 import { AssetsService } from '../ui-file-upload/assets.service';
+import { cancellablePromise } from '@pos/shared/utils';
 
 /* eslint-disable-next-line */
 export interface UIS3ImageProps {
@@ -24,16 +23,20 @@ export function UIS3Image({ size, s3Key, width, height }: UIS3ImageProps) {
     const [busy, setBusy] = useState<boolean>(false);
     
     useEffect(() => {
-        async function getImageUri() {
-            setBusy(true);
-            if (!s3Key) {
-                return setUri(undefined);
-            }
-            setUri(await AssetsService.getAssetUri(s3Key));
-            setBusy(false);
+        setBusy(true);
+        
+        if (!s3Key) {
+            return setUri(undefined);
         }
 
-        getImageUri();
+        const { promise, cancel } = cancellablePromise<string>(AssetsService.getAssetUri(s3Key));
+
+        promise.then((uri: string) => {
+            setUri(uri);
+            setBusy(false);
+        });
+
+        return cancel;
     }, [s3Key]);
 
     return (
