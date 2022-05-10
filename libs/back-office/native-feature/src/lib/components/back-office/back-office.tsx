@@ -7,7 +7,10 @@ import Sidebar from '../sidebar/sidebar';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, useTheme } from '@rneui/themed';
 
-import { createNativeStackNavigator, NativeStackNavigationProp } from '@react-navigation/native-stack';
+import {
+    createNativeStackNavigator,
+    NativeStackNavigationProp,
+} from '@react-navigation/native-stack';
 import { Categories } from '@pos/categories/native-feature';
 
 import Logo from '../../assets/logo.png';
@@ -26,16 +29,16 @@ export function BackOffice({ navigation }: BackOfficeProps) {
 
     return (
         <SafeAreaView style={styles.page}>
-                    <Button
-                        icon={{
-                            name: 'arrow-left-circle',
-                            type: 'material-community',
-                            color: theme.theme.colors.grey3
-                        }}
-                        style={{ alignSelf: 'flex-start', position: 'relative' }}
-                        type="clear"
-                        onPress={() => navigation.replace('Home')}
-                    />
+            <Button
+                icon={{
+                    name: 'arrow-left-circle',
+                    type: 'material-community',
+                    color: theme.theme.colors.grey3,
+                }}
+                style={{ alignSelf: 'flex-start', position: 'relative' }}
+                type="clear"
+                onPress={() => navigation.replace('Home')}
+            />
             <View style={[styles.page, styles.row]}>
                 <View style={styles.leftSide}>
                     <ScrollView>
@@ -53,7 +56,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                             </Text>
                         </View>
                         <View style={{ marginLeft: 10 }}>
-                            <Sidebar />
+                            <Sidebar navigation={navigation} />
                         </View>
                     </ScrollView>
                 </View>
@@ -61,10 +64,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
 
                 <View style={styles.rightSide}>
                     <Stack.Navigator screenOptions={{ headerShown: false }}>
-                        <Stack.Screen
-                            name="Products"
-                            component={Products}
-                        />
+                        <Stack.Screen name="Products" component={Products} />
                         <Stack.Screen
                             name="Categories"
                             component={Categories}
