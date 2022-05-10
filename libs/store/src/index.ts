@@ -1,3 +1,5 @@
+/* eslint-disable @nrwl/nx/enforce-module-boundaries */
+import { productsReducer } from './../../products/data-access/src/lib/slices/products.slice';
 import { authReducer } from '@pos/auth/data-access';
 import { categoriesReducer } from '@pos/categories/data-access';
 import { configureStore } from '@reduxjs/toolkit'
@@ -7,6 +9,7 @@ export const store = configureStore({
   reducer: {
       auth: authReducer,
       categories: categoriesReducer,
+      products: productsReducer,
   },
 });
 

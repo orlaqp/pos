@@ -28,6 +28,9 @@
             "@pos/categories/native-feature": [
                 "libs/categories/native-feature/src/index.ts"
             ],
+            "@pos/products/data-access": [
+                "libs/products/data-access/src/index.ts"
+            ],
             "@pos/products/native-feature": [
                 "libs/products/native-feature/src/index.ts"
             ],

@@ -11,6 +11,7 @@ import { createNativeStackNavigator, NativeStackNavigationProp } from '@react-na
 import { Categories } from '@pos/categories/native-feature';
 
 import Logo from '../../assets/logo.png';
+import { Products } from '@pos/products/native-feature';
 
 const Stack = createNativeStackNavigator();
 
@@ -60,6 +61,10 @@ export function BackOffice({ navigation }: BackOfficeProps) {
 
                 <View style={styles.rightSide}>
                     <Stack.Navigator screenOptions={{ headerShown: false }}>
+                        <Stack.Screen
+                            name="Products"
+                            component={Products}
+                        />
                         <Stack.Screen
                             name="Categories"
                             component={Categories}
