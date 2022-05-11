@@ -7,6 +7,7 @@ export const onCreateBrand = /* GraphQL */ `
     onCreateBrand {
       id
       name
+      description
       createdAt
       updatedAt
       _version
@@ -20,6 +21,7 @@ export const onUpdateBrand = /* GraphQL */ `
     onUpdateBrand {
       id
       name
+      description
       createdAt
       updatedAt
       _version
@@ -33,6 +35,7 @@ export const onDeleteBrand = /* GraphQL */ `
     onDeleteBrand {
       id
       name
+      description
       createdAt
       updatedAt
       _version
@@ -406,6 +409,7 @@ export const onCreateProduct = /* GraphQL */ `
       Brand {
         id
         name
+        description
         createdAt
         updatedAt
         _version
@@ -462,6 +466,7 @@ export const onUpdateProduct = /* GraphQL */ `
       Brand {
         id
         name
+        description
         createdAt
         updatedAt
         _version
@@ -518,6 +523,7 @@ export const onDeleteProduct = /* GraphQL */ `
       Brand {
         id
         name
+        description
         createdAt
         updatedAt
         _version

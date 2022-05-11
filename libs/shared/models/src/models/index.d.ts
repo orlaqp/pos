@@ -63,7 +63,8 @@ type TagMetaData = {
 
 export declare class Brand {
   readonly id: string;
-  readonly name?: string | null;
+  readonly name: string;
+  readonly description?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Brand, BrandMetaData>);
@@ -72,7 +73,7 @@ export declare class Brand {
 
 export declare class Category {
   readonly id: string;
-  readonly name?: string | null;
+  readonly name: string;
   readonly description?: string | null;
   readonly code?: string | null;
   readonly color?: string | null;
@@ -85,7 +86,7 @@ export declare class Category {
 
 export declare class Customer {
   readonly id: string;
-  readonly firstName?: string | null;
+  readonly firstName: string;
   readonly lastName?: string | null;
   readonly middleName?: string | null;
   readonly dob?: string | null;
@@ -99,11 +100,11 @@ export declare class Customer {
 
 export declare class Order {
   readonly id: string;
-  readonly orderNo?: string | null;
-  readonly subtotal?: number | null;
-  readonly tax?: number | null;
-  readonly total?: number | null;
-  readonly status?: OrderStatus | keyof typeof OrderStatus | null;
+  readonly orderNo: string;
+  readonly subtotal: number;
+  readonly tax: number;
+  readonly total: number;
+  readonly status: OrderStatus | keyof typeof OrderStatus;
   readonly OrderItems?: (OrderLine | null)[] | null;
   readonly Customer?: Customer | null;
   readonly createdAt?: string | null;
@@ -116,8 +117,8 @@ export declare class Order {
 export declare class OrderLine {
   readonly id: string;
   readonly Product?: Product | null;
-  readonly quantity?: number | null;
-  readonly tax?: number | null;
+  readonly quantity: number;
+  readonly tax: number;
   readonly discountType?: string | null;
   readonly discountValue?: number | null;
   readonly orderID: string;
@@ -135,14 +136,13 @@ export declare class Product {
   readonly price: number;
   readonly tags?: string | null;
   readonly cost?: number | null;
-  readonly sku?: boolean | null;
-  readonly trackStock?: string | null;
+  readonly barcode?: string | null;
+  readonly sku?: string | null;
+  readonly trackStock: boolean;
   readonly Category?: Category | null;
   readonly UnitOfMeasure?: UnitOfMeasure | null;
   readonly Brand?: Brand | null;
   readonly isActive?: boolean | null;
-  readonly deleted?: boolean | null;
-  readonly barcode?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly productCategoryId?: string | null;
@@ -154,7 +154,7 @@ export declare class Product {
 
 export declare class UnitOfMeasure {
   readonly id: string;
-  readonly name?: string | null;
+  readonly name: string;
   readonly description?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
@@ -177,7 +177,7 @@ export declare class PurchaseOrder {
 export declare class Supplier {
   readonly id: string;
   readonly code?: string | null;
-  readonly name?: string | null;
+  readonly name: string;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Supplier, SupplierMetaData>);
@@ -198,13 +198,13 @@ export declare class PurchaseOrderLine {
 
 export declare class Store {
   readonly id: string;
-  readonly name?: string | null;
-  readonly address?: string | null;
-  readonly city?: string | null;
-  readonly state?: string | null;
-  readonly country?: string | null;
-  readonly phone?: string | null;
-  readonly email?: string | null;
+  readonly name: string;
+  readonly address: string;
+  readonly city: string;
+  readonly state: string;
+  readonly country: string;
+  readonly phone: string;
+  readonly email: string;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Store, StoreMetaData>);
@@ -214,7 +214,7 @@ export declare class Store {
 export declare class Stock {
   readonly id: string;
   readonly Product?: Product | null;
-  readonly quantity?: number | null;
+  readonly quantity: number;
   readonly updatedAt?: string | null;
   readonly createdAt?: string | null;
   readonly stockProductId?: string | null;
@@ -224,7 +224,7 @@ export declare class Stock {
 
 export declare class Tag {
   readonly id: string;
-  readonly name?: string | null;
+  readonly name: string;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Tag, TagMetaData>);

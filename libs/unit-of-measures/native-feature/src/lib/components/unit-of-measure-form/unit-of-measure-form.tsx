@@ -3,12 +3,7 @@ import React, { useState } from 'react';
 
 import { Alert, View } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
-import {
-    UIActions,
-    UiFileUpload,
-    UIInput,
-    UIVerticalSpacer,
-} from '@pos/shared/ui-native';
+import { UIActions, UIInput } from '@pos/shared/ui-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
@@ -47,10 +42,12 @@ export function UnitOfMeasureForm({ navigation }: UnitOfMeasureFormProps) {
         setBusy(false);
     };
 
-    const form = useForm< UnitOfMeasure >({
+    const form = useForm< UnitOfMeasureEntity >({
         mode: 'onChange',
         defaultValues: {
-            // TODO: add defaults values to your form
+            id: unitOfMeasure?.id,
+            name: unitOfMeasure?.name,
+            description: unitOfMeasure?.description
         },
     });
 
@@ -76,6 +73,13 @@ export function UnitOfMeasureForm({ navigation }: UnitOfMeasureFormProps) {
                     }}
                 >
                     <UIInput name="name" placeholder="Name" />
+                    <UIInput
+                        name="description"
+                        placeholder="Description"
+                        multiline={true}
+                        numberOfLines={3}
+                        style={{ height: 100, textAlignVertical: 'top' }}
+                    />
                     <UIActions
                         busy={busy}
                         submitAction={form.handleSubmit(save)}

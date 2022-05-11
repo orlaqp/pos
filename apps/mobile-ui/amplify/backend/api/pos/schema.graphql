@@ -1,11 +1,12 @@
 type Brand @model @auth(rules: [{allow: public}]) {
   id: ID!
-  name: String
+  name: String!
+  description: String
 }
 
 type Category @model @auth(rules: [{allow: public}]) {
   id: ID!
-  name: String
+  name: String!
   description: String
   code: String
   color: String
@@ -14,7 +15,7 @@ type Category @model @auth(rules: [{allow: public}]) {
 
 type Customer @model @auth(rules: [{allow: public}]) {
   id: ID!
-  firstName: String
+  firstName: String!
   lastName: String
   middleName: String
   dob: AWSDate
@@ -24,11 +25,11 @@ type Customer @model @auth(rules: [{allow: public}]) {
 
 type Order @model @auth(rules: [{allow: public}]) {
   id: ID!
-  orderNo: String
-  subtotal: Float
-  tax: Float
-  total: Float
-  status: OrderStatus
+  orderNo: String!
+  subtotal: Float!
+  tax: Float!
+  total: Float!
+  status: OrderStatus!
   OrderItems: [OrderLine] @hasMany(indexName: "byOrder", fields: ["id"])
   Customer: Customer @hasOne
 }
@@ -36,8 +37,8 @@ type Order @model @auth(rules: [{allow: public}]) {
 type OrderLine @model @auth(rules: [{allow: public}]) {
   id: ID!
   Product: Product @hasOne
-  quantity: Float
-  tax: Float
+  quantity: Float!
+  tax: Float!
   discountType: String
   discountValue: Float
   orderID: ID! @index(name: "byOrder")
@@ -59,7 +60,7 @@ type Product @model @auth(rules: [{allow: public}]) {
   cost: Float
   barcode: String
   sku: String
-  trackStock: Boolean 
+  trackStock: Boolean! 
   Category: Category @hasOne
   UnitOfMeasure: UnitOfMeasure @hasOne
   Brand: Brand @hasOne
@@ -82,35 +83,35 @@ type PurchaseOrderLine @model @auth(rules: [{allow: public}]) {
 
 type Store @model @auth(rules: [{allow: public}]) {
   id: ID!
-  name: String
-  address: String
-  city: String
-  state: String
-  country: String
-  phone: String
-  email: String
+  name: String!
+  address: String!
+  city: String!
+  state: String!
+  country: String!
+  phone: String!
+  email: String!
 }
 
 type Supplier @model @auth(rules: [{allow: public}]) {
   id: ID!
   code: String
-  name: String
+  name: String!
 }
 
 type Stock @model @auth(rules: [{allow: public}]) {
   id: ID!
   Product: Product @hasOne
-  quantity: Float
+  quantity: Float!
   updatedAt: AWSDateTime
 }
 
 type Tag @model @auth(rules: [{allow: public}]) {
   id: ID!
-  name: String
+  name: String!
 }
 
 type UnitOfMeasure @model @auth(rules: [{allow: public}]) {
   id: ID!
-  name: String
+  name: String!
   description: String
 }

@@ -7,6 +7,7 @@ export const getBrand = /* GraphQL */ `
     getBrand(id: $id) {
       id
       name
+      description
       createdAt
       updatedAt
       _version
@@ -25,6 +26,7 @@ export const listBrands = /* GraphQL */ `
       items {
         id
         name
+        description
         createdAt
         updatedAt
         _version
@@ -52,6 +54,7 @@ export const syncBrands = /* GraphQL */ `
       items {
         id
         name
+        description
         createdAt
         updatedAt
         _version
@@ -440,6 +443,7 @@ export const getProduct = /* GraphQL */ `
       Brand {
         id
         name
+        description
         createdAt
         updatedAt
         _version

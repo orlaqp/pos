@@ -61,9 +61,18 @@ export const <%= plural %>Slice = createSlice({
   name: <%= allCaps %>_FEATURE_KEY,
   initialState: initial<%= pluralUpper %>State,
   reducers: {
-    add: <%= plural %>Adapter.addOne,
-    remove: <%= plural %>Adapter.removeOne,
-    update: <%= plural %>Adapter.updateOne,
+    add: (state: <%= pluralUpper %>State, action: PayloadAction< <%= className %>Entity >) =>{
+        <%= plural %>Adapter.addOne(state, action);
+        filterList(state, state.filterQuery);
+    },
+    remove: (state: <%= pluralUpper %>State, action: PayloadAction< EntityId >) => {
+        <%= plural %>Adapter.removeOne(state, action);
+        filterList(state, state.filterQuery);
+    },
+    update: (state: <%= pluralUpper %>State, action: PayloadAction<Update< <%= className %>Entity>>) => {
+        <%= plural %>Adapter.updateOne(state, action);
+        filterList(state, state.filterQuery);
+    },
     select: (state: <%= pluralUpper %>State, action: PayloadAction< <%= className %>Entity >) => {
         state.selected = action.payload;
     },

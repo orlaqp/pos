@@ -22,14 +22,8 @@ export const menuItems: SidebarItem[] = [
         title: 'Inventory',
         icon: 'warehouse',
         children: [
-            {
-                id: '4-1',
-                title: 'Receive',
-            },
-            {
-                id: '4-2',
-                title: 'Count',
-            },
+            { id: '4-1', title: 'Receive' },
+            { id: '4-2', title: 'Count' },
         ],
     },
     {
@@ -40,7 +34,7 @@ export const menuItems: SidebarItem[] = [
             { id: '5-1', title: 'Categories' },
             { id: '5-2', title: 'Products' },
             { id: '5-3', title: 'U/M' },
-            { id: '5-3', title: 'Brands' },
+            { id: '5-4', title: 'Brands' },
         ],
     },
     {

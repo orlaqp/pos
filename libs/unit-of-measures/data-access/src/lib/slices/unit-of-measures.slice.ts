@@ -7,8 +7,10 @@ import {
     createSelector,
     createSlice,
     Dictionary,
+    EntityId,
     EntityState,
     PayloadAction,
+    Update,
 } from '@reduxjs/toolkit';
 import { UnitOfMeasureEntity } from '../unit-of-measure.entity';
 import { UnitOfMeasureService } from '../unit-of-measure.service';
@@ -31,9 +33,8 @@ export const fetchUnitOfMeasures = createAsyncThunk(
     const unitOfMeasures = await UnitOfMeasureService.getAll();
     return unitOfMeasures.map(c => ({
         id: c.id,
-        
-        // TODO: Assign rest of properties here
-
+        name: c.name,
+        description: c.description,
         createdAt: c.createdAt,
         updatedAt: c.updatedAt
     }))
@@ -52,9 +53,18 @@ export const unitOfMeasuresSlice = createSlice({
   name: UNITOFMEASURE_FEATURE_KEY,
   initialState: initialUnitOfMeasuresState,
   reducers: {
-    add: unitOfMeasuresAdapter.addOne,
-    remove: unitOfMeasuresAdapter.removeOne,
-    update: unitOfMeasuresAdapter.updateOne,
+    add: (state: UnitOfMeasuresState, action: PayloadAction< UnitOfMeasureEntity >) => {
+        unitOfMeasuresAdapter.addOne(state, action);
+        filterList(state, state.filterQuery);
+    },
+    remove: (state: UnitOfMeasuresState, action: PayloadAction< EntityId >) => {
+        unitOfMeasuresAdapter.removeOne(state, action);
+        filterList(state, state.filterQuery);
+    },
+    update: (state: UnitOfMeasuresState, action: PayloadAction<Update<UnitOfMeasureEntity>>) => {
+        unitOfMeasuresAdapter.updateOne(state, action);
+        filterList(state, state.filterQuery);
+    },
     select: (state: UnitOfMeasuresState, action: PayloadAction< UnitOfMeasureEntity >) => {
         state.selected = action.payload;
     },

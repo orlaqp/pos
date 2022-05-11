@@ -14,6 +14,13 @@ export const schema = {
                     "name": "name",
                     "isArray": false,
                     "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "description": {
+                    "name": "description",
+                    "isArray": false,
+                    "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -73,7 +80,7 @@ export const schema = {
                     "name": "name",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "description": {
@@ -160,7 +167,7 @@ export const schema = {
                     "name": "firstName",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "lastName": {
@@ -254,28 +261,28 @@ export const schema = {
                     "name": "orderNo",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "subtotal": {
                     "name": "subtotal",
                     "isArray": false,
                     "type": "Float",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "tax": {
                     "name": "tax",
                     "isArray": false,
                     "type": "Float",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "total": {
                     "name": "total",
                     "isArray": false,
                     "type": "Float",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "status": {
@@ -284,7 +291,7 @@ export const schema = {
                     "type": {
                         "enum": "OrderStatus"
                     },
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "OrderItems": {
@@ -392,14 +399,14 @@ export const schema = {
                     "name": "quantity",
                     "isArray": false,
                     "type": "Float",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "tax": {
                     "name": "tax",
                     "isArray": false,
                     "type": "Float",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "discountType": {
@@ -544,7 +551,7 @@ export const schema = {
                     "name": "trackStock",
                     "isArray": false,
                     "type": "Boolean",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "Category": {
@@ -673,7 +680,7 @@ export const schema = {
                     "name": "name",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "description": {
@@ -833,7 +840,7 @@ export const schema = {
                     "name": "name",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "createdAt": {
@@ -979,49 +986,49 @@ export const schema = {
                     "name": "name",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "address": {
                     "name": "address",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "city": {
                     "name": "city",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "state": {
                     "name": "state",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "country": {
                     "name": "country",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "phone": {
                     "name": "phone",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "email": {
                     "name": "email",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "createdAt": {
@@ -1094,7 +1101,7 @@ export const schema = {
                     "name": "quantity",
                     "isArray": false,
                     "type": "Float",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "updatedAt": {
@@ -1159,7 +1166,7 @@ export const schema = {
                     "name": "name",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "createdAt": {
@@ -1217,5 +1224,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "72216d753490a222bc7f5d11b420a6be"
+    "version": "304728836500e7db0e1944b32ad1f88a"
 };

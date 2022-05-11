@@ -15,7 +15,7 @@ export const CATEGORIES_FEATURE_KEY = 'categories';
 
 export type CategoryEntity = {
     id?: string,
-    name?: string | null,
+    name: string,
     description?: string | null,
     code?: string | null,
     color?: string | null,

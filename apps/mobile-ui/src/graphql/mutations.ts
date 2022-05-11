@@ -10,6 +10,7 @@ export const createBrand = /* GraphQL */ `
     createBrand(input: $input, condition: $condition) {
       id
       name
+      description
       createdAt
       updatedAt
       _version
@@ -26,6 +27,7 @@ export const updateBrand = /* GraphQL */ `
     updateBrand(input: $input, condition: $condition) {
       id
       name
+      description
       createdAt
       updatedAt
       _version
@@ -42,6 +44,7 @@ export const deleteBrand = /* GraphQL */ `
     deleteBrand(input: $input, condition: $condition) {
       id
       name
+      description
       createdAt
       updatedAt
       _version
@@ -454,6 +457,7 @@ export const createProduct = /* GraphQL */ `
       Brand {
         id
         name
+        description
         createdAt
         updatedAt
         _version
@@ -513,6 +517,7 @@ export const updateProduct = /* GraphQL */ `
       Brand {
         id
         name
+        description
         createdAt
         updatedAt
         _version
@@ -572,6 +577,7 @@ export const deleteProduct = /* GraphQL */ `
       Brand {
         id
         name
+        description
         createdAt
         updatedAt
         _version

@@ -53,10 +53,11 @@ export function <%= singularCapitalized %>Form({ navigation }: <%= singularCapit
         setBusy(false);
     };
 
-    const form = useForm< <%= singularCapitalized %> >({
+    const form = useForm< <%= singularCapitalized %>Entity >({
         mode: 'onChange',
         defaultValues: {
-            // TODO: add defaults values to your form
+            id: <%= name %>?.id,
+            // TODO: Update the rest of the properties here
         },
     });
 

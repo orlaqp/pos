@@ -21,7 +21,6 @@ export interface AuthState {
     user?: User;
     error?: string;
     signInStatus: 'not-started' | 'inProgress' | 'complete' | 'error';
-    isSignedIn: boolean;
 }
 
 export const signIn = createAsyncThunk(
@@ -44,15 +43,12 @@ export const initialAuthState: AuthState = {
     user: undefined,
     error: undefined,
     signInStatus: 'not-started',
-    isSignedIn: false,
 };
 
 export const authSlice = createSlice({
     name: AUTH_FEATURE_KEY,
     initialState: initialAuthState,
-    reducers: {
-        loginRequired: (state) => { state.isSignedIn = false }
-    },
+    reducers: {},
     extraReducers: (builder) => {
         builder
             .addCase(signIn.pending, (state: AuthState) => {

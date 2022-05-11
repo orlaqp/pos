@@ -5,9 +5,7 @@ import { Alert, View } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import {
     UIActions,
-    UiFileUpload,
     UIInput,
-    UIVerticalSpacer,
 } from '@pos/shared/ui-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -47,10 +45,12 @@ export function BrandForm({ navigation }: BrandFormProps) {
         setBusy(false);
     };
 
-    const form = useForm< Brand >({
+    const form = useForm< BrandEntity >({
         mode: 'onChange',
         defaultValues: {
-            // TODO: add defaults values to your form
+            id: brand?.id,
+            name: brand?.name,
+            description: brand?.description,
         },
     });
 
@@ -75,7 +75,14 @@ export function BrandForm({ navigation }: BrandFormProps) {
                         marginTop: 50,
                     }}
                 >
-                    <UIInput name="name" placeholder="Name" />
+                    <UIInput name="name" placeholder="Name" rules={{ required: true }} />
+                    <UIInput
+                        name="description"
+                        placeholder="Description"
+                        multiline={true}
+                        numberOfLines={3}
+                        style={{ height: 100, textAlignVertical: 'top' }}
+                    />
                     <UIActions
                         busy={busy}
                         submitAction={form.handleSubmit(save)}

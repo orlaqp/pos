@@ -7,8 +7,10 @@ import {
     createSelector,
     createSlice,
     Dictionary,
+    EntityId,
     EntityState,
     PayloadAction,
+    Update,
 } from '@reduxjs/toolkit';
 import { BrandEntity } from '../brand.entity';
 import { BrandService } from '../brand.service';
@@ -31,9 +33,8 @@ export const fetchBrands = createAsyncThunk(
     const brands = await BrandService.getAll();
     return brands.map(c => ({
         id: c.id,
-        
-        // TODO: Assign rest of properties here
-
+        name: c.name,
+        description: c.description,
         createdAt: c.createdAt,
         updatedAt: c.updatedAt
     }))
@@ -52,9 +53,18 @@ export const brandsSlice = createSlice({
   name: BRAND_FEATURE_KEY,
   initialState: initialBrandsState,
   reducers: {
-    add: brandsAdapter.addOne,
-    remove: brandsAdapter.removeOne,
-    update: brandsAdapter.updateOne,
+    add: (state: BrandsState, action: PayloadAction<BrandEntity>) =>{
+        brandsAdapter.addOne(state, action);
+        filterList(state, state.filterQuery);
+    },
+    remove: (state: BrandsState, action: PayloadAction< EntityId >) => {
+        brandsAdapter.removeOne(state, action);
+        filterList(state, state.filterQuery);
+    },
+    update: (state: BrandsState, action: PayloadAction<Update<BrandEntity>>) => {
+        brandsAdapter.updateOne(state, action);
+        filterList(state, state.filterQuery);
+    },
     select: (state: BrandsState, action: PayloadAction< BrandEntity >) => {
         state.selected = action.payload;
     },

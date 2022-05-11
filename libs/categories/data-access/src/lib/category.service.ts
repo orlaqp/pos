@@ -9,7 +9,7 @@ export class CategoryService {
         if (!category.id) {
             const cat = new Category(category);
             await DataStore.save(cat);
-            return dispatch(categoriesActions.add(cat));
+            return dispatch(categoriesActions.add(category));
         }
         
         const cat = await DataStore.query(Category, category.id);

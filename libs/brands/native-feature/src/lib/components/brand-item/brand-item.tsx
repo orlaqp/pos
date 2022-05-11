@@ -51,9 +51,9 @@ export function BrandItem({ item, navigation }: BrandItemProps) {
             { busy &&
             <ActivityIndicator size='small' />
             }
-            <UIS3Image s3Key={item.picture} width={50} height={50} />
             <View style={{ flex: 5 }}>
-                <Text style={styles.name}>Sample name</Text>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.description}>{item.description}</Text>
             </View>
             <View
                 style={{
@@ -103,6 +103,10 @@ const useStyles = () => {
                 fontSize: 18,
                 color: theme.theme.colors.grey0,
                 marginBottom: 5,
+            },
+            description: {
+                fontSize: 14,
+                color: theme.theme.colors.grey3,
             },
         }),
     };

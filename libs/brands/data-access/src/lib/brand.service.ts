@@ -1,27 +1,32 @@
 
 import { Brand } from '@pos/shared/models';
-import { AssetsService } from '@pos/shared/ui-native';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
-import { brandsActions, BrandEntity } from './slices/brands.slice';
+import { brandsActions } from './slices/brands.slice';
+import { BrandEntity } from './brand.entity';
 
 export class BrandService {
     static async save(dispatch: Dispatch<any>, brand: BrandEntity) {
         if (!brand.id) {
+            debugger;
             const entity = new Brand(brand);
-            await DataStore.save(entity);
-            return dispatch(brandsActions.add(entity));
+            const res = await DataStore.save(entity);
+            
+            brand.id = res.id;
+
+            return dispatch(brandsActions.add(brand));
         }
         
-        const cat = await DataStore.query(Brand, brand.id);
+        const existing = await DataStore.query(Brand, brand.id);
 
-        if (!cat) {
+        if (!existing) {
             return console.log(`It seems that brand: ${brand.id} has been removed`);
         }
 
         await DataStore.save(
-            Brand.copyOf(cat, updated => {
-                // TODO: Update brand properties here
+            Brand.copyOf(existing, updated => {
+                updated.name = brand.name;
+                updated.description = brand.description
             })
         );
         

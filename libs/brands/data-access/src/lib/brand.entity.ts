@@ -1,9 +1,8 @@
 
 export type BrandEntity = {
-    id?: string,
-    
-    // TODO: Add entity properties here
-
-    createdAt?: string | null | undefined,
-    updatedAt?: string | null | undefined,
+    id?: string;
+    name: string;
+    description: string | null | undefined;
+    createdAt?: string | null | undefined;
+    updatedAt?: string | null | undefined;
 };
