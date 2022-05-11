@@ -1,5 +1,5 @@
 import React from 'react';
-import { theme, useSharedStyles } from '@pos/theme/native';
+import { useSharedStyles } from '@pos/theme/native';
 
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,10 +11,15 @@ import {
     createNativeStackNavigator,
     NativeStackNavigationProp,
 } from '@react-navigation/native-stack';
+
+import { Brands } from '@pos/brands/native-feature';
 import { Categories } from '@pos/categories/native-feature';
+import { Products } from '@pos/products/native-feature';
+import { UnitOfMeasures } from '@pos/unit-of-measures/native-feature';
 
 import Logo from '../../assets/logo.png';
-import { Products } from '@pos/products/native-feature';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+// const Logo = require('../../assets/logo.png');
 
 const Stack = createNativeStackNavigator();
 
@@ -65,6 +70,8 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                 <View style={styles.rightSide}>
                     <Stack.Navigator screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="Products" component={Products} />
+                        <Stack.Screen name="Brands" component={Brands} />
+                        <Stack.Screen name="U/M" component={UnitOfMeasures} />
                         <Stack.Screen
                             name="Categories"
                             component={Categories}

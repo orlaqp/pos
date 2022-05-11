@@ -1,0 +1,26 @@
+
+{
+  "root": "libs/unit-of-measures/native",
+  "sourceRoot": "libs/unit-of-measures/native/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "libs/unit-of-measures/native/**/*.{ts,tsx,js,jsx}"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/unit-of-measures/native"],
+      "options": {
+        "jestConfig": "libs/unit-of-measures/native/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

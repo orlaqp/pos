@@ -40,6 +40,7 @@ export const menuItems: SidebarItem[] = [
             { id: '5-1', title: 'Categories' },
             { id: '5-2', title: 'Products' },
             { id: '5-3', title: 'U/M' },
+            { id: '5-3', title: 'Brands' },
         ],
     },
     {

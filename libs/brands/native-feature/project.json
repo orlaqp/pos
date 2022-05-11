@@ -1,0 +1,26 @@
+
+{
+  "root": "libs/brands/native",
+  "sourceRoot": "libs/brands/native/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "libs/brands/native/**/*.{ts,tsx,js,jsx}"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/brands/native"],
+      "options": {
+        "jestConfig": "libs/brands/native/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}
