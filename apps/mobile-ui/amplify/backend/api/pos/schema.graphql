@@ -57,14 +57,13 @@ type Product @model @auth(rules: [{allow: public}]) {
   price: Float!
   tags: String
   cost: Float
-  sku: Boolean
-  trackStock: String
+  barcode: String
+  sku: String
+  trackStock: Boolean 
   Category: Category @hasOne
   UnitOfMeasure: UnitOfMeasure @hasOne
   Brand: Brand @hasOne
   isActive: Boolean
-  deleted: Boolean
-  barcode: String
 }
 
 type PurchaseOrder @model @auth(rules: [{allow: public}]) {

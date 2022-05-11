@@ -10,20 +10,44 @@ export interface SingleItemProps {
     setSelected: (item: SidebarItem) => void;
 }
 
-export function SingleItem({ chevron, item , selected, setSelected}: SingleItemProps) {
+export function SingleItem({
+    chevron,
+    item,
+    selected,
+    setSelected,
+}: SingleItemProps) {
     const theme = useTheme();
-    return <ListItem fileKey={item.id} onPress={() => setSelected(item)}>
-        { item.icon && 
-        <Icon name={item.icon} type="material-community" color={theme.theme.colors.grey3} />
-        }
-        <ListItem.Content>
-        <ListItem.Title style={[
-            {
-                color: theme.theme.colors.grey1,
-                backgroundColor: item === selected ? theme.theme.colors.primary : 'transparent'
-            }
-        ]}>{item.title}</ListItem.Title>
-        </ListItem.Content>
-        { chevron && <ListItem.Chevron />}
-    </ListItem>
+    return (
+        <ListItem
+            fileKey={item.id}
+            onPress={() => selected !== item && setSelected(item)}
+        >
+            {item.icon && (
+                <Icon
+                    name={item.icon}
+                    type="material-community"
+                    color={theme.theme.colors.grey3}
+                />
+            )}
+            <ListItem.Content
+                style={{
+                    paddingLeft: 10,
+                    borderLeftWidth: 4,
+                    borderLeftColor: item === selected ? theme.theme.colors.primary : 'transparent',
+
+                }}
+            >
+                <ListItem.Title
+                    style={[
+                        {
+                            color: item === selected ? theme.theme.colors.primary : theme.theme.colors.grey1
+                        },
+                    ]}
+                >
+                    {item.title}
+                </ListItem.Title>
+            </ListItem.Content>
+            {chevron && <ListItem.Chevron />}
+        </ListItem>
+    );
 }

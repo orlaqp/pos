@@ -84,7 +84,7 @@ const useStyles = () => {
         ...sharedStyles,
         ...StyleSheet.create({
             leftSide: {
-                flex: 2,
+                flex: 2.3,
                 flexDirection: 'column',
             },
             rightSide: {

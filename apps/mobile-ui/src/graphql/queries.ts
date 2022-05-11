@@ -317,11 +317,10 @@ export const getOrderLine = /* GraphQL */ `
         price
         tags
         cost
+        barcode
         sku
         trackStock
         isActive
-        deleted
-        barcode
         createdAt
         updatedAt
         _version
@@ -412,6 +411,7 @@ export const getProduct = /* GraphQL */ `
       price
       tags
       cost
+      barcode
       sku
       trackStock
       Category {
@@ -447,8 +447,6 @@ export const getProduct = /* GraphQL */ `
         _lastChangedAt
       }
       isActive
-      deleted
-      barcode
       createdAt
       updatedAt
       _version
@@ -474,11 +472,10 @@ export const listProducts = /* GraphQL */ `
         price
         tags
         cost
+        barcode
         sku
         trackStock
         isActive
-        deleted
-        barcode
         createdAt
         updatedAt
         _version
@@ -513,11 +510,10 @@ export const syncProducts = /* GraphQL */ `
         price
         tags
         cost
+        barcode
         sku
         trackStock
         isActive
-        deleted
-        barcode
         createdAt
         updatedAt
         _version
@@ -620,11 +616,10 @@ export const getPurchaseOrderLine = /* GraphQL */ `
         price
         tags
         cost
+        barcode
         sku
         trackStock
         isActive
-        deleted
-        barcode
         createdAt
         updatedAt
         _version
@@ -855,11 +850,10 @@ export const getStock = /* GraphQL */ `
         price
         tags
         cost
+        barcode
         sku
         trackStock
         isActive
-        deleted
-        barcode
         createdAt
         updatedAt
         _version
