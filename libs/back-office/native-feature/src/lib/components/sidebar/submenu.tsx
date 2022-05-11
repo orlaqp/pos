@@ -1,13 +1,13 @@
 import React from 'react';
+
 import { Icon, ListItem, useTheme } from '@rneui/themed';
 import { SidebarItem } from './definitions';
 import { SingleItem, SingleItemProps } from './single-item';
 import { View } from 'react-native';
-import { normalize } from 'path';
 
 export interface SubmenuProps extends SingleItemProps {
-    expanded: SidebarItem | null;
-    setExpanded: (item?: SidebarItem) => void;
+    expanded: SidebarItem | null | undefined;
+    setExpanded: (item?: SidebarItem | null | undefined) => void;
 }
 
 export function Submenu({
@@ -28,7 +28,7 @@ export function Submenu({
                         <Icon
                             name={item.icon}
                             type="material-community"
-                            color={theme.theme.colors.grey3}
+                            color={selected && item.children?.includes(selected) ? theme.theme.colors.grey0 : theme.theme.colors.grey3}
                         />
                     )}
                     <ListItem.Content style={{ marginLeft: 20 }}>

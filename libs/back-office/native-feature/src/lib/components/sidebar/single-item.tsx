@@ -26,7 +26,7 @@ export function SingleItem({
                 <Icon
                     name={item.icon}
                     type="material-community"
-                    color={theme.theme.colors.grey3}
+                    color={item === selected ? theme.theme.colors.grey0 : theme.theme.colors.grey3}
                 />
             )}
             <ListItem.Content
@@ -40,7 +40,8 @@ export function SingleItem({
                 <ListItem.Title
                     style={[
                         {
-                            color: item === selected ? theme.theme.colors.primary : theme.theme.colors.grey1
+                            color: item === selected ? theme.theme.colors.primary : theme.theme.colors.grey1,
+                            fontWeight: item === selected ? 'bold' : 'normal'
                         },
                     ]}
                 >
