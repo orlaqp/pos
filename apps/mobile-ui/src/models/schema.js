@@ -554,6 +554,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "picture": {
+                    "name": "picture",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "Category": {
                     "name": "Category",
                     "isArray": false,
@@ -1224,5 +1231,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "304728836500e7db0e1944b32ad1f88a"
+    "version": "5e0be56d1b0b1c31e686718ab2411f1d"
 };

@@ -1,23 +1,33 @@
+import React, { useEffect, useState } from 'react';
 
-import React, { useState } from 'react';
-
-import { Alert, View } from 'react-native';
+import { Alert, View, Text } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import {
     UIActions,
     UiFileUpload,
     UIInput,
+    UiOverlaySelect,
     UIVerticalSpacer,
 } from '@pos/shared/ui-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-    ProductEntity,
-    ProductService,
-} from '@pos/categories/data-access';
+import { ProductEntity, ProductService } from '@pos/products/data-access';
 import { RootState } from '@pos/store';
 import { Product } from '@pos/shared/models';
+import {
+    CategoryEntity,
+    fetchCategories,
+    selectAllCategories,
+    selectLoadingStatus as categorySelectLoadingStatus,
+} from '@pos/categories/data-access';
+import {
+    BrandEntity,
+    fetchBrands,
+    selectAllBrands,
+    selectLoadingStatus as brandSelectLoadingStatus,
+} from '@pos/brands/data-access';
+import { fetchUnitOfMeasures, selectAllUnitOfMeasures, selectLoadingStatus as umSelectLadingStatus, UnitOfMeasureEntity } from '@pos/unit-of-measures/data-access';
 
 export interface ProductFormParams {
     [name: string]: object | undefined;
@@ -25,19 +35,54 @@ export interface ProductFormParams {
 }
 
 export interface ProductFormProps {
-    navigation: NativeStackNavigationProp< ProductFormParams>;
+    navigation: NativeStackNavigationProp<ProductFormParams>;
 }
 
 export function ProductForm({ navigation }: ProductFormProps) {
     const product = useSelector((state: RootState) => state.products.selected);
+    const categories = useSelector(selectAllCategories);
+    const catLoadingStatus = useSelector(categorySelectLoadingStatus);
+    const brands = useSelector(selectAllBrands);
+    const brLoadingStatus = useSelector(brandSelectLoadingStatus);
+    const ums = useSelector(selectAllUnitOfMeasures);
+    const umLoadingStatus = useSelector(umSelectLadingStatus);
     const dispatch = useDispatch();
+
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (catLoadingStatus === 'not loaded') dispatch(fetchCategories());
+    }, [catLoadingStatus, dispatch]);
+
+    useEffect(() => {
+        if (brLoadingStatus === 'not loaded') dispatch(fetchBrands());
+    }, [brLoadingStatus, dispatch]);
+
+    useEffect(() => {
+        if (umLoadingStatus === 'not loaded') dispatch(fetchUnitOfMeasures());
+    }, [umLoadingStatus, dispatch]);
+
+    const updatePicture = (key: string) => {
+        form.setValue('picture', key);
+    };
+
+    const updateCategory = (cat: CategoryEntity) => {
+        form.setValue('category', cat);
+    };
+
+    const updateBrand = (brand: BrandEntity) => {
+        form.setValue('brand', brand);
+    };
+
+    const updateUnitOfMeasure = (um: UnitOfMeasureEntity) => {
+        form.setValue('unitOfMeasure', um);
+    };
 
     const save = async () => {
         setBusy(true);
         const formValues: ProductEntity = form.getValues();
-        
+
         if (!formValues.id) {
             delete formValues.id;
         }
@@ -47,10 +92,22 @@ export function ProductForm({ navigation }: ProductFormProps) {
         setBusy(false);
     };
 
-    const form = useForm< Product >({
+    const form = useForm<ProductEntity>({
         mode: 'onChange',
         defaultValues: {
-            // TODO: add defaults values to your form
+            id: product?.id,
+            name: product?.name,
+            description: product?.description,
+            price: product?.price,
+            tags: product?.tags,
+            cost: product?.cost,
+            barcode: product?.barcode,
+            sku: product?.sku,
+            trackStock: product?.trackStock,
+            picture: product?.picture,
+            category: product?.category,
+            unitOfMeasure: product?.unitOfMeasure,
+            brand: product?.brand,
         },
     });
 
@@ -63,27 +120,102 @@ export function ProductForm({ navigation }: ProductFormProps) {
                 { text: 'Yes', onPress: () => navigation.goBack() },
             ]
         );
-    }
+    };
 
     return (
-        <View style={[styles.page, styles.centeredHorizontally]}>
-            <FormProvider {...form}>
-                <View
-                    style={{
-                        width: '60%',
-                        flexDirection: 'column',
-                        marginTop: 50,
-                    }}
-                >
-                    <UIInput name="name" placeholder="Name" />
-                    <UIActions
-                        busy={busy}
-                        submitAction={form.handleSubmit(save)}
-                        cancelAction={confirmCancel}
-                    />
+        <FormProvider {...form}>
+            <View style={[styles.page]}>
+                <View style={[styles.row, { padding: 25 }]}>
+                    <View style={{ flex: 1 }}>
+                        <View style={{ marginTop: 25 }}>
+                            <UiFileUpload
+                                imageKey={form.getValues().picture}
+                                onAssetUploaded={updatePicture}
+                                onAssetRemoved={updatePicture}
+                            />
+                        </View>
+                    </View>
+                    <View style={{ flex: 4 }} >
+                        <View style={{ flexDirection: 'row' }}>
+                            <UiOverlaySelect
+                                title={'Select Category'}
+                                list={categories}
+                                onSelection={updateCategory}
+                            />
+                            <UiOverlaySelect
+                                title={'Select Brand'}
+                                list={brands}
+                                onSelection={updateBrand}
+                            />
+                            <UiOverlaySelect
+                                title={'Select U/of Measure'}
+                                list={ums}
+                                onSelection={updateUnitOfMeasure}
+                            />
+                        </View>
+                        <UIVerticalSpacer size="medium" />
+                        <UIInput
+                            name="name"
+                            placeholder="Name"
+                            rules={{ required: 'Name is required' }}
+                        />
+                        <UIInput
+                            name="description"
+                            placeholder="Description"
+                            multiline={true}
+                            numberOfLines={2}
+                            style={{
+                                height: 65,
+                                textAlignVertical: 'top',
+                            }}
+                        />
+                        <View style={{ flexDirection: 'row' }}>
+                            <View style={{ flex: 1}}>
+                                <UIInput
+                                    name="cost"
+                                    placeholder="Cost"
+                                    textAlign='right'
+                                    lIcon='currency-usd'
+                                />
+                            </View>
+                            <View style={{ flex: 1}}>
+                                <UIInput
+                                    name="price"
+                                    placeholder="Price"
+                                    textAlign='right'
+                                    rules={{ required: 'Price is required' }}
+                                    lIcon='currency-usd'
+                                />
+                            </View>
+                        </View>
+                        <View style={{ flexDirection: 'row' }}>
+                            <View style={{ flex: 1}}>
+                                <UIInput
+                                    name="barcode"
+                                    placeholder="Barcode"
+                                    textAlign='right'
+                                    lIcon='barcode'
+                                />
+                            </View>
+                            <View style={{ flex: 1}}>
+                                <UIInput
+                                    name="sku"
+                                    placeholder="SKU"
+                                    textAlign='right'
+                                    lIcon='barcode'
+                                />
+                            </View>
+                        </View>
+                    </View>
                 </View>
-            </FormProvider>
-        </View>
+                <UIVerticalSpacer size="small" />
+                <UIActions
+                    busy={busy}
+                    submitAction={form.handleSubmit(save)}
+                    cancelAction={confirmCancel}
+                />
+            </View>
+        </FormProvider>
     );
 }
 

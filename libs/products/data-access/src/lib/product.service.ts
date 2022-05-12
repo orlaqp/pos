@@ -1,26 +1,29 @@
 
 import { Product } from '@pos/shared/models';
-import { AssetsService } from '@pos/shared/ui-native';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
-import { productsActions, ProductEntity } from './slices/products.slice';
+import { productsActions } from './slices/products.slice';
+import { ProductEntity } from './product.entity';
 
 export class ProductService {
     static async save(dispatch: Dispatch<any>, product: ProductEntity) {
         if (!product.id) {
             const entity = new Product(product);
-            await DataStore.save(entity);
-            return dispatch(productsActions.add(entity));
+            const res = await DataStore.save(entity);
+
+            product.id = res.id;
+
+            return dispatch(productsActions.add(product));
         }
         
-        const cat = await DataStore.query(Product, product.id);
+        const existing = await DataStore.query(Product, product.id);
 
-        if (!cat) {
+        if (!existing) {
             return console.log(`It seems that product: ${product.id} has been removed`);
         }
 
         await DataStore.save(
-            Product.copyOf(cat, updated => {
+            Product.copyOf(existing, updated => {
                 // TODO: Update product properties here
             })
         );

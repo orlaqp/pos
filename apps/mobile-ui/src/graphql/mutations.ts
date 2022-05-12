@@ -310,6 +310,7 @@ export const createOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -351,6 +352,7 @@ export const updateOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -392,6 +394,7 @@ export const deleteOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -431,6 +434,7 @@ export const createProduct = /* GraphQL */ `
       barcode
       sku
       trackStock
+      picture
       Category {
         id
         name
@@ -491,6 +495,7 @@ export const updateProduct = /* GraphQL */ `
       barcode
       sku
       trackStock
+      picture
       Category {
         id
         name
@@ -551,6 +556,7 @@ export const deleteProduct = /* GraphQL */ `
       barcode
       sku
       trackStock
+      picture
       Category {
         id
         name
@@ -697,6 +703,7 @@ export const createPurchaseOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -735,6 +742,7 @@ export const updatePurchaseOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -773,6 +781,7 @@ export const deletePurchaseOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -928,6 +937,7 @@ export const createStock = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -965,6 +975,7 @@ export const updateStock = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -1002,6 +1013,7 @@ export const deleteStock = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt

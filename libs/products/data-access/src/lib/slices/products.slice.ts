@@ -10,18 +10,10 @@ import {
     EntityState,
     PayloadAction,
 } from '@reduxjs/toolkit';
+import { ProductEntity } from '../product.entity';
 import { ProductService } from '../product.service';
 
 export const PRODUCT_FEATURE_KEY = 'products';
-
-export type ProductEntity = {
-    id?: string,
-    
-    // TODO: Add entity properties here
-
-    createdAt?: string | null | undefined,
-    updatedAt?: string | null | undefined,
-};
 
 export interface ProductsState extends EntityState< ProductEntity > {
   loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
@@ -60,9 +52,18 @@ export const productsSlice = createSlice({
   name: PRODUCT_FEATURE_KEY,
   initialState: initialProductsState,
   reducers: {
-    add: productsAdapter.addOne,
-    remove: productsAdapter.removeOne,
-    update: productsAdapter.updateOne,
+    add: (state: ProductsState, action: PayloadAction< ProductEntity >) =>{
+        productsAdapter.addOne(state, action);
+        filterList(state, state.filterQuery);
+    },
+    remove: (state: ProductsState, action: PayloadAction< EntityId >) => {
+        productsAdapter.removeOne(state, action);
+        filterList(state, state.filterQuery);
+    },
+    update: (state: ProductsState, action: PayloadAction<Update< ProductEntity>>) => {
+        productsAdapter.updateOne(state, action);
+        filterList(state, state.filterQuery);
+    },
     select: (state: ProductsState, action: PayloadAction< ProductEntity >) => {
         state.selected = action.payload;
     },

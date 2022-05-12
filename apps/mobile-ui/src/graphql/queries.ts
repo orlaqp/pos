@@ -323,6 +323,7 @@ export const getOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -417,6 +418,7 @@ export const getProduct = /* GraphQL */ `
       barcode
       sku
       trackStock
+      picture
       Category {
         id
         name
@@ -479,6 +481,7 @@ export const listProducts = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -517,6 +520,7 @@ export const syncProducts = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -623,6 +627,7 @@ export const getPurchaseOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -857,6 +862,7 @@ export const getStock = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt

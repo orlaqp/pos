@@ -271,6 +271,7 @@ export const onCreateOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -309,6 +310,7 @@ export const onUpdateOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -347,6 +349,7 @@ export const onDeleteOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -383,6 +386,7 @@ export const onCreateProduct = /* GraphQL */ `
       barcode
       sku
       trackStock
+      picture
       Category {
         id
         name
@@ -440,6 +444,7 @@ export const onUpdateProduct = /* GraphQL */ `
       barcode
       sku
       trackStock
+      picture
       Category {
         id
         name
@@ -497,6 +502,7 @@ export const onDeleteProduct = /* GraphQL */ `
       barcode
       sku
       trackStock
+      picture
       Category {
         id
         name
@@ -631,6 +637,7 @@ export const onCreatePurchaseOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -666,6 +673,7 @@ export const onUpdatePurchaseOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -701,6 +709,7 @@ export const onDeletePurchaseOrderLine = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -835,6 +844,7 @@ export const onCreateStock = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -869,6 +879,7 @@ export const onUpdateStock = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt
@@ -903,6 +914,7 @@ export const onDeleteStock = /* GraphQL */ `
         barcode
         sku
         trackStock
+        picture
         isActive
         createdAt
         updatedAt

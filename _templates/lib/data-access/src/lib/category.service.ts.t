@@ -10,7 +10,7 @@ import { <%= className %> } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
 import { <%= plural %>Actions } from './slices/<%= pluralParamCase %>.slice';
-import { <%= className %>Entity } from './<%= paramCase %>.entity';
+import { <%= className %>Entity } from './<%= h.paramCase(name) %>.entity';
 
 export class <%= className %>Service {
     static async save(dispatch: Dispatch<any>, <%= name %>: <%= className %>Entity) {
