@@ -18,6 +18,8 @@ import { Products } from '@pos/products/native-feature';
 import { UnitOfMeasures } from '@pos/unit-of-measures/native-feature';
 
 import Logo from '../../assets/logo.png';
+import { useSelector } from 'react-redux';
+import { selectUser } from '@pos/auth/data-access';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 // const Logo = require('../../assets/logo.png');
 
@@ -31,6 +33,7 @@ export interface BackOfficeProps {
 export function BackOffice({ navigation }: BackOfficeProps) {
     const theme = useTheme();
     const styles = useStyles();
+    const user = useSelector(selectUser);
 
     return (
         <SafeAreaView style={styles.page}>
@@ -57,7 +60,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                         >
                             <Image source={Logo} style={styles.logo} />
                             <Text style={{ color: 'white' }}>
-                                Orlando Quero
+                                { `${user?.given_name} ${user?.family_name}` }
                             </Text>
                         </View>
                         <View style={{ marginLeft: 10 }}>
@@ -65,8 +68,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                         </View>
                     </ScrollView>
                 </View>
-                {/* <Divider color={theme.theme.colors.grey5} style={{ marginBottom: 20 }} orientation='vertical' /> */}
-
+                
                 <View style={styles.rightSide}>
                     <Stack.Navigator screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="Products" component={Products} />

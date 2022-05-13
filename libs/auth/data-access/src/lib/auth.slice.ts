@@ -1,6 +1,7 @@
 import { SignInRequest } from './definitions';
 import {
     createAsyncThunk,
+    createSelector,
     createSlice,
     PayloadAction,
 } from '@reduxjs/toolkit';
@@ -15,6 +16,7 @@ export interface User {
     given_name: string;
     family_name: string;
     email: string;
+    groups: string[];
 }
 
 export interface AuthState {
@@ -28,6 +30,8 @@ export const signIn = createAsyncThunk(
     async (req: SignInRequest, thunkAPI) => {
         const signInResponse = await Auth.signIn(req.email, req.password);
         const attrs = signInResponse.attributes;
+        const currentUser = await Auth.currentAuthenticatedUser();
+        const groups = currentUser?.signInUserSession?.accessToken?.payload['cognito:groups'];
 
         return {
             id: attrs.sub,
@@ -35,7 +39,8 @@ export const signIn = createAsyncThunk(
             email_verified: attrs.email_verified,
             family_name: attrs.family_name,
             given_name: attrs.given_name,
-        }
+            groups,
+        } as User;
     }
 );
 
@@ -75,6 +80,9 @@ export const authReducer = authSlice.reducer;
 export const getAuthState = (rootState: RootState): AuthState =>
     rootState[AUTH_FEATURE_KEY];
 
-// export const selectAllAuth = createSelector(getAuthState, selectAll);
+export const selectUser = createSelector(
+    getAuthState,
+    (state: AuthState) => state.user
+);   
 
 // export const selectAuthEntities = createSelector(getAuthState, selectEntities);

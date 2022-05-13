@@ -92,13 +92,6 @@ const useStyles = () => {
     return {
         ...sharedStyles,
         ...StyleSheet.create({
-            dataRow: {
-                ...sharedStyles.row,
-                padding: 20,
-                backgroundColor: `${theme.theme.colors.searchBg}44`,
-                borderRadius: 10,
-                marginBottom: 10,
-            },
             name: {
                 fontSize: 18,
                 color: theme.theme.colors.grey0,

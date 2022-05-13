@@ -41,6 +41,23 @@ export const useSharedStyles = () => {
         },
         labelText: {
             color: theme.theme.colors.grey1
-        }
+        },
+        dataRow: {
+            flexDirection: "row",
+            flexWrap: "wrap",
+            backgroundColor: `${theme.theme.colors.grey5}44`,
+            padding: 20,
+            borderRadius: 10,
+            marginBottom: 10,
+        },
+        name: {
+            fontSize: 18,
+            color: theme.theme.colors.grey0,
+            marginBottom: 5,
+        },
+        description: {
+            fontSize: 14,
+            color: theme.theme.colors.grey3,
+        },
     });
 } 

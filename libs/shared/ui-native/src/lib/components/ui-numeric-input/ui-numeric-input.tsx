@@ -59,7 +59,7 @@ export const UINumericInput = React.forwardRef<TextInput, Props>(
                         ref={ref}
                         {...restOfProps}
                         placeholder={props.placeholder}
-                        value={value}
+                        value={value?.toString()}
                         onBlur={onBlur}
                         onChangeText={(text) => onChange(+text)}
                         errorMessage={error?.message}

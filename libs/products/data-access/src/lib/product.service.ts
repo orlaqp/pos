@@ -33,9 +33,9 @@ export class ProductService {
                 updated.sku = product?.sku;
                 updated.trackStock = product?.trackStock;
                 updated.picture = product?.picture;
-                updated.productCategoryId = product?.category.id;
-                updated.productUnitOfMeasureId = product?.unitOfMeasure?.id;
-                updated.productBrandId = product?.brand?.id;
+                updated.productCategoryId = product?.productCategoryId;
+                updated.productUnitOfMeasureId = product?.productUnitOfMeasureId;
+                updated.productBrandId = product?.productBrandId;
             })
         );
         

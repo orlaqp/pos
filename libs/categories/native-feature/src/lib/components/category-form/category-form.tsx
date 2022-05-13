@@ -88,6 +88,7 @@ export function CategoryForm({ navigation }: CategoryFormProps) {
                     }}
                 >
                     <UiFileUpload
+                        prefix='categories'
                         imageKey={form.getValues().picture}
                         onAssetUploaded={updatePicture}
                         onAssetRemoved={updatePicture}

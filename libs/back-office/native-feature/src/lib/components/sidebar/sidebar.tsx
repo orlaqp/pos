@@ -17,6 +17,8 @@ export function Sidebar({ navigation }: SidebarProps) {
     const [selected, setSelected] = useState<SidebarItem | null>(null);
 
     const onSelect = (item: SidebarItem) => {
+        if (item === selected) return;
+
         setSelected(item);
         navigation.replace(item.title);
     }

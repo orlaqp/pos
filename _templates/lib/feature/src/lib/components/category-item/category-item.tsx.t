@@ -8,13 +8,12 @@ singularCapitalized = h.singularCapitalized(name)
 %>
 import React, { useState } from 'react';
 
-import { View, Text, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Alert, ActivityIndicator } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { <%= plural %>Actions, <%= singularCapitalized %>Entity, <%= singularCapitalized %>Service } from '@pos/<%= pluralParamCase %>/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { UIS3Image } from '@pos/shared/ui-native';
 
 export interface <%= singularCapitalized %>ItemProps {
     item: <%= singularCapitalized %>Entity;
@@ -23,7 +22,7 @@ export interface <%= singularCapitalized %>ItemProps {
 
 export function <%= singularCapitalized %>Item({ item, navigation }: <%= singularCapitalized %>ItemProps) {
     const theme = useTheme();
-    const styles = useStyles();
+    const styles = useSharedStyles();
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
 
@@ -91,28 +90,5 @@ export function <%= singularCapitalized %>Item({ item, navigation }: <%= singula
         </View>
     );
 }
-
-const useStyles = () => {
-    const theme = useTheme();
-    const sharedStyles = useSharedStyles();
-
-    return {
-        ...sharedStyles,
-        ...StyleSheet.create({
-            dataRow: {
-                ...sharedStyles.row,
-                padding: 20,
-                backgroundColor: `${theme.theme.colors.searchBg}44`,
-                borderRadius: 10,
-                marginBottom: 10,
-            },
-            name: {
-                fontSize: 18,
-                color: theme.theme.colors.grey0,
-                marginBottom: 5,
-            },
-        }),
-    };
-};
 
 export default <%= singularCapitalized %>Item;

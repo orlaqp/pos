@@ -7,7 +7,6 @@ import { Button, useTheme } from '@rneui/themed';
 import { unitOfMeasuresActions, UnitOfMeasureEntity, UnitOfMeasureService } from '@pos/unit-of-measures/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { UIS3Image } from '@pos/shared/ui-native';
 
 export interface UnitOfMeasureItemProps {
     item: UnitOfMeasureEntity;
@@ -16,7 +15,7 @@ export interface UnitOfMeasureItemProps {
 
 export function UnitOfMeasureItem({ item, navigation }: UnitOfMeasureItemProps) {
     const theme = useTheme();
-    const styles = useStyles();
+    const styles = useSharedStyles();
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
 
@@ -84,32 +83,5 @@ export function UnitOfMeasureItem({ item, navigation }: UnitOfMeasureItemProps) 
         </View>
     );
 }
-
-const useStyles = () => {
-    const theme = useTheme();
-    const sharedStyles = useSharedStyles();
-
-    return {
-        ...sharedStyles,
-        ...StyleSheet.create({
-            dataRow: {
-                ...sharedStyles.row,
-                padding: 20,
-                backgroundColor: `${theme.theme.colors.searchBg}44`,
-                borderRadius: 10,
-                marginBottom: 10,
-            },
-            name: {
-                fontSize: 18,
-                color: theme.theme.colors.grey0,
-                marginBottom: 5,
-            },
-            description: {
-                fontSize: 14,
-                color: theme.theme.colors.grey3,
-            },
-        }),
-    };
-};
 
 export default UnitOfMeasureItem;

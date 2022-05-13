@@ -12,7 +12,7 @@ export function UISearchInput({ onChange }: UiSearchInputProps) {
       placeholder="type to search ..."
       onChangeText={onChange}
       containerStyle={{
-        backgroundColor: theme.theme.colors.searchBg,
+        backgroundColor: theme.theme.colors.grey5,
         borderRadius: 20,
       }}
       inputContainerStyle={{ borderBottomWidth: 0, paddingLeft: 10 }}

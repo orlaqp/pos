@@ -60,18 +60,33 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
     };
 
     return (
-        <View style={styles.dataRow}>
+        <View
+            style={[
+                styles.dataRow,
+                { justifyContent: 'center', alignItems: 'center' },
+            ]}
+        >
             {busy && <ActivityIndicator size="small" />}
-            {item.picture && (
-                <UIS3Image s3Key={item.picture} width={50} height={50} />
-            )}
             {!item.picture && <View style={{ width: 50, height: 50 }} />}
-            <View style={styles.column}>
-                <Chip
-                    title={category?.name}
-                    containerStyle={{ borderRadius: 0 }}
-                    buttonStyle={{ borderRadius: 5, padding: 2 }}
-                />
+            <View style={[styles.column, { flex: 1, alignItems: 'center' }]}>
+                {item.picture && (
+                    <UIS3Image s3Key={item.picture} width={50} height={50} />
+                )}
+                <View
+                    style={{
+                        marginTop: 10,
+                        width: '100%',
+                    }}
+                >
+                    <Text
+                        style={{
+                            ...styles.description,
+                            textAlign: 'center',
+                        }}
+                    >
+                        {category?.name}
+                    </Text>
+                </View>
             </View>
             <View style={{ flex: 2 }}>
                 <Text style={styles.name}>
@@ -79,11 +94,17 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
                 </Text>
                 <Text style={styles.description}>{item.description}</Text>
             </View>
-            <View style={{ flex: 1 }}>
-                <Text style={styles.name}>$ {item.price}</Text>
+            <View style={[styles.column, { flex: 0.7 }]}>
+                <Text style={[styles.name, { textAlign: 'right' }]}>
+                    $ {item.price.toFixed(2)}
+                </Text>
             </View>
             <View style={{ flex: 2, flexDirection: 'row' }}>
-                <Icon name="barcode" type="material-community" color={theme.theme.colors.grey2} />
+                <Icon
+                    name="barcode"
+                    type="material-community"
+                    color={theme.theme.colors.grey2}
+                />
                 <View style={{ marginLeft: 10 }}>
                     <Text style={styles.barcode}>B/C: {item.barcode}</Text>
                     <Text style={styles.barcode}>SKU: {item.sku}</Text>
@@ -91,7 +112,7 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
             </View>
             <View
                 style={{
-                    flex: 2,
+                    flex: 1,
                     flexDirection: 'row',
                     justifyContent: 'flex-end',
                 }}
@@ -126,24 +147,8 @@ const useStyles = () => {
     return {
         ...sharedStyles,
         ...StyleSheet.create({
-            dataRow: {
-                ...sharedStyles.row,
-                padding: 20,
-                backgroundColor: `${theme.theme.colors.searchBg}44`,
-                borderRadius: 10,
-                marginBottom: 10,
-            },
             column: {
                 marginRight: 15,
-            },
-            name: {
-                fontSize: 16,
-                color: theme.theme.colors.grey0,
-                marginBottom: 5,
-            },
-            description: {
-                fontSize: 14,
-                color: theme.theme.colors.grey3,
             },
             barcode: {
                 fontSize: 12,

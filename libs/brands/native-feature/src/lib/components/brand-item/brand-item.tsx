@@ -1,13 +1,12 @@
 
 import React, { useState } from 'react';
 
-import { View, Text, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Alert, ActivityIndicator } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { brandsActions, BrandEntity, BrandService } from '@pos/brands/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { UIS3Image } from '@pos/shared/ui-native';
 
 export interface BrandItemProps {
     item: BrandEntity;
@@ -16,7 +15,7 @@ export interface BrandItemProps {
 
 export function BrandItem({ item, navigation }: BrandItemProps) {
     const theme = useTheme();
-    const styles = useStyles();
+    const styles = useSharedStyles();
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
 
@@ -84,32 +83,5 @@ export function BrandItem({ item, navigation }: BrandItemProps) {
         </View>
     );
 }
-
-const useStyles = () => {
-    const theme = useTheme();
-    const sharedStyles = useSharedStyles();
-
-    return {
-        ...sharedStyles,
-        ...StyleSheet.create({
-            dataRow: {
-                ...sharedStyles.row,
-                padding: 20,
-                backgroundColor: `${theme.theme.colors.searchBg}44`,
-                borderRadius: 10,
-                marginBottom: 10,
-            },
-            name: {
-                fontSize: 18,
-                color: theme.theme.colors.grey0,
-                marginBottom: 5,
-            },
-            description: {
-                fontSize: 14,
-                color: theme.theme.colors.grey3,
-            },
-        }),
-    };
-};
 
 export default BrandItem;

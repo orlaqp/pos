@@ -70,9 +70,9 @@ export function ProductForm({ navigation }: ProductFormProps) {
             sku: product?.sku,
             trackStock: product?.trackStock || false,
             picture: product?.picture,
-            category: product?.category,
-            unitOfMeasure: product?.unitOfMeasure,
-            brand: product?.brand,
+            productCategoryId: product?.productCategoryId,
+            productUnitOfMeasureId: product?.productUnitOfMeasureId,
+            productBrandId: product?.productBrandId,
         },
     });
 
@@ -94,6 +94,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                     <View style={{ flex: 1 }}>
                         <View style={{ marginTop: 25 }}>
                             <UiFileUpload
+                                prefix='products'
                                 imageKey={form.getValues().picture}
                                 onAssetUploaded={updatePicture}
                                 onAssetRemoved={updatePicture}

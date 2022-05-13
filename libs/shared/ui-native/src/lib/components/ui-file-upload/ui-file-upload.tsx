@@ -22,6 +22,7 @@ const fakePromise = () => {
 /* eslint-disable-next-line */
 export interface UiFileUploadProps {
     message?: string;
+    prefix: string;
     imageKey: string | null | undefined;
     width?: number;
     height?: number;
@@ -31,6 +32,7 @@ export interface UiFileUploadProps {
 
 export function UiFileUpload({
     message,
+    prefix,
     imageKey,
     height,
     width,
@@ -71,7 +73,7 @@ export function UiFileUpload({
 
     const processUpload = async () => {
         setBusy(true);
-        const res = await AssetsService.uploadAsset('photo', 'categories');
+        const res = await AssetsService.uploadAsset('photo', prefix);
 
         if (!res) {
             return alert(

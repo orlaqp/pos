@@ -35,7 +35,7 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
         const { control } = useFormContext();
 
         const toggleOverlay = () => setVisible(!visible);
-
+        const getSelected = (value: string) => list.find(i => i.id === value);
         const select = (item: IdName) => {
             setSelected(item);
             toggleOverlay();
@@ -53,10 +53,10 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                     }) => (
                         <>
                             <Button
-                                title={selected?.name || title}
+                                title={getSelected(value)?.name || title}
                                 onPress={toggleOverlay}
                                 buttonStyle={styles.button}
-                                type={selected ? 'solid' : 'outline'}
+                                type={value ? 'solid' : 'outline'}
                                 titleStyle={{
                                     fontSize: 12,
                                     paddingLeft: 15,
