@@ -17,6 +17,9 @@ export type ProductEntity = {
     category: CategoryEntity;
     unitOfMeasure?: UnitOfMeasureEntity;
     brand?: BrandEntity;
+    productCategoryId: string;
+    productUnitOfMeasureId: string;
+    productBrandId: string;
     createdAt?: string | null | undefined;
     updatedAt?: string | null | undefined;
 };

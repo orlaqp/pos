@@ -6,7 +6,8 @@ import {
     UIActions,
     UiFileUpload,
     UIInput,
-    UiOverlaySelect,
+    UIOverlaySelect,
+    UISwitch,
     UIVerticalSpacer,
 } from '@pos/shared/ui-native';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -27,7 +28,13 @@ import {
     selectAllBrands,
     selectLoadingStatus as brandSelectLoadingStatus,
 } from '@pos/brands/data-access';
-import { fetchUnitOfMeasures, selectAllUnitOfMeasures, selectLoadingStatus as umSelectLadingStatus, UnitOfMeasureEntity } from '@pos/unit-of-measures/data-access';
+import {
+    fetchUnitOfMeasures,
+    selectAllUnitOfMeasures,
+    selectLoadingStatus as umSelectLadingStatus,
+    UnitOfMeasureEntity,
+} from '@pos/unit-of-measures/data-access';
+import { Switch } from '@rneui/themed';
 
 export interface ProductFormParams {
     [name: string]: object | undefined;
@@ -67,19 +74,8 @@ export function ProductForm({ navigation }: ProductFormProps) {
         form.setValue('picture', key);
     };
 
-    const updateCategory = (cat: CategoryEntity) => {
-        form.setValue('category', cat);
-    };
-
-    const updateBrand = (brand: BrandEntity) => {
-        form.setValue('brand', brand);
-    };
-
-    const updateUnitOfMeasure = (um: UnitOfMeasureEntity) => {
-        form.setValue('unitOfMeasure', um);
-    };
-
     const save = async () => {
+        debugger;
         setBusy(true);
         const formValues: ProductEntity = form.getValues();
 
@@ -124,8 +120,8 @@ export function ProductForm({ navigation }: ProductFormProps) {
 
     return (
         <FormProvider {...form}>
-            <View style={[styles.page]}>
-                <View style={[styles.row, { padding: 25 }]}>
+            <View style={[styles.page, { padding: 25 }]}>
+                <View style={[styles.row]}>
                     <View style={{ flex: 1 }}>
                         <View style={{ marginTop: 25 }}>
                             <UiFileUpload
@@ -135,23 +131,30 @@ export function ProductForm({ navigation }: ProductFormProps) {
                             />
                         </View>
                     </View>
-                    <View style={{ flex: 4 }} >
+                    <View style={{ flex: 4 }}>
                         <View style={{ flexDirection: 'row' }}>
-                            <UiOverlaySelect
+                            <UIOverlaySelect
+                                name='productCategoryId'
                                 title={'Select Category'}
                                 list={categories}
-                                onSelection={updateCategory}
+                                selectedId={product?.productCategoryId}
                             />
-                            <UiOverlaySelect
+                            <UIOverlaySelect
+                                name='productBrandId'
                                 title={'Select Brand'}
                                 list={brands}
-                                onSelection={updateBrand}
+                                selectedId={product?.productBrandId}
                             />
-                            <UiOverlaySelect
+                            <UIOverlaySelect
+                                name='productUnitOfMeasureId'
                                 title={'Select U/of Measure'}
                                 list={ums}
-                                onSelection={updateUnitOfMeasure}
+                                selectedId={product?.productUnitOfMeasureId}
                             />
+                        </View>
+                        <UIVerticalSpacer size="large" />
+                        <View style={{ flexDirection: 'row-reverse' }}>
+                            <UISwitch name='trackStock' label='Enable inventory tracking ?' />
                         </View>
                         <UIVerticalSpacer size="medium" />
                         <UIInput
@@ -170,39 +173,41 @@ export function ProductForm({ navigation }: ProductFormProps) {
                             }}
                         />
                         <View style={{ flexDirection: 'row' }}>
-                            <View style={{ flex: 1}}>
+                            <View style={{ flex: 1 }}>
                                 <UIInput
+                                    keyboardType='decimal-pad'
                                     name="cost"
                                     placeholder="Cost"
-                                    textAlign='right'
-                                    lIcon='currency-usd'
+                                    textAlign="right"
+                                    lIcon="currency-usd"
                                 />
                             </View>
-                            <View style={{ flex: 1}}>
+                            <View style={{ flex: 1 }}>
                                 <UIInput
+                                    keyboardType='decimal-pad'
                                     name="price"
                                     placeholder="Price"
-                                    textAlign='right'
+                                    textAlign="right"
                                     rules={{ required: 'Price is required' }}
-                                    lIcon='currency-usd'
+                                    lIcon="currency-usd"
                                 />
                             </View>
                         </View>
                         <View style={{ flexDirection: 'row' }}>
-                            <View style={{ flex: 1}}>
+                            <View style={{ flex: 1 }}>
                                 <UIInput
                                     name="barcode"
                                     placeholder="Barcode"
-                                    textAlign='right'
-                                    lIcon='barcode'
+                                    textAlign="right"
+                                    lIcon="barcode"
                                 />
                             </View>
-                            <View style={{ flex: 1}}>
+                            <View style={{ flex: 1 }}>
                                 <UIInput
                                     name="sku"
                                     placeholder="SKU"
-                                    textAlign='right'
-                                    lIcon='barcode'
+                                    textAlign="right"
+                                    lIcon="barcode"
                                 />
                             </View>
                         </View>

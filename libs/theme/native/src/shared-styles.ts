@@ -1,4 +1,5 @@
 import { useTheme } from '@rneui/themed';
+import { abort } from 'process';
 import { StyleSheet } from 'react-native';
 
 
@@ -37,6 +38,9 @@ export const useSharedStyles = () => {
         },
         darkBackground: {
             backgroundColor: `${theme.theme.colors.searchBg}44`
+        },
+        labelText: {
+            color: theme.theme.colors.grey1
         }
     });
 } 

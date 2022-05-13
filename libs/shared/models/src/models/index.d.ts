@@ -139,6 +139,7 @@ export declare class Product {
   readonly barcode?: string | null;
   readonly sku?: string | null;
   readonly trackStock: boolean;
+  readonly picture?: string | null;
   readonly Category?: Category | null;
   readonly UnitOfMeasure?: UnitOfMeasure | null;
   readonly Brand?: Brand | null;

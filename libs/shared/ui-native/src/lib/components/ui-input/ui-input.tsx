@@ -1,6 +1,6 @@
-import { Icon, InputProps } from '@rneui/base';
+import { InputProps } from '@rneui/base';
 import { Input, useTheme } from '@rneui/themed';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useFormContext, Controller, RegisterOptions } from 'react-hook-form';
 import { TextInput } from 'react-native';
 
@@ -64,7 +64,7 @@ export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
                     placeholder={props.placeholder}
                     value={value}
                     onBlur={onBlur}
-                    onChangeText={(value) => onChange(value)}
+                    onChangeText={onChange}
                     errorMessage={error?.message}
                 />
             )}

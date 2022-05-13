@@ -24,7 +24,18 @@ export class ProductService {
 
         await DataStore.save(
             Product.copyOf(existing, updated => {
-                // TODO: Update product properties here
+                updated.name = product?.name;
+                updated.description = product?.description;
+                updated.price = product?.price;
+                updated.tags = product?.tags;
+                updated.cost = product?.cost;
+                updated.barcode = product?.barcode;
+                updated.sku = product?.sku;
+                updated.trackStock = product?.trackStock;
+                updated.picture = product?.picture;
+                updated.productCategoryId = product?.category.id;
+                updated.productUnitOfMeasureId = product?.unitOfMeasure?.id;
+                updated.productBrandId = product?.brand?.id;
             })
         );
         

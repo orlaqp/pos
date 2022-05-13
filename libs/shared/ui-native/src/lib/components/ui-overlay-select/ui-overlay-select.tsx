@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import { theme, useSharedStyles } from '@pos/theme/native';
 import { Button, Icon, Overlay, useTheme } from '@rneui/themed';
 
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import {
+    View,
+    Text,
+    StyleSheet,
+    FlatList,
+    TouchableOpacity,
+} from 'react-native';
+import { Controller, RegisterOptions, useFormContext } from 'react-hook-form';
 
 export interface IdName {
     id?: string;
@@ -11,58 +18,120 @@ export interface IdName {
 
 /* eslint-disable-next-line */
 export interface UiOverlaySelectProps {
+    name?: string;
     title: string;
     list: IdName[];
-    onSelection: (item: IdName) => unknown;
+    selectedId?: string;
+    rules?: RegisterOptions;
+    onSelection?: (item: IdName) => unknown;
 }
 
-export function UiOverlaySelect({ title, list, onSelection }: UiOverlaySelectProps) {
-    const styles = useStyles();
-    const [visible, setVisible] = useState(false);
-    const [selected, setSelected] = useState<IdName>();
-    const toggleOverlay = () => setVisible(!visible);
+export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectProps>(
+    (props) => {
+        const { name, title, list, onSelection, rules } = props;
+        const styles = useStyles();
+        const [visible, setVisible] = useState(false);
+        const [selected, setSelected] = useState<IdName>();
+        const { control } = useFormContext();
 
-    const select = (item: IdName) => {
-        setSelected(item);
-        onSelection(item);
-        toggleOverlay();
-    }
+        const toggleOverlay = () => setVisible(!visible);
 
-    return (
-        <View>
-            <Button
-                title={selected?.name || title}
-                onPress={toggleOverlay}
-                buttonStyle={styles.button}
-                type={selected ? 'solid' : 'outline'}
-                titleStyle={{
-                    fontSize: 12,
-                    paddingLeft: 15,
-                    paddingRight: 15,
-                }}
-            />
-            <Overlay
-                isVisible={visible}
-                onBackdropPress={toggleOverlay}
-                overlayStyle={styles.overlay}
-            >
-                <View >
-                <FlatList
-                    data={list}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                            style={styles.dataRow}
-                            onPress={() => select(item) }
-                        >
-                            <Text style={styles.name}>{item.name}</Text>
-                        </TouchableOpacity>
+        const select = (item: IdName) => {
+            setSelected(item);
+            toggleOverlay();
+            if (onSelection) onSelection(item);
+        };
+
+        if (name) {
+            return (
+                <Controller
+                    control={control}
+                    name={name}
+                    render={({
+                        field: { onChange, value, onBlur, ref },
+                        fieldState: { isTouched, isDirty, error },
+                    }) => (
+                        <>
+                            <Button
+                                title={selected?.name || title}
+                                onPress={toggleOverlay}
+                                buttonStyle={styles.button}
+                                type={selected ? 'solid' : 'outline'}
+                                titleStyle={{
+                                    fontSize: 12,
+                                    paddingLeft: 15,
+                                    paddingRight: 15,
+                                }}
+                            />
+                            <Overlay
+                                isVisible={visible}
+                                onBackdropPress={toggleOverlay}
+                                overlayStyle={styles.overlay}
+                            >
+                                <View>
+                                    <FlatList
+                                        data={list}
+                                        renderItem={({ item }) => (
+                                            <TouchableOpacity
+                                                style={styles.dataRow}
+                                                onPress={() => {
+                                                    onChange(item.id);
+                                                    select(item);
+                                                }}
+                                            >
+                                                <Text style={styles.name}>
+                                                    {item.name}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    />
+                                </View>
+                            </Overlay>
+                        </>
                     )}
+                    rules={rules}
                 />
-                </View>
-            </Overlay>
-        </View>
-    );
-}
+            );
+        }
+
+        return (
+            <>
+                <Button
+                    title={selected?.name || title}
+                    onPress={toggleOverlay}
+                    buttonStyle={styles.button}
+                    type={selected ? 'solid' : 'outline'}
+                    titleStyle={{
+                        fontSize: 12,
+                        paddingLeft: 15,
+                        paddingRight: 15,
+                    }}
+                />
+                <Overlay
+                    isVisible={visible}
+                    onBackdropPress={toggleOverlay}
+                    overlayStyle={styles.overlay}
+                >
+                    <View>
+                        <FlatList
+                            data={list}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    style={styles.dataRow}
+                                    onPress={() => select(item)}
+                                >
+                                    <Text style={styles.name}>
+                                        {item.name}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+                        />
+                    </View>
+                </Overlay>
+            </>
+        );
+    }
+);
 
 const useStyles = () => {
     const theme = useTheme();
@@ -71,7 +140,7 @@ const useStyles = () => {
     return {
         ...StyleSheet.create({
             overlay: {
-                backgroundColor: theme.theme.colors.background
+                backgroundColor: theme.theme.colors.background,
             },
             button: {
                 margin: 10,
@@ -89,5 +158,3 @@ const useStyles = () => {
         }),
     };
 };
-
-export default UiOverlaySelect;
