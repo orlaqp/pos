@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-import { Alert, View, Text } from 'react-native';
+import { Alert, View } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import {
     UIActions,
@@ -17,25 +17,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ProductEntity, ProductService } from '@pos/products/data-access';
 import { RootState } from '@pos/store';
 import { Product } from '@pos/shared/models';
-import {
-    CategoryEntity,
-    fetchCategories,
-    selectAllCategories,
-    selectLoadingStatus as categorySelectLoadingStatus,
-} from '@pos/categories/data-access';
-import {
-    BrandEntity,
-    fetchBrands,
-    selectAllBrands,
-    selectLoadingStatus as brandSelectLoadingStatus,
-} from '@pos/brands/data-access';
-import {
-    fetchUnitOfMeasures,
-    selectAllUnitOfMeasures,
-    selectLoadingStatus as umSelectLadingStatus,
-    UnitOfMeasureEntity,
-} from '@pos/unit-of-measures/data-access';
-import { Switch } from '@rneui/themed';
+import { selectAllCategories } from '@pos/categories/data-access';
+import { selectAllBrands } from '@pos/brands/data-access';
+import { selectAllUnitOfMeasures } from '@pos/unit-of-measures/data-access';
 
 export interface ProductFormParams {
     [name: string]: object | undefined;
@@ -49,34 +33,18 @@ export interface ProductFormProps {
 export function ProductForm({ navigation }: ProductFormProps) {
     const product = useSelector((state: RootState) => state.products.selected);
     const categories = useSelector(selectAllCategories);
-    const catLoadingStatus = useSelector(categorySelectLoadingStatus);
     const brands = useSelector(selectAllBrands);
-    const brLoadingStatus = useSelector(brandSelectLoadingStatus);
     const ums = useSelector(selectAllUnitOfMeasures);
-    const umLoadingStatus = useSelector(umSelectLadingStatus);
     const dispatch = useDispatch();
 
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
-
-    useEffect(() => {
-        if (catLoadingStatus === 'not loaded') dispatch(fetchCategories());
-    }, [catLoadingStatus, dispatch]);
-
-    useEffect(() => {
-        if (brLoadingStatus === 'not loaded') dispatch(fetchBrands());
-    }, [brLoadingStatus, dispatch]);
-
-    useEffect(() => {
-        if (umLoadingStatus === 'not loaded') dispatch(fetchUnitOfMeasures());
-    }, [umLoadingStatus, dispatch]);
 
     const updatePicture = (key: string) => {
         form.setValue('picture', key);
     };
 
     const save = async () => {
-        debugger;
         setBusy(true);
         const formValues: ProductEntity = form.getValues();
 

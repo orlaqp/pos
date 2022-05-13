@@ -29,13 +29,22 @@ export const fetchProducts = createAsyncThunk(
   'products/fetchStatus',
   async (_, thunkAPI) => {
     const products = await ProductService.getAll();
-    return products.map(c => ({
-        id: c.id,
-        
-        // TODO: Assign rest of properties here
-
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt
+    return products.map(p => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        price: p.price,
+        tags: p.tags,
+        cost: p.cost,
+        barcode: p.barcode,
+        sku: p.sku,
+        trackStock: p.trackStock,
+        picture: p.picture,
+        productCategoryId: p.productCategoryId,
+        productUnitOfMeasureId: p.productUnitOfMeasureId,
+        productBrandId: p.productBrandId,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt
     }))
   }
 );

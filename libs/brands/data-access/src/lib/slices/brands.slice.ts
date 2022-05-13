@@ -166,7 +166,10 @@ export const selectFilteredList = createSelector(
     (state: BrandsState) => state.filteredList
 )
 
-
+export const selectBrand = (id: string) => createSelector(
+    getBrandsState,
+    (state: BrandsState) => state.entities[id]
+)
 
 
 function filterList(state: BrandsState, query?: string) {

@@ -166,7 +166,10 @@ export const selectFilteredList = createSelector(
     (state: UnitOfMeasuresState) => state.filteredList
 )
 
-
+export const selectUnitOfMeasure = (id: string) => createSelector(
+    getUnitOfMeasuresState,
+    (state: UnitOfMeasuresState) => state.entities[id]
+)
 
 
 function filterList(state: UnitOfMeasuresState, query?: string) {

@@ -8,7 +8,6 @@ import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UIS3Image } from '@pos/shared/ui-native';
 
-/* eslint-disable-next-line */
 export interface CategoryItemProps {
     item: CategoryEntity;
     navigation: NativeStackNavigationProp<any>;
