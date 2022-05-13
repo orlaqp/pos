@@ -6,6 +6,7 @@ import {
     UIActions,
     UiFileUpload,
     UIInput,
+    UINumericInput,
     UIOverlaySelect,
     UISwitch,
     UIVerticalSpacer,
@@ -99,7 +100,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
             cost: product?.cost,
             barcode: product?.barcode,
             sku: product?.sku,
-            trackStock: product?.trackStock,
+            trackStock: product?.trackStock || false,
             picture: product?.picture,
             category: product?.category,
             unitOfMeasure: product?.unitOfMeasure,
@@ -174,21 +175,25 @@ export function ProductForm({ navigation }: ProductFormProps) {
                         />
                         <View style={{ flexDirection: 'row' }}>
                             <View style={{ flex: 1 }}>
-                                <UIInput
+                                <UINumericInput
                                     keyboardType='decimal-pad'
                                     name="cost"
+                                    allowDecimals={true}
                                     placeholder="Cost"
                                     textAlign="right"
                                     lIcon="currency-usd"
                                 />
                             </View>
                             <View style={{ flex: 1 }}>
-                                <UIInput
-                                    keyboardType='decimal-pad'
+                                <UINumericInput
+                                    keyboardType='number-pad'
                                     name="price"
+                                    allowDecimals={true}
                                     placeholder="Price"
                                     textAlign="right"
-                                    rules={{ required: 'Price is required' }}
+                                    rules={{
+                                        required: 'Price is required',
+                                    }}
                                     lIcon="currency-usd"
                                 />
                             </View>
