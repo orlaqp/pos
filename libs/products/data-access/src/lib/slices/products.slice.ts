@@ -178,8 +178,6 @@ export const selectFilteredList = createSelector(
 
 
 function filterList(state: ProductsState, query?: string) {
-    console.log('Query', query);
-    
     const filteredList: Dictionary<ProductEntity> = {};
     
     if (!query) {
@@ -192,10 +190,16 @@ function filterList(state: ProductsState, query?: string) {
     // const queryString = query || state.filterQuery;
     
     state.ids.forEach(id => {
-        if (state.entities[id]?.name?.toLowerCase().indexOf(lowerQuery) === -1)
-            return;
+        const entity = state.entities[id];
+        if (
+            entity?.name?.toLowerCase().indexOf(lowerQuery) !== -1
+            || entity.description?.toLowerCase().indexOf(lowerQuery) !== -1
+            || entity.barcode?.toLowerCase().indexOf(lowerQuery) !== -1
+            || entity.sku?.toLowerCase().indexOf(lowerQuery) !== -1
+        ) {
+            filteredList[id] = entity;
+        }
 
-        filteredList[id] = state.entities[id];
     });
 
     state.filteredList = filteredList;
