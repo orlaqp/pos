@@ -56,7 +56,6 @@ export function SignUpScreen(props: SignupProps) {
     }
   }
 
-  //   debugger;
   return (
     <FormProvider {...formMethods}>
       <View style={[styles.container, styles.centered]}>

@@ -8,7 +8,6 @@ import { BrandEntity } from './brand.entity';
 export class BrandService {
     static async save(dispatch: Dispatch<any>, brand: BrandEntity) {
         if (!brand.id) {
-            debugger;
             const entity = new Brand(brand);
             const res = await DataStore.save(entity);
             

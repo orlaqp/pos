@@ -1,8 +1,6 @@
 import { ProductEntityMapper } from './../product.entity';
-import { ListProductsQuery } from './../../../../../../apps/mobile-ui/src/API';
 
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { listProducts, ModelProductFilterInput } from '@pos/shared/api';
 import { RootState } from '@pos/store';
 import {
     createAsyncThunk,
@@ -15,10 +13,8 @@ import {
     PayloadAction,
     Update,
 } from '@reduxjs/toolkit';
-import { API } from 'aws-amplify';
 import { ProductEntity } from '../product.entity';
 import { ProductService } from '../product.service';
-import { GraphQLResult } from '@aws-amplify/api-graphql';
 
 export const PRODUCT_FEATURE_KEY = 'products';
 
@@ -32,14 +28,14 @@ export interface ProductsState extends EntityState< ProductEntity > {
 
 export const productsAdapter = createEntityAdapter< ProductEntity >();
 
-export const fetchProducts = createAsyncThunk(
-  'products/fetchStatus',
-  async (_, thunkAPI) => {
-    const products = await ProductService.getAll();
+// export const fetchProducts = createAsyncThunk(
+//   'products/fetchStatus',
+//   async (_, thunkAPI) => {
+//     const products = await ProductService.getAll();
 
-    return products.map(p => ProductEntityMapper.fromProduct(p))
-  }
-);
+//     return products.map(p => ProductEntityMapper.fromProduct(p))
+//   }
+// );
 
 export const initialProductsState: ProductsState =
   productsAdapter.getInitialState({
@@ -53,6 +49,11 @@ export const productsSlice = createSlice({
   name: PRODUCT_FEATURE_KEY,
   initialState: initialProductsState,
   reducers: {
+    setAll: (state: ProductsState, action: PayloadAction< ProductEntity[] >) =>{
+        productsAdapter.setAll(state, action.payload);
+        state.loadingStatus = 'loaded';
+        filterList(state, state.filterQuery);
+    },
     add: (state: ProductsState, action: PayloadAction< ProductEntity >) =>{
         productsAdapter.addOne(state, action);
         filterList(state, state.filterQuery);
@@ -78,22 +79,22 @@ export const productsSlice = createSlice({
     
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchProducts.pending, (state: ProductsState) => {
-        state.loadingStatus = 'loading';
-      })
-      .addCase(
-        fetchProducts.fulfilled,
-        (state: ProductsState, action: PayloadAction< ProductEntity[] >) => {
-          productsAdapter.setAll(state, action.payload);
-          filterList(state, state.filterQuery);
-          state.loadingStatus = 'loaded';
-        }
-      )
-      .addCase(fetchProducts.rejected, (state: ProductsState, action) => {
-        state.loadingStatus = 'error';
-        state.error = action.error.message;
-      });
+    // builder
+    //   .addCase(fetchProducts.pending, (state: ProductsState) => {
+    //     state.loadingStatus = 'loading';
+    //   })
+    //   .addCase(
+    //     fetchProducts.fulfilled,
+    //     (state: ProductsState, action: PayloadAction< ProductEntity[] >) => {
+    //       productsAdapter.setAll(state, action.payload);
+    //       filterList(state, state.filterQuery);
+    //       state.loadingStatus = 'loaded';
+    //     }
+    //   )
+    //   .addCase(fetchProducts.rejected, (state: ProductsState, action) => {
+    //     state.loadingStatus = 'error';
+    //     state.error = action.error.message;
+    //   });
   },
 });
 

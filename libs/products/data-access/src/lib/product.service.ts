@@ -42,9 +42,9 @@ export class ProductService {
         return dispatch(productsActions.update({ id: product.id, changes: product }));
     }
 
-    static getAll() {
-        return DataStore.query(Product);
-    }
+    // static getAll() {
+    //     return DataStore.query(Product);
+    // }
 
     static async delete(id: string) {
         const item = await DataStore.query(Product, id);

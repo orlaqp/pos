@@ -35,3 +35,29 @@ export function observeChanges<TModel, TEntity>({ dispatch, mapper, model, addAc
         }
     })
 }
+
+// export function observeQueryChanges<TModel, TEntity>({ dispatch, mapper, model, addAction, updateAction, deleteAction }: ObserverProps<TModel, TEntity>) {
+//     DataStore.observeQuery(model).subscribe(({ isSynced, items }) => {
+//         if (isSynced) {
+
+//         }
+        
+
+//         switch (msg.opType) {
+//             case OpType.INSERT:
+//                 console.log('Product inserted', msg.element);
+//                 dispatch(addAction(mapper(msg.element)));
+//                 break;
+//             case OpType.UPDATE:
+//                 console.log('Product updated', msg.element);
+//                 dispatch(updateAction({ id: msg.element.id, changes: mapper(msg.element) }));
+//                 break;
+//             case OpType.DELETE:
+//                 console.log('Product deleted', msg.element);
+//                 dispatch(deleteAction(msg.element.id));
+//                 break;
+//             default:
+//                 break;
+//         }
+//     })
+// }

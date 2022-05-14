@@ -24,7 +24,7 @@ export interface ItemListProps<TState, TEntityType> {
     // actions
     clearSelectionAction: () => unknown;
     filterAction: (query: string) => unknown;
-    fetchItemsAction: () => unknown;
+    fetchItemsAction?: () => unknown;
 
     ItemComponent: (props: ItemComponentProps<TEntityType>) => JSX.Element;
 }
@@ -58,7 +58,7 @@ export function UIGenericItemList({
     };
 
     useEffect(() => {
-        if (loadingStatus === 'not loaded') dispatch(fetchItemsAction());
+        if (fetchItemsAction && loadingStatus === 'not loaded') dispatch(fetchItemsAction());
     }, [loadingStatus, dispatch, fetchItemsAction]);
 
     if (loadingStatus === 'loading' || loadingStatus === 'not loaded')
@@ -91,7 +91,7 @@ export function UIGenericItemList({
                         color: theme.theme.colors.grey2,
                     }}
                     style={{ top: 4, left: 15 }}
-                    onPress={() => dispatch(fetchItemsAction())}
+                    onPress={() => fetchItemsAction && dispatch(fetchItemsAction())}
                 />
                 <View
                     style={{ flex: 1, alignItems: 'flex-end', marginRight: 20 }}

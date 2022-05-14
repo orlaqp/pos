@@ -42,7 +42,6 @@ export function LoginScreen(props: LoginProps) {
     dispatch(signIn({ email: model.email, password: model.password}));
   };
 
-  //   debugger;
   return (
     <FormProvider {...formMethods}>
       <View style={[styles.container, styles.centered]}>

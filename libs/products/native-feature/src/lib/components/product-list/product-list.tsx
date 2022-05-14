@@ -19,7 +19,7 @@ export function ProductList({ navigation }: ProductListProps) {
         filteredListSelector: selectFilteredList,
         clearSelectionAction: productsActions.clearSelection,
         filterAction: productsActions.filter,
-        fetchItemsAction: fetchProducts,
+        fetchItemsAction: undefined,
     }
 
     return <UIGenericItemList {...props} />

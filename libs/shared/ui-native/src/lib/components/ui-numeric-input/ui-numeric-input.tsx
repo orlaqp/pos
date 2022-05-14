@@ -67,34 +67,6 @@ export const UINumericInput = React.forwardRef<TextInput, Props>(
                 )}
                 rules={mergedRules}
             />
-
-            // <Controller
-            //   control={control}
-            //   render={({
-            //       field: { onChange, onBlur, value, name, ref },
-            //       fieldState: { invalid, isTouched, isDirty, error },
-            //     formState,
-            //   }) => (
-            //     <Input
-            //       {...restOfProps}
-            //       ref={ref}
-            //       testID={`TextField.${name}`}
-            //       errorMessage={error?.message}
-            //       onBlur={(event) => {
-            //           debugger;
-            //         onBlur()
-            //       }}
-            //       onChangeText={(text) => {
-            //           debugger;
-            //         const formatted = formatter ? formatter(value, text) : text
-            //         onChange(formatted)
-            //       }}
-            //       value={value}
-            //     />
-            //   )}
-            //   name={name}
-            //   rules={rules}
-            // />
         );
     }
 );
