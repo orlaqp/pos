@@ -1,3 +1,4 @@
+import { observeProductChanges } from './../../products/data-access/src/lib/slices/products.subscriptions';
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import logger from 'redux-logger';
 
@@ -23,5 +24,8 @@ export const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 export const useAppDispatch = () => useDispatch<AppDispatch>() ;
+
+// subscriptions
+observeProductChanges(store.dispatch);
 
 export default store;

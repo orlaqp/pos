@@ -1,5 +1,8 @@
+import { ProductEntityMapper } from './../product.entity';
+import { ListProductsQuery } from './../../../../../../apps/mobile-ui/src/API';
 
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { listProducts, ModelProductFilterInput } from '@pos/shared/api';
 import { RootState } from '@pos/store';
 import {
     createAsyncThunk,
@@ -7,11 +10,15 @@ import {
     createSelector,
     createSlice,
     Dictionary,
+    EntityId,
     EntityState,
     PayloadAction,
+    Update,
 } from '@reduxjs/toolkit';
+import { API } from 'aws-amplify';
 import { ProductEntity } from '../product.entity';
 import { ProductService } from '../product.service';
+import { GraphQLResult } from '@aws-amplify/api-graphql';
 
 export const PRODUCT_FEATURE_KEY = 'products';
 
@@ -29,23 +36,8 @@ export const fetchProducts = createAsyncThunk(
   'products/fetchStatus',
   async (_, thunkAPI) => {
     const products = await ProductService.getAll();
-    return products.map(p => ({
-        id: p.id,
-        name: p.name,
-        description: p.description,
-        price: p.price,
-        tags: p.tags,
-        cost: p.cost,
-        barcode: p.barcode,
-        sku: p.sku,
-        trackStock: p.trackStock,
-        picture: p.picture,
-        productCategoryId: p.productCategoryId,
-        productUnitOfMeasureId: p.productUnitOfMeasureId,
-        productBrandId: p.productBrandId,
-        createdAt: p.createdAt,
-        updatedAt: p.updatedAt
-    }))
+
+    return products.map(p => ProductEntityMapper.fromProduct(p))
   }
 );
 

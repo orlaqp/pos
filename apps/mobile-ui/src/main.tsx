@@ -6,6 +6,7 @@ import App from './app/App';
 
 import { Auth, Amplify, Storage } from 'aws-amplify';
 import awsconfig from './aws-exports';
+
 Amplify.configure(awsconfig);
 
 AppRegistry.registerComponent('main', () => App);

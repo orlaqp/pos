@@ -1,8 +1,5 @@
-import { BrandEntity } from '@pos/brands/data-access';
+import { Product } from '@pos/shared/models';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { CategoryEntity } from '@pos/categories/data-access';
-import { UnitOfMeasureEntity } from '@pos/unit-of-measures/data-access';
-
 export type ProductEntity = {
     id?: string;
     name: string;
@@ -20,3 +17,25 @@ export type ProductEntity = {
     createdAt?: string | null | undefined;
     updatedAt?: string | null | undefined;
 };
+
+export class ProductEntityMapper {
+    static fromProduct(p: Product): ProductEntity {
+        return {
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            price: p.price,
+            tags: p.tags,
+            cost: p.cost,
+            barcode: p.barcode,
+            sku: p.sku,
+            trackStock: p.trackStock,
+            picture: p.picture,
+            productCategoryId: p.productCategoryId,
+            productUnitOfMeasureId: p.productUnitOfMeasureId,
+            productBrandId: p.productBrandId,
+            createdAt: p.createdAt,
+            updatedAt: p.updatedAt
+        }
+    }
+}

@@ -18,15 +18,15 @@ export interface ItemListProps<TState, TEntityType> {
     formNavName: string;
     navigation: NativeStackNavigationProp<any>;
     // selectors
-    isEmptySelector: (state: TState) => boolean,
-    loadingStatusSelector: (state: TState) => unknown,
-    filteredListSelector: (state: TState) => Dictionary<unknown> | undefined,
+    isEmptySelector: (state: TState) => boolean;
+    loadingStatusSelector: (state: TState) => unknown;
+    filteredListSelector: (state: TState) => Dictionary<unknown> | undefined;
     // actions
-    clearSelectionAction: () => unknown,
-    filterAction: (query: string) => unknown,
-    fetchItemsAction: () => unknown,
+    clearSelectionAction: () => unknown;
+    filterAction: (query: string) => unknown;
+    fetchItemsAction: () => unknown;
 
-    ItemComponent: (props: ItemComponentProps<TEntityType>) => JSX.Element
+    ItemComponent: (props: ItemComponentProps<TEntityType>) => JSX.Element;
 }
 
 export function UIGenericItemList({
@@ -36,7 +36,7 @@ export function UIGenericItemList({
     loadingStatusSelector,
     clearSelectionAction,
     filterAction,
-    fetchItemsAction, 
+    fetchItemsAction,
     filteredListSelector,
     ItemComponent,
 }: ItemListProps<unknown, unknown>) {
@@ -51,18 +51,22 @@ export function UIGenericItemList({
     const createNew = () => {
         dispatch(clearSelectionAction());
         navigation.navigate(formNavName);
-    }
+    };
 
     const filterList = (query: string) => {
         dispatch(filterAction(query));
-    }
+    };
 
     useEffect(() => {
         if (loadingStatus === 'not loaded') dispatch(fetchItemsAction());
     }, [loadingStatus, dispatch, fetchItemsAction]);
 
     if (loadingStatus === 'loading' || loadingStatus === 'not loaded')
-        return <UISpinner size="large" message="Loading..." />;
+        return (
+            <View style={[styles.page, { paddingTop: 50 }]}>
+                <UISpinner size='small' message="Loading..." />
+            </View>
+        );
 
     if (loadingStatus === 'loaded' && isEmpty)
         return (
@@ -100,17 +104,17 @@ export function UIGenericItemList({
                 </View>
             </View>
             <View style={styles.content}>
-                { items && 
-                <FlatList
-                    data={Object.keys(items)}
-                    renderItem={({ item }) => (
-                        <ItemComponent
-                            navigation={navigation}
-                            item={items[item]!}
-                        />
-                    )}
-                />
-                }
+                {items && (
+                    <FlatList
+                        data={Object.keys(items)}
+                        renderItem={({ item }) => (
+                            <ItemComponent
+                                navigation={navigation}
+                                item={items[item]!}
+                            />
+                        )}
+                    />
+                )}
             </View>
         </View>
     );

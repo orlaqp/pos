@@ -41,6 +41,7 @@
             "@pos/sales/native-feature": [
                 "libs/sales/native-feature/src/index.ts"
             ],
+            "@pos/shared/api": ["libs/shared/api/src/index.ts"],
             "@pos/shared/models": ["libs/shared/models/src/index.ts"],
             "@pos/shared/ui-native": ["libs/shared/ui-native/src/index.ts"],
             "@pos/shared/utils": ["libs/shared/utils/src/index.ts"],
