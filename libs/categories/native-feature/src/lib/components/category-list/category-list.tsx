@@ -18,7 +18,7 @@ export function CategoryList({ navigation }: CategoryListProps) {
         filteredListSelector: selectFilteredList,
         clearSelectionAction: categoriesActions.clearSelection,
         filterAction: categoriesActions.filter,
-        fetchItemsAction: fetchCategories,
+        fetchItemsAction: undefined,
     }
 
     return <UIGenericItemList {...props} />

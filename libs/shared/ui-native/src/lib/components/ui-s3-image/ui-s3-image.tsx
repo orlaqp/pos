@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { ActivityIndicator, Image, View } from 'react-native';
+import { ActivityIndicator, Image, View, Text } from 'react-native';
 import { AssetsService } from '../ui-file-upload/assets.service';
 import { cancellablePromise } from '@pos/shared/utils';
 
@@ -16,19 +16,21 @@ export interface UIS3ImageProps {
     s3Key: string | null | undefined;
     width: number;
     height: number;
+    factor?: number;
 }
 
-export function UIS3Image({ size, s3Key, width, height }: UIS3ImageProps) {
+export function UIS3Image({ size, s3Key, width, height, factor }: UIS3ImageProps) {
     const [uri, setUri] = useState<string | undefined>();
     const [busy, setBusy] = useState<boolean>(false);
     
     useEffect(() => {
-        setBusy(true);
-        
         if (!s3Key) {
+            setBusy(false);
             return setUri(undefined);
         }
 
+        setBusy(true);
+        
         const { promise, cancel } = cancellablePromise<string>(AssetsService.getAssetUri(s3Key));
 
         promise.then((uri: string) => {
@@ -53,8 +55,8 @@ export function UIS3Image({ size, s3Key, width, height }: UIS3ImageProps) {
                 resizeMode="contain"
                 style={{
                     flex: 1.3,
-                    height: 2 * 25,
-                    width: 2 * 100,
+                    height: (factor || 2) * 25,
+                    width: (factor || 2) * 100,
                 }}
             />
             }

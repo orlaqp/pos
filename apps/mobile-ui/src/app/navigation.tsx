@@ -5,7 +5,6 @@ import { LoginScreen, SignUpScreen } from '@pos/auth/native-feature';
 import { SalesScreen } from '@pos/sales/native-feature';
 import { theme } from '@pos/theme/native';
 
-import { View, Text } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@pos/store';
 import { BackOffice } from '@pos/back-office/native-feature';

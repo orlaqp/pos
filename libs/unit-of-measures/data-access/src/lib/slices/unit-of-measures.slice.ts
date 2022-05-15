@@ -53,6 +53,11 @@ export const unitOfMeasuresSlice = createSlice({
   name: UNITOFMEASURE_FEATURE_KEY,
   initialState: initialUnitOfMeasuresState,
   reducers: {
+    setAll: (state: UnitOfMeasuresState, action: PayloadAction< UnitOfMeasureEntity[] >) =>{
+        unitOfMeasuresAdapter.setAll(state, action.payload);
+        state.loadingStatus = 'loaded';
+        filterList(state, state.filterQuery);
+    },
     add: (state: UnitOfMeasuresState, action: PayloadAction< UnitOfMeasureEntity >) => {
         unitOfMeasuresAdapter.addOne(state, action);
         filterList(state, state.filterQuery);

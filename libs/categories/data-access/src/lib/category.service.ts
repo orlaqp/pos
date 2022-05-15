@@ -2,7 +2,8 @@ import { Category } from '@pos/shared/models';
 import { AssetsService } from '@pos/shared/ui-native';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
-import { categoriesActions, CategoryEntity } from './slices/categories.slice';
+import { CategoryEntity } from './category.entity';
+import { categoriesActions } from './slices/categories.slice';
 
 export class CategoryService {
     static async save(dispatch: Dispatch<any>, category: CategoryEntity) {

@@ -11,6 +11,9 @@ export const useSharedStyles = () => {
             flex: 1,
             backgroundColor: theme.theme.colors.background,
         },
+        pageBackground: {
+            backgroundColor: theme.theme.colors.background,
+        },
         detailsPage: {
             flex: 1,
             flexDirection: 'column',

@@ -6,85 +6,88 @@ import { Storage } from 'aws-amplify';
 import { Category } from '@pos/shared/models';
 
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Image,
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    ScrollView,
+    Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
+import {
+    CategoryEntity,
+    selectAllCategories,
+} from '@pos/categories/data-access';
+import { UIS3Image } from '@pos/shared/ui-native';
+import { FlatList } from 'react-native-gesture-handler';
 
 const categories: Category[] = [];
 
 /* eslint-disable-next-line */
-export interface CategorySelectionProps {}
+export interface CategorySelectionProps {
+    onSelected: (c: CategoryEntity) => void;
+}
 
-export function CategorySelection(props: CategorySelectionProps) {
-  const theme = useTheme();
-  const styles = useStyles();
-  const [uri, setUri] = useState(undefined);
-  const imageKey = 'category-5E7F1392-DE4A-427D-A3B3-C36F8BFF4CA6.png';
+export function CategorySelection({ onSelected }: CategorySelectionProps) {
+    const theme = useTheme();
+    const styles = useStyles();
+    const categories = useSelector(selectAllCategories);
 
-  useEffect(() => {
-    const fetchImageUri = async () => {
-      const image = await Storage.get(imageKey);
-      setUri(image as any);
-    };
-
-    fetchImageUri();
-  }, []);
-
-  return (
-    <SafeAreaView style={styles.page}>
-      <ScrollView horizontal={true}>
-        <TouchableOpacity style={styles.container}>
-          <View style={styles.centered}>
-            {/* <View style={[styles.categoryBtn, { backgroundColor: c.color }]} /> */}
-            <Image source={{ uri }} style={styles.picture} />
-            <Text style={{ color: theme.theme.colors.black, marginBottom: 25 }}>
-              Meat
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        {categories.map((c) => (
-          <TouchableOpacity style={styles.container}>
-            <View style={styles.centered}>
-              <View
-                style={[styles.categoryBtn]}
-              />
-              <Text
-                style={{ color: theme.theme.colors.black, marginBottom: 25 }}
-              >
-                {c.name}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </SafeAreaView>
-  );
+    return (
+        <SafeAreaView style={[styles.pageBackground, styles.list]}>
+            <FlatList
+                data={categories}
+                renderItem={({ item }) => (
+                    <TouchableOpacity
+                        style={styles.container}
+                        key={item.id}
+                        onPress={() => onSelected(item)}
+                    >
+                        <View style={styles.centered}>
+                            <UIS3Image
+                                s3Key={item.picture}
+                                width={35}
+                                height={35}
+                                factor={1.5}
+                            />
+                            <Text
+                                style={{
+                                    color: theme.theme.colors.black,
+                                    marginTop: 5,
+                                    marginBottom: 25,
+                                    fontSize: 12,
+                                }}
+                            >
+                                {item.name}
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                )}
+            />
+        </SafeAreaView>
+    );
 }
 
 const useStyles = () => {
-  const theme = useTheme();
-  const sharedStyles = useSharedStyles();
+    const theme = useTheme();
+    const sharedStyles = useSharedStyles();
 
-  return {
-    ...sharedStyles,
-    ...StyleSheet.create({
-      container: {
-        marginRight: 20,
-      },
-      categoryBtn: {
-        width: 80,
-        height: 80,
-        borderRadius: 4,
-      },
-      picture: { marginBottom: 15, width: 75, height: 75 },
-    }),
-  };
+    return {
+        ...sharedStyles,
+        ...StyleSheet.create({
+            list: {
+                ...sharedStyles.darkBackground,
+            },
+            container: {},
+            categoryBtn: {
+                width: 80,
+                height: 80,
+                borderRadius: 4,
+            },
+            picture: { marginBottom: 15, width: 50, height: 50 },
+        }),
+    };
 };
 
 export default CategorySelection;

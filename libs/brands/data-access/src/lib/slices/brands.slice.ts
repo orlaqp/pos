@@ -53,6 +53,11 @@ export const brandsSlice = createSlice({
   name: BRAND_FEATURE_KEY,
   initialState: initialBrandsState,
   reducers: {
+    setAll: (state: BrandsState, action: PayloadAction< BrandEntity[] >) =>{
+        brandsAdapter.setAll(state, action.payload);
+        state.loadingStatus = 'loaded';
+        filterList(state, state.filterQuery);
+    },
     add: (state: BrandsState, action: PayloadAction<BrandEntity>) =>{
         brandsAdapter.addOne(state, action);
         filterList(state, state.filterQuery);

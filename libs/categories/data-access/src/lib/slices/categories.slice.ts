@@ -6,23 +6,15 @@ import {
     createSelector,
     createSlice,
     Dictionary,
+    EntityId,
     EntityState,
     PayloadAction,
+    Update,
 } from '@reduxjs/toolkit';
+import { CategoryEntity, CategoryEntityMapper } from '../category.entity';
 import { CategoryService } from '../category.service';
 
 export const CATEGORIES_FEATURE_KEY = 'categories';
-
-export type CategoryEntity = {
-    id?: string,
-    name: string,
-    description?: string | null,
-    code?: string | null,
-    color?: string | null,
-    picture?: string | null,
-    createdAt?: string | null | undefined,
-    updatedAt?: string | null | undefined,
-};
 
 export interface CategoriesState extends EntityState<CategoryEntity> {
   loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
@@ -38,16 +30,8 @@ export const fetchCategories = createAsyncThunk(
   'categories/fetchStatus',
   async (_, thunkAPI) => {
     const categories = await CategoryService.getAll();
-    return categories.map(c => ({
-        id: c.id,
-        name: c.name,
-        description: c.description,
-        code: c.code,
-        color: c.color,
-        picture: c.picture,
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt
-    }))
+
+    return categories.map(c => CategoryEntityMapper.fromCategory(c))
   }
 );
 
@@ -63,9 +47,23 @@ export const categoriesSlice = createSlice({
   name: CATEGORIES_FEATURE_KEY,
   initialState: initialCategoriesState,
   reducers: {
-    add: categoriesAdapter.addOne,
-    remove: categoriesAdapter.removeOne,
-    update: categoriesAdapter.updateOne,
+    setAll: (state: CategoriesState, action: PayloadAction< CategoryEntity[] >) =>{
+        categoriesAdapter.setAll(state, action.payload);
+        state.loadingStatus = 'loaded';
+        filterList(state, state.filterQuery);
+    },
+    add: (state: CategoriesState, action: PayloadAction< CategoryEntity >) =>{
+        categoriesAdapter.addOne(state, action);
+        filterList(state, state.filterQuery);
+    },
+    remove: (state: CategoriesState, action: PayloadAction< EntityId >) => {
+        categoriesAdapter.removeOne(state, action);
+        filterList(state, state.filterQuery);
+    },
+    update: (state: CategoriesState, action: PayloadAction<Update<CategoryEntity>>) => {
+        categoriesAdapter.updateOne(state, action);
+        filterList(state, state.filterQuery);
+    },  
     select: (state: CategoriesState, action: PayloadAction<CategoryEntity>) => {
         state.selected = action.payload;
     },

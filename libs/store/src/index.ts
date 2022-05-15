@@ -1,10 +1,10 @@
-import { observeProductChanges } from './../../products/data-access/src/lib/slices/products.subscriptions';
+import { observeProductChanges } from '../../products/data-access/src/lib/slices/products.subscription';
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import logger from 'redux-logger';
 
 import { productsReducer } from './../../products/data-access/src/lib/slices/products.slice';
 import { authReducer } from '@pos/auth/data-access';
-import { categoriesReducer } from '@pos/categories/data-access';
+import { categoriesReducer, observeCategoryChanges } from '@pos/categories/data-access';
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux';
 import { brandsReducer } from '@pos/brands/data-access';
@@ -27,5 +27,6 @@ export const useAppDispatch = () => useDispatch<AppDispatch>() ;
 
 // subscriptions
 observeProductChanges(store.dispatch);
+observeCategoryChanges(store.dispatch);
 
 export default store;
