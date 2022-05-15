@@ -19,9 +19,10 @@ export interface UIButtonProps {
     onSelected: (item: ButtonItemType) => void;
     item: ButtonItemType;
     maxTextLength?: number;
+    children?: any; 
 }
 
-export function UIButton({ item, onSelected, maxTextLength }: UIButtonProps) {
+export function UIButton({ item, onSelected, maxTextLength, children }: UIButtonProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
     const textLength = maxTextLength || 14;
@@ -41,8 +42,9 @@ export function UIButton({ item, onSelected, maxTextLength }: UIButtonProps) {
                 />
                 <Text
                     style={{
+                        marginTop: 5,
                         color: theme.theme.colors.black,
-                        fontSize: 12,
+                        fontSize: 14,
                         textAlign: 'center'
                     }}
                 >
@@ -52,6 +54,7 @@ export function UIButton({ item, onSelected, maxTextLength }: UIButtonProps) {
                             : item.name
                     }
                 </Text>
+                {children}
             </View>
         </TouchableOpacity>
     );

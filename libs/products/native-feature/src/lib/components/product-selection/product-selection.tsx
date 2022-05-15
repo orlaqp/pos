@@ -11,6 +11,7 @@ import {
     UISearchInput,
 } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
+import { iteratorSymbol } from '@reduxjs/toolkit/node_modules/immer/dist/internal';
 import { useTheme } from '@rneui/themed';
 import React from 'react';
 
@@ -58,7 +59,31 @@ export function ProductSelection(props: ProductSelectionProps) {
                                 item={p}
                                 onSelected={(item) => onSelected(item)}
                                 maxTextLength={10}
-                            />
+                            >
+                                <View
+                                    style={{
+                                        marginTop: 4,
+                                        padding: 4,
+                                        borderRadius: 4,
+                                        borderColor: theme.theme.colors.grey4,
+                                        borderWidth: 1
+                                        // backgroundColor:
+                                        //     theme.theme.colors.secondary,
+                                    }}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.labelText,
+                                            {
+                                                fontWeight: 'bold',
+                                                fontSize: 18,
+                                            },
+                                        ]}
+                                    >
+                                        $ {p.price.toFixed(2)}
+                                    </Text>
+                                </View>
+                            </UIButton>
                         ))}
                     </View>
                 </ScrollView>

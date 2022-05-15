@@ -5,7 +5,7 @@ import { useTheme } from '@rneui/themed';
 
 import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { CategorySelection } from '@pos/categories/native-feature';
-import Totals from '../../components/totals/totals';
+import Totals from '../components/totals/totals';
 
 import { CategoryEntity } from '@pos/categories/data-access';
 import { ProductSelection } from '@pos/products/native-feature';

@@ -8,10 +8,11 @@ import { SafeAreaView, StyleSheet } from 'react-native';
 
 export interface StackNavigationProps {
     Stack: TypedNavigator<any, any, any, any, any>
+    children: any;
 }
 
 /* eslint-disable-next-line */
-export function StackNavigation({ Stack, children }: any) {
+export function StackNavigation({ Stack, children }: StackNavigationProps) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const styles = useStyles();
 
