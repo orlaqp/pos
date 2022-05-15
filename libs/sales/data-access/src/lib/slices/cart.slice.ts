@@ -1,134 +1,67 @@
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { ProductEntity } from '@pos/products/data-access';
 import {
-    createAsyncThunk,
-    createEntityAdapter,
     createSelector,
     createSlice,
-    EntityState,
     PayloadAction,
 } from '@reduxjs/toolkit';
+import { CartState } from '../../cart-entity';
 
 export const CART_FEATURE_KEY = 'cart';
 
-export interface CartState extends EntityState<ProductEntity> {
-    loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
-    error?: string;
-    selected?: ProductEntity;
-}
-
-export const cartAdapter = createEntityAdapter<ProductEntity>();
-
-// export const fetchSlicesCart = createAsyncThunk(
-//     'slicesCart/fetchStatus',
-//     async (_, thunkAPI) => {
-//         /**
-//          * Replace this with your custom fetch call.
-//          * For example, `return myApi.getSlicesCarts()`;
-//          * Right now we just return an empty array.
-//          */
-//         return Promise.resolve([]);
-//     }
-// );
-
-export const initialCartState: CartState =
-    cartAdapter.getInitialState({
-        loadingStatus: 'not loaded',
-        error: undefined,
-        selected: undefined,
-    });
+export const initialCartState: CartState = {
+    header: undefined,
+    items: [],
+    footer: {
+        discount: 0,
+        subtotal: 0,
+        tax: 0,
+        total: 0
+    },
+    selected: undefined,
+};
 
 export const cartSlice = createSlice({
     name: CART_FEATURE_KEY,
     initialState: initialCartState,
     reducers: {
-        select: (state: CartState, action: PayloadAction< ProductEntity | undefined >) => {
+        select: (state: CartState, action: PayloadAction<ProductEntity | undefined>) => {
             state.selected = action.payload;
         },
-        add: cartAdapter.addOne,
-        remove: cartAdapter.removeOne,
-        // ...
+        addProduct: (state: CartState, action: PayloadAction<{ product: ProductEntity, quantity: number }>) => {
+            state.items?.push({ product: action.payload.product, quantity: action.payload.quantity });
+            updateTotals(state);
+        },
+        removeProduct: (state: CartState, action: PayloadAction<ProductEntity>) => {
+            state.items.splice(state.items.findIndex(i => i.product === action.payload), 1);
+            updateTotals(state);
+        }
     },
-    // extraReducers: (builder) => {
-    //     builder
-    //         .addCase(fetchSlicesCart.pending, (state: SlicesCartState) => {
-    //             state.loadingStatus = 'loading';
-    //         })
-    //         .addCase(
-    //             fetchSlicesCart.fulfilled,
-    //             (
-    //                 state: SlicesCartState,
-    //                 action: PayloadAction<SlicesCartEntity[]>
-    //             ) => {
-    //                 slicesCartAdapter.setAll(state, action.payload);
-    //                 state.loadingStatus = 'loaded';
-    //             }
-    //         )
-    //         .addCase(
-    //             fetchSlicesCart.rejected,
-    //             (state: SlicesCartState, action) => {
-    //                 state.loadingStatus = 'error';
-    //                 state.error = action.error.message;
-    //             }
-    //         );
-    // },
 });
 
-/*
- * Export reducer for store configuration.
- */
 export const cartReducer = cartSlice.reducer;
-
-/*
- * Export action creators to be dispatched. For use with the `useDispatch` hook.
- *
- * e.g.
- * ```
- * import React, { useEffect } from 'react';
- * import { useDispatch } from 'react-redux';
- *
- * // ...
- *
- * const dispatch = useDispatch();
- * useEffect(() => {
- *   dispatch(slicesCartActions.add({ id: 1 }))
- * }, [dispatch]);
- * ```
- *
- * See: https://react-redux.js.org/next/api/hooks#usedispatch
- */
 export const cartActions = cartSlice.actions;
-
-/*
- * Export selectors to query state. For use with the `useSelector` hook.
- *
- * e.g.
- * ```
- * import { useSelector } from 'react-redux';
- *
- * // ...
- *
- * const entities = useSelector(selectAllSlicesCart);
- * ```
- *
- * See: https://react-redux.js.org/next/api/hooks#useselector
- */
-const { selectAll, selectEntities } = cartAdapter.getSelectors();
-
-export const getSlicesCartState = (rootState: RootState): CartState =>
+export const getCartState = (rootState: RootState): CartState =>
     rootState[CART_FEATURE_KEY];
 
-export const selectAllSlicesCart = createSelector(
-    getSlicesCartState,
-    selectAll
-);
-
-export const selectSlicesCartEntities = createSelector(
-    getSlicesCartState,
-    selectEntities
-);
-
 export const selectActiveProduct = createSelector(
-    getSlicesCartState,
+    getCartState,
     (state: CartState) => state.selected
 );
+
+export const selectCart = createSelector(
+    getCartState,
+    (state) => state
+)
+
+
+const updateTotals = (state: CartState) => {
+    const subtotal = state.items.reduce((prev, next) => {
+        return prev + (next.product.price * next.quantity);
+    }, 0);
+    
+    state.footer.subtotal = subtotal;
+    state.footer.total = subtotal;
+}

@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import { theme, useSharedStyles } from '@pos/theme/native';
 import { Dialog, useTheme } from '@rneui/themed';
 
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
-import Totals from '../totals/totals';
+import { View, StyleSheet, SafeAreaView } from 'react-native';
 
 import { CategoryEntity } from '@pos/categories/data-access';
 import CategorySelection from '../category-selection/category-selection';
@@ -12,6 +11,7 @@ import ProductSelection from '../product-selection/product-selection';
 import { useDispatch, useSelector } from 'react-redux';
 import { cartActions, selectActiveProduct } from '@pos/sales/data-access';
 import ProductDetails from '../product-details/product-details';
+import Cart from '../cart/cart';
 
 /* eslint-disable-next-line */
 export interface SalesScreenProps {}
@@ -32,7 +32,7 @@ export function SalesScreen(props: SalesScreenProps) {
                 <ProductSelection category={category} />
             </View>
             <View style={styles.cart}>
-                <Totals />
+                <Cart />
             </View>
             <Dialog
                 isVisible={!!product}
@@ -55,6 +55,7 @@ const useStyles = () => {
             overlay: {
                 maxWidth: 350,
                 backgroundColor: theme.theme.colors.searchBg,
+                borderRadius: 5,
             },
             categories: {
                 flex: 0.7,
@@ -66,6 +67,8 @@ const useStyles = () => {
             },
             cart: {
                 flex: 2,
+                // borderColor: 'yellow',
+                // borderWidth: 4
             },
         }),
     };

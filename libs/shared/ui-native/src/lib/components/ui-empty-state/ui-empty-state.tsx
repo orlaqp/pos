@@ -10,8 +10,9 @@ import EmptyBox from '../../assets/empty-box.png';
 export interface EmptyStateProps {
   imageSize?: number;
   text: string;
-  actionText: string;
-  action: () => unknown;
+  actionText?: string;
+  action?: () => unknown;
+  picture?: any;
 }
 
 export function UIEmptyState({
@@ -19,6 +20,7 @@ export function UIEmptyState({
   text,
   actionText,
   action,
+  picture
 }: EmptyStateProps) {
   const theme = useTheme();
   const styles = useStyles();
@@ -27,8 +29,9 @@ export function UIEmptyState({
   return (
     <View style={[styles.page, styles.centered]}>
       <View style={[styles.centered, { width: '60%', marginTop: -100 }]}>
-        <Image source={EmptyBox} style={{ width: size, height: size }} />
+        <Image source={picture || EmptyBox} style={{ width: size, height: size }} />
         <Text style={styles.text}>{text}</Text>
+        { actionText &&
         <Button
             type="outline"
             title={actionText}
@@ -37,6 +40,7 @@ export function UIEmptyState({
             titleStyle={{ fontSize: 14 }}
             icon={{ name: 'plus', type: "material-community", color: theme.theme.colors.primary }}
         />
+        }
       </View>
     </View>
   );

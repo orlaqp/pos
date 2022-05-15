@@ -1,5 +1,6 @@
 import { selectBrand } from '@pos/brands/data-access';
 import { ProductEntity } from '@pos/products/data-access';
+import { cartActions } from '@pos/sales/data-access';
 import { UILabel, UIS3Image } from '@pos/shared/ui-native';
 import { theme, useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
@@ -7,7 +8,7 @@ import React, { useEffect, useState } from 'react';
 
 import { View, Text, StyleSheet } from 'react-native';
 import NumericInput from 'react-native-numeric-input';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 /* eslint-disable-next-line */
 export interface ProductDetailsProps {
@@ -17,9 +18,14 @@ export interface ProductDetailsProps {
 export function ProductDetails({ product }: ProductDetailsProps) {
     const theme = useTheme();
     const styles = useStyles();
+    const dispatch = useDispatch();
     const brand = useSelector(selectBrand(product.productBrandId));
     const [quantity, setQuantity] = useState<number>(1);
     const [price, setPrice] = useState<number>(product.price);
+
+    const addProduct = () => {
+        dispatch(cartActions.addProduct({ product, quantity }));
+    }
 
     useEffect(() => {
         setPrice(quantity * product.price);
@@ -64,7 +70,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
             <View style={{ marginTop: 35 }}>
                 <Text style={styles.price}>$ {price.toFixed(2)}</Text>
             </View>
-            <Button style={{ marginTop: 35 }} type='clear' title={'Add to cart'} />
+            <Button style={{ marginTop: 35 }} type='clear' title={'Add to cart'} onPress={addProduct} />
         </View>
     );
 }
