@@ -171,9 +171,9 @@ export const selectFilteredList = createSelector(
     (state: BrandsState) => state.filteredList
 )
 
-export const selectBrand = (id: string) => createSelector(
+export const selectBrand = (id: string | null | undefined) => createSelector(
     getBrandsState,
-    (state: BrandsState) => state.entities[id]
+    (state: BrandsState) => id ? state.entities[id] : null
 )
 
 

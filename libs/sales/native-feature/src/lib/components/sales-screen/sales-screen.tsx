@@ -53,7 +53,7 @@ const useStyles = () => {
         ...sharedStyles,
         ...StyleSheet.create({
             overlay: {
-                maxWidth: 500,
+                maxWidth: 350,
                 backgroundColor: theme.theme.colors.searchBg,
             },
             categories: {

@@ -1,11 +1,10 @@
 import { categoriesActions, CategoryEntity } from '@pos/categories/data-access';
-import { ProductEntity, selectProductsByCategory } from '@pos/products/data-access';
-import { cartActions } from '@pos/sales/data-access';
 import {
-    ButtonItemType,
-    UIButton,
-    UISearchInput,
-} from '@pos/shared/ui-native';
+    ProductEntity,
+    selectProductsByCategory,
+} from '@pos/products/data-access';
+import { cartActions } from '@pos/sales/data-access';
+import { ButtonItemType, UIButton, UISearchInput } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { useTheme } from '@rneui/themed';
 import React, { useState } from 'react';
@@ -49,35 +48,41 @@ export function ProductSelection(props: ProductSelectionProps) {
 
             <View style={{ padding: 25 }}>
                 <ScrollView>
-                    <View style={styles.row}>
+                    <View style={[styles.row, { alignContent: 'space-around', justifyContent: 'center' }]}>
                         {products?.map((p) => (
-                            <UIButton
-                                item={p}
-                                onSelected={(item) => onSelected(item)}
-                                maxTextLength={10}
+                            <View
+                                style={{
+                                    borderRadius: 4,
+                                    borderColor: theme.theme.colors.grey4,
+                                    borderWidth: 1,
+                                    marginRight: 10,
+                                }}
                             >
-                                <View
-                                    style={{
-                                        marginTop: 4,
-                                        padding: 4,
-                                        borderRadius: 4,
-                                        borderColor: theme.theme.colors.grey4,
-                                        borderWidth: 1
-                                    }}
+                                <UIButton
+                                    item={p}
+                                    onSelected={(item) => onSelected(item)}
+                                    maxTextLength={14}
                                 >
-                                    <Text
-                                        style={[
-                                            styles.labelText,
-                                            {
-                                                fontWeight: 'bold',
-                                                fontSize: 18,
-                                            },
-                                        ]}
+                                    <View
+                                        style={{
+                                            marginTop: 4,
+                                            padding: 4,
+                                        }}
                                     >
-                                        $ {p.price.toFixed(2)}
-                                    </Text>
-                                </View>
-                            </UIButton>
+                                        <Text
+                                            style={[
+                                                styles.labelText,
+                                                {
+                                                    fontWeight: 'bold',
+                                                    fontSize: 18,
+                                                },
+                                            ]}
+                                        >
+                                            $ {p.price.toFixed(2)}
+                                        </Text>
+                                    </View>
+                                </UIButton>
+                            </View>
                         ))}
                     </View>
                 </ScrollView>

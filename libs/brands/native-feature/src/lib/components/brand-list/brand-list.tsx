@@ -19,7 +19,7 @@ export function BrandList({ navigation }: BrandListProps) {
         filteredListSelector: selectFilteredList,
         clearSelectionAction: brandsActions.clearSelection,
         filterAction: brandsActions.filter,
-        fetchItemsAction: fetchBrands,
+        fetchItemsAction: null,
     }
 
     return <UIGenericItemList {...props} />

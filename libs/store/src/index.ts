@@ -8,7 +8,7 @@ import { authReducer } from '@pos/auth/data-access';
 import { categoriesReducer, observeCategoryChanges } from '@pos/categories/data-access';
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux';
-import { brandsReducer } from '@pos/brands/data-access';
+import { brandsReducer, observeBrandChanges } from '@pos/brands/data-access';
 import { unitOfMeasuresReducer } from '@pos/unit-of-measures/data-access';
 
 export const store = configureStore({
@@ -30,5 +30,6 @@ export const useAppDispatch = () => useDispatch<AppDispatch>() ;
 // subscriptions
 observeProductChanges(store.dispatch);
 observeCategoryChanges(store.dispatch);
+observeBrandChanges(store.dispatch);
 
 export default store;
