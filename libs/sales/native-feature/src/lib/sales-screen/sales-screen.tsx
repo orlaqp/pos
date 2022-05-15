@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { useSharedStyles } from '@pos/theme/native';
 import { useTheme } from '@rneui/themed';
 
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { CategorySelection } from '@pos/categories/native-feature';
 import Totals from '../../components/totals/totals';
 
-import { Storage } from 'aws-amplify';
 import { CategoryEntity } from '@pos/categories/data-access';
-import { useSelector } from 'react-redux';
 import { ProductSelection } from '@pos/products/native-feature';
 
 /* eslint-disable-next-line */
@@ -18,11 +16,11 @@ export interface SalesScreenProps {}
 export function SalesScreen(props: SalesScreenProps) {
     const styles = useStyles();
     const [category, setCategory] = useState<CategoryEntity>();
-    
+
     return (
-        <View style={[styles.page, styles.row]}>
+        <SafeAreaView style={[styles.page, styles.row]}>
             <View style={styles.categories}>
-                <CategorySelection onSelected={setCategory}/>
+                <CategorySelection onSelected={setCategory} />
             </View>
             <View style={styles.products}>
                 <ProductSelection category={category} />
@@ -30,7 +28,7 @@ export function SalesScreen(props: SalesScreenProps) {
             <View style={styles.cart}>
                 <Totals />
             </View>
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -42,11 +40,12 @@ const useStyles = () => {
         ...sharedStyles,
         ...StyleSheet.create({
             categories: {
-                flex: 1,
-                justifyContent: 'center'
+                flex: 0.7,
+                justifyContent: 'center',
             },
             products: {
                 flex: 5,
+                flexDirection: 'column',
             },
             cart: {
                 flex: 2,

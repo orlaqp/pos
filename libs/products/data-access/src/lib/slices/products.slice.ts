@@ -167,6 +167,17 @@ export const selectFilteredList = createSelector(
     (state: ProductsState) => state.filteredList
 )
 
+export const selectProductsByCategory = (id?: string) => createSelector(
+    getProductsState,
+    (state: ProductsState) => {
+        const products = selectAll(state);
+        return id 
+            ? products.filter(p => p.productCategoryId === id)
+            : products;
+    } 
+        
+)
+
 
 
 

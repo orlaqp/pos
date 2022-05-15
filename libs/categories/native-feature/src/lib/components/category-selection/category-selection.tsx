@@ -14,12 +14,14 @@ import {
     Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
+    categoriesActions,
     CategoryEntity,
     selectAllCategories,
+    selectedCategory,
 } from '@pos/categories/data-access';
-import { UIS3Image } from '@pos/shared/ui-native';
+import { UIButton, UIS3Image } from '@pos/shared/ui-native';
 import { FlatList } from 'react-native-gesture-handler';
 
 const categories: Category[] = [];
@@ -33,36 +35,32 @@ export function CategorySelection({ onSelected }: CategorySelectionProps) {
     const theme = useTheme();
     const styles = useStyles();
     const categories = useSelector(selectAllCategories);
+    const dispatch = useDispatch();
+    const allCategories: CategoryEntity = { name: 'Show\nAll' };
+    const selected = useSelector(selectedCategory);
+
+    const onSelection = (item: CategoryEntity) => {
+        onSelected(item);
+        dispatch(categoriesActions.select(item));
+    }
 
     return (
         <SafeAreaView style={[styles.pageBackground, styles.list]}>
+            <UIButton item={allCategories} onSelected={onSelection} />
             <FlatList
                 data={categories}
                 renderItem={({ item }) => (
-                    <TouchableOpacity
-                        style={styles.container}
-                        key={item.id}
-                        onPress={() => onSelected(item)}
+                    <View
+                        style={{
+                            borderLeftWidth: 8,
+                            borderColor:
+                                item === selected
+                                    ? theme.theme.colors.primary
+                                    : undefined,
+                        }}
                     >
-                        <View style={styles.centered}>
-                            <UIS3Image
-                                s3Key={item.picture}
-                                width={35}
-                                height={35}
-                                factor={1.5}
-                            />
-                            <Text
-                                style={{
-                                    color: theme.theme.colors.black,
-                                    marginTop: 5,
-                                    marginBottom: 25,
-                                    fontSize: 12,
-                                }}
-                            >
-                                {item.name}
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
+                        <UIButton item={item} onSelected={onSelection} />
+                    </View>
                 )}
             />
         </SafeAreaView>
@@ -79,7 +77,6 @@ const useStyles = () => {
             list: {
                 ...sharedStyles.darkBackground,
             },
-            container: {},
             categoryBtn: {
                 width: 80,
                 height: 80,

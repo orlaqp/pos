@@ -165,6 +165,11 @@ export const selectFilteredList = createSelector(
     (state: CategoriesState) => state.filteredList
 )
 
+export const selectedCategory = createSelector(
+    getCategoriesState,
+    (state: CategoriesState) => state.selected
+)
+
 export const selectCategory = (id: string) => createSelector(
     getCategoriesState,
     (state: CategoriesState) => state.entities[id]
