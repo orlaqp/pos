@@ -1,1 +1,1 @@
-export * from './lib/sales-screen/sales-screen';
+export * from './lib/components/sales-screen/sales-screen';

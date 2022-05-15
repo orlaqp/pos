@@ -6,7 +6,7 @@
     "start": "nx serve",
     "build": "nx build",
     "test": "nx test",
-    "ios": "nx run-ios mobile-ui --simulator \"iPad (8th generation)\"",
+    "ios": "nx run-ios mobile-ui --simulator \"iPad (9th generation)\"",
     "new-feature": "hygen native feature",
     "new-data-access": "hygen data-access new"
   },

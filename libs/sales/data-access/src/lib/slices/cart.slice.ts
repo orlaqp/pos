@@ -1,3 +1,4 @@
+import { RootState } from '@pos/store';
 import { ProductEntity } from '@pos/products/data-access';
 import {
     createAsyncThunk,
@@ -8,14 +9,15 @@ import {
     PayloadAction,
 } from '@reduxjs/toolkit';
 
-export const CART_FEATURE_KEY = 'Cart';
+export const CART_FEATURE_KEY = 'cart';
 
-export interface SlicesCartState extends EntityState<ProductEntity> {
+export interface CartState extends EntityState<ProductEntity> {
     loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
     error?: string;
+    selected?: ProductEntity;
 }
 
-export const slicesCartAdapter = createEntityAdapter<ProductEntity>();
+export const cartAdapter = createEntityAdapter<ProductEntity>();
 
 // export const fetchSlicesCart = createAsyncThunk(
 //     'slicesCart/fetchStatus',
@@ -29,18 +31,22 @@ export const slicesCartAdapter = createEntityAdapter<ProductEntity>();
 //     }
 // );
 
-export const initialSlicesCartState: SlicesCartState =
-    slicesCartAdapter.getInitialState({
+export const initialCartState: CartState =
+    cartAdapter.getInitialState({
         loadingStatus: 'not loaded',
         error: undefined,
+        selected: undefined,
     });
 
-export const slicesCartSlice = createSlice({
+export const cartSlice = createSlice({
     name: CART_FEATURE_KEY,
-    initialState: initialSlicesCartState,
+    initialState: initialCartState,
     reducers: {
-        add: slicesCartAdapter.addOne,
-        remove: slicesCartAdapter.removeOne,
+        select: (state: CartState, action: PayloadAction< ProductEntity | undefined >) => {
+            state.selected = action.payload;
+        },
+        add: cartAdapter.addOne,
+        remove: cartAdapter.removeOne,
         // ...
     },
     // extraReducers: (builder) => {
@@ -71,7 +77,7 @@ export const slicesCartSlice = createSlice({
 /*
  * Export reducer for store configuration.
  */
-export const slicesCartReducer = slicesCartSlice.reducer;
+export const cartReducer = cartSlice.reducer;
 
 /*
  * Export action creators to be dispatched. For use with the `useDispatch` hook.
@@ -91,7 +97,7 @@ export const slicesCartReducer = slicesCartSlice.reducer;
  *
  * See: https://react-redux.js.org/next/api/hooks#usedispatch
  */
-export const slicesCartActions = slicesCartSlice.actions;
+export const cartActions = cartSlice.actions;
 
 /*
  * Export selectors to query state. For use with the `useSelector` hook.
@@ -107,9 +113,9 @@ export const slicesCartActions = slicesCartSlice.actions;
  *
  * See: https://react-redux.js.org/next/api/hooks#useselector
  */
-const { selectAll, selectEntities } = slicesCartAdapter.getSelectors();
+const { selectAll, selectEntities } = cartAdapter.getSelectors();
 
-export const getSlicesCartState = (rootState: unknown): SlicesCartState =>
+export const getSlicesCartState = (rootState: RootState): CartState =>
     rootState[CART_FEATURE_KEY];
 
 export const selectAllSlicesCart = createSelector(
@@ -120,4 +126,9 @@ export const selectAllSlicesCart = createSelector(
 export const selectSlicesCartEntities = createSelector(
     getSlicesCartState,
     selectEntities
+);
+
+export const selectActiveProduct = createSelector(
+    getSlicesCartState,
+    (state: CartState) => state.selected
 );

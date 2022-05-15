@@ -1,23 +1,18 @@
-import { CategoryEntity } from '@pos/categories/data-access';
-import {
-    ProductEntity,
-    selectAllProducts,
-    selectProductsByCategory,
-} from '@pos/products/data-access';
+import { categoriesActions, CategoryEntity } from '@pos/categories/data-access';
+import { ProductEntity, selectProductsByCategory } from '@pos/products/data-access';
+import { cartActions } from '@pos/sales/data-access';
 import {
     ButtonItemType,
     UIButton,
-    UIS3Image,
     UISearchInput,
 } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
-import { iteratorSymbol } from '@reduxjs/toolkit/node_modules/immer/dist/internal';
 import { useTheme } from '@rneui/themed';
-import React from 'react';
+import React, { useState } from 'react';
 
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 /* eslint-disable-next-line */
 export interface ProductSelectionProps {
@@ -27,14 +22,15 @@ export interface ProductSelectionProps {
 export function ProductSelection(props: ProductSelectionProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
+    const dispatch = useDispatch();
     const products = useSelector(selectProductsByCategory(props.category?.id));
 
     const onFilterChange = (text: string) => {
-        console.log('filter changes');
+        dispatch(categoriesActions.select({ name: 'All Prods' }));
     };
 
     const onSelected = (p: ButtonItemType) => {
-        console.log('Product selected');
+        dispatch(cartActions.select(p as ProductEntity));
     };
 
     return (
@@ -67,8 +63,6 @@ export function ProductSelection(props: ProductSelectionProps) {
                                         borderRadius: 4,
                                         borderColor: theme.theme.colors.grey4,
                                         borderWidth: 1
-                                        // backgroundColor:
-                                        //     theme.theme.colors.secondary,
                                     }}
                                 >
                                     <Text

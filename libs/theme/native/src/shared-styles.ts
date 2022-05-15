@@ -45,6 +45,10 @@ export const useSharedStyles = () => {
         labelText: {
             color: theme.theme.colors.grey1
         },
+        subLabel: {
+            fontSize: 14,
+            color: theme.theme.colors.grey3,
+        },
         dataRow: {
             flexDirection: "row",
             flexWrap: "wrap",

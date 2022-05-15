@@ -1,3 +1,4 @@
+import { cartReducer } from './../../sales/data-access/src/lib/slices/cart.slice';
 import { observeProductChanges } from '../../products/data-access/src/lib/slices/products.subscription';
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import logger from 'redux-logger';
@@ -17,6 +18,7 @@ export const store = configureStore({
       products: productsReducer,
       brands: brandsReducer,
       unitOfMeasures: unitOfMeasuresReducer,
+      cart: cartReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 });
