@@ -9,7 +9,7 @@ import { CategoryEntity } from '@pos/categories/data-access';
 import CategorySelection from '../category-selection/category-selection';
 import ProductSelection from '../product-selection/product-selection';
 import { useDispatch, useSelector } from 'react-redux';
-import { cartActions, selectActiveProduct } from '@pos/sales/data-access';
+import { cartActions, CartItem, selectActiveProduct } from '@pos/sales/data-access';
 import ProductDetails from '../product-details/product-details';
 import Cart from '../cart/cart';
 import { ProductEntity } from '@pos/products/data-access';
@@ -24,8 +24,8 @@ export function SalesScreen(props: SalesScreenProps) {
     const product = useSelector(selectActiveProduct);
     const deselectProduct = () => dispatch(cartActions.select(undefined));
 
-    const addToCart = (product: ProductEntity, quantity: number) => {
-        dispatch(cartActions.addProduct({ product, quantity }));
+    const upsertCart = (item: CartItem) => {
+        dispatch(cartActions.upsert(item));
         deselectProduct();
     };
 
@@ -45,7 +45,7 @@ export function SalesScreen(props: SalesScreenProps) {
                 onBackdropPress={deselectProduct}
                 overlayStyle={styles.overlay}
             >
-                <ProductDetails product={product!} onAddToCart={addToCart} />
+                <ProductDetails item={product!} upsertCart={upsertCart} />
             </Dialog>
         </SafeAreaView>
     );

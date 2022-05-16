@@ -8,6 +8,7 @@ export interface CartHeader {
 }
 
 export interface CartItem {
+    id?: string;
     product: ProductEntity;
     quantity: number;
 }
@@ -23,5 +24,5 @@ export interface CartState {
     header?: CartHeader;
     items: CartItem[];
     footer: CartFooter;
-    selected?: ProductEntity;
+    selected?: CartItem;
 }

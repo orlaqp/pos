@@ -12,10 +12,11 @@ import { useSelector } from 'react-redux';
 /* eslint-disable-next-line */
 export interface CartLineProps {
     item: CartItem;
+    onSelect: (item: CartItem) => void;
     onRemove: (item: CartItem) => void;
 }
 
-export function CartLine({ item, onRemove }: CartLineProps) {
+export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
     const um = useSelector(
@@ -47,6 +48,7 @@ export function CartLine({ item, onRemove }: CartLineProps) {
                 justifyContent: 'center',
                 alignItems: 'center',
             }}
+            onPress={() => onSelect(item)}
         >
             <View>
                 <Text style={styles.primaryText}>{item.product.name}</Text>
@@ -81,10 +83,6 @@ export function CartLine({ item, onRemove }: CartLineProps) {
                 }}
                 onPress={confirmDeletion}
             />
-            {/* <Icon
-                
-                color={theme.theme.colors.error}
-            /> */}
         </TouchableOpacity>
     );
 }

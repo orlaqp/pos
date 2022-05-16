@@ -1,5 +1,5 @@
 import { selectBrand } from '@pos/brands/data-access';
-import { ProductEntity } from '@pos/products/data-access';
+import { CartItem } from '@pos/sales/data-access';
 import { UIS3Image } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
@@ -7,31 +7,30 @@ import React, { useEffect, useState } from 'react';
 
 import { View, Text, StyleSheet } from 'react-native';
 import NumericInput from 'react-native-numeric-input';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 /* eslint-disable-next-line */
 export interface ProductDetailsProps {
-    product: ProductEntity;
-    onAddToCart: (product: ProductEntity, quantity: number) => void;
+    item: CartItem;
+    upsertCart: (item: CartItem) => void;
 }
 
-export function ProductDetails({ product, onAddToCart }: ProductDetailsProps) {
+export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
     const theme = useTheme();
     const styles = useStyles();
-    const dispatch = useDispatch();
-    const brand = useSelector(selectBrand(product.productBrandId));
-    const [quantity, setQuantity] = useState<number>(1);
-    const [price, setPrice] = useState<number>(product.price);
+    const brand = useSelector(selectBrand(item.product.productBrandId));
+    const [quantity, setQuantity] = useState<number>(item.quantity || 1);
+    const [price, setPrice] = useState<number>(item.product.price);
 
     useEffect(() => {
-        setPrice(quantity * product.price);
-    }, [product, quantity]);
+        setPrice(quantity * item.product.price);
+    }, [item, quantity]);
 
     return (
         <View style={styles.productDetailsContainer}>
             <View style={{ height: 100 }}>
                 <UIS3Image
-                    s3Key={product.picture}
+                    s3Key={item.product.picture}
                     width={100}
                     height={100}
                     factor={0.5}
@@ -42,10 +41,10 @@ export function ProductDetails({ product, onAddToCart }: ProductDetailsProps) {
                 {brand?.name}
             </Text>
             <Text style={[styles.labelText, { fontSize: 20 }]}>
-                {product.name}
+                {item.product.name}
             </Text>
             <Text style={[styles.subLabel, { fontSize: 14 }]}>
-                {product.name}
+                {item.product.name}
             </Text>
             <View></View>
             <View style={{ marginTop: 25 }}>
@@ -64,13 +63,13 @@ export function ProductDetails({ product, onAddToCart }: ProductDetailsProps) {
                 />
             </View>
             <View style={{ marginTop: 35 }}>
-                <Text style={styles.price}>$ {price.toFixed(2)}</Text>
+                <Text style={styles.price}>$ {price?.toFixed(2)}</Text>
             </View>
             <Button
                 style={{ marginTop: 35 }}
                 type="clear"
-                title={'Add to cart'}
-                onPress={() => onAddToCart(product, quantity)}
+                title={item.id ? 'Update cart' : 'Add to cart'}
+                onPress={() => upsertCart({ id: item.id, product: item.product, quantity })}
             />
         </View>
     );

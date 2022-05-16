@@ -20,6 +20,10 @@ export function Cart(props: CartProps) {
     const dispatch = useDispatch();
     const cart = useSelector(selectCart);
 
+    const onSelect = (item: CartItem) => {
+        dispatch(cartActions.select(item));
+    }
+
     const onRemove = (item: CartItem) => {
         dispatch(cartActions.removeProduct(item));
     }
@@ -39,7 +43,7 @@ export function Cart(props: CartProps) {
             <View style={{ flex: 5 }}>
                 <ScrollView>
                     {cart.items.map((i) => (
-                        <CartLine item={i} onRemove={onRemove} />
+                        <CartLine key={i.product.id} item={i} onSelect={onSelect} onRemove={onRemove} />
                     ))}
                 </ScrollView>
             </View>

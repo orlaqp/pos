@@ -8,6 +8,7 @@ import {
     PayloadAction,
 } from '@reduxjs/toolkit';
 import { CartItem, CartState } from '../../cart-entity';
+import uuid from 'react-native-uuid';
 
 export const CART_FEATURE_KEY = 'cart';
 
@@ -27,16 +28,27 @@ export const cartSlice = createSlice({
     name: CART_FEATURE_KEY,
     initialState: initialCartState,
     reducers: {
-        select: (state: CartState, action: PayloadAction<ProductEntity | undefined>) => {
+        select: (state: CartState, action: PayloadAction<CartItem | undefined>) => {
             state.selected = action.payload;
         },
-        addProduct: (state: CartState, action: PayloadAction<{ product: ProductEntity, quantity: number }>) => {
-            const cartItem = state.items.find(i => i.product.id === action.payload.product.id);
+        upsert: (state: CartState, action: PayloadAction<CartItem>) => {
+            let cartItem = state.items.find(i => action.payload.id && i.id === action.payload.id);
+
+            if (cartItem) {
+                cartItem.quantity = action.payload.quantity;
+                return;
+            }
+
+            cartItem = state.items.find(i => i.product.id === action.payload.product.id);
 
             if (cartItem) {
                 cartItem.quantity += action.payload.quantity;
             } else {
-                state.items?.push({ product: action.payload.product, quantity: action.payload.quantity });
+                state.items?.push({
+                    id: uuid.v4().toString(),
+                    product: action.payload.product,
+                    quantity: action.payload.quantity
+                });
             }
 
             updateTotals(state);
