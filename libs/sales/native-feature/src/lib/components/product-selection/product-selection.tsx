@@ -6,52 +6,35 @@ import {
     selectProductsByCategory,
 } from '@pos/products/data-access';
 import { cartActions } from '@pos/sales/data-access';
-import { ButtonItemType, UIButton, UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
+import { ButtonItemType, UIButton, UIEmptyState } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
+import { Dictionary } from '@reduxjs/toolkit';
 import { useTheme } from '@rneui/themed';
-import React, { useState } from 'react';
+import React from 'react';
 
 import { View, Text } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 /* eslint-disable-next-line */
 export interface ProductSelectionProps {
-    category?: CategoryEntity;
+    products?: Dictionary<ProductEntity>;
 }
 
-export function ProductSelection(props: ProductSelectionProps) {
+export function ProductSelection({ products }: ProductSelectionProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
     const dispatch = useDispatch();
-    const products = useSelector(selectProductsByCategory(props.category?.id));
-    const filteredProducts = useSelector(selectFilteredList);
-
-
-    const onFilterChange = (text: string) => {
-        dispatch(categoriesActions.select({ name: 'All Prods' }));
-        dispatch(productsActions.filter(text));
-    };
-
+    
     const onSelected = (p: ButtonItemType) => {
         dispatch(cartActions.select({ product: p as ProductEntity, quantity: 0 }));
     };
+    
+    const productIds = Object.keys(products || {});
 
     return (
         <View>
-            <View
-                style={{
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
-            >
-                <View style={{ width: '50%', marginTop: 20 }}>
-                    <UISearchInput onChange={onFilterChange} />
-                </View>
-            </View>
-
-            {!products.length &&
+            {!productIds.length &&
                 <View style={{ flex: 1, marginTop: 300 }}>
                 <UIEmptyState text='No products found for this category' backgroundColor='transparent' />
             </View>
@@ -60,7 +43,7 @@ export function ProductSelection(props: ProductSelectionProps) {
             <View style={{ padding: 25 }}>
                 <ScrollView>
                     <View style={[styles.row, { alignContent: 'space-around', justifyContent: 'center' }]}>
-                        {products?.map((p) => (
+                        {productIds?.map((id) => (
                             <View
                                 style={{
                                     borderRadius: 5,
@@ -71,7 +54,7 @@ export function ProductSelection(props: ProductSelectionProps) {
                                 }}
                             >
                                 <UIButton
-                                    item={p}
+                                    item={products[id]!}
                                     onSelected={(item) => onSelected(item)}
                                     maxTextLength={14}
                                 >
@@ -90,7 +73,7 @@ export function ProductSelection(props: ProductSelectionProps) {
                                                 },
                                             ]}
                                         >
-                                            $ {p.price.toFixed(2)}
+                                            $ {products[id]!.price.toFixed(2)}
                                         </Text>
                                     </View>
                                 </UIButton>

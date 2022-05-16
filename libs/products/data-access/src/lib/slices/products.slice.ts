@@ -72,9 +72,9 @@ export const productsSlice = createSlice({
     clearSelection: (state: ProductsState) => {
         state.selected = undefined;
     },
-    filter: (state: ProductsState, action: PayloadAction<string>) => {
-        filterList(state, action.payload);
-        state.filterQuery = action.payload;
+    filter: (state: ProductsState, action: PayloadAction<{ filter?: string, categoryId?: string}>) => {
+        filterList(state, action.payload.filter, action.payload.categoryId);
+        state.filterQuery = action.payload.filter;
     }
     
   },
@@ -103,40 +103,8 @@ export const productsSlice = createSlice({
  */
 export const productsReducer = productsSlice.reducer;
 
-/*
- * Export action creators to be dispatched. For use with the `useDispatch` hook.
- *
- * e.g.
- * ```
- * import React, { useEffect } from 'react';
- * import { useDispatch } from 'react-redux';
- *
- * // ...
- *
- * const dispatch = useDispatch();
- * useEffect(() => {
- *   dispatch(productsActions.add({ id: 1 }))
- * }, [dispatch]);
- * ```
- *
- * See: https://react-redux.js.org/next/api/hooks#usedispatch
- */
 export const productsActions = productsSlice.actions;
 
-/*
- * Export selectors to query state. For use with the `useSelector` hook.
- *
- * e.g.
- * ```
- * import { useSelector } from 'react-redux';
- *
- * // ...
- *
- * const entities = useSelector(selectAllProducts);
- * ```
- *
- * See: https://react-redux.js.org/next/api/hooks#useselector
- */
 const { selectAll, selectEntities } = productsAdapter.getSelectors();
 
 export const getProductsState = (rootState: RootState): ProductsState =>
@@ -178,12 +146,20 @@ export const selectProductsByCategory = (id?: string) => createSelector(
         
 )
 
-
-
-
-function filterList(state: ProductsState, query?: string) {
+function filterList(state: ProductsState, query?: string, categoryId?: string) {
     const filteredList: Dictionary<ProductEntity> = {};
     
+    if (categoryId && !query) {
+        state.ids.forEach(id => {
+            const entity = state.entities[id];
+            if (entity?.productCategoryId === categoryId) {
+                filteredList[id] = entity;
+            }
+        });
+
+        return state.filteredList = filteredList;
+    }
+
     if (!query) {
         state.filteredList = state.entities;
         return;
