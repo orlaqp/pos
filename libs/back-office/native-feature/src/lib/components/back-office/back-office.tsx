@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSharedStyles } from '@pos/theme/native';
 
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Sidebar from '../sidebar/sidebar';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -35,6 +35,17 @@ export function BackOffice({ navigation }: BackOfficeProps) {
     const styles = useStyles();
     const user = useSelector(selectUser);
 
+    const confirmGoBack = () => {
+        Alert.alert(
+            'Are you sure?',
+            'Press yes to confirm',
+            [
+                { text: 'No' },
+                { text: 'Yes', onPress: () => navigation.goBack() },
+            ]
+        );
+    }
+
     return (
         <SafeAreaView style={styles.page}>
             <Button
@@ -45,7 +56,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                 }}
                 style={{ alignSelf: 'flex-start', position: 'relative' }}
                 type="clear"
-                onPress={() => navigation.replace('Home')}
+                onPress={confirmGoBack}
             />
             <View style={[styles.page, styles.row]}>
                 <View style={styles.leftSide}>

@@ -2,14 +2,16 @@ import React from 'react';
 
 import { Input, useTheme } from '@rneui/themed';
 export interface UiSearchInputProps {
+    value?: string;
     onChange: (query: string) => unknown;
 }
 
-export function UISearchInput({ onChange }: UiSearchInputProps) {
+export function UISearchInput({ onChange, value }: UiSearchInputProps) {
     const theme = useTheme();
   return (
     <Input
       placeholder="type to search ..."
+      value={value}
       onChangeText={onChange}
       containerStyle={{
         backgroundColor: theme.theme.colors.grey5,

@@ -43,7 +43,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
         },
     ];
     const goto = (details: PathDetails) =>
-        props.navigation.replace(details.path);
+        props.navigation.navigate(details.path);
 
     return (
         <View style={[sharedStyles.page, sharedStyles.centered]}>

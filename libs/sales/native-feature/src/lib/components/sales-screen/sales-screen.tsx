@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { theme, useSharedStyles } from '@pos/theme/native';
 import { Dialog, useTheme } from '@rneui/themed';
 
-import { View, StyleSheet, SafeAreaView } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Alert } from 'react-native';
 
 import { categoriesActions, CategoryEntity } from '@pos/categories/data-access';
 import CategorySelection from '../category-selection/category-selection';
@@ -16,14 +16,17 @@ import {
 } from '@pos/sales/data-access';
 import ProductDetails from '../product-details/product-details';
 import Cart from '../cart/cart';
-import { ProductEntity, productsActions, selectFilteredList } from '@pos/products/data-access';
-import { UISearchInput } from '@pos/shared/ui-native';
+import { productsActions, selectFilteredList } from '@pos/products/data-access';
 import ProductSearch from '../product-search/product-search';
+import { Button } from '@rneui/base';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 /* eslint-disable-next-line */
-export interface SalesScreenProps {}
+export interface SalesScreenProps {
+    navigation: NativeStackNavigationProp<any>;
+}
 
-export function SalesScreen(props: SalesScreenProps) {
+export function SalesScreen({ navigation }: SalesScreenProps) {
     const styles = useStyles();
     const dispatch = useDispatch();
     const [category, setCategory] = useState<CategoryEntity>();
@@ -40,11 +43,24 @@ export function SalesScreen(props: SalesScreenProps) {
     const onCategoryChange = (c: CategoryEntity) => {
         setFilter(undefined);
         setCategory(c);
-    }
+    };
 
     const onFilterChange = (filter: string) => {
+        console.log(`Filter: ${filter}`);
+
         setFilter(filter);
         setCategory(undefined);
+    };
+
+    const confirmGoBack = () => {
+        Alert.alert(
+            'Are you sure?',
+            'Press yes to confirm',
+            [
+                { text: 'No' },
+                { text: 'Yes', onPress: () => navigation.goBack() },
+            ]
+        );
     }
 
     useEffect(() => {
@@ -54,10 +70,23 @@ export function SalesScreen(props: SalesScreenProps) {
     return (
         <SafeAreaView style={[styles.page, styles.row]}>
             <View style={styles.categories}>
+                <View>
+                    <Button
+                        icon={{
+                            name: 'arrow-left',
+                            type: 'material-community',
+                            color: styles.primaryText.color,
+                        }}
+                        onPress={confirmGoBack}
+                    />
+                </View>
                 <CategorySelection onSelected={onCategoryChange} />
             </View>
             <View style={styles.products}>
-                <ProductSearch onFilterChange={onFilterChange}/>
+                <ProductSearch
+                    onFilterChange={onFilterChange}
+                    filter={filter}
+                />
                 <ProductSelection products={products} />
             </View>
             <View style={styles.cart}>
@@ -88,7 +117,8 @@ const useStyles = () => {
             },
             categories: {
                 flex: 0.7,
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
+                flexDirection: 'column',
                 ...sharedStyles.darkBackground,
             },
             products: {
