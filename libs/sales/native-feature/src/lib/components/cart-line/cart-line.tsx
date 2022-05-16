@@ -30,9 +30,15 @@ export function CartLine({ item }: CartLineProps) {
         >
             <View>
                 <Text style={styles.primaryText}>{item.product.name}</Text>
-                <Text style={[styles.secondaryText, { fontSize: 20 }]}>
+                <View style={{ flexDirection: 'row' }}>
+                <Text style={[styles.secondaryText, { fontSize: 20, fontWeight: 'bold', marginTop: 5 }]}>
                     $ {item.product.price.toFixed(2)}x{item.quantity}
                 </Text>
+                <Text style={[styles.primaryText, { fontSize: 20, fontWeight: 'bold', marginTop: 5 }]}>
+                    {'  '}($ {(item.product.price*item.quantity).toFixed(2)})
+                </Text>
+                </View>
+                
             </View>
             <View style={{ flexGrow: 1 }}></View>
             <Icon
