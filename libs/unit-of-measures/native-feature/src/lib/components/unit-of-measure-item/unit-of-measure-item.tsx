@@ -54,7 +54,7 @@ export function UnitOfMeasureItem({ item, navigation }: UnitOfMeasureItemProps) 
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.description}>{item.description}</Text>
             </View>
-            <View
+            {/* <View
                 style={{
                     flex: 2,
                     flexDirection: 'row',
@@ -79,7 +79,7 @@ export function UnitOfMeasureItem({ item, navigation }: UnitOfMeasureItemProps) 
                     }}
                     onPress={confirmDeletion}
                 />
-            </View>
+            </View> */}
         </View>
     );
 }

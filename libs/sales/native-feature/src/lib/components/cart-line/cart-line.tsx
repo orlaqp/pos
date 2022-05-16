@@ -19,10 +19,7 @@ export interface CartLineProps {
 export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
-    const um = useSelector(
-        selectUnitOfMeasure(item.product.productUnitOfMeasureId)
-    );
-
+    
     const confirmDeletion = () => {
         Alert.alert(
             'Are you sure?',
@@ -39,7 +36,7 @@ export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
         <TouchableOpacity
             style={{
                 // ...styles.darkBackground,
-                backgroundColor: theme.theme.colors.grey4,
+                backgroundColor: item.quantity === 0 ? theme.theme.colors.error : theme.theme.colors.grey4,
                 marginBottom: 5,
                 paddingHorizontal: 10,
                 paddingVertical: 15,
@@ -60,7 +57,7 @@ export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
                         ]}
                     >
                         $ {item.product.price.toFixed(2)}x
-                        {`${item.quantity}${um?.name}`}
+                        {`${item.quantity}${item.product.unitOfMeasure}`}
                     </Text>
                     <Text
                         style={[

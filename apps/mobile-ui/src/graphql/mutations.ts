@@ -309,6 +309,7 @@ export const createOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -318,7 +319,6 @@ export const createOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -351,6 +351,7 @@ export const updateOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -360,7 +361,6 @@ export const updateOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -393,6 +393,7 @@ export const deleteOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -402,7 +403,6 @@ export const deleteOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -433,6 +433,7 @@ export const createProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      unitOfMeasure
       trackStock
       picture
       Category {
@@ -442,16 +443,6 @@ export const createProduct = /* GraphQL */ `
         code
         color
         picture
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      UnitOfMeasure {
-        id
-        name
-        description
         createdAt
         updatedAt
         _version
@@ -475,7 +466,6 @@ export const createProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       productCategoryId
-      productUnitOfMeasureId
       productBrandId
     }
   }
@@ -494,6 +484,7 @@ export const updateProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      unitOfMeasure
       trackStock
       picture
       Category {
@@ -503,16 +494,6 @@ export const updateProduct = /* GraphQL */ `
         code
         color
         picture
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      UnitOfMeasure {
-        id
-        name
-        description
         createdAt
         updatedAt
         _version
@@ -536,7 +517,6 @@ export const updateProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       productCategoryId
-      productUnitOfMeasureId
       productBrandId
     }
   }
@@ -555,6 +535,7 @@ export const deleteProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      unitOfMeasure
       trackStock
       picture
       Category {
@@ -564,16 +545,6 @@ export const deleteProduct = /* GraphQL */ `
         code
         color
         picture
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      UnitOfMeasure {
-        id
-        name
-        description
         createdAt
         updatedAt
         _version
@@ -597,7 +568,6 @@ export const deleteProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       productCategoryId
-      productUnitOfMeasureId
       productBrandId
     }
   }
@@ -702,6 +672,7 @@ export const createPurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -711,7 +682,6 @@ export const createPurchaseOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       unitPrice
@@ -741,6 +711,7 @@ export const updatePurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -750,7 +721,6 @@ export const updatePurchaseOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       unitPrice
@@ -780,6 +750,7 @@ export const deletePurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -789,7 +760,6 @@ export const deletePurchaseOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       unitPrice
@@ -936,6 +906,7 @@ export const createStock = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -945,7 +916,6 @@ export const createStock = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -974,6 +944,7 @@ export const updateStock = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -983,7 +954,6 @@ export const updateStock = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -1012,6 +982,7 @@ export const deleteStock = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -1021,7 +992,6 @@ export const deleteStock = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -1130,6 +1100,132 @@ export const deleteUnitOfMeasure = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+    }
+  }
+`;
+export const createInventoryChanges = /* GraphQL */ `
+  mutation CreateInventoryChanges(
+    $input: CreateInventoryChangesInput!
+    $condition: ModelInventoryChangesConditionInput
+  ) {
+    createInventoryChanges(input: $input, condition: $condition) {
+      id
+      timestamp
+      type
+      typeId
+      quantityIn
+      quantityOut
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryChangesProductId
+    }
+  }
+`;
+export const updateInventoryChanges = /* GraphQL */ `
+  mutation UpdateInventoryChanges(
+    $input: UpdateInventoryChangesInput!
+    $condition: ModelInventoryChangesConditionInput
+  ) {
+    updateInventoryChanges(input: $input, condition: $condition) {
+      id
+      timestamp
+      type
+      typeId
+      quantityIn
+      quantityOut
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryChangesProductId
+    }
+  }
+`;
+export const deleteInventoryChanges = /* GraphQL */ `
+  mutation DeleteInventoryChanges(
+    $input: DeleteInventoryChangesInput!
+    $condition: ModelInventoryChangesConditionInput
+  ) {
+    deleteInventoryChanges(input: $input, condition: $condition) {
+      id
+      timestamp
+      type
+      typeId
+      quantityIn
+      quantityOut
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryChangesProductId
     }
   }
 `;

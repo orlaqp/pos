@@ -27,7 +27,7 @@ export interface UiOverlaySelectProps {
 }
 
 export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectProps>(
-    (props) => {
+    (props, ref) => {
         const { name, title, list, onSelection, rules } = props;
         const styles = useStyles();
         const [visible, setVisible] = useState(false);

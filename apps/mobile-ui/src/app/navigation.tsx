@@ -8,6 +8,7 @@ import { theme } from '@pos/theme/native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@pos/store';
 import { BackOffice } from '@pos/back-office/native-feature';
+import { DataStore } from 'aws-amplify';
 
 /* eslint-disable-next-line */
 export interface NavigationProps {}

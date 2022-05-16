@@ -60,10 +60,10 @@ type Product @model @auth(rules: [{allow: public}]) {
   cost: Float
   barcode: String
   sku: String
+  unitOfMeasure: String!
   trackStock: Boolean! 
   picture: String
   Category: Category @hasOne
-  UnitOfMeasure: UnitOfMeasure @hasOne
   Brand: Brand @hasOne
   isActive: Boolean
 }
@@ -121,8 +121,8 @@ type InventoryChanges @model @auth(rules: [{allow: public}]) {
     id: ID!
     timestamp: AWSDateTime!
     type: String! # type of operation Purchase Order/Inventory count
-    typeId: String
-    quantityIn: Integer!
-    quantityOut: Integer!
+    typeId: String # identifier to that type
+    quantityIn: Int!
+    quantityOut: Int!
     Product: Product @hasOne
 }

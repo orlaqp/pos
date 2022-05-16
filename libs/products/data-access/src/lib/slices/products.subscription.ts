@@ -19,5 +19,7 @@ export const observeProductChanges = (dispatch: Dispatch) => {
         if (isSynced) {
             dispatch(productsActions.setAll(items.map(i => ProductEntityMapper.fromProduct(i))));
         }
+    }, (error) => {
+        dispatch(productsActions.error(error));
     });
 }

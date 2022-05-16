@@ -1,9 +1,10 @@
 import { UISearchInput } from '@pos/shared/ui-native';
 import React, { useCallback, useState } from 'react';
 
-import { View } from 'react-native';
+import { TextInputKeyPressEventData, View } from 'react-native';
 import debounce from 'lodash/debounce';
 import { Button, useTheme } from '@rneui/themed';
+import { NativeSyntheticEvent } from 'react-native';
 
 /* eslint-disable-next-line */
 export interface ProductSearchProps {
@@ -13,9 +14,9 @@ export interface ProductSearchProps {
 
 export function ProductSearch({ filter, onFilterChange }: ProductSearchProps) {
     const theme = useTheme();
+    // const [text, setText] = useState<string>();
     const [showSoftInputOnFocus, setShowSoftInputOnFocus] = useState(false);
-    const debouncedOnChange = useCallback(debounce(onFilterChange, 300), []);
-
+    
     const toggleSoftInput = () => setShowSoftInputOnFocus(!showSoftInputOnFocus);
 
     return (
@@ -36,9 +37,14 @@ export function ProductSearch({ filter, onFilterChange }: ProductSearchProps) {
             >
                 <UISearchInput
                     placeholder="type to search by name, description, barcode and sku..."
-                    onChangeText={debouncedOnChange}
-                    value={filter}
+                    // value={text}
+                    debounceTime={300}
                     showSoftInputOnFocus={showSoftInputOnFocus}
+                    returnKeyType='search'
+                    autoComplete='off'
+                    autoCorrect={false}
+                    autoCapitalize='none'
+                    onTextChanged={onFilterChange}
                 />
                 <Button
                     icon={{

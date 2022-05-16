@@ -18,8 +18,8 @@ export function ProductList({ navigation }: ProductListProps) {
         loadingStatusSelector: selectLoadingStatus,
         filteredListSelector: selectFilteredList,
         clearSelectionAction: productsActions.clearSelection,
-        filterAction: productsActions.filter,
-        fetchItemsAction: undefined,
+        filterAction: productsActions.filter as any,
+        fetchItemsAction: fetchProducts,
     }
 
     return <UIGenericItemList {...props} />

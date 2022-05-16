@@ -44,6 +44,10 @@ export function ProductForm({ navigation }: ProductFormProps) {
         form.setValue('picture', key);
     };
 
+    console.log('====================================');
+    console.log(`Unit of measure: ${product?.unitOfMeasure}`);
+    console.log('====================================');
+
     const save = async () => {
         setBusy(true);
         const formValues: ProductEntity = form.getValues();
@@ -68,10 +72,10 @@ export function ProductForm({ navigation }: ProductFormProps) {
             cost: product?.cost,
             barcode: product?.barcode,
             sku: product?.sku,
+            unitOfMeasure: product?.unitOfMeasure,
             trackStock: product?.trackStock || false,
             picture: product?.picture,
             productCategoryId: product?.productCategoryId,
-            productUnitOfMeasureId: product?.productUnitOfMeasureId,
             productBrandId: product?.productBrandId,
         },
     });
@@ -117,10 +121,10 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 selectedId={product?.productBrandId}
                             />
                             <UIOverlaySelect
-                                name='productUnitOfMeasureId'
+                                name='unitOfMeasure'
                                 title={'Select U/of Measure'}
-                                list={ums}
-                                selectedId={product?.productUnitOfMeasureId}
+                                list={ums.map(u => ({ id: u.name, name: u.name }))}
+                                selectedId={product?.unitOfMeasure}
                                 rules={{ required: true }}
                             />
                         </View>

@@ -270,6 +270,7 @@ export const onCreateOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -279,7 +280,6 @@ export const onCreateOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -309,6 +309,7 @@ export const onUpdateOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -318,7 +319,6 @@ export const onUpdateOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -348,6 +348,7 @@ export const onDeleteOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -357,7 +358,6 @@ export const onDeleteOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -385,6 +385,7 @@ export const onCreateProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      unitOfMeasure
       trackStock
       picture
       Category {
@@ -394,16 +395,6 @@ export const onCreateProduct = /* GraphQL */ `
         code
         color
         picture
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      UnitOfMeasure {
-        id
-        name
-        description
         createdAt
         updatedAt
         _version
@@ -427,7 +418,6 @@ export const onCreateProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       productCategoryId
-      productUnitOfMeasureId
       productBrandId
     }
   }
@@ -443,6 +433,7 @@ export const onUpdateProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      unitOfMeasure
       trackStock
       picture
       Category {
@@ -452,16 +443,6 @@ export const onUpdateProduct = /* GraphQL */ `
         code
         color
         picture
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      UnitOfMeasure {
-        id
-        name
-        description
         createdAt
         updatedAt
         _version
@@ -485,7 +466,6 @@ export const onUpdateProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       productCategoryId
-      productUnitOfMeasureId
       productBrandId
     }
   }
@@ -501,6 +481,7 @@ export const onDeleteProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      unitOfMeasure
       trackStock
       picture
       Category {
@@ -510,16 +491,6 @@ export const onDeleteProduct = /* GraphQL */ `
         code
         color
         picture
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      UnitOfMeasure {
-        id
-        name
-        description
         createdAt
         updatedAt
         _version
@@ -543,7 +514,6 @@ export const onDeleteProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       productCategoryId
-      productUnitOfMeasureId
       productBrandId
     }
   }
@@ -636,6 +606,7 @@ export const onCreatePurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -645,7 +616,6 @@ export const onCreatePurchaseOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       unitPrice
@@ -672,6 +642,7 @@ export const onUpdatePurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -681,7 +652,6 @@ export const onUpdatePurchaseOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       unitPrice
@@ -708,6 +678,7 @@ export const onDeletePurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -717,7 +688,6 @@ export const onDeletePurchaseOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       unitPrice
@@ -843,6 +813,7 @@ export const onCreateStock = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -852,7 +823,6 @@ export const onCreateStock = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -878,6 +848,7 @@ export const onUpdateStock = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -887,7 +858,6 @@ export const onUpdateStock = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -913,6 +883,7 @@ export const onDeleteStock = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -922,7 +893,6 @@ export const onDeleteStock = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -1013,6 +983,123 @@ export const onDeleteUnitOfMeasure = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+    }
+  }
+`;
+export const onCreateInventoryChanges = /* GraphQL */ `
+  subscription OnCreateInventoryChanges {
+    onCreateInventoryChanges {
+      id
+      timestamp
+      type
+      typeId
+      quantityIn
+      quantityOut
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryChangesProductId
+    }
+  }
+`;
+export const onUpdateInventoryChanges = /* GraphQL */ `
+  subscription OnUpdateInventoryChanges {
+    onUpdateInventoryChanges {
+      id
+      timestamp
+      type
+      typeId
+      quantityIn
+      quantityOut
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryChangesProductId
+    }
+  }
+`;
+export const onDeleteInventoryChanges = /* GraphQL */ `
+  subscription OnDeleteInventoryChanges {
+    onDeleteInventoryChanges {
+      id
+      timestamp
+      type
+      typeId
+      quantityIn
+      quantityOut
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryChangesProductId
     }
   }
 `;

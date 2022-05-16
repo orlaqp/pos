@@ -18,6 +18,11 @@ import { ProductService } from '../product.service';
 
 export const PRODUCT_FEATURE_KEY = 'products';
 
+export interface ProductFilterRequest {
+    filter?: string;
+    categoryId?: string;
+}
+
 export interface ProductsState extends EntityState< ProductEntity > {
   loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
   error?: string;
@@ -28,14 +33,14 @@ export interface ProductsState extends EntityState< ProductEntity > {
 
 export const productsAdapter = createEntityAdapter< ProductEntity >();
 
-// export const fetchProducts = createAsyncThunk(
-//   'products/fetchStatus',
-//   async (_, thunkAPI) => {
-//     const products = await ProductService.getAll();
-
-//     return products.map(p => ProductEntityMapper.fromProduct(p))
-//   }
-// );
+export const fetchProducts = createAsyncThunk(
+  'products/fetchStatus',
+  async (_, thunkAPI) => {
+    const products = await ProductService.getAll();
+    
+    return products.map(p => ProductEntityMapper.fromProduct(p))
+  }
+);
 
 export const initialProductsState: ProductsState =
   productsAdapter.getInitialState({
@@ -72,29 +77,31 @@ export const productsSlice = createSlice({
     clearSelection: (state: ProductsState) => {
         state.selected = undefined;
     },
-    filter: (state: ProductsState, action: PayloadAction<{ filter?: string, categoryId?: string}>) => {
+    filter: (state: ProductsState, action: PayloadAction<ProductFilterRequest>) => {
         filterList(state, action.payload.filter, action.payload.categoryId);
         state.filterQuery = action.payload.filter;
-    }
-    
+    },
+    error: (state: ProductsState, action: PayloadAction<Error>) => {
+        state.error = action.payload.message;
+    },
   },
   extraReducers: (builder) => {
-    // builder
-    //   .addCase(fetchProducts.pending, (state: ProductsState) => {
-    //     state.loadingStatus = 'loading';
-    //   })
-    //   .addCase(
-    //     fetchProducts.fulfilled,
-    //     (state: ProductsState, action: PayloadAction< ProductEntity[] >) => {
-    //       productsAdapter.setAll(state, action.payload);
-    //       filterList(state, state.filterQuery);
-    //       state.loadingStatus = 'loaded';
-    //     }
-    //   )
-    //   .addCase(fetchProducts.rejected, (state: ProductsState, action) => {
-    //     state.loadingStatus = 'error';
-    //     state.error = action.error.message;
-    //   });
+    builder
+      .addCase(fetchProducts.pending, (state: ProductsState) => {
+        state.loadingStatus = 'loading';
+      })
+      .addCase(
+        fetchProducts.fulfilled,
+        (state: ProductsState, action: PayloadAction< ProductEntity[] >) => {
+          productsAdapter.setAll(state, action.payload);
+          filterList(state, state.filterQuery);
+          state.loadingStatus = 'loaded';
+        }
+      )
+      .addCase(fetchProducts.rejected, (state: ProductsState, action) => {
+        state.loadingStatus = 'error';
+        state.error = action.error.message;
+      });
   },
 });
 

@@ -1,10 +1,4 @@
-import { categoriesActions, CategoryEntity } from '@pos/categories/data-access';
-import {
-    ProductEntity,
-    productsActions,
-    selectFilteredList,
-    selectProductsByCategory,
-} from '@pos/products/data-access';
+import { ProductEntity } from '@pos/products/data-access';
 import { cartActions } from '@pos/sales/data-access';
 import { ButtonItemType, UIButton, UIEmptyState } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
@@ -45,6 +39,7 @@ export function ProductSelection({ products }: ProductSelectionProps) {
                     <View style={[styles.row, { alignContent: 'space-around', justifyContent: 'center' }]}>
                         {productIds?.map((id) => (
                             <View
+                                key={id}
                                 style={{
                                     borderRadius: 5,
                                     borderColor: theme.theme.colors.grey4,

@@ -9,7 +9,7 @@ const OrderStatus = {
   "ONHOLD": "ONHOLD"
 };
 
-const { Brand, Category, Customer, Order, OrderLine, Product, UnitOfMeasure, PurchaseOrder, Supplier, PurchaseOrderLine, Store, Stock, Tag } = initSchema(schema);
+const { Brand, Category, Customer, Order, OrderLine, Product, PurchaseOrder, Supplier, PurchaseOrderLine, Store, Stock, Tag, UnitOfMeasure, InventoryChanges } = initSchema(schema);
 
 export {
   Brand,
@@ -18,12 +18,13 @@ export {
   Order,
   OrderLine,
   Product,
-  UnitOfMeasure,
   PurchaseOrder,
   Supplier,
   PurchaseOrderLine,
   Store,
   Stock,
   Tag,
+  UnitOfMeasure,
+  InventoryChanges,
   OrderStatus
 };

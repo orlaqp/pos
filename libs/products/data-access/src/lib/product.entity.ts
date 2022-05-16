@@ -8,11 +8,11 @@ export type ProductEntity = {
     tags: string | null | undefined;
     cost: number | null | undefined;
     barcode: string | null | undefined;
+    unitOfMeasure: string;
     sku?: string | null | undefined;
     trackStock: boolean;
     picture: string | null | undefined;
     productCategoryId: string | null | undefined;
-    productUnitOfMeasureId: string | null | undefined;
     productBrandId: string | null | undefined;
     createdAt?: string | null | undefined;
     updatedAt?: string | null | undefined;
@@ -29,10 +29,10 @@ export class ProductEntityMapper {
             cost: p.cost,
             barcode: p.barcode,
             sku: p.sku,
+            unitOfMeasure: p.unitOfMeasure,
             trackStock: p.trackStock,
             picture: p.picture,
             productCategoryId: p.productCategoryId,
-            productUnitOfMeasureId: p.productUnitOfMeasureId,
             productBrandId: p.productBrandId,
             createdAt: p.createdAt,
             updatedAt: p.updatedAt

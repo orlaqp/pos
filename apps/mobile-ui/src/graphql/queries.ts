@@ -322,6 +322,7 @@ export const getOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -331,7 +332,6 @@ export const getOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -417,6 +417,7 @@ export const getProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      unitOfMeasure
       trackStock
       picture
       Category {
@@ -426,16 +427,6 @@ export const getProduct = /* GraphQL */ `
         code
         color
         picture
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      UnitOfMeasure {
-        id
-        name
-        description
         createdAt
         updatedAt
         _version
@@ -459,7 +450,6 @@ export const getProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       productCategoryId
-      productUnitOfMeasureId
       productBrandId
     }
   }
@@ -480,6 +470,7 @@ export const listProducts = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -489,7 +480,6 @@ export const listProducts = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       nextToken
@@ -519,6 +509,7 @@ export const syncProducts = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -528,7 +519,6 @@ export const syncProducts = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       nextToken
@@ -626,6 +616,7 @@ export const getPurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -635,7 +626,6 @@ export const getPurchaseOrderLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       unitPrice
@@ -861,6 +851,7 @@ export const getStock = /* GraphQL */ `
         cost
         barcode
         sku
+        unitOfMeasure
         trackStock
         picture
         isActive
@@ -870,7 +861,6 @@ export const getStock = /* GraphQL */ `
         _deleted
         _lastChangedAt
         productCategoryId
-        productUnitOfMeasureId
         productBrandId
       }
       quantity
@@ -1052,6 +1042,107 @@ export const syncUnitOfMeasures = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const getInventoryChanges = /* GraphQL */ `
+  query GetInventoryChanges($id: ID!) {
+    getInventoryChanges(id: $id) {
+      id
+      timestamp
+      type
+      typeId
+      quantityIn
+      quantityOut
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryChangesProductId
+    }
+  }
+`;
+export const listInventoryChanges = /* GraphQL */ `
+  query ListInventoryChanges(
+    $filter: ModelInventoryChangesFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listInventoryChanges(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        timestamp
+        type
+        typeId
+        quantityIn
+        quantityOut
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        inventoryChangesProductId
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncInventoryChanges = /* GraphQL */ `
+  query SyncInventoryChanges(
+    $filter: ModelInventoryChangesFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncInventoryChanges(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        timestamp
+        type
+        typeId
+        quantityIn
+        quantityOut
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        inventoryChangesProductId
       }
       nextToken
       startedAt

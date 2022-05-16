@@ -31,10 +31,10 @@ export class ProductService {
                 updated.cost = product?.cost;
                 updated.barcode = product?.barcode;
                 updated.sku = product?.sku;
+                updated.unitOfMeasure = product?.unitOfMeasure;
                 updated.trackStock = product?.trackStock;
                 updated.picture = product?.picture;
                 updated.productCategoryId = product?.productCategoryId;
-                updated.productUnitOfMeasureId = product?.productUnitOfMeasureId;
                 updated.productBrandId = product?.productBrandId;
             })
         );
@@ -42,9 +42,14 @@ export class ProductService {
         return dispatch(productsActions.update({ id: product.id, changes: product }));
     }
 
-    // static getAll() {
-    //     return DataStore.query(Product);
-    // }
+    static getAll() {
+        try {
+            return DataStore.query(Product);
+        } catch (error) {
+            console.error('error querying produtcs', error);
+            return [];
+        }
+    }
 
     static async delete(id: string) {
         const item = await DataStore.query(Product, id);

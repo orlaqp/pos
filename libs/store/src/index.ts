@@ -31,6 +31,6 @@ export const useAppDispatch = () => useDispatch<AppDispatch>() ;
 observeProductChanges(store.dispatch);
 observeCategoryChanges(store.dispatch);
 observeBrandChanges(store.dispatch);
-observeUnitOfMeasureChanges(store.dispatch);
+// observeUnitOfMeasureChanges(store.dispatch);
 
 export default store;
