@@ -41,7 +41,7 @@ export function ProductSelection(props: ProductSelectionProps) {
                     alignItems: 'center',
                 }}
             >
-                <View style={{ width: '50%' }}>
+                <View style={{ width: '50%', marginTop: 20 }}>
                     <UISearchInput onChange={onFilterChange} />
                 </View>
             </View>
@@ -52,8 +52,9 @@ export function ProductSelection(props: ProductSelectionProps) {
                         {products?.map((p) => (
                             <View
                                 style={{
-                                    borderRadius: 4,
+                                    borderRadius: 5,
                                     borderColor: theme.theme.colors.grey4,
+                                    backgroundColor: theme.theme.colors.grey4,
                                     borderWidth: 1,
                                     marginRight: 10,
                                 }}

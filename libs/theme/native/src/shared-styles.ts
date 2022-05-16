@@ -45,6 +45,12 @@ export const useSharedStyles = () => {
         labelText: {
             color: theme.theme.colors.grey1
         },
+        primaryText: {
+            color: theme.theme.colors.black
+        },
+        secondaryText: {
+            color: theme.theme.colors.grey2
+        },
         subLabel: {
             fontSize: 14,
             color: theme.theme.colors.grey3,

@@ -56,7 +56,7 @@ export function CategorySelection({ onSelected }: CategorySelectionProps) {
                             borderColor:
                                 item === selected
                                     ? theme.theme.colors.primary
-                                    : undefined,
+                                    : `${theme.theme.colors.searchBg}44`,
                         }}
                     >
                         <UIButton item={item} onSelected={onSelection} />

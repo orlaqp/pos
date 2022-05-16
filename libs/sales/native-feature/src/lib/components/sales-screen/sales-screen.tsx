@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { cartActions, selectActiveProduct } from '@pos/sales/data-access';
 import ProductDetails from '../product-details/product-details';
 import Cart from '../cart/cart';
+import { ProductEntity } from '@pos/products/data-access';
 
 /* eslint-disable-next-line */
 export interface SalesScreenProps {}
@@ -22,6 +23,11 @@ export function SalesScreen(props: SalesScreenProps) {
     const [category, setCategory] = useState<CategoryEntity>();
     const product = useSelector(selectActiveProduct);
     const deselectProduct = () => dispatch(cartActions.select(undefined));
+
+    const addToCart = (product: ProductEntity, quantity: number) => {
+        dispatch(cartActions.addProduct({ product, quantity }));
+        deselectProduct();
+    };
 
     return (
         <SafeAreaView style={[styles.page, styles.row]}>
@@ -39,7 +45,7 @@ export function SalesScreen(props: SalesScreenProps) {
                 onBackdropPress={deselectProduct}
                 overlayStyle={styles.overlay}
             >
-                <ProductDetails product={product!} />
+                <ProductDetails product={product!} onAddToCart={addToCart} />
             </Dialog>
         </SafeAreaView>
     );
@@ -60,13 +66,17 @@ const useStyles = () => {
             categories: {
                 flex: 0.7,
                 justifyContent: 'center',
+                ...sharedStyles.darkBackground,
             },
             products: {
+                ...sharedStyles.darkBackground,
                 flex: 5,
                 flexDirection: 'column',
+                marginHorizontal: 10,
             },
             cart: {
                 flex: 2,
+                flexDirection: 'column',
                 // borderColor: 'yellow',
                 // borderWidth: 4
             },
