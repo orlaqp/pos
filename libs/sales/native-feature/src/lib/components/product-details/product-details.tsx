@@ -2,6 +2,7 @@ import { selectBrand } from '@pos/brands/data-access';
 import { CartItem } from '@pos/sales/data-access';
 import { UIS3Image } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
+import { selectUnitOfMeasure } from '@pos/unit-of-measures/data-access';
 import { Button, useTheme } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
 
@@ -19,7 +20,8 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
     const theme = useTheme();
     const styles = useStyles();
     const brand = useSelector(selectBrand(item.product.productBrandId));
-    const [quantity, setQuantity] = useState<number>(item.quantity || 1);
+    const unitOfMeasure = useSelector(selectUnitOfMeasure(item.product.productUnitOfMeasureId));
+    const [quantity, setQuantity] = useState<number>(item.quantity || 0);
     const [price, setPrice] = useState<number>(item.product.price);
 
     useEffect(() => {
@@ -44,7 +46,7 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
                 {item.product.name}
             </Text>
             <Text style={[styles.subLabel, { fontSize: 14 }]}>
-                {item.product.name}
+                {item.product.description}
             </Text>
             <View></View>
             <View style={{ marginTop: 25 }}>
@@ -62,8 +64,9 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
                     rounded={true}
                 />
             </View>
-            <View style={{ marginTop: 35 }}>
+            <View style={{ marginTop: 35, flexDirection: 'row', alignItems: 'flex-end' }}>
                 <Text style={styles.price}>$ {price?.toFixed(2)}</Text>
+                <Text style={styles.unitOfMeasure}>{` (${unitOfMeasure?.name})`}</Text>
             </View>
             <Button
                 style={{ marginTop: 35 }}
@@ -97,6 +100,12 @@ const useStyles = () => {
                 fontSize: 48,
                 fontWeight: 'bold',
                 color: theme.theme.colors.grey0,
+            },
+            unitOfMeasure: {
+                fontSize: 24,
+                fontWeight: 'bold',
+                color: theme.theme.colors.grey3,
+                lineHeight: 48,
             },
         }),
     };

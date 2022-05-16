@@ -21,7 +21,7 @@ export interface UiOverlaySelectProps {
     name?: string;
     title: string;
     list: IdName[];
-    selectedId?: string;
+    selectedId: string | null | undefined;
     rules?: RegisterOptions;
     onSelection?: (item: IdName) => unknown;
 }

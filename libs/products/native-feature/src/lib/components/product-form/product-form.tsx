@@ -108,6 +108,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 title={'Select Category'}
                                 list={categories}
                                 selectedId={product?.productCategoryId}
+                                rules={{ required: true }}
                             />
                             <UIOverlaySelect
                                 name='productBrandId'
@@ -120,6 +121,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 title={'Select U/of Measure'}
                                 list={ums}
                                 selectedId={product?.productUnitOfMeasureId}
+                                rules={{ required: true }}
                             />
                         </View>
                         <UIVerticalSpacer size="large" />

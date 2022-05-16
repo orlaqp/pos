@@ -29,7 +29,7 @@ export function ProductSelection(props: ProductSelectionProps) {
     };
 
     const onSelected = (p: ButtonItemType) => {
-        dispatch(cartActions.select({ product: p as ProductEntity, quantity: 1 }));
+        dispatch(cartActions.select({ product: p as ProductEntity, quantity: 0 }));
     };
 
     return (
