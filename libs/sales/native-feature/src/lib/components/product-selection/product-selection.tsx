@@ -1,10 +1,12 @@
 import { categoriesActions, CategoryEntity } from '@pos/categories/data-access';
 import {
     ProductEntity,
+    productsActions,
+    selectFilteredList,
     selectProductsByCategory,
 } from '@pos/products/data-access';
 import { cartActions } from '@pos/sales/data-access';
-import { ButtonItemType, UIButton, UISearchInput } from '@pos/shared/ui-native';
+import { ButtonItemType, UIButton, UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { useTheme } from '@rneui/themed';
 import React, { useState } from 'react';
@@ -23,9 +25,12 @@ export function ProductSelection(props: ProductSelectionProps) {
     const styles = useSharedStyles();
     const dispatch = useDispatch();
     const products = useSelector(selectProductsByCategory(props.category?.id));
+    const filteredProducts = useSelector(selectFilteredList);
+
 
     const onFilterChange = (text: string) => {
         dispatch(categoriesActions.select({ name: 'All Prods' }));
+        dispatch(productsActions.filter(text));
     };
 
     const onSelected = (p: ButtonItemType) => {
@@ -45,6 +50,12 @@ export function ProductSelection(props: ProductSelectionProps) {
                     <UISearchInput onChange={onFilterChange} />
                 </View>
             </View>
+
+            {!products.length &&
+                <View style={{ flex: 1, marginTop: 300 }}>
+                <UIEmptyState text='No products found for this category' backgroundColor='transparent' />
+            </View>
+            }
 
             <View style={{ padding: 25 }}>
                 <ScrollView>

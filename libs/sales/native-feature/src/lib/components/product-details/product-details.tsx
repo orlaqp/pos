@@ -52,6 +52,7 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
             <View style={{ marginTop: 25 }}>
                 <NumericInput
                     type="plus-minus"
+                    valueType={ unitOfMeasure?.name === 'Unit' ? 'integer' : 'real' }
                     value={quantity}
                     onChange={setQuantity}
                     borderColor="transparent"
