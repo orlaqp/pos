@@ -1,3 +1,4 @@
+import { UnitOfMeasureEntityMapper } from './../unit-of-measure.entity';
 
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
@@ -31,13 +32,7 @@ export const fetchUnitOfMeasures = createAsyncThunk(
   'unitOfMeasures/fetchStatus',
   async (_, thunkAPI) => {
     const unitOfMeasures = await UnitOfMeasureService.getAll();
-    return unitOfMeasures.map(c => ({
-        id: c.id,
-        name: c.name,
-        description: c.description,
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt
-    }))
+    return unitOfMeasures.map(u => UnitOfMeasureEntityMapper.fromModel(u));
   }
 );
 
@@ -106,41 +101,8 @@ export const unitOfMeasuresSlice = createSlice({
  * Export reducer for store configuration.
  */
 export const unitOfMeasuresReducer = unitOfMeasuresSlice.reducer;
-
-/*
- * Export action creators to be dispatched. For use with the `useDispatch` hook.
- *
- * e.g.
- * ```
- * import React, { useEffect } from 'react';
- * import { useDispatch } from 'react-redux';
- *
- * // ...
- *
- * const dispatch = useDispatch();
- * useEffect(() => {
- *   dispatch(unitOfMeasuresActions.add({ id: 1 }))
- * }, [dispatch]);
- * ```
- *
- * See: https://react-redux.js.org/next/api/hooks#usedispatch
- */
 export const unitOfMeasuresActions = unitOfMeasuresSlice.actions;
 
-/*
- * Export selectors to query state. For use with the `useSelector` hook.
- *
- * e.g.
- * ```
- * import { useSelector } from 'react-redux';
- *
- * // ...
- *
- * const entities = useSelector(selectAllUnitOfMeasures);
- * ```
- *
- * See: https://react-redux.js.org/next/api/hooks#useselector
- */
 const { selectAll, selectEntities } = unitOfMeasuresAdapter.getSelectors();
 
 export const getUnitOfMeasuresState = (rootState: RootState): UnitOfMeasuresState =>
@@ -171,15 +133,13 @@ export const selectFilteredList = createSelector(
     (state: UnitOfMeasuresState) => state.filteredList
 )
 
-export const selectUnitOfMeasure = (id: string) => createSelector(
+export const selectUnitOfMeasure = (id: string | null | undefined) => createSelector(
     getUnitOfMeasuresState,
-    (state: UnitOfMeasuresState) => state.entities[id]
+    (state: UnitOfMeasuresState) => id ? state.entities[id] : null
 )
 
 
 function filterList(state: UnitOfMeasuresState, query?: string) {
-    console.log('Query', query);
-    
     const filteredList: Dictionary<UnitOfMeasureEntity> = {};
     
     if (!query) {

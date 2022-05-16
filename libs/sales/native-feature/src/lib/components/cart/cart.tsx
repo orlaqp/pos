@@ -1,4 +1,4 @@
-import { selectCart } from '@pos/sales/data-access';
+import { cartActions, CartItem, selectCart } from '@pos/sales/data-access';
 import { UIEmptyState } from '@pos/shared/ui-native';
 import { theme, useSharedStyles } from '@pos/theme/native';
 import { Button, Divider, Icon, ListItem, useTheme } from '@rneui/themed';
@@ -6,7 +6,7 @@ import React from 'react';
 
 import { View, Text } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import EmptyCart from '../../../../assets/images/empty-cart.png';
 import CartLine from '../cart-line/cart-line';
@@ -17,7 +17,12 @@ export interface CartProps {}
 export function Cart(props: CartProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
+    const dispatch = useDispatch();
     const cart = useSelector(selectCart);
+
+    const onRemove = (item: CartItem) => {
+        dispatch(cartActions.removeProduct(item));
+    }
 
     if (!cart.items.length) {
         return (
@@ -34,12 +39,12 @@ export function Cart(props: CartProps) {
             <View style={{ flex: 5 }}>
                 <ScrollView>
                     {cart.items.map((i) => (
-                        <CartLine item={i} />
+                        <CartLine item={i} onRemove={onRemove} />
                     ))}
                 </ScrollView>
             </View>
             <View>
-                <Button title={'$ 30.45'} type='solid' />
+                <Button title={`$ ${cart.footer.total.toFixed(2)}`} type='solid' />
             </View>
         </View>
     );

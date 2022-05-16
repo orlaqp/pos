@@ -1,3 +1,4 @@
+import { UnitOfMeasure } from '@pos/shared/models';
 
 export type UnitOfMeasureEntity = {
     id?: string;
@@ -6,3 +7,15 @@ export type UnitOfMeasureEntity = {
     createdAt?: string | null | undefined;
     updatedAt?: string | null | undefined;
 };
+
+export class UnitOfMeasureEntityMapper {
+    static fromModel(c: UnitOfMeasure) {
+        return {
+            id: c.id,
+            name: c.name,
+            description: c.description,
+            createdAt: c.createdAt,
+            updatedAt: c.updatedAt
+        }
+    }
+}

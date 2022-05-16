@@ -9,7 +9,7 @@ import { categoriesReducer, observeCategoryChanges } from '@pos/categories/data-
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux';
 import { brandsReducer, observeBrandChanges } from '@pos/brands/data-access';
-import { unitOfMeasuresReducer } from '@pos/unit-of-measures/data-access';
+import { observeUnitOfMeasureChanges, unitOfMeasuresReducer } from '@pos/unit-of-measures/data-access';
 
 export const store = configureStore({
   reducer: {
@@ -31,5 +31,6 @@ export const useAppDispatch = () => useDispatch<AppDispatch>() ;
 observeProductChanges(store.dispatch);
 observeCategoryChanges(store.dispatch);
 observeBrandChanges(store.dispatch);
+observeUnitOfMeasureChanges(store.dispatch);
 
 export default store;

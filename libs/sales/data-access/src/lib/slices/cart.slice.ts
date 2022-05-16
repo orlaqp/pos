@@ -7,7 +7,7 @@ import {
     createSlice,
     PayloadAction,
 } from '@reduxjs/toolkit';
-import { CartState } from '../../cart-entity';
+import { CartItem, CartState } from '../../cart-entity';
 
 export const CART_FEATURE_KEY = 'cart';
 
@@ -31,11 +31,18 @@ export const cartSlice = createSlice({
             state.selected = action.payload;
         },
         addProduct: (state: CartState, action: PayloadAction<{ product: ProductEntity, quantity: number }>) => {
-            state.items?.push({ product: action.payload.product, quantity: action.payload.quantity });
+            const cartItem = state.items.find(i => i.product.id === action.payload.product.id);
+
+            if (cartItem) {
+                cartItem.quantity += action.payload.quantity;
+            } else {
+                state.items?.push({ product: action.payload.product, quantity: action.payload.quantity });
+            }
+
             updateTotals(state);
         },
-        removeProduct: (state: CartState, action: PayloadAction<ProductEntity>) => {
-            state.items.splice(state.items.findIndex(i => i.product === action.payload), 1);
+        removeProduct: (state: CartState, action: PayloadAction<CartItem>) => {
+            state.items.splice(state.items.findIndex(i => i === action.payload), 1);
             updateTotals(state);
         }
     },
