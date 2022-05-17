@@ -21,7 +21,7 @@ export function ProductSelection({ products }: ProductSelectionProps) {
     const dispatch = useDispatch();
     
     const onSelected = (p: ButtonItemType) => {
-        dispatch(cartActions.select({ product: p as ProductEntity, quantity: 0 }));
+        dispatch(cartActions.select({ product: p as ProductEntity, quantity: 1 }));
     };
     
     const productIds = Object.keys(products || {});

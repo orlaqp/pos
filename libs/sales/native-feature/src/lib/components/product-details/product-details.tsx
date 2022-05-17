@@ -2,8 +2,8 @@ import { selectBrand } from '@pos/brands/data-access';
 import { CartItem } from '@pos/sales/data-access';
 import { UIS3Image } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
-import { selectUnitOfMeasure } from '@pos/unit-of-measures/data-access';
-import { Button, useTheme } from '@rneui/themed';
+import { EACH } from '@pos/unit-of-measures/data-access';
+import { Button, Input, useTheme } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
 
 import { View, Text, StyleSheet } from 'react-native';
@@ -20,12 +20,12 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
     const theme = useTheme();
     const styles = useStyles();
     const brand = useSelector(selectBrand(item.product.productBrandId));
-    const unitOfMeasure = useSelector(selectUnitOfMeasure(item.product.productUnitOfMeasureId));
-    const [quantity, setQuantity] = useState<number>(item.quantity || 0);
+    const [quantity, setQuantity] = useState<string>(item.quantity.toString() || '0');
     const [price, setPrice] = useState<number>(item.product.price);
+    const each = item.product.unitOfMeasure === EACH;
 
     useEffect(() => {
-        setPrice(quantity * item.product.price);
+        setPrice(+quantity * item.product.price);
     }, [item, quantity]);
 
     return (
@@ -50,30 +50,61 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
             </Text>
             <View></View>
             <View style={{ marginTop: 25 }}>
-                <NumericInput
-                    type="plus-minus"
-                    valueType={ unitOfMeasure?.name === 'Unit' ? 'integer' : 'real' }
-                    value={quantity}
-                    onChange={setQuantity}
-                    borderColor="transparent"
-                    textColor={theme.theme.colors.grey1}
-                    iconSize={20}
-                    totalHeight={50}
-                    leftButtonBackgroundColor={theme.theme.colors.grey2}
-                    rightButtonBackgroundColor={theme.theme.colors.success}
-                    minValue={0}
-                    rounded={true}
-                />
+                {each && (
+                    <NumericInput
+                        type="plus-minus"
+                        valueType="integer"
+                        value={+quantity}
+                        onChange={(val) => setQuantity(val.toString())}
+                        borderColor="transparent"
+                        textColor={theme.theme.colors.grey1}
+                        iconSize={20}
+                        totalHeight={50}
+                        leftButtonBackgroundColor={theme.theme.colors.grey2}
+                        rightButtonBackgroundColor={theme.theme.colors.success}
+                        minValue={1}
+                        step={1}
+                        rounded={true}
+                    />
+                )}
+                {!each && (
+                    <View style={{ width: 200 }}>
+                    <Input
+                        value={quantity.toString()}
+                        placeholder="Weight ..."
+                        keyboardType="decimal-pad"
+                        style={{ fontSize: 32 }}
+                        textAlign='center'
+                        onChangeText={(text) => {
+                            const val = +text;
+                            
+                            if (isNaN(val) && !text.match(/^[0-9]+\.$/)) return;
+
+                            setQuantity(text)
+                        }}
+                    />
+                    </View>
+                )}
             </View>
-            <View style={{ marginTop: 35, flexDirection: 'row', alignItems: 'flex-end' }}>
+            <View
+                style={{
+                    marginTop: 35,
+                    flexDirection: 'row',
+                    alignItems: 'flex-end',
+                }}
+            >
                 <Text style={styles.price}>$ {price?.toFixed(2)}</Text>
-                <Text style={styles.unitOfMeasure}>{` (${unitOfMeasure?.name})`}</Text>
+                <Text
+                    style={styles.unitOfMeasure}
+                >{` (${item.product.unitOfMeasure})`}</Text>
             </View>
             <Button
                 style={{ marginTop: 35 }}
                 type="clear"
                 title={item.id ? 'Update cart' : 'Add to cart'}
-                onPress={() => upsertCart({ id: item.id, product: item.product, quantity })}
+                onPress={() =>
+                    upsertCart({ id: item.id, product: item.product, quantity: +quantity })
+                }
             />
         </View>
     );

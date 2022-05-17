@@ -9,6 +9,7 @@ import {
 } from '@reduxjs/toolkit';
 import { CartItem, CartState } from '../../cart-entity';
 import uuid from 'react-native-uuid';
+import { EACH } from '@pos/unit-of-measures/data-access';
 
 export const CART_FEATURE_KEY = 'cart';
 
@@ -41,14 +42,16 @@ export const cartSlice = createSlice({
 
             cartItem = state.items.find(i => i.product.id === action.payload.product.id);
 
-            if (cartItem) {
+            if (cartItem?.product.unitOfMeasure === EACH) {
                 cartItem.quantity += action.payload.quantity;
             } else {
-                state.items?.push({
-                    id: uuid.v4().toString(),
-                    product: action.payload.product,
-                    quantity: action.payload.quantity
-                });
+                for (let i = 0; i < action.payload.quantity; i++) {
+                    state.items?.push({
+                        id: uuid.v4().toString(),
+                        product: action.payload.product,
+                        quantity: 1
+                    });
+                }
             }
 
             updateTotals(state);

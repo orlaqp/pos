@@ -1,5 +1,7 @@
 import { UnitOfMeasure } from '@pos/shared/models';
 
+export const EACH = 'ea';
+
 export type UnitOfMeasureEntity = {
     id?: string;
     name: string;

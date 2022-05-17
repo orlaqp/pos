@@ -24,14 +24,16 @@ export function Cart(props: CartProps) {
 
     const onSelect = (item: CartItem) => {
         dispatch(cartActions.select(item));
-    }
+    };
 
     const onRemove = (item: CartItem) => {
         dispatch(cartActions.removeProduct(item));
-    }
+    };
 
     useEffect(() => {
-        setReady(cart.items.length > 0 && every(cart.items, (i) => i.quantity > 0));
+        setReady(
+            cart.items.length > 0 && every(cart.items, (i) => i.quantity > 0)
+        );
     }, [cart]);
 
     if (!cart.items.length) {
@@ -49,12 +51,21 @@ export function Cart(props: CartProps) {
             <View style={{ flex: 5 }}>
                 <ScrollView>
                     {cart.items.map((i) => (
-                        <CartLine key={i.product.id} item={i} onSelect={onSelect} onRemove={onRemove} />
+                        <CartLine
+                            key={i.product.id}
+                            item={i}
+                            onSelect={onSelect}
+                            onRemove={onRemove}
+                        />
                     ))}
                 </ScrollView>
             </View>
             <View>
-                <Button title={`$ ${cart.footer.total.toFixed(2)}`} type='solid' disabled={!ready} />
+                <Button
+                    title={`$ ${cart.footer.total.toFixed(2)}\nPrint Order`}
+                    type="solid"
+                    disabled={!ready}
+                />
             </View>
         </View>
     );
