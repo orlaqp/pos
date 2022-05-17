@@ -20,7 +20,9 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
     const theme = useTheme();
     const styles = useStyles();
     const brand = useSelector(selectBrand(item.product.productBrandId));
-    const [quantity, setQuantity] = useState<string>(item.quantity.toString() || '0');
+    const [quantity, setQuantity] = useState<string>(
+        item.quantity.toString() || '0'
+    );
     const [price, setPrice] = useState<number>(item.product.price);
     const each = item.product.unitOfMeasure === EACH;
 
@@ -68,21 +70,25 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
                     />
                 )}
                 {!each && (
-                    <View style={{ width: 200 }}>
-                    <Input
-                        value={quantity.toString()}
-                        placeholder="Weight ..."
-                        keyboardType="decimal-pad"
-                        style={{ fontSize: 32 }}
-                        textAlign='center'
-                        onChangeText={(text) => {
-                            const val = +text;
-                            
-                            if (isNaN(val) && !text.match(/^[0-9]+\.$/)) return;
+                    <View style={{ width: 150, flexDirection: 'row', justifyContent: 'center' }}>
+                        <Input
+                            value={quantity.toString()}
+                            placeholder="Weight ..."
+                            keyboardType="decimal-pad"
+                            style={{ fontSize: 32 }}
+                            textAlign="center"
+                            onChangeText={(text) => {
+                                const val = +text;
 
-                            setQuantity(text)
-                        }}
-                    />
+                                if (isNaN(val) && !text.match(/^[0-9]+\.$/))
+                                    return;
+
+                                setQuantity(text);
+                            }}
+                        />
+                        <Text
+                            style={styles.unitOfMeasure}
+                        >{` (${item.product.unitOfMeasure})`}</Text>
                     </View>
                 )}
             </View>
@@ -94,16 +100,17 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
                 }}
             >
                 <Text style={styles.price}>$ {price?.toFixed(2)}</Text>
-                <Text
-                    style={styles.unitOfMeasure}
-                >{` (${item.product.unitOfMeasure})`}</Text>
             </View>
             <Button
                 style={{ marginTop: 35 }}
                 type="clear"
                 title={item.id ? 'Update cart' : 'Add to cart'}
                 onPress={() =>
-                    upsertCart({ id: item.id, product: item.product, quantity: +quantity })
+                    upsertCart({
+                        id: item.id,
+                        product: item.product,
+                        quantity: +quantity,
+                    })
                 }
             />
         </View>
