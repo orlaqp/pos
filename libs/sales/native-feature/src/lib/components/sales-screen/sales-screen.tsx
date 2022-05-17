@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { theme, useSharedStyles } from '@pos/theme/native';
 import { Dialog, useTheme } from '@rneui/themed';
@@ -16,10 +16,14 @@ import {
 } from '@pos/sales/data-access';
 import ProductDetails from '../product-details/product-details';
 import Cart from '../cart/cart';
-import { productsActions, selectFilteredList } from '@pos/products/data-access';
+import { ProductEntity, productsActions, selectFilteredList } from '@pos/products/data-access';
 import ProductSearch from '../product-search/product-search';
 import { Button } from '@rneui/base';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { ButtonItemType } from '@pos/shared/ui-native';
+import { RootState } from '@pos/store';
+import { Dictionary } from '@reduxjs/toolkit';
+import { EACH } from '@pos/unit-of-measures/data-access';
 
 /* eslint-disable-next-line */
 export interface SalesScreenProps {
@@ -32,7 +36,7 @@ export function SalesScreen({ navigation }: SalesScreenProps) {
     const [category, setCategory] = useState<CategoryEntity>();
     const [filter, setFilter] = useState<string>();
     const product = useSelector(selectActiveProduct);
-    const products = useSelector(selectFilteredList);
+    const products = useSelector<RootState, Dictionary<ProductEntity> | undefined>(selectFilteredList);
     const deselectProduct = () => dispatch(cartActions.select(undefined));
 
     const upsertCart = (item: CartItem) => {
@@ -52,6 +56,11 @@ export function SalesScreen({ navigation }: SalesScreenProps) {
         setCategory(undefined);
     };
 
+    const onProductSelected = useCallback((p: ButtonItemType) => {
+        const product = p as ProductEntity;
+        dispatch(cartActions.select({ product, quantity: product.unitOfMeasure === EACH ? 1 : 0 }));
+    }, [dispatch]);
+
     const confirmGoBack = () => {
         Alert.alert(
             'Are you sure?',
@@ -63,9 +72,19 @@ export function SalesScreen({ navigation }: SalesScreenProps) {
         );
     }
 
+
     useEffect(() => {
         dispatch(productsActions.filter({ filter, categoryId: category?.id }));
     }, [dispatch, category, filter]);
+
+    useEffect(() => {
+        if (!products) return;
+        
+        const productIds = Object.keys(products || {});
+        if (productIds.length === 1) {
+            onProductSelected(products[productIds[0]] as any)
+        }
+    }, [onProductSelected, products]);
 
     return (
         <SafeAreaView style={[styles.page, styles.row]}>
@@ -87,7 +106,7 @@ export function SalesScreen({ navigation }: SalesScreenProps) {
                     onFilterChange={onFilterChange}
                     filter={filter}
                 />
-                <ProductSelection products={products} />
+                <ProductSelection products={products} onSelected={onProductSelected} />
             </View>
             <View style={styles.cart}>
                 <Cart />

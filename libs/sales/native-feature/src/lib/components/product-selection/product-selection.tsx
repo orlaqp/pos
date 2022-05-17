@@ -13,17 +13,12 @@ import { useDispatch } from 'react-redux';
 /* eslint-disable-next-line */
 export interface ProductSelectionProps {
     products?: Dictionary<ProductEntity>;
+    onSelected: (p: ButtonItemType) => void;
 }
 
-export function ProductSelection({ products }: ProductSelectionProps) {
+export function ProductSelection({ products, onSelected }: ProductSelectionProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
-    const dispatch = useDispatch();
-    
-    const onSelected = (p: ButtonItemType) => {
-        dispatch(cartActions.select({ product: p as ProductEntity, quantity: 1 }));
-    };
-    
     const productIds = Object.keys(products || {});
 
     return (
@@ -50,7 +45,7 @@ export function ProductSelection({ products }: ProductSelectionProps) {
                             >
                                 <UIButton
                                     item={products[id]!}
-                                    onSelected={(item) => onSelected(item)}
+                                    onSelected={onSelected}
                                     maxTextLength={14}
                                 >
                                     <View
