@@ -11,7 +11,6 @@ export interface CartItem {
     id?: string;
     product: ProductEntity;
     quantity: number;
-    weight?: number;
 }
 
 export interface CartFooter {

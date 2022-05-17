@@ -45,13 +45,11 @@ export const cartSlice = createSlice({
             if (cartItem?.product.unitOfMeasure === EACH) {
                 cartItem.quantity += action.payload.quantity;
             } else {
-                for (let i = 0; i < action.payload.quantity; i++) {
-                    state.items?.push({
-                        id: uuid.v4().toString(),
-                        product: action.payload.product,
-                        quantity: 1
-                    });
-                }
+                state.items?.push({
+                    id: uuid.v4().toString(),
+                    product: action.payload.product,
+                    quantity: action.payload.quantity
+                });
             }
 
             updateTotals(state);
@@ -83,7 +81,7 @@ const updateTotals = (state: CartState) => {
     const subtotal = state.items.reduce((prev, next) => {
         return prev + (next.product.price * next.quantity);
     }, 0);
-    
+
     state.footer.subtotal = subtotal;
     state.footer.total = subtotal;
 }
