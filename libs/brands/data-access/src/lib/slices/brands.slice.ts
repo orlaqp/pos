@@ -18,7 +18,7 @@ import { BrandService } from '../brand.service';
 export const BRAND_FEATURE_KEY = 'brands';
 
 export interface BrandsState extends EntityState< BrandEntity > {
-  loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
+  loadingStatus: 'new' | 'loading' | 'loaded' | 'error';
   error?: string;
   selected?: BrandEntity;
   filterQuery?: string;

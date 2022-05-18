@@ -1,5 +1,3 @@
-import { cartReducer } from './../../sales/data-access/src/lib/slices/cart.slice';
-import { observeProductChanges } from '../../products/data-access/src/lib/slices/products.subscription';
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import logger from 'redux-logger';
 
@@ -9,7 +7,9 @@ import { categoriesReducer, observeCategoryChanges } from '@pos/categories/data-
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux';
 import { brandsReducer, observeBrandChanges } from '@pos/brands/data-access';
-import { observeUnitOfMeasureChanges, unitOfMeasuresReducer } from '@pos/unit-of-measures/data-access';
+import { unitOfMeasuresReducer } from '@pos/unit-of-measures/data-access';
+import { cartReducer, observeOpenOrderChanges, orderReducer } from '@pos/sales/data-access';
+import { observeProductChanges } from '@pos/products/data-access';
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +19,7 @@ export const store = configureStore({
       brands: brandsReducer,
       unitOfMeasures: unitOfMeasuresReducer,
       cart: cartReducer,
+      order: orderReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 });
@@ -31,6 +32,7 @@ export const useAppDispatch = () => useDispatch<AppDispatch>() ;
 observeProductChanges(store.dispatch);
 observeCategoryChanges(store.dispatch);
 observeBrandChanges(store.dispatch);
+observeOpenOrderChanges(store.dispatch);
 // observeUnitOfMeasureChanges(store.dispatch);
 
 export default store;

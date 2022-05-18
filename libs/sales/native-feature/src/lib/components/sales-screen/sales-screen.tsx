@@ -15,22 +15,25 @@ import {
     selectActiveProduct,
 } from '@pos/sales/data-access';
 import ProductDetails from '../product-details/product-details';
-import Cart from '../cart/cart';
+import Cart, { CartMode, CartProps } from '../cart/cart';
 import { ProductEntity, productsActions, selectFilteredList } from '@pos/products/data-access';
 import ProductSearch from '../product-search/product-search';
 import { Button } from '@rneui/base';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ButtonItemType } from '@pos/shared/ui-native';
 import { RootState } from '@pos/store';
 import { Dictionary } from '@reduxjs/toolkit';
 import { EACH } from '@pos/unit-of-measures/data-access';
 
-/* eslint-disable-next-line */
-export interface SalesScreenProps {
-    navigation: NativeStackNavigationProp<any>;
+export interface NavigationParamList {
+    [key: string]: object | undefined;
+    'Sales': {
+        mode: 'order' | 'payment';
+    }
 }
 
-export function SalesScreen({ navigation }: SalesScreenProps) {
+/* eslint-disable-next-line */
+export function SalesScreen({ navigation, route }: NativeStackScreenProps<NavigationParamList, 'Sales'>) {
     const styles = useStyles();
     const dispatch = useDispatch();
     const [category, setCategory] = useState<CategoryEntity>();
@@ -109,7 +112,7 @@ export function SalesScreen({ navigation }: SalesScreenProps) {
                 <ProductSelection products={products} onSelected={onProductSelected} />
             </View>
             <View style={styles.cart}>
-                <Cart />
+                <Cart mode={route.params.mode} />
             </View>
             <Dialog
                 isVisible={!!product}

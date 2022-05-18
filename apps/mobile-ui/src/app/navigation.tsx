@@ -11,11 +11,17 @@ import { BackOffice } from '@pos/back-office/native-feature';
 import { DataStore } from 'aws-amplify';
 
 /* eslint-disable-next-line */
-export interface NavigationProps {}
+export interface NavigationParamList {
+    [key: string]: object | undefined;
+    'Sales': {
+        mode: 'order' | 'payment';
+    }
+}
 
-const Stack = createNativeStackNavigator();
 
-export function Navigation(props: NavigationProps) {
+const Stack = createNativeStackNavigator<NavigationParamList>();
+
+export function Navigation() {
   const user = useSelector((state: RootState) => state.auth.user);
   return (
     <Stack.Navigator

@@ -120,7 +120,9 @@ export declare class Order {
 
 export declare class OrderLine {
   readonly id: string;
-  readonly Product?: Product | null;
+  readonly productId: string;
+  readonly productName: string;
+  readonly unitOfMeasure: string;
   readonly quantity: number;
   readonly tax: number;
   readonly discountType?: string | null;
@@ -128,7 +130,6 @@ export declare class OrderLine {
   readonly orderID: string;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  readonly orderLineProductId?: string | null;
   constructor(init: ModelInit<OrderLine, OrderLineMetaData>);
   static copyOf(source: OrderLine, mutator: (draft: MutableModel<OrderLine, OrderLineMetaData>) => MutableModel<OrderLine, OrderLineMetaData> | void): OrderLine;
 }

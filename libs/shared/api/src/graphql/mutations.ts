@@ -300,27 +300,9 @@ export const createOrderLine = /* GraphQL */ `
   ) {
     createOrderLine(input: $input, condition: $condition) {
       id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
+      productId
+      productName
+      unitOfMeasure
       quantity
       tax
       discountType
@@ -331,7 +313,6 @@ export const createOrderLine = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-      orderLineProductId
     }
   }
 `;
@@ -342,27 +323,9 @@ export const updateOrderLine = /* GraphQL */ `
   ) {
     updateOrderLine(input: $input, condition: $condition) {
       id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
+      productId
+      productName
+      unitOfMeasure
       quantity
       tax
       discountType
@@ -373,7 +336,6 @@ export const updateOrderLine = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-      orderLineProductId
     }
   }
 `;
@@ -384,27 +346,9 @@ export const deleteOrderLine = /* GraphQL */ `
   ) {
     deleteOrderLine(input: $input, condition: $condition) {
       id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
+      productId
+      productName
+      unitOfMeasure
       quantity
       tax
       discountType
@@ -415,7 +359,6 @@ export const deleteOrderLine = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-      orderLineProductId
     }
   }
 `;

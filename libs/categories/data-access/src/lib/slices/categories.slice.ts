@@ -17,7 +17,7 @@ import { CategoryService } from '../category.service';
 export const CATEGORIES_FEATURE_KEY = 'categories';
 
 export interface CategoriesState extends EntityState<CategoryEntity> {
-  loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
+  loadingStatus: 'new' | 'loading' | 'loaded' | 'error';
   error?: string;
   selected?: CategoryEntity;
   filterQuery?: string;

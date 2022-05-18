@@ -27,15 +27,15 @@ export function Products() {
     const umLoadingStatus = useSelector(umSelectLadingStatus);
 
     useEffect(() => {
-        if (catLoadingStatus === 'not loaded') dispatch(fetchCategories());
+        if (catLoadingStatus === 'new') dispatch(fetchCategories());
     }, [catLoadingStatus, dispatch]);
 
     useEffect(() => {
-        if (brLoadingStatus === 'not loaded') dispatch(fetchBrands());
+        if (brLoadingStatus === 'new') dispatch(fetchBrands());
     }, [brLoadingStatus, dispatch]);
 
     useEffect(() => {
-        if (umLoadingStatus === 'not loaded') dispatch(fetchUnitOfMeasures());
+        if (umLoadingStatus === 'new') dispatch(fetchUnitOfMeasures());
     }, [umLoadingStatus, dispatch]);
 
     return (

@@ -19,7 +19,7 @@ import { UnitOfMeasureService } from '../unit-of-measure.service';
 export const UNITOFMEASURE_FEATURE_KEY = 'unitOfMeasures';
 
 export interface UnitOfMeasuresState extends EntityState< UnitOfMeasureEntity > {
-  loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
+  loadingStatus: 'new' | 'loading' | 'loaded' | 'error';
   error?: string;
   selected?: UnitOfMeasureEntity;
   filterQuery?: string;

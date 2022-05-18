@@ -261,27 +261,9 @@ export const onCreateOrderLine = /* GraphQL */ `
   subscription OnCreateOrderLine {
     onCreateOrderLine {
       id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
+      productId
+      productName
+      unitOfMeasure
       quantity
       tax
       discountType
@@ -292,7 +274,6 @@ export const onCreateOrderLine = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-      orderLineProductId
     }
   }
 `;
@@ -300,27 +281,9 @@ export const onUpdateOrderLine = /* GraphQL */ `
   subscription OnUpdateOrderLine {
     onUpdateOrderLine {
       id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
+      productId
+      productName
+      unitOfMeasure
       quantity
       tax
       discountType
@@ -331,7 +294,6 @@ export const onUpdateOrderLine = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-      orderLineProductId
     }
   }
 `;
@@ -339,27 +301,9 @@ export const onDeleteOrderLine = /* GraphQL */ `
   subscription OnDeleteOrderLine {
     onDeleteOrderLine {
       id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
+      productId
+      productName
+      unitOfMeasure
       quantity
       tax
       discountType
@@ -370,7 +314,6 @@ export const onDeleteOrderLine = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-      orderLineProductId
     }
   }
 `;

@@ -1,10 +1,9 @@
-import { cartActions, CartItem, selectCart } from '@pos/sales/data-access';
+import { cartActions, CartItem, getOrderStatus, orderActions, selectCart, submitOrder } from '@pos/sales/data-access';
 import { UIEmptyState } from '@pos/shared/ui-native';
-import { theme, useSharedStyles } from '@pos/theme/native';
-import { Button, Divider, Icon, ListItem, useTheme } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
 
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 import every from 'lodash/every';
@@ -12,15 +11,19 @@ import every from 'lodash/every';
 import EmptyCart from '../../../../assets/images/empty-cart.png';
 import CartLine from '../cart-line/cart-line';
 
-/* eslint-disable-next-line */
-export interface CartProps {}
+export type CartMode = 'order' | 'payment'; 
 
-export function Cart(props: CartProps) {
+/* eslint-disable-next-line */
+export interface CartProps {
+    mode: CartMode;
+}
+
+export function Cart({ mode }: CartProps) {
     const theme = useTheme();
-    const styles = useSharedStyles();
     const dispatch = useDispatch();
     const cart = useSelector(selectCart);
     const [ready, setReady] = useState(false);
+    const orderStatus = useSelector(getOrderStatus);
 
     const onSelect = (item: CartItem) => {
         dispatch(cartActions.select(item));
@@ -30,11 +33,25 @@ export function Cart(props: CartProps) {
         dispatch(cartActions.removeProduct(item));
     };
 
+    const submit = () => {
+        if (mode === 'order') {
+            return dispatch(submitOrder(cart))
+        }
+
+        return;
+    }
+
     useEffect(() => {
         setReady(
             cart.items.length > 0 && every(cart.items, (i) => i.quantity > 0)
         );
     }, [cart]);
+
+    useEffect(() => {
+        if (orderStatus === 'saved') {
+            dispatch(cartActions.reset());
+        }
+    }, [dispatch, orderStatus]);
 
     if (!cart.items.length) {
         return (
@@ -65,6 +82,8 @@ export function Cart(props: CartProps) {
                     title={`$ ${cart.footer.total.toFixed(2)}\nPrint Order`}
                     type="solid"
                     disabled={!ready}
+                    onPress={submit}
+                    loading={orderStatus === 'saving'}
                 />
             </View>
         </View>

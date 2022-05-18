@@ -16,6 +16,7 @@ interface PathDetails {
     icon?: string;
     image?: any;
     role: string;
+    params?: object;
 }
 
 interface HomeScreenProps {
@@ -28,7 +29,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const sharedStyles = useSharedStyles();
     const styles = useStyles();
     const paths: PathDetails[] = [
-        { title: 'Sales', path: 'Sales', image: emptyCart, role: Role.Sales },
+        { title: 'Sales', path: 'Sales', image: emptyCart, role: Role.Sales, params: { mode: 'order' } },
         {
             title: 'Payments',
             path: 'Payments',
@@ -43,7 +44,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
         },
     ];
     const goto = (details: PathDetails) =>
-        props.navigation.navigate(details.path);
+        props.navigation.navigate(details.path, details.params);
 
     return (
         <View style={[sharedStyles.page, sharedStyles.centered]}>

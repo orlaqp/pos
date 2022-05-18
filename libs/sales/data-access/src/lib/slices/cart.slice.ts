@@ -1,15 +1,16 @@
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { ProductEntity } from '@pos/products/data-access';
+import { EACH } from '@pos/unit-of-measures/data-access';
 import {
+    createAsyncThunk,
     createSelector,
     createSlice,
     PayloadAction,
 } from '@reduxjs/toolkit';
-import { CartItem, CartState } from '../../cart-entity';
+import { CartItem, CartState } from '../cart-entity';
 import uuid from 'react-native-uuid';
-import { EACH } from '@pos/unit-of-measures/data-access';
+import { saveOrder } from '../../cart.service';
 
 export const CART_FEATURE_KEY = 'cart';
 
@@ -77,7 +78,13 @@ export const cartSlice = createSlice({
         removeProduct: (state: CartState, action: PayloadAction<CartItem>) => {
             state.items.splice(state.items.findIndex(i => i === action.payload), 1);
             updateTotals(state);
-        }
+        },
+        reset: (state: CartState) => {
+            state.footer = initialCartState.footer;
+            state.header = initialCartState.header;
+            state.items = initialCartState.items;
+            state.selected = initialCartState.selected;
+        },
     },
 });
 

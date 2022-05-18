@@ -313,27 +313,9 @@ export const getOrderLine = /* GraphQL */ `
   query GetOrderLine($id: ID!) {
     getOrderLine(id: $id) {
       id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
+      productId
+      productName
+      unitOfMeasure
       quantity
       tax
       discountType
@@ -344,7 +326,6 @@ export const getOrderLine = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-      orderLineProductId
     }
   }
 `;
@@ -357,6 +338,9 @@ export const listOrderLines = /* GraphQL */ `
     listOrderLines(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        productId
+        productName
+        unitOfMeasure
         quantity
         tax
         discountType
@@ -367,7 +351,6 @@ export const listOrderLines = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
-        orderLineProductId
       }
       nextToken
       startedAt
@@ -389,6 +372,9 @@ export const syncOrderLines = /* GraphQL */ `
     ) {
       items {
         id
+        productId
+        productName
+        unitOfMeasure
         quantity
         tax
         discountType
@@ -399,7 +385,6 @@ export const syncOrderLines = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
-        orderLineProductId
       }
       nextToken
       startedAt

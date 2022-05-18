@@ -13,8 +13,7 @@
     "update-graphql": "cp -R apps/mobile-ui/src/graphql libs/shared/api/src",
     "update-api": "cp -R apps/mobile-ui/src/API.ts libs/shared/api/src",
     "update-codegen": "npm run update-models && npm run update-graphql && npm run update-api",
-    "update-amplify": "cd apps/mobile-ui && amplify push && cd ../.. && npm run update-codegen"
-
+    "update-amplify": "cd apps/mobile-ui && amplify push && amplify codegen models && cd ../.. && npm run update-codegen"
   },
   "private": true,
   "dependencies": {

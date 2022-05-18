@@ -381,19 +381,26 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
-                "Product": {
-                    "name": "Product",
+                "productId": {
+                    "name": "productId",
                     "isArray": false,
-                    "type": {
-                        "model": "Product"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "association": {
-                        "connectionType": "HAS_ONE",
-                        "associatedWith": "id",
-                        "targetName": "orderLineProductId"
-                    }
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "productName": {
+                    "name": "productName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "unitOfMeasure": {
+                    "name": "unitOfMeasure",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
                 },
                 "quantity": {
                     "name": "quantity",
@@ -445,13 +452,6 @@ export const schema = {
                     "isRequired": false,
                     "attributes": [],
                     "isReadOnly": true
-                },
-                "orderLineProductId": {
-                    "name": "orderLineProductId",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
                 }
             },
             "syncable": true,
@@ -1325,5 +1325,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "24cb63e3adba482da9bfa84227e6d73b"
+    "version": "8fb817adcc1375659045d19584576c0e"
 };
