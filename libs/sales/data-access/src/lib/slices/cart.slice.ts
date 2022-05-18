@@ -33,23 +33,43 @@ export const cartSlice = createSlice({
             state.selected = action.payload;
         },
         upsert: (state: CartState, action: PayloadAction<CartItem>) => {
-            let cartItem = state.items.find(i => action.payload.id && i.id === action.payload.id);
-
-            if (cartItem) {
-                cartItem.quantity = action.payload.quantity;
-                return;
-            }
-
-            cartItem = state.items.find(i => i.product.id === action.payload.product.id);
-
-            if (cartItem?.product.unitOfMeasure === EACH) {
-                cartItem.quantity += action.payload.quantity;
-            } else {
+            const sameCartItem = state.items.find(i => action.payload.id && i.id === action.payload.id);
+            const addItem = (state: CartState, item: CartItem) => {
                 state.items?.push({
                     id: uuid.v4().toString(),
                     product: action.payload.product,
                     quantity: action.payload.quantity
                 });
+            }
+
+            if (sameCartItem) {
+                sameCartItem.quantity = action.payload.quantity;
+                return;
+            }
+
+            const sameProducts = state.items.filter(i => i.product.id === action.payload.product.id);
+
+            if (!sameProducts.length) {
+                addItem(state, action.payload);
+                return;
+            }
+
+            if (action.payload.product.unitOfMeasure === EACH) {
+                sameProducts[0].quantity += action.payload.quantity;
+                return;
+            }
+
+            if (action.payload.quantity === 0) {
+                addItem(state, action.payload);
+                return;
+            }
+
+            const itemInZero = sameProducts.find(p => p.quantity === 0);
+
+            if (itemInZero) {
+                itemInZero.quantity = action.payload.quantity;
+            } else {
+                addItem(state, action.payload);
             }
 
             updateTotals(state);

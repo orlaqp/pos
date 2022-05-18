@@ -72,7 +72,7 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
                 {!each && (
                     <View style={{ width: 150, flexDirection: 'row', justifyContent: 'center' }}>
                         <Input
-                            value={quantity.toString()}
+                            value={quantity === '0' ? '' : quantity.toString()}
                             placeholder="Weight ..."
                             keyboardType="decimal-pad"
                             style={{ fontSize: 32 }}
@@ -109,7 +109,7 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
                     upsertCart({
                         id: item.id,
                         product: item.product,
-                        quantity: +quantity,
+                        quantity: quantity === '' ? 0 : +quantity,
                     })
                 }
             />
