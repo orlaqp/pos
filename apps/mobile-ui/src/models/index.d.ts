@@ -65,6 +65,10 @@ type InventoryChangesMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
+type PrinterMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
 export declare class Brand {
   readonly id: string;
   readonly name: string;
@@ -249,4 +253,17 @@ export declare class InventoryChanges {
   readonly inventoryChangesProductId?: string | null;
   constructor(init: ModelInit<InventoryChanges, InventoryChangesMetaData>);
   static copyOf(source: InventoryChanges, mutator: (draft: MutableModel<InventoryChanges, InventoryChangesMetaData>) => MutableModel<InventoryChanges, InventoryChangesMetaData> | void): InventoryChanges;
+}
+
+export declare class Printer {
+  readonly id: string;
+  readonly identifier: string;
+  readonly interfaceType: string;
+  readonly ip: string;
+  readonly model: string;
+  readonly alias?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  constructor(init: ModelInit<Printer, PrinterMetaData>);
+  static copyOf(source: Printer, mutator: (draft: MutableModel<Printer, PrinterMetaData>) => MutableModel<Printer, PrinterMetaData> | void): Printer;
 }

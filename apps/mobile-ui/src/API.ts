@@ -818,6 +818,57 @@ export type DeleteInventoryChangesInput = {
   _version?: number | null,
 };
 
+export type CreatePrinterInput = {
+  id?: string | null,
+  identifier: string,
+  interfaceType: string,
+  ip: string,
+  model: string,
+  alias?: string | null,
+  _version?: number | null,
+};
+
+export type ModelPrinterConditionInput = {
+  identifier?: ModelStringInput | null,
+  interfaceType?: ModelStringInput | null,
+  ip?: ModelStringInput | null,
+  model?: ModelStringInput | null,
+  alias?: ModelStringInput | null,
+  and?: Array< ModelPrinterConditionInput | null > | null,
+  or?: Array< ModelPrinterConditionInput | null > | null,
+  not?: ModelPrinterConditionInput | null,
+};
+
+export type Printer = {
+  __typename: "Printer",
+  id: string,
+  identifier: string,
+  interfaceType: string,
+  ip: string,
+  model: string,
+  alias?: string | null,
+  createdAt: string,
+  updatedAt: string,
+  _version: number,
+  _deleted?: boolean | null,
+  _lastChangedAt: number,
+};
+
+export type UpdatePrinterInput = {
+  id: string,
+  identifier?: string | null,
+  interfaceType?: string | null,
+  ip?: string | null,
+  model?: string | null,
+  alias?: string | null,
+  _version?: number | null,
+};
+
+export type DeletePrinterInput = {
+  id: string,
+  _version?: number | null,
+};
+
 export type ModelBrandFilterInput = {
   id?: ModelIDInput | null,
   name?: ModelStringInput | null,
@@ -1070,6 +1121,25 @@ export type ModelInventoryChangesFilterInput = {
 export type ModelInventoryChangesConnection = {
   __typename: "ModelInventoryChangesConnection",
   items:  Array<InventoryChanges | null >,
+  nextToken?: string | null,
+  startedAt?: number | null,
+};
+
+export type ModelPrinterFilterInput = {
+  id?: ModelIDInput | null,
+  identifier?: ModelStringInput | null,
+  interfaceType?: ModelStringInput | null,
+  ip?: ModelStringInput | null,
+  model?: ModelStringInput | null,
+  alias?: ModelStringInput | null,
+  and?: Array< ModelPrinterFilterInput | null > | null,
+  or?: Array< ModelPrinterFilterInput | null > | null,
+  not?: ModelPrinterFilterInput | null,
+};
+
+export type ModelPrinterConnection = {
+  __typename: "ModelPrinterConnection",
+  items:  Array<Printer | null >,
   nextToken?: string | null,
   startedAt?: number | null,
 };
@@ -2352,6 +2422,72 @@ export type DeleteInventoryChangesMutation = {
   } | null,
 };
 
+export type CreatePrinterMutationVariables = {
+  input: CreatePrinterInput,
+  condition?: ModelPrinterConditionInput | null,
+};
+
+export type CreatePrinterMutation = {
+  createPrinter?:  {
+    __typename: "Printer",
+    id: string,
+    identifier: string,
+    interfaceType: string,
+    ip: string,
+    model: string,
+    alias?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type UpdatePrinterMutationVariables = {
+  input: UpdatePrinterInput,
+  condition?: ModelPrinterConditionInput | null,
+};
+
+export type UpdatePrinterMutation = {
+  updatePrinter?:  {
+    __typename: "Printer",
+    id: string,
+    identifier: string,
+    interfaceType: string,
+    ip: string,
+    model: string,
+    alias?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type DeletePrinterMutationVariables = {
+  input: DeletePrinterInput,
+  condition?: ModelPrinterConditionInput | null,
+};
+
+export type DeletePrinterMutation = {
+  deletePrinter?:  {
+    __typename: "Printer",
+    id: string,
+    identifier: string,
+    interfaceType: string,
+    ip: string,
+    model: string,
+    alias?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
 export type GetBrandQueryVariables = {
   id: string,
 };
@@ -3554,6 +3690,84 @@ export type SyncInventoryChangesQuery = {
   } | null,
 };
 
+export type GetPrinterQueryVariables = {
+  id: string,
+};
+
+export type GetPrinterQuery = {
+  getPrinter?:  {
+    __typename: "Printer",
+    id: string,
+    identifier: string,
+    interfaceType: string,
+    ip: string,
+    model: string,
+    alias?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type ListPrintersQueryVariables = {
+  filter?: ModelPrinterFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListPrintersQuery = {
+  listPrinters?:  {
+    __typename: "ModelPrinterConnection",
+    items:  Array< {
+      __typename: "Printer",
+      id: string,
+      identifier: string,
+      interfaceType: string,
+      ip: string,
+      model: string,
+      alias?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type SyncPrintersQueryVariables = {
+  filter?: ModelPrinterFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  lastSync?: number | null,
+};
+
+export type SyncPrintersQuery = {
+  syncPrinters?:  {
+    __typename: "ModelPrinterConnection",
+    items:  Array< {
+      __typename: "Printer",
+      id: string,
+      identifier: string,
+      interfaceType: string,
+      ip: string,
+      model: string,
+      alias?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
 export type OnCreateBrandSubscription = {
   onCreateBrand?:  {
     __typename: "Brand",
@@ -4619,5 +4833,56 @@ export type OnDeleteInventoryChangesSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
     inventoryChangesProductId?: string | null,
+  } | null,
+};
+
+export type OnCreatePrinterSubscription = {
+  onCreatePrinter?:  {
+    __typename: "Printer",
+    id: string,
+    identifier: string,
+    interfaceType: string,
+    ip: string,
+    model: string,
+    alias?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnUpdatePrinterSubscription = {
+  onUpdatePrinter?:  {
+    __typename: "Printer",
+    id: string,
+    identifier: string,
+    interfaceType: string,
+    ip: string,
+    model: string,
+    alias?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnDeletePrinterSubscription = {
+  onDeletePrinter?:  {
+    __typename: "Printer",
+    id: string,
+    identifier: string,
+    interfaceType: string,
+    ip: string,
+    model: string,
+    alias?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
   } | null,
 };

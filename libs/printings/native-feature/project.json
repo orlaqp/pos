@@ -1,0 +1,26 @@
+
+{
+  "root": "libs/printings/native",
+  "sourceRoot": "libs/printings/native/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "libs/printings/native/**/*.{ts,tsx,js,jsx}"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/printings/native"],
+      "options": {
+        "jestConfig": "libs/printings/native/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

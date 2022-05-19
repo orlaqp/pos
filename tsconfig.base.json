@@ -32,7 +32,12 @@
             "@pos/categories/native-feature": [
                 "libs/categories/native-feature/src/index.ts"
             ],
-            "@pos/printing": ["libs/printing/src/index.ts"],
+            "@pos/printings/data-access": [
+                "libs/printings/data-access/src/index.ts"
+            ],
+            "@pos/printings/native-feature": [
+                "libs/printings/native-feature/src/index.ts"
+            ],
             "@pos/products/data-access": [
                 "libs/products/data-access/src/index.ts"
             ],

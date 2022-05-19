@@ -1,3 +1,4 @@
+import { printingsReducer } from './../../printings/data-access/src/lib/slices/printings.slice';
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import logger from 'redux-logger';
 
@@ -20,6 +21,7 @@ export const store = configureStore({
       unitOfMeasures: unitOfMeasuresReducer,
       cart: cartReducer,
       order: orderReducer,
+      printings: printingsReducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 });

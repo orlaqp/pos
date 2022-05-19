@@ -1,0 +1,24 @@
+
+{
+  "root": "libs/printings/data-access",
+  "sourceRoot": "libs/printings/data-access/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/printings/data-access/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/printings/data-access"],
+      "options": {
+        "jestConfig": "libs/printings/data-access/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

@@ -128,3 +128,12 @@ type InventoryChanges @model @auth(rules: [{allow: public}]) {
     quantityOut: Int!
     Product: Product @hasOne
 }
+
+type Printer @model @auth(rules: [{allow: public}]) {
+    id: ID!
+    identifier: String!
+    interfaceType: String!
+    ip: String!
+    model: String
+    alias: String
+}

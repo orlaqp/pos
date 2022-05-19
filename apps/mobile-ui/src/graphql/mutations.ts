@@ -1172,3 +1172,63 @@ export const deleteInventoryChanges = /* GraphQL */ `
     }
   }
 `;
+export const createPrinter = /* GraphQL */ `
+  mutation CreatePrinter(
+    $input: CreatePrinterInput!
+    $condition: ModelPrinterConditionInput
+  ) {
+    createPrinter(input: $input, condition: $condition) {
+      id
+      identifier
+      interfaceType
+      ip
+      model
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const updatePrinter = /* GraphQL */ `
+  mutation UpdatePrinter(
+    $input: UpdatePrinterInput!
+    $condition: ModelPrinterConditionInput
+  ) {
+    updatePrinter(input: $input, condition: $condition) {
+      id
+      identifier
+      interfaceType
+      ip
+      model
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const deletePrinter = /* GraphQL */ `
+  mutation DeletePrinter(
+    $input: DeletePrinterInput!
+    $condition: ModelPrinterConditionInput
+  ) {
+    deletePrinter(input: $input, condition: $condition) {
+      id
+      identifier
+      interfaceType
+      ip
+      model
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;

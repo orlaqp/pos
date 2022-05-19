@@ -7,38 +7,41 @@ import {
     StarXpandCommand,
 } from 'react-native-star-io10';
 
-export const discoverStarPrinters = async (): Promise<void> => {
-    try {
+export const discoverStarPrinters = async (): Promise<StarPrinter[]> => {
+    return new Promise((resolve, reject) => {
+        const printers: StarPrinter[] = [];
         // Specify your printer interface types.
-        const manager = await StarDeviceDiscoveryManagerFactory.create([
+        StarDeviceDiscoveryManagerFactory.create([
             InterfaceType.Lan,
             // InterfaceType.Bluetooth,
             // InterfaceType.BluetoothLE,
             // InterfaceType.Usb
-        ]);
+        ]).then((manager) => {
+            // Set discovery time. (option)
+            manager.discoveryTime = 10000;
 
-        // Set discovery time. (option)
-        manager.discoveryTime = 10000;
+            // Callback for printer found.
+            manager.onPrinterFound = (printer: StarPrinter) => {
+                printers.push(printer);
+                console.log(printer);
+            };
 
-        // Callback for printer found.
-        manager.onPrinterFound = (printer: StarPrinter) => {
-            console.log(printer);
-        };
+            // Callback for discovery finished. (option)
+            manager.onDiscoveryFinished = () => {
+                resolve(printers);
+                console.log(`Discovery finished.`);
+            };
 
-        // Callback for discovery finished. (option)
-        manager.onDiscoveryFinished = () => {
-            console.log(`Discovery finished.`);
-        };
+            // Start discovery.
+            manager.startDiscovery();
 
-        // Start discovery.
-        await manager.startDiscovery();
-
-        // Stop discovery.
-        // await manager.stopDiscovery()
-    } catch (error) {
-        // Error.
-        console.log(error);
-    }
+            // Stop discovery.
+            // await manager.stopDiscovery()
+            return printers;
+        }).catch((error) => {
+            console.error('Error while searching for printers', error);
+        });
+    });
 };
 
 export const print = async (): Promise<void> => {
@@ -69,7 +72,9 @@ export const print = async (): Promise<void> => {
     }
 };
 
-export const buildData = (builder: StarXpandCommand.StarXpandCommandBuilder) => {
+export const buildData = (
+    builder: StarXpandCommand.StarXpandCommandBuilder
+) => {
     // Create printing data using StarXpandCommandBuilder object.
     builder.addDocument(
         new StarXpandCommand.DocumentBuilder().addPrinter(
@@ -115,7 +120,7 @@ export const buildData = (builder: StarXpandCommand.StarXpandCommandBuilder) => 
                         .styleMagnification(
                             new StarXpandCommand.MagnificationParameter(2, 2)
                         )
-                        .actionPrintText('   $156.95\n')
+                        .actionPrintText('    $156.95\n')
                 )
                 .actionPrintText(
                     '--------------------------------\n' +

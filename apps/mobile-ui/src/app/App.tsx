@@ -8,12 +8,8 @@ import { theme } from '@pos/theme/native';
 import { Provider } from 'react-redux';
 import { store } from '@pos/store';
 import Navigation from './navigation';
-import { discoverStarPrinters, print } from '@pos/printing';
 
 export const App = () => {
-    discoverStarPrinters();
-    // print();
-
   return (
     <Provider store={store}>
       <NavigationContainer>

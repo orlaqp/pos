@@ -16,6 +16,7 @@ import { Brands } from '@pos/brands/native-feature';
 import { Categories } from '@pos/categories/native-feature';
 import { Products } from '@pos/products/native-feature';
 import { UnitOfMeasures } from '@pos/unit-of-measures/native-feature';
+import { PrinterList } from '@pos/printings/native-feature';
 
 import Logo from '../../assets/logo.png';
 import { useSelector } from 'react-redux';
@@ -85,10 +86,8 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                         <Stack.Screen name="Products" component={Products} />
                         <Stack.Screen name="Brands" component={Brands} />
                         <Stack.Screen name="U/M" component={UnitOfMeasures} />
-                        <Stack.Screen
-                            name="Categories"
-                            component={Categories}
-                        />
+                        <Stack.Screen name="Categories" component={Categories} />
+                        <Stack.Screen name="Printers" component={PrinterList} />
                     </Stack.Navigator>
                 </View>
             </View>

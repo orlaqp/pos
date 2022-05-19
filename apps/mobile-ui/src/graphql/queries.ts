@@ -1134,3 +1134,76 @@ export const syncInventoryChanges = /* GraphQL */ `
     }
   }
 `;
+export const getPrinter = /* GraphQL */ `
+  query GetPrinter($id: ID!) {
+    getPrinter(id: $id) {
+      id
+      identifier
+      interfaceType
+      ip
+      model
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const listPrinters = /* GraphQL */ `
+  query ListPrinters(
+    $filter: ModelPrinterFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listPrinters(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        identifier
+        interfaceType
+        ip
+        model
+        alias
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncPrinters = /* GraphQL */ `
+  query SyncPrinters(
+    $filter: ModelPrinterFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncPrinters(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        identifier
+        interfaceType
+        ip
+        model
+        alias
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;

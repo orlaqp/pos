@@ -1046,3 +1046,54 @@ export const onDeleteInventoryChanges = /* GraphQL */ `
     }
   }
 `;
+export const onCreatePrinter = /* GraphQL */ `
+  subscription OnCreatePrinter {
+    onCreatePrinter {
+      id
+      identifier
+      interfaceType
+      ip
+      model
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onUpdatePrinter = /* GraphQL */ `
+  subscription OnUpdatePrinter {
+    onUpdatePrinter {
+      id
+      identifier
+      interfaceType
+      ip
+      model
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onDeletePrinter = /* GraphQL */ `
+  subscription OnDeletePrinter {
+    onDeletePrinter {
+      id
+      identifier
+      interfaceType
+      ip
+      model
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
