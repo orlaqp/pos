@@ -11,6 +11,7 @@
         "mobile-ui": "apps/mobile-ui",
         "mobile-ui-e2e": "apps/mobile-ui-e2e",
         "models": "libs/shared/models",
+        "printing": "libs/printing",
         "products-data-access": "libs/products/data-access",
         "products-native-feature": "libs/products/native-feature",
         "sales-data-access": "libs/sales/data-access",

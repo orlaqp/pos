@@ -30,6 +30,7 @@
     "redux-logger": "*",
     "react-native-numeric-input": "*",
     "react-native-uuid": "*",
-    "lodash": "*"
+    "lodash": "*",
+    "react-native-star-io10": "*"
   }
 }
