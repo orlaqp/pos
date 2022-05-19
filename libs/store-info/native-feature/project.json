@@ -1,0 +1,25 @@
+{
+    "root": "libs/store-info/native-feature",
+    "sourceRoot": "libs/store-info/native-feature/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "lint": {
+            "executor": "@nrwl/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": [
+                    "libs/store-info/native-feature/**/*.{ts,tsx,js,jsx}"
+                ]
+            }
+        },
+        "test": {
+            "executor": "@nrwl/jest:jest",
+            "outputs": ["coverage/libs/store-info/native-feature"],
+            "options": {
+                "jestConfig": "libs/store-info/native-feature/jest.config.js",
+                "passWithNoTests": true
+            }
+        }
+    }
+}

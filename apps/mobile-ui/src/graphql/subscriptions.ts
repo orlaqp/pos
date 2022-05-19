@@ -1050,6 +1050,7 @@ export const onCreatePrinter = /* GraphQL */ `
   subscription OnCreatePrinter {
     onCreatePrinter {
       id
+      deviceId
       identifier
       interfaceType
       ip
@@ -1067,6 +1068,7 @@ export const onUpdatePrinter = /* GraphQL */ `
   subscription OnUpdatePrinter {
     onUpdatePrinter {
       id
+      deviceId
       identifier
       interfaceType
       ip
@@ -1084,10 +1086,53 @@ export const onDeletePrinter = /* GraphQL */ `
   subscription OnDeletePrinter {
     onDeletePrinter {
       id
+      deviceId
       identifier
       interfaceType
       ip
       model
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onCreateStation = /* GraphQL */ `
+  subscription OnCreateStation {
+    onCreateStation {
+      id
+      deviceId
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onUpdateStation = /* GraphQL */ `
+  subscription OnUpdateStation {
+    onUpdateStation {
+      id
+      deviceId
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onDeleteStation = /* GraphQL */ `
+  subscription OnDeleteStation {
+    onDeleteStation {
+      id
+      deviceId
       alias
       createdAt
       updatedAt

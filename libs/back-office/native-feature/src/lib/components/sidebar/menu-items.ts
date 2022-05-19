@@ -59,7 +59,7 @@ export const menuItems: SidebarItem[] = [
         icon: 'cog-outline',
         role: Role.Admin,
         children: [
-            { id: '7-1', title: 'Store Info' },
+            { id: '7-1', title: 'Store' },
             { id: '7-2', title: 'Printers' },
             { id: '7-3', title: 'Receipt' },
         ],

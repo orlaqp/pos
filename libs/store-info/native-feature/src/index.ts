@@ -1,0 +1,1 @@
+export * from './lib/components/store-info-form/store-info-form';

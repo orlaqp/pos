@@ -21,6 +21,8 @@
         "shared-ui-native": "libs/shared/ui-native",
         "shared-utils": "libs/shared/utils",
         "store": "libs/store",
+        "store-info-data-access": "libs/store-info/data-access",
+        "store-info-native-feature": "libs/store-info/native-feature",
         "theme-native": "libs/theme/native",
         "unit-of-measures-data-access": "libs/unit-of-measures/data-access",
         "unit-of-measures-native-feature": "libs/unit-of-measures/native-feature"

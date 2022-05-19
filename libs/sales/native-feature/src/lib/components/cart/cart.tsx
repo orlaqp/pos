@@ -10,6 +10,7 @@ import every from 'lodash/every';
 
 import EmptyCart from '../../../../assets/images/empty-cart.png';
 import CartLine from '../cart-line/cart-line';
+import { print } from '@pos/printings/data-access';
 
 export type CartMode = 'order' | 'payment'; 
 
@@ -35,7 +36,9 @@ export function Cart({ mode }: CartProps) {
 
     const submit = () => {
         if (mode === 'order') {
-            return dispatch(submitOrder(cart))
+            dispatch(submitOrder(cart));
+            print();
+            return;
         }
 
         return;

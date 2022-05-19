@@ -53,6 +53,12 @@
             "@pos/shared/ui-native": ["libs/shared/ui-native/src/index.ts"],
             "@pos/shared/utils": ["libs/shared/utils/src/index.ts"],
             "@pos/store": ["libs/store/src/index.ts"],
+            "@pos/store-info/data-access": [
+                "libs/store-info/data-access/src/index.ts"
+            ],
+            "@pos/store-info/native-feature": [
+                "libs/store-info/native-feature/src/index.ts"
+            ],
             "@pos/theme/native": ["libs/theme/native/src/index.ts"],
             "@pos/unit-of-measures/data-access": [
                 "libs/unit-of-measures/data-access/src/index.ts"

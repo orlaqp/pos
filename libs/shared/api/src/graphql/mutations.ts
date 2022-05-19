@@ -1179,6 +1179,7 @@ export const createPrinter = /* GraphQL */ `
   ) {
     createPrinter(input: $input, condition: $condition) {
       id
+      deviceId
       identifier
       interfaceType
       ip
@@ -1199,6 +1200,7 @@ export const updatePrinter = /* GraphQL */ `
   ) {
     updatePrinter(input: $input, condition: $condition) {
       id
+      deviceId
       identifier
       interfaceType
       ip
@@ -1219,10 +1221,62 @@ export const deletePrinter = /* GraphQL */ `
   ) {
     deletePrinter(input: $input, condition: $condition) {
       id
+      deviceId
       identifier
       interfaceType
       ip
       model
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const createStation = /* GraphQL */ `
+  mutation CreateStation(
+    $input: CreateStationInput!
+    $condition: ModelStationConditionInput
+  ) {
+    createStation(input: $input, condition: $condition) {
+      id
+      deviceId
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const updateStation = /* GraphQL */ `
+  mutation UpdateStation(
+    $input: UpdateStationInput!
+    $condition: ModelStationConditionInput
+  ) {
+    updateStation(input: $input, condition: $condition) {
+      id
+      deviceId
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const deleteStation = /* GraphQL */ `
+  mutation DeleteStation(
+    $input: DeleteStationInput!
+    $condition: ModelStationConditionInput
+  ) {
+    deleteStation(input: $input, condition: $condition) {
+      id
+      deviceId
       alias
       createdAt
       updatedAt

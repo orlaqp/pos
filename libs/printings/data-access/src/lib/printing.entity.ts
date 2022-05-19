@@ -2,6 +2,7 @@ import { Printer } from '@pos/shared/models';
 
 export type PrintingEntity = {
     id?: string;
+    deviceId: string;
     identifier: string;
     interfaceType: string;
     ip: string;
@@ -15,6 +16,7 @@ export class PrintingEntityMapper {
     static fromModel(c: Printer): PrintingEntity {
         return {
             id: c.id,
+            deviceId: c.deviceId,
             identifier: c.identifier,
             interfaceType: c.interfaceType,
             ip: c.ip,

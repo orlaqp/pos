@@ -1322,6 +1322,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "deviceId": {
+                    "name": "deviceId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "identifier": {
                     "name": "identifier",
                     "isArray": false,
@@ -1347,7 +1354,7 @@ export const schema = {
                     "name": "model",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "alias": {
@@ -1398,6 +1405,72 @@ export const schema = {
                     }
                 }
             ]
+        },
+        "Station": {
+            "name": "Station",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "deviceId": {
+                    "name": "deviceId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "alias": {
+                    "name": "alias",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "Stations",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "allow": "public",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
         }
     },
     "enums": {
@@ -1412,5 +1485,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "af4afc8bb2ea8b5e0dd2b855e7c9bcad"
+    "version": "42e49b379b14874cbd7252d2f9e9f421"
 };

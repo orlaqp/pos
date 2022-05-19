@@ -820,15 +820,17 @@ export type DeleteInventoryChangesInput = {
 
 export type CreatePrinterInput = {
   id?: string | null,
+  deviceId: string,
   identifier: string,
   interfaceType: string,
   ip: string,
-  model: string,
+  model?: string | null,
   alias?: string | null,
   _version?: number | null,
 };
 
 export type ModelPrinterConditionInput = {
+  deviceId?: ModelStringInput | null,
   identifier?: ModelStringInput | null,
   interfaceType?: ModelStringInput | null,
   ip?: ModelStringInput | null,
@@ -842,10 +844,11 @@ export type ModelPrinterConditionInput = {
 export type Printer = {
   __typename: "Printer",
   id: string,
+  deviceId: string,
   identifier: string,
   interfaceType: string,
   ip: string,
-  model: string,
+  model?: string | null,
   alias?: string | null,
   createdAt: string,
   updatedAt: string,
@@ -856,6 +859,7 @@ export type Printer = {
 
 export type UpdatePrinterInput = {
   id: string,
+  deviceId?: string | null,
   identifier?: string | null,
   interfaceType?: string | null,
   ip?: string | null,
@@ -865,6 +869,45 @@ export type UpdatePrinterInput = {
 };
 
 export type DeletePrinterInput = {
+  id: string,
+  _version?: number | null,
+};
+
+export type CreateStationInput = {
+  id?: string | null,
+  deviceId: string,
+  alias: string,
+  _version?: number | null,
+};
+
+export type ModelStationConditionInput = {
+  deviceId?: ModelStringInput | null,
+  alias?: ModelStringInput | null,
+  and?: Array< ModelStationConditionInput | null > | null,
+  or?: Array< ModelStationConditionInput | null > | null,
+  not?: ModelStationConditionInput | null,
+};
+
+export type Station = {
+  __typename: "Station",
+  id: string,
+  deviceId: string,
+  alias: string,
+  createdAt: string,
+  updatedAt: string,
+  _version: number,
+  _deleted?: boolean | null,
+  _lastChangedAt: number,
+};
+
+export type UpdateStationInput = {
+  id: string,
+  deviceId?: string | null,
+  alias?: string | null,
+  _version?: number | null,
+};
+
+export type DeleteStationInput = {
   id: string,
   _version?: number | null,
 };
@@ -1127,6 +1170,7 @@ export type ModelInventoryChangesConnection = {
 
 export type ModelPrinterFilterInput = {
   id?: ModelIDInput | null,
+  deviceId?: ModelStringInput | null,
   identifier?: ModelStringInput | null,
   interfaceType?: ModelStringInput | null,
   ip?: ModelStringInput | null,
@@ -1140,6 +1184,22 @@ export type ModelPrinterFilterInput = {
 export type ModelPrinterConnection = {
   __typename: "ModelPrinterConnection",
   items:  Array<Printer | null >,
+  nextToken?: string | null,
+  startedAt?: number | null,
+};
+
+export type ModelStationFilterInput = {
+  id?: ModelIDInput | null,
+  deviceId?: ModelStringInput | null,
+  alias?: ModelStringInput | null,
+  and?: Array< ModelStationFilterInput | null > | null,
+  or?: Array< ModelStationFilterInput | null > | null,
+  not?: ModelStationFilterInput | null,
+};
+
+export type ModelStationConnection = {
+  __typename: "ModelStationConnection",
+  items:  Array<Station | null >,
   nextToken?: string | null,
   startedAt?: number | null,
 };
@@ -2431,10 +2491,11 @@ export type CreatePrinterMutation = {
   createPrinter?:  {
     __typename: "Printer",
     id: string,
+    deviceId: string,
     identifier: string,
     interfaceType: string,
     ip: string,
-    model: string,
+    model?: string | null,
     alias?: string | null,
     createdAt: string,
     updatedAt: string,
@@ -2453,10 +2514,11 @@ export type UpdatePrinterMutation = {
   updatePrinter?:  {
     __typename: "Printer",
     id: string,
+    deviceId: string,
     identifier: string,
     interfaceType: string,
     ip: string,
-    model: string,
+    model?: string | null,
     alias?: string | null,
     createdAt: string,
     updatedAt: string,
@@ -2475,11 +2537,69 @@ export type DeletePrinterMutation = {
   deletePrinter?:  {
     __typename: "Printer",
     id: string,
+    deviceId: string,
     identifier: string,
     interfaceType: string,
     ip: string,
-    model: string,
+    model?: string | null,
     alias?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type CreateStationMutationVariables = {
+  input: CreateStationInput,
+  condition?: ModelStationConditionInput | null,
+};
+
+export type CreateStationMutation = {
+  createStation?:  {
+    __typename: "Station",
+    id: string,
+    deviceId: string,
+    alias: string,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type UpdateStationMutationVariables = {
+  input: UpdateStationInput,
+  condition?: ModelStationConditionInput | null,
+};
+
+export type UpdateStationMutation = {
+  updateStation?:  {
+    __typename: "Station",
+    id: string,
+    deviceId: string,
+    alias: string,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type DeleteStationMutationVariables = {
+  input: DeleteStationInput,
+  condition?: ModelStationConditionInput | null,
+};
+
+export type DeleteStationMutation = {
+  deleteStation?:  {
+    __typename: "Station",
+    id: string,
+    deviceId: string,
+    alias: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -3698,10 +3818,11 @@ export type GetPrinterQuery = {
   getPrinter?:  {
     __typename: "Printer",
     id: string,
+    deviceId: string,
     identifier: string,
     interfaceType: string,
     ip: string,
-    model: string,
+    model?: string | null,
     alias?: string | null,
     createdAt: string,
     updatedAt: string,
@@ -3723,10 +3844,11 @@ export type ListPrintersQuery = {
     items:  Array< {
       __typename: "Printer",
       id: string,
+      deviceId: string,
       identifier: string,
       interfaceType: string,
       ip: string,
-      model: string,
+      model?: string | null,
       alias?: string | null,
       createdAt: string,
       updatedAt: string,
@@ -3752,11 +3874,81 @@ export type SyncPrintersQuery = {
     items:  Array< {
       __typename: "Printer",
       id: string,
+      deviceId: string,
       identifier: string,
       interfaceType: string,
       ip: string,
-      model: string,
+      model?: string | null,
       alias?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type GetStationQueryVariables = {
+  id: string,
+};
+
+export type GetStationQuery = {
+  getStation?:  {
+    __typename: "Station",
+    id: string,
+    deviceId: string,
+    alias: string,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type ListStationsQueryVariables = {
+  filter?: ModelStationFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListStationsQuery = {
+  listStations?:  {
+    __typename: "ModelStationConnection",
+    items:  Array< {
+      __typename: "Station",
+      id: string,
+      deviceId: string,
+      alias: string,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type SyncStationsQueryVariables = {
+  filter?: ModelStationFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  lastSync?: number | null,
+};
+
+export type SyncStationsQuery = {
+  syncStations?:  {
+    __typename: "ModelStationConnection",
+    items:  Array< {
+      __typename: "Station",
+      id: string,
+      deviceId: string,
+      alias: string,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -4840,10 +5032,11 @@ export type OnCreatePrinterSubscription = {
   onCreatePrinter?:  {
     __typename: "Printer",
     id: string,
+    deviceId: string,
     identifier: string,
     interfaceType: string,
     ip: string,
-    model: string,
+    model?: string | null,
     alias?: string | null,
     createdAt: string,
     updatedAt: string,
@@ -4857,10 +5050,11 @@ export type OnUpdatePrinterSubscription = {
   onUpdatePrinter?:  {
     __typename: "Printer",
     id: string,
+    deviceId: string,
     identifier: string,
     interfaceType: string,
     ip: string,
-    model: string,
+    model?: string | null,
     alias?: string | null,
     createdAt: string,
     updatedAt: string,
@@ -4874,11 +5068,54 @@ export type OnDeletePrinterSubscription = {
   onDeletePrinter?:  {
     __typename: "Printer",
     id: string,
+    deviceId: string,
     identifier: string,
     interfaceType: string,
     ip: string,
-    model: string,
+    model?: string | null,
     alias?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnCreateStationSubscription = {
+  onCreateStation?:  {
+    __typename: "Station",
+    id: string,
+    deviceId: string,
+    alias: string,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnUpdateStationSubscription = {
+  onUpdateStation?:  {
+    __typename: "Station",
+    id: string,
+    deviceId: string,
+    alias: string,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnDeleteStationSubscription = {
+  onDeleteStation?:  {
+    __typename: "Station",
+    id: string,
+    deviceId: string,
+    alias: string,
     createdAt: string,
     updatedAt: string,
     _version: number,

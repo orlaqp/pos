@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import DeviceInfo from 'react-native-device-info';
 import { PrinterItem } from '../printer-item/printer-item';
 import { View, StyleSheet } from 'react-native';
 import { useTheme } from '@react-navigation/native';
@@ -26,7 +27,9 @@ export function PrinterList({ navigation }: PrintingListProps) {
     const defaultPrinter = useSelector(getDefaultPrinter); 
 
     const setDefaultPrinter = (printer: StarPrinter) => {
+        debugger;
         dispatch(printingsActions.select({
+            deviceId: DeviceInfo.getUniqueId(),
             identifier: printer.connectionSettings.identifier,
             ip: printer.information?.reserved.get('ipAddress'),
             model: printer.information?.model,

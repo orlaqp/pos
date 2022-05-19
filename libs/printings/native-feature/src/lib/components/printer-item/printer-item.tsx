@@ -83,7 +83,6 @@ export function PrinterItem({
                             paddingHorizontal: 10,
                             backgroundColor: theme.theme.colors.success,
                             justifyContent: 'center'
-
                         }}>
                         <Text style={{ color: theme.theme.colors.grey0 }}>
                             Default Printer

@@ -131,9 +131,16 @@ type InventoryChanges @model @auth(rules: [{allow: public}]) {
 
 type Printer @model @auth(rules: [{allow: public}]) {
     id: ID!
+    deviceId: String!
     identifier: String!
     interfaceType: String!
     ip: String!
     model: String
     alias: String
+}
+
+type Station @model @auth(rules: [{allow: public}]) {
+    id: ID!
+    deviceId: String!
+    alias: String!
 }

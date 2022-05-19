@@ -1138,6 +1138,7 @@ export const getPrinter = /* GraphQL */ `
   query GetPrinter($id: ID!) {
     getPrinter(id: $id) {
       id
+      deviceId
       identifier
       interfaceType
       ip
@@ -1160,6 +1161,7 @@ export const listPrinters = /* GraphQL */ `
     listPrinters(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        deviceId
         identifier
         interfaceType
         ip
@@ -1191,10 +1193,75 @@ export const syncPrinters = /* GraphQL */ `
     ) {
       items {
         id
+        deviceId
         identifier
         interfaceType
         ip
         model
+        alias
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const getStation = /* GraphQL */ `
+  query GetStation($id: ID!) {
+    getStation(id: $id) {
+      id
+      deviceId
+      alias
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const listStations = /* GraphQL */ `
+  query ListStations(
+    $filter: ModelStationFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listStations(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        deviceId
+        alias
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncStations = /* GraphQL */ `
+  query SyncStations(
+    $filter: ModelStationFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncStations(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        deviceId
         alias
         createdAt
         updatedAt
