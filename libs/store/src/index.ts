@@ -8,10 +8,11 @@ import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux';
 import { brandsReducer, observeBrandChanges } from '@pos/brands/data-access';
 import { unitOfMeasuresReducer } from '@pos/unit-of-measures/data-access';
-import { cartReducer, observeOpenOrderChanges, orderReducer } from '@pos/sales/data-access';
+import { cartReducer } from '@pos/sales/data-access';
 import { observeProductChanges } from '@pos/products/data-access';
 import { fetchStoreInfo, storeInfoReducer } from '@pos/store-info/data-access';
 import { fetchDefaultPrinter, printingsReducer } from '@pos/printings/data-access';
+import { OrderService, ordersReducer } from '@pos/orders/data-access';
 
 export const store = configureStore({
   reducer: {
@@ -21,7 +22,7 @@ export const store = configureStore({
       brands: brandsReducer,
       unitOfMeasures: unitOfMeasuresReducer,
       cart: cartReducer,
-      order: orderReducer,
+      orders: ordersReducer,
       printings: printingsReducer,
       storeInfo: storeInfoReducer,
   },
@@ -41,7 +42,7 @@ store.dispatch(fetchDefaultPrinter());
 observeProductChanges(store.dispatch);
 observeCategoryChanges(store.dispatch);
 observeBrandChanges(store.dispatch);
-observeOpenOrderChanges(store.dispatch);
+OrderService.observeOpenOrderChanges(store.dispatch);
 // observeUnitOfMeasureChanges(store.dispatch);
 
 export default store;

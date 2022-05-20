@@ -48,6 +48,10 @@
             "@pos/sales/native-feature": [
                 "libs/sales/native-feature/src/index.ts"
             ],
+            "@pos/orders/data-access": ["libs/orders/data-access/src/index.ts"],
+            "@pos/orders/native-feature": [
+                "libs/orders/native-feature/src/index.ts"
+            ],
             "@pos/shared/api": ["libs/shared/api/src/index.ts"],
             "@pos/shared/models": ["libs/shared/models/src/index.ts"],
             "@pos/shared/ui-native": ["libs/shared/ui-native/src/index.ts"],

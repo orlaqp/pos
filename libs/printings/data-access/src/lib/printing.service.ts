@@ -89,12 +89,12 @@ export const printReceipt = async (
                     )
                     .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
                     .actionPrintText(
-                        'SKU     Description        Total\n' +
-                        cart.items.map(i => `${i.product.sku?.padEnd(6, ' ')}  ${i.product.name.substring(0, 13).padEnd(13, ' ')}  ${i.product.price.toFixed(2).padStart(9, ' ')}`).join('\n') +
+                        'SKU   Description        Total\n' +
+                        cart.items.map(i => `${i.product.sku?.padEnd(5, ' ')} ${i.quantity.toString().padStart(2, ' ')}x${i.product.name.substring(0, 13).padEnd(13, ' ')} ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`).join('\n') +
                             
                         '\n\n' +
-                        `Subtotal                   ${cart.footer.subtotal.toFixed(2)}\n` +
-                        'Tax                         0.00\n' +
+                        // `Subtotal                 ${cart.footer.subtotal.toFixed(2).padStart(7, ' ')}\n` +
+                        // 'Tax                         0.00\n' +
                         '--------------------------------\n'
                     )
                     .actionPrintText('Total     ')
@@ -106,8 +106,9 @@ export const printReceipt = async (
                                     2
                                 )
                             )
-                            .actionPrintText(`    ${cart.footer.total.toFixed(2)}\n`)
+                            .actionPrintText(`     ${cart.footer.total.toFixed(2).padStart(7, '')}\n`)
                     )
+                    .actionPrintText('--------------------------------\n')
                     .actionFeedLine(1)
                     .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
                     .actionPrintQRCode(
@@ -120,6 +121,8 @@ export const printReceipt = async (
                             .setLevel(StarXpandCommand.Printer.QRCodeLevel.L)
                             .setCellSize(8)
                     )
+                    .actionFeedLine(1)
+                    .actionPrintText(`${order.id.substring(0, 6)}...\n`)
                     .actionFeedLine(1)
                     .actionCut(StarXpandCommand.Printer.CutType.Partial)
             )

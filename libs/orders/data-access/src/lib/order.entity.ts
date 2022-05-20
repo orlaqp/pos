@@ -21,6 +21,7 @@ export interface OrderLineEntity {
   readonly unitOfMeasure: string;
   readonly quantity: number;
   readonly tax: number;
+  readonly price: number;
   readonly discountType?: string | null;
   readonly discountValue?: number | null;
   readonly orderID: string;
@@ -47,6 +48,7 @@ export class OrderEntityMapper {
                     productName: i?.productName,
                     quantity: i?.quantity,
                     tax: 0,
+                    price: i.price,
                     unitOfMeasure: i?.unitOfMeasure,
                     createdAt: i?.createdAt,
                     updatedAt: i?.updatedAt
