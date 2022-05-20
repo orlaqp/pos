@@ -153,7 +153,6 @@ export const onCreateOrder = /* GraphQL */ `
   subscription OnCreateOrder {
     onCreateOrder {
       id
-      orderNo
       subtotal
       tax
       total
@@ -189,7 +188,6 @@ export const onUpdateOrder = /* GraphQL */ `
   subscription OnUpdateOrder {
     onUpdateOrder {
       id
-      orderNo
       subtotal
       tax
       total
@@ -225,7 +223,6 @@ export const onDeleteOrder = /* GraphQL */ `
   subscription OnDeleteOrder {
     onDeleteOrder {
       id
-      orderNo
       subtotal
       tax
       total

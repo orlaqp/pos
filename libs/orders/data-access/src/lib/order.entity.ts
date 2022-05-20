@@ -1,39 +1,35 @@
 import { Order, OrderStatus } from '@pos/shared/models';
 
 export interface OrderEntity {
-  readonly id: string;
-  readonly orderNo: string;
-  readonly subtotal: number;
-  readonly tax: number;
-  readonly total: number;
-  readonly status: OrderStatus | keyof typeof OrderStatus;
-  readonly items?: (OrderLineEntity | null)[] | null;
-//   readonly Customer?: Customer | null;
-  readonly createdAt?: string | null;
-  readonly updatedAt?: string | null;
-//   readonly orderCustomerId?: string | null;
+  id: string;
+  subtotal: number;
+  tax: number;
+  total: number;
+  status: OrderStatus | keyof typeof OrderStatus;
+  items?: (OrderLineEntity | null)[] | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface OrderLineEntity {
-  readonly id: string;
-  readonly productId: string;
-  readonly productName: string;
-  readonly unitOfMeasure: string;
-  readonly quantity: number;
-  readonly tax: number;
-  readonly price: number;
-  readonly discountType?: string | null;
-  readonly discountValue?: number | null;
-  readonly orderID: string;
-  readonly createdAt?: string | null;
-  readonly updatedAt?: string | null;
+  id: string;
+  productId: string;
+  productName: string;
+  unitOfMeasure: string;
+  quantity: number;
+  tax: number;
+  price: number;
+  discountType?: string | null;
+  discountValue?: number | null;
+  orderID: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }
 
 export class OrderEntityMapper {
     static fromModel(p: Order): OrderEntity {
         return {
             id: p.id,
-            orderNo: p.orderNo,
             subtotal: p.subtotal,
             tax: p.tax,
             total: p.total,

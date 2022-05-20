@@ -12,7 +12,8 @@ import { cartReducer } from '@pos/sales/data-access';
 import { observeProductChanges } from '@pos/products/data-access';
 import { fetchStoreInfo, storeInfoReducer } from '@pos/store-info/data-access';
 import { fetchDefaultPrinter, printingsReducer } from '@pos/printings/data-access';
-import { OrderService, ordersReducer } from '@pos/orders/data-access';
+import { ordersReducer } from '@pos/orders/data-access';
+import { observeOpenOrderChanges } from '@pos/orders/data-access';
 
 export const store = configureStore({
   reducer: {
@@ -42,7 +43,7 @@ store.dispatch(fetchDefaultPrinter());
 observeProductChanges(store.dispatch);
 observeCategoryChanges(store.dispatch);
 observeBrandChanges(store.dispatch);
-OrderService.observeOpenOrderChanges(store.dispatch);
+// observeOpenOrderChanges(store.dispatch);
 // observeUnitOfMeasureChanges(store.dispatch);
 
 export default store;

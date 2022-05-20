@@ -183,7 +183,6 @@ export const createOrder = /* GraphQL */ `
   ) {
     createOrder(input: $input, condition: $condition) {
       id
-      orderNo
       subtotal
       tax
       total
@@ -222,7 +221,6 @@ export const updateOrder = /* GraphQL */ `
   ) {
     updateOrder(input: $input, condition: $condition) {
       id
-      orderNo
       subtotal
       tax
       total
@@ -261,7 +259,6 @@ export const deleteOrder = /* GraphQL */ `
   ) {
     deleteOrder(input: $input, condition: $condition) {
       id
-      orderNo
       subtotal
       tax
       total

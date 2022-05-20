@@ -6,11 +6,9 @@ import { OrderEntityMapper } from './order.entity';
 import { CartState } from '@pos/sales/data-access';
 import { ordersActions } from './slices/orders.slice';
 
-
 export class OrderService {
     static async saveOrder(state: CartState) {
         let o = new Order({
-            orderNo: '1',
             status: 'CREATED',
             subtotal: state.footer.subtotal,
             tax: 0,
@@ -20,7 +18,7 @@ export class OrderService {
         o = await DataStore.save(o);
         
         const promises: Promise<unknown>[] = [];
-        const oLines = state.items.forEach((i) => {
+        state.items.forEach((i) => {
             const ol = new OrderLine({
                 orderID: o.id,
                 quantity: i.quantity,
@@ -38,23 +36,6 @@ export class OrderService {
         return o;
     }
 
-    static observeOpenOrderChanges(dispatch: Dispatch) {
-        DataStore.observeQuery(Order, (o) => o.status('eq', 'CREATED')).subscribe(
-            ({ isSynced, items }) => {
-                if (isSynced) {
-                    dispatch(
-                        ordersActions.addMany(
-                            items.map((i) => OrderEntityMapper.fromModel(i))
-                        )
-                    );
-                }
-            },
-            (error) => {
-                dispatch(ordersActions.submitError(error.message));
-            }
-        );
-    };
-
     static getOpenOrders() {
         return DataStore.query(Order, o => o.status('eq', 'CREATED'));
     }
@@ -71,3 +52,20 @@ export class OrderService {
         return DataStore.delete(item);
     }
 }
+
+export function observeOpenOrderChanges(dispatch: Dispatch) {
+    DataStore.observeQuery(Order, (o) => o.status('eq', 'CREATED')).subscribe(
+        ({ isSynced, items }) => {
+            if (isSynced) {
+                dispatch(
+                    ordersActions.addMany(
+                        items.map((i) => OrderEntityMapper.fromModel(i))
+                    )
+                );
+            }
+        },
+        (error) => {
+            dispatch(ordersActions.submitError(error.message));
+        }
+    );
+};

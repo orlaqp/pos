@@ -189,7 +189,6 @@ export type DeleteCustomerInput = {
 
 export type CreateOrderInput = {
   id?: string | null,
-  orderNo: string,
   subtotal: number,
   tax: number,
   total: number,
@@ -207,7 +206,6 @@ export enum OrderStatus {
 
 
 export type ModelOrderConditionInput = {
-  orderNo?: ModelStringInput | null,
   subtotal?: ModelFloatInput | null,
   tax?: ModelFloatInput | null,
   total?: ModelFloatInput | null,
@@ -254,7 +252,6 @@ export type ModelIDInput = {
 export type Order = {
   __typename: "Order",
   id: string,
-  orderNo: string,
   subtotal: number,
   tax: number,
   total: number,
@@ -297,7 +294,6 @@ export type OrderLine = {
 
 export type UpdateOrderInput = {
   id: string,
-  orderNo?: string | null,
   subtotal?: number | null,
   tax?: number | null,
   total?: number | null,
@@ -985,7 +981,6 @@ export type ModelCustomerConnection = {
 
 export type ModelOrderFilterInput = {
   id?: ModelIDInput | null,
-  orderNo?: ModelStringInput | null,
   subtotal?: ModelFloatInput | null,
   tax?: ModelFloatInput | null,
   total?: ModelFloatInput | null,
@@ -1425,7 +1420,6 @@ export type CreateOrderMutation = {
   createOrder?:  {
     __typename: "Order",
     id: string,
-    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -1468,7 +1462,6 @@ export type UpdateOrderMutation = {
   updateOrder?:  {
     __typename: "Order",
     id: string,
-    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -1511,7 +1504,6 @@ export type DeleteOrderMutation = {
   deleteOrder?:  {
     __typename: "Order",
     id: string,
-    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -2876,7 +2868,6 @@ export type GetOrderQuery = {
   getOrder?:  {
     __typename: "Order",
     id: string,
-    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -2922,7 +2913,6 @@ export type ListOrdersQuery = {
     items:  Array< {
       __typename: "Order",
       id: string,
-      orderNo: string,
       subtotal: number,
       tax: number,
       total: number,
@@ -2952,7 +2942,6 @@ export type SyncOrdersQuery = {
     items:  Array< {
       __typename: "Order",
       id: string,
-      orderNo: string,
       subtotal: number,
       tax: number,
       total: number,
@@ -4155,7 +4144,6 @@ export type OnCreateOrderSubscription = {
   onCreateOrder?:  {
     __typename: "Order",
     id: string,
-    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -4193,7 +4181,6 @@ export type OnUpdateOrderSubscription = {
   onUpdateOrder?:  {
     __typename: "Order",
     id: string,
-    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -4231,7 +4218,6 @@ export type OnDeleteOrderSubscription = {
   onDeleteOrder?:  {
     __typename: "Order",
     id: string,
-    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,

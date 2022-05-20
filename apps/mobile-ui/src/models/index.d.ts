@@ -112,7 +112,6 @@ export declare class Customer {
 
 export declare class Order {
   readonly id: string;
-  readonly orderNo: string;
   readonly subtotal: number;
   readonly tax: number;
   readonly total: number;

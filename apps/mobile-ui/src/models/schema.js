@@ -257,13 +257,6 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
-                "orderNo": {
-                    "name": "orderNo",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
                 "subtotal": {
                     "name": "subtotal",
                     "isArray": false,
@@ -1513,5 +1506,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "d86afcb8da5b0b783653c0ec15e17537"
+    "version": "405ea476734b47db81e33736ca2281f8"
 };

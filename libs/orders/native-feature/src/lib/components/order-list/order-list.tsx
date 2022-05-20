@@ -1,7 +1,7 @@
 import React from 'react';
 import {
+    fetchOpenOrders,
     ordersActions,
-    fetchOrders,
     selectFilteredList,
     selectIsEmpty,
     selectLoadingStatus,
@@ -28,7 +28,7 @@ export function OrderList({ navigation }: OrderListProps) {
         filteredListSelector: selectFilteredList,
         clearSelectionAction: ordersActions.clearSelection,
         filterAction: ordersActions.filter,
-        fetchItemsAction: undefined,
+        fetchItemsAction: fetchOpenOrders,
     };
 
     return <UIGenericItemList {...props} goBackEnable={true} />;

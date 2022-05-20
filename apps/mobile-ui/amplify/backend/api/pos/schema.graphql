@@ -25,7 +25,6 @@ type Customer @model @auth(rules: [{allow: public}]) {
 
 type Order @model @auth(rules: [{allow: public}]) {
   id: ID!
-  orderNo: String!
   subtotal: Float!
   tax: Float!
   total: Float!
