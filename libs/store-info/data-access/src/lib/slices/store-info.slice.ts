@@ -2,12 +2,12 @@ import {
     createAsyncThunk,
     createSelector,
     createSlice,
-    EntityState,
     PayloadAction,
 } from '@reduxjs/toolkit';
 import { StoreInfoEntity, StoreInfoEntityMapper } from './store-info.entity';
 import DeviceInfo from 'react-native-device-info';
 import { StoreInfoService } from './store-info.service';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
 
 export const STORE_INFO_FEATURE_KEY = 'storeInfo';

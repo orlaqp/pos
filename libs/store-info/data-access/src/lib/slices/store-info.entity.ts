@@ -9,7 +9,9 @@ export interface StoreInfoEntity {
     zipCode: string;
     country: string;
     phone: string;
+    fax: string | null | undefined;
     email: string;
+    disclaimer: string | null | undefined;
     createdAt?: string | null;
     updatedAt?: string | null;
 }
@@ -26,6 +28,8 @@ export class StoreInfoEntityMapper {
             country: c.country,
             email: c.email,
             phone: c.phone,
+            fax: c.fax,
+            disclaimer: c.disclaimer,
             createdAt: c.createdAt,
             updatedAt: c.updatedAt
         }

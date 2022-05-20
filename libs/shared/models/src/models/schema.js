@@ -965,11 +965,25 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "fax": {
+                    "name": "fax",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "email": {
                     "name": "email",
                     "isArray": false,
                     "type": "String",
                     "isRequired": true,
+                    "attributes": []
+                },
+                "disclaimer": {
+                    "name": "disclaimer",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
                     "attributes": []
                 },
                 "createdAt": {
@@ -1499,5 +1513,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "7bfc03c4263d0190f1e5ca97ab9c5189"
+    "version": "d86afcb8da5b0b783653c0ec15e17537"
 };

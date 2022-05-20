@@ -3,7 +3,7 @@ import { UIEmptyState, UISearchInput, UISpinner } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, FAB, useTheme } from '@rneui/themed';
 
-import { View, StyleSheet, FlatList } from 'react-native';
+import { View, StyleSheet, FlatList, Alert } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Dictionary } from '@reduxjs/toolkit';
@@ -27,6 +27,7 @@ export interface ItemListProps<TState, TEntityType> {
     fetchItemsAction?: () => unknown;
 
     ItemComponent: (props: ItemComponentProps<TEntityType>) => JSX.Element;
+    goBackEnable?: boolean;
 }
 
 export function UIGenericItemList({
@@ -39,6 +40,7 @@ export function UIGenericItemList({
     fetchItemsAction,
     filteredListSelector,
     ItemComponent,
+    goBackEnable,
 }: ItemListProps<unknown, unknown>) {
     const theme = useTheme();
     const styles = useStyles();
@@ -58,13 +60,14 @@ export function UIGenericItemList({
     };
 
     useEffect(() => {
-        if (fetchItemsAction && loadingStatus === 'not loaded') dispatch(fetchItemsAction());
+        if (fetchItemsAction && loadingStatus === 'not loaded')
+            dispatch(fetchItemsAction());
     }, [loadingStatus, dispatch, fetchItemsAction]);
 
     if (loadingStatus === 'loading' || loadingStatus === 'not loaded')
         return (
             <View style={[styles.page, { paddingTop: 50 }]}>
-                <UISpinner size='small' message="Loading..." />
+                <UISpinner size="small" message="Loading..." />
             </View>
         );
 
@@ -77,11 +80,34 @@ export function UIGenericItemList({
             />
         );
 
+    
+    const confirmGoBack = () => {
+        Alert.alert('Are you sure?', 'Press yes to confirm', [
+            { text: 'No' },
+            { text: 'Yes', onPress: () => navigation.goBack() },
+        ]);
+    };
+
     return (
         <View style={styles.detailsPage}>
-            <View style={styles.header}>
+            <View style={[styles.header, { alignItems: 'center' }]}>
+                {goBackEnable && (
+                    <View style={{ marginRight: 20 }}>
+                        <Button
+                            icon={{
+                                name: 'arrow-left',
+                                type: 'material-community',
+                                color: styles.primaryText.color,
+                            }}
+                            onPress={confirmGoBack}
+                        />
+                    </View>
+                )}
                 <View style={{ flex: 5 }}>
-                    <UISearchInput debounceTime={300} onTextChanged={filterList} />
+                    <UISearchInput
+                        debounceTime={300}
+                        onTextChanged={filterList}
+                    />
                 </View>
                 <Button
                     type="clear"
@@ -91,7 +117,9 @@ export function UIGenericItemList({
                         color: theme.theme.colors.grey2,
                     }}
                     style={{ top: 4, left: 15 }}
-                    onPress={() => fetchItemsAction && dispatch(fetchItemsAction())}
+                    onPress={() =>
+                        fetchItemsAction && dispatch(fetchItemsAction())
+                    }
                 />
                 <View
                     style={{ flex: 1, alignItems: 'flex-end', marginRight: 20 }}

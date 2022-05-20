@@ -79,7 +79,7 @@ export const printReceipt = async (
                     )
                     .styleCharacterSpace(0)
                     .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
-                    .actionPrintText(`${store.name}\n${store.address}\n${store.city}, ${store.state} ${store.zipCode}\n\n`
+                    .actionPrintText(`${store.name}\n${store.address}\n${store.city}, ${store.state} ${store.zipCode}\nP: ${store.phone}\nF: ${store.fax}\n${store.email}\n\n`
                     )
                     .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
                     .actionPrintText(
@@ -109,6 +109,13 @@ export const printReceipt = async (
                             .actionPrintText(`     ${cart.footer.total.toFixed(2).padStart(7, '')}\n`)
                     )
                     .actionPrintText('--------------------------------\n')
+                    .actionFeedLine(1)
+                    .add(
+                        new StarXpandCommand.PrinterBuilder()
+                            .styleInvert(true)
+                            .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
+                            .actionPrintText(` ${store.disclaimer} \n`)
+                    )
                     .actionFeedLine(1)
                     .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
                     .actionPrintQRCode(

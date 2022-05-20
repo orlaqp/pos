@@ -733,7 +733,9 @@ export const createStore = /* GraphQL */ `
       zipCode
       country
       phone
+      fax
       email
+      disclaimer
       createdAt
       updatedAt
       _version
@@ -756,7 +758,9 @@ export const updateStore = /* GraphQL */ `
       zipCode
       country
       phone
+      fax
       email
+      disclaimer
       createdAt
       updatedAt
       _version
@@ -779,7 +783,9 @@ export const deleteStore = /* GraphQL */ `
       zipCode
       country
       phone
+      fax
       email
+      disclaimer
       createdAt
       updatedAt
       _version

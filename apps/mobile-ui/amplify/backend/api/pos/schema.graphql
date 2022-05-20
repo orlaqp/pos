@@ -94,7 +94,9 @@ type Store @model @auth(rules: [{allow: public}]) {
   zipCode: String!
   country: String!
   phone: String!
+  fax: String
   email: String!
+  disclaimer: String
 }
 
 type Supplier @model @auth(rules: [{allow: public}]) {

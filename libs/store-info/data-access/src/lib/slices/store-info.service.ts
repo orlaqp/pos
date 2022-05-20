@@ -34,6 +34,8 @@ export class StoreInfoService {
                 updated.zipCode = store.zipCode;
                 updated.country = store.country;
                 updated.email = store.email;
+                updated.fax = store.fax;
+                updated.disclaimer = store.disclaimer;
                 updated.phone = store.phone;
             })
         );

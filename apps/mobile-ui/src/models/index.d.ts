@@ -209,7 +209,9 @@ export declare class Store {
   readonly zipCode: string;
   readonly country: string;
   readonly phone: string;
+  readonly fax?: string | null;
   readonly email: string;
+  readonly disclaimer?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Store, StoreMetaData>);

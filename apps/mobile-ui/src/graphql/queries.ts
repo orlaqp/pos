@@ -694,7 +694,9 @@ export const getStore = /* GraphQL */ `
       zipCode
       country
       phone
+      fax
       email
+      disclaimer
       createdAt
       updatedAt
       _version
@@ -719,7 +721,9 @@ export const listStores = /* GraphQL */ `
         zipCode
         country
         phone
+        fax
         email
+        disclaimer
         createdAt
         updatedAt
         _version
@@ -753,7 +757,9 @@ export const syncStores = /* GraphQL */ `
         zipCode
         country
         phone
+        fax
         email
+        disclaimer
         createdAt
         updatedAt
         _version

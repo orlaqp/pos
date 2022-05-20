@@ -56,6 +56,8 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
             country: 'USA',
             email: storeInfo?.email,
             phone: storeInfo?.phone,
+            fax: storeInfo?.fax,
+            disclaimer: storeInfo?.disclaimer,
         },
     });
 
@@ -78,9 +80,16 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
                     <UIInput name="city" placeholder="City" rules={{ required: true }} />
                     <UIInput name="state" placeholder="State" rules={{ required: true }} />
                     <UIInput name="zipCode" placeholder="Zip Code" rules={{ required: true }} />
-                    {/* <UIInput name="country" placeholder="Country" rules={{ required: true }} /> */}
                     <UIInput name="email" placeholder="Email" rules={{ required: true }} />
                     <UIInput name="phone" placeholder="Phone" rules={{ required: true }} />
+                    <UIInput name="fax" placeholder="Fax" rules={{ required: true }} />
+                    <UIInput
+                        name="disclaimer"
+                        placeholder="Disclaimer"
+                        multiline={true}
+                        numberOfLines={2}
+                        style={{ height: 80, textAlignVertical: 'top' }}
+                    />
                     
                     <UIActions
                         busy={busy}
