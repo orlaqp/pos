@@ -81,7 +81,7 @@ export function UIGenericItemList({
         <View style={styles.detailsPage}>
             <View style={styles.header}>
                 <View style={{ flex: 5 }}>
-                    <UISearchInput onChange={filterList} />
+                    <UISearchInput debounceTime={300} onTextChanged={filterList} />
                 </View>
                 <Button
                     type="clear"

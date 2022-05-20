@@ -1,10 +1,8 @@
 import { UISearchInput } from '@pos/shared/ui-native';
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 
-import { TextInputKeyPressEventData, View } from 'react-native';
-import debounce from 'lodash/debounce';
+import { View } from 'react-native';
 import { Button, useTheme } from '@rneui/themed';
-import { NativeSyntheticEvent } from 'react-native';
 
 /* eslint-disable-next-line */
 export interface ProductSearchProps {
