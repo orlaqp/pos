@@ -178,8 +178,6 @@ export const selectBrand = (id: string | null | undefined) => createSelector(
 
 
 function filterList(state: BrandsState, query?: string) {
-    console.log('Query', query);
-    
     const filteredList: Dictionary<BrandEntity> = {};
     
     if (!query) {

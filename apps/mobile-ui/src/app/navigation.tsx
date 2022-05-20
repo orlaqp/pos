@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@pos/store';
 import { BackOffice } from '@pos/back-office/native-feature';
 import { DataStore } from 'aws-amplify';
+import { Orders } from '@pos/orders/native-feature';
 
 /* eslint-disable-next-line */
 export interface NavigationParamList {
@@ -38,6 +39,7 @@ export function Navigation() {
         <>
             <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Sales" component={SalesScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Payments" component={Orders} options={{ headerShown: false }} />
             <Stack.Screen name="BackOffice" component={BackOffice} options={{ headerShown: false }} />
         </>
     ) : (

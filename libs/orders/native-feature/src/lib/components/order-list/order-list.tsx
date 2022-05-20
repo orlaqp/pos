@@ -19,7 +19,7 @@ export function OrderList({ navigation }: OrderListProps) {
         filteredListSelector: selectFilteredList,
         clearSelectionAction: ordersActions.clearSelection,
         filterAction: ordersActions.filter,
-        fetchItemsAction: fetchOrders,
+        fetchItemsAction: undefined,
     }
 
     return <UIGenericItemList {...props} />

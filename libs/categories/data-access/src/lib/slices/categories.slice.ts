@@ -179,8 +179,6 @@ export const selectCategory = (id: string) => createSelector(
 
 
 function filterList(state: CategoriesState, query?: string) {
-    console.log('Query', query);
-    
     const filteredList: Dictionary<CategoryEntity> = {};
     
     if (!query) {

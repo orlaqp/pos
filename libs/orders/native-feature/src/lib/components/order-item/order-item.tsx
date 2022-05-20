@@ -7,6 +7,8 @@ import { Button, useTheme } from '@rneui/themed';
 import { ordersActions, OrderEntity, OrderService } from '@pos/orders/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { format, formatDistance, formatRelative, subDays } from 'date-fns'
+
 
 export interface OrderItemProps {
     item: OrderEntity;
@@ -50,9 +52,22 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
             { busy &&
             <ActivityIndicator size='small' />
             }
-            <UIS3Image s3Key={item.picture} width={50} height={50} />
-            <View style={{ flex: 5 }}>
-                <Text style={styles.name}>Sample name</Text>
+            <View style={{ flex: 1.5 }}>
+                <Text style={styles.name}>{`${item.id.substring(0, 8)}...`}</Text>
+            </View>
+            <View style={{ flex: 3 }}>
+                <Text style={styles.name}>
+                    {new Date(item.createdAt!).toLocaleString()}
+                </Text>
+            </View>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.name}>{item.status}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.name}>{item.items?.length}</Text>
+            </View>
+            <View style={{ flex: 3 }}>
+                <Text style={styles.name}>{`$ ${item.total.toFixed(2)}`}</Text>
             </View>
             <View
                 style={{

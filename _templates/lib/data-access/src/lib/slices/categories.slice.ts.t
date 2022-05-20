@@ -147,9 +147,8 @@ export const selectFilteredList = createSelector(
 
 
 function filterList(state: <%= pluralUpper %>State, query?: string) {
-    console.log('Query', query);
-    
-    const filteredList: Dictionary<<%= className %>Entity> = {};
+    const filteredList: Dictionary< <%= className %>Entity> = {};
+    state.loadingStatus = 'loaded';
     
     if (!query) {
         state.filteredList = state.entities;

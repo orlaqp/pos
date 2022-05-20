@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { theme, useSharedStyles } from '@pos/theme/native';
+import { useSharedStyles } from '@pos/theme/native';
 import { Dialog, useTheme } from '@rneui/themed';
 
 import { View, StyleSheet, SafeAreaView, Alert } from 'react-native';
 
-import { categoriesActions, CategoryEntity } from '@pos/categories/data-access';
+import { CategoryEntity } from '@pos/categories/data-access';
 import CategorySelection from '../category-selection/category-selection';
 import ProductSelection from '../product-selection/product-selection';
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,11 +15,11 @@ import {
     selectActiveProduct,
 } from '@pos/sales/data-access';
 import ProductDetails from '../product-details/product-details';
-import Cart, { CartMode, CartProps } from '../cart/cart';
+import Cart from '../cart/cart';
 import { ProductEntity, productsActions, selectFilteredList } from '@pos/products/data-access';
 import ProductSearch from '../product-search/product-search';
 import { Button } from '@rneui/base';
-import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ButtonItemType } from '@pos/shared/ui-native';
 import { RootState } from '@pos/store';
 import { Dictionary } from '@reduxjs/toolkit';

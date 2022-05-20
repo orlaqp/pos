@@ -55,7 +55,7 @@ export const submitOrder = createAsyncThunk(
         const o = await OrderService.saveOrder(request.cart);
         return {
             ...request,
-            order: o,
+            order: OrderEntityMapper.fromModel(o),
         };
     }
 );
@@ -183,9 +183,8 @@ export const selectFilteredList = createSelector(
 );
 
 function filterList(state: OrdersState, query?: string) {
-    console.log('Query', query);
-
     const filteredList: Dictionary<OrderEntity> = {};
+    state.loadingStatus = 'loaded';
 
     if (!query) {
         state.filteredList = state.entities;
