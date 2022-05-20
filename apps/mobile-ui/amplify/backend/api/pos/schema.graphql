@@ -41,6 +41,7 @@ type OrderLine @model @auth(rules: [{allow: public}]) {
   unitOfMeasure: String!
   quantity: Float!
   tax: Float!
+  price: Float!
   discountType: String
   discountValue: Float
   orderID: ID! @index(name: "byOrder")
@@ -90,6 +91,7 @@ type Store @model @auth(rules: [{allow: public}]) {
   address: String!
   city: String!
   state: String!
+  zipCode: String!
   country: String!
   phone: String!
   email: String!

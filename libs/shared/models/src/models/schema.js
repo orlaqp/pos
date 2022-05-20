@@ -416,6 +416,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "price": {
+                    "name": "price",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "discountType": {
                     "name": "discountType",
                     "isArray": false,
@@ -932,6 +939,13 @@ export const schema = {
                 },
                 "state": {
                     "name": "state",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "zipCode": {
+                    "name": "zipCode",
                     "isArray": false,
                     "type": "String",
                     "isRequired": true,
@@ -1485,5 +1499,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "42e49b379b14874cbd7252d2f9e9f421"
+    "version": "7bfc03c4263d0190f1e5ca97ab9c5189"
 };

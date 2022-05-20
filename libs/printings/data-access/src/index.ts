@@ -1,4 +1,4 @@
-export * from './lib/slices/printings.slice';
-export * from './lib/printing.entity';
-export * from './lib/printer.service';
+export * from './lib/slices/printers.slice';
+export * from './lib/slices/printer.entity';
+export * from './lib/slices/printer.service';
 export * from './lib/printing.service';

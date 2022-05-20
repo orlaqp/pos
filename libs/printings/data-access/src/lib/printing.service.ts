@@ -1,3 +1,5 @@
+import { StoreInfoEntity } from '@pos/store-info/data-access';
+import { CartState, OrderEntity } from '@pos/sales/data-access';
 import {
     InterfaceType,
     StarConnectionSettings,
@@ -6,6 +8,10 @@ import {
     StarPrinter,
     StarXpandCommand,
 } from 'react-native-star-io10';
+import { PrinterEntity } from './slices/printer.entity';
+import { Alert } from 'react-native';
+
+let starManager: StarDeviceDiscoveryManager;
 
 export const discoverStarPrinters = async (): Promise<StarPrinter[]> => {
     return new Promise((resolve, reject) => {
@@ -16,35 +22,114 @@ export const discoverStarPrinters = async (): Promise<StarPrinter[]> => {
             // InterfaceType.Bluetooth,
             // InterfaceType.BluetoothLE,
             // InterfaceType.Usb
-        ]).then((manager) => {
-            // Set discovery time. (option)
-            manager.discoveryTime = 10000;
+        ])
+            .then((manager) => {
+                starManager = manager;
+                // Set discovery time. (option)
+                manager.discoveryTime = 10000;
 
-            // Callback for printer found.
-            manager.onPrinterFound = (printer: StarPrinter) => {
-                printers.push(printer);
-                console.log(printer);
-            };
+                // Callback for printer found.
+                manager.onPrinterFound = (printer: StarPrinter) => {
+                    printers.push(printer);
+                    console.log(printer);
+                };
 
-            // Callback for discovery finished. (option)
-            manager.onDiscoveryFinished = () => {
-                resolve(printers);
-                console.log(`Discovery finished.`);
-            };
+                // Callback for discovery finished. (option)
+                manager.onDiscoveryFinished = () => {
+                    resolve(printers);
+                    console.log(`Discovery finished.`);
+                };
 
-            // Start discovery.
-            manager.startDiscovery();
+                // Start discovery.
+                manager.startDiscovery();
 
-            // Stop discovery.
-            // await manager.stopDiscovery()
-            return printers;
-        }).catch((error) => {
-            console.error('Error while searching for printers', error);
-        });
+                // Stop discovery.
+                // await manager.stopDiscovery()
+                return printers;
+            })
+            .catch((error) => {
+                console.error('Error while searching for printers', error);
+            });
     });
 };
 
-export const print = async (): Promise<void> => {
+export const stopDiscovery = () => {
+    starManager.stopDiscovery();
+};
+
+export const printReceipt = async (
+    store?: StoreInfoEntity,
+    printerInfo?: PrinterEntity,
+    cart: CartState,
+    order: OrderEntity,
+) => {
+    if (!store || !printerInfo) {
+        Alert.alert('Store and printer should be available in order to print');
+        return;
+    }
+
+    print((builder) => {
+        const date = new Date();
+
+        builder.addDocument(
+            new StarXpandCommand.DocumentBuilder().addPrinter(
+                new StarXpandCommand.PrinterBuilder()
+                    .styleInternationalCharacter(
+                        StarXpandCommand.Printer.InternationalCharacterType.Usa
+                    )
+                    .styleCharacterSpace(0)
+                    .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
+                    .actionPrintText(`${store.name}\n${store.address}\n${store.city}, ${store.state} ${store.zipCode}\n\n`
+                    )
+                    .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
+                    .actionPrintText(
+                        `Date:${date.toLocaleString()}\n` +
+                            '--------------------------------\n' +
+                            '\n'
+                    )
+                    .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
+                    .actionPrintText(
+                        'SKU     Description        Total\n' +
+                        cart.items.map(i => `${i.product.sku?.padEnd(6, ' ')}  ${i.product.name.substring(0, 13).padEnd(13, ' ')}  ${i.product.price.toFixed(2).padStart(9, ' ')}`).join('\n') +
+                            
+                        '\n\n' +
+                        `Subtotal                   ${cart.footer.subtotal.toFixed(2)}\n` +
+                        'Tax                         0.00\n' +
+                        '--------------------------------\n'
+                    )
+                    .actionPrintText('Total     ')
+                    .add(
+                        new StarXpandCommand.PrinterBuilder()
+                            .styleMagnification(
+                                new StarXpandCommand.MagnificationParameter(
+                                    2,
+                                    2
+                                )
+                            )
+                            .actionPrintText(`    ${cart.footer.total.toFixed(2)}\n`)
+                    )
+                    .actionFeedLine(1)
+                    .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
+                    .actionPrintQRCode(
+                        new StarXpandCommand.Printer.QRCodeParameter(
+                            `${order.id}\n`
+                        )
+                            .setModel(
+                                StarXpandCommand.Printer.QRCodeModel.Model2
+                            )
+                            .setLevel(StarXpandCommand.Printer.QRCodeLevel.L)
+                            .setCellSize(8)
+                    )
+                    .actionFeedLine(1)
+                    .actionCut(StarXpandCommand.Printer.CutType.Partial)
+            )
+        );
+    });
+};
+
+export const print = async (
+    dataBuilder: (builder: StarXpandCommand.StarXpandCommandBuilder) => void
+): Promise<void> => {
     // Specify your printer connection settings.
     const settings = new StarConnectionSettings();
     settings.interfaceType = InterfaceType.Lan;
@@ -57,7 +142,7 @@ export const print = async (): Promise<void> => {
 
         // create printing data. (Please refer to 'Create Printing data')
         const builder = new StarXpandCommand.StarXpandCommandBuilder();
-        buildData(builder);
+        dataBuilder(builder);
         const commands = await builder.getCommands();
 
         // Print.

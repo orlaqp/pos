@@ -22,6 +22,7 @@ export const saveOrder = async (state: CartState) => {
             orderID: o.id,
             quantity: i.quantity,
             tax: 0,
+            price: i.product.price,
             productId: i.product.id!,
             productName: i.product.name,
             unitOfMeasure: i.product.unitOfMeasure,

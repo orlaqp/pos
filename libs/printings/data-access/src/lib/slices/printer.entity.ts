@@ -1,19 +1,19 @@
 import { Printer } from '@pos/shared/models';
 
-export type PrintingEntity = {
+export type PrinterEntity = {
     id?: string;
     deviceId: string;
     identifier: string;
     interfaceType: string;
     ip: string;
-    model?: string;
+    model: string | null | undefined;
     alias?: string | null;
     createdAt?: string | null | undefined;
     updatedAt?: string | null | undefined;
 };
 
-export class PrintingEntityMapper {
-    static fromModel(c: Printer): PrintingEntity {
+export class PrinterEntityMapper {
+    static fromModel(c: Printer): PrinterEntity {
         return {
             id: c.id,
             deviceId: c.deviceId,

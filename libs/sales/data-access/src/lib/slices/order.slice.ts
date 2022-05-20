@@ -1,3 +1,6 @@
+import { PrinterEntity } from './../../../../../printings/data-access/src/lib/slices/printer.entity';
+import { StoreInfoEntity } from 'libs/store-info/data-access/src/lib/slices/store-info.entity';
+import { printReceipt } from '@pos/printings/data-access';
 import { RootState } from '@pos/store';
 import {
     createAsyncThunk,
@@ -13,6 +16,16 @@ import { saveOrder } from '../order.service';
 
 export const ORDER_FEATURE_KEY = 'order';
 
+export interface SubmitOrderRequest {
+    storeInfo?: StoreInfoEntity;
+    defaultPrinter?: PrinterEntity;
+    cart: CartState;
+}
+
+export interface SubmitOrderResponse extends SubmitOrderRequest {
+    order: OrderEntity;
+}
+
 export interface OrderState extends EntityState<OrderEntity> {
     orderStatus: 'new' | 'saving' | 'saved' | 'error';
     error?: string;
@@ -21,9 +34,12 @@ export interface OrderState extends EntityState<OrderEntity> {
 export const orderAdapter = createEntityAdapter<OrderEntity>();
 export const submitOrder = createAsyncThunk(
     'order/save',
-    async (cart: CartState, thunkAPI) => {
-        const o = await saveOrder(cart);
-        return OrderEntityMapper.fromModel(o);
+    async (request: SubmitOrderRequest, thunkAPI) => {
+        const o = await saveOrder(request.cart);
+        return {
+            ...request,
+            order: o,
+        };
     }
 );
 
@@ -36,7 +52,7 @@ export const orderSlice = createSlice({
     name: ORDER_FEATURE_KEY,
     initialState: initialOrderState,
     reducers: {
-        setAll: (state: OrderState, action: PayloadAction< OrderEntity[] >) =>{
+        setAll: (state: OrderState, action: PayloadAction<OrderEntity[]>) => {
             orderAdapter.setAll(state, action.payload);
             state.orderStatus = 'saved';
             // filterList(state, state.filterQuery);
@@ -55,9 +71,18 @@ export const orderSlice = createSlice({
             })
             .addCase(
                 submitOrder.fulfilled,
-                (state: OrderState, action: PayloadAction<OrderEntity>) => {
-                    orderAdapter.addOne(state, action.payload);
+                (
+                    state: OrderState,
+                    action: PayloadAction<SubmitOrderResponse>
+                ) => {
+                    orderAdapter.addOne(state, action.payload.order);
                     state.orderStatus = 'saved';
+                    printReceipt(
+                        action.payload.storeInfo,
+                        action.payload.defaultPrinter,
+                        action.payload.cart,
+                        action.payload.order
+                    );
                 }
             )
             .addCase(submitOrder.rejected, (state: OrderState, action) => {

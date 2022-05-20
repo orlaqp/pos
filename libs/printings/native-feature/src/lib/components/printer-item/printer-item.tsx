@@ -1,21 +1,19 @@
 import React, { useState } from 'react';
 
 import { View, Text } from 'react-native';
-import { theme, useSharedStyles } from '@pos/theme/native';
+import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StarPrinter } from 'react-native-star-io10';
-import { PrintingEntity } from '@pos/printings/data-access';
-import { UILabel } from '@pos/shared/ui-native';
+import { PrinterEntity } from '@pos/printings/data-access';
 
 export interface PrinterItemProps {
-    item: StarPrinter;
+    item: PrinterEntity;
     navigation: NativeStackNavigationProp<any>;
-    defaultPrinter?: PrintingEntity;
-    setAsDefault: (printer: StarPrinter) => void;
+    defaultPrinter?: PrinterEntity;
+    setAsDefault?: (printer: PrinterEntity) => void;
 }
 
-function InfoBox(props: { label?: string; value?: string }) {
+function InfoBox(props: { label?: string; value: string | null | undefined }) {
     const styles = useSharedStyles();
 
     return (
@@ -41,24 +39,24 @@ export function PrinterItem({
         <View style={styles.dataRow}>
             <View style={{ flexDirection: 'row', flex: 6 }}>
                 <View style={{ flex: 1 }}>
-                    <InfoBox label="Model" value={item.information?.model} />
+                    <InfoBox label="Model" value={item.model} />
                 </View>
                 <View style={{ flex: 1 }}>
                     <InfoBox
                         label="Identifier"
-                        value={item.connectionSettings.identifier}
+                        value={item.identifier}
                     />
                 </View>
                 <View style={{ flex: 1 }}>
                     <InfoBox
                         label="IP Address"
-                        value={item.information?.reserved.get('ipAddress')}
+                        value={item.ip}
                     />
                 </View>
                 <View style={{ flex: 1 }}>
                     <InfoBox
                         label="Interface"
-                        value={item.connectionSettings.interfaceType}
+                        value={item.interfaceType}
                     />
                 </View>
             </View>
@@ -69,7 +67,7 @@ export function PrinterItem({
                     justifyContent: 'flex-end',
                 }}
             >
-                {!defaultPrinter && (
+                {!defaultPrinter && setAsDefault && (
                     <Button
                         type="outline"
                         title="Set as Default"

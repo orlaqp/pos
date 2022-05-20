@@ -133,6 +133,7 @@ export declare class OrderLine {
   readonly unitOfMeasure: string;
   readonly quantity: number;
   readonly tax: number;
+  readonly price: number;
   readonly discountType?: string | null;
   readonly discountValue?: number | null;
   readonly orderID: string;
@@ -205,6 +206,7 @@ export declare class Store {
   readonly address: string;
   readonly city: string;
   readonly state: string;
+  readonly zipCode: string;
   readonly country: string;
   readonly phone: string;
   readonly email: string;

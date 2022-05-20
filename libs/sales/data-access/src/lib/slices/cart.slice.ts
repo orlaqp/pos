@@ -52,25 +52,18 @@ export const cartSlice = createSlice({
 
             if (!sameProducts.length) {
                 addItem(state, action.payload);
-                return;
-            }
-
-            if (action.payload.product.unitOfMeasure === EACH) {
+            } else if (action.payload.product.unitOfMeasure === EACH) {
                 sameProducts[0].quantity += action.payload.quantity;
-                return;
-            }
-
-            if (action.payload.quantity === 0) {
+            } else if (action.payload.quantity === 0) {
                 addItem(state, action.payload);
-                return;
-            }
-
-            const itemInZero = sameProducts.find(p => p.quantity === 0);
-
-            if (itemInZero) {
-                itemInZero.quantity = action.payload.quantity;
             } else {
-                addItem(state, action.payload);
+                const itemInZero = sameProducts.find(p => p.quantity === 0);
+    
+                if (itemInZero) {
+                    itemInZero.quantity = action.payload.quantity;
+                } else {
+                    addItem(state, action.payload);
+                }
             }
 
             updateTotals(state);

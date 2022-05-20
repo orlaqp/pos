@@ -266,6 +266,7 @@ export const onCreateOrderLine = /* GraphQL */ `
       unitOfMeasure
       quantity
       tax
+      price
       discountType
       discountValue
       orderID
@@ -286,6 +287,7 @@ export const onUpdateOrderLine = /* GraphQL */ `
       unitOfMeasure
       quantity
       tax
+      price
       discountType
       discountValue
       orderID
@@ -306,6 +308,7 @@ export const onDeleteOrderLine = /* GraphQL */ `
       unitOfMeasure
       quantity
       tax
+      price
       discountType
       discountValue
       orderID
@@ -652,6 +655,7 @@ export const onCreateStore = /* GraphQL */ `
       address
       city
       state
+      zipCode
       country
       phone
       email
@@ -671,6 +675,7 @@ export const onUpdateStore = /* GraphQL */ `
       address
       city
       state
+      zipCode
       country
       phone
       email
@@ -690,6 +695,7 @@ export const onDeleteStore = /* GraphQL */ `
       address
       city
       state
+      zipCode
       country
       phone
       email

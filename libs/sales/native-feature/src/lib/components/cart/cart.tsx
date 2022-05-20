@@ -10,7 +10,8 @@ import every from 'lodash/every';
 
 import EmptyCart from '../../../../assets/images/empty-cart.png';
 import CartLine from '../cart-line/cart-line';
-import { print } from '@pos/printings/data-access';
+import { getDefaultPrinter, print, printReceipt } from '@pos/printings/data-access';
+import { selectStore } from '@pos/store-info/data-access';
 
 export type CartMode = 'order' | 'payment'; 
 
@@ -25,6 +26,8 @@ export function Cart({ mode }: CartProps) {
     const cart = useSelector(selectCart);
     const [ready, setReady] = useState(false);
     const orderStatus = useSelector(getOrderStatus);
+    const storeInfo = useSelector(selectStore);
+    const defaultPrinter = useSelector(getDefaultPrinter);
 
     const onSelect = (item: CartItem) => {
         dispatch(cartActions.select(item));
@@ -36,8 +39,7 @@ export function Cart({ mode }: CartProps) {
 
     const submit = () => {
         if (mode === 'order') {
-            dispatch(submitOrder(cart));
-            print();
+            dispatch(submitOrder({ cart, defaultPrinter, storeInfo }));
             return;
         }
 

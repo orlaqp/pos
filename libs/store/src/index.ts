@@ -1,4 +1,3 @@
-import { printingsReducer } from './../../printings/data-access/src/lib/slices/printings.slice';
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import logger from 'redux-logger';
 
@@ -11,6 +10,8 @@ import { brandsReducer, observeBrandChanges } from '@pos/brands/data-access';
 import { unitOfMeasuresReducer } from '@pos/unit-of-measures/data-access';
 import { cartReducer, observeOpenOrderChanges, orderReducer } from '@pos/sales/data-access';
 import { observeProductChanges } from '@pos/products/data-access';
+import { fetchStoreInfo, storeInfoReducer } from '@pos/store-info/data-access';
+import { fetchDefaultPrinter, printingsReducer } from '@pos/printings/data-access';
 
 export const store = configureStore({
   reducer: {
@@ -21,7 +22,8 @@ export const store = configureStore({
       unitOfMeasures: unitOfMeasuresReducer,
       cart: cartReducer,
       order: orderReducer,
-      printings: printingsReducer
+      printings: printingsReducer,
+      storeInfo: storeInfoReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 });
@@ -29,6 +31,11 @@ export const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 export const useAppDispatch = () => useDispatch<AppDispatch>() ;
+
+// fetch store info
+store.dispatch(fetchStoreInfo());
+// fetch default printer config
+store.dispatch(fetchDefaultPrinter());
 
 // subscriptions
 observeProductChanges(store.dispatch);

@@ -318,6 +318,7 @@ export const getOrderLine = /* GraphQL */ `
       unitOfMeasure
       quantity
       tax
+      price
       discountType
       discountValue
       orderID
@@ -343,6 +344,7 @@ export const listOrderLines = /* GraphQL */ `
         unitOfMeasure
         quantity
         tax
+        price
         discountType
         discountValue
         orderID
@@ -377,6 +379,7 @@ export const syncOrderLines = /* GraphQL */ `
         unitOfMeasure
         quantity
         tax
+        price
         discountType
         discountValue
         orderID
@@ -688,6 +691,7 @@ export const getStore = /* GraphQL */ `
       address
       city
       state
+      zipCode
       country
       phone
       email
@@ -712,6 +716,7 @@ export const listStores = /* GraphQL */ `
         address
         city
         state
+        zipCode
         country
         phone
         email
@@ -745,6 +750,7 @@ export const syncStores = /* GraphQL */ `
         address
         city
         state
+        zipCode
         country
         phone
         email
