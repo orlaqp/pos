@@ -28,6 +28,10 @@ export interface ItemListProps<TState, TEntityType> {
 
     ItemComponent: (props: ItemComponentProps<TEntityType>) => JSX.Element;
     goBackEnable?: boolean;
+    emptyText?: string;
+    emptyActionText?: string;
+    emptyAction?: () => void;
+    emptyActionIcon?: string;
 }
 
 export function UIGenericItemList({
@@ -41,6 +45,10 @@ export function UIGenericItemList({
     filteredListSelector,
     ItemComponent,
     goBackEnable,
+    emptyText,
+    emptyActionText,
+    emptyAction,
+    emptyActionIcon,
 }: ItemListProps<unknown, unknown>) {
     const theme = useTheme();
     const styles = useStyles();
@@ -74,9 +82,10 @@ export function UIGenericItemList({
     if (loadingStatus === 'loaded' && isEmpty)
         return (
             <UIEmptyState
-                text="This is looking kind of empty here. Click below to fix that :-)"
-                actionText="Add your first!"
-                action={() => navigation.navigate(formNavName)}
+                text={ emptyText || "This is looking kind of empty here. Click below to fix that :-)"}
+                actionText={emptyActionText || "Add your first!"}
+                action={() => emptyAction ? emptyAction() : () => navigation.navigate(formNavName)}
+                icon={emptyActionIcon}
             />
         );
 

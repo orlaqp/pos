@@ -29,6 +29,10 @@ export function OrderList({ navigation }: OrderListProps) {
         clearSelectionAction: ordersActions.clearSelection,
         filterAction: ordersActions.filter,
         fetchItemsAction: fetchOpenOrders,
+        emptyAction: () => navigation.goBack(),
+        emptyActionText: 'Go back',
+        emptyText: 'No orders have been created yet',
+        emptyActionIcon: 'arrow-left',
     };
 
     return <UIGenericItemList {...props} goBackEnable={true} />;

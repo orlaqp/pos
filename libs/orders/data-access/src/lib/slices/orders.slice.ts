@@ -45,6 +45,7 @@ export const fetchOpenOrders = createAsyncThunk(
     'orders/fetchStatus',
     async (_, thunkAPI) => {
         const orders = await OrderService.getOpenOrders();
+        debugger;
         return orders.map((o) => OrderEntityMapper.fromModel(o));
     }
 );

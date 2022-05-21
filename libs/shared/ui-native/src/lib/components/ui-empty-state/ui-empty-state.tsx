@@ -14,6 +14,7 @@ export interface EmptyStateProps {
     action?: () => unknown;
     picture?: any;
     backgroundColor?: string;
+    icon?: string;
 }
 
 export function UIEmptyState({
@@ -23,6 +24,7 @@ export function UIEmptyState({
     action,
     picture,
     backgroundColor,
+    icon,
 }: EmptyStateProps) {
     const theme = useTheme();
     const styles = useStyles();
@@ -53,7 +55,7 @@ export function UIEmptyState({
                         buttonStyle={{ paddingRight: 20 }}
                         titleStyle={{ fontSize: 14 }}
                         icon={{
-                            name: 'plus',
+                            name: icon || 'plus',
                             type: 'material-community',
                             color: theme.theme.colors.primary,
                         }}

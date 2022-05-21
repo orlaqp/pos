@@ -2,7 +2,6 @@
 import React from 'react';
 
 import OrderList from '../order-list/order-list';
-import OrderForm from '../order-form/order-form';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StackNavigation } from '@pos/shared/ui-native';
 import { SalesScreen } from '@pos/sales/native-feature';
