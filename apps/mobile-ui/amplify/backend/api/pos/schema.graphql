@@ -64,6 +64,7 @@ type Product @model @auth(rules: [{allow: public}]) {
   cost: Float
   barcode: String
   sku: String
+  quantity: Float!
   unitOfMeasure: String!
   trackStock: Boolean! 
   picture: String

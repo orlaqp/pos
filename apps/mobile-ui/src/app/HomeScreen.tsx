@@ -96,22 +96,11 @@ const useStyles = () => {
         },
         bigButton: {
             backgroundColor: `${theme.theme.colors.grey5}33`,
-            //   borderColor: theme.theme.colors.divider,
-            borderStyle: 'solid',
-            borderWidth: 1,
             borderRadius: 10,
             margin: 15,
             padding: 20,
             minWidth: 150,
             minHeight: 150,
-            //   shadowColor: '#ccc',
-            //   shadowOffset: {
-            //     width: 0,
-            //     height: 1,
-            //   },
-            //   shadowOpacity: 0.22,
-            //   shadowRadius: 2.22,
-            //   elevation: 3,
         },
     });
 };

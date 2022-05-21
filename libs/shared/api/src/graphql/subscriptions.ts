@@ -334,6 +334,7 @@ export const onCreateProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      quantity
       unitOfMeasure
       trackStock
       picture
@@ -382,6 +383,7 @@ export const onUpdateProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      quantity
       unitOfMeasure
       trackStock
       picture
@@ -430,6 +432,7 @@ export const onDeleteProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      quantity
       unitOfMeasure
       trackStock
       picture
@@ -555,6 +558,7 @@ export const onCreatePurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        quantity
         unitOfMeasure
         trackStock
         picture
@@ -591,6 +595,7 @@ export const onUpdatePurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        quantity
         unitOfMeasure
         trackStock
         picture
@@ -627,6 +632,7 @@ export const onDeletePurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        quantity
         unitOfMeasure
         trackStock
         picture
@@ -771,6 +777,7 @@ export const onCreateStock = /* GraphQL */ `
         cost
         barcode
         sku
+        quantity
         unitOfMeasure
         trackStock
         picture
@@ -806,6 +813,7 @@ export const onUpdateStock = /* GraphQL */ `
         cost
         barcode
         sku
+        quantity
         unitOfMeasure
         trackStock
         picture
@@ -841,6 +849,7 @@ export const onDeleteStock = /* GraphQL */ `
         cost
         barcode
         sku
+        quantity
         unitOfMeasure
         trackStock
         picture
@@ -962,6 +971,7 @@ export const onCreateInventoryChanges = /* GraphQL */ `
         cost
         barcode
         sku
+        quantity
         unitOfMeasure
         trackStock
         picture
@@ -1001,6 +1011,7 @@ export const onUpdateInventoryChanges = /* GraphQL */ `
         cost
         barcode
         sku
+        quantity
         unitOfMeasure
         trackStock
         picture
@@ -1040,6 +1051,7 @@ export const onDeleteInventoryChanges = /* GraphQL */ `
         cost
         barcode
         sku
+        quantity
         unitOfMeasure
         trackStock
         picture

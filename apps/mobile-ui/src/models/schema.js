@@ -561,6 +561,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "quantity": {
+                    "name": "quantity",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "unitOfMeasure": {
                     "name": "unitOfMeasure",
                     "isArray": false,
@@ -1520,5 +1527,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "2f1c4e0a921d76e1e5bc4aa7d8a42c65"
+    "version": "cbd68505373c342694762c972e28b51f"
 };

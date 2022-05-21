@@ -1,3 +1,4 @@
+/* eslint-disable @nrwl/nx/enforce-module-boundaries */
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { PrinterEntity, printReceipt } from '@pos/printings/data-access';
 import { CartState } from '@pos/sales/data-access';
@@ -75,7 +76,7 @@ export const payOrder = createAsyncThunk(
     'order/pay',
     async (request: SubmitOrderRequest, thunkAPI) => {
         const o = await OrderService.payOrder(request.cart);
-
+        
         if (!o) return;
 
         return {
@@ -153,21 +154,6 @@ export const ordersSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // .addCase(fetchOpenOrders.pending, (state: OrdersState) => {
-            //     state.loadingStatus = 'loading';
-            // })
-            // .addCase(
-            //     fetchOpenOrders.fulfilled,
-            //     (state: OrdersState, action: PayloadAction<OrderEntity[]>) => {
-            //         // ordersAdapter.setAll(state, action.payload);
-            //         filterList(state, state.filterQuery);
-            //         state.loadingStatus = 'loaded';
-            //     }
-            // )
-            // .addCase(fetchOpenOrders.rejected, (state: OrdersState, action) => {
-            //     state.loadingStatus = 'error';
-            //     state.error = action.error.message;
-            // })
             .addCase(submitOrder.pending, (state: OrdersState) => {
                 state.submitStatus = 'saving';
             })

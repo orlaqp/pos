@@ -1,4 +1,4 @@
-import { Order, OrderLine } from '@pos/shared/models';
+import { Order, OrderLine, Product } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
 import { OrderEntity, OrderEntityMapper } from './order.entity';
@@ -9,7 +9,6 @@ import { Alert } from 'react-native';
 import { DatesService } from '@pos/shared/utils';
 
 export class OrderService {
-    
     static async payOrder(cart: CartState) {
         if (!cart.header?.orderNumber) return;
 
@@ -24,7 +23,10 @@ export class OrderService {
             updated.status = 'PAID';
         });
 
-        return await DataStore.save(updatedOrder);
+        await DataStore.save(updatedOrder);
+        await OrderService.updateInventory(o);
+
+        return o;
     }
     
     // static async getFullOrder(id: string) {
@@ -101,12 +103,38 @@ export class OrderService {
         if (!item)
             return console.error(`Order Id: ${id} not found`);
         
-        // TODO: Do any extra cleanup here like for example remove image
-        // if (item.picture)
-        //     AssetsService.deleteAsset(item.picture);
+        const promises: Promise<unknown>[] = [];
+        const lines = await DataStore.query(OrderLine, l => l.orderID('eq', id));
+        lines.forEach(l => {
+            promises.push(DataStore.delete(l));
+        });
 
+        await Promise.all(promises);
         return DataStore.delete(item);
     }
+
+    static async updateInventory(order: Order) {
+        const lines = await DataStore.query(OrderLine, l => l.orderID('eq', order.id));
+
+        const promises: Promise<unknown>[] = [];
+        lines.forEach(l => {
+            promises.push(updateProductQuantity(l.productId, l.quantity));
+        });
+
+        Promise.all(promises);
+    }
+}
+
+async function updateProductQuantity(id: string, quantity: number) {
+    const p = await DataStore.query(Product, id);
+
+    if (!p) return;
+
+    const updatedProduct = Product.copyOf(p, updated => {
+        updated.quantity -= quantity;
+    })
+
+    return DataStore.save(updatedProduct);
 }
 
 export function observeOpenOrderChanges(dispatch: Dispatch) {
