@@ -17,6 +17,7 @@ interface PathDetails {
     image?: any;
     role: string;
     params?: object;
+    action?: () => void;
 }
 
 interface HomeScreenProps {
@@ -29,7 +30,13 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const sharedStyles = useSharedStyles();
     const styles = useStyles();
     const paths: PathDetails[] = [
-        { title: 'Sales', path: 'Sales', image: emptyCart, role: Role.Sales, params: { mode: 'order' } },
+        {
+            title: 'Sales',
+            path: 'Sales',
+            image: emptyCart,
+            role: Role.Sales,
+            params: { mode: 'order' },
+        },
         {
             title: 'Payments',
             path: 'Payments',

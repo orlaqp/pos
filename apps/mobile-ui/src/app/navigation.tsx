@@ -38,9 +38,9 @@ export function Navigation() {
     { user ? (
         <>
             <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="Sales" component={SalesScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="Payments" component={Orders} options={{ headerShown: false }} />
-            <Stack.Screen name="BackOffice" component={BackOffice} options={{ headerShown: false }} />
+            <Stack.Screen name="Sales" component={SalesScreen} />
+            <Stack.Screen name="Payments" component={Orders} />
+            <Stack.Screen name="BackOffice" component={BackOffice} />
         </>
     ) : (
         <>

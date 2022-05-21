@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-    fetchOpenOrders,
     ordersActions,
     selectFilteredList,
     selectIsEmpty,
@@ -18,7 +17,6 @@ export interface OrderListProps {
 }
 
 export function OrderList({ navigation }: OrderListProps) {
-    const styles = useSharedStyles();
     const props: ItemListProps<any, any> = {
         ItemComponent: OrderItem,
         formNavName: 'Order Form',
@@ -28,7 +26,7 @@ export function OrderList({ navigation }: OrderListProps) {
         filteredListSelector: selectFilteredList,
         clearSelectionAction: ordersActions.clearSelection,
         filterAction: ordersActions.filter,
-        fetchItemsAction: fetchOpenOrders,
+        fetchItemsAction: undefined,
         emptyAction: () => navigation.goBack(),
         emptyActionText: 'Go back',
         emptyText: 'No orders have been created yet',

@@ -43,7 +43,7 @@ store.dispatch(fetchDefaultPrinter());
 observeProductChanges(store.dispatch);
 observeCategoryChanges(store.dispatch);
 observeBrandChanges(store.dispatch);
-// observeOpenOrderChanges(store.dispatch);
+observeOpenOrderChanges(store.dispatch);
 // observeUnitOfMeasureChanges(store.dispatch);
 
 export default store;

@@ -100,18 +100,6 @@ export function UIGenericItemList({
     return (
         <View style={styles.detailsPage}>
             <View style={[styles.header, { alignItems: 'center' }]}>
-                {goBackEnable && (
-                    <View style={{ marginRight: 20 }}>
-                        <Button
-                            icon={{
-                                name: 'arrow-left',
-                                type: 'material-community',
-                                color: styles.primaryText.color,
-                            }}
-                            onPress={confirmGoBack}
-                        />
-                    </View>
-                )}
                 <View style={{ flex: 5 }}>
                     <UISearchInput
                         debounceTime={300}

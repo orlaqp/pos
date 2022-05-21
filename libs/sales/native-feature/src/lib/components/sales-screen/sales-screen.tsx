@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
     cartActions,
     CartItem,
+    CartState,
     selectActiveProduct,
 } from '@pos/sales/data-access';
 import ProductDetails from '../product-details/product-details';
@@ -24,6 +25,9 @@ import { ButtonItemType } from '@pos/shared/ui-native';
 import { RootState } from '@pos/store';
 import { Dictionary } from '@reduxjs/toolkit';
 import { EACH } from '@pos/unit-of-measures/data-access';
+import { PrinterEntity } from '@pos/printings/data-access';
+import { payOrder, submitOrder } from '@pos/orders/data-access';
+import { StoreInfoEntity } from '@pos/store-info/data-access';
 
 export interface NavigationParamList {
     [key: string]: object | undefined;
@@ -64,6 +68,18 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
         dispatch(cartActions.select({ product, quantity: product.unitOfMeasure === EACH ? 1 : 0 }));
     }, [dispatch]);
 
+    const onCartSubmit = (cart: CartState, defaultPrinter?: PrinterEntity, storeInfo?: StoreInfoEntity) => {
+        if (route.params.mode === 'order') {
+            dispatch(submitOrder({ cart, defaultPrinter, storeInfo }));
+            dispatch(cartActions.reset());
+            return;
+        }
+
+        dispatch(payOrder({ cart, defaultPrinter, storeInfo }));
+        navigation.goBack();
+        return;
+    }
+
     const confirmGoBack = () => {
         Alert.alert(
             'Are you sure?',
@@ -92,16 +108,6 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
     return (
         <SafeAreaView style={[styles.page, styles.row]}>
             <View style={styles.categories}>
-                <View>
-                    <Button
-                        icon={{
-                            name: 'arrow-left',
-                            type: 'material-community',
-                            color: styles.primaryText.color,
-                        }}
-                        onPress={confirmGoBack}
-                    />
-                </View>
                 <CategorySelection onSelected={onCategoryChange} />
             </View>
             <View style={styles.products}>
@@ -112,7 +118,7 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
                 <ProductSelection products={products} onSelected={onProductSelected} />
             </View>
             <View style={styles.cart}>
-                <Cart mode={route.params.mode} />
+                <Cart mode={route.params.mode} onSubmit={onCartSubmit} />
             </View>
             <Dialog
                 isVisible={!!product}

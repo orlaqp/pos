@@ -68,6 +68,9 @@ export const printReceipt = async (
         return;
     }
 
+    // TODO: Restore printing service
+    return;
+
     print((builder) => {
         const date = new Date();
 

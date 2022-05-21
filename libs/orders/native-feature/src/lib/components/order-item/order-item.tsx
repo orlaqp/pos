@@ -34,11 +34,7 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
     };
 
     const openItem = async () => {
-        const order = await OrderService.getFullOrder(item.id);
-
-        if (!order) return;
-
-        dispatch(cartActions.set(order));
+        dispatch(cartActions.set(item));
         navigation.navigate('Sales', { mode: 'payment' });
     };
 

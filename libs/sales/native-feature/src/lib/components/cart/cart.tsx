@@ -1,4 +1,4 @@
-import { cartActions, CartItem, selectCart } from '@pos/sales/data-access';
+import { cartActions, CartItem, CartState, selectCart } from '@pos/sales/data-access';
 import { UIEmptyState } from '@pos/shared/ui-native';
 import { Button, useTheme } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
@@ -10,8 +10,8 @@ import every from 'lodash/every';
 
 import EmptyCart from '../../../../assets/images/empty-cart.png';
 import CartLine from '../cart-line/cart-line';
-import { getDefaultPrinter } from '@pos/printings/data-access';
-import { selectStore } from '@pos/store-info/data-access';
+import { getDefaultPrinter, PrinterEntity } from '@pos/printings/data-access';
+import { selectStore, StoreInfoEntity } from '@pos/store-info/data-access';
 import { payOrder, submitOrder } from '@pos/orders/data-access';
 
 export type CartMode = 'order' | 'payment';
@@ -19,9 +19,10 @@ export type CartMode = 'order' | 'payment';
 /* eslint-disable-next-line */
 export interface CartProps {
     mode: CartMode;
+    onSubmit: (cart: CartState, printer?: PrinterEntity, storeInfo?: StoreInfoEntity) => void;
 }
 
-export function Cart({ mode }: CartProps) {
+export function Cart({ mode, onSubmit }: CartProps) {
     const theme = useTheme();
     const dispatch = useDispatch();
     const cart = useSelector(selectCart);
@@ -37,16 +38,16 @@ export function Cart({ mode }: CartProps) {
         dispatch(cartActions.removeProduct(item));
     };
 
-    const submit = () => {
-        if (mode === 'order') {
-            dispatch(submitOrder({ cart, defaultPrinter, storeInfo }));
-            dispatch(cartActions.reset());
-            return;
-        }
+    // const submit = () => {
+    //     if (mode === 'order') {
+    //         dispatch(submitOrder({ cart, defaultPrinter, storeInfo }));
+    //         dispatch(cartActions.reset());
+    //         return;
+    //     }
 
-        dispatch(payOrder({ cart, defaultPrinter, storeInfo }));
-        return;
-    };
+    //     dispatch(payOrder({ cart, defaultPrinter, storeInfo }));
+    //     return;
+    // };
 
     useEffect(() => {
         setReady(
@@ -68,9 +69,9 @@ export function Cart({ mode }: CartProps) {
         <View style={{ flex: 1, flexDirection: 'column' }}>
             <View style={{ flex: 5 }}>
                 <ScrollView>
-                    {cart.items.map((i) => (
+                    {cart.items.map((i, idx) => (
                         <CartLine
-                            key={i.product.id}
+                            key={idx}
                             item={i}
                             onSelect={onSelect}
                             onRemove={onRemove}
@@ -85,7 +86,7 @@ export function Cart({ mode }: CartProps) {
                     }`}
                     type="solid"
                     disabled={!ready}
-                    onPress={submit}
+                    onPress={() => onSubmit(cart, defaultPrinter, storeInfo)}
                     // loading={orderStatus === 'saving'}
                 />
             </View>

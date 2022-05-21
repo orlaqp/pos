@@ -50,16 +50,6 @@ export function BackOffice({ navigation }: BackOfficeProps) {
 
     return (
         <SafeAreaView style={styles.page}>
-            <Button
-                icon={{
-                    name: 'arrow-left-circle',
-                    type: 'material-community',
-                    color: theme.theme.colors.grey3,
-                }}
-                style={{ alignSelf: 'flex-start', position: 'relative' }}
-                type="clear"
-                onPress={confirmGoBack}
-            />
             <View style={[styles.page, styles.row]}>
                 <View style={styles.leftSide}>
                     <ScrollView>

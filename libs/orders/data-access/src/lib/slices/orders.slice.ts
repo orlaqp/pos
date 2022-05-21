@@ -14,7 +14,11 @@ import {
     PayloadAction,
     Update,
 } from '@reduxjs/toolkit';
-import { OrderEntity, OrderEntityMapper } from '../order.entity';
+import {
+    OrderEntity,
+    OrderEntityMapper,
+    OrderLineEntity,
+} from '../order.entity';
 import { OrderService } from '../order.service';
 
 export const ORDER_FEATURE_KEY = 'orders';
@@ -30,6 +34,7 @@ export interface SubmitOrderResponse extends SubmitOrderRequest {
 }
 
 export interface OrdersState extends EntityState<OrderEntity> {
+    lines: OrderLineEntity[];
     loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
     submitStatus: 'not saved' | 'saving' | 'saved' | 'error';
     error?: string;
@@ -41,14 +46,13 @@ export interface OrdersState extends EntityState<OrderEntity> {
 
 export const ordersAdapter = createEntityAdapter<OrderEntity>();
 
-export const fetchOpenOrders = createAsyncThunk(
-    'orders/fetchStatus',
-    async (_, thunkAPI) => {
-        const orders = await OrderService.getOpenOrders();
-        debugger;
-        return orders.map((o) => OrderEntityMapper.fromModel(o));
-    }
-);
+// export const fetchOpenOrders = createAsyncThunk(
+//     'orders/fetchStatus',
+//     async (_, thunkAPI) => {
+//         const orders = await OrderService.getOpenOrders();
+//         return orders.map((o) => OrderEntityMapper.fromModel(o));
+//     }
+// );
 
 export const submitOrder = createAsyncThunk(
     'order/save',
@@ -81,6 +85,7 @@ export const initialOrdersState: OrdersState = ordersAdapter.getInitialState({
     selected: undefined,
     filterQuery: undefined,
     filteredList: undefined,
+    lines: [],
 });
 
 export const ordersSlice = createSlice({
@@ -91,9 +96,28 @@ export const ordersSlice = createSlice({
             ordersAdapter.addOne(state, action);
             filterList(state, state.filterQuery);
         },
-        addMany: (state: OrdersState, action: PayloadAction<OrderEntity[]>) => {
-            ordersAdapter.addMany(state, action);
+        setAll: (state: OrdersState, action: PayloadAction<OrderEntity[]>) => {
+            ordersAdapter.setAll(
+                state,
+                OrderEntityMapper.composeOrders(action.payload, state.lines)
+            );
             filterList(state, state.filterQuery);
+            state.loadingStatus = 'loaded';
+        },
+        setLines: (
+            state: OrdersState,
+            action: PayloadAction<OrderLineEntity[]>
+        ) => {
+            state.lines = action.payload;
+            ordersAdapter.setAll(
+                state,
+                OrderEntityMapper.composeOrders(
+                    ordersAdapter.getSelectors().selectAll(state),
+                    state.lines
+                )
+            );
+            filterList(state, state.filterQuery);
+            state.loadingStatus = 'loaded';
         },
         remove: (state: OrdersState, action: PayloadAction<EntityId>) => {
             ordersAdapter.removeOne(state, action);
@@ -123,21 +147,21 @@ export const ordersSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchOpenOrders.pending, (state: OrdersState) => {
-                state.loadingStatus = 'loading';
-            })
-            .addCase(
-                fetchOpenOrders.fulfilled,
-                (state: OrdersState, action: PayloadAction<OrderEntity[]>) => {
-                    ordersAdapter.setAll(state, action.payload);
-                    filterList(state, state.filterQuery);
-                    state.loadingStatus = 'loaded';
-                }
-            )
-            .addCase(fetchOpenOrders.rejected, (state: OrdersState, action) => {
-                state.loadingStatus = 'error';
-                state.error = action.error.message;
-            })
+            // .addCase(fetchOpenOrders.pending, (state: OrdersState) => {
+            //     state.loadingStatus = 'loading';
+            // })
+            // .addCase(
+            //     fetchOpenOrders.fulfilled,
+            //     (state: OrdersState, action: PayloadAction<OrderEntity[]>) => {
+            //         // ordersAdapter.setAll(state, action.payload);
+            //         filterList(state, state.filterQuery);
+            //         state.loadingStatus = 'loaded';
+            //     }
+            // )
+            // .addCase(fetchOpenOrders.rejected, (state: OrdersState, action) => {
+            //     state.loadingStatus = 'error';
+            //     state.error = action.error.message;
+            // })
             .addCase(submitOrder.pending, (state: OrdersState) => {
                 state.submitStatus = 'saving';
             })
@@ -223,18 +247,22 @@ function filterList(state: OrdersState, query?: string) {
     state.loadingStatus = 'loaded';
 
     if (!query) {
-        state.filteredList = state.entities;
-        return;
+        state.ids.forEach((id) => {
+            if (state.entities[id]?.status !== 'CREATED') return;
+            filteredList[id] = state.entities[id];
+        });
+    } else {
+        const lowerQuery = query.toLowerCase();
+
+        state.ids.forEach((id) => {
+            if (
+                state.entities[id]?.status !== 'CREATED' ||
+                state.entities[id]?.id?.toLowerCase().indexOf(lowerQuery) === -1
+            ) return;
+
+            filteredList[id] = state.entities[id];
+        });
     }
-
-    const lowerQuery = query.toLowerCase();
-
-    state.ids.forEach((id) => {
-        if (state.entities[id]?.id?.toLowerCase().indexOf(lowerQuery) === -1)
-            return;
-
-        filteredList[id] = state.entities[id];
-    });
 
     state.filteredList = filteredList;
 }
