@@ -14,6 +14,7 @@ import { fetchStoreInfo, storeInfoReducer } from '@pos/store-info/data-access';
 import { fetchDefaultPrinter, printingsReducer } from '@pos/printings/data-access';
 import { ordersReducer } from '@pos/orders/data-access';
 import { observeOpenOrderChanges } from '@pos/orders/data-access';
+import { settingsReducer } from '@pos/settings/data-access';
 
 export const store = configureStore({
   reducer: {
@@ -26,6 +27,7 @@ export const store = configureStore({
       orders: ordersReducer,
       printings: printingsReducer,
       storeInfo: storeInfoReducer,
+      settings: settingsReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 });

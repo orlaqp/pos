@@ -1,7 +1,7 @@
 import { ModelInit, MutableModel, PersistentModelConstructor } from "@aws-amplify/datastore";
 
 export enum OrderStatus {
-  CREATED = "CREATED",
+  OPEN = "OPEN",
   CANCELLED = "CANCELLED",
   PAID = "PAID",
   ONHOLD = "ONHOLD"

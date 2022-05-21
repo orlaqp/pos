@@ -73,7 +73,7 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
                 </Text>
             </View>
             <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.items?.length}</Text>
+                <Text style={styles.name}>{item.items?.length} item(s)</Text>
             </View>
             <View style={{ flex: 3 }}>
                 <Text style={[styles.name, { textAlign: 'right' }]}>

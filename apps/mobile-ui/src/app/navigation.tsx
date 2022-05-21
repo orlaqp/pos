@@ -3,13 +3,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeScreen } from './HomeScreen';
 import { LoginScreen, SignUpScreen } from '@pos/auth/native-feature';
 import { SalesScreen } from '@pos/sales/native-feature';
-import { theme } from '@pos/theme/native';
 
 import { useSelector } from 'react-redux';
 import { RootState } from '@pos/store';
 import { BackOffice } from '@pos/back-office/native-feature';
 import { DataStore } from 'aws-amplify';
 import { Orders } from '@pos/orders/native-feature';
+import { useTheme } from '@rneui/themed';
 
 /* eslint-disable-next-line */
 export interface NavigationParamList {
@@ -23,15 +23,16 @@ export interface NavigationParamList {
 const Stack = createNativeStackNavigator<NavigationParamList>();
 
 export function Navigation() {
+    const theme = useTheme();
   const user = useSelector((state: RootState) => state.auth.user);
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: theme.darkColors.background,
+          backgroundColor: theme.theme.colors.background,
         },
         headerTitleStyle: {
-          color: theme.darkColors.grey0,
+          color: theme.theme.colors.grey0,
         },
       }}
     >

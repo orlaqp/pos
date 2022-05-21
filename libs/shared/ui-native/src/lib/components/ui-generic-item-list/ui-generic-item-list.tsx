@@ -32,6 +32,7 @@ export interface ItemListProps<TState, TEntityType> {
     emptyActionText?: string;
     emptyAction?: () => void;
     emptyActionIcon?: string;
+    renderHeader: () => unknown;
 }
 
 export function UIGenericItemList({
@@ -49,6 +50,7 @@ export function UIGenericItemList({
     emptyActionText,
     emptyAction,
     emptyActionIcon,
+    renderHeader,
 }: ItemListProps<unknown, unknown>) {
     const theme = useTheme();
     const styles = useStyles();
@@ -99,6 +101,8 @@ export function UIGenericItemList({
 
     return (
         <View style={styles.detailsPage}>
+            { renderHeader && renderHeader() }
+            { !renderHeader &&
             <View style={[styles.header, { alignItems: 'center' }]}>
                 <View style={{ flex: 5 }}>
                     <UISearchInput
@@ -128,6 +132,7 @@ export function UIGenericItemList({
                     />
                 </View>
             </View>
+            }
             <View style={styles.content}>
                 {items && (
                     <FlatList

@@ -3,7 +3,7 @@ import { initSchema } from '@aws-amplify/datastore';
 import { schema } from './schema';
 
 const OrderStatus = {
-  "CREATED": "CREATED",
+  "OPEN": "OPEN",
   "CANCELLED": "CANCELLED",
   "PAID": "PAID",
   "ONHOLD": "ONHOLD"

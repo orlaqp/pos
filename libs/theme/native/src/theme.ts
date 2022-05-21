@@ -1,7 +1,7 @@
-import { createTheme } from '@rneui/themed';
+import { createTheme, ThemeMode } from '@rneui/themed';
 
-export const theme = createTheme({
-    mode: 'dark',
+export const theme = (mode: ThemeMode) => createTheme({
+    mode,
     // lightColors: {
     //     ...Platform.select({
     //         default: lightColors.platform.ios,

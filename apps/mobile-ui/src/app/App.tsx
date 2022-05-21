@@ -13,7 +13,7 @@ export const App = () => {
   return (
     <Provider store={store}>
       <NavigationContainer>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={theme(store.getState().settings.darkTheme ? 'dark' : 'light')}>
           <SafeAreaProvider>
             <Navigation />
           </SafeAreaProvider>

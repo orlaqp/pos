@@ -48,7 +48,7 @@ export function SingleItem({
                     {item.title}
                 </ListItem.Title>
             </ListItem.Content>
-            {chevron && <ListItem.Chevron />}
+            {chevron && <ListItem.Chevron color={item === selected ? theme.theme.colors.primary : theme.theme.colors.grey5} />}
         </ListItem>
     );
 }

@@ -34,14 +34,13 @@ export function UIEmptyState({
         <View
             style={[
                 {
-                    flex: 1,
                     backgroundColor:
                         backgroundColor || theme.theme.colors.background,
                 },
                 styles.centered,
             ]}
         >
-            <View style={[styles.centered, { width: '60%', marginTop: -100 }]}>
+            <View style={[styles.centered, { width: '60%' }]}>
                 <Image
                     source={picture || EmptyBox}
                     style={{ width: size, height: size }}

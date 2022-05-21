@@ -19,6 +19,8 @@
         "products-native-feature": "libs/products/native-feature",
         "sales-data-access": "libs/sales/data-access",
         "sales-native-feature": "libs/sales/native-feature",
+        "settings-data-access": "libs/settings/data-access",
+        "settings-native-feature": "libs/settings/native-feature",
         "shared-api": "libs/shared/api",
         "shared-ui-native": "libs/shared/ui-native",
         "shared-utils": "libs/shared/utils",

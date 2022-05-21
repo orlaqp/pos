@@ -1512,7 +1512,7 @@ export const schema = {
         "OrderStatus": {
             "name": "OrderStatus",
             "values": [
-                "CREATED",
+                "OPEN",
                 "CANCELLED",
                 "PAID",
                 "ONHOLD"

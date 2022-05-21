@@ -1,6 +1,7 @@
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { PrinterEntity, printReceipt } from '@pos/printings/data-access';
 import { CartState } from '@pos/sales/data-access';
+import { OrderStatus } from '@pos/shared/models';
 import { RootState } from '@pos/store';
 import { StoreInfoEntity } from '@pos/store-info/data-access';
 import {
@@ -40,8 +41,13 @@ export interface OrdersState extends EntityState<OrderEntity> {
     error?: string;
     submitError?: string;
     selected?: OrderEntity;
-    filterQuery?: string;
+    filterQuery: FilterRequest;
     filteredList?: Dictionary<OrderEntity>;
+}
+
+export interface FilterRequest {
+    status: OrderStatus;
+    filter?: string;
 }
 
 export const ordersAdapter = createEntityAdapter<OrderEntity>();
@@ -83,7 +89,7 @@ export const initialOrdersState: OrdersState = ordersAdapter.getInitialState({
     loadingStatus: 'not loaded',
     submitStatus: 'not saved',
     selected: undefined,
-    filterQuery: undefined,
+    filterQuery: { status: OrderStatus.OPEN },
     filteredList: undefined,
     lines: [],
 });
@@ -92,10 +98,10 @@ export const ordersSlice = createSlice({
     name: ORDER_FEATURE_KEY,
     initialState: initialOrdersState,
     reducers: {
-        add: (state: OrdersState, action: PayloadAction<OrderEntity>) => {
-            ordersAdapter.addOne(state, action);
-            filterList(state, state.filterQuery);
-        },
+        // add: (state: OrdersState, action: PayloadAction<OrderEntity>) => {
+        //     ordersAdapter.addOne(state, action);
+        //     filterList(state, state.filterQuery);
+        // },
         setAll: (state: OrdersState, action: PayloadAction<OrderEntity[]>) => {
             ordersAdapter.setAll(
                 state,
@@ -123,22 +129,22 @@ export const ordersSlice = createSlice({
             ordersAdapter.removeOne(state, action);
             filterList(state, state.filterQuery);
         },
-        update: (
-            state: OrdersState,
-            action: PayloadAction<Update<OrderEntity>>
-        ) => {
-            ordersAdapter.updateOne(state, action);
-            filterList(state, state.filterQuery);
-        },
-        select: (state: OrdersState, action: PayloadAction<OrderEntity>) => {
-            state.selected = action.payload;
-        },
+        // update: (
+        //     state: OrdersState,
+        //     action: PayloadAction<Update<OrderEntity>>
+        // ) => {
+        //     ordersAdapter.updateOne(state, action);
+        //     filterList(state, state.filterQuery);
+        // },
+        // select: (state: OrdersState, action: PayloadAction<OrderEntity>) => {
+        //     state.selected = action.payload;
+        // },
         clearSelection: (state: OrdersState) => {
             state.selected = undefined;
         },
-        filter: (state: OrdersState, action: PayloadAction<string>) => {
-            filterList(state, action.payload);
+        filter: (state: OrdersState, action: PayloadAction<FilterRequest>) => {
             state.filterQuery = action.payload;
+            filterList(state, action.payload);
         },
         submitError: (state: OrdersState, action: PayloadAction<string>) => {
             state.submitStatus = 'error';
@@ -242,27 +248,24 @@ export const selectFilteredList = createSelector(
     (state: OrdersState) => state.filteredList
 );
 
-function filterList(state: OrdersState, query?: string) {
+function filterList(state: OrdersState, options: FilterRequest) {
     const filteredList: Dictionary<OrderEntity> = {};
     state.loadingStatus = 'loaded';
 
-    if (!query) {
-        state.ids.forEach((id) => {
-            if (state.entities[id]?.status !== 'CREATED') return;
-            filteredList[id] = state.entities[id];
-        });
-    } else {
-        const lowerQuery = query.toLowerCase();
+    const lowerQuery = options.filter?.toLowerCase();
 
-        state.ids.forEach((id) => {
-            if (
-                state.entities[id]?.status !== 'CREATED' ||
-                state.entities[id]?.id?.toLowerCase().indexOf(lowerQuery) === -1
-            ) return;
+    state.ids.forEach((id) => {
+        const e = state.entities[id];
+        
+        if (e?.status !== options.status) {
+            return;
+        }
 
-            filteredList[id] = state.entities[id];
-        });
-    }
+        if (lowerQuery && e?.id?.toLowerCase().indexOf(lowerQuery) === -1)
+            return;
+
+        filteredList[id] = state.entities[id];
+    });
 
     state.filteredList = filteredList;
 }

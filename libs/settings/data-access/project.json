@@ -1,0 +1,25 @@
+{
+    "root": "libs/settings/data-access",
+    "sourceRoot": "libs/settings/data-access/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "lint": {
+            "executor": "@nrwl/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": [
+                    "libs/settings/data-access/**/*.{ts,tsx,js,jsx}"
+                ]
+            }
+        },
+        "test": {
+            "executor": "@nrwl/jest:jest",
+            "outputs": ["coverage/libs/settings/data-access"],
+            "options": {
+                "jestConfig": "libs/settings/data-access/jest.config.js",
+                "passWithNoTests": true
+            }
+        }
+    }
+}

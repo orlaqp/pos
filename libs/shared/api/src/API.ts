@@ -198,7 +198,7 @@ export type CreateOrderInput = {
 };
 
 export enum OrderStatus {
-  CREATED = "CREATED",
+  OPEN = "OPEN",
   CANCELLED = "CANCELLED",
   PAID = "PAID",
   ONHOLD = "ONHOLD",

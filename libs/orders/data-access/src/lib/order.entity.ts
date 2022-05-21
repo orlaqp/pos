@@ -64,7 +64,7 @@ export class OrderEntityMapper {
     static composeOrders(orders: OrderEntity[], lines: OrderLineEntity[]): OrderEntity[] {
         return orders.map(o => ({
             ...o,
-            items: lines.filter(l => l.orderID === o.id)
+            items: lines?.filter(l => l.orderID === o.id)
         }))
     }
 }

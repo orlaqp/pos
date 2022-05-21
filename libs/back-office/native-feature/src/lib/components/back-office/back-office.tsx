@@ -22,6 +22,7 @@ import Logo from '../../assets/logo.png';
 import { useSelector } from 'react-redux';
 import { selectUser } from '@pos/auth/data-access';
 import { StoreInfoForm } from '@pos/store-info/native-feature';
+import { Settings } from '@pos/settings/native-feature';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 // const Logo = require('../../assets/logo.png');
 
@@ -80,6 +81,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                         <Stack.Screen name="Categories" component={Categories} />
                         <Stack.Screen name="Printers" component={PrinterList} />
                         <Stack.Screen name="Store" component={StoreInfoForm} />
+                        <Stack.Screen name="General" component={Settings} />
                     </Stack.Navigator>
                 </View>
             </View>

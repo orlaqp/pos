@@ -67,7 +67,7 @@ export class OrderService {
     
     static async saveOrder(state: CartState) {
         let o = new Order({
-            status: 'CREATED',
+            status: 'OPEN',
             subtotal: state.footer.subtotal,
             tax: 0,
             total: state.footer.total,
@@ -96,10 +96,6 @@ export class OrderService {
         return o;
     }
 
-    // static getOpenOrders() {
-    //     return DataStore.query(Order, o => o.status('eq', 'CREATED'));
-    // }
-
     static async delete(id: string) {
         const item = await DataStore.query(Order, id);
         if (!item)
@@ -117,7 +113,6 @@ export function observeOpenOrderChanges(dispatch: Dispatch) {
     const sevenDaysAgo = DatesService.daysAgo(7);
     const isoDate = DatesService.toISO8601(sevenDaysAgo);
 
-    // DataStore.observeQuery(Order, (o) => o.createdAt('eq', 'CREATED')).subscribe(
     DataStore.observeQuery(Order, (o) => o.createdAt('gt', isoDate)).subscribe(
         ({ isSynced, items }) => {
             if (isSynced) {
