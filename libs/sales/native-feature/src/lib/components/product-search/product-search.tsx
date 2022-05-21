@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 
 import { View } from 'react-native';
 import { Button, useTheme } from '@rneui/themed';
+import { useDispatch } from 'react-redux';
 
 /* eslint-disable-next-line */
 export interface ProductSearchProps {
@@ -12,6 +13,7 @@ export interface ProductSearchProps {
 
 export function ProductSearch({ filter, onFilterChange }: ProductSearchProps) {
     const theme = useTheme();
+    const dispatch = useDispatch();
     // const [text, setText] = useState<string>();
     const [showSoftInputOnFocus, setShowSoftInputOnFocus] = useState(false);
     

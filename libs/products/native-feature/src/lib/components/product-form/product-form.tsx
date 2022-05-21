@@ -73,7 +73,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
             barcode: product?.barcode,
             sku: product?.sku,
             unitOfMeasure: product?.unitOfMeasure,
-            trackStock: product?.trackStock || false,
+            trackStock: true,
             picture: product?.picture,
             productCategoryId: product?.productCategoryId,
             productBrandId: product?.productBrandId,
@@ -129,9 +129,6 @@ export function ProductForm({ navigation }: ProductFormProps) {
                             />
                         </View>
                         <UIVerticalSpacer size="large" />
-                        <View style={{ flexDirection: 'row-reverse' }}>
-                            <UISwitch name='trackStock' label='Enable inventory tracking ?' />
-                        </View>
                         <UIVerticalSpacer size="medium" />
                         <UIInput
                             name="name"

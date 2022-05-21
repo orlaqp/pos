@@ -11,18 +11,17 @@ import { ScrollView } from 'react-native-gesture-handler';
 
 /* eslint-disable-next-line */
 export interface ProductSelectionProps {
-    products?: Dictionary<ProductEntity>;
+    products: ProductEntity[];
     onSelected: (p: ButtonItemType) => void;
 }
 
 export function ProductSelection({ products, onSelected }: ProductSelectionProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
-    const productIds = Object.keys(products || {});
-
+    
     return (
         <View>
-            {!productIds.length &&
+            {!products.length &&
                 <View style={{ flex: 1, marginTop: 300 }}>
                 <UIEmptyState text='No products found for this category' backgroundColor='transparent' />
             </View>
@@ -31,19 +30,20 @@ export function ProductSelection({ products, onSelected }: ProductSelectionProps
             <View style={{ padding: 25 }}>
                 <ScrollView>
                     <View style={[styles.row, { alignContent: 'space-around', justifyContent: 'center' }]}>
-                        {productIds?.map((id) => (
+                        {products?.map((p) => (
                             <View
-                                key={id}
+                                key={p.id}
                                 style={{
                                     borderRadius: 5,
                                     borderColor: theme.theme.colors.grey4,
                                     backgroundColor: theme.theme.colors.grey4,
                                     borderWidth: 1,
                                     marginRight: 10,
+                                    marginBottom: 10,
                                 }}
                             >
                                 <UIButton
-                                    item={products[id]!}
+                                    item={p}
                                     onSelected={onSelected}
                                     maxTextLength={14}
                                 >
@@ -62,7 +62,7 @@ export function ProductSelection({ products, onSelected }: ProductSelectionProps
                                                 },
                                             ]}
                                         >
-                                            $ {products[id]!.price.toFixed(2)}
+                                            $ {p.price.toFixed(2)}
                                         </Text>
                                     </View>
                                 </UIButton>

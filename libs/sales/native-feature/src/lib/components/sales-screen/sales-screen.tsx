@@ -17,7 +17,7 @@ import {
 } from '@pos/sales/data-access';
 import ProductDetails from '../product-details/product-details';
 import Cart from '../cart/cart';
-import { ProductEntity, productsActions, selectFilteredList } from '@pos/products/data-access';
+import { ProductEntity, productsActions, ProductService, selectAllProducts, selectFilteredList } from '@pos/products/data-access';
 import ProductSearch from '../product-search/product-search';
 import { Button } from '@rneui/base';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -44,6 +44,8 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
     const [filter, setFilter] = useState<string>();
     const product = useSelector(selectActiveProduct);
     const products = useSelector<RootState, Dictionary<ProductEntity> | undefined>(selectFilteredList);
+    const allProducts = useSelector(selectAllProducts);
+    const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(allProducts);
     const deselectProduct = () => dispatch(cartActions.select(undefined));
 
     const upsertCart = (item: CartItem) => {
@@ -56,12 +58,36 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
         setCategory(c);
     };
 
-    const onFilterChange = (filter: string) => {
-        console.log(`Filter: ${filter}`);
+    const onFilterChange = async (text: string) => {
+        const res = await ProductService.search(allProducts, text);
+        setFilteredProducts(res);
+
+        if (res.length === 1) {
+            const p = res[0];
+            // add product to cart directly
+            dispatch(cartActions.upsert({
+                product: {
+                    id: p.id!,
+                    name: p.name,
+                    price: p.price,
+                    unitOfMeasure: p.unitOfMeasure,
+                    barcode: p.barcode,
+                    sku: p.sku
+                },
+                quantity: res[0].unitOfMeasure === EACH ? 1 : 0,
+            }));
+        }
 
         setFilter(filter);
         setCategory(undefined);
-    };
+        
+        // onFilterChange(text);
+    }
+
+    // const onFilterChange = (filter: string) => {
+    //     setFilter(filter);
+    //     setCategory(undefined);
+    // };
 
     const onProductSelected = useCallback((p: ButtonItemType) => {
         const product = p as ProductEntity;
@@ -80,21 +106,21 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
         return;
     }
 
-    const confirmGoBack = () => {
-        Alert.alert(
-            'Are you sure?',
-            'Press yes to confirm',
-            [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
-            ]
-        );
-    }
+    // const confirmGoBack = () => {
+    //     Alert.alert(
+    //         'Are you sure?',
+    //         'Press yes to confirm',
+    //         [
+    //             { text: 'No' },
+    //             { text: 'Yes', onPress: () => navigation.goBack() },
+    //         ]
+    //     );
+    // }
 
 
-    useEffect(() => {
-        dispatch(productsActions.filter({ filter, categoryId: category?.id }));
-    }, [dispatch, category, filter]);
+    // useEffect(() => {
+    //     dispatch(productsActions.filter({ filter, categoryId: category?.id }));
+    // }, [dispatch, category, filter]);
 
     useEffect(() => {
         if (!products) return;
@@ -115,7 +141,7 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
                     onFilterChange={onFilterChange}
                     filter={filter}
                 />
-                <ProductSelection products={products} onSelected={onProductSelected} />
+                <ProductSelection products={filteredProducts} onSelected={onProductSelected} />
             </View>
             <View style={styles.cart}>
                 <Cart mode={route.params.mode} onSubmit={onCartSubmit} />

@@ -62,4 +62,15 @@ export class ProductService {
 
         return DataStore.delete(item);
     }
+
+    static async search(products: ProductEntity[], text: string) {
+        const lower = text.toLowerCase();
+        
+        return products.filter(p => 
+               p.sku?.toLowerCase().indexOf(lower) !== -1
+            || p.barcode?.toLowerCase().indexOf(lower) !== -1
+            || p.description?.toLowerCase().indexOf(lower) !== -1
+            || p.name.toLowerCase().indexOf(lower) !== -1
+        );
+    }
 }

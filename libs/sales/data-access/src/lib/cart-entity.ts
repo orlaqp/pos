@@ -6,6 +6,7 @@ export interface CartHeader {
 }
 
 export interface CartProduct {
+    id: string;
     barcode?: string | null | undefined;
     sku?: string | null | undefined;
     name: string;
