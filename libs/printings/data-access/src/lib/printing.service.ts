@@ -89,8 +89,10 @@ export const printReceipt = async (
                     )
                     .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
                     .actionPrintText(
-                        'SKU   Description        Total\n' +
-                        cart.items.map(i => `${i.product.sku?.padEnd(5, ' ')} ${i.quantity.toString().padStart(2, ' ')}x${i.product.name.substring(0, 13).padEnd(13, ' ')} ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`).join('\n') +
+                        // 'SKU   Description        Total\n' +
+                        'Description        Qty   Total\n' +
+                        // cart.items.map(i => `${i.product.sku?.padEnd(5, ' ')} ${i.quantity.toString().padStart(2, ' ')}x${i.product.name.substring(0, 13).padEnd(13, ' ')} ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`).join('\n') +
+                        cart.items.map(i => `${i.product.name.substring(0, 17).padEnd(17, ' ')}  ${i.quantity.toString().padStart(2, ' ')}  ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`).join('\n') +
                             
                         '\n\n' +
                         // `Subtotal                 ${cart.footer.subtotal.toFixed(2).padStart(7, ' ')}\n` +

@@ -1,12 +1,67 @@
-
 import { Order, OrderLine } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
-import { OrderEntityMapper } from './order.entity';
+import { OrderEntity, OrderEntityMapper } from './order.entity';
 import { CartState } from '@pos/sales/data-access';
 import { ordersActions } from './slices/orders.slice';
+import { Alert } from 'react-native';
 
 export class OrderService {
+    
+    static async payOrder(cart: CartState) {
+        if (!cart.header?.orderNumber) return;
+
+        const o = await DataStore.query(Order, cart.header.orderNumber);
+
+        if (!o) {
+            Alert.alert(`Order ${cart.header.orderNumber} not found`);
+            return;
+        }
+
+        const updatedOrder = Order.copyOf(o, (updated) => {
+            updated.status = 'PAID';
+        });
+
+        return await DataStore.save(updatedOrder);
+    }
+    
+    static async getFullOrder(id: string) {
+        const o = await DataStore.query(Order, id);
+
+        if (!o) {
+            Alert.alert(`Order ${id} not found`);
+            return;
+        }
+
+        const items = await DataStore.query(OrderLine, l => l.orderID('eq', id));
+
+        return {
+            id: o.id,
+            status: o.status,
+            subtotal: o.subtotal,
+            tax: o.tax,
+            total: o.total,
+            createdAt: o.createdAt,
+            updatedAt: o.updatedAt,
+            items: items.map(i => ({
+                id: i.id,
+                orderID: i.orderID,
+                price: i.price,
+                productId: i.productId,
+                barcode: i.barcode,
+                sku: i.sku,
+                productName: i.productName,
+                quantity: i.quantity,
+                tax: i.tax,
+                unitOfMeasure: i.unitOfMeasure,
+                discountType: i.discountType,
+                discountValue: i.discountValue,
+                createdAt: i.createdAt,
+                updatedAt: i.updatedAt
+            }))
+        } as OrderEntity;
+    }
+    
     static async saveOrder(state: CartState) {
         let o = new Order({
             status: 'CREATED',
@@ -25,6 +80,8 @@ export class OrderService {
                 tax: 0,
                 price: i.product.price,
                 productId: i.product.id!,
+                barcode: i.product.barcode,
+                sku: i.product.sku,
                 productName: i.product.name,
                 unitOfMeasure: i.product.unitOfMeasure,
             });

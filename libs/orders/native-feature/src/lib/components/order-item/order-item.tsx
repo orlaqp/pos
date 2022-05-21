@@ -1,14 +1,17 @@
-
 import React, { useState } from 'react';
 
 import { View, Text, Alert, ActivityIndicator } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
-import { ordersActions, OrderEntity, OrderService } from '@pos/orders/data-access';
+import {
+    ordersActions,
+    OrderEntity,
+    OrderService,
+} from '@pos/orders/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { format, formatDistance, formatRelative, subDays } from 'date-fns'
-
+import { format, formatDistance, formatRelative, subDays } from 'date-fns';
+import { cartActions } from '@pos/sales/data-access';
 
 export interface OrderItemProps {
     item: OrderEntity;
@@ -28,32 +31,45 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
         await OrderService.delete(item.id);
         setBusy(false);
         dispatch(ordersActions.remove(item.id));
+    };
 
-    }
+    const openItem = async () => {
+        const order = await OrderService.getFullOrder(item.id);
 
-    const editItem = () => {
-        dispatch(ordersActions.select(item));
-        navigation.navigate('Order Form');
-    }
+        if (!order) return;
+
+        dispatch(cartActions.set(order));
+        navigation.navigate('Sales', { mode: 'payment' });
+    };
 
     const confirmDeletion = () => {
         Alert.alert(
             'Are you sure?',
             'You will not be able to undo this operation',
-            [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => deleteItem() },
-            ]
+            [{ text: 'No' }, { text: 'Yes', onPress: () => deleteItem() }]
         );
-    }
+    };
 
     return (
         <View style={styles.dataRow}>
-            { busy &&
-            <ActivityIndicator size='small' />
-            }
+            {busy && <ActivityIndicator size="small" />}
             <View style={{ flex: 1.5 }}>
-                <Text style={styles.name}>{`${item.id.substring(0, 8)}...`}</Text>
+                <View
+                    style={{
+                        marginHorizontal: 10,
+                        padding: 5,
+                        borderRadius: 50,
+                        backgroundColor: theme.theme.colors.primary,
+                    }}
+                >
+                    <Text style={{ textAlign: 'center', color: theme.theme.colors.grey0 }}>{item.status}</Text>
+                </View>
+            </View>
+            <View style={{ flex: 2 }}>
+                <Text style={[styles.name, { textAlign: 'center' }]}>{`${item.id.substring(
+                    0,
+                    8
+                )}...`}</Text>
             </View>
             <View style={{ flex: 3 }}>
                 <Text style={styles.name}>
@@ -61,14 +77,14 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
                 </Text>
             </View>
             <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.status}</Text>
-            </View>
-            <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.items?.length}</Text>
             </View>
             <View style={{ flex: 3 }}>
-                <Text style={styles.name}>{`$ ${item.total.toFixed(2)}`}</Text>
+                <Text style={[styles.name, { textAlign: 'right' }]}>
+                    {`$ ${item.total.toFixed(2)}`}
+                </Text>
             </View>
+            <View style={{ flex: 1 }}></View>
             <View
                 style={{
                     flex: 2,
@@ -77,13 +93,15 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
                 }}
             >
                 <Button
-                    type="clear"
-                    title="Edit"
+                    type="outline"
+                    title="Open"
                     icon={{
-                        name: 'pencil-outline',
+                        name: 'folder-open-outline',
                         type: 'material-community',
+                        color: theme.theme.colors.primary,
                     }}
-                    onPress={editItem}
+                    titleStyle={{ paddingRight: 10 }}
+                    onPress={openItem}
                 />
                 <Button
                     type="clear"

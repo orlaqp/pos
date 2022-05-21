@@ -1,5 +1,3 @@
-import { ProductEntity } from '@pos/products/data-access';
-
 export interface CartHeader {
     orderNumber: string;
     orderDate: string;
@@ -7,9 +5,17 @@ export interface CartHeader {
     status: string;
 }
 
+export interface CartProduct {
+    barcode?: string | null | undefined;
+    sku?: string | null | undefined;
+    name: string;
+    price: number;
+    unitOfMeasure: string;
+}
+
 export interface CartItem {
     id?: string;
-    product: ProductEntity;
+    product: CartProduct;
     quantity: number;
 }
 

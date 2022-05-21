@@ -8,7 +8,6 @@ import React from 'react';
 
 import { View, Text } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { useDispatch } from 'react-redux';
 
 /* eslint-disable-next-line */
 export interface ProductSelectionProps {

@@ -10,7 +10,7 @@ import {
 } from '@reduxjs/toolkit';
 import { CartItem, CartState } from '../cart-entity';
 import uuid from 'react-native-uuid';
-import { saveOrder } from '../../cart.service';
+import { OrderEntity } from '@pos/orders/data-access';
 
 export const CART_FEATURE_KEY = 'cart';
 
@@ -30,6 +30,34 @@ export const cartSlice = createSlice({
     name: CART_FEATURE_KEY,
     initialState: initialCartState,
     reducers: {
+        set: (state: CartState, action: PayloadAction<OrderEntity>) => {
+            const o = action.payload;
+
+            if (!o.items) return;
+
+            state.footer = {
+                discount: 0,
+                subtotal: o.subtotal,
+                tax: o.tax,
+                total: o.total
+            }
+            state.header = {
+                orderDate: o.createdAt!,
+                orderNumber: o.id,
+                status: o.status,
+                user: '',
+            }
+            state.items = o.items.map(i => ({
+                quantity: i?.quantity,
+                id: i?.id,
+                product: {
+                    name: i?.productName,
+                    price: i?.price,
+                    unitOfMeasure: i?.unitOfMeasure
+                }
+            }))
+            state.selected = initialCartState.selected;
+        },
         select: (state: CartState, action: PayloadAction<CartItem | undefined>) => {
             state.selected = action.payload;
         },

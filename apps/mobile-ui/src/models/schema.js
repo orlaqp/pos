@@ -381,6 +381,20 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "barcode": {
+                    "name": "barcode",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "sku": {
+                    "name": "sku",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "productName": {
                     "name": "productName",
                     "isArray": false,
@@ -1506,5 +1520,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "405ea476734b47db81e33736ca2281f8"
+    "version": "2f1c4e0a921d76e1e5bc4aa7d8a42c65"
 };

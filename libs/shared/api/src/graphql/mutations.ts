@@ -298,6 +298,8 @@ export const createOrderLine = /* GraphQL */ `
     createOrderLine(input: $input, condition: $condition) {
       id
       productId
+      barcode
+      sku
       productName
       unitOfMeasure
       quantity
@@ -322,6 +324,8 @@ export const updateOrderLine = /* GraphQL */ `
     updateOrderLine(input: $input, condition: $condition) {
       id
       productId
+      barcode
+      sku
       productName
       unitOfMeasure
       quantity
@@ -346,6 +350,8 @@ export const deleteOrderLine = /* GraphQL */ `
     deleteOrderLine(input: $input, condition: $condition) {
       id
       productId
+      barcode
+      sku
       productName
       unitOfMeasure
       quantity

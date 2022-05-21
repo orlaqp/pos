@@ -128,6 +128,8 @@ export declare class Order {
 export declare class OrderLine {
   readonly id: string;
   readonly productId: string;
+  readonly barcode?: string | null;
+  readonly sku?: string | null;
   readonly productName: string;
   readonly unitOfMeasure: string;
   readonly quantity: number;

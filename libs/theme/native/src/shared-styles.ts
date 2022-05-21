@@ -58,6 +58,8 @@ export const useSharedStyles = () => {
         dataRow: {
             flexDirection: "row",
             flexWrap: "wrap",
+            justifyContent: 'center',
+            alignItems: 'center',
             backgroundColor: `${theme.theme.colors.grey5}44`,
             padding: 20,
             borderRadius: 10,

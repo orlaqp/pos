@@ -311,6 +311,8 @@ export const getOrderLine = /* GraphQL */ `
     getOrderLine(id: $id) {
       id
       productId
+      barcode
+      sku
       productName
       unitOfMeasure
       quantity
@@ -337,6 +339,8 @@ export const listOrderLines = /* GraphQL */ `
       items {
         id
         productId
+        barcode
+        sku
         productName
         unitOfMeasure
         quantity
@@ -372,6 +376,8 @@ export const syncOrderLines = /* GraphQL */ `
       items {
         id
         productId
+        barcode
+        sku
         productName
         unitOfMeasure
         quantity

@@ -36,6 +36,8 @@ type Order @model @auth(rules: [{allow: public}]) {
 type OrderLine @model @auth(rules: [{allow: public}]) {
   id: ID!
   productId: String!
+  barcode: String
+  sku: String
   productName: String!
   unitOfMeasure: String!
   quantity: Float!

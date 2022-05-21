@@ -12,9 +12,9 @@ import EmptyCart from '../../../../assets/images/empty-cart.png';
 import CartLine from '../cart-line/cart-line';
 import { getDefaultPrinter } from '@pos/printings/data-access';
 import { selectStore } from '@pos/store-info/data-access';
-import { submitOrder } from '@pos/orders/data-access';
+import { payOrder, submitOrder } from '@pos/orders/data-access';
 
-export type CartMode = 'order' | 'payment'; 
+export type CartMode = 'order' | 'payment';
 
 /* eslint-disable-next-line */
 export interface CartProps {
@@ -44,8 +44,9 @@ export function Cart({ mode }: CartProps) {
             return;
         }
 
+        dispatch(payOrder({ cart, defaultPrinter, storeInfo }));
         return;
-    }
+    };
 
     useEffect(() => {
         setReady(
@@ -79,7 +80,9 @@ export function Cart({ mode }: CartProps) {
             </View>
             <View>
                 <Button
-                    title={`$ ${cart.footer.total.toFixed(2)}\nPrint Order`}
+                    title={`$ ${cart.footer.total.toFixed(2)}\n${
+                        mode === 'order' ? 'Print Order' : 'Paid'
+                    }`}
                     type="solid"
                     disabled={!ready}
                     onPress={submit}

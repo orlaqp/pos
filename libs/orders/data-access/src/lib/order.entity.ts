@@ -6,7 +6,7 @@ export interface OrderEntity {
   tax: number;
   total: number;
   status: OrderStatus | keyof typeof OrderStatus;
-  items?: (OrderLineEntity | null)[] | null;
+  items?: OrderLineEntity[] | null;
   createdAt?: string | null;
   updatedAt?: string | null;
 }
@@ -14,6 +14,8 @@ export interface OrderEntity {
 export interface OrderLineEntity {
   id: string;
   productId: string;
+  barcode: string;
+  sku: string;
   productName: string;
   unitOfMeasure: string;
   quantity: number;
@@ -34,9 +36,7 @@ export class OrderEntityMapper {
             tax: p.tax,
             total: p.total,
             status: p.status,
-            items: p.OrderItems?.map(i => {
-                if (!i) return null;
-
+            items: p.OrderItems?.filter(i => i !== null).map(i => {
                 return {
                     id: i?.id,
                     orderID: p.id,

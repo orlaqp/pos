@@ -60,6 +60,20 @@ export const submitOrder = createAsyncThunk(
     }
 );
 
+export const payOrder = createAsyncThunk(
+    'order/pay',
+    async (request: SubmitOrderRequest, thunkAPI) => {
+        const o = await OrderService.payOrder(request.cart);
+
+        if (!o) return;
+
+        return {
+            ...request,
+            order: OrderEntityMapper.fromModel(o),
+        };
+    }
+);
+
 export const initialOrdersState: OrdersState = ordersAdapter.getInitialState({
     loadingStatus: 'not loaded',
     submitStatus: 'not saved',
@@ -145,7 +159,28 @@ export const ordersSlice = createSlice({
             .addCase(submitOrder.rejected, (state: OrdersState, action) => {
                 state.submitStatus = 'error';
                 state.error = action.error.message;
-            });
+            })
+            .addCase(
+                payOrder.fulfilled,
+                (
+                    state: OrdersState,
+                    action: PayloadAction<SubmitOrderResponse | undefined>
+                ) => {
+                    if (!action.payload) return;
+
+                    ordersAdapter.updateOne(state, {
+                        id: action.payload.order.id,
+                        changes: action.payload.order,
+                    });
+                    state.submitStatus = 'saved';
+                    printReceipt(
+                        action.payload.storeInfo,
+                        action.payload.defaultPrinter,
+                        action.payload.cart,
+                        action.payload.order
+                    );
+                }
+            );
     },
 });
 
