@@ -7,11 +7,13 @@ import {
     ordersActions,
     OrderEntity,
     OrderService,
+    OrderEntityMapper,
 } from '@pos/orders/data-access';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { format, formatDistance, formatRelative, subDays } from 'date-fns';
 import { cartActions } from '@pos/sales/data-access';
+import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
+import { selectStore } from '@pos/store-info/data-access';
 
 export interface OrderItemProps {
     item: OrderEntity;
@@ -22,6 +24,8 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
     const dispatch = useDispatch();
+    const defaultPrinter = useSelector(getDefaultPrinter);
+    const store = useSelector(selectStore);
     const [busy, setBusy] = useState<boolean>(false);
 
     const deleteItem = async () => {
@@ -34,8 +38,19 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
     };
 
     const openItem = async () => {
-        dispatch(cartActions.set(item));
-        navigation.navigate('Sales', { mode: 'payment' });
+        if (item.status === 'OPEN') {
+            dispatch(cartActions.set(item));
+            navigation.navigate('Sales', { mode: 'payment' });
+        }
+
+        if (item.status === 'PAID') {
+            printReceipt(
+                store,
+                defaultPrinter,
+                OrderEntityMapper.asCartState(item),
+                item
+            );
+        }
     };
 
     const confirmDeletion = () => {
@@ -58,14 +73,20 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
                         backgroundColor: theme.theme.colors.primary,
                     }}
                 >
-                    <Text style={{ textAlign: 'center', color: theme.theme.colors.grey0 }}>{item.status}</Text>
+                    <Text
+                        style={{
+                            textAlign: 'center',
+                            color: theme.theme.colors.grey0,
+                        }}
+                    >
+                        {item.status}
+                    </Text>
                 </View>
             </View>
             <View style={{ flex: 2 }}>
-                <Text style={[styles.name, { textAlign: 'center' }]}>{`${item.id.substring(
-                    0,
-                    8
-                )}...`}</Text>
+                <Text
+                    style={[styles.name, { textAlign: 'center' }]}
+                >{`${item.id.substring(0, 8)}...`}</Text>
             </View>
             <View style={{ flex: 3 }}>
                 <Text style={styles.name}>
@@ -90,9 +111,12 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
             >
                 <Button
                     type="outline"
-                    title="Open"
+                    title={item.status === 'OPEN' ? 'Open' : 'Print'}
                     icon={{
-                        name: 'folder-open-outline',
+                        name:
+                            item.status === 'OPEN'
+                                ? 'folder-open-outline'
+                                : 'printer-outline',
                         type: 'material-community',
                         color: theme.theme.colors.primary,
                     }}

@@ -1,3 +1,5 @@
+import { initialCartState } from './../../../../sales/data-access/src/lib/slices/cart.slice';
+import { CartState } from '@pos/sales/data-access';
 import { Order, OrderLine, OrderStatus } from '@pos/shared/models';
 
 export interface OrderEntity {
@@ -61,10 +63,42 @@ export class OrderEntityMapper {
         };
     }
 
-    static composeOrders(orders: OrderEntity[], lines: OrderLineEntity[]): OrderEntity[] {
-        return orders.map(o => ({
+    static asCartState(o: OrderEntity): CartState {
+        const state: CartState = { ...initialCartState };
+
+        state.footer = {
+            discount: 0,
+            subtotal: o.subtotal,
+            tax: o.tax,
+            total: o.total,
+        };
+        state.header = {
+            orderDate: o.createdAt!,
+            orderNumber: o.id,
+            status: o.status,
+            user: '',
+        };
+        state.items = o.items.map((i) => ({
+            quantity: i?.quantity,
+            id: i?.id,
+            product: {
+                name: i?.productName,
+                price: i?.price,
+                unitOfMeasure: i?.unitOfMeasure,
+            },
+        }));
+        state.selected = initialCartState.selected;
+
+        return state;
+    }
+
+    static composeOrders(
+        orders: OrderEntity[],
+        lines: OrderLineEntity[]
+    ): OrderEntity[] {
+        return orders.map((o) => ({
             ...o,
-            items: lines?.filter(l => l.orderID === o.id)
-        }))
+            items: lines?.filter((l) => l.orderID === o.id),
+        }));
     }
 }
