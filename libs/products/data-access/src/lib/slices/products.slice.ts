@@ -122,6 +122,11 @@ export const selectAllProducts = createSelector(
   selectAll
 );
 
+export const selectProduct = (id: string) => createSelector(
+  getProductsState,
+  (state) => state.entities[id]
+);
+
 export const selectProductsEntities = createSelector(
   getProductsState,
   selectEntities

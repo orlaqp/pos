@@ -1,4 +1,5 @@
 import { selectBrand } from '@pos/brands/data-access';
+import { selectProduct } from '@pos/products/data-access';
 import { CartItem } from '@pos/sales/data-access';
 import { UIS3Image } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
@@ -23,7 +24,11 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
         item.quantity.toString() || '0'
     );
     const [price, setPrice] = useState<number>(item.product.price);
+    const product = useSelector(selectProduct(item.product.id));
+    const brand = useSelector(selectBrand(product?.productBrandId));
     const each = item.product.unitOfMeasure === EACH;
+
+    debugger;
 
     useEffect(() => {
         setPrice(+quantity * item.product.price);
@@ -33,15 +38,20 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
         <View style={styles.productDetailsContainer}>
             <View style={{ height: 100 }}>
                 <UIS3Image
-                    s3Key={item.product.picture}
+                    s3Key={product?.picture}
                     width={100}
                     height={100}
                     factor={0.5}
                 />
             </View>
-            {/* <UILabel type='info' text={brand?.name} /> */}
+            <Text style={[styles.subLabel, { fontSize: 14 }]}>
+                {brand?.name}
+            </Text>
             <Text style={[styles.labelText, { fontSize: 20 }]}>
                 {item.product.name}
+            </Text>
+            <Text style={[styles.subLabel, { fontSize: 14 }]}>
+                {product?.description}
             </Text>
             <View></View>
             <View style={{ marginTop: 25 }}>
@@ -55,7 +65,7 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
                         textColor={theme.theme.colors.grey1}
                         iconSize={20}
                         totalHeight={50}
-                        leftButtonBackgroundColor={theme.theme.colors.grey5}
+                        leftButtonBackgroundColor={theme.theme.colors.grey4}
                         rightButtonBackgroundColor={theme.theme.colors.success}
                         minValue={1}
                         step={1}

@@ -1,13 +1,9 @@
-import { selectBrand } from '@pos/brands/data-access';
-import { ProductEntity, productsAdapter } from '@pos/products/data-access';
 import { CartItem } from '@pos/sales/data-access';
 import { useSharedStyles } from '@pos/theme/native';
-import { selectUnitOfMeasure } from '@pos/unit-of-measures/data-access';
-import { Button, Icon, useTheme } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
 import React from 'react';
 
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import { useSelector } from 'react-redux';
 
 /* eslint-disable-next-line */
 export interface CartLineProps {

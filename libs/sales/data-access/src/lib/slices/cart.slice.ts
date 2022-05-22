@@ -51,6 +51,7 @@ export const cartSlice = createSlice({
                 quantity: i?.quantity,
                 id: i?.id,
                 product: {
+                    id: i.productId,
                     name: i?.productName,
                     price: i?.price,
                     unitOfMeasure: i?.unitOfMeasure
