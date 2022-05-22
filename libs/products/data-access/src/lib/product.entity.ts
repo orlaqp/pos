@@ -1,7 +1,7 @@
 import { Product } from '@pos/shared/models';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 export type ProductEntity = {
-    id?: string;
+    id: string;
     name: string;
     description: string | null | undefined;
     price: number;
@@ -10,6 +10,7 @@ export type ProductEntity = {
     barcode: string | null | undefined;
     unitOfMeasure: string;
     sku?: string | null | undefined;
+    quantity: number;
     trackStock: boolean;
     picture: string | null | undefined;
     productCategoryId: string | null | undefined;
@@ -29,6 +30,7 @@ export class ProductEntityMapper {
             cost: p.cost,
             barcode: p.barcode,
             sku: p.sku,
+            quantity: p.quantity,
             unitOfMeasure: p.unitOfMeasure,
             trackStock: p.trackStock,
             picture: p.picture,

@@ -13,8 +13,6 @@ export interface ProductSearchProps {
 
 export function ProductSearch({ filter, onFilterChange }: ProductSearchProps) {
     const theme = useTheme();
-    const dispatch = useDispatch();
-    // const [text, setText] = useState<string>();
     const [showSoftInputOnFocus, setShowSoftInputOnFocus] = useState(false);
     
     const toggleSoftInput = () => setShowSoftInputOnFocus(!showSoftInputOnFocus);

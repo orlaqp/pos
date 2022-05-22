@@ -53,13 +53,15 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
         deselectProduct();
     };
 
-    const onCategoryChange = (c: CategoryEntity) => {
+    const onCategoryChange = async (c: CategoryEntity) => {
+        const res = await ProductService.search(allProducts, { categoryId: c.id });
+        setFilteredProducts(res);
         setFilter(undefined);
         setCategory(c);
     };
 
     const onFilterChange = async (text: string) => {
-        const res = await ProductService.search(allProducts, text);
+        const res = await ProductService.search(allProducts, { text });
         setFilteredProducts(res);
 
         if (res.length === 1) {
@@ -74,20 +76,13 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
                     barcode: p.barcode,
                     sku: p.sku
                 },
-                quantity: res[0].unitOfMeasure === EACH ? 1 : 0,
+                quantity: p.unitOfMeasure === EACH ? 1 : 0,
             }));
         }
 
         setFilter(filter);
         setCategory(undefined);
-        
-        // onFilterChange(text);
     }
-
-    // const onFilterChange = (filter: string) => {
-    //     setFilter(filter);
-    //     setCategory(undefined);
-    // };
 
     const onProductSelected = useCallback((p: ButtonItemType) => {
         const product = p as ProductEntity;
@@ -116,11 +111,6 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
     //         ]
     //     );
     // }
-
-
-    // useEffect(() => {
-    //     dispatch(productsActions.filter({ filter, categoryId: category?.id }));
-    // }, [dispatch, category, filter]);
 
     useEffect(() => {
         if (!products) return;
@@ -166,7 +156,9 @@ const useStyles = () => {
         ...StyleSheet.create({
             overlay: {
                 maxWidth: 350,
-                backgroundColor: theme.theme.colors.searchBg,
+                backgroundColor: `${theme.theme.colors.background}`,
+                borderColor: theme.theme.colors.grey5,
+                borderWidth: 1,
                 borderRadius: 5,
             },
             categories: {

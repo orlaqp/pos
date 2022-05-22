@@ -5,6 +5,11 @@ import { DataStore } from 'aws-amplify';
 import { productsActions } from './slices/products.slice';
 import { ProductEntity } from './product.entity';
 
+export interface SearchRequest {
+    text?: string;
+    categoryId?: string;
+}
+
 export class ProductService {
     static async save(dispatch: Dispatch<any>, product: ProductEntity) {
         if (!product.id) {
@@ -63,8 +68,13 @@ export class ProductService {
         return DataStore.delete(item);
     }
 
-    static async search(products: ProductEntity[], text: string) {
-        const lower = text.toLowerCase();
+    static async search(products: ProductEntity[], request: SearchRequest) {
+        if (request.categoryId)
+            return products.filter(p => p.productCategoryId === request.categoryId);
+
+        if (!request.text) return products;
+
+        const lower = request.text.toLowerCase();
         
         return products.filter(p => 
                p.sku?.toLowerCase().indexOf(lower) !== -1
