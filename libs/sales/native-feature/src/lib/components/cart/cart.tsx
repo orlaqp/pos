@@ -1,4 +1,9 @@
-import { cartActions, CartItem, CartState, selectCart } from '@pos/sales/data-access';
+import {
+    cartActions,
+    CartItem,
+    CartState,
+    selectCart,
+} from '@pos/sales/data-access';
 import { UIEmptyState } from '@pos/shared/ui-native';
 import { Button, useTheme } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
@@ -13,17 +18,23 @@ import CartLine from '../cart-line/cart-line';
 import { getDefaultPrinter, PrinterEntity } from '@pos/printings/data-access';
 import { selectStore, StoreInfoEntity } from '@pos/store-info/data-access';
 import { payOrder, submitOrder } from '@pos/orders/data-access';
+import { useSharedStyles } from '@pos/theme/native';
 
 export type CartMode = 'order' | 'payment';
 
 /* eslint-disable-next-line */
 export interface CartProps {
     mode: CartMode;
-    onSubmit: (cart: CartState, printer?: PrinterEntity, storeInfo?: StoreInfoEntity) => void;
+    onSubmit: (
+        cart: CartState,
+        printer?: PrinterEntity,
+        storeInfo?: StoreInfoEntity
+    ) => void;
 }
 
 export function Cart({ mode, onSubmit }: CartProps) {
     const theme = useTheme();
+    const styles = useSharedStyles();
     const dispatch = useDispatch();
     const cart = useSelector(selectCart);
     const [ready, setReady] = useState(false);
@@ -57,11 +68,13 @@ export function Cart({ mode, onSubmit }: CartProps) {
 
     if (!cart.items.length) {
         return (
-            <UIEmptyState
-                text="Cart is empty"
-                picture={EmptyCart}
-                backgroundColor={`${theme.theme.colors.searchBg}44`}
-            />
+            <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
+                <UIEmptyState
+                    text="Cart is empty"
+                    picture={EmptyCart}
+                    backgroundColor={styles.darkBackground.backgroundColor}
+                />
+            </View>
         );
     }
 

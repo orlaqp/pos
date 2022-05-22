@@ -184,8 +184,7 @@ const useStyles = () => {
             cart: {
                 flex: 2,
                 flexDirection: 'column',
-                // borderColor: 'yellow',
-                // borderWidth: 4
+                ...sharedStyles.darkBackground,
             },
         }),
     };

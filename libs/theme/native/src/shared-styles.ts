@@ -40,7 +40,10 @@ export const useSharedStyles = () => {
             backgroundColor: `${theme.theme.colors.grey5}22`,
         },
         darkBackground: {
-            backgroundColor: `${theme.theme.colors.searchBg}44`
+            backgroundColor: `${theme.theme.colors.background}44`
+        },
+        itemBackground: {
+            backgroundColor: `${theme.theme.colors.grey5}44`,
         },
         labelText: {
             color: theme.theme.colors.grey1

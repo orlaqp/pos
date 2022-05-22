@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { View, Text, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
-import { Button, Chip, useTheme } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
 import {
     productsActions,
     ProductEntity,
@@ -11,12 +11,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UIS3Image } from '@pos/shared/ui-native';
-import {
-    selectCategoriesEntities,
-    selectCategory,
-} from '@pos/categories/data-access';
-import { selectBrand } from '@pos/brands/data-access';
-import { selectUnitOfMeasure } from '@pos/unit-of-measures/data-access';
+import { selectCategory } from '@pos/categories/data-access';
 import { Icon } from '@rneui/base';
 
 export interface ProductItemProps {
@@ -28,15 +23,10 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
     const theme = useTheme();
     const styles = useStyles();
     const dispatch = useDispatch();
-
-    const category = useSelector(selectCategory(item.productCategoryId));
-    const brand = useSelector(selectBrand(item.productBrandId));
-    const unitOfMeasure = useSelector(
-        selectUnitOfMeasure(item.productUnitOfMeasureId)
-    );
-
     const [busy, setBusy] = useState<boolean>(false);
 
+    const category = useSelector(selectCategory(item.productCategoryId));
+    
     const deleteItem = async () => {
         if (!item.id) return;
 
@@ -90,7 +80,7 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
             </View>
             <View style={{ flex: 2 }}>
                 <Text style={styles.name}>
-                    {item.name} ({unitOfMeasure?.name})
+                    {item.name} ({item.unitOfMeasure})
                 </Text>
                 <Text style={styles.description}>{item.description}</Text>
             </View>
