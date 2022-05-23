@@ -10,6 +10,8 @@ import {
 } from 'react-native-star-io10';
 import { PrinterEntity } from './slices/printer.entity';
 import { Alert } from 'react-native';
+import { CutType } from 'react-native-star-io10/src/StarXpandCommand/Printer/CutType';
+import { Alignment } from 'react-native-star-io10/src/StarXpandCommand/Printer/Alignment';
 
 let starManager: StarDeviceDiscoveryManager;
 
@@ -58,10 +60,10 @@ export const stopDiscovery = () => {
 };
 
 export const printReceipt = async (
-    store?: StoreInfoEntity,
-    printerInfo?: PrinterEntity,
+    store: StoreInfoEntity,
+    printerInfo: PrinterEntity,
     cart: CartState,
-    order: OrderEntity,
+    order?: OrderEntity
 ) => {
     if (!store || !printerInfo) {
         Alert.alert('Store and printer should be available in order to print');
@@ -69,75 +71,97 @@ export const printReceipt = async (
     }
 
     // TODO: Restore printing service
-    return;
+    // return;
 
     print((builder) => {
         const date = new Date();
 
-        builder.addDocument(
-            new StarXpandCommand.DocumentBuilder().addPrinter(
-                new StarXpandCommand.PrinterBuilder()
-                    .styleInternationalCharacter(
-                        StarXpandCommand.Printer.InternationalCharacterType.Usa
-                    )
-                    .styleCharacterSpace(0)
-                    .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
-                    .actionPrintText(`${store.name}\n${store.address}\n${store.city}, ${store.state} ${store.zipCode}\nP: ${store.phone}\nF: ${store.fax}\n${store.email}\n\n`
-                    )
-                    .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
-                    .actionPrintText(
-                        `Date:${date.toLocaleString()}\n` +
-                            '--------------------------------\n' +
-                            '\n'
-                    )
-                    .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
-                    .actionPrintText(
-                        // 'SKU   Description        Total\n' +
-                        'Description        Qty   Total\n' +
-                        // cart.items.map(i => `${i.product.sku?.padEnd(5, ' ')} ${i.quantity.toString().padStart(2, ' ')}x${i.product.name.substring(0, 13).padEnd(13, ' ')} ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`).join('\n') +
-                        cart.items.map(i => `${i.product.name.substring(0, 17).padEnd(17, ' ')}  ${i.quantity.toString().padStart(2, ' ')}  ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`).join('\n') +
-                            
-                        '\n\n' +
-                        // `Subtotal                 ${cart.footer.subtotal.toFixed(2).padStart(7, ' ')}\n` +
-                        // 'Tax                         0.00\n' +
-                        '--------------------------------\n'
-                    )
-                    .actionPrintText('Total     ')
-                    .add(
-                        new StarXpandCommand.PrinterBuilder()
-                            .styleMagnification(
-                                new StarXpandCommand.MagnificationParameter(
-                                    2,
-                                    2
-                                )
-                            )
-                            .actionPrintText(`     ${cart.footer.total.toFixed(2).padStart(7, '')}\n`)
-                    )
-                    .actionPrintText('--------------------------------\n')
-                    .actionFeedLine(1)
-                    .add(
-                        new StarXpandCommand.PrinterBuilder()
-                            .styleInvert(true)
-                            .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
-                            .actionPrintText(` ${store.disclaimer} \n`)
-                    )
-                    .actionFeedLine(1)
-                    .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
-                    .actionPrintQRCode(
-                        new StarXpandCommand.Printer.QRCodeParameter(
-                            `${order.id}\n`
-                        )
-                            .setModel(
-                                StarXpandCommand.Printer.QRCodeModel.Model2
-                            )
-                            .setLevel(StarXpandCommand.Printer.QRCodeLevel.L)
-                            .setCellSize(8)
-                    )
-                    .actionFeedLine(1)
-                    .actionPrintText(`${order.id.substring(0, 6)}...\n`)
-                    .actionFeedLine(1)
-                    .actionCut(StarXpandCommand.Printer.CutType.Partial)
+        const printerBuilder = new StarXpandCommand.PrinterBuilder()
+            .styleInternationalCharacter(
+                StarXpandCommand.Printer.InternationalCharacterType.Usa
             )
+            .styleCharacterSpace(0)
+            .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
+            .styleBold(true)
+            .actionPrintText(`${store.name}\n`)
+            .styleBold(false)
+            .actionPrintText(
+                `${store.address}\n${store.city}, ${store.state} ${store.zipCode}\nP: ${store.phone}\nF: ${store.fax}\n${store.email}\n\n`
+            )
+            .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
+            .actionPrintText(
+                `Date:${date.toLocaleString()}\n` +
+                    '--------------------------------\n' +
+                    '\n'
+            )
+            .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
+            .actionPrintText(
+                // 'SKU   Description        Total\n' +
+                'Description        Qty   Total\n' +
+                    // cart.items.map(i => `${i.product.sku?.padEnd(5, ' ')} ${i.quantity.toString().padStart(2, ' ')}x${i.product.name.substring(0, 13).padEnd(13, ' ')} ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`).join('\n') +
+                    cart.items
+                        .map(
+                            (i) =>
+                                `${i.product.name
+                                    .substring(0, 17)
+                                    .padEnd(17, ' ')}  ${i.quantity
+                                    .toString()
+                                    .padStart(2, ' ')}  ${(
+                                    i.product.price * i.quantity
+                                )
+                                    .toFixed(2)
+                                    .padStart(7, ' ')}`
+                        )
+                        .join('\n') +
+                    '\n\n' +
+                    // `Subtotal                 ${cart.footer.subtotal.toFixed(2).padStart(7, ' ')}\n` +
+                    // 'Tax                         0.00\n' +
+                    '--------------------------------\n'
+            )
+            .actionPrintText('Total     ')
+            .add(
+                new StarXpandCommand.PrinterBuilder()
+                    .styleMagnification(
+                        new StarXpandCommand.MagnificationParameter(2, 2)
+                    )
+                    .actionPrintText(
+                        `     ${cart.footer.total.toFixed(2).padStart(7, '')}\n`
+                    )
+            )
+            .actionPrintText('--------------------------------\n')
+            .actionFeedLine(1);            
+
+        if (order?.id) {
+            printerBuilder
+                .add(
+                    new StarXpandCommand.PrinterBuilder()
+                        .styleInvert(true)
+                        .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
+                        .actionPrintText(` ${store.disclaimer} \n`)
+                )
+                .actionFeedLine(1)
+                .actionPrintQRCode(
+                    new StarXpandCommand.Printer.QRCodeParameter(
+                        `${order?.id}\n`
+                    )
+                        .setModel(StarXpandCommand.Printer.QRCodeModel.Model2)
+                        .setLevel(StarXpandCommand.Printer.QRCodeLevel.L)
+                        .setCellSize(8)
+                )
+                .actionFeedLine(1)
+                .actionPrintText(`${order?.id.substring(0, 6)}...\n`)
+                .actionFeedLine(1);
+        } else {
+            printerBuilder
+                .styleAlignment(Alignment.Center)
+                .actionPrintText('*** NOT A RECEIPT ***')
+                .actionFeedLine(1);
+        }
+
+        printerBuilder.actionCut(CutType.Partial);
+
+        builder.addDocument(
+            new StarXpandCommand.DocumentBuilder().addPrinter(printerBuilder)
         );
     });
 };

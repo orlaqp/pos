@@ -2,13 +2,9 @@ import React, { useState } from 'react';
 import {
     ordersActions,
     selectFilteredList,
-    selectIsEmpty,
-    selectLoadingStatus,
 } from '@pos/orders/data-access';
 import {
-    ItemListProps,
     UIEmptyState,
-    UIGenericItemList,
     UISearchInput,
 } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';

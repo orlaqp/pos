@@ -7,7 +7,7 @@ import { Button, useTheme } from '@rneui/themed';
 /* eslint-disable-next-line */
 export interface ProductSearchProps {
     filter?: string;
-    onFilterChange: (text: string) => void;
+    onFilterChange: (text: string) => Promise<string>;
 }
 
 // export function ProductSearch({ filter, onFilterChange }: ProductSearchProps) {
@@ -41,16 +41,15 @@ export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((pr
             >
                 <UISearchInput
                     ref={ref}
+                    value={filter}
                     placeholder="type to search by name, description, barcode and sku..."
-                    // value={text}
-                    debounceTime={300}
+                    debounceTime={100}
                     showSoftInputOnFocus={showSoftInputOnFocus}
                     returnKeyType='search'
                     autoComplete='off'
                     autoCorrect={false}
                     autoCapitalize='none'
                     onTextChanged={onFilterChange}
-                    value={filter}
                 />
                 <Button
                     icon={{

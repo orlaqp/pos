@@ -4,53 +4,111 @@ import { HomeScreen } from './HomeScreen';
 import { LoginScreen, SignUpScreen } from '@pos/auth/native-feature';
 import { SalesScreen } from '@pos/sales/native-feature';
 
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@pos/store';
 import { BackOffice } from '@pos/back-office/native-feature';
 import { DataStore } from 'aws-amplify';
 import { Orders } from '@pos/orders/native-feature';
-import { useTheme } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
+import { Alert } from 'react-native';
+import { cartActions, selectCart } from '@pos/sales/data-access';
+import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
+import { selectStore } from '@pos/store-info/data-access';
 
 /* eslint-disable-next-line */
 export interface NavigationParamList {
     [key: string]: object | undefined;
-    'Sales': {
+    Sales: {
         mode: 'order' | 'payment';
-    }
+    };
 }
-
 
 const Stack = createNativeStackNavigator<NavigationParamList>();
 
 export function Navigation() {
     const theme = useTheme();
-  const user = useSelector((state: RootState) => state.auth.user);
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: theme.theme.colors.background,
-        },
-        headerTitleStyle: {
-          color: theme.theme.colors.grey0,
-        },
-      }}
-    >
-    { user ? (
-        <>
-            <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="Sales" component={SalesScreen} />
-            <Stack.Screen name="Payments" component={Orders} />
-            <Stack.Screen name="BackOffice" component={BackOffice} />
-        </>
-    ) : (
-        <>
-            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="Signup" component={SignUpScreen} options={{ headerShown: false }} />
-        </>
-    ) }
-    </Stack.Navigator>
-  );
+    const user = useSelector((state: RootState) => state.auth.user);
+    const dispatch = useDispatch();
+    const cart = useSelector(selectCart);
+    const defaultPrinter = useSelector(getDefaultPrinter);
+    const store = useSelector(selectStore);
+
+    const print = () => {
+        printReceipt(store, defaultPrinter, cart);
+    }
+
+    const confirmResetCart = () => {
+        Alert.alert('Are you sure?', 'Press yes to confirm', [
+            { text: 'No' },
+            { text: 'Yes', onPress: () => dispatch(cartActions.reset()) },
+        ]);
+    };
+
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerStyle: {
+                    backgroundColor: theme.theme.colors.background,
+                },
+                headerTitleStyle: {
+                    color: theme.theme.colors.grey0,
+                },
+            }}
+        >
+            {user ? (
+                <>
+                    <Stack.Screen
+                        name="Home"
+                        component={HomeScreen}
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                        name="Sales"
+                        component={SalesScreen}
+                        options={{
+                            headerRight: () => (
+                                <>
+                                    <Button
+                                        type="clear"
+                                        title="Print"
+                                        style={{ marginRight: 20 }}
+                                        onPress={print}
+                                        disabled={cart.items?.length === 0}
+                                        icon={{
+                                            name: 'printer-outline',
+                                            type: 'material-community',
+                                            color: cart.items?.length === 0 ? theme.theme.colors.disabled : theme.theme.colors.primary
+                                        }}
+                                    />
+                                    <Button
+                                        type="clear"
+                                        title="Reset"
+                                        onPress={confirmResetCart}
+                                        disabled={cart.items?.length === 0}
+                                    />
+                                </>
+                            ),
+                        }}
+                    />
+                    <Stack.Screen name="Payments" component={Orders} />
+                    <Stack.Screen name="BackOffice" component={BackOffice} />
+                </>
+            ) : (
+                <>
+                    <Stack.Screen
+                        name="Login"
+                        component={LoginScreen}
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                        name="Signup"
+                        component={SignUpScreen}
+                        options={{ headerShown: false }}
+                    />
+                </>
+            )}
+        </Stack.Navigator>
+    );
 }
 
 export default Navigation;
