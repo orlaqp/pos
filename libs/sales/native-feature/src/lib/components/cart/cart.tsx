@@ -33,7 +33,6 @@ export interface CartProps {
 }
 
 export function Cart({ mode, onSubmit }: CartProps) {
-    const theme = useTheme();
     const styles = useSharedStyles();
     const dispatch = useDispatch();
     const cart = useSelector(selectCart);

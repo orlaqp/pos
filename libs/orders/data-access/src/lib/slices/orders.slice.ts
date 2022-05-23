@@ -1,4 +1,3 @@
-import { RootState } from './../../../../../store/src/index';
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { PrinterEntity, printReceipt } from '@pos/printings/data-access';
