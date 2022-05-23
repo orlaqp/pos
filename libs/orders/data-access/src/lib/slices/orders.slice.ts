@@ -1,3 +1,4 @@
+import { RootState } from './../../../../../store/src/index';
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { PrinterEntity, printReceipt } from '@pos/printings/data-access';
@@ -64,7 +65,8 @@ export const ordersAdapter = createEntityAdapter<OrderEntity>();
 export const submitOrder = createAsyncThunk(
     'order/save',
     async (request: SubmitOrderRequest, thunkAPI) => {
-        const o = await OrderService.saveOrder(request.cart);
+        const user = (thunkAPI.getState() as RootState).auth.user!;
+        const o = await OrderService.saveOrder(user, request.cart);
         return {
             ...request,
             order: OrderEntityMapper.fromModel(o),

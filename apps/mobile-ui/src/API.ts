@@ -193,6 +193,8 @@ export type CreateOrderInput = {
   tax: number,
   total: number,
   status: OrderStatus,
+  employeeId: string,
+  employeeName: string,
   _version?: number | null,
   orderCustomerId?: string | null,
 };
@@ -210,6 +212,8 @@ export type ModelOrderConditionInput = {
   tax?: ModelFloatInput | null,
   total?: ModelFloatInput | null,
   status?: ModelOrderStatusInput | null,
+  employeeId?: ModelStringInput | null,
+  employeeName?: ModelStringInput | null,
   and?: Array< ModelOrderConditionInput | null > | null,
   or?: Array< ModelOrderConditionInput | null > | null,
   not?: ModelOrderConditionInput | null,
@@ -256,6 +260,8 @@ export type Order = {
   tax: number,
   total: number,
   status: OrderStatus,
+  employeeId: string,
+  employeeName: string,
   OrderItems?: ModelOrderLineConnection | null,
   Customer?: Customer | null,
   createdAt: string,
@@ -300,6 +306,8 @@ export type UpdateOrderInput = {
   tax?: number | null,
   total?: number | null,
   status?: OrderStatus | null,
+  employeeId?: string | null,
+  employeeName?: string | null,
   _version?: number | null,
   orderCustomerId?: string | null,
 };
@@ -842,6 +850,182 @@ export type DeleteInventoryChangesInput = {
   _version?: number | null,
 };
 
+export type CreateInventoryCountInput = {
+  id?: string | null,
+  comments?: string | null,
+  _version?: number | null,
+};
+
+export type ModelInventoryCountConditionInput = {
+  comments?: ModelStringInput | null,
+  and?: Array< ModelInventoryCountConditionInput | null > | null,
+  or?: Array< ModelInventoryCountConditionInput | null > | null,
+  not?: ModelInventoryCountConditionInput | null,
+};
+
+export type InventoryCount = {
+  __typename: "InventoryCount",
+  id: string,
+  comments?: string | null,
+  createdAt: string,
+  updatedAt: string,
+  _version: number,
+  _deleted?: boolean | null,
+  _lastChangedAt: number,
+};
+
+export type UpdateInventoryCountInput = {
+  id: string,
+  comments?: string | null,
+  _version?: number | null,
+};
+
+export type DeleteInventoryCountInput = {
+  id: string,
+  _version?: number | null,
+};
+
+export type CreateInventoryCountLineInput = {
+  id?: string | null,
+  current: number,
+  newCount: number,
+  comments?: string | null,
+  _version?: number | null,
+  inventoryCountLineInventoryCountId?: string | null,
+  inventoryCountLineProductId?: string | null,
+};
+
+export type ModelInventoryCountLineConditionInput = {
+  current?: ModelFloatInput | null,
+  newCount?: ModelFloatInput | null,
+  comments?: ModelStringInput | null,
+  and?: Array< ModelInventoryCountLineConditionInput | null > | null,
+  or?: Array< ModelInventoryCountLineConditionInput | null > | null,
+  not?: ModelInventoryCountLineConditionInput | null,
+  inventoryCountLineInventoryCountId?: ModelIDInput | null,
+  inventoryCountLineProductId?: ModelIDInput | null,
+};
+
+export type InventoryCountLine = {
+  __typename: "InventoryCountLine",
+  id: string,
+  current: number,
+  newCount: number,
+  comments?: string | null,
+  InventoryCount?: InventoryCount | null,
+  Product?: Product | null,
+  createdAt: string,
+  updatedAt: string,
+  _version: number,
+  _deleted?: boolean | null,
+  _lastChangedAt: number,
+  inventoryCountLineInventoryCountId?: string | null,
+  inventoryCountLineProductId?: string | null,
+};
+
+export type UpdateInventoryCountLineInput = {
+  id: string,
+  current?: number | null,
+  newCount?: number | null,
+  comments?: string | null,
+  _version?: number | null,
+  inventoryCountLineInventoryCountId?: string | null,
+  inventoryCountLineProductId?: string | null,
+};
+
+export type DeleteInventoryCountLineInput = {
+  id: string,
+  _version?: number | null,
+};
+
+export type CreateInventoryReceivedInput = {
+  id?: string | null,
+  comments?: string | null,
+  _version?: number | null,
+};
+
+export type ModelInventoryReceivedConditionInput = {
+  comments?: ModelStringInput | null,
+  and?: Array< ModelInventoryReceivedConditionInput | null > | null,
+  or?: Array< ModelInventoryReceivedConditionInput | null > | null,
+  not?: ModelInventoryReceivedConditionInput | null,
+};
+
+export type InventoryReceived = {
+  __typename: "InventoryReceived",
+  id: string,
+  comments?: string | null,
+  createdAt: string,
+  updatedAt: string,
+  _version: number,
+  _deleted?: boolean | null,
+  _lastChangedAt: number,
+};
+
+export type UpdateInventoryReceivedInput = {
+  id: string,
+  comments?: string | null,
+  _version?: number | null,
+};
+
+export type DeleteInventoryReceivedInput = {
+  id: string,
+  _version?: number | null,
+};
+
+export type CreateInventoryReceivedLineInput = {
+  id?: string | null,
+  current: number,
+  received: number,
+  comments?: string | null,
+  _version?: number | null,
+  inventoryReceivedLineInventoryReceivedId?: string | null,
+  inventoryReceivedLineProductId?: string | null,
+};
+
+export type ModelInventoryReceivedLineConditionInput = {
+  current?: ModelFloatInput | null,
+  received?: ModelFloatInput | null,
+  comments?: ModelStringInput | null,
+  and?: Array< ModelInventoryReceivedLineConditionInput | null > | null,
+  or?: Array< ModelInventoryReceivedLineConditionInput | null > | null,
+  not?: ModelInventoryReceivedLineConditionInput | null,
+  inventoryReceivedLineInventoryReceivedId?: ModelIDInput | null,
+  inventoryReceivedLineProductId?: ModelIDInput | null,
+};
+
+export type InventoryReceivedLine = {
+  __typename: "InventoryReceivedLine",
+  id: string,
+  current: number,
+  received: number,
+  comments?: string | null,
+  InventoryReceived?: InventoryReceived | null,
+  Product?: Product | null,
+  createdAt: string,
+  updatedAt: string,
+  _version: number,
+  _deleted?: boolean | null,
+  _lastChangedAt: number,
+  inventoryReceivedLineInventoryReceivedId?: string | null,
+  inventoryReceivedLineProductId?: string | null,
+};
+
+export type UpdateInventoryReceivedLineInput = {
+  id: string,
+  current?: number | null,
+  received?: number | null,
+  comments?: string | null,
+  _version?: number | null,
+  inventoryReceivedLineInventoryReceivedId?: string | null,
+  inventoryReceivedLineProductId?: string | null,
+};
+
+export type DeleteInventoryReceivedLineInput = {
+  id: string,
+  _version?: number | null,
+};
+
 export type CreatePrinterInput = {
   id?: string | null,
   deviceId: string,
@@ -997,6 +1181,8 @@ export type ModelOrderFilterInput = {
   tax?: ModelFloatInput | null,
   total?: ModelFloatInput | null,
   status?: ModelOrderStatusInput | null,
+  employeeId?: ModelStringInput | null,
+  employeeName?: ModelStringInput | null,
   and?: Array< ModelOrderFilterInput | null > | null,
   or?: Array< ModelOrderFilterInput | null > | null,
   not?: ModelOrderFilterInput | null,
@@ -1194,6 +1380,74 @@ export type ModelInventoryChangesFilterInput = {
 export type ModelInventoryChangesConnection = {
   __typename: "ModelInventoryChangesConnection",
   items:  Array<InventoryChanges | null >,
+  nextToken?: string | null,
+  startedAt?: number | null,
+};
+
+export type ModelInventoryCountFilterInput = {
+  id?: ModelIDInput | null,
+  comments?: ModelStringInput | null,
+  and?: Array< ModelInventoryCountFilterInput | null > | null,
+  or?: Array< ModelInventoryCountFilterInput | null > | null,
+  not?: ModelInventoryCountFilterInput | null,
+};
+
+export type ModelInventoryCountConnection = {
+  __typename: "ModelInventoryCountConnection",
+  items:  Array<InventoryCount | null >,
+  nextToken?: string | null,
+  startedAt?: number | null,
+};
+
+export type ModelInventoryCountLineFilterInput = {
+  id?: ModelIDInput | null,
+  current?: ModelFloatInput | null,
+  newCount?: ModelFloatInput | null,
+  comments?: ModelStringInput | null,
+  and?: Array< ModelInventoryCountLineFilterInput | null > | null,
+  or?: Array< ModelInventoryCountLineFilterInput | null > | null,
+  not?: ModelInventoryCountLineFilterInput | null,
+  inventoryCountLineInventoryCountId?: ModelIDInput | null,
+  inventoryCountLineProductId?: ModelIDInput | null,
+};
+
+export type ModelInventoryCountLineConnection = {
+  __typename: "ModelInventoryCountLineConnection",
+  items:  Array<InventoryCountLine | null >,
+  nextToken?: string | null,
+  startedAt?: number | null,
+};
+
+export type ModelInventoryReceivedFilterInput = {
+  id?: ModelIDInput | null,
+  comments?: ModelStringInput | null,
+  and?: Array< ModelInventoryReceivedFilterInput | null > | null,
+  or?: Array< ModelInventoryReceivedFilterInput | null > | null,
+  not?: ModelInventoryReceivedFilterInput | null,
+};
+
+export type ModelInventoryReceivedConnection = {
+  __typename: "ModelInventoryReceivedConnection",
+  items:  Array<InventoryReceived | null >,
+  nextToken?: string | null,
+  startedAt?: number | null,
+};
+
+export type ModelInventoryReceivedLineFilterInput = {
+  id?: ModelIDInput | null,
+  current?: ModelFloatInput | null,
+  received?: ModelFloatInput | null,
+  comments?: ModelStringInput | null,
+  and?: Array< ModelInventoryReceivedLineFilterInput | null > | null,
+  or?: Array< ModelInventoryReceivedLineFilterInput | null > | null,
+  not?: ModelInventoryReceivedLineFilterInput | null,
+  inventoryReceivedLineInventoryReceivedId?: ModelIDInput | null,
+  inventoryReceivedLineProductId?: ModelIDInput | null,
+};
+
+export type ModelInventoryReceivedLineConnection = {
+  __typename: "ModelInventoryReceivedLineConnection",
+  items:  Array<InventoryReceivedLine | null >,
   nextToken?: string | null,
   startedAt?: number | null,
 };
@@ -1439,6 +1693,8 @@ export type CreateOrderMutation = {
     tax: number,
     total: number,
     status: OrderStatus,
+    employeeId: string,
+    employeeName: string,
     OrderItems?:  {
       __typename: "ModelOrderLineConnection",
       nextToken?: string | null,
@@ -1481,6 +1737,8 @@ export type UpdateOrderMutation = {
     tax: number,
     total: number,
     status: OrderStatus,
+    employeeId: string,
+    employeeName: string,
     OrderItems?:  {
       __typename: "ModelOrderLineConnection",
       nextToken?: string | null,
@@ -1523,6 +1781,8 @@ export type DeleteOrderMutation = {
     tax: number,
     total: number,
     status: OrderStatus,
+    employeeId: string,
+    employeeName: string,
     OrderItems?:  {
       __typename: "ModelOrderLineConnection",
       nextToken?: string | null,
@@ -2539,6 +2799,444 @@ export type DeleteInventoryChangesMutation = {
   } | null,
 };
 
+export type CreateInventoryCountMutationVariables = {
+  input: CreateInventoryCountInput,
+  condition?: ModelInventoryCountConditionInput | null,
+};
+
+export type CreateInventoryCountMutation = {
+  createInventoryCount?:  {
+    __typename: "InventoryCount",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type UpdateInventoryCountMutationVariables = {
+  input: UpdateInventoryCountInput,
+  condition?: ModelInventoryCountConditionInput | null,
+};
+
+export type UpdateInventoryCountMutation = {
+  updateInventoryCount?:  {
+    __typename: "InventoryCount",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type DeleteInventoryCountMutationVariables = {
+  input: DeleteInventoryCountInput,
+  condition?: ModelInventoryCountConditionInput | null,
+};
+
+export type DeleteInventoryCountMutation = {
+  deleteInventoryCount?:  {
+    __typename: "InventoryCount",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type CreateInventoryCountLineMutationVariables = {
+  input: CreateInventoryCountLineInput,
+  condition?: ModelInventoryCountLineConditionInput | null,
+};
+
+export type CreateInventoryCountLineMutation = {
+  createInventoryCountLine?:  {
+    __typename: "InventoryCountLine",
+    id: string,
+    current: number,
+    newCount: number,
+    comments?: string | null,
+    InventoryCount?:  {
+      __typename: "InventoryCount",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryCountLineInventoryCountId?: string | null,
+    inventoryCountLineProductId?: string | null,
+  } | null,
+};
+
+export type UpdateInventoryCountLineMutationVariables = {
+  input: UpdateInventoryCountLineInput,
+  condition?: ModelInventoryCountLineConditionInput | null,
+};
+
+export type UpdateInventoryCountLineMutation = {
+  updateInventoryCountLine?:  {
+    __typename: "InventoryCountLine",
+    id: string,
+    current: number,
+    newCount: number,
+    comments?: string | null,
+    InventoryCount?:  {
+      __typename: "InventoryCount",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryCountLineInventoryCountId?: string | null,
+    inventoryCountLineProductId?: string | null,
+  } | null,
+};
+
+export type DeleteInventoryCountLineMutationVariables = {
+  input: DeleteInventoryCountLineInput,
+  condition?: ModelInventoryCountLineConditionInput | null,
+};
+
+export type DeleteInventoryCountLineMutation = {
+  deleteInventoryCountLine?:  {
+    __typename: "InventoryCountLine",
+    id: string,
+    current: number,
+    newCount: number,
+    comments?: string | null,
+    InventoryCount?:  {
+      __typename: "InventoryCount",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryCountLineInventoryCountId?: string | null,
+    inventoryCountLineProductId?: string | null,
+  } | null,
+};
+
+export type CreateInventoryReceivedMutationVariables = {
+  input: CreateInventoryReceivedInput,
+  condition?: ModelInventoryReceivedConditionInput | null,
+};
+
+export type CreateInventoryReceivedMutation = {
+  createInventoryReceived?:  {
+    __typename: "InventoryReceived",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type UpdateInventoryReceivedMutationVariables = {
+  input: UpdateInventoryReceivedInput,
+  condition?: ModelInventoryReceivedConditionInput | null,
+};
+
+export type UpdateInventoryReceivedMutation = {
+  updateInventoryReceived?:  {
+    __typename: "InventoryReceived",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type DeleteInventoryReceivedMutationVariables = {
+  input: DeleteInventoryReceivedInput,
+  condition?: ModelInventoryReceivedConditionInput | null,
+};
+
+export type DeleteInventoryReceivedMutation = {
+  deleteInventoryReceived?:  {
+    __typename: "InventoryReceived",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type CreateInventoryReceivedLineMutationVariables = {
+  input: CreateInventoryReceivedLineInput,
+  condition?: ModelInventoryReceivedLineConditionInput | null,
+};
+
+export type CreateInventoryReceivedLineMutation = {
+  createInventoryReceivedLine?:  {
+    __typename: "InventoryReceivedLine",
+    id: string,
+    current: number,
+    received: number,
+    comments?: string | null,
+    InventoryReceived?:  {
+      __typename: "InventoryReceived",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryReceivedLineInventoryReceivedId?: string | null,
+    inventoryReceivedLineProductId?: string | null,
+  } | null,
+};
+
+export type UpdateInventoryReceivedLineMutationVariables = {
+  input: UpdateInventoryReceivedLineInput,
+  condition?: ModelInventoryReceivedLineConditionInput | null,
+};
+
+export type UpdateInventoryReceivedLineMutation = {
+  updateInventoryReceivedLine?:  {
+    __typename: "InventoryReceivedLine",
+    id: string,
+    current: number,
+    received: number,
+    comments?: string | null,
+    InventoryReceived?:  {
+      __typename: "InventoryReceived",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryReceivedLineInventoryReceivedId?: string | null,
+    inventoryReceivedLineProductId?: string | null,
+  } | null,
+};
+
+export type DeleteInventoryReceivedLineMutationVariables = {
+  input: DeleteInventoryReceivedLineInput,
+  condition?: ModelInventoryReceivedLineConditionInput | null,
+};
+
+export type DeleteInventoryReceivedLineMutation = {
+  deleteInventoryReceivedLine?:  {
+    __typename: "InventoryReceivedLine",
+    id: string,
+    current: number,
+    received: number,
+    comments?: string | null,
+    InventoryReceived?:  {
+      __typename: "InventoryReceived",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryReceivedLineInventoryReceivedId?: string | null,
+    inventoryReceivedLineProductId?: string | null,
+  } | null,
+};
+
 export type CreatePrinterMutationVariables = {
   input: CreatePrinterInput,
   condition?: ModelPrinterConditionInput | null,
@@ -2905,6 +3603,8 @@ export type GetOrderQuery = {
     tax: number,
     total: number,
     status: OrderStatus,
+    employeeId: string,
+    employeeName: string,
     OrderItems?:  {
       __typename: "ModelOrderLineConnection",
       nextToken?: string | null,
@@ -2950,6 +3650,8 @@ export type ListOrdersQuery = {
       tax: number,
       total: number,
       status: OrderStatus,
+      employeeId: string,
+      employeeName: string,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -2979,6 +3681,8 @@ export type SyncOrdersQuery = {
       tax: number,
       total: number,
       status: OrderStatus,
+      employeeId: string,
+      employeeName: string,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -3888,6 +4592,360 @@ export type SyncInventoryChangesQuery = {
   } | null,
 };
 
+export type GetInventoryCountQueryVariables = {
+  id: string,
+};
+
+export type GetInventoryCountQuery = {
+  getInventoryCount?:  {
+    __typename: "InventoryCount",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type ListInventoryCountsQueryVariables = {
+  filter?: ModelInventoryCountFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListInventoryCountsQuery = {
+  listInventoryCounts?:  {
+    __typename: "ModelInventoryCountConnection",
+    items:  Array< {
+      __typename: "InventoryCount",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type SyncInventoryCountsQueryVariables = {
+  filter?: ModelInventoryCountFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  lastSync?: number | null,
+};
+
+export type SyncInventoryCountsQuery = {
+  syncInventoryCounts?:  {
+    __typename: "ModelInventoryCountConnection",
+    items:  Array< {
+      __typename: "InventoryCount",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type GetInventoryCountLineQueryVariables = {
+  id: string,
+};
+
+export type GetInventoryCountLineQuery = {
+  getInventoryCountLine?:  {
+    __typename: "InventoryCountLine",
+    id: string,
+    current: number,
+    newCount: number,
+    comments?: string | null,
+    InventoryCount?:  {
+      __typename: "InventoryCount",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryCountLineInventoryCountId?: string | null,
+    inventoryCountLineProductId?: string | null,
+  } | null,
+};
+
+export type ListInventoryCountLinesQueryVariables = {
+  filter?: ModelInventoryCountLineFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListInventoryCountLinesQuery = {
+  listInventoryCountLines?:  {
+    __typename: "ModelInventoryCountLineConnection",
+    items:  Array< {
+      __typename: "InventoryCountLine",
+      id: string,
+      current: number,
+      newCount: number,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      inventoryCountLineInventoryCountId?: string | null,
+      inventoryCountLineProductId?: string | null,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type SyncInventoryCountLinesQueryVariables = {
+  filter?: ModelInventoryCountLineFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  lastSync?: number | null,
+};
+
+export type SyncInventoryCountLinesQuery = {
+  syncInventoryCountLines?:  {
+    __typename: "ModelInventoryCountLineConnection",
+    items:  Array< {
+      __typename: "InventoryCountLine",
+      id: string,
+      current: number,
+      newCount: number,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      inventoryCountLineInventoryCountId?: string | null,
+      inventoryCountLineProductId?: string | null,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type GetInventoryReceivedQueryVariables = {
+  id: string,
+};
+
+export type GetInventoryReceivedQuery = {
+  getInventoryReceived?:  {
+    __typename: "InventoryReceived",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type ListInventoryReceivedsQueryVariables = {
+  filter?: ModelInventoryReceivedFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListInventoryReceivedsQuery = {
+  listInventoryReceiveds?:  {
+    __typename: "ModelInventoryReceivedConnection",
+    items:  Array< {
+      __typename: "InventoryReceived",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type SyncInventoryReceivedsQueryVariables = {
+  filter?: ModelInventoryReceivedFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  lastSync?: number | null,
+};
+
+export type SyncInventoryReceivedsQuery = {
+  syncInventoryReceiveds?:  {
+    __typename: "ModelInventoryReceivedConnection",
+    items:  Array< {
+      __typename: "InventoryReceived",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type GetInventoryReceivedLineQueryVariables = {
+  id: string,
+};
+
+export type GetInventoryReceivedLineQuery = {
+  getInventoryReceivedLine?:  {
+    __typename: "InventoryReceivedLine",
+    id: string,
+    current: number,
+    received: number,
+    comments?: string | null,
+    InventoryReceived?:  {
+      __typename: "InventoryReceived",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryReceivedLineInventoryReceivedId?: string | null,
+    inventoryReceivedLineProductId?: string | null,
+  } | null,
+};
+
+export type ListInventoryReceivedLinesQueryVariables = {
+  filter?: ModelInventoryReceivedLineFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListInventoryReceivedLinesQuery = {
+  listInventoryReceivedLines?:  {
+    __typename: "ModelInventoryReceivedLineConnection",
+    items:  Array< {
+      __typename: "InventoryReceivedLine",
+      id: string,
+      current: number,
+      received: number,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      inventoryReceivedLineInventoryReceivedId?: string | null,
+      inventoryReceivedLineProductId?: string | null,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type SyncInventoryReceivedLinesQueryVariables = {
+  filter?: ModelInventoryReceivedLineFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  lastSync?: number | null,
+};
+
+export type SyncInventoryReceivedLinesQuery = {
+  syncInventoryReceivedLines?:  {
+    __typename: "ModelInventoryReceivedLineConnection",
+    items:  Array< {
+      __typename: "InventoryReceivedLine",
+      id: string,
+      current: number,
+      received: number,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      inventoryReceivedLineInventoryReceivedId?: string | null,
+      inventoryReceivedLineProductId?: string | null,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
 export type GetPrinterQueryVariables = {
   id: string,
 };
@@ -4193,6 +5251,8 @@ export type OnCreateOrderSubscription = {
     tax: number,
     total: number,
     status: OrderStatus,
+    employeeId: string,
+    employeeName: string,
     OrderItems?:  {
       __typename: "ModelOrderLineConnection",
       nextToken?: string | null,
@@ -4230,6 +5290,8 @@ export type OnUpdateOrderSubscription = {
     tax: number,
     total: number,
     status: OrderStatus,
+    employeeId: string,
+    employeeName: string,
     OrderItems?:  {
       __typename: "ModelOrderLineConnection",
       nextToken?: string | null,
@@ -4267,6 +5329,8 @@ export type OnDeleteOrderSubscription = {
     tax: number,
     total: number,
     status: OrderStatus,
+    employeeId: string,
+    employeeName: string,
     OrderItems?:  {
       __typename: "ModelOrderLineConnection",
       nextToken?: string | null,
@@ -5130,6 +6194,384 @@ export type OnDeleteInventoryChangesSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
     inventoryChangesProductId?: string | null,
+  } | null,
+};
+
+export type OnCreateInventoryCountSubscription = {
+  onCreateInventoryCount?:  {
+    __typename: "InventoryCount",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnUpdateInventoryCountSubscription = {
+  onUpdateInventoryCount?:  {
+    __typename: "InventoryCount",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnDeleteInventoryCountSubscription = {
+  onDeleteInventoryCount?:  {
+    __typename: "InventoryCount",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnCreateInventoryCountLineSubscription = {
+  onCreateInventoryCountLine?:  {
+    __typename: "InventoryCountLine",
+    id: string,
+    current: number,
+    newCount: number,
+    comments?: string | null,
+    InventoryCount?:  {
+      __typename: "InventoryCount",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryCountLineInventoryCountId?: string | null,
+    inventoryCountLineProductId?: string | null,
+  } | null,
+};
+
+export type OnUpdateInventoryCountLineSubscription = {
+  onUpdateInventoryCountLine?:  {
+    __typename: "InventoryCountLine",
+    id: string,
+    current: number,
+    newCount: number,
+    comments?: string | null,
+    InventoryCount?:  {
+      __typename: "InventoryCount",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryCountLineInventoryCountId?: string | null,
+    inventoryCountLineProductId?: string | null,
+  } | null,
+};
+
+export type OnDeleteInventoryCountLineSubscription = {
+  onDeleteInventoryCountLine?:  {
+    __typename: "InventoryCountLine",
+    id: string,
+    current: number,
+    newCount: number,
+    comments?: string | null,
+    InventoryCount?:  {
+      __typename: "InventoryCount",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryCountLineInventoryCountId?: string | null,
+    inventoryCountLineProductId?: string | null,
+  } | null,
+};
+
+export type OnCreateInventoryReceivedSubscription = {
+  onCreateInventoryReceived?:  {
+    __typename: "InventoryReceived",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnUpdateInventoryReceivedSubscription = {
+  onUpdateInventoryReceived?:  {
+    __typename: "InventoryReceived",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnDeleteInventoryReceivedSubscription = {
+  onDeleteInventoryReceived?:  {
+    __typename: "InventoryReceived",
+    id: string,
+    comments?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnCreateInventoryReceivedLineSubscription = {
+  onCreateInventoryReceivedLine?:  {
+    __typename: "InventoryReceivedLine",
+    id: string,
+    current: number,
+    received: number,
+    comments?: string | null,
+    InventoryReceived?:  {
+      __typename: "InventoryReceived",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryReceivedLineInventoryReceivedId?: string | null,
+    inventoryReceivedLineProductId?: string | null,
+  } | null,
+};
+
+export type OnUpdateInventoryReceivedLineSubscription = {
+  onUpdateInventoryReceivedLine?:  {
+    __typename: "InventoryReceivedLine",
+    id: string,
+    current: number,
+    received: number,
+    comments?: string | null,
+    InventoryReceived?:  {
+      __typename: "InventoryReceived",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryReceivedLineInventoryReceivedId?: string | null,
+    inventoryReceivedLineProductId?: string | null,
+  } | null,
+};
+
+export type OnDeleteInventoryReceivedLineSubscription = {
+  onDeleteInventoryReceivedLine?:  {
+    __typename: "InventoryReceivedLine",
+    id: string,
+    current: number,
+    received: number,
+    comments?: string | null,
+    InventoryReceived?:  {
+      __typename: "InventoryReceived",
+      id: string,
+      comments?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryReceivedLineInventoryReceivedId?: string | null,
+    inventoryReceivedLineProductId?: string | null,
   } | null,
 };
 

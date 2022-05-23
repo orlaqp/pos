@@ -7,6 +7,7 @@ import { CartState } from '@pos/sales/data-access';
 import { ordersActions } from './slices/orders.slice';
 import { Alert } from 'react-native';
 import { DatesService } from '@pos/shared/utils';
+import { User } from '@pos/auth/data-access';
 
 export class OrderService {
     static async payOrder(cart: CartState) {
@@ -67,12 +68,14 @@ export class OrderService {
     //     } as OrderEntity;
     // }
     
-    static async saveOrder(state: CartState) {
+    static async saveOrder(user: User, state: CartState) {
         let o = new Order({
             status: 'OPEN',
             subtotal: state.footer.subtotal,
             tax: 0,
             total: state.footer.total,
+            employeeId: user.id,
+            employeeName: `${user.given_name} ${user.family_name}`,
         });
     
         o = await DataStore.save(o);

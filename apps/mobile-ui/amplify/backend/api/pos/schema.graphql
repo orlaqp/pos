@@ -29,6 +29,8 @@ type Order @model @auth(rules: [{allow: public}]) {
   tax: Float!
   total: Float!
   status: OrderStatus!
+  employeeId: String!
+  employeeName: String!
   OrderItems: [OrderLine] @hasMany(indexName: "byOrder", fields: ["id"])
   Customer: Customer @hasOne
 }
@@ -132,6 +134,34 @@ type InventoryChanges @model @auth(rules: [{allow: public}]) {
     typeId: String # identifier to that type
     quantityIn: Int!
     quantityOut: Int!
+    Product: Product @hasOne
+}
+
+type InventoryCount @model @auth(rules: [{allow: public}]) {
+    id: ID!
+    comments: String    
+}
+
+type InventoryCountLine @model @auth(rules: [{allow: public}]) {
+    id: ID!
+    current: Float!
+    newCount: Float!
+    comments: String
+    InventoryCount: InventoryCount @hasOne
+    Product: Product @hasOne
+}
+
+type InventoryReceived @model @auth(rules: [{allow: public}]) {
+    id: ID!
+    comments: String    
+}
+
+type InventoryReceivedLine @model @auth(rules: [{allow: public}]) {
+    id: ID!
+    current: Float!
+    received: Float!
+    comments: String
+    InventoryReceived: InventoryReceived @hasOne
     Product: Product @hasOne
 }
 

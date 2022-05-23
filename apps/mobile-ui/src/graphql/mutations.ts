@@ -187,6 +187,8 @@ export const createOrder = /* GraphQL */ `
       tax
       total
       status
+      employeeId
+      employeeName
       OrderItems {
         nextToken
         startedAt
@@ -225,6 +227,8 @@ export const updateOrder = /* GraphQL */ `
       tax
       total
       status
+      employeeId
+      employeeName
       OrderItems {
         nextToken
         startedAt
@@ -263,6 +267,8 @@ export const deleteOrder = /* GraphQL */ `
       tax
       total
       status
+      employeeId
+      employeeName
       OrderItems {
         nextToken
         startedAt
@@ -1196,6 +1202,408 @@ export const deleteInventoryChanges = /* GraphQL */ `
       _deleted
       _lastChangedAt
       inventoryChangesProductId
+    }
+  }
+`;
+export const createInventoryCount = /* GraphQL */ `
+  mutation CreateInventoryCount(
+    $input: CreateInventoryCountInput!
+    $condition: ModelInventoryCountConditionInput
+  ) {
+    createInventoryCount(input: $input, condition: $condition) {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const updateInventoryCount = /* GraphQL */ `
+  mutation UpdateInventoryCount(
+    $input: UpdateInventoryCountInput!
+    $condition: ModelInventoryCountConditionInput
+  ) {
+    updateInventoryCount(input: $input, condition: $condition) {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const deleteInventoryCount = /* GraphQL */ `
+  mutation DeleteInventoryCount(
+    $input: DeleteInventoryCountInput!
+    $condition: ModelInventoryCountConditionInput
+  ) {
+    deleteInventoryCount(input: $input, condition: $condition) {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const createInventoryCountLine = /* GraphQL */ `
+  mutation CreateInventoryCountLine(
+    $input: CreateInventoryCountLineInput!
+    $condition: ModelInventoryCountLineConditionInput
+  ) {
+    createInventoryCountLine(input: $input, condition: $condition) {
+      id
+      current
+      newCount
+      comments
+      InventoryCount {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryCountLineInventoryCountId
+      inventoryCountLineProductId
+    }
+  }
+`;
+export const updateInventoryCountLine = /* GraphQL */ `
+  mutation UpdateInventoryCountLine(
+    $input: UpdateInventoryCountLineInput!
+    $condition: ModelInventoryCountLineConditionInput
+  ) {
+    updateInventoryCountLine(input: $input, condition: $condition) {
+      id
+      current
+      newCount
+      comments
+      InventoryCount {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryCountLineInventoryCountId
+      inventoryCountLineProductId
+    }
+  }
+`;
+export const deleteInventoryCountLine = /* GraphQL */ `
+  mutation DeleteInventoryCountLine(
+    $input: DeleteInventoryCountLineInput!
+    $condition: ModelInventoryCountLineConditionInput
+  ) {
+    deleteInventoryCountLine(input: $input, condition: $condition) {
+      id
+      current
+      newCount
+      comments
+      InventoryCount {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryCountLineInventoryCountId
+      inventoryCountLineProductId
+    }
+  }
+`;
+export const createInventoryReceived = /* GraphQL */ `
+  mutation CreateInventoryReceived(
+    $input: CreateInventoryReceivedInput!
+    $condition: ModelInventoryReceivedConditionInput
+  ) {
+    createInventoryReceived(input: $input, condition: $condition) {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const updateInventoryReceived = /* GraphQL */ `
+  mutation UpdateInventoryReceived(
+    $input: UpdateInventoryReceivedInput!
+    $condition: ModelInventoryReceivedConditionInput
+  ) {
+    updateInventoryReceived(input: $input, condition: $condition) {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const deleteInventoryReceived = /* GraphQL */ `
+  mutation DeleteInventoryReceived(
+    $input: DeleteInventoryReceivedInput!
+    $condition: ModelInventoryReceivedConditionInput
+  ) {
+    deleteInventoryReceived(input: $input, condition: $condition) {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const createInventoryReceivedLine = /* GraphQL */ `
+  mutation CreateInventoryReceivedLine(
+    $input: CreateInventoryReceivedLineInput!
+    $condition: ModelInventoryReceivedLineConditionInput
+  ) {
+    createInventoryReceivedLine(input: $input, condition: $condition) {
+      id
+      current
+      received
+      comments
+      InventoryReceived {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryReceivedLineInventoryReceivedId
+      inventoryReceivedLineProductId
+    }
+  }
+`;
+export const updateInventoryReceivedLine = /* GraphQL */ `
+  mutation UpdateInventoryReceivedLine(
+    $input: UpdateInventoryReceivedLineInput!
+    $condition: ModelInventoryReceivedLineConditionInput
+  ) {
+    updateInventoryReceivedLine(input: $input, condition: $condition) {
+      id
+      current
+      received
+      comments
+      InventoryReceived {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryReceivedLineInventoryReceivedId
+      inventoryReceivedLineProductId
+    }
+  }
+`;
+export const deleteInventoryReceivedLine = /* GraphQL */ `
+  mutation DeleteInventoryReceivedLine(
+    $input: DeleteInventoryReceivedLineInput!
+    $condition: ModelInventoryReceivedLineConditionInput
+  ) {
+    deleteInventoryReceivedLine(input: $input, condition: $condition) {
+      id
+      current
+      received
+      comments
+      InventoryReceived {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryReceivedLineInventoryReceivedId
+      inventoryReceivedLineProductId
     }
   }
 `;

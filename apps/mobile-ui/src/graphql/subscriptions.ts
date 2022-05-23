@@ -157,6 +157,8 @@ export const onCreateOrder = /* GraphQL */ `
       tax
       total
       status
+      employeeId
+      employeeName
       OrderItems {
         nextToken
         startedAt
@@ -192,6 +194,8 @@ export const onUpdateOrder = /* GraphQL */ `
       tax
       total
       status
+      employeeId
+      employeeName
       OrderItems {
         nextToken
         startedAt
@@ -227,6 +231,8 @@ export const onDeleteOrder = /* GraphQL */ `
       tax
       total
       status
+      employeeId
+      employeeName
       OrderItems {
         nextToken
         startedAt
@@ -1070,6 +1076,372 @@ export const onDeleteInventoryChanges = /* GraphQL */ `
       _deleted
       _lastChangedAt
       inventoryChangesProductId
+    }
+  }
+`;
+export const onCreateInventoryCount = /* GraphQL */ `
+  subscription OnCreateInventoryCount {
+    onCreateInventoryCount {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onUpdateInventoryCount = /* GraphQL */ `
+  subscription OnUpdateInventoryCount {
+    onUpdateInventoryCount {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onDeleteInventoryCount = /* GraphQL */ `
+  subscription OnDeleteInventoryCount {
+    onDeleteInventoryCount {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onCreateInventoryCountLine = /* GraphQL */ `
+  subscription OnCreateInventoryCountLine {
+    onCreateInventoryCountLine {
+      id
+      current
+      newCount
+      comments
+      InventoryCount {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryCountLineInventoryCountId
+      inventoryCountLineProductId
+    }
+  }
+`;
+export const onUpdateInventoryCountLine = /* GraphQL */ `
+  subscription OnUpdateInventoryCountLine {
+    onUpdateInventoryCountLine {
+      id
+      current
+      newCount
+      comments
+      InventoryCount {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryCountLineInventoryCountId
+      inventoryCountLineProductId
+    }
+  }
+`;
+export const onDeleteInventoryCountLine = /* GraphQL */ `
+  subscription OnDeleteInventoryCountLine {
+    onDeleteInventoryCountLine {
+      id
+      current
+      newCount
+      comments
+      InventoryCount {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryCountLineInventoryCountId
+      inventoryCountLineProductId
+    }
+  }
+`;
+export const onCreateInventoryReceived = /* GraphQL */ `
+  subscription OnCreateInventoryReceived {
+    onCreateInventoryReceived {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onUpdateInventoryReceived = /* GraphQL */ `
+  subscription OnUpdateInventoryReceived {
+    onUpdateInventoryReceived {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onDeleteInventoryReceived = /* GraphQL */ `
+  subscription OnDeleteInventoryReceived {
+    onDeleteInventoryReceived {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onCreateInventoryReceivedLine = /* GraphQL */ `
+  subscription OnCreateInventoryReceivedLine {
+    onCreateInventoryReceivedLine {
+      id
+      current
+      received
+      comments
+      InventoryReceived {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryReceivedLineInventoryReceivedId
+      inventoryReceivedLineProductId
+    }
+  }
+`;
+export const onUpdateInventoryReceivedLine = /* GraphQL */ `
+  subscription OnUpdateInventoryReceivedLine {
+    onUpdateInventoryReceivedLine {
+      id
+      current
+      received
+      comments
+      InventoryReceived {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryReceivedLineInventoryReceivedId
+      inventoryReceivedLineProductId
+    }
+  }
+`;
+export const onDeleteInventoryReceivedLine = /* GraphQL */ `
+  subscription OnDeleteInventoryReceivedLine {
+    onDeleteInventoryReceivedLine {
+      id
+      current
+      received
+      comments
+      InventoryReceived {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryReceivedLineInventoryReceivedId
+      inventoryReceivedLineProductId
     }
   }
 `;

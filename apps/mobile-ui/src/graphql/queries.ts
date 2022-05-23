@@ -223,6 +223,8 @@ export const getOrder = /* GraphQL */ `
       tax
       total
       status
+      employeeId
+      employeeName
       OrderItems {
         nextToken
         startedAt
@@ -263,6 +265,8 @@ export const listOrders = /* GraphQL */ `
         tax
         total
         status
+        employeeId
+        employeeName
         createdAt
         updatedAt
         _version
@@ -294,6 +298,8 @@ export const syncOrders = /* GraphQL */ `
         tax
         total
         status
+        employeeId
+        employeeName
         createdAt
         updatedAt
         _version
@@ -1149,6 +1155,348 @@ export const syncInventoryChanges = /* GraphQL */ `
         _deleted
         _lastChangedAt
         inventoryChangesProductId
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const getInventoryCount = /* GraphQL */ `
+  query GetInventoryCount($id: ID!) {
+    getInventoryCount(id: $id) {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const listInventoryCounts = /* GraphQL */ `
+  query ListInventoryCounts(
+    $filter: ModelInventoryCountFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listInventoryCounts(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncInventoryCounts = /* GraphQL */ `
+  query SyncInventoryCounts(
+    $filter: ModelInventoryCountFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncInventoryCounts(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const getInventoryCountLine = /* GraphQL */ `
+  query GetInventoryCountLine($id: ID!) {
+    getInventoryCountLine(id: $id) {
+      id
+      current
+      newCount
+      comments
+      InventoryCount {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryCountLineInventoryCountId
+      inventoryCountLineProductId
+    }
+  }
+`;
+export const listInventoryCountLines = /* GraphQL */ `
+  query ListInventoryCountLines(
+    $filter: ModelInventoryCountLineFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listInventoryCountLines(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        current
+        newCount
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        inventoryCountLineInventoryCountId
+        inventoryCountLineProductId
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncInventoryCountLines = /* GraphQL */ `
+  query SyncInventoryCountLines(
+    $filter: ModelInventoryCountLineFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncInventoryCountLines(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        current
+        newCount
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        inventoryCountLineInventoryCountId
+        inventoryCountLineProductId
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const getInventoryReceived = /* GraphQL */ `
+  query GetInventoryReceived($id: ID!) {
+    getInventoryReceived(id: $id) {
+      id
+      comments
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const listInventoryReceiveds = /* GraphQL */ `
+  query ListInventoryReceiveds(
+    $filter: ModelInventoryReceivedFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listInventoryReceiveds(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncInventoryReceiveds = /* GraphQL */ `
+  query SyncInventoryReceiveds(
+    $filter: ModelInventoryReceivedFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncInventoryReceiveds(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const getInventoryReceivedLine = /* GraphQL */ `
+  query GetInventoryReceivedLine($id: ID!) {
+    getInventoryReceivedLine(id: $id) {
+      id
+      current
+      received
+      comments
+      InventoryReceived {
+        id
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryReceivedLineInventoryReceivedId
+      inventoryReceivedLineProductId
+    }
+  }
+`;
+export const listInventoryReceivedLines = /* GraphQL */ `
+  query ListInventoryReceivedLines(
+    $filter: ModelInventoryReceivedLineFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listInventoryReceivedLines(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        current
+        received
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        inventoryReceivedLineInventoryReceivedId
+        inventoryReceivedLineProductId
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncInventoryReceivedLines = /* GraphQL */ `
+  query SyncInventoryReceivedLines(
+    $filter: ModelInventoryReceivedLineFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncInventoryReceivedLines(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        current
+        received
+        comments
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        inventoryReceivedLineInventoryReceivedId
+        inventoryReceivedLineProductId
       }
       nextToken
       startedAt

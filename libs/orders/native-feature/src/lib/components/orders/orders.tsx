@@ -11,7 +11,7 @@ const Stack = createNativeStackNavigator();
 export function Orders() {
   return (
     <StackNavigation Stack={Stack}>
-        <Stack.Screen name="Order List"  component={OrderList} />
+        <Stack.Screen name="Order List" component={OrderList} />
         <Stack.Screen name="Sales" component={SalesScreen} options={{ headerShown: false }} />
     </StackNavigation>
   );

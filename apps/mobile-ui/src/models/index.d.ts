@@ -65,6 +65,22 @@ type InventoryChangesMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
+type InventoryCountMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type InventoryCountLineMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type InventoryReceivedMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type InventoryReceivedLineMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
 type PrinterMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
@@ -116,6 +132,8 @@ export declare class Order {
   readonly tax: number;
   readonly total: number;
   readonly status: OrderStatus | keyof typeof OrderStatus;
+  readonly employeeId: string;
+  readonly employeeName: string;
   readonly OrderItems?: (OrderLine | null)[] | null;
   readonly Customer?: Customer | null;
   readonly createdAt?: string | null;
@@ -263,6 +281,54 @@ export declare class InventoryChanges {
   readonly inventoryChangesProductId?: string | null;
   constructor(init: ModelInit<InventoryChanges, InventoryChangesMetaData>);
   static copyOf(source: InventoryChanges, mutator: (draft: MutableModel<InventoryChanges, InventoryChangesMetaData>) => MutableModel<InventoryChanges, InventoryChangesMetaData> | void): InventoryChanges;
+}
+
+export declare class InventoryCount {
+  readonly id: string;
+  readonly comments?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  constructor(init: ModelInit<InventoryCount, InventoryCountMetaData>);
+  static copyOf(source: InventoryCount, mutator: (draft: MutableModel<InventoryCount, InventoryCountMetaData>) => MutableModel<InventoryCount, InventoryCountMetaData> | void): InventoryCount;
+}
+
+export declare class InventoryCountLine {
+  readonly id: string;
+  readonly current: number;
+  readonly newCount: number;
+  readonly comments?: string | null;
+  readonly InventoryCount?: InventoryCount | null;
+  readonly Product?: Product | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  readonly inventoryCountLineInventoryCountId?: string | null;
+  readonly inventoryCountLineProductId?: string | null;
+  constructor(init: ModelInit<InventoryCountLine, InventoryCountLineMetaData>);
+  static copyOf(source: InventoryCountLine, mutator: (draft: MutableModel<InventoryCountLine, InventoryCountLineMetaData>) => MutableModel<InventoryCountLine, InventoryCountLineMetaData> | void): InventoryCountLine;
+}
+
+export declare class InventoryReceived {
+  readonly id: string;
+  readonly comments?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  constructor(init: ModelInit<InventoryReceived, InventoryReceivedMetaData>);
+  static copyOf(source: InventoryReceived, mutator: (draft: MutableModel<InventoryReceived, InventoryReceivedMetaData>) => MutableModel<InventoryReceived, InventoryReceivedMetaData> | void): InventoryReceived;
+}
+
+export declare class InventoryReceivedLine {
+  readonly id: string;
+  readonly current: number;
+  readonly received: number;
+  readonly comments?: string | null;
+  readonly InventoryReceived?: InventoryReceived | null;
+  readonly Product?: Product | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  readonly inventoryReceivedLineInventoryReceivedId?: string | null;
+  readonly inventoryReceivedLineProductId?: string | null;
+  constructor(init: ModelInit<InventoryReceivedLine, InventoryReceivedLineMetaData>);
+  static copyOf(source: InventoryReceivedLine, mutator: (draft: MutableModel<InventoryReceivedLine, InventoryReceivedLineMetaData>) => MutableModel<InventoryReceivedLine, InventoryReceivedLineMetaData> | void): InventoryReceivedLine;
 }
 
 export declare class Printer {
