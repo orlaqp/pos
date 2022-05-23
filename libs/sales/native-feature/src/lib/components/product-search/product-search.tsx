@@ -1,9 +1,8 @@
 import { UISearchInput } from '@pos/shared/ui-native';
 import React, { useState } from 'react';
 
-import { View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import { Button, useTheme } from '@rneui/themed';
-import { useDispatch } from 'react-redux';
 
 /* eslint-disable-next-line */
 export interface ProductSearchProps {
@@ -11,9 +10,16 @@ export interface ProductSearchProps {
     onFilterChange: (text: string) => void;
 }
 
-export function ProductSearch({ filter, onFilterChange }: ProductSearchProps) {
+// export function ProductSearch({ filter, onFilterChange }: ProductSearchProps) {
+
+export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((props, ref) => {
+    const { filter, onFilterChange } = props;
     const theme = useTheme();
     const [showSoftInputOnFocus, setShowSoftInputOnFocus] = useState(false);
+
+    console.log('====================================');
+    console.log('filter:', filter);
+    console.log('====================================');
     
     const toggleSoftInput = () => setShowSoftInputOnFocus(!showSoftInputOnFocus);
 
@@ -34,6 +40,7 @@ export function ProductSearch({ filter, onFilterChange }: ProductSearchProps) {
                 }}
             >
                 <UISearchInput
+                    ref={ref}
                     placeholder="type to search by name, description, barcode and sku..."
                     // value={text}
                     debounceTime={300}
@@ -43,6 +50,7 @@ export function ProductSearch({ filter, onFilterChange }: ProductSearchProps) {
                     autoCorrect={false}
                     autoCapitalize='none'
                     onTextChanged={onFilterChange}
+                    value={filter}
                 />
                 <Button
                     icon={{
@@ -56,6 +64,4 @@ export function ProductSearch({ filter, onFilterChange }: ProductSearchProps) {
             </View>
         </View>
     );
-}
-
-export default ProductSearch;
+});

@@ -32,6 +32,7 @@
     "react-native-numeric-input": "*",
     "react-native-uuid": "*",
     "lodash": "*",
-    "react-native-star-io10": "*"
+    "react-native-star-io10": "*",
+    "date-fns": "*"
   }
 }

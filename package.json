@@ -7,6 +7,7 @@
     "build": "nx build",
     "test": "nx test",
     "ios": "nx run-ios mobile-ui --simulator \"iPad (9th generation)\"",
+    "list-simulators": "xcrun simctl list",
     "new-feature": "hygen native feature",
     "new-data-access": "hygen data-access new",
     "update-models": "cp -R apps/mobile-ui/src/models libs/shared/models/src",

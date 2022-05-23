@@ -4,7 +4,7 @@ import { Input, useTheme } from '@rneui/themed';
 import { TextInput } from 'react-native';
 import debounce from 'lodash/debounce';
 type UiSearchInputProps = React.ComponentProps<typeof TextInput> & {
-    onTextChanged?: (text: string) => void;
+    onTextChanged?: (text: string) => Promise<string>;
     debounceTime?: number;
 };
 
@@ -16,9 +16,12 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
         const [text, setText] = useState<string | undefined>(value);
 
         const debouncedOnChange = useCallback(
-            debounce((text) => {
+            debounce(async (text) => {
                 if (!onTextChanged) return;
-                onTextChanged(text);
+                const res = await onTextChanged(text);
+                console.log('On change text response: ', res);
+                
+                setText(res);
             }, debounceTime || 0),
             []
         );
@@ -32,6 +35,7 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
 
         return (
             <Input
+                ref={ref}
                 {...restOfProps}
                 value={text}
                 containerStyle={{
@@ -47,11 +51,8 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
                     onPress: clearText,
                 }}
                 renderErrorMessage={false}
-                onChangeText={(text) => {
-                    setText(text);
-                    debouncedOnChange(text);
-                }}
-                onSubmitEditing={() => setTimeout(() => setText(''), (debounceTime || 0) + 100)}
+                onChangeText={(text) => debouncedOnChange(text)}
+                // onSubmitEditing={() => setTimeout(() => setText(''), (debounceTime || 0) + 100)}
             />
         );
     }

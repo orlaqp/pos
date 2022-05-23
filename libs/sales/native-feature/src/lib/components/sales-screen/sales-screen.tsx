@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useSharedStyles } from '@pos/theme/native';
 import { Dialog, useTheme } from '@rneui/themed';
 
-import { View, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Alert, TextInput } from 'react-native';
 
 import { CategoryEntity } from '@pos/categories/data-access';
 import CategorySelection from '../category-selection/category-selection';
@@ -17,9 +17,8 @@ import {
 } from '@pos/sales/data-access';
 import ProductDetails from '../product-details/product-details';
 import Cart from '../cart/cart';
-import { ProductEntity, productsActions, ProductService, selectAllProducts, selectFilteredList } from '@pos/products/data-access';
-import ProductSearch from '../product-search/product-search';
-import { Button } from '@rneui/base';
+import { ProductEntity, ProductService, selectAllProducts, selectFilteredList } from '@pos/products/data-access';
+import { ProductSearch } from '../product-search/product-search';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ButtonItemType } from '@pos/shared/ui-native';
 import { RootState } from '@pos/store';
@@ -40,6 +39,7 @@ export interface NavigationParamList {
 export function SalesScreen({ navigation, route }: NativeStackScreenProps<NavigationParamList, 'Sales'>) {
     const styles = useStyles();
     const dispatch = useDispatch();
+    const searchRef = React.createRef<TextInput>();
     const [category, setCategory] = useState<CategoryEntity>();
     const [filter, setFilter] = useState<string>();
     const product = useSelector(selectActiveProduct);
@@ -55,17 +55,32 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
 
     const onCategoryChange = async (c: CategoryEntity) => {
         const res = await ProductService.search(allProducts, { categoryId: c.id });
-        setFilteredProducts(res);
+        setFilteredProducts(res.items);
         setFilter(undefined);
         setCategory(c);
     };
 
     const onFilterChange = async (text: string) => {
+        searchRef.current?.focus();
         const res = await ProductService.search(allProducts, { text });
-        setFilteredProducts(res);
+        
+        if (!res.allNumbers || (res.allNumbers && text.length < 4)) {
+            console.log('Not all numbers');
+            console.log('result', res);
+            
+            setFilteredProducts(res.items);
+            setFilter(text);
+            setCategory(undefined);
 
-        if (res.length === 1) {
-            const p = res[0];
+            return text;
+        }
+
+        if (res.items.length === 1 && res.allNumbers) {
+            console.log('One result and all numbers');
+            setFilter('');
+            setCategory(undefined);
+
+            const p = res.items[0];
             // add product to cart directly
             dispatch(cartActions.upsert({
                 product: {
@@ -78,10 +93,9 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
                 },
                 quantity: p.unitOfMeasure === EACH ? 1 : 0,
             }));
-        }
 
-        setFilter(filter);
-        setCategory(undefined);
+            return '';
+        }
     }
 
     const onProductSelected = useCallback((p: ButtonItemType) => {
@@ -113,6 +127,10 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
     // }
 
     useEffect(() => {
+        searchRef.current?.focus();
+    })
+
+    useEffect(() => {
         if (!products) return;
         
         const productIds = Object.keys(products || {});
@@ -128,7 +146,8 @@ export function SalesScreen({ navigation, route }: NativeStackScreenProps<Naviga
             </View>
             <View style={styles.products}>
                 <ProductSearch
-                    onFilterChange={onFilterChange}
+                    ref={searchRef}
+                    onFilterChange={async (text) => onFilterChange(text)}
                     filter={filter}
                 />
                 <ProductSelection products={filteredProducts} onSelected={onProductSelected} />
