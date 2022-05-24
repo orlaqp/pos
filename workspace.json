@@ -6,6 +6,8 @@
         "back-office-native-feature": "libs/back-office/native-feature",
         "brands-data-access": "libs/brands/data-access",
         "brands-native-feature": "libs/brands/native-feature",
+        "inventory-data-access": "libs/inventory/data-access",
+        "inventory-native-feature": "libs/inventory/native-feature",
         "categories-data-access": "libs/categories/data-access",
         "categories-native-feature": "libs/categories/native-feature",
         "mobile-ui": "apps/mobile-ui",

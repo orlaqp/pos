@@ -1,3 +1,4 @@
+import { inventoryReducer } from './../../inventory/data-access/src/lib/slices/inventory.slice';
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import logger from 'redux-logger';
 
@@ -15,6 +16,7 @@ import { fetchDefaultPrinter, printingsReducer } from '@pos/printings/data-acces
 import { ordersReducer } from '@pos/orders/data-access';
 import { observeOpenOrderChanges } from '@pos/orders/data-access';
 import { settingsReducer } from '@pos/settings/data-access';
+import { inventoryCountReducer } from '@pos/inventory/data-access';
 
 export const store = configureStore({
   reducer: {
@@ -28,6 +30,7 @@ export const store = configureStore({
       printings: printingsReducer,
       storeInfo: storeInfoReducer,
       settings: settingsReducer,
+      inventoryCount: inventoryCountReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 });

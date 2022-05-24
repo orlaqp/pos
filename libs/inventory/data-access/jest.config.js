@@ -1,10 +1,10 @@
 
 module.exports = {
-  displayName: 'inventories-data-access',
+  displayName: 'inventory-data-access',
   preset: '../../../jest.preset.js',
   transform: {
     '^.+\\.[tj]sx?$': 'babel-jest',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  coverageDirectory: '../../../coverage/libs/inventories/data-access',
+  coverageDirectory: '../../../coverage/libs/inventory/data-access',
 };

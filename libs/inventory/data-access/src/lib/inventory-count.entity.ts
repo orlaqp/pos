@@ -1,20 +1,17 @@
+import { InventoryCount } from '@pos/shared/models';
 
-export type InventoryEntity = {
+export type InventoryCountDTO = {
     id?: string;
-    
-    // TODO: Add entity properties here
-
+    comments: string | null | undefined;
     createdAt?: string | null | undefined;
     updatedAt?: string | null | undefined;
 };
 
-export class InventoryEntityMapper {
-    static fromModel(x: Inventory): InventoryEntity {
+export class InventoryCountMapper {
+    static fromModel(x: InventoryCount): InventoryCountDTO {
         return {
             id: x.id,
-            
-            // TODO: Add the rest of the properties here
-
+            comments: x.comments,
             createdAt: x.createdAt,
             updatedAt: x.updatedAt,
         };

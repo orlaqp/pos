@@ -1,42 +1,42 @@
 
-import { Inventory } from '@pos/shared/models';
+import { InventoryCount } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
-import { inventoriesActions } from './slices/inventory.slice';
-import { InventoryEntity } from './inventory.entity';
+import { inventoryCountActions } from './slices/inventory-count.slice';
+import { InventoryCountDTO } from './inventory-count.entity';
 
-export class InventoryService {
-    static async save(dispatch: Dispatch<any>, inventory: InventoryEntity) {
-        if (!inventory.id) {
-            const entity = new Inventory(inventory);
+export class InventoryCountService {
+    static async save(dispatch: Dispatch<any>, count: InventoryCountDTO) {
+        if (!count.id) {
+            const entity = new InventoryCount(count);
             const res = await DataStore.save(entity);
 
-            inventory.id = res.id;
+            count.id = res.id;
 
-            return dispatch(inventoriesActions.add(inventory));
+            return dispatch(inventoryCountActions.add(count));
         }
         
-        const existing = await DataStore.query(Inventory, inventory.id);
+        const existing = await DataStore.query(InventoryCount, count.id);
 
         if (!existing) {
-            return console.log(`It seems that inventory: ${inventory.id} has been removed`);
+            return console.log(`It seems that inventory: ${count.id} has been removed`);
         }
 
         await DataStore.save(
-            Inventory.copyOf(existing, updated => {
-                // TODO: Update inventory properties here
+            InventoryCount.copyOf(existing, updated => {
+                updated.comments = count.comments
             })
         );
         
-        return dispatch(inventoriesActions.update({ id: inventory.id, changes: inventory }));
+        return dispatch(inventoryCountActions.update({ id: count.id, changes: count }));
     }
 
     static getAll() {
-        return DataStore.query(Inventory);
+        return DataStore.query(InventoryCount);
     }
 
     static async delete(id: string) {
-        const item = await DataStore.query(Inventory, id);
+        const item = await DataStore.query(InventoryCount, id);
         if (!item)
             return console.error(`Inventory Id: ${id} not found`);
         

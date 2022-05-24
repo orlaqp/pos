@@ -12,26 +12,26 @@ import {
     PayloadAction,
     Update,
 } from '@reduxjs/toolkit';
-import { InventoryReceivedEntity } from '../inventory-count.entity';
-import { InventoryReceivedService } from '../inventory-count.service';
+import { InventoryCountEntity } from '../inventory-count.entity';
+import { InventoryCountService } from '../inventory-count.service';
 
-export const INVENTORY_RECEIVED_FEATURE_KEY = 'inventoryReceived';
+export const INVENTORY_COUNT_FEATURE_KEY = 'inventoryCountCount';
 
-export interface InventoryReceivedState extends EntityState< InventoryReceivedEntity > {
+export interface InventoryCountState extends EntityState< InventoryCountEntity > {
   loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
   error?: string;
-  selected?: InventoryReceivedEntity;
+  selected?: InventoryCountEntity;
   filterQuery?: string;
-  filteredList?: Dictionary< InventoryReceivedEntity >;
+  filteredList?: Dictionary< InventoryCountEntity >;
 }
 
-export const inventoryReceivedAdapter = createEntityAdapter< InventoryReceivedEntity >();
+export const inventoryCountAdapter = createEntityAdapter< InventoryCountEntity >();
 
-export const fetchInventoryReceived = createAsyncThunk(
-  'inventoryReceived/fetchStatus',
+export const fetchInventoryCount = createAsyncThunk(
+  'inventoryCount/fetchStatus',
   async (_, thunkAPI) => {
-    const inventoryReceived = await InventoryReceivedService.getAll();
-    return inventoryReceived.map(c => ({
+    const inventoryCount = await InventoryCountService.getAll();
+    return inventoryCount.map(c => ({
         id: c.id,
         
         // TODO: Assign rest of properties here
@@ -42,37 +42,37 @@ export const fetchInventoryReceived = createAsyncThunk(
   }
 );
 
-export const initialInventoryReceivedState: InventoryReceivedState =
-  inventoryReceivedAdapter.getInitialState({
+export const initialInventoryCountState: InventoryCountState =
+  inventoryCountAdapter.getInitialState({
     loadingStatus: 'not loaded',
     selected: undefined,
     filterQuery: undefined,
     filteredList: undefined
   });
 
-export const inventoryReceivedSlice = createSlice({
-  name: INVENTORYReceived_FEATURE_KEY,
-  initialState: initialInventoryReceivedState,
+export const inventoryCountSlice = createSlice({
+  name: INVENTORYCount_FEATURE_KEY,
+  initialState: initialInventoryCountState,
   reducers: {
-    add: (state: InventoryReceivedState, action: PayloadAction< InventoryReceivedEntity >) =>{
-        inventoryReceivedAdapter.addOne(state, action);
+    add: (state: InventoryCountState, action: PayloadAction< InventoryCountEntity >) =>{
+        inventoryCountAdapter.addOne(state, action);
         filterList(state, state.filterQuery);
     },
-    remove: (state: InventoryReceivedState, action: PayloadAction< EntityId >) => {
-        inventoryReceivedAdapter.removeOne(state, action);
+    remove: (state: InventoryCountState, action: PayloadAction< EntityId >) => {
+        inventoryCountAdapter.removeOne(state, action);
         filterList(state, state.filterQuery);
     },
-    update: (state: InventoryReceivedState, action: PayloadAction<Update< InventoryReceivedEntity>>) => {
-        inventoryReceivedAdapter.updateOne(state, action);
+    update: (state: InventoryCountState, action: PayloadAction<Update< InventoryCountEntity>>) => {
+        inventoryCountAdapter.updateOne(state, action);
         filterList(state, state.filterQuery);
     },
-    select: (state: InventoryReceivedState, action: PayloadAction< InventoryReceivedEntity >) => {
+    select: (state: InventoryCountState, action: PayloadAction< InventoryCountEntity >) => {
         state.selected = action.payload;
     },
-    clearSelection: (state: InventoryReceivedState) => {
+    clearSelection: (state: InventoryCountState) => {
         state.selected = undefined;
     },
-    filter: (state: InventoryReceivedState, action: PayloadAction<string>) => {
+    filter: (state: InventoryCountState, action: PayloadAction<string>) => {
         filterList(state, action.payload);
         state.filterQuery = action.payload;
     }
@@ -80,18 +80,18 @@ export const inventoryReceivedSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchInventoryReceived.pending, (state: InventoryReceivedState) => {
+      .addCase(fetchInventoryCount.pending, (state: InventoryCountState) => {
         state.loadingStatus = 'loading';
       })
       .addCase(
-        fetchInventoryReceived.fulfilled,
-        (state: InventoryReceivedState, action: PayloadAction< InventoryReceivedEntity[] >) => {
-          inventoryReceivedAdapter.setAll(state, action.payload);
+        fetchInventoryCount.fulfilled,
+        (state: InventoryCountState, action: PayloadAction< InventoryCountEntity[] >) => {
+          inventoryCountAdapter.setAll(state, action.payload);
           filterList(state, state.filterQuery);
           state.loadingStatus = 'loaded';
         }
       )
-      .addCase(fetchInventoryReceived.rejected, (state: InventoryReceivedState, action) => {
+      .addCase(fetchInventoryCount.rejected, (state: InventoryCountState, action) => {
         state.loadingStatus = 'error';
         state.error = action.error.message;
       });
@@ -101,44 +101,44 @@ export const inventoryReceivedSlice = createSlice({
 /*
  * Export reducer for store configuration.
  */
-export const inventoryReceivedReducer = inventoryReceivedSlice.reducer;
+export const inventoryCountReducer = inventoryCountSlice.reducer;
 
-export const inventoryReceivedActions = inventoryReceivedSlice.actions;
-const { selectAll, selectEntities } = inventoryReceivedAdapter.getSelectors();
+export const inventoryCountActions = inventoryCountSlice.actions;
+const { selectAll, selectEntities } = inventoryCountAdapter.getSelectors();
 
-export const getInventoryReceivedState = (rootState: RootState): InventoryReceivedState =>
+export const getInventoryCountState = (rootState: RootState): InventoryCountState =>
   rootState[INVENTORY_FEATURE_KEY];
 
-export const selectAllInventoryReceived = createSelector(
-  getInventoryReceivedState,
+export const selectAllInventoryCount = createSelector(
+  getInventoryCountState,
   selectAll
 );
 
-export const selectInventoryReceivedEntities = createSelector(
-  getInventoryReceivedState,
+export const selectInventoryCountEntities = createSelector(
+  getInventoryCountState,
   selectEntities
 );
 
 export const selectLoadingStatus = createSelector(
-    getInventoryReceivedState,
-    (state: InventoryReceivedState) => state.loadingStatus
+    getInventoryCountState,
+    (state: InventoryCountState) => state.loadingStatus
 )
 
 export const selectIsEmpty = createSelector(
-    getInventoryReceivedState,
-    (state: InventoryReceivedState) => state.ids.length === 0
+    getInventoryCountState,
+    (state: InventoryCountState) => state.ids.length === 0
 )
 
 export const selectFilteredList = createSelector(
-    getInventoryReceivedState,
-    (state: InventoryReceivedState) => state.filteredList
+    getInventoryCountState,
+    (state: InventoryCountState) => state.filteredList
 )
 
 
 
 
-function filterList(state: InventoryReceivedState, query?: string) {
-    const filteredList: Dictionary< InventoryReceivedEntity> = {};
+function filterList(state: InventoryCountState, query?: string) {
+    const filteredList: Dictionary< InventoryCountEntity> = {};
     state.loadingStatus = 'loaded';
     
     if (!query) {

@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
     InventoryEntity,
     InventoryService,
-} from '@pos/inventories/data-access';
+} from '@pos/inventory/data-access';
 import { RootState } from '@pos/store';
 import { Inventory } from '@pos/shared/models';
 

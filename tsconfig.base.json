@@ -26,6 +26,10 @@
             "@pos/brands/native-feature": [
                 "libs/brands/native-feature/src/index.ts"
             ],
+            "@pos/inventory/data-access": ["libs/inventory/data-access/src/index.ts"],
+            "@pos/inventory/native-feature": [
+                "libs/inventory/native-feature/src/index.ts"
+            ],
             "@pos/categories/data-access": [
                 "libs/categories/data-access/src/index.ts"
             ],

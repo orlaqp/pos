@@ -1,6 +1,6 @@
 
 module.exports = {
-  displayName: 'inventories-native-feature',
+  displayName: 'inventory-native-feature',
   preset: 'react-native',
   testRunner: 'jest-jasmine2',
   resolver: '@nrwl/jest/plugins/resolver',

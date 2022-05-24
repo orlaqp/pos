@@ -1,7 +1,7 @@
 
 {
-  "root": "libs/inventories/data-access",
-  "sourceRoot": "libs/inventories/data-access/src",
+  "root": "libs/inventory/data-access",
+  "sourceRoot": "libs/inventory/data-access/src",
   "projectType": "library",
   "tags": [],
   "targets": {
@@ -9,14 +9,14 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["libs/inventories/data-access/**/*.{ts,tsx,js,jsx}"]
+        "lintFilePatterns": ["libs/inventory/data-access/**/*.{ts,tsx,js,jsx}"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/inventories/data-access"],
+      "outputs": ["coverage/libs/inventory/data-access"],
       "options": {
-        "jestConfig": "libs/inventories/data-access/jest.config.js",
+        "jestConfig": "libs/inventory/data-access/jest.config.js",
         "passWithNoTests": true
       }
     }

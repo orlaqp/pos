@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { inventoriesActions, fetchInventories, selectFilteredList, selectIsEmpty, selectLoadingStatus } from '@pos/inventories/data-access';
+import { inventoryCountActions, fetchInventoryCount, selectFilteredList, selectIsEmpty, selectLoadingStatus } from '@pos/inventory/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import InventoryItem from '../inventory-item/inventory-item';
@@ -17,9 +17,9 @@ export function InventoryList({ navigation }: InventoryListProps) {
         isEmptySelector: selectIsEmpty,
         loadingStatusSelector: selectLoadingStatus,
         filteredListSelector: selectFilteredList,
-        clearSelectionAction: inventoriesActions.clearSelection,
-        filterAction: inventoriesActions.filter,
-        fetchItemsAction: fetchInventories,
+        clearSelectionAction: inventoryCountActions.clearSelection,
+        filterAction: inventoryCountActions.filter,
+        fetchItemsAction: fetchInventoryCount,
     }
 
     return <UIGenericItemList {...props} />

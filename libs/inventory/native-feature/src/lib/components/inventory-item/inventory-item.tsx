@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import { View, Text, Alert, ActivityIndicator } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
-import { inventoriesActions, InventoryEntity, InventoryService } from '@pos/inventories/data-access';
+import { inventoryCountActions, InventoryCountDTO, InventoryCountService } from '@pos/inventory/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 export interface InventoryItemProps {
-    item: InventoryEntity;
+    item: InventoryCountDTO;
     navigation: NativeStackNavigationProp<any>;
 }
 
@@ -23,14 +23,14 @@ export function InventoryItem({ item, navigation }: InventoryItemProps) {
         if (!item.id) return;
 
         setBusy(true);
-        await InventoryService.delete(item.id);
+        await InventoryCountService.delete(item.id);
         setBusy(false);
-        dispatch(inventoriesActions.remove(item.id));
+        dispatch(inventoryCountActions.remove(item.id));
 
     }
 
     const editItem = () => {
-        dispatch(inventoriesActions.select(item));
+        dispatch(inventoryCountActions.select(item));
         navigation.navigate('Inventory Form');
     }
 
@@ -50,9 +50,8 @@ export function InventoryItem({ item, navigation }: InventoryItemProps) {
             { busy &&
             <ActivityIndicator size='small' />
             }
-            <UIS3Image s3Key={item.picture} width={50} height={50} />
             <View style={{ flex: 5 }}>
-                <Text style={styles.name}>Sample name</Text>
+                <Text style={styles.name}>{item.comments}</Text>
             </View>
             <View
                 style={{
