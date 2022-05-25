@@ -61,6 +61,10 @@ type UnitOfMeasureMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
+type InventoryMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
 type InventoryChangesMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
@@ -266,6 +270,17 @@ export declare class UnitOfMeasure {
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<UnitOfMeasure, UnitOfMeasureMetaData>);
   static copyOf(source: UnitOfMeasure, mutator: (draft: MutableModel<UnitOfMeasure, UnitOfMeasureMetaData>) => MutableModel<UnitOfMeasure, UnitOfMeasureMetaData> | void): UnitOfMeasure;
+}
+
+export declare class Inventory {
+  readonly id: string;
+  readonly quantity: number;
+  readonly Product?: Product | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  readonly inventoryProductId?: string | null;
+  constructor(init: ModelInit<Inventory, InventoryMetaData>);
+  static copyOf(source: Inventory, mutator: (draft: MutableModel<Inventory, InventoryMetaData>) => MutableModel<Inventory, InventoryMetaData> | void): Inventory;
 }
 
 export declare class InventoryChanges {

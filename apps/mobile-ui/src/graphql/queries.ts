@@ -1059,6 +1059,92 @@ export const syncUnitOfMeasures = /* GraphQL */ `
     }
   }
 `;
+export const getInventory = /* GraphQL */ `
+  query GetInventory($id: ID!) {
+    getInventory(id: $id) {
+      id
+      quantity
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryProductId
+    }
+  }
+`;
+export const listInventories = /* GraphQL */ `
+  query ListInventories(
+    $filter: ModelInventoryFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listInventories(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        quantity
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        inventoryProductId
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncInventories = /* GraphQL */ `
+  query SyncInventories(
+    $filter: ModelInventoryFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncInventories(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        quantity
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        inventoryProductId
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
 export const getInventoryChanges = /* GraphQL */ `
   query GetInventoryChanges($id: ID!) {
     getInventoryChanges(id: $id) {

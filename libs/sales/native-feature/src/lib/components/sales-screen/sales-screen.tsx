@@ -141,12 +141,11 @@ export function SalesScreen({
                         dispatch(
                             submitOrder({ cart, defaultPrinter, storeInfo })
                         );
-                        dispatch(cartActions.reset());
-                        return;
+                    } else {
+                        dispatch(payOrder({ cart, defaultPrinter, storeInfo }));
+                        navigation.goBack();
                     }
-
-                    dispatch(payOrder({ cart, defaultPrinter, storeInfo }));
-                    navigation.goBack();
+                    dispatch(cartActions.reset());
                     return;
                 },
             },

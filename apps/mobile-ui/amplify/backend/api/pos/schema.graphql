@@ -127,6 +127,12 @@ type UnitOfMeasure @model @auth(rules: [{allow: public}]) {
   description: String
 }
 
+type Inventory @model @auth(rules: [{allow: public}]) {
+    id: ID!
+    quantity: Float!
+    Product: Product @hasOne
+}
+
 type InventoryChanges @model @auth(rules: [{allow: public}]) {
     id: ID!
     timestamp: AWSDateTime!

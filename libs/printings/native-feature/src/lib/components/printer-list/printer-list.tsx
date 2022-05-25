@@ -65,6 +65,7 @@ export function PrinterList({ navigation }: PrintingListProps) {
         <View style={styles.page}>
             {defaultPrinter && (
                 <PrinterItem
+                    key='default'
                     item={defaultPrinter}
                     navigation={navigation}
                     defaultPrinter={defaultPrinter}
@@ -83,6 +84,7 @@ export function PrinterList({ navigation }: PrintingListProps) {
                 )
                 .map((p) => (
                     <PrinterItem
+                        key={p.identifier}
                         item={p}
                         navigation={navigation}
                         defaultPrinter={defaultPrinter}

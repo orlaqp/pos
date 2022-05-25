@@ -782,6 +782,46 @@ export type DeleteUnitOfMeasureInput = {
   _version?: number | null,
 };
 
+export type CreateInventoryInput = {
+  id?: string | null,
+  quantity: number,
+  _version?: number | null,
+  inventoryProductId?: string | null,
+};
+
+export type ModelInventoryConditionInput = {
+  quantity?: ModelFloatInput | null,
+  and?: Array< ModelInventoryConditionInput | null > | null,
+  or?: Array< ModelInventoryConditionInput | null > | null,
+  not?: ModelInventoryConditionInput | null,
+  inventoryProductId?: ModelIDInput | null,
+};
+
+export type Inventory = {
+  __typename: "Inventory",
+  id: string,
+  quantity: number,
+  Product?: Product | null,
+  createdAt: string,
+  updatedAt: string,
+  _version: number,
+  _deleted?: boolean | null,
+  _lastChangedAt: number,
+  inventoryProductId?: string | null,
+};
+
+export type UpdateInventoryInput = {
+  id: string,
+  quantity?: number | null,
+  _version?: number | null,
+  inventoryProductId?: string | null,
+};
+
+export type DeleteInventoryInput = {
+  id: string,
+  _version?: number | null,
+};
+
 export type CreateInventoryChangesInput = {
   id?: string | null,
   timestamp: string,
@@ -1360,6 +1400,22 @@ export type ModelUnitOfMeasureFilterInput = {
 export type ModelUnitOfMeasureConnection = {
   __typename: "ModelUnitOfMeasureConnection",
   items:  Array<UnitOfMeasure | null >,
+  nextToken?: string | null,
+  startedAt?: number | null,
+};
+
+export type ModelInventoryFilterInput = {
+  id?: ModelIDInput | null,
+  quantity?: ModelFloatInput | null,
+  and?: Array< ModelInventoryFilterInput | null > | null,
+  or?: Array< ModelInventoryFilterInput | null > | null,
+  not?: ModelInventoryFilterInput | null,
+  inventoryProductId?: ModelIDInput | null,
+};
+
+export type ModelInventoryConnection = {
+  __typename: "ModelInventoryConnection",
+  items:  Array<Inventory | null >,
   nextToken?: string | null,
   startedAt?: number | null,
 };
@@ -2658,6 +2714,132 @@ export type DeleteUnitOfMeasureMutation = {
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
+  } | null,
+};
+
+export type CreateInventoryMutationVariables = {
+  input: CreateInventoryInput,
+  condition?: ModelInventoryConditionInput | null,
+};
+
+export type CreateInventoryMutation = {
+  createInventory?:  {
+    __typename: "Inventory",
+    id: string,
+    quantity: number,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryProductId?: string | null,
+  } | null,
+};
+
+export type UpdateInventoryMutationVariables = {
+  input: UpdateInventoryInput,
+  condition?: ModelInventoryConditionInput | null,
+};
+
+export type UpdateInventoryMutation = {
+  updateInventory?:  {
+    __typename: "Inventory",
+    id: string,
+    quantity: number,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryProductId?: string | null,
+  } | null,
+};
+
+export type DeleteInventoryMutationVariables = {
+  input: DeleteInventoryInput,
+  condition?: ModelInventoryConditionInput | null,
+};
+
+export type DeleteInventoryMutation = {
+  deleteInventory?:  {
+    __typename: "Inventory",
+    id: string,
+    quantity: number,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryProductId?: string | null,
   } | null,
 };
 
@@ -4488,6 +4670,98 @@ export type SyncUnitOfMeasuresQuery = {
   } | null,
 };
 
+export type GetInventoryQueryVariables = {
+  id: string,
+};
+
+export type GetInventoryQuery = {
+  getInventory?:  {
+    __typename: "Inventory",
+    id: string,
+    quantity: number,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryProductId?: string | null,
+  } | null,
+};
+
+export type ListInventoriesQueryVariables = {
+  filter?: ModelInventoryFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListInventoriesQuery = {
+  listInventories?:  {
+    __typename: "ModelInventoryConnection",
+    items:  Array< {
+      __typename: "Inventory",
+      id: string,
+      quantity: number,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      inventoryProductId?: string | null,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type SyncInventoriesQueryVariables = {
+  filter?: ModelInventoryFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  lastSync?: number | null,
+};
+
+export type SyncInventoriesQuery = {
+  syncInventories?:  {
+    __typename: "ModelInventoryConnection",
+    items:  Array< {
+      __typename: "Inventory",
+      id: string,
+      quantity: number,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      inventoryProductId?: string | null,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
 export type GetInventoryChangesQueryVariables = {
   id: string,
 };
@@ -6071,6 +6345,117 @@ export type OnDeleteUnitOfMeasureSubscription = {
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
+  } | null,
+};
+
+export type OnCreateInventorySubscription = {
+  onCreateInventory?:  {
+    __typename: "Inventory",
+    id: string,
+    quantity: number,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryProductId?: string | null,
+  } | null,
+};
+
+export type OnUpdateInventorySubscription = {
+  onUpdateInventory?:  {
+    __typename: "Inventory",
+    id: string,
+    quantity: number,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryProductId?: string | null,
+  } | null,
+};
+
+export type OnDeleteInventorySubscription = {
+  onDeleteInventory?:  {
+    __typename: "Inventory",
+    id: string,
+    quantity: number,
+    Product?:  {
+      __typename: "Product",
+      id: string,
+      name: string,
+      description?: string | null,
+      price: number,
+      tags?: string | null,
+      cost?: number | null,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      unitOfMeasure: string,
+      trackStock: boolean,
+      picture?: string | null,
+      isActive?: boolean | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+      productCategoryId?: string | null,
+      productBrandId?: string | null,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    inventoryProductId?: string | null,
   } | null,
 };
 

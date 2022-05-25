@@ -39,11 +39,20 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
 
     const openItem = async () => {
         if (item.status === 'OPEN') {
-            dispatch(cartActions.set(item));
+            const orderLines = await OrderService.getLines(item);
+            dispatch(cartActions.set({
+                ...item,
+                items: orderLines
+            }));
             navigation.navigate('Sales', { mode: 'payment' });
         }
 
         if (item.status === 'PAID') {
+            if (!store || !defaultPrinter) {
+                Alert.alert('Store info and printer setup needs ro be ready before closing an order');
+                return;
+            }
+
             printReceipt(
                 store,
                 defaultPrinter,

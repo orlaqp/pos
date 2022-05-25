@@ -1076,6 +1076,123 @@ export const deleteUnitOfMeasure = /* GraphQL */ `
     }
   }
 `;
+export const createInventory = /* GraphQL */ `
+  mutation CreateInventory(
+    $input: CreateInventoryInput!
+    $condition: ModelInventoryConditionInput
+  ) {
+    createInventory(input: $input, condition: $condition) {
+      id
+      quantity
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryProductId
+    }
+  }
+`;
+export const updateInventory = /* GraphQL */ `
+  mutation UpdateInventory(
+    $input: UpdateInventoryInput!
+    $condition: ModelInventoryConditionInput
+  ) {
+    updateInventory(input: $input, condition: $condition) {
+      id
+      quantity
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryProductId
+    }
+  }
+`;
+export const deleteInventory = /* GraphQL */ `
+  mutation DeleteInventory(
+    $input: DeleteInventoryInput!
+    $condition: ModelInventoryConditionInput
+  ) {
+    deleteInventory(input: $input, condition: $condition) {
+      id
+      quantity
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryProductId
+    }
+  }
+`;
 export const createInventoryChanges = /* GraphQL */ `
   mutation CreateInventoryChanges(
     $input: CreateInventoryChangesInput!

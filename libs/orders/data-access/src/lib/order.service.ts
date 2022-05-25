@@ -7,7 +7,7 @@ import { CartState } from '@pos/sales/data-access';
 import { ordersActions } from './slices/orders.slice';
 import { Alert } from 'react-native';
 import { DatesService } from '@pos/shared/utils';
-import { User } from '@pos/auth/data-access';
+import { ZenObservable } from 'zen-observable-ts';
 
 export class OrderService {
     static async payOrder(cart: CartState) {
@@ -126,6 +126,11 @@ export class OrderService {
 
         Promise.all(promises);
     }
+
+    static async getLines(item: OrderEntity) {
+        const lines = await DataStore.query(OrderLine, l => l.orderID('eq', item.id));
+        return lines.map(l => OrderEntityMapper.fromLine(l));
+    }
 }
 
 async function updateProductQuantity(id: string, quantity: number) {
@@ -134,17 +139,25 @@ async function updateProductQuantity(id: string, quantity: number) {
     if (!p) return;
 
     const updatedProduct = Product.copyOf(p, updated => {
-        updated.quantity -= quantity;
+        updated.quantity = -1 * quantity;
     })
-
+    
     return DataStore.save(updatedProduct);
 }
+
+export let ordersSubscription: ZenObservable.Subscription | null;
+export let orderLinesSubscription: ZenObservable.Subscription | null;
 
 export function observeOpenOrderChanges(dispatch: Dispatch) {
     const sevenDaysAgo = DatesService.daysAgo(7);
     const isoDate = DatesService.toISO8601(sevenDaysAgo);
 
-    DataStore.observeQuery(Order, (o) => o.createdAt('gt', isoDate)).subscribe(
+    if (ordersSubscription) {
+        ordersSubscription.unsubscribe();
+        ordersSubscription = null;
+    }
+
+    ordersSubscription = DataStore.observeQuery(Order, (o) => o.createdAt('gt', isoDate)).subscribe(
         ({ isSynced, items }) => {
             if (isSynced) {
                 dispatch(
@@ -159,7 +172,12 @@ export function observeOpenOrderChanges(dispatch: Dispatch) {
         }
     );
 
-    DataStore.observeQuery(OrderLine, (o) => o.createdAt('gt', isoDate)).subscribe(
+    if (orderLinesSubscription) {
+        orderLinesSubscription.unsubscribe();
+        orderLinesSubscription = null;
+    }
+
+    orderLinesSubscription = DataStore.observeQuery(OrderLine, (o) => o.createdAt('gt', isoDate)).subscribe(
         ({ isSynced, items }) => {
             if (isSynced) {
                 dispatch(

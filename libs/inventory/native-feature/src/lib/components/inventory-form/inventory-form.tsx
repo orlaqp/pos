@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 import { Alert, View } from 'react-native';
@@ -13,45 +12,49 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-    InventoryEntity,
-    InventoryService,
+    InventoryCountDTO,
+    InventoryCountService,
 } from '@pos/inventory/data-access';
 import { RootState } from '@pos/store';
-import { Inventory } from '@pos/shared/models';
+import { InventoryCount } from '@pos/shared/models';
+import { Text } from '@rneui/themed';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
-    inventory: Inventory;
+    inventory: InventoryCount;
 }
 
 export interface InventoryFormProps {
-    navigation: NativeStackNavigationProp< InventoryFormParams>;
+    navigation: NativeStackNavigationProp<InventoryFormParams>;
 }
 
 export function InventoryForm({ navigation }: InventoryFormProps) {
-    const inventory = useSelector((state: RootState) => state.inventories.selected);
+    const inventory = useSelector(
+        (state: RootState) => state.inventoryCount.selected
+    );
     const dispatch = useDispatch();
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
 
     const save = async () => {
         setBusy(true);
-        const formValues: InventoryEntity = form.getValues();
-        
+        const formValues: InventoryCountDTO = form.getValues();
+
         if (!formValues.id) {
             delete formValues.id;
         }
 
-        await InventoryService.save(dispatch, formValues);
+        await InventoryCountService.save(dispatch, formValues);
         navigation.goBack();
         setBusy(false);
     };
 
-    const form = useForm< InventoryEntity >({
+    const form = useForm<InventoryCountDTO>({
         mode: 'onChange',
         defaultValues: {
             id: inventory?.id,
-            // TODO: Update the rest of the properties here
+            comments: inventory?.comments,
+            createdAt: new Date().toISOString()
         },
     });
 
@@ -64,27 +67,38 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
                 { text: 'Yes', onPress: () => navigation.goBack() },
             ]
         );
-    }
+    };
 
     return (
-        <View style={[styles.page, styles.centeredHorizontally]}>
-            <FormProvider {...form}>
+        <FormProvider {...form}>
+            <View style={[styles.page]}>
                 <View
                     style={{
-                        width: '60%',
+                        flex: 1,
                         flexDirection: 'column',
                         marginTop: 50,
                     }}
                 >
-                    <UIInput name="name" placeholder="Name" />
+                    <View style={{ flexDirection: 'row' }}>
+                        <Text style={[styles.primaryText, { flex: 1 }]}>
+                            { JSON.stringify(form.getValues()) }
+                            {form?.getValues().createdAt && new Date(form.getValues().createdAt).toLocaleDateString()}
+                        </Text>
+                        <View style={{ flex: 2 }}>
+                            <UIInput name="createdAt" placeholder="Created At" />
+                            </View>
+                        <View style={{ flex: 4 }}>
+                            <UIInput name="comments" placeholder="Comments" />
+                        </View>
+                    </View>
                     <UIActions
                         busy={busy}
                         submitAction={form.handleSubmit(save)}
                         cancelAction={confirmCancel}
                     />
                 </View>
-            </FormProvider>
-        </View>
+            </View>
+        </FormProvider>
     );
 }
 

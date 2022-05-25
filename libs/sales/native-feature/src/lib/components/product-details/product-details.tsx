@@ -28,8 +28,6 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
     const brand = useSelector(selectBrand(product?.productBrandId));
     const each = item.product.unitOfMeasure === EACH;
 
-    debugger;
-
     useEffect(() => {
         setPrice(+quantity * item.product.price);
     }, [item, quantity]);

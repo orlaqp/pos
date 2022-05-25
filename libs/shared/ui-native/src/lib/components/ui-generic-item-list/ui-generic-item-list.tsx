@@ -32,7 +32,7 @@ export interface ItemListProps<TState, TEntityType> {
     emptyActionText?: string;
     emptyAction?: () => void;
     emptyActionIcon?: string;
-    renderHeader: () => unknown;
+    renderHeader?: () => unknown;
 }
 
 export function UIGenericItemList({
@@ -83,15 +83,23 @@ export function UIGenericItemList({
 
     if (loadingStatus === 'loaded' && isEmpty)
         return (
-            <UIEmptyState
-                text={ emptyText || "This is looking kind of empty here. Click below to fix that :-)"}
-                actionText={emptyActionText || "Add your first!"}
-                action={() => emptyAction ? emptyAction() : () => navigation.navigate(formNavName)}
-                icon={emptyActionIcon}
-            />
+            <View style={[styles.page, { paddingTop: 50 }]}>
+                <UIEmptyState
+                    text={
+                        emptyText ||
+                        'This is looking kind of empty here. Click below to fix that :-)'
+                    }
+                    actionText={emptyActionText || 'Add your first!'}
+                    action={() =>
+                        emptyAction
+                            ? emptyAction()
+                            : navigation.navigate(formNavName)
+                    }
+                    icon={emptyActionIcon}
+                />
+            </View>
         );
 
-    
     const confirmGoBack = () => {
         Alert.alert('Are you sure?', 'Press yes to confirm', [
             { text: 'No' },
@@ -101,38 +109,42 @@ export function UIGenericItemList({
 
     return (
         <View style={styles.detailsPage}>
-            { renderHeader && renderHeader() }
-            { !renderHeader &&
-            <View style={[styles.header, { alignItems: 'center' }]}>
-                <View style={{ flex: 5 }}>
-                    <UISearchInput
-                        debounceTime={300}
-                        onTextChanged={filterList}
+            {renderHeader && renderHeader()}
+            {!renderHeader && (
+                <View style={[styles.header, { alignItems: 'center' }]}>
+                    <View style={{ flex: 5 }}>
+                        <UISearchInput
+                            debounceTime={300}
+                            onTextChanged={filterList}
+                        />
+                    </View>
+                    <Button
+                        type="clear"
+                        icon={{
+                            name: 'refresh',
+                            type: 'material-community',
+                            color: theme.theme.colors.grey2,
+                        }}
+                        style={{ top: 4, left: 15 }}
+                        onPress={() =>
+                            fetchItemsAction && dispatch(fetchItemsAction())
+                        }
                     />
+                    <View
+                        style={{
+                            flex: 1,
+                            alignItems: 'flex-end',
+                            marginRight: 20,
+                        }}
+                    >
+                        <FAB
+                            icon={{ name: 'add', color: 'white' }}
+                            color={theme.theme.colors.primary}
+                            onPress={createNew}
+                        />
+                    </View>
                 </View>
-                <Button
-                    type="clear"
-                    icon={{
-                        name: 'refresh',
-                        type: 'material-community',
-                        color: theme.theme.colors.grey2,
-                    }}
-                    style={{ top: 4, left: 15 }}
-                    onPress={() =>
-                        fetchItemsAction && dispatch(fetchItemsAction())
-                    }
-                />
-                <View
-                    style={{ flex: 1, alignItems: 'flex-end', marginRight: 20 }}
-                >
-                    <FAB
-                        icon={{ name: 'add', color: 'white' }}
-                        color={theme.theme.colors.primary}
-                        onPress={createNew}
-                    />
-                </View>
-            </View>
-            }
+            )}
             <View style={styles.content}>
                 {items && (
                     <FlatList

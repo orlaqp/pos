@@ -959,6 +959,114 @@ export const onDeleteUnitOfMeasure = /* GraphQL */ `
     }
   }
 `;
+export const onCreateInventory = /* GraphQL */ `
+  subscription OnCreateInventory {
+    onCreateInventory {
+      id
+      quantity
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryProductId
+    }
+  }
+`;
+export const onUpdateInventory = /* GraphQL */ `
+  subscription OnUpdateInventory {
+    onUpdateInventory {
+      id
+      quantity
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryProductId
+    }
+  }
+`;
+export const onDeleteInventory = /* GraphQL */ `
+  subscription OnDeleteInventory {
+    onDeleteInventory {
+      id
+      quantity
+      Product {
+        id
+        name
+        description
+        price
+        tags
+        cost
+        barcode
+        sku
+        quantity
+        unitOfMeasure
+        trackStock
+        picture
+        isActive
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productCategoryId
+        productBrandId
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      inventoryProductId
+    }
+  }
+`;
 export const onCreateInventoryChanges = /* GraphQL */ `
   subscription OnCreateInventoryChanges {
     onCreateInventoryChanges {
