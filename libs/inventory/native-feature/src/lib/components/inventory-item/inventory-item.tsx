@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { View, Text, Alert, ActivityIndicator } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
@@ -24,7 +24,7 @@ export function InventoryItem({ item, navigation, onUpdate, onDelete }: Inventor
     const theme = useTheme();
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
-    const [value, setValue] = useState<string>(item.newCount.toString());
+    const [count, setCount] = useState<string>(item.newCount.toString());
     const [comment, setComment] = useState<string | undefined>(item.comments || undefined);
 
     const confirmDeletion = () => {
@@ -34,6 +34,15 @@ export function InventoryItem({ item, navigation, onUpdate, onDelete }: Inventor
             [{ text: 'No' }, { text: 'Yes', onPress: () => onDelete(item) }]
         );
     };
+
+    const updateCount = (count: string) => {
+        setCount(count);
+        onUpdate({ ...item, newCount: +count });
+    }
+    const updateComment = (comments: string) => {
+        setComment(comments);
+        onUpdate({ ...item, comments });
+    }
 
     return (
         <View style={[styles.smallDataRow, styles.centered]}>
@@ -46,15 +55,17 @@ export function InventoryItem({ item, navigation, onUpdate, onDelete }: Inventor
             </View>
             <View style={{ flex: 1 }}>
                 <TextInput
-                    value={value}
-                    onChangeText={setValue}
+                    value={count}
+                    onChangeText={updateCount}
                     style={[styles.input, { marginRight: 25 }]}
+                    onFocus={() => count === '0' && setCount('')}
+                    onBlur={() => count === '' && setCount('0')}
                 />
             </View>
             <View style={{ flex: 3 }}>
                 <TextInput
                     value={comment}
-                    onChangeText={setComment}
+                    onChangeText={updateComment}
                     style={styles.input}
                 />
             </View>

@@ -77,6 +77,9 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
     };
 
     const updateItem = (item: InventoryCountLineDTO) => {
+        console.log('====================================');
+        console.log('updating item: ', item);
+        console.log('====================================');
         const idx = items.findIndex(i => i.productId === item.productId);
         
         if (idx === -1) return;
