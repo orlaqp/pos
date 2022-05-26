@@ -76,6 +76,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                 
                 <View style={styles.rightSide}>
                     <Stack.Navigator screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="Count" component={Inventories} />
                         <Stack.Screen name="Products" component={Products} />
                         <Stack.Screen name="Brands" component={Brands} />
                         <Stack.Screen name="U/M" component={UnitOfMeasures} />
@@ -83,7 +84,6 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                         <Stack.Screen name="Printers" component={PrinterList} />
                         <Stack.Screen name="Store" component={StoreInfoForm} />
                         <Stack.Screen name="General" component={Settings} />
-                        <Stack.Screen name="Count" component={Inventories} />
                     </Stack.Navigator>
                 </View>
             </View>

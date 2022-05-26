@@ -2,42 +2,43 @@ import React, { useCallback, useState } from 'react';
 
 import { Input, useTheme } from '@rneui/themed';
 import { TextInput } from 'react-native';
-import debounce from 'lodash/debounce';
+// import debounce from 'lodash/debounce';
 type UiSearchInputProps = React.ComponentProps<typeof TextInput> & {
-    onTextChanged?: (text: string) => Promise<string>;
+    onSubmit: (text: string) => void;
+    onClear?: () => void;
     debounceTime?: number;
 };
 
 export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
     (props, ref) => {
         const theme = useTheme();
-        const { value, onChange, debounceTime, onTextChanged, ...restOfProps } =
+        const { value, onChange, debounceTime, onSubmit, onClear, ...restOfProps } =
             props;
         const [text, setText] = useState<string | undefined>(value);
 
-        const debouncedOnChange = useCallback(
-            debounce(async (text) => {
-                if (!onTextChanged) return;
-                const res = await onTextChanged(text);
-                console.log('On change text response: ', res);
+        // const debouncedOnChange = useCallback(
+        //     debounce(async (text) => {
+        //         if (!onTextChanged) return;
                 
-                setText(res);
-            }, debounceTime || 0),
-            []
-        );
+        //         const res = await onTextChanged(text);
+        //         console.log('On change text response: ', res);
+                
+        //         setText(res);
+        //     }, debounceTime || 0),
+        //     []
+        // );
 
         const clearText = () => {
-            if (!text || !onTextChanged) return;
-
             setText('');
-            onTextChanged('');
+            if (onSubmit) onSubmit('');
+            if (onClear) onClear();
         }
 
         return (
             <Input
                 ref={ref}
                 {...restOfProps}
-                value={text}
+                // value={text}
                 containerStyle={{
                     backgroundColor: theme.theme.colors.grey5,
                     borderRadius: 20,
@@ -51,8 +52,8 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
                     onPress: clearText,
                 }}
                 renderErrorMessage={false}
-                onChangeText={(text) => debouncedOnChange(text)}
-                // onSubmitEditing={() => setTimeout(() => setText(''), (debounceTime || 0) + 100)}
+                // onChangeText={(text) => { setText(text); debouncedOnChange(text) }}
+                onSubmitEditing={(e) => onSubmit(e.nativeEvent.text)}
             />
         );
     }

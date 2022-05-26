@@ -1312,6 +1312,9 @@ export const getInventoryCountLine = /* GraphQL */ `
   query GetInventoryCountLine($id: ID!) {
     getInventoryCountLine(id: $id) {
       id
+      productId
+      productName
+      unitOfMeasure
       current
       newCount
       comments
@@ -1324,35 +1327,12 @@ export const getInventoryCountLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
       inventoryCountLineInventoryCountId
-      inventoryCountLineProductId
     }
   }
 `;
@@ -1369,6 +1349,9 @@ export const listInventoryCountLines = /* GraphQL */ `
     ) {
       items {
         id
+        productId
+        productName
+        unitOfMeasure
         current
         newCount
         comments
@@ -1378,7 +1361,6 @@ export const listInventoryCountLines = /* GraphQL */ `
         _deleted
         _lastChangedAt
         inventoryCountLineInventoryCountId
-        inventoryCountLineProductId
       }
       nextToken
       startedAt
@@ -1400,6 +1382,9 @@ export const syncInventoryCountLines = /* GraphQL */ `
     ) {
       items {
         id
+        productId
+        productName
+        unitOfMeasure
         current
         newCount
         comments
@@ -1409,7 +1394,6 @@ export const syncInventoryCountLines = /* GraphQL */ `
         _deleted
         _lastChangedAt
         inventoryCountLineInventoryCountId
-        inventoryCountLineProductId
       }
       nextToken
       startedAt

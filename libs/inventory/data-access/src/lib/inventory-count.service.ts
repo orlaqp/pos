@@ -1,5 +1,5 @@
 
-import { InventoryCount } from '@pos/shared/models';
+import { InventoryCount, Product } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
 import { inventoryCountActions } from './slices/inventory-count.slice';
@@ -45,5 +45,13 @@ export class InventoryCountService {
         //     AssetsService.deleteAsset(item.picture);
 
         return DataStore.delete(item);
+    }
+
+    static reset() {
+
+    }
+
+    static addProduct(product: Product) {
+
     }
 }

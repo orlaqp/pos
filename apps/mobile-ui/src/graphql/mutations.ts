@@ -1377,6 +1377,9 @@ export const createInventoryCountLine = /* GraphQL */ `
   ) {
     createInventoryCountLine(input: $input, condition: $condition) {
       id
+      productId
+      productName
+      unitOfMeasure
       current
       newCount
       comments
@@ -1389,35 +1392,12 @@ export const createInventoryCountLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
       inventoryCountLineInventoryCountId
-      inventoryCountLineProductId
     }
   }
 `;
@@ -1428,6 +1408,9 @@ export const updateInventoryCountLine = /* GraphQL */ `
   ) {
     updateInventoryCountLine(input: $input, condition: $condition) {
       id
+      productId
+      productName
+      unitOfMeasure
       current
       newCount
       comments
@@ -1440,35 +1423,12 @@ export const updateInventoryCountLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
       inventoryCountLineInventoryCountId
-      inventoryCountLineProductId
     }
   }
 `;
@@ -1479,6 +1439,9 @@ export const deleteInventoryCountLine = /* GraphQL */ `
   ) {
     deleteInventoryCountLine(input: $input, condition: $condition) {
       id
+      productId
+      productName
+      unitOfMeasure
       current
       newCount
       comments
@@ -1491,35 +1454,12 @@ export const deleteInventoryCountLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
       inventoryCountLineInventoryCountId
-      inventoryCountLineProductId
     }
   }
 `;

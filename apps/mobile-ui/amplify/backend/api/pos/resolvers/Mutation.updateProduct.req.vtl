@@ -39,19 +39,12 @@ $util.qr($mergedValues.putAll($util.defaultIfNull($args.input, {})))
   #else
     ## Make sure we use increment/decrement when passing quantity field
     #if($entryKeyAttributeName == "quantity")
-      #if($entry.value > 0)
-        #set( $value = $entry.value )
         $util.qr($expSet.put("#$entryKeyAttributeName", "$entryKeyAttributeName + :$entryKeyAttributeName"))
-      #else
-        #set( $value = -1 * $entry.value )
-        $util.qr($expSet.put("#$entryKeyAttributeName", "$entryKeyAttributeName - :$entryKeyAttributeName"))
-      #end
-      $util.qr($expValues.put(":$entryKeyAttributeName", $util.dynamodb.toDynamoDB($value)))
     #else
         $util.qr($expSet.put("#$entryKeyAttributeName", ":$entryKeyAttributeName"))
-        $util.qr($expValues.put(":$entryKeyAttributeName", $util.dynamodb.toDynamoDB($entry.value)))
     #end
     $util.qr($expNames.put("#$entryKeyAttributeName", "$entry.key"))
+    $util.qr($expValues.put(":$entryKeyAttributeName", $util.dynamodb.toDynamoDB($entry.value)))
     
   #end
 #end

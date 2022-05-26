@@ -17,10 +17,6 @@ export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((pr
     const theme = useTheme();
     const [showSoftInputOnFocus, setShowSoftInputOnFocus] = useState(false);
 
-    console.log('====================================');
-    console.log('filter:', filter);
-    console.log('====================================');
-    
     const toggleSoftInput = () => setShowSoftInputOnFocus(!showSoftInputOnFocus);
 
     return (
@@ -49,7 +45,7 @@ export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((pr
                     autoComplete='off'
                     autoCorrect={false}
                     autoCapitalize='none'
-                    onTextChanged={onFilterChange}
+                    onSubmit={onFilterChange}
                 />
                 <Button
                     icon={{

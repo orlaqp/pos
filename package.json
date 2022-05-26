@@ -13,8 +13,8 @@
     "update-models": "cp -R apps/mobile-ui/src/models libs/shared/models/src",
     "update-graphql": "cp -R apps/mobile-ui/src/graphql libs/shared/api/src",
     "update-api": "cp -R apps/mobile-ui/src/API.ts libs/shared/api/src",
-    "update-codegen": "npm run update-models && npm run update-graphql && npm run update-api",
-    "update-amplify": "cd apps/mobile-ui && amplify push --allow-destructive-graphql-schema-updates && amplify codegen models && cd ../.. && npm run update-codegen"
+    "update-codegen": "yarn update-models && yarn update-graphql && yarn update-api",
+    "update-amplify": "cd apps/mobile-ui && amplify push --allow-destructive-graphql-schema-updates && amplify codegen models && cd ../.. && yarn update-codegen"
   },
   "private": true,
   "dependencies": {

@@ -8,19 +8,24 @@ import { theme } from '@pos/theme/native';
 import { Provider } from 'react-redux';
 import { store } from '@pos/store';
 import Navigation from './navigation';
+import { Appearance } from 'react-native';
 
 export const App = () => {
-  return (
-    <Provider store={store}>
-      <NavigationContainer>
-        <ThemeProvider theme={theme(store.getState().settings.darkTheme ? 'dark' : 'light')}>
-          <SafeAreaProvider>
-            <Navigation />
-          </SafeAreaProvider>
-        </ThemeProvider>
-      </NavigationContainer>
-    </Provider>
-  );
+    const colorScheme = Appearance.getColorScheme();
+
+    return (
+        <Provider store={store}>
+            <NavigationContainer>
+                <ThemeProvider
+                    theme={theme(colorScheme === 'light' ? 'light' : 'dark')}
+                >
+                    <SafeAreaProvider>
+                        <Navigation />
+                    </SafeAreaProvider>
+                </ThemeProvider>
+            </NavigationContainer>
+        </Provider>
+    );
 };
 
 export default App;

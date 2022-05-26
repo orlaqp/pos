@@ -115,7 +115,7 @@ export function UIGenericItemList({
                     <View style={{ flex: 5 }}>
                         <UISearchInput
                             debounceTime={300}
-                            onTextChanged={filterList}
+                            onSubmit={filterList}
                         />
                     </View>
                     <Button

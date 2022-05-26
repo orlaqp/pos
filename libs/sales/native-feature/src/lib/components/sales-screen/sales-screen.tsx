@@ -90,7 +90,6 @@ export function SalesScreen({
         }
 
         if (res.items.length === 1 && res.allNumbers) {
-            console.log('One result and all numbers');
             setFilter('');
             setCategory(undefined);
 

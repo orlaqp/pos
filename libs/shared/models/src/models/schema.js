@@ -1517,6 +1517,27 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "productId": {
+                    "name": "productId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "productName": {
+                    "name": "productName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "unitOfMeasure": {
+                    "name": "unitOfMeasure",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "current": {
                     "name": "current",
                     "isArray": false,
@@ -1552,20 +1573,6 @@ export const schema = {
                         "targetName": "inventoryCountLineInventoryCountId"
                     }
                 },
-                "Product": {
-                    "name": "Product",
-                    "isArray": false,
-                    "type": {
-                        "model": "Product"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "association": {
-                        "connectionType": "HAS_ONE",
-                        "associatedWith": "id",
-                        "targetName": "inventoryCountLineProductId"
-                    }
-                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -1584,13 +1591,6 @@ export const schema = {
                 },
                 "inventoryCountLineInventoryCountId": {
                     "name": "inventoryCountLineInventoryCountId",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "inventoryCountLineProductId": {
-                    "name": "inventoryCountLineProductId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": false,
@@ -1969,5 +1969,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "bc52c7e18a4268ffd8db4001cc037440"
+    "version": "069a200b5aa40a6ef0f8e0b9ab198456"
 };

@@ -79,8 +79,6 @@ export class ProductService {
         products: ProductEntity[],
         request: ProductSearchRequest
     ): Promise<ProductSearchResponse> {
-        console.log('Request: ', request);
-
         if (request.categoryId)
             return {
                 items: products.filter(
@@ -121,5 +119,11 @@ export class ProductService {
             ),
             allNumbers: false,
         };
+    }
+
+    static async searchByCode(code: string) {
+        return DataStore.query(Product, (x) => x.or(
+            p => p.barcode('eq', code).sku('eq', code)
+        ));
     }
 }

@@ -1230,6 +1230,9 @@ export const onCreateInventoryCountLine = /* GraphQL */ `
   subscription OnCreateInventoryCountLine {
     onCreateInventoryCountLine {
       id
+      productId
+      productName
+      unitOfMeasure
       current
       newCount
       comments
@@ -1242,35 +1245,12 @@ export const onCreateInventoryCountLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
       inventoryCountLineInventoryCountId
-      inventoryCountLineProductId
     }
   }
 `;
@@ -1278,6 +1258,9 @@ export const onUpdateInventoryCountLine = /* GraphQL */ `
   subscription OnUpdateInventoryCountLine {
     onUpdateInventoryCountLine {
       id
+      productId
+      productName
+      unitOfMeasure
       current
       newCount
       comments
@@ -1290,35 +1273,12 @@ export const onUpdateInventoryCountLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
       inventoryCountLineInventoryCountId
-      inventoryCountLineProductId
     }
   }
 `;
@@ -1326,6 +1286,9 @@ export const onDeleteInventoryCountLine = /* GraphQL */ `
   subscription OnDeleteInventoryCountLine {
     onDeleteInventoryCountLine {
       id
+      productId
+      productName
+      unitOfMeasure
       current
       newCount
       comments
@@ -1338,35 +1301,12 @@ export const onDeleteInventoryCountLine = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
       inventoryCountLineInventoryCountId
-      inventoryCountLineProductId
     }
   }
 `;

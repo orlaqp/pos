@@ -1,23 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Alert, View } from 'react-native';
+import { Alert, FlatList, TextInput, View } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
-import {
-    UIActions,
-    UiFileUpload,
-    UIInput,
-    UIVerticalSpacer,
-} from '@pos/shared/ui-native';
+import { UIActions, UIInput, UISearchInput } from '@pos/shared/ui-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     InventoryCountDTO,
+    InventoryCountLineDTO,
     InventoryCountService,
 } from '@pos/inventory/data-access';
 import { RootState } from '@pos/store';
-import { InventoryCount } from '@pos/shared/models';
-import { Text } from '@rneui/themed';
+import { InventoryCount, Product } from '@pos/shared/models';
+import { ProductService } from '@pos/products/data-access';
+import InventoryItem from '../inventory-item/inventory-item';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -35,6 +32,11 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
     const dispatch = useDispatch();
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
+    const [filter, setFilter] = useState<string>();
+    const [value, setValue] = useState<string>();
+    const [items, setItems] = useState<InventoryCountLineDTO[]>([]);
+    const ref = React.createRef<TextInput>();
+    const newRef = React.createRef<TextInput>();
 
     const save = async () => {
         setBusy(true);
@@ -54,7 +56,7 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
         defaultValues: {
             id: inventory?.id,
             comments: inventory?.comments,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
         },
     });
 
@@ -69,34 +71,107 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
         );
     };
 
+    const addItem = (product: Product) => {
+        if (items.find(i => i.productId === product.id)) return;
+
+        console.log('adding item: ' + product.name);
+        
+        setItems((res) => [
+            ...res,
+            {
+                productId: product.id,
+                productName: product.name,
+                unitOfMeasure: product.unitOfMeasure,
+                comments: '',
+                current: product.quantity,
+                newCount: 0,
+                inventoryCountLineProductId: product.id,
+                inventoryCountLineInventoryCountId: '',
+            },
+        ]);
+    };
+
+    const searchSubmit = (text: string) => {
+        setFilter(text);
+        ref.current?.clear();
+    }
+
+    useEffect(() => {
+        console.log('Filter effect: ' + filter);
+        
+        if (!filter) return;
+
+        const searchProduct = async (text?: string) => {
+            if (!text) return;
+            
+            const products = await ProductService.searchByCode(text);
+            console.log('Products', products);
+            
+            if (products.length !== 1) return;
+            addItem(products[0]);
+        }
+
+        searchProduct(filter);
+
+    }, [addItem, filter]);
+
     return (
         <FormProvider {...form}>
             <View style={[styles.page]}>
-                <View
+                <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flex: 2 }}>
+                        <UIInput
+                            name="createdAt"
+                            placeholder="Created At"
+                            editable={false}
+                        />
+                    </View>
+                    <View style={{ flex: 4 }}>
+                        <UIInput name="comments" placeholder="Comments" />
+                    </View>
+                </View>
+                <FlatList
+                    horizontal={false}
+                    data={items}
+                    renderItem={(data) => (
+                        <InventoryItem
+                            item={data.item}
+                            key={data.index}
+                            navigation={navigation}
+                        />
+                    )}
                     style={{
                         flex: 1,
                         flexDirection: 'column',
                         marginTop: 50,
                     }}
+                />
+
+                <View
+                    style={{
+                        margin: 20,
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                    }}
                 >
-                    <View style={{ flexDirection: 'row' }}>
-                        <Text style={[styles.primaryText, { flex: 1 }]}>
-                            { JSON.stringify(form.getValues()) }
-                            {form?.getValues().createdAt && new Date(form.getValues().createdAt).toLocaleDateString()}
-                        </Text>
-                        <View style={{ flex: 2 }}>
-                            <UIInput name="createdAt" placeholder="Created At" />
-                            </View>
-                        <View style={{ flex: 4 }}>
-                            <UIInput name="comments" placeholder="Comments" />
-                        </View>
+                    <View style={{ flex: 0.5 }}>
+                        <UISearchInput
+                            ref={ref}
+                            value={filter}
+                            placeholder="Search for products ..."
+                            debounceTime={700}
+                            // onTextChanged={onSearchChange}
+                            onSubmit={searchSubmit}
+                            onClear={() => ref.current?.focus()}
+                        />
+                        {/* <TextInput onSubmitEditing={(e) => setFilter(e.nativeEvent.text)} style={{ borderColor: 'blue', borderWidth: 1 }} /> */}
                     </View>
-                    <UIActions
-                        busy={busy}
-                        submitAction={form.handleSubmit(save)}
-                        cancelAction={confirmCancel}
-                    />
                 </View>
+                <UIActions
+                    busy={busy}
+                    submitAction={form.handleSubmit(save)}
+                    cancelAction={confirmCancel}
+                />
             </View>
         </FormProvider>
     );

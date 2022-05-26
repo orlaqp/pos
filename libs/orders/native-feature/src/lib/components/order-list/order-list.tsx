@@ -58,7 +58,7 @@ export function OrderList({ navigation }: OrderListProps) {
                     <View style={{ flex: 5 }}>
                         <UISearchInput
                             debounceTime={300}
-                            onTextChanged={(text) =>
+                            onSubmit={(text) =>
                                 filter(selectedIndex, text)
                             }
                         />

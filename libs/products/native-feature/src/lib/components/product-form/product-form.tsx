@@ -44,10 +44,6 @@ export function ProductForm({ navigation }: ProductFormProps) {
         form.setValue('picture', key);
     };
 
-    console.log('====================================');
-    console.log(`Unit of measure: ${product?.unitOfMeasure}`);
-    console.log('====================================');
-
     const save = async () => {
         setBusy(true);
         const formValues: ProductEntity = form.getValues();

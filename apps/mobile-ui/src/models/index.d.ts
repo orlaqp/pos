@@ -309,15 +309,16 @@ export declare class InventoryCount {
 
 export declare class InventoryCountLine {
   readonly id: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly unitOfMeasure: string;
   readonly current: number;
   readonly newCount: number;
   readonly comments?: string | null;
   readonly InventoryCount?: InventoryCount | null;
-  readonly Product?: Product | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly inventoryCountLineInventoryCountId?: string | null;
-  readonly inventoryCountLineProductId?: string | null;
   constructor(init: ModelInit<InventoryCountLine, InventoryCountLineMetaData>);
   static copyOf(source: InventoryCountLine, mutator: (draft: MutableModel<InventoryCountLine, InventoryCountLineMetaData>) => MutableModel<InventoryCountLine, InventoryCountLineMetaData> | void): InventoryCountLine;
 }
