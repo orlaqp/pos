@@ -34,10 +34,9 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
     const [filter, setFilter] = useState<string>();
-    const [value, setValue] = useState<string>();
     const [items, setItems] = useState<InventoryCountLineDTO[]>([]);
     const ref = React.createRef<TextInput>();
-    const newRef = React.createRef<TextInput>();
+    
 
     const save = async () => {
         setBusy(true);
@@ -124,15 +123,19 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
         <FormProvider {...form}>
             <View style={[styles.page]}>
                 <View style={{ flexDirection: 'row' }}>
-                    <View style={{ flex: 2 }}>
-                        <UIInput
-                            name="createdAt"
-                            placeholder="Created At"
-                            editable={false}
-                        />
-                    </View>
-                    <View style={{ flex: 4 }}>
+                    {/* <View style={{ flex: 4 }}>
                         <UIInput name="comments" placeholder="Comments" />
+                    </View> */}
+                    <View style={{ flex: 3, padding: 10 }}>
+                        <UISearchInput
+                            ref={ref}
+                            value={filter}
+                            placeholder="Search for products ..."
+                            debounceTime={700}
+                            onSubmit={searchSubmit}
+                            onClear={() => ref.current?.focus()}
+                        />
+                        {/* <TextInput onSubmitEditing={(e) => setFilter(e.nativeEvent.text)} style={{ borderColor: 'blue', borderWidth: 1 }} /> */}
                     </View>
                 </View>
                 <FlatList
@@ -150,29 +153,9 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
                     style={{
                         flex: 1,
                         flexDirection: 'column',
-                        marginTop: 50,
                     }}
                 />
 
-                <View
-                    style={{
-                        margin: 20,
-                        flexDirection: 'row',
-                        justifyContent: 'center',
-                    }}
-                >
-                    <View style={{ flex: 0.5 }}>
-                        <UISearchInput
-                            ref={ref}
-                            value={filter}
-                            placeholder="Search for products ..."
-                            debounceTime={700}
-                            onSubmit={searchSubmit}
-                            onClear={() => ref.current?.focus()}
-                        />
-                        {/* <TextInput onSubmitEditing={(e) => setFilter(e.nativeEvent.text)} style={{ borderColor: 'blue', borderWidth: 1 }} /> */}
-                    </View>
-                </View>
                 <UIActions
                     busy={busy}
                     submitAction={form.handleSubmit(save)}

@@ -36,7 +36,7 @@ export function InventoryItem({ item, navigation, onUpdate, onDelete }: Inventor
     };
 
     return (
-        <View style={[styles.dataRow, styles.centered]}>
+        <View style={[styles.smallDataRow, styles.centered]}>
             {busy && <ActivityIndicator size="small" />}
             <View style={{ flex: 3, flexDirection: 'row' }}>
                 <Text style={styles.name}>{item.productName}</Text>
