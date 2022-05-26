@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
     InventoryCountDTO,
     InventoryCountLineDTO,
+    InventoryCountLineMapper,
     InventoryCountService,
 } from '@pos/inventory/data-access';
 import { RootState } from '@pos/store';
@@ -71,49 +72,53 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
         );
     };
 
-    const addItem = (product: Product) => {
-        if (items.find(i => i.productId === product.id)) return;
-
-        console.log('adding item: ' + product.name);
-        
-        setItems((res) => [
-            ...res,
-            {
-                productId: product.id,
-                productName: product.name,
-                unitOfMeasure: product.unitOfMeasure,
-                comments: '',
-                current: product.quantity,
-                newCount: 0,
-                inventoryCountLineProductId: product.id,
-                inventoryCountLineInventoryCountId: '',
-            },
-        ]);
-    };
-
     const searchSubmit = (text: string) => {
         setFilter(text);
         ref.current?.clear();
+    };
+
+    const updateItem = (item: InventoryCountLineDTO) => {
+        const idx = items.findIndex(i => i.productId === item.productId);
+        
+        if (idx === -1) return;
+
+        items[idx].newCount = item.newCount;
+        items[idx].comments = item.comments;
+
+        setItems(res => [...items]);
+    }
+    const deleteItem = (item: InventoryCountLineDTO) => {
+        setItems(res => res.filter(i => i.productId !== item.productId))
     }
 
     useEffect(() => {
         console.log('Filter effect: ' + filter);
-        
+
         if (!filter) return;
+
+        const addItem = (product: Product) => {
+            if (items.find((i) => i.productId === product.id)) return;
+
+            console.log('adding item: ' + product.name);
+
+            setItems((res) => [
+                ...res,
+                InventoryCountLineMapper.fromProduct(product)
+            ]);
+        };
 
         const searchProduct = async (text?: string) => {
             if (!text) return;
-            
+
             const products = await ProductService.searchByCode(text);
             console.log('Products', products);
-            
+
             if (products.length !== 1) return;
             addItem(products[0]);
-        }
+        };
 
         searchProduct(filter);
-
-    }, [addItem, filter]);
+    }, [filter]);
 
     return (
         <FormProvider {...form}>
@@ -138,6 +143,8 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
                             item={data.item}
                             key={data.index}
                             navigation={navigation}
+                            onUpdate={updateItem}
+                            onDelete={deleteItem}
                         />
                     )}
                     style={{
@@ -160,7 +167,6 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
                             value={filter}
                             placeholder="Search for products ..."
                             debounceTime={700}
-                            // onTextChanged={onSearchChange}
                             onSubmit={searchSubmit}
                             onClear={() => ref.current?.focus()}
                         />

@@ -54,6 +54,14 @@ export const useSharedStyles = () => {
         secondaryText: {
             color: theme.theme.colors.grey2
         },
+        input: {
+            padding: 5,
+            backgroundColor: theme.theme.colors.grey5,
+            textAlign: 'right',
+            fontSize: 18,
+            borderRadius: 5,
+            paddingHorizontal: 10
+        },
         subLabel: {
             fontSize: 14,
             color: theme.theme.colors.grey3,

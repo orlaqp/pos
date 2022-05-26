@@ -1,4 +1,4 @@
-import { InventoryCount, InventoryCountLine } from '@pos/shared/models';
+import { InventoryCount, InventoryCountLine, Product } from '@pos/shared/models';
 
 export type InventoryCountLineDTO = {
     id?: string;
@@ -14,6 +14,19 @@ export type InventoryCountLineDTO = {
 };
 
 export class InventoryCountLineMapper {
+    static fromProduct(x: Product) {
+        return {
+            productId: x.id,
+            productName: x.name,
+            unitOfMeasure: x.unitOfMeasure,
+            comments: '',
+            current: x.quantity,
+            newCount: 0,
+            inventoryCountLineProductId: x.id,
+            inventoryCountLineInventoryCountId: '',
+        };
+    }
+
     static fromModel(x: InventoryCountLine): InventoryCountLineDTO {
         return {
             id: x.id,
