@@ -143,9 +143,15 @@ type InventoryChanges @model @auth(rules: [{allow: public}]) {
     Product: Product @hasOne
 }
 
+enum InventoryCountStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
 type InventoryCount @model @auth(rules: [{allow: public}]) {
     id: ID!
-    comments: String    
+    comments: String
+    status: InventoryCountStatus!
 }
 
 type InventoryCountLine @model @auth(rules: [{allow: public}]) {

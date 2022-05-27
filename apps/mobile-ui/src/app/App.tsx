@@ -17,7 +17,8 @@ export const App = () => {
         <Provider store={store}>
             <NavigationContainer>
                 <ThemeProvider
-                    theme={theme(colorScheme === 'light' ? 'light' : 'dark')}
+                    // theme={theme(colorScheme === 'light' ? 'light' : 'dark')}
+                    theme={theme('dark')}
                 >
                     <SafeAreaProvider>
                         <Navigation />

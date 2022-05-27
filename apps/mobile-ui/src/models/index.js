@@ -9,6 +9,11 @@ const OrderStatus = {
   "ONHOLD": "ONHOLD"
 };
 
+const InventoryCountStatus = {
+  "IN_PROGRESS": "IN_PROGRESS",
+  "COMPLETED": "COMPLETED"
+};
+
 const { Brand, Category, Customer, Order, OrderLine, Product, PurchaseOrder, Supplier, PurchaseOrderLine, Store, Stock, Tag, UnitOfMeasure, Inventory, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceived, InventoryReceivedLine, Printer, Station } = initSchema(schema);
 
 export {
@@ -33,5 +38,6 @@ export {
   InventoryReceivedLine,
   Printer,
   Station,
-  OrderStatus
+  OrderStatus,
+  InventoryCountStatus
 };

@@ -1330,6 +1330,7 @@ export const createInventoryCount = /* GraphQL */ `
     createInventoryCount(input: $input, condition: $condition) {
       id
       comments
+      status
       createdAt
       updatedAt
       _version
@@ -1346,6 +1347,7 @@ export const updateInventoryCount = /* GraphQL */ `
     updateInventoryCount(input: $input, condition: $condition) {
       id
       comments
+      status
       createdAt
       updatedAt
       _version
@@ -1362,6 +1364,7 @@ export const deleteInventoryCount = /* GraphQL */ `
     deleteInventoryCount(input: $input, condition: $condition) {
       id
       comments
+      status
       createdAt
       updatedAt
       _version
@@ -1386,6 +1389,7 @@ export const createInventoryCountLine = /* GraphQL */ `
       InventoryCount {
         id
         comments
+        status
         createdAt
         updatedAt
         _version
@@ -1417,6 +1421,7 @@ export const updateInventoryCountLine = /* GraphQL */ `
       InventoryCount {
         id
         comments
+        status
         createdAt
         updatedAt
         _version
@@ -1448,6 +1453,7 @@ export const deleteInventoryCountLine = /* GraphQL */ `
       InventoryCount {
         id
         comments
+        status
         createdAt
         updatedAt
         _version

@@ -1252,6 +1252,7 @@ export const getInventoryCount = /* GraphQL */ `
     getInventoryCount(id: $id) {
       id
       comments
+      status
       createdAt
       updatedAt
       _version
@@ -1270,6 +1271,7 @@ export const listInventoryCounts = /* GraphQL */ `
       items {
         id
         comments
+        status
         createdAt
         updatedAt
         _version
@@ -1297,6 +1299,7 @@ export const syncInventoryCounts = /* GraphQL */ `
       items {
         id
         comments
+        status
         createdAt
         updatedAt
         _version
@@ -1321,6 +1324,7 @@ export const getInventoryCountLine = /* GraphQL */ `
       InventoryCount {
         id
         comments
+        status
         createdAt
         updatedAt
         _version

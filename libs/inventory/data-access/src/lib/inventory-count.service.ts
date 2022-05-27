@@ -1,18 +1,25 @@
 
-import { InventoryCount, Product } from '@pos/shared/models';
+import { InventoryCount, InventoryCountLine, Product } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
 import { inventoryCountActions } from './slices/inventory-count.slice';
 import { InventoryCountDTO } from './inventory-count.entity';
+import { InventoryCountLineDTO } from './inventory-count-line.entity';
 
 export class InventoryCountService {
     static async save(dispatch: Dispatch<any>, count: InventoryCountDTO) {
         if (!count.id) {
-            const entity = new InventoryCount(count);
+            const { lines, ...rest } = count;
+            const entity = new InventoryCount(rest);
             const res = await DataStore.save(entity);
-
             count.id = res.id;
 
+            const promises = lines.map(l => {
+                l.inventoryCountLineInventoryCountId = count.id;
+                return DataStore.save(new InventoryCountLine(l));
+            });
+
+            await Promise.all(promises);
             return dispatch(inventoryCountActions.add(count));
         }
         

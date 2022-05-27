@@ -43,7 +43,7 @@ export function UIActions(props: UiActionBarProps) {
                 icon={{
                     name: 'check',
                     type: 'material-community',
-                    color: props.busy ? theme.theme.colors.grey5 : theme.theme.colors.grey0,
+                    color: props.busy ? theme.theme.colors.grey5 : theme.theme.colors.white,
                 }}
                 titleStyle={{
                     paddingRight: 20

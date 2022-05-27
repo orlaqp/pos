@@ -21,7 +21,7 @@ export class InventoryCountLineMapper {
             unitOfMeasure: x.unitOfMeasure,
             comments: '',
             current: x.quantity,
-            newCount: 0,
+            newCount: x.quantity,
             inventoryCountLineProductId: x.id,
             inventoryCountLineInventoryCountId: '',
         };

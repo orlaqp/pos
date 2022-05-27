@@ -7,6 +7,11 @@ export enum OrderStatus {
   ONHOLD = "ONHOLD"
 }
 
+export enum InventoryCountStatus {
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED"
+}
+
 
 
 type BrandMetaData = {
@@ -301,6 +306,7 @@ export declare class InventoryChanges {
 export declare class InventoryCount {
   readonly id: string;
   readonly comments?: string | null;
+  readonly status: InventoryCountStatus | keyof typeof InventoryCountStatus;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<InventoryCount, InventoryCountMetaData>);

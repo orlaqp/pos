@@ -16,6 +16,8 @@ import { RootState } from '@pos/store';
 import { InventoryCount, Product } from '@pos/shared/models';
 import { ProductService } from '@pos/products/data-access';
 import InventoryItem from '../inventory-item/inventory-item';
+import { Button, useTheme } from '@rneui/themed';
+import InventoryCountLine from '../inventory-count-line/inventory-count-line';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -27,38 +29,37 @@ export interface InventoryFormProps {
 }
 
 export function InventoryForm({ navigation }: InventoryFormProps) {
-    const inventory = useSelector(
+    const inventoryCount = useSelector(
         (state: RootState) => state.inventoryCount.selected
     );
     const dispatch = useDispatch();
+    const theme = useTheme();
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
     const [filter, setFilter] = useState<string>();
-    const [items, setItems] = useState<InventoryCountLineDTO[]>([]);
+    const [lines, setLines] = useState<InventoryCountLineDTO[]>([]);
     const ref = React.createRef<TextInput>();
-    
 
     const save = async () => {
         setBusy(true);
-        const formValues: InventoryCountDTO = form.getValues();
-
-        if (!formValues.id) {
-            delete formValues.id;
-        }
-
-        await InventoryCountService.save(dispatch, formValues);
+        const inv: InventoryCountDTO = inventoryCount || {
+            status: 'IN_PROGRESS',
+            comments: 'n/a',
+            lines,
+        };
+        await InventoryCountService.save(dispatch, inv);
         navigation.goBack();
         setBusy(false);
     };
 
-    const form = useForm<InventoryCountDTO>({
-        mode: 'onChange',
-        defaultValues: {
-            id: inventory?.id,
-            comments: inventory?.comments,
-            createdAt: new Date().toISOString(),
-        },
-    });
+    // const form = useForm<InventoryCountDTO>({
+    //     mode: 'onChange',
+    //     defaultValues: {
+    //         id: inventoryCount?.id,
+    //         comments: inventoryCount?.comments,
+    //         createdAt: new Date().toISOString(),
+    //     },
+    // });
 
     const confirmCancel = () => {
         Alert.alert(
@@ -77,21 +78,21 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
     };
 
     const updateItem = (item: InventoryCountLineDTO) => {
-        console.log('====================================');
-        console.log('updating item: ', item);
-        console.log('====================================');
-        const idx = items.findIndex(i => i.productId === item.productId);
-        
+        const idx = lines.findIndex((i) => i.productId === item.productId);
+
         if (idx === -1) return;
 
-        items[idx].newCount = item.newCount;
-        items[idx].comments = item.comments;
+        lines[idx].newCount = item.newCount;
+        lines[idx].comments = item.comments;
 
-        setItems(res => [...items]);
-    }
+        setLines((res) => [...lines]);
+    };
+
     const deleteItem = (item: InventoryCountLineDTO) => {
-        setItems(res => res.filter(i => i.productId !== item.productId))
-    }
+        setLines((res) => res.filter((i) => i.productId !== item.productId));
+    };
+
+    const updateInventory = () => {};
 
     useEffect(() => {
         console.log('Filter effect: ' + filter);
@@ -99,13 +100,13 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
         if (!filter) return;
 
         const addItem = (product: Product) => {
-            if (items.find((i) => i.productId === product.id)) return;
+            if (lines.find((i) => i.productId === product.id)) return;
 
             console.log('adding item: ' + product.name);
 
-            setItems((res) => [
+            setLines((res) => [
                 ...res,
-                InventoryCountLineMapper.fromProduct(product)
+                InventoryCountLineMapper.fromProduct(product),
             ]);
         };
 
@@ -123,49 +124,74 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
     }, [filter]);
 
     return (
-        <FormProvider {...form}>
-            <View style={[styles.page]}>
-                <View style={{ flexDirection: 'row' }}>
-                    {/* <View style={{ flex: 4 }}>
+        // <FormProvider {...form}>
+        <View style={[styles.page]}>
+            <View style={{ flexDirection: 'row' }}>
+                {/* <View style={{ flex: 4 }}>
                         <UIInput name="comments" placeholder="Comments" />
                     </View> */}
-                    <View style={{ flex: 3, padding: 10 }}>
-                        <UISearchInput
-                            ref={ref}
-                            value={filter}
-                            placeholder="Search for products ..."
-                            debounceTime={700}
-                            onSubmit={searchSubmit}
-                            onClear={() => ref.current?.focus()}
-                        />
-                        {/* <TextInput onSubmitEditing={(e) => setFilter(e.nativeEvent.text)} style={{ borderColor: 'blue', borderWidth: 1 }} /> */}
-                    </View>
+                <View style={{ flex: 3, padding: 10 }}>
+                    <UISearchInput
+                        ref={ref}
+                        value={filter}
+                        placeholder="Search for products ..."
+                        debounceTime={700}
+                        onSubmit={searchSubmit}
+                        onClear={() => ref.current?.focus()}
+                    />
+                    {/* <TextInput onSubmitEditing={(e) => setFilter(e.nativeEvent.text)} style={{ borderColor: 'blue', borderWidth: 1 }} /> */}
                 </View>
-                <FlatList
-                    horizontal={false}
-                    data={items}
-                    renderItem={(data) => (
-                        <InventoryItem
-                            item={data.item}
-                            key={data.index}
-                            navigation={navigation}
-                            onUpdate={updateItem}
-                            onDelete={deleteItem}
-                        />
-                    )}
-                    style={{
-                        flex: 1,
-                        flexDirection: 'column',
-                    }}
-                />
+            </View>
+            <FlatList
+                horizontal={false}
+                data={lines}
+                renderItem={(data) => (
+                    <InventoryCountLine
+                        item={data.item}
+                        key={data.index}
+                        navigation={navigation}
+                        onUpdate={updateItem}
+                        onDelete={deleteItem}
+                    />
+                )}
+                style={{
+                    flex: 1,
+                    flexDirection: 'column',
+                }}
+            />
 
+            <View
+                style={{
+                    margin: 10,
+                    flexDirection: 'row',
+                    justifyContent: 'flex-end',
+                }}
+            >
                 <UIActions
                     busy={busy}
-                    submitAction={form.handleSubmit(save)}
+                    submitAction={save}
                     cancelAction={confirmCancel}
                 />
+                <View style={{ marginLeft: 10 }}>
+                    <Button
+                        color="success"
+                        title="Update Inventory"
+                        onPress={updateInventory}
+                        icon={{
+                            name: 'scale-balance',
+                            type: 'material-community',
+                            color: theme.theme.colors.white,
+                        }}
+                        titleStyle={{
+                            paddingRight: 20,
+                        }}
+                        disabledStyle={styles.darkBackground}
+                        disabledTitleStyle={{ color: theme.theme.colors.grey5 }}
+                    />
+                </View>
             </View>
-        </FormProvider>
+        </View>
+        // </FormProvider>
     );
 }
 

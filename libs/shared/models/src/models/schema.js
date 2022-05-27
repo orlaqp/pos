@@ -1465,6 +1465,15 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "status": {
+                    "name": "status",
+                    "isArray": false,
+                    "type": {
+                        "enum": "InventoryCountStatus"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -1966,8 +1975,15 @@ export const schema = {
                 "PAID",
                 "ONHOLD"
             ]
+        },
+        "InventoryCountStatus": {
+            "name": "InventoryCountStatus",
+            "values": [
+                "IN_PROGRESS",
+                "COMPLETED"
+            ]
         }
     },
     "nonModels": {},
-    "version": "069a200b5aa40a6ef0f8e0b9ab198456"
+    "version": "4ac93630a203cf9e18d96dcc36353532"
 };

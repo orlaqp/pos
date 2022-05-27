@@ -893,20 +893,34 @@ export type DeleteInventoryChangesInput = {
 export type CreateInventoryCountInput = {
   id?: string | null,
   comments?: string | null,
+  status: InventoryCountStatus,
   _version?: number | null,
 };
 
+export enum InventoryCountStatus {
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+}
+
+
 export type ModelInventoryCountConditionInput = {
   comments?: ModelStringInput | null,
+  status?: ModelInventoryCountStatusInput | null,
   and?: Array< ModelInventoryCountConditionInput | null > | null,
   or?: Array< ModelInventoryCountConditionInput | null > | null,
   not?: ModelInventoryCountConditionInput | null,
+};
+
+export type ModelInventoryCountStatusInput = {
+  eq?: InventoryCountStatus | null,
+  ne?: InventoryCountStatus | null,
 };
 
 export type InventoryCount = {
   __typename: "InventoryCount",
   id: string,
   comments?: string | null,
+  status: InventoryCountStatus,
   createdAt: string,
   updatedAt: string,
   _version: number,
@@ -917,6 +931,7 @@ export type InventoryCount = {
 export type UpdateInventoryCountInput = {
   id: string,
   comments?: string | null,
+  status?: InventoryCountStatus | null,
   _version?: number | null,
 };
 
@@ -1450,6 +1465,7 @@ export type ModelInventoryChangesConnection = {
 export type ModelInventoryCountFilterInput = {
   id?: ModelIDInput | null,
   comments?: ModelStringInput | null,
+  status?: ModelInventoryCountStatusInput | null,
   and?: Array< ModelInventoryCountFilterInput | null > | null,
   or?: Array< ModelInventoryCountFilterInput | null > | null,
   not?: ModelInventoryCountFilterInput | null,
@@ -3000,6 +3016,7 @@ export type CreateInventoryCountMutation = {
     __typename: "InventoryCount",
     id: string,
     comments?: string | null,
+    status: InventoryCountStatus,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -3018,6 +3035,7 @@ export type UpdateInventoryCountMutation = {
     __typename: "InventoryCount",
     id: string,
     comments?: string | null,
+    status: InventoryCountStatus,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -3036,6 +3054,7 @@ export type DeleteInventoryCountMutation = {
     __typename: "InventoryCount",
     id: string,
     comments?: string | null,
+    status: InventoryCountStatus,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -3063,6 +3082,7 @@ export type CreateInventoryCountLineMutation = {
       __typename: "InventoryCount",
       id: string,
       comments?: string | null,
+      status: InventoryCountStatus,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -3097,6 +3117,7 @@ export type UpdateInventoryCountLineMutation = {
       __typename: "InventoryCount",
       id: string,
       comments?: string | null,
+      status: InventoryCountStatus,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -3131,6 +3152,7 @@ export type DeleteInventoryCountLineMutation = {
       __typename: "InventoryCount",
       id: string,
       comments?: string | null,
+      status: InventoryCountStatus,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -4821,6 +4843,7 @@ export type GetInventoryCountQuery = {
     __typename: "InventoryCount",
     id: string,
     comments?: string | null,
+    status: InventoryCountStatus,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -4842,6 +4865,7 @@ export type ListInventoryCountsQuery = {
       __typename: "InventoryCount",
       id: string,
       comments?: string | null,
+      status: InventoryCountStatus,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -4867,6 +4891,7 @@ export type SyncInventoryCountsQuery = {
       __typename: "InventoryCount",
       id: string,
       comments?: string | null,
+      status: InventoryCountStatus,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -4896,6 +4921,7 @@ export type GetInventoryCountLineQuery = {
       __typename: "InventoryCount",
       id: string,
       comments?: string | null,
+      status: InventoryCountStatus,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -6516,6 +6542,7 @@ export type OnCreateInventoryCountSubscription = {
     __typename: "InventoryCount",
     id: string,
     comments?: string | null,
+    status: InventoryCountStatus,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -6529,6 +6556,7 @@ export type OnUpdateInventoryCountSubscription = {
     __typename: "InventoryCount",
     id: string,
     comments?: string | null,
+    status: InventoryCountStatus,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -6542,6 +6570,7 @@ export type OnDeleteInventoryCountSubscription = {
     __typename: "InventoryCount",
     id: string,
     comments?: string | null,
+    status: InventoryCountStatus,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -6564,6 +6593,7 @@ export type OnCreateInventoryCountLineSubscription = {
       __typename: "InventoryCount",
       id: string,
       comments?: string | null,
+      status: InventoryCountStatus,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -6593,6 +6623,7 @@ export type OnUpdateInventoryCountLineSubscription = {
       __typename: "InventoryCount",
       id: string,
       comments?: string | null,
+      status: InventoryCountStatus,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -6622,6 +6653,7 @@ export type OnDeleteInventoryCountLineSubscription = {
       __typename: "InventoryCount",
       id: string,
       comments?: string | null,
+      status: InventoryCountStatus,
       createdAt: string,
       updatedAt: string,
       _version: number,
