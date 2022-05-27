@@ -38,6 +38,9 @@ export interface NavigationParamList {
     Sales: {
         mode: 'order' | 'payment';
     };
+    'Inventory Form': {
+        readOnly: boolean
+    }
 }
 
 /* eslint-disable-next-line */

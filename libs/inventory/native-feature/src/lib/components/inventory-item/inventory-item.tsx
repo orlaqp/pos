@@ -25,7 +25,12 @@ export function InventoryItem({ item, navigation }: InventoryItemProps) {
     const editItem = () => {
         dispatch(inventoryCountActions.select(item));
         navigation.navigate('Inventory Form');
-    }
+    };
+
+    const showItem = () => {
+        dispatch(inventoryCountActions.select(item));
+        navigation.navigate('Inventory Form', { readOnly: true });
+    };
 
     const deleteItem = async () => {
         if (!item.id) return;
@@ -34,20 +39,16 @@ export function InventoryItem({ item, navigation }: InventoryItemProps) {
         await InventoryCountService.delete(item.id);
         setBusy(false);
         dispatch(inventoryCountActions.remove(item.id));
-    }
-    
+    };
+
     const confirmDeletion = () => {
         Alert.alert(
             'Are you sure?',
             'You will not be able to undo this operation',
-            [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => deleteItem() },
-            ]
+            [{ text: 'No' }, { text: 'Yes', onPress: () => deleteItem() }]
         );
-    }
+    };
 
-   
     return (
         <View style={[styles.dataRow, styles.centered]}>
             <View style={{ flex: 4, flexDirection: 'row' }}>
@@ -63,26 +64,40 @@ export function InventoryItem({ item, navigation }: InventoryItemProps) {
                     justifyContent: 'flex-end',
                 }}
             >
-                <Button
-                    type="clear"
-                    title="Edit"
-                    icon={{
-                        name: 'pencil-outline',
-                        type: 'material-community',
-                    }}
-                    onPress={editItem}
-                />
-                { item.status === 'IN_PROGRESS' &&
-                <Button
-                    type="clear"
-                    icon={{
-                        name: 'trash-can',
-                        type: 'material-community',
-                        color: theme.theme.colors.error
-                    }}
-                    onPress={confirmDeletion}
-                />
-                }
+                {item.status === 'COMPLETED' && (
+                    <Button
+                        type="clear"
+                        title="View"
+                        icon={{
+                            name: 'eye-arrow-right-outline',
+                            type: 'material-community',
+                            color: theme.theme.colors.primary,
+                        }}
+                        onPress={showItem}
+                    />
+                )}
+                {item.status === 'IN_PROGRESS' && (
+                    <>
+                        <Button
+                            type="clear"
+                            title="Edit"
+                            icon={{
+                                name: 'pencil-outline',
+                                type: 'material-community',
+                            }}
+                            onPress={editItem}
+                        />
+                        <Button
+                            type="clear"
+                            icon={{
+                                name: 'trash-can',
+                                type: 'material-community',
+                                color: theme.theme.colors.error,
+                            }}
+                            onPress={confirmDeletion}
+                        />
+                    </>
+                )}
             </View>
         </View>
     );

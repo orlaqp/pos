@@ -8,6 +8,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { TextInput } from 'react-native-gesture-handler';
 
 export interface InventoryCountLineProps {
+    readOnly: boolean;
     item: InventoryCountLineDTO;
     navigation: NativeStackNavigationProp<any>;
     onUpdate: (item: InventoryCountLineDTO) => void;
@@ -15,6 +16,7 @@ export interface InventoryCountLineProps {
 }
 
 export function InventoryCountLine({
+    readOnly,
     item,
     navigation,
     onUpdate,
@@ -60,8 +62,8 @@ export function InventoryCountLine({
                     value={count}
                     onChangeText={setCount}
                     style={[
-                        styles.input,
-                        { marginRight: 25, color: theme.theme.colors.black },
+                        styles.input, styles.primaryText,
+                        { marginRight: 25 },
                     ]}
                     onFocus={() => setCount('')}
                     onBlur={(e) => updateCount(e.nativeEvent.text)}
@@ -72,9 +74,10 @@ export function InventoryCountLine({
                     value={comment}
                     onChangeText={setComment}
                     onBlur={(e) => updateComment(e.nativeEvent.text)}
-                    style={styles.input}
+                    style={[styles.input, styles.primaryText]}
                 />
             </View>
+            { !readOnly &&
             <View
                 style={{
                     flex: 1,
@@ -92,6 +95,7 @@ export function InventoryCountLine({
                     onPress={confirmDeletion}
                 />
             </View>
+            }
         </View>
     );
 }

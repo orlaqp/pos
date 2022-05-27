@@ -4,9 +4,13 @@ import { Alert, FlatList, TextInput, View } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { UIActions, UIInput, UISearchInput } from '@pos/shared/ui-native';
 import { FormProvider, useForm } from 'react-hook-form';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import {
+    NativeStackNavigationProp,
+    NativeStackScreenProps,
+} from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
 import {
+    inventoryCountActions,
     InventoryCountDTO,
     InventoryCountLineDTO,
     InventoryCountLineMapper,
@@ -19,18 +23,30 @@ import { ProductService } from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
 import InventoryCountLine from '../inventory-count-line/inventory-count-line';
 import { includes } from 'lodash';
+import { confirm } from '@pos/shared/utils';
+import { NavigationParamList } from '@pos/sales/native-feature';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
     inventory: InventoryCount;
 }
 
-export interface InventoryFormProps {
-    navigation: NativeStackNavigationProp<InventoryFormParams>;
-    item: InventoryCountDTO;
-}
+// export interface InventoryFormParamList {
+//     [key: string]: object | undefined;
+//     'Inventory Form': {
+//         mode: 'order' | 'payment';
+//     };
+// }
 
-export function InventoryForm({ navigation }: InventoryFormProps) {
+// export interface InventoryFormProps {
+//     navigation: NativeStackNavigationProp<InventoryFormParams>;
+//     item: InventoryCountDTO;
+// }
+
+export function InventoryForm({
+    navigation,
+    route,
+}: NativeStackScreenProps<NavigationParamList, 'Inventory Form'>) {
     const inventoryCount = useSelector(
         (state: RootState) => state.inventoryCount.selected
     );
@@ -47,11 +63,11 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
             setLines([]);
             return;
         }
-        
-        setLines(inventoryCount.lines.map(l => ({...l})));
+
+        setLines(inventoryCount.lines.map((l) => ({ ...l })));
     }, [inventoryCount]);
 
-    const save = async () => {
+    const save = async (updateInv: boolean) => {
         setBusy(true);
         let inv: InventoryCountDTO;
 
@@ -62,15 +78,28 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
                 status: inventoryCount.status,
                 id: inventoryCount.id,
                 createdAt: inventoryCount.createdAt,
-            }
+            };
         } else {
             inv = InventoryCountMapper.newCount();
             inv.lines = lines;
         }
-         
-        await InventoryCountService.save(dispatch, inv);
+
+        if (updateInv) {
+            inv.status = 'COMPLETED';
+        }
+
+        await InventoryCountService.save(dispatch, inv, updateInv);
+        dispatch(inventoryCountActions.clearSelection());
         navigation.goBack();
         setBusy(false);
+    };
+
+    const updateInventory = () => {
+        confirm(
+            '',
+            'This action will adjust your inventory based on this count. You will no be able to undo this operation',
+            () => save(true)
+        );
     };
 
     const confirmCancel = () => {
@@ -79,7 +108,13 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
             'You will not be able to undo this operation',
             [
                 { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
+                {
+                    text: 'Yes',
+                    onPress: () => {
+                        dispatch(inventoryCountActions.clearSelection());
+                        navigation.goBack();
+                    },
+                },
             ]
         );
     };
@@ -103,8 +138,6 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
     const deleteItem = (item: InventoryCountLineDTO) => {
         setLines((res) => res.filter((i) => i.productId !== item.productId));
     };
-
-    const updateInventory = () => {};
 
     useEffect(() => {
         console.log('Filter effect: ' + filter);
@@ -159,6 +192,7 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
                 data={lines}
                 renderItem={(data) => (
                     <InventoryCountLine
+                        readOnly={route.params?.readOnly}
                         item={data.item}
                         key={data.index}
                         navigation={navigation}
@@ -179,28 +213,34 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
                     justifyContent: 'flex-end',
                 }}
             >
-                <UIActions
-                    busy={busy}
-                    submitAction={save}
-                    cancelAction={confirmCancel}
-                />
-                <View style={{ marginLeft: 10 }}>
-                    <Button
-                        color="success"
-                        title="Update Inventory"
-                        onPress={updateInventory}
-                        icon={{
-                            name: 'scale-balance',
-                            type: 'material-community',
-                            color: theme.theme.colors.white,
-                        }}
-                        titleStyle={{
-                            paddingRight: 20,
-                        }}
-                        disabledStyle={styles.darkBackground}
-                        disabledTitleStyle={{ color: theme.theme.colors.grey5 }}
-                    />
-                </View>
+                {!route.params?.readOnly && (
+                    <>
+                        <UIActions
+                            busy={busy}
+                            submitAction={() => save(false)}
+                            cancelAction={confirmCancel}
+                        />
+                        <View style={{ marginLeft: 10 }}>
+                            <Button
+                                color="success"
+                                title="Update Inventory"
+                                onPress={updateInventory}
+                                icon={{
+                                    name: 'scale-balance',
+                                    type: 'material-community',
+                                    color: theme.theme.colors.white,
+                                }}
+                                titleStyle={{
+                                    paddingRight: 20,
+                                }}
+                                disabledStyle={styles.darkBackground}
+                                disabledTitleStyle={{
+                                    color: theme.theme.colors.grey5,
+                                }}
+                            />
+                        </View>
+                    </>
+                )}
             </View>
         </View>
         // </FormProvider>
