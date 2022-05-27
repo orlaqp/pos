@@ -11,7 +11,7 @@ export type InventoryReceiveDTO = {
 };
 
 export class InventoryReceiveMapper {
-    static newCount(): InventoryReceiveDTO {
+    static newReceive(): InventoryReceiveDTO {
         return {
             status: 'IN_PROGRESS',
             comments: 'n/a',

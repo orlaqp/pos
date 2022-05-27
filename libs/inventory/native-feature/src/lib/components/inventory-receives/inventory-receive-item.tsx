@@ -4,40 +4,40 @@ import { View, Text, Alert } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import {
-    inventoryCountActions,
-    InventoryCountDTO,
-    InventoryCountService,
+    inventoryReceiveActions,
+    InventoryReceiveDTO,
+    InventoryReceiveService,
 } from '@pos/inventory/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 export interface InventoryItemProps {
-    item: InventoryCountDTO;
+    item: InventoryReceiveDTO;
     navigation: NativeStackNavigationProp<any>;
 }
 
-export function InventoryCountItem({ item, navigation }: InventoryItemProps) {
+export function InventoryReceiveItem({ item, navigation }: InventoryItemProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
 
     const editItem = () => {
-        dispatch(inventoryCountActions.select(item));
-        navigation.navigate('Inventory Count Form');
+        dispatch(inventoryReceiveActions.select(item));
+        navigation.navigate('Inventory Receive Form');
     };
 
     const showItem = () => {
-        dispatch(inventoryCountActions.select(item));
-        navigation.navigate('Inventory Count Form', { readOnly: true });
+        dispatch(inventoryReceiveActions.select(item));
+        navigation.navigate('Inventory Receive Form', { readOnly: true });
     };
 
     const deleteItem = async () => {
         if (!item.id) return;
 
         setBusy(true);
-        await InventoryCountService.delete(item.id);
+        await InventoryReceiveService.delete(item.id);
         setBusy(false);
-        dispatch(inventoryCountActions.remove(item.id));
+        dispatch(inventoryReceiveActions.remove(item.id));
     };
 
     const confirmDeletion = () => {
@@ -102,4 +102,4 @@ export function InventoryCountItem({ item, navigation }: InventoryItemProps) {
     );
 }
 
-export default InventoryCountItem;
+export default InventoryReceiveItem;

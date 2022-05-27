@@ -19,7 +19,7 @@ export class InventoryReceiveLineMapper {
             productName: x.name,
             unitOfMeasure: x.unitOfMeasure,
             comments: '',
-            received: x.quantity,
+            received: 0,
             inventoryReceivedLineInventoryReceivedId: '',
         };
     }

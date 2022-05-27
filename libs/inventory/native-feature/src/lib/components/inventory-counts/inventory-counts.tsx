@@ -8,13 +8,13 @@ import { StackNavigation } from '@pos/shared/ui-native';
 
 const Stack = createNativeStackNavigator();
 
-export function Inventories() {
+export function InventoryCounts() {
   return (
     <StackNavigation Stack={Stack}>
-        <Stack.Screen name="Inventory List"  component={InventoryCountList} />
-        <Stack.Screen name="Inventory Form" component={InventoryCountForm} />
+        <Stack.Screen name="Inventory Count List"  component={InventoryCountList} />
+        <Stack.Screen name="Inventory Count Form" component={InventoryCountForm} />
     </StackNavigation>
   );
 }
 
-export default Inventories;
+export default InventoryCounts;

@@ -6,64 +6,64 @@ import { UIActions, UISearchInput } from '@pos/shared/ui-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-    inventoryCountActions,
-    InventoryCountDTO,
-    InventoryCountLineDTO,
-    InventoryCountLineMapper,
-    InventoryCountMapper,
-    InventoryCountService,
+    inventoryReceiveActions,
+    InventoryReceiveDTO,
+    InventoryReceiveLineDTO,
+    InventoryReceiveLineMapper,
+    InventoryReceiveMapper,
+    InventoryReceiveService,
 } from '@pos/inventory/data-access';
 import { RootState } from '@pos/store';
-import { InventoryCount, Product } from '@pos/shared/models';
+import { InventoryReceive, Product } from '@pos/shared/models';
 import { ProductService } from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
-import InventoryCountLine from '../inventory-counts/inventory-count-line';
+import InventoryReceiveLine from '../inventory-receives/inventory-receive-line';
 import { confirm } from '@pos/shared/utils';
 import { NavigationParamList } from '@pos/sales/native-feature';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
-    inventory: InventoryCount;
+    inventory: InventoryReceive;
 }
 
-export function InventoryCountForm({
+export function InventoryReceiveForm({
     navigation,
     route,
-}: NativeStackScreenProps<NavigationParamList, 'Inventory Count Form'>) {
-    const inventoryCount = useSelector(
-        (state: RootState) => state.inventoryCount.selected
+}: NativeStackScreenProps<NavigationParamList, 'Inventory Receive Form'>) {
+    const inventoryReceive = useSelector(
+        (state: RootState) => state.inventoryReceive.selected
     );
     const dispatch = useDispatch();
     const theme = useTheme();
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
     const [filter, setFilter] = useState<string>();
-    const [lines, setLines] = useState<InventoryCountLineDTO[]>([]);
+    const [lines, setLines] = useState<InventoryReceiveLineDTO[]>([]);
     const ref = React.createRef<TextInput>();
 
     useEffect(() => {
-        if (!inventoryCount) {
+        if (!inventoryReceive) {
             setLines([]);
             return;
         }
 
-        setLines(inventoryCount.lines.map((l) => ({ ...l })));
-    }, [inventoryCount]);
+        setLines(inventoryReceive.lines.map((l) => ({ ...l })));
+    }, [inventoryReceive]);
 
     const save = async (updateInv: boolean) => {
         setBusy(true);
-        let inv: InventoryCountDTO;
+        let inv: InventoryReceiveDTO;
 
-        if (inventoryCount) {
+        if (inventoryReceive) {
             inv = {
-                comments: inventoryCount.comments,
+                comments: inventoryReceive.comments,
                 lines: lines,
-                status: inventoryCount.status,
-                id: inventoryCount.id,
-                createdAt: inventoryCount.createdAt,
+                status: inventoryReceive.status,
+                id: inventoryReceive.id,
+                createdAt: inventoryReceive.createdAt,
             };
         } else {
-            inv = InventoryCountMapper.newCount();
+            inv = InventoryReceiveMapper.newReceive();
             inv.lines = lines;
         }
 
@@ -71,8 +71,8 @@ export function InventoryCountForm({
             inv.status = 'COMPLETED';
         }
 
-        await InventoryCountService.save(dispatch, inv, updateInv);
-        dispatch(inventoryCountActions.clearSelection());
+        await InventoryReceiveService.save(dispatch, inv, updateInv);
+        dispatch(inventoryReceiveActions.clearSelection());
         navigation.goBack();
         setBusy(false);
     };
@@ -80,7 +80,7 @@ export function InventoryCountForm({
     const updateInventory = () => {
         confirm(
             '',
-            'This action will adjust your inventory based on this count. You will no be able to undo this operation',
+            'This action will adjust your inventory based on this receive. You will no be able to undo this operation',
             () => save(true)
         );
     };
@@ -94,7 +94,7 @@ export function InventoryCountForm({
                 {
                     text: 'Yes',
                     onPress: () => {
-                        dispatch(inventoryCountActions.clearSelection());
+                        dispatch(inventoryReceiveActions.clearSelection());
                         navigation.goBack();
                     },
                 },
@@ -107,34 +107,30 @@ export function InventoryCountForm({
         ref.current?.clear();
     };
 
-    const updateItem = (item: InventoryCountLineDTO) => {
+    const updateItem = (item: InventoryReceiveLineDTO) => {
         const idx = lines.findIndex((i) => i.productId === item.productId);
 
         if (idx === -1) return;
 
-        lines[idx].newCount = item.newCount;
+        lines[idx].received = item.received;
         lines[idx].comments = item.comments;
 
         setLines((res) => [...lines]);
     };
 
-    const deleteItem = (item: InventoryCountLineDTO) => {
+    const deleteItem = (item: InventoryReceiveLineDTO) => {
         setLines((res) => res.filter((i) => i.productId !== item.productId));
     };
 
     useEffect(() => {
-        console.log('Filter effect: ' + filter);
-
         if (!filter) return;
 
         const addItem = (product: Product) => {
             if (lines.find((i) => i.productId === product.id)) return;
 
-            console.log('adding item: ' + product.name);
-
             setLines((res) => [
                 ...res,
-                InventoryCountLineMapper.fromProduct(product),
+                InventoryReceiveLineMapper.fromProduct(product),
             ]);
         };
 
@@ -142,17 +138,15 @@ export function InventoryCountForm({
             if (!text) return;
 
             const products = await ProductService.searchByCode(text);
-            console.log('Products', products);
-
+            
             if (products.length !== 1) return;
             addItem(products[0]);
         };
 
         searchProduct(filter);
-    }, [filter]);
+    }, [lines, filter]);
 
     return (
-        // <FormProvider {...form}>
         <View style={[styles.page]}>
             <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                 {route.params?.readOnly && (
@@ -172,7 +166,7 @@ export function InventoryCountForm({
                                 styles.textBold,
                             ]}
                         >
-                            This count was already completed and cannot be changed
+                            This receive was already completed and cannot be changed
                         </Text>
                     </View>
                 )}
@@ -194,7 +188,7 @@ export function InventoryCountForm({
                 horizontal={false}
                 data={lines}
                 renderItem={(data) => (
-                    <InventoryCountLine
+                    <InventoryReceiveLine
                         readOnly={route.params?.readOnly}
                         item={data.item}
                         key={data.index}
@@ -246,8 +240,7 @@ export function InventoryCountForm({
                 )}
             </View>
         </View>
-        // </FormProvider>
     );
 }
 
-export default InventoryCountForm;
+export default InventoryReceiveForm;

@@ -138,12 +138,12 @@ export const selectInventoryReceiveEntities = createSelector(
   selectEntities
 );
 
-export const selectInvReceiveLoadingStatus = createSelector(
+export const selectInventoryCountLoadingStatus = createSelector(
     getInventoryReceiveState,
     (state: InventoryReceiveState) => state.loadingStatus
 )
 
-export const selectInvReceiveIsEmpty = createSelector(
+export const selectInventoryCountIsEmpty = createSelector(
     getInventoryReceiveState,
     (state: InventoryReceiveState) => state.ids.length === 0
 )

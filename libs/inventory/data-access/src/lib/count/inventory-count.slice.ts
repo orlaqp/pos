@@ -138,17 +138,17 @@ export const selectInventoryCountEntities = createSelector(
   selectEntities
 );
 
-export const selectLoadingStatus = createSelector(
+export const selectInventoryCountLoadingStatus = createSelector(
     getInventoryCountState,
     (state: InventoryCountState) => state.loadingStatus
 )
 
-export const selectIsEmpty = createSelector(
+export const selectInventoryCountIsEmpty = createSelector(
     getInventoryCountState,
     (state: InventoryCountState) => state.ids.length === 0
 )
 
-export const selectFilteredList = createSelector(
+export const selectInventoryCountFilteredList = createSelector(
     getInventoryCountState,
     (state: InventoryCountState) => state.filteredList
 )

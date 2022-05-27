@@ -38,7 +38,10 @@ export interface NavigationParamList {
     Sales: {
         mode: 'order' | 'payment';
     };
-    'Inventory Form': {
+    'Inventory Count Form': {
+        readOnly: boolean
+    },
+    'Inventory Receive Form': {
         readOnly: boolean
     }
 }

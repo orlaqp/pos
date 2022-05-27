@@ -5,7 +5,7 @@ import {
 } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
-import { inventoryCountActions } from './slices/inventory-count.slice';
+import { inventoryCountActions } from './inventory-count.slice';
 import {
     InventoryCountDTO,
     InventoryCountMapper,
