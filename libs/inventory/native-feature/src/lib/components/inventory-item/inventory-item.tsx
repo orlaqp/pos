@@ -36,8 +36,9 @@ export function InventoryItem({ item, navigation, onUpdate, onDelete }: Inventor
     };
 
     const updateCount = (count: string) => {
-        setCount(count);
-        onUpdate({ ...item, newCount: +count });
+        const validatedCount = count || '0';
+        setCount(validatedCount);
+        onUpdate({ ...item, newCount: +validatedCount });
     }
     const updateComment = (comments: string) => {
         setComment(comments);
@@ -47,7 +48,7 @@ export function InventoryItem({ item, navigation, onUpdate, onDelete }: Inventor
     return (
         <View style={[styles.smallDataRow, styles.centered]}>
             {busy && <ActivityIndicator size="small" />}
-            <View style={{ flex: 3, flexDirection: 'row' }}>
+            <View style={{ flex: 4, flexDirection: 'row' }}>
                 <Text style={styles.name}>{item.productName}</Text>
             </View>
             <View style={{ flex: 1 }}>
@@ -56,16 +57,17 @@ export function InventoryItem({ item, navigation, onUpdate, onDelete }: Inventor
             <View style={{ flex: 1 }}>
                 <TextInput
                     value={count}
-                    onChangeText={updateCount}
+                    onChangeText={setCount}
+                    onBlur={(e) => updateCount(e.nativeEvent.text)}
                     style={[styles.input, { marginRight: 25 }]}
                     onFocus={() => count === '0' && setCount('')}
-                    onBlur={() => count === '' && setCount('0')}
                 />
             </View>
             <View style={{ flex: 3 }}>
                 <TextInput
                     value={comment}
-                    onChangeText={updateComment}
+                    onChangeText={setComment}
+                    onBlur={(e) => updateComment(e.nativeEvent.text)}
                     style={styles.input}
                 />
             </View>
