@@ -84,6 +84,15 @@ export const productsSlice = createSlice({
     error: (state: ProductsState, action: PayloadAction<Error>) => {
         state.error = action.payload.message;
     },
+    reset: (state: ProductsState) => {
+        state.entities = initialProductsState.entities;
+        state.error = initialProductsState.error;
+        state.filterQuery = initialProductsState.filterQuery;
+        state.filteredList = initialProductsState.filteredList;
+        state.ids = initialProductsState.ids;
+        state.loadingStatus = initialProductsState.loadingStatus;
+        state.selected = initialProductsState.selected;
+    }
   },
   extraReducers: (builder) => {
     builder

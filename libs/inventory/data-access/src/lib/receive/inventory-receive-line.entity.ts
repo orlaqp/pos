@@ -9,7 +9,7 @@ export type InventoryReceiveLineDTO = {
     comments: string | null | undefined;
     createdAt?: string | null | undefined;
     updatedAt?: string | null | undefined;
-    inventoryReceivedLineInventoryReceivedId: string | null | undefined;
+    inventoryReceiveLineInventoryReceiveId: string | null | undefined;
 };
 
 export class InventoryReceiveLineMapper {
@@ -20,7 +20,7 @@ export class InventoryReceiveLineMapper {
             unitOfMeasure: x.unitOfMeasure,
             comments: '',
             received: 0,
-            inventoryReceivedLineInventoryReceivedId: '',
+            inventoryReceiveLineInventoryReceiveId: '',
         };
     }
 
@@ -34,7 +34,7 @@ export class InventoryReceiveLineMapper {
             comments: x.comments,
             createdAt: x.createdAt,
             updatedAt: x.updatedAt,
-            inventoryReceivedLineInventoryReceivedId: x.inventoryReceiveLineInventoryReceivedId,
+            inventoryReceiveLineInventoryReceiveId: x.inventoryReceiveLineInventoryReceiveId,
         };
     }
 }

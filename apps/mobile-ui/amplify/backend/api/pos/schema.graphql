@@ -183,7 +183,7 @@ type InventoryReceiveLine @model @auth(rules: [{allow: public}]) {
     unitOfMeasure: String!
     received: Float!
     comments: String
-    InventoryReceived: InventoryReceive @hasOne
+    InventoryReceive: InventoryReceive @hasOne
 }
 
 type Printer @model @auth(rules: [{allow: public}]) {

@@ -62,6 +62,7 @@ export const inventoryReceiveSlice = createSlice({
         state: InventoryReceiveState,
         action: PayloadAction<InventoryReceiveLineDTO[]>
     ) => {
+        debugger;
         state.lines = action.payload;
         inventoryReceiveAdapter.setAll(
             state,
@@ -138,17 +139,17 @@ export const selectInventoryReceiveEntities = createSelector(
   selectEntities
 );
 
-export const selectInventoryCountLoadingStatus = createSelector(
+export const selectInventoryReceiveLoadingStatus = createSelector(
     getInventoryReceiveState,
     (state: InventoryReceiveState) => state.loadingStatus
 )
 
-export const selectInventoryCountIsEmpty = createSelector(
+export const selectInventoryReceiveIsEmpty = createSelector(
     getInventoryReceiveState,
     (state: InventoryReceiveState) => state.ids.length === 0
 )
 
-export const selectInvReceiveFilteredList = createSelector(
+export const selectInventoryReceiveFilteredList = createSelector(
     getInventoryReceiveState,
     (state: InventoryReceiveState) => state.filteredList
 )

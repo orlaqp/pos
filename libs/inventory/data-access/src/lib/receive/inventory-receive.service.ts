@@ -41,7 +41,7 @@ export class InventoryReceiveService {
             return console.error(`Inventory received id: ${id} not found`);
 
         const lines = DataStore.query(InventoryReceiveLine, (l) =>
-            l.inventoryReceiveLineInventoryReceivedId('eq', item.id)
+            l.inventoryReceiveLineInventoryReceiveId('eq', item.id)
         );
 
         (await lines).forEach(l => DataStore.delete(l));
@@ -57,7 +57,7 @@ async function createReceive(count: InventoryReceiveDTO, dispatch: Dispatch<any>
     count.id = res.id;
 
     const promises = lines.map((l) => {
-        l.inventoryReceivedLineInventoryReceivedId = count.id;
+        l.inventoryReceiveLineInventoryReceiveId = res.id;
         return DataStore.save(new InventoryReceiveLine(l));
     });
 
@@ -79,7 +79,7 @@ async function updateReceive(receive: InventoryReceiveDTO, dispatch: Dispatch<an
     await DataStore.save(
         InventoryReceive.copyOf(existing, (updated) => {
             updated.comments = receive.comments;
-            updated.status = 'IN_PROGRESS';
+            updated.status = receive.status;
         })
     );
 
@@ -88,7 +88,7 @@ async function updateReceive(receive: InventoryReceiveDTO, dispatch: Dispatch<an
             DataStore.save(
                 new InventoryReceiveLine({
                     ...l,
-                    inventoryReceiveLineInventoryReceivedId: existing.id,
+                    inventoryReceiveLineInventoryReceiveId: existing.id,
                 })
             );
         } else {

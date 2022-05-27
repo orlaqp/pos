@@ -9,7 +9,7 @@ import {
 } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
 
-import { productsSubscription } from '@pos/products/data-access';
+import { productsSubscription, productsActions } from '@pos/products/data-access';
 import { categoriesSubscription } from '@pos/categories/data-access';
 import { brandsSubscription } from '@pos/brands/data-access';
 import { ordersSubscription } from '@pos/orders/data-access';
@@ -29,6 +29,8 @@ export const initialSettingsState: SettingsState = {
 export const resetDataStore = createAsyncThunk(
     'settings/reset',
     async (_, thunkApi) => {
+        thunkApi.dispatch(productsActions.reset());
+
         productsSubscription?.unsubscribe();
         categoriesSubscription?.unsubscribe();
         brandsSubscription?.unsubscribe();

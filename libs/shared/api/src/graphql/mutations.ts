@@ -1532,7 +1532,7 @@ export const createInventoryReceiveLine = /* GraphQL */ `
       unitOfMeasure
       received
       comments
-      InventoryReceived {
+      InventoryReceive {
         id
         comments
         status
@@ -1547,7 +1547,7 @@ export const createInventoryReceiveLine = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-      inventoryReceiveLineInventoryReceivedId
+      inventoryReceiveLineInventoryReceiveId
     }
   }
 `;
@@ -1563,7 +1563,7 @@ export const updateInventoryReceiveLine = /* GraphQL */ `
       unitOfMeasure
       received
       comments
-      InventoryReceived {
+      InventoryReceive {
         id
         comments
         status
@@ -1578,7 +1578,7 @@ export const updateInventoryReceiveLine = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-      inventoryReceiveLineInventoryReceivedId
+      inventoryReceiveLineInventoryReceiveId
     }
   }
 `;
@@ -1594,7 +1594,7 @@ export const deleteInventoryReceiveLine = /* GraphQL */ `
       unitOfMeasure
       received
       comments
-      InventoryReceived {
+      InventoryReceive {
         id
         comments
         status
@@ -1609,7 +1609,7 @@ export const deleteInventoryReceiveLine = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-      inventoryReceiveLineInventoryReceivedId
+      inventoryReceiveLineInventoryReceiveId
     }
   }
 `;

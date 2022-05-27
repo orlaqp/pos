@@ -1744,8 +1744,8 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "InventoryReceived": {
-                    "name": "InventoryReceived",
+                "InventoryReceive": {
+                    "name": "InventoryReceive",
                     "isArray": false,
                     "type": {
                         "model": "InventoryReceive"
@@ -1755,7 +1755,7 @@ export const schema = {
                     "association": {
                         "connectionType": "HAS_ONE",
                         "associatedWith": "id",
-                        "targetName": "inventoryReceiveLineInventoryReceivedId"
+                        "targetName": "inventoryReceiveLineInventoryReceiveId"
                     }
                 },
                 "createdAt": {
@@ -1774,8 +1774,8 @@ export const schema = {
                     "attributes": [],
                     "isReadOnly": true
                 },
-                "inventoryReceiveLineInventoryReceivedId": {
-                    "name": "inventoryReceiveLineInventoryReceivedId",
+                "inventoryReceiveLineInventoryReceiveId": {
+                    "name": "inventoryReceiveLineInventoryReceiveId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": false,
@@ -1994,5 +1994,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "1ec6f3d1c3cd4fa04d517d8a71df71ee"
+    "version": "d78ec58063fae9f595d5e07f1c66d89e"
 };

@@ -351,10 +351,10 @@ export declare class InventoryReceiveLine {
   readonly unitOfMeasure: string;
   readonly received: number;
   readonly comments?: string | null;
-  readonly InventoryReceived?: InventoryReceive | null;
+  readonly InventoryReceive?: InventoryReceive | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  readonly inventoryReceiveLineInventoryReceivedId?: string | null;
+  readonly inventoryReceiveLineInventoryReceiveId?: string | null;
   constructor(init: ModelInit<InventoryReceiveLine, InventoryReceiveLineMetaData>);
   static copyOf(source: InventoryReceiveLine, mutator: (draft: MutableModel<InventoryReceiveLine, InventoryReceiveLineMetaData>) => MutableModel<InventoryReceiveLine, InventoryReceiveLineMetaData> | void): InventoryReceiveLine;
 }

@@ -20,15 +20,16 @@ export class InventoryCountService {
         count: InventoryCountDTO,
         updateInv: boolean
     ) {
+        let updatedCount: InventoryCountDTO | null;
         if (!count.id) {
-            await createCount(count, dispatch);
+            updatedCount = await createCount(count, dispatch);
         } else {
-            await updateCount(count, dispatch);
+            updatedCount = await updateCount(count, dispatch);
         }
 
-        if (!updateInv) return;
+        if (!updateInv || !updateCount) return;
 
-        await updateInventory(count);
+        await updateInventory(updatedCount!);
 
     }
 
@@ -65,24 +66,28 @@ async function createCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
     });
 
     await Promise.all(promises);
-    return dispatch(inventoryCountActions.add(count));
+    dispatch(inventoryCountActions.add(count));
+
+    return count;
 }
 
 async function updateCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
-    if (!count.id) return;
+    if (!count.id) return null;
 
     const existing = await DataStore.query(InventoryCount, count.id);
 
     if (!existing) {
-        return console.log(
+        console.log(
             `It seems that inventory: ${count.id} has been removed`
         );
+
+        return null;
     }
 
     await DataStore.save(
         InventoryCount.copyOf(existing, (updated) => {
             updated.comments = count.comments;
-            updated.status = 'IN_PROGRESS';
+            updated.status = count.status;
         })
     );
 
@@ -113,9 +118,11 @@ async function updateCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
         }
     });
 
-    return dispatch(
+    dispatch(
         inventoryCountActions.update({ id: count.id, changes: count })
     );
+
+    return count;
 }
 
 const updateInventory = async (count: InventoryCountDTO) => {

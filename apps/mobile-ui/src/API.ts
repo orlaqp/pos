@@ -1058,7 +1058,7 @@ export type CreateInventoryReceiveLineInput = {
   received: number,
   comments?: string | null,
   _version?: number | null,
-  inventoryReceiveLineInventoryReceivedId?: string | null,
+  inventoryReceiveLineInventoryReceiveId?: string | null,
 };
 
 export type ModelInventoryReceiveLineConditionInput = {
@@ -1070,7 +1070,7 @@ export type ModelInventoryReceiveLineConditionInput = {
   and?: Array< ModelInventoryReceiveLineConditionInput | null > | null,
   or?: Array< ModelInventoryReceiveLineConditionInput | null > | null,
   not?: ModelInventoryReceiveLineConditionInput | null,
-  inventoryReceiveLineInventoryReceivedId?: ModelIDInput | null,
+  inventoryReceiveLineInventoryReceiveId?: ModelIDInput | null,
 };
 
 export type InventoryReceiveLine = {
@@ -1081,13 +1081,13 @@ export type InventoryReceiveLine = {
   unitOfMeasure: string,
   received: number,
   comments?: string | null,
-  InventoryReceived?: InventoryReceive | null,
+  InventoryReceive?: InventoryReceive | null,
   createdAt: string,
   updatedAt: string,
   _version: number,
   _deleted?: boolean | null,
   _lastChangedAt: number,
-  inventoryReceiveLineInventoryReceivedId?: string | null,
+  inventoryReceiveLineInventoryReceiveId?: string | null,
 };
 
 export type UpdateInventoryReceiveLineInput = {
@@ -1098,7 +1098,7 @@ export type UpdateInventoryReceiveLineInput = {
   received?: number | null,
   comments?: string | null,
   _version?: number | null,
-  inventoryReceiveLineInventoryReceivedId?: string | null,
+  inventoryReceiveLineInventoryReceiveId?: string | null,
 };
 
 export type DeleteInventoryReceiveLineInput = {
@@ -1543,7 +1543,7 @@ export type ModelInventoryReceiveLineFilterInput = {
   and?: Array< ModelInventoryReceiveLineFilterInput | null > | null,
   or?: Array< ModelInventoryReceiveLineFilterInput | null > | null,
   not?: ModelInventoryReceiveLineFilterInput | null,
-  inventoryReceiveLineInventoryReceivedId?: ModelIDInput | null,
+  inventoryReceiveLineInventoryReceiveId?: ModelIDInput | null,
 };
 
 export type ModelInventoryReceiveLineConnection = {
@@ -3259,7 +3259,7 @@ export type CreateInventoryReceiveLineMutation = {
     unitOfMeasure: string,
     received: number,
     comments?: string | null,
-    InventoryReceived?:  {
+    InventoryReceive?:  {
       __typename: "InventoryReceive",
       id: string,
       comments?: string | null,
@@ -3275,7 +3275,7 @@ export type CreateInventoryReceiveLineMutation = {
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
-    inventoryReceiveLineInventoryReceivedId?: string | null,
+    inventoryReceiveLineInventoryReceiveId?: string | null,
   } | null,
 };
 
@@ -3293,7 +3293,7 @@ export type UpdateInventoryReceiveLineMutation = {
     unitOfMeasure: string,
     received: number,
     comments?: string | null,
-    InventoryReceived?:  {
+    InventoryReceive?:  {
       __typename: "InventoryReceive",
       id: string,
       comments?: string | null,
@@ -3309,7 +3309,7 @@ export type UpdateInventoryReceiveLineMutation = {
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
-    inventoryReceiveLineInventoryReceivedId?: string | null,
+    inventoryReceiveLineInventoryReceiveId?: string | null,
   } | null,
 };
 
@@ -3327,7 +3327,7 @@ export type DeleteInventoryReceiveLineMutation = {
     unitOfMeasure: string,
     received: number,
     comments?: string | null,
-    InventoryReceived?:  {
+    InventoryReceive?:  {
       __typename: "InventoryReceive",
       id: string,
       comments?: string | null,
@@ -3343,7 +3343,7 @@ export type DeleteInventoryReceiveLineMutation = {
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
-    inventoryReceiveLineInventoryReceivedId?: string | null,
+    inventoryReceiveLineInventoryReceiveId?: string | null,
   } | null,
 };
 
@@ -5040,7 +5040,7 @@ export type GetInventoryReceiveLineQuery = {
     unitOfMeasure: string,
     received: number,
     comments?: string | null,
-    InventoryReceived?:  {
+    InventoryReceive?:  {
       __typename: "InventoryReceive",
       id: string,
       comments?: string | null,
@@ -5056,7 +5056,7 @@ export type GetInventoryReceiveLineQuery = {
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
-    inventoryReceiveLineInventoryReceivedId?: string | null,
+    inventoryReceiveLineInventoryReceiveId?: string | null,
   } | null,
 };
 
@@ -5082,7 +5082,7 @@ export type ListInventoryReceiveLinesQuery = {
       _version: number,
       _deleted?: boolean | null,
       _lastChangedAt: number,
-      inventoryReceiveLineInventoryReceivedId?: string | null,
+      inventoryReceiveLineInventoryReceiveId?: string | null,
     } | null >,
     nextToken?: string | null,
     startedAt?: number | null,
@@ -5112,7 +5112,7 @@ export type SyncInventoryReceiveLinesQuery = {
       _version: number,
       _deleted?: boolean | null,
       _lastChangedAt: number,
-      inventoryReceiveLineInventoryReceivedId?: string | null,
+      inventoryReceiveLineInventoryReceiveId?: string | null,
     } | null >,
     nextToken?: string | null,
     startedAt?: number | null,
@@ -6664,7 +6664,7 @@ export type OnCreateInventoryReceiveLineSubscription = {
     unitOfMeasure: string,
     received: number,
     comments?: string | null,
-    InventoryReceived?:  {
+    InventoryReceive?:  {
       __typename: "InventoryReceive",
       id: string,
       comments?: string | null,
@@ -6680,7 +6680,7 @@ export type OnCreateInventoryReceiveLineSubscription = {
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
-    inventoryReceiveLineInventoryReceivedId?: string | null,
+    inventoryReceiveLineInventoryReceiveId?: string | null,
   } | null,
 };
 
@@ -6693,7 +6693,7 @@ export type OnUpdateInventoryReceiveLineSubscription = {
     unitOfMeasure: string,
     received: number,
     comments?: string | null,
-    InventoryReceived?:  {
+    InventoryReceive?:  {
       __typename: "InventoryReceive",
       id: string,
       comments?: string | null,
@@ -6709,7 +6709,7 @@ export type OnUpdateInventoryReceiveLineSubscription = {
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
-    inventoryReceiveLineInventoryReceivedId?: string | null,
+    inventoryReceiveLineInventoryReceiveId?: string | null,
   } | null,
 };
 
@@ -6722,7 +6722,7 @@ export type OnDeleteInventoryReceiveLineSubscription = {
     unitOfMeasure: string,
     received: number,
     comments?: string | null,
-    InventoryReceived?:  {
+    InventoryReceive?:  {
       __typename: "InventoryReceive",
       id: string,
       comments?: string | null,
@@ -6738,7 +6738,7 @@ export type OnDeleteInventoryReceiveLineSubscription = {
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
-    inventoryReceiveLineInventoryReceivedId?: string | null,
+    inventoryReceiveLineInventoryReceiveId?: string | null,
   } | null,
 };
 

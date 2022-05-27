@@ -1481,7 +1481,7 @@ export const getInventoryReceiveLine = /* GraphQL */ `
       unitOfMeasure
       received
       comments
-      InventoryReceived {
+      InventoryReceive {
         id
         comments
         status
@@ -1496,7 +1496,7 @@ export const getInventoryReceiveLine = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-      inventoryReceiveLineInventoryReceivedId
+      inventoryReceiveLineInventoryReceiveId
     }
   }
 `;
@@ -1523,7 +1523,7 @@ export const listInventoryReceiveLines = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
-        inventoryReceiveLineInventoryReceivedId
+        inventoryReceiveLineInventoryReceiveId
       }
       nextToken
       startedAt
@@ -1555,7 +1555,7 @@ export const syncInventoryReceiveLines = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
-        inventoryReceiveLineInventoryReceivedId
+        inventoryReceiveLineInventoryReceiveId
       }
       nextToken
       startedAt

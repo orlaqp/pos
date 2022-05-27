@@ -33,7 +33,7 @@ export class InventoryReceiveMapper {
     static fromLine(x: InventoryReceiveLine): InventoryReceiveLineDTO {
         return {
             id: x.id,
-            inventoryReceivedLineInventoryReceivedId: x.inventoryReceiveLineInventoryReceivedId,
+            inventoryReceiveLineInventoryReceiveId: x.inventoryReceiveLineInventoryReceiveId,
             productId: x.productId,
             productName: x.productName,
             unitOfMeasure: x.unitOfMeasure,
@@ -45,12 +45,12 @@ export class InventoryReceiveMapper {
     }
 
     static composeReceiveItems(
-        counts: InventoryReceiveDTO[],
+        list: InventoryReceiveDTO[],
         lines: InventoryReceiveLineDTO[]
     ): InventoryReceiveDTO[] {
-        return counts.map((c) => ({
-            ...c,
-            lines: lines?.filter((l) => l.inventoryReceivedLineInventoryReceivedId === c.id),
+        return list.map((i) => ({
+            ...i,
+            lines: lines?.filter((l) => l.inventoryReceiveLineInventoryReceiveId === i.id),
         }));
     }
 }
