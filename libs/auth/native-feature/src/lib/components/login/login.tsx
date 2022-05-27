@@ -7,7 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Link } from '@react-navigation/native';
 import { FormProvider, useForm } from 'react-hook-form';
-import { UIInput, UIAlert } from '@pos/shared/ui-native';
+import { UIInput, UIAlert, UIVerticalSpacer } from '@pos/shared/ui-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { signIn } from '@pos/auth/data-access';
 import { RootState } from '@pos/store';
@@ -49,6 +49,7 @@ export function LoginScreen(props: LoginProps) {
           <View style={[styles.centered, styles.bottomMargin]}>
             <Image source={logo} style={styles.logo} />
           </View>
+          <UIVerticalSpacer size='medium' />
           {error && <UIAlert message={error} type="error" />}
 
           <UIInput
@@ -56,7 +57,7 @@ export function LoginScreen(props: LoginProps) {
             autoCapitalize='none'
             placeholder='Email address'
             keyboardType='email-address'
-            style={styles.topMargin}
+            textAlign='left'
             rules={{
                 required: 'Email address is required',
                 // eslint-disable-next-line no-useless-escape
@@ -69,18 +70,20 @@ export function LoginScreen(props: LoginProps) {
           <UIInput
             name="password"
             placeholder="Password"
-            style={styles.topMargin}
             secureTextEntry={true}
+            textAlign='left'
             rules={{ required: 'Password is required' }}
           />
           
+          <View style={{ paddingHorizontal: 100 }}>
           <Button
             title="Login"
-            type="outline"
+            type="solid"
             containerStyle={styles.topMargin}
             onPress={formMethods.handleSubmit(login)}
             loading={loading}
           />
+          </View>
           <Text style={styles.signUpText}>
             If you need a new account click{' '}
             <Link style={styles.signUpLink} to={{ screen: 'Signup' }}>

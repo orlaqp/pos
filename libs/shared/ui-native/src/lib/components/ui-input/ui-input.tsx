@@ -1,3 +1,4 @@
+import { useSharedStyles } from '@pos/theme/native';
 import { InputProps } from '@rneui/base';
 import { Input, useTheme } from '@rneui/themed';
 import React from 'react';
@@ -17,6 +18,7 @@ type Props = React.ComponentProps<typeof TextInput> & {
 
 export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
     const theme = useTheme();
+    const styles = useSharedStyles();
     const { name, rules, formatter, onValid, lIcon, rIcon, ...restOfProps } =
         props;
     const { control } = useFormContext();
@@ -66,6 +68,8 @@ export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
                     onBlur={onBlur}
                     onChangeText={onChange}
                     errorMessage={error?.message}
+                    inputContainerStyle={styles.inputContainerStyle}
+                    inputStyle={styles.inputStyle}
                 />
             )}
             rules={rules}

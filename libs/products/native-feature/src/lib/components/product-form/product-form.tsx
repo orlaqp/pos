@@ -20,6 +20,7 @@ import { Product } from '@pos/shared/models';
 import { selectAllCategories } from '@pos/categories/data-access';
 import { selectAllBrands } from '@pos/brands/data-access';
 import { selectAllUnitOfMeasures } from '@pos/unit-of-measures/data-access';
+import { useTheme, Input } from '@rneui/themed';
 
 export interface ProductFormParams {
     [name: string]: object | undefined;
@@ -36,7 +37,10 @@ export function ProductForm({ navigation }: ProductFormProps) {
     const brands = useSelector(selectAllBrands);
     const ums = useSelector(selectAllUnitOfMeasures);
     const dispatch = useDispatch();
+    const [barcode, setBarcode] = useState(product?.barcode);
+    const [sku, setSku] = useState(product?.sku);
 
+    const theme = useTheme();
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
 
@@ -58,7 +62,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
     };
 
     const form = useForm<ProductEntity>({
-        mode: 'onChange',
+        mode: 'onBlur',
         defaultValues: {
             id: product?.id,
             name: product?.name,
@@ -94,7 +98,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                     <View style={{ flex: 1 }}>
                         <View style={{ marginTop: 25 }}>
                             <UiFileUpload
-                                prefix='products'
+                                prefix="products"
                                 imageKey={form.getValues().picture}
                                 onAssetUploaded={updatePicture}
                                 onAssetRemoved={updatePicture}
@@ -104,22 +108,25 @@ export function ProductForm({ navigation }: ProductFormProps) {
                     <View style={{ flex: 4 }}>
                         <View style={{ flexDirection: 'row' }}>
                             <UIOverlaySelect
-                                name='productCategoryId'
+                                name="productCategoryId"
                                 title={'Select Category'}
                                 list={categories}
                                 selectedId={product?.productCategoryId}
                                 rules={{ required: true }}
                             />
                             <UIOverlaySelect
-                                name='productBrandId'
+                                name="productBrandId"
                                 title={'Select Brand'}
                                 list={brands}
                                 selectedId={product?.productBrandId}
                             />
                             <UIOverlaySelect
-                                name='unitOfMeasure'
+                                name="unitOfMeasure"
                                 title={'Select U/of Measure'}
-                                list={ums.map(u => ({ id: u.name, name: u.name }))}
+                                list={ums.map((u) => ({
+                                    id: u.name,
+                                    name: u.name,
+                                }))}
                                 selectedId={product?.unitOfMeasure}
                                 rules={{ required: true }}
                             />
@@ -144,7 +151,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                         <View style={{ flexDirection: 'row' }}>
                             <View style={{ flex: 1 }}>
                                 <UINumericInput
-                                    keyboardType='decimal-pad'
+                                    keyboardType="decimal-pad"
                                     name="cost"
                                     allowDecimals={true}
                                     placeholder="Cost"
@@ -154,7 +161,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                             </View>
                             <View style={{ flex: 1 }}>
                                 <UINumericInput
-                                    keyboardType='number-pad'
+                                    keyboardType="number-pad"
                                     name="price"
                                     allowDecimals={true}
                                     placeholder="Price"
@@ -168,19 +175,39 @@ export function ProductForm({ navigation }: ProductFormProps) {
                         </View>
                         <View style={{ flexDirection: 'row' }}>
                             <View style={{ flex: 1 }}>
-                                <UIInput
+                                {/* <UIInput
                                     name="barcode"
                                     placeholder="Barcode"
                                     textAlign="right"
                                     lIcon="barcode"
+                                /> */}
+                                <Input
+                                    inputContainerStyle={styles.inputContainerStyle}
+                                    inputStyle={styles.inputStyle}
+                                    leftIcon={{
+                                        name: 'barcode',
+                                        type: 'material-community',
+                                        color: theme.theme.colors.grey2,
+                                    }}
+                                    onBlur={(e) => form.setValue('barcode', e.nativeEvent.text)}
                                 />
                             </View>
                             <View style={{ flex: 1 }}>
-                                <UIInput
+                                {/* <UIInput
                                     name="sku"
                                     placeholder="SKU"
                                     textAlign="right"
                                     lIcon="barcode"
+                                /> */}
+                                <Input
+                                    inputContainerStyle={styles.inputContainerStyle}
+                                    inputStyle={styles.inputStyle}
+                                    leftIcon={{
+                                        name: 'barcode',
+                                        type: 'material-community',
+                                        color: theme.theme.colors.grey2,
+                                    }}
+                                    onBlur={(e) => form.setValue('sku', e.nativeEvent.text)}
                                 />
                             </View>
                         </View>

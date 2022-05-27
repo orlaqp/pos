@@ -98,5 +98,17 @@ export const useSharedStyles = () => {
             fontSize: 14,
             color: theme.theme.colors.grey3,
         },
+        inputContainerStyle: {
+            borderRadius: 5,
+            borderBottomWidth: 0,
+            paddingLeft: 10,
+            backgroundColor:
+                theme.theme.colors.grey5,
+        },
+        inputStyle: {
+            color: theme.theme.colors.grey1,
+            paddingHorizontal: 10,
+            textAlign: 'right',
+        }
     });
 } 

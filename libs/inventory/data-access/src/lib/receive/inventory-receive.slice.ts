@@ -62,7 +62,6 @@ export const inventoryReceiveSlice = createSlice({
         state: InventoryReceiveState,
         action: PayloadAction<InventoryReceiveLineDTO[]>
     ) => {
-        debugger;
         state.lines = action.payload;
         inventoryReceiveAdapter.setAll(
             state,
