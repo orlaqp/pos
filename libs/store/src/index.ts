@@ -1,4 +1,3 @@
-import { inventoryReducer } from './../../inventory/data-access/src/lib/slices/inventory.slice';
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import logger from 'redux-logger';
 
@@ -16,7 +15,7 @@ import { fetchDefaultPrinter, printingsReducer } from '@pos/printings/data-acces
 import { ordersReducer } from '@pos/orders/data-access';
 import { observeOpenOrderChanges } from '@pos/orders/data-access';
 import { settingsReducer } from '@pos/settings/data-access';
-import { inventoryCountReducer } from '@pos/inventory/data-access';
+import { inventoryCountReducer, observeInventoryCountChanges } from '@pos/inventory/data-access';
 
 export const store = configureStore({
   reducer: {
@@ -49,6 +48,7 @@ observeProductChanges(store.dispatch);
 observeCategoryChanges(store.dispatch);
 observeBrandChanges(store.dispatch);
 observeOpenOrderChanges(store.dispatch);
+observeInventoryCountChanges(store.dispatch);
 // observeUnitOfMeasureChanges(store.dispatch);
 
 export default store;

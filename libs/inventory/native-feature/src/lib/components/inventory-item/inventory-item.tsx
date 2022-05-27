@@ -22,6 +22,11 @@ export function InventoryItem({ item, navigation }: InventoryItemProps) {
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
 
+    const editItem = () => {
+        dispatch(inventoryCountActions.select(item));
+        navigation.navigate('Inventory Form');
+    }
+
     const deleteItem = async () => {
         if (!item.id) return;
 
@@ -65,7 +70,7 @@ export function InventoryItem({ item, navigation }: InventoryItemProps) {
                         name: 'pencil-outline',
                         type: 'material-community',
                     }}
-                    // onPress={editItem}
+                    onPress={editItem}
                 />
                 { item.status === 'IN_PROGRESS' &&
                 <Button

@@ -26,6 +26,7 @@ export function InventoryCountLine({
     const [comment, setComment] = useState<string | undefined>(
         item.comments || undefined
     );
+    
     const originalCount = item.newCount;
 
     const confirmDeletion = () => {

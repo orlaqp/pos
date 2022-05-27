@@ -12,6 +12,7 @@ import {
     PayloadAction,
     Update,
 } from '@reduxjs/toolkit';
+import { InventoryCountLineDTO } from '../inventory-count-line.entity';
 import { InventoryCountDTO, InventoryCountMapper } from '../inventory-count.entity';
 import { InventoryCountService } from '../inventory-count.service';
 
@@ -23,6 +24,7 @@ export interface InventoryCountState extends EntityState< InventoryCountDTO > {
   selected?: InventoryCountDTO;
   filterQuery?: string;
   filteredList?: Dictionary< InventoryCountDTO >;
+  lines: InventoryCountLineDTO[];
 }
 
 export const inventoryCountAdapter = createEntityAdapter< InventoryCountDTO >();
@@ -31,7 +33,7 @@ export const fetchInventoryCount = createAsyncThunk(
   'inventoryCount/fetchStatus',
   async (_, thunkAPI) => {
     const inventoryCount = await InventoryCountService.getAll();
-    return inventoryCount.map(i => InventoryCountMapper.fromModel(i));
+    return inventoryCount.map(i => InventoryCountMapper.fromModel(i, []));
   }
 );
 
@@ -40,13 +42,37 @@ export const initialInventoryCountState: InventoryCountState =
     loadingStatus: 'not loaded',
     selected: undefined,
     filterQuery: undefined,
-    filteredList: undefined
+    filteredList: undefined,
+    lines: []
   });
 
 export const inventoryCountSlice = createSlice({
   name: INVENTORY_COUNT_FEATURE_KEY,
   initialState: initialInventoryCountState,
   reducers: {
+    setAll: (state: InventoryCountState, action: PayloadAction<InventoryCountDTO[]>) => {
+        inventoryCountAdapter.setAll(
+            state,
+            InventoryCountMapper.composeInventoryItems(action.payload, state.lines)
+        );
+        filterList(state, state.filterQuery);
+        state.loadingStatus = 'loaded';
+    },
+    setLines: (
+        state: InventoryCountState,
+        action: PayloadAction<InventoryCountLineDTO[]>
+    ) => {
+        state.lines = action.payload;
+        inventoryCountAdapter.setAll(
+            state,
+            InventoryCountMapper.composeInventoryItems(
+                inventoryCountAdapter.getSelectors().selectAll(state),
+                state.lines
+            )
+        );
+        filterList(state, state.filterQuery);
+        state.loadingStatus = 'loaded';
+    },
     add: (state: InventoryCountState, action: PayloadAction< InventoryCountDTO >) =>{
         inventoryCountAdapter.addOne(state, action);
         filterList(state, state.filterQuery);
@@ -68,7 +94,7 @@ export const inventoryCountSlice = createSlice({
     filter: (state: InventoryCountState, action: PayloadAction<string>) => {
         filterList(state, action.payload);
         state.filterQuery = action.payload;
-    }
+    },
     
   },
   extraReducers: (builder) => {

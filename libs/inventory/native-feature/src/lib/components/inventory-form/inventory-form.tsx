@@ -10,14 +10,15 @@ import {
     InventoryCountDTO,
     InventoryCountLineDTO,
     InventoryCountLineMapper,
+    InventoryCountMapper,
     InventoryCountService,
 } from '@pos/inventory/data-access';
 import { RootState } from '@pos/store';
 import { InventoryCount, Product } from '@pos/shared/models';
 import { ProductService } from '@pos/products/data-access';
-import InventoryItem from '../inventory-item/inventory-item';
 import { Button, useTheme } from '@rneui/themed';
 import InventoryCountLine from '../inventory-count-line/inventory-count-line';
+import { includes } from 'lodash';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -26,6 +27,7 @@ export interface InventoryFormParams {
 
 export interface InventoryFormProps {
     navigation: NativeStackNavigationProp<InventoryFormParams>;
+    item: InventoryCountDTO;
 }
 
 export function InventoryForm({ navigation }: InventoryFormProps) {
@@ -40,26 +42,36 @@ export function InventoryForm({ navigation }: InventoryFormProps) {
     const [lines, setLines] = useState<InventoryCountLineDTO[]>([]);
     const ref = React.createRef<TextInput>();
 
+    useEffect(() => {
+        if (!inventoryCount) {
+            setLines([]);
+            return;
+        }
+        
+        setLines(inventoryCount.lines.map(l => ({...l})));
+    }, [inventoryCount]);
+
     const save = async () => {
         setBusy(true);
-        const inv: InventoryCountDTO = inventoryCount || {
-            status: 'IN_PROGRESS',
-            comments: 'n/a',
-            lines,
-        };
+        let inv: InventoryCountDTO;
+
+        if (inventoryCount) {
+            inv = {
+                comments: inventoryCount.comments,
+                lines: lines,
+                status: inventoryCount.status,
+                id: inventoryCount.id,
+                createdAt: inventoryCount.createdAt,
+            }
+        } else {
+            inv = InventoryCountMapper.newCount();
+            inv.lines = lines;
+        }
+         
         await InventoryCountService.save(dispatch, inv);
         navigation.goBack();
         setBusy(false);
     };
-
-    // const form = useForm<InventoryCountDTO>({
-    //     mode: 'onChange',
-    //     defaultValues: {
-    //         id: inventoryCount?.id,
-    //         comments: inventoryCount?.comments,
-    //         createdAt: new Date().toISOString(),
-    //     },
-    // });
 
     const confirmCancel = () => {
         Alert.alert(
