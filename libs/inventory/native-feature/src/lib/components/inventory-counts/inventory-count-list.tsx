@@ -1,22 +1,22 @@
 
 import React from 'react';
-import { inventoryCountActions, fetchInventoryCount, selectFilteredList, selectIsEmpty, selectLoadingStatus } from '@pos/inventory/data-access';
+import { inventoryCountActions, fetchInventoryCount, selectInvReceiveFilteredList, selectInvReceiveIsEmpty, selectInvReceiveLoadingStatus } from '@pos/inventory/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import InventoryItem from '../inventory-item/inventory-item';
+import InventoryCountItem from './inventory-count-item';
 
 export interface InventoryListProps {
     navigation: NativeStackNavigationProp<any>;
 }
 
-export function InventoryList({ navigation }: InventoryListProps) {
+export function InventoryCountList({ navigation }: InventoryListProps) {
     const props: ItemListProps<any, any> = {
-        ItemComponent: InventoryItem,
+        ItemComponent: InventoryCountItem,
         formNavName: 'Inventory Form',
         navigation: navigation,
-        isEmptySelector: selectIsEmpty,
-        loadingStatusSelector: selectLoadingStatus,
-        filteredListSelector: selectFilteredList,
+        isEmptySelector: selectInvReceiveIsEmpty,
+        loadingStatusSelector: selectInvReceiveLoadingStatus,
+        filteredListSelector: selectInvReceiveFilteredList,
         clearSelectionAction: inventoryCountActions.clearSelection,
         filterAction: inventoryCountActions.filter,
         fetchItemsAction: fetchInventoryCount,
@@ -25,4 +25,4 @@ export function InventoryList({ navigation }: InventoryListProps) {
     return <UIGenericItemList {...props} />
 };
 
-export default InventoryList;
+export default InventoryCountList;

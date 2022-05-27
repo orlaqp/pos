@@ -1469,14 +1469,15 @@ export const deleteInventoryCountLine = /* GraphQL */ `
     }
   }
 `;
-export const createInventoryReceived = /* GraphQL */ `
-  mutation CreateInventoryReceived(
-    $input: CreateInventoryReceivedInput!
-    $condition: ModelInventoryReceivedConditionInput
+export const createInventoryReceive = /* GraphQL */ `
+  mutation CreateInventoryReceive(
+    $input: CreateInventoryReceiveInput!
+    $condition: ModelInventoryReceiveConditionInput
   ) {
-    createInventoryReceived(input: $input, condition: $condition) {
+    createInventoryReceive(input: $input, condition: $condition) {
       id
       comments
+      status
       createdAt
       updatedAt
       _version
@@ -1485,14 +1486,15 @@ export const createInventoryReceived = /* GraphQL */ `
     }
   }
 `;
-export const updateInventoryReceived = /* GraphQL */ `
-  mutation UpdateInventoryReceived(
-    $input: UpdateInventoryReceivedInput!
-    $condition: ModelInventoryReceivedConditionInput
+export const updateInventoryReceive = /* GraphQL */ `
+  mutation UpdateInventoryReceive(
+    $input: UpdateInventoryReceiveInput!
+    $condition: ModelInventoryReceiveConditionInput
   ) {
-    updateInventoryReceived(input: $input, condition: $condition) {
+    updateInventoryReceive(input: $input, condition: $condition) {
       id
       comments
+      status
       createdAt
       updatedAt
       _version
@@ -1501,14 +1503,15 @@ export const updateInventoryReceived = /* GraphQL */ `
     }
   }
 `;
-export const deleteInventoryReceived = /* GraphQL */ `
-  mutation DeleteInventoryReceived(
-    $input: DeleteInventoryReceivedInput!
-    $condition: ModelInventoryReceivedConditionInput
+export const deleteInventoryReceive = /* GraphQL */ `
+  mutation DeleteInventoryReceive(
+    $input: DeleteInventoryReceiveInput!
+    $condition: ModelInventoryReceiveConditionInput
   ) {
-    deleteInventoryReceived(input: $input, condition: $condition) {
+    deleteInventoryReceive(input: $input, condition: $condition) {
       id
       comments
+      status
       createdAt
       updatedAt
       _version
@@ -1517,156 +1520,96 @@ export const deleteInventoryReceived = /* GraphQL */ `
     }
   }
 `;
-export const createInventoryReceivedLine = /* GraphQL */ `
-  mutation CreateInventoryReceivedLine(
-    $input: CreateInventoryReceivedLineInput!
-    $condition: ModelInventoryReceivedLineConditionInput
+export const createInventoryReceiveLine = /* GraphQL */ `
+  mutation CreateInventoryReceiveLine(
+    $input: CreateInventoryReceiveLineInput!
+    $condition: ModelInventoryReceiveLineConditionInput
   ) {
-    createInventoryReceivedLine(input: $input, condition: $condition) {
+    createInventoryReceiveLine(input: $input, condition: $condition) {
       id
-      current
+      productId
+      productName
+      unitOfMeasure
       received
       comments
       InventoryReceived {
         id
         comments
+        status
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
-      }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
       }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      inventoryReceivedLineInventoryReceivedId
-      inventoryReceivedLineProductId
+      inventoryReceiveLineInventoryReceivedId
     }
   }
 `;
-export const updateInventoryReceivedLine = /* GraphQL */ `
-  mutation UpdateInventoryReceivedLine(
-    $input: UpdateInventoryReceivedLineInput!
-    $condition: ModelInventoryReceivedLineConditionInput
+export const updateInventoryReceiveLine = /* GraphQL */ `
+  mutation UpdateInventoryReceiveLine(
+    $input: UpdateInventoryReceiveLineInput!
+    $condition: ModelInventoryReceiveLineConditionInput
   ) {
-    updateInventoryReceivedLine(input: $input, condition: $condition) {
+    updateInventoryReceiveLine(input: $input, condition: $condition) {
       id
-      current
+      productId
+      productName
+      unitOfMeasure
       received
       comments
       InventoryReceived {
         id
         comments
+        status
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
-      }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
       }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      inventoryReceivedLineInventoryReceivedId
-      inventoryReceivedLineProductId
+      inventoryReceiveLineInventoryReceivedId
     }
   }
 `;
-export const deleteInventoryReceivedLine = /* GraphQL */ `
-  mutation DeleteInventoryReceivedLine(
-    $input: DeleteInventoryReceivedLineInput!
-    $condition: ModelInventoryReceivedLineConditionInput
+export const deleteInventoryReceiveLine = /* GraphQL */ `
+  mutation DeleteInventoryReceiveLine(
+    $input: DeleteInventoryReceiveLineInput!
+    $condition: ModelInventoryReceiveLineConditionInput
   ) {
-    deleteInventoryReceivedLine(input: $input, condition: $condition) {
+    deleteInventoryReceiveLine(input: $input, condition: $condition) {
       id
-      current
+      productId
+      productName
+      unitOfMeasure
       received
       comments
       InventoryReceived {
         id
         comments
+        status
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
-      }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
       }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      inventoryReceivedLineInventoryReceivedId
-      inventoryReceivedLineProductId
+      inventoryReceiveLineInventoryReceivedId
     }
   }
 `;

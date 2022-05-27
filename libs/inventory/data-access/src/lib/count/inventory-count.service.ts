@@ -40,9 +40,11 @@ export class InventoryCountService {
         const item = await DataStore.query(InventoryCount, id);
         if (!item) return console.error(`Inventory Id: ${id} not found`);
 
-        // TODO: Do any extra cleanup here like for example remove image
-        // if (item.picture)
-        //     AssetsService.deleteAsset(item.picture);
+        const lines = DataStore.query(InventoryCountLine, (l) =>
+            l.inventoryCountLineInventoryCountId('eq', item.id)
+        );
+
+        (await lines).forEach(l => DataStore.delete(l));
 
         return DataStore.delete(item);
     }

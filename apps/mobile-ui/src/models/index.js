@@ -14,7 +14,12 @@ const InventoryCountStatus = {
   "COMPLETED": "COMPLETED"
 };
 
-const { Brand, Category, Customer, Order, OrderLine, Product, PurchaseOrder, Supplier, PurchaseOrderLine, Store, Stock, Tag, UnitOfMeasure, Inventory, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceived, InventoryReceivedLine, Printer, Station } = initSchema(schema);
+const InventoryReceiveStatus = {
+  "IN_PROGRESS": "IN_PROGRESS",
+  "COMPLETED": "COMPLETED"
+};
+
+const { Brand, Category, Customer, Order, OrderLine, Product, PurchaseOrder, Supplier, PurchaseOrderLine, Store, Stock, Tag, UnitOfMeasure, Inventory, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station } = initSchema(schema);
 
 export {
   Brand,
@@ -34,10 +39,11 @@ export {
   InventoryChanges,
   InventoryCount,
   InventoryCountLine,
-  InventoryReceived,
-  InventoryReceivedLine,
+  InventoryReceive,
+  InventoryReceiveLine,
   Printer,
   Station,
   OrderStatus,
-  InventoryCountStatus
+  InventoryCountStatus,
+  InventoryReceiveStatus
 };

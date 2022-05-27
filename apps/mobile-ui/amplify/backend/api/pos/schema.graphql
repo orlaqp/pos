@@ -165,18 +165,25 @@ type InventoryCountLine @model @auth(rules: [{allow: public}]) {
     InventoryCount: InventoryCount @hasOne
 }
 
-type InventoryReceived @model @auth(rules: [{allow: public}]) {
-    id: ID!
-    comments: String    
+enum InventoryReceiveStatus {
+  IN_PROGRESS
+  COMPLETED
 }
 
-type InventoryReceivedLine @model @auth(rules: [{allow: public}]) {
+type InventoryReceive @model @auth(rules: [{allow: public}]) {
     id: ID!
-    current: Float!
+    comments: String   
+    status: InventoryReceiveStatus! 
+}
+
+type InventoryReceiveLine @model @auth(rules: [{allow: public}]) {
+    id: ID!
+    productId: String!
+    productName: String!
+    unitOfMeasure: String!
     received: Float!
     comments: String
-    InventoryReceived: InventoryReceived @hasOne
-    Product: Product @hasOne
+    InventoryReceived: InventoryReceive @hasOne
 }
 
 type Printer @model @auth(rules: [{allow: public}]) {

@@ -1404,11 +1404,12 @@ export const syncInventoryCountLines = /* GraphQL */ `
     }
   }
 `;
-export const getInventoryReceived = /* GraphQL */ `
-  query GetInventoryReceived($id: ID!) {
-    getInventoryReceived(id: $id) {
+export const getInventoryReceive = /* GraphQL */ `
+  query GetInventoryReceive($id: ID!) {
+    getInventoryReceive(id: $id) {
       id
       comments
+      status
       createdAt
       updatedAt
       _version
@@ -1417,13 +1418,13 @@ export const getInventoryReceived = /* GraphQL */ `
     }
   }
 `;
-export const listInventoryReceiveds = /* GraphQL */ `
-  query ListInventoryReceiveds(
-    $filter: ModelInventoryReceivedFilterInput
+export const listInventoryReceives = /* GraphQL */ `
+  query ListInventoryReceives(
+    $filter: ModelInventoryReceiveFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    listInventoryReceiveds(
+    listInventoryReceives(
       filter: $filter
       limit: $limit
       nextToken: $nextToken
@@ -1431,6 +1432,7 @@ export const listInventoryReceiveds = /* GraphQL */ `
       items {
         id
         comments
+        status
         createdAt
         updatedAt
         _version
@@ -1442,14 +1444,14 @@ export const listInventoryReceiveds = /* GraphQL */ `
     }
   }
 `;
-export const syncInventoryReceiveds = /* GraphQL */ `
-  query SyncInventoryReceiveds(
-    $filter: ModelInventoryReceivedFilterInput
+export const syncInventoryReceives = /* GraphQL */ `
+  query SyncInventoryReceives(
+    $filter: ModelInventoryReceiveFilterInput
     $limit: Int
     $nextToken: String
     $lastSync: AWSTimestamp
   ) {
-    syncInventoryReceiveds(
+    syncInventoryReceives(
       filter: $filter
       limit: $limit
       nextToken: $nextToken
@@ -1458,6 +1460,7 @@ export const syncInventoryReceiveds = /* GraphQL */ `
       items {
         id
         comments
+        status
         createdAt
         updatedAt
         _version
@@ -1469,68 +1472,50 @@ export const syncInventoryReceiveds = /* GraphQL */ `
     }
   }
 `;
-export const getInventoryReceivedLine = /* GraphQL */ `
-  query GetInventoryReceivedLine($id: ID!) {
-    getInventoryReceivedLine(id: $id) {
+export const getInventoryReceiveLine = /* GraphQL */ `
+  query GetInventoryReceiveLine($id: ID!) {
+    getInventoryReceiveLine(id: $id) {
       id
-      current
+      productId
+      productName
+      unitOfMeasure
       received
       comments
       InventoryReceived {
         id
         comments
+        status
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
-      }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
       }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      inventoryReceivedLineInventoryReceivedId
-      inventoryReceivedLineProductId
+      inventoryReceiveLineInventoryReceivedId
     }
   }
 `;
-export const listInventoryReceivedLines = /* GraphQL */ `
-  query ListInventoryReceivedLines(
-    $filter: ModelInventoryReceivedLineFilterInput
+export const listInventoryReceiveLines = /* GraphQL */ `
+  query ListInventoryReceiveLines(
+    $filter: ModelInventoryReceiveLineFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    listInventoryReceivedLines(
+    listInventoryReceiveLines(
       filter: $filter
       limit: $limit
       nextToken: $nextToken
     ) {
       items {
         id
-        current
+        productId
+        productName
+        unitOfMeasure
         received
         comments
         createdAt
@@ -1538,22 +1523,21 @@ export const listInventoryReceivedLines = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
-        inventoryReceivedLineInventoryReceivedId
-        inventoryReceivedLineProductId
+        inventoryReceiveLineInventoryReceivedId
       }
       nextToken
       startedAt
     }
   }
 `;
-export const syncInventoryReceivedLines = /* GraphQL */ `
-  query SyncInventoryReceivedLines(
-    $filter: ModelInventoryReceivedLineFilterInput
+export const syncInventoryReceiveLines = /* GraphQL */ `
+  query SyncInventoryReceiveLines(
+    $filter: ModelInventoryReceiveLineFilterInput
     $limit: Int
     $nextToken: String
     $lastSync: AWSTimestamp
   ) {
-    syncInventoryReceivedLines(
+    syncInventoryReceiveLines(
       filter: $filter
       limit: $limit
       nextToken: $nextToken
@@ -1561,7 +1545,9 @@ export const syncInventoryReceivedLines = /* GraphQL */ `
     ) {
       items {
         id
-        current
+        productId
+        productName
+        unitOfMeasure
         received
         comments
         createdAt
@@ -1569,8 +1555,7 @@ export const syncInventoryReceivedLines = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
-        inventoryReceivedLineInventoryReceivedId
-        inventoryReceivedLineProductId
+        inventoryReceiveLineInventoryReceivedId
       }
       nextToken
       startedAt

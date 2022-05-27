@@ -1,1 +1,1 @@
-export * from './lib/components/inventories/inventories';
+export * from './lib/components/inventory-counts/inventory-counts';

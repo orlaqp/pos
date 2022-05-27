@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-import { View, Text, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Alert } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
-import { Button, Input, useTheme } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
 import {
     inventoryCountActions,
     InventoryCountDTO,
-    InventoryCountLineDTO,
     InventoryCountService,
 } from '@pos/inventory/data-access';
 import { useDispatch } from 'react-redux';
@@ -16,7 +15,7 @@ export interface InventoryItemProps {
     navigation: NativeStackNavigationProp<any>;
 }
 
-export function InventoryItem({ item, navigation }: InventoryItemProps) {
+export function InventoryCountItem({ item, navigation }: InventoryItemProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
     const dispatch = useDispatch();
@@ -103,4 +102,4 @@ export function InventoryItem({ item, navigation }: InventoryItemProps) {
     );
 }
 
-export default InventoryItem;
+export default InventoryCountItem;

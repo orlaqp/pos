@@ -12,9 +12,9 @@ import {
     PayloadAction,
     Update,
 } from '@reduxjs/toolkit';
-import { InventoryCountLineDTO } from '../inventory-count-line.entity';
-import { InventoryCountDTO, InventoryCountMapper } from '../inventory-count.entity';
-import { InventoryCountService } from '../inventory-count.service';
+import { InventoryCountLineDTO } from './inventory-count-line.entity';
+import { InventoryCountDTO, InventoryCountMapper } from './inventory-count.entity';
+import { InventoryCountService } from './inventory-count.service';
 
 export const INVENTORY_COUNT_FEATURE_KEY = 'inventoryCount';
 

@@ -17,7 +17,7 @@ import { RootState } from '@pos/store';
 import { InventoryCount, Product } from '@pos/shared/models';
 import { ProductService } from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
-import InventoryCountLine from '../inventory-count-line/inventory-count-line';
+import InventoryCountLine from '../inventory-counts/inventory-count-line';
 import { confirm } from '@pos/shared/utils';
 import { NavigationParamList } from '@pos/sales/native-feature';
 
@@ -25,18 +25,6 @@ export interface InventoryFormParams {
     [name: string]: object | undefined;
     inventory: InventoryCount;
 }
-
-// export interface InventoryFormParamList {
-//     [key: string]: object | undefined;
-//     'Inventory Form': {
-//         mode: 'order' | 'payment';
-//     };
-// }
-
-// export interface InventoryFormProps {
-//     navigation: NativeStackNavigationProp<InventoryFormParams>;
-//     item: InventoryCountDTO;
-// }
 
 export function InventoryCountForm({
     navigation,

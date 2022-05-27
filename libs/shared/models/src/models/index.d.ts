@@ -12,6 +12,11 @@ export enum InventoryCountStatus {
   COMPLETED = "COMPLETED"
 }
 
+export enum InventoryReceiveStatus {
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED"
+}
+
 
 
 type BrandMetaData = {
@@ -82,11 +87,11 @@ type InventoryCountLineMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
-type InventoryReceivedMetaData = {
+type InventoryReceiveMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
-type InventoryReceivedLineMetaData = {
+type InventoryReceiveLineMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
@@ -329,28 +334,29 @@ export declare class InventoryCountLine {
   static copyOf(source: InventoryCountLine, mutator: (draft: MutableModel<InventoryCountLine, InventoryCountLineMetaData>) => MutableModel<InventoryCountLine, InventoryCountLineMetaData> | void): InventoryCountLine;
 }
 
-export declare class InventoryReceived {
+export declare class InventoryReceive {
   readonly id: string;
   readonly comments?: string | null;
+  readonly status: InventoryReceiveStatus | keyof typeof InventoryReceiveStatus;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<InventoryReceived, InventoryReceivedMetaData>);
-  static copyOf(source: InventoryReceived, mutator: (draft: MutableModel<InventoryReceived, InventoryReceivedMetaData>) => MutableModel<InventoryReceived, InventoryReceivedMetaData> | void): InventoryReceived;
+  constructor(init: ModelInit<InventoryReceive, InventoryReceiveMetaData>);
+  static copyOf(source: InventoryReceive, mutator: (draft: MutableModel<InventoryReceive, InventoryReceiveMetaData>) => MutableModel<InventoryReceive, InventoryReceiveMetaData> | void): InventoryReceive;
 }
 
-export declare class InventoryReceivedLine {
+export declare class InventoryReceiveLine {
   readonly id: string;
-  readonly current: number;
+  readonly productId: string;
+  readonly productName: string;
+  readonly unitOfMeasure: string;
   readonly received: number;
   readonly comments?: string | null;
-  readonly InventoryReceived?: InventoryReceived | null;
-  readonly Product?: Product | null;
+  readonly InventoryReceived?: InventoryReceive | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  readonly inventoryReceivedLineInventoryReceivedId?: string | null;
-  readonly inventoryReceivedLineProductId?: string | null;
-  constructor(init: ModelInit<InventoryReceivedLine, InventoryReceivedLineMetaData>);
-  static copyOf(source: InventoryReceivedLine, mutator: (draft: MutableModel<InventoryReceivedLine, InventoryReceivedLineMetaData>) => MutableModel<InventoryReceivedLine, InventoryReceivedLineMetaData> | void): InventoryReceivedLine;
+  readonly inventoryReceiveLineInventoryReceivedId?: string | null;
+  constructor(init: ModelInit<InventoryReceiveLine, InventoryReceiveLineMetaData>);
+  static copyOf(source: InventoryReceiveLine, mutator: (draft: MutableModel<InventoryReceiveLine, InventoryReceiveLineMetaData>) => MutableModel<InventoryReceiveLine, InventoryReceiveLineMetaData> | void): InventoryReceiveLine;
 }
 
 export declare class Printer {

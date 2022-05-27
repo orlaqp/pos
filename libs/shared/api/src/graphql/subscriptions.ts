@@ -1316,11 +1316,12 @@ export const onDeleteInventoryCountLine = /* GraphQL */ `
     }
   }
 `;
-export const onCreateInventoryReceived = /* GraphQL */ `
-  subscription OnCreateInventoryReceived {
-    onCreateInventoryReceived {
+export const onCreateInventoryReceive = /* GraphQL */ `
+  subscription OnCreateInventoryReceive {
+    onCreateInventoryReceive {
       id
       comments
+      status
       createdAt
       updatedAt
       _version
@@ -1329,11 +1330,12 @@ export const onCreateInventoryReceived = /* GraphQL */ `
     }
   }
 `;
-export const onUpdateInventoryReceived = /* GraphQL */ `
-  subscription OnUpdateInventoryReceived {
-    onUpdateInventoryReceived {
+export const onUpdateInventoryReceive = /* GraphQL */ `
+  subscription OnUpdateInventoryReceive {
+    onUpdateInventoryReceive {
       id
       comments
+      status
       createdAt
       updatedAt
       _version
@@ -1342,11 +1344,12 @@ export const onUpdateInventoryReceived = /* GraphQL */ `
     }
   }
 `;
-export const onDeleteInventoryReceived = /* GraphQL */ `
-  subscription OnDeleteInventoryReceived {
-    onDeleteInventoryReceived {
+export const onDeleteInventoryReceive = /* GraphQL */ `
+  subscription OnDeleteInventoryReceive {
+    onDeleteInventoryReceive {
       id
       comments
+      status
       createdAt
       updatedAt
       _version
@@ -1355,147 +1358,87 @@ export const onDeleteInventoryReceived = /* GraphQL */ `
     }
   }
 `;
-export const onCreateInventoryReceivedLine = /* GraphQL */ `
-  subscription OnCreateInventoryReceivedLine {
-    onCreateInventoryReceivedLine {
+export const onCreateInventoryReceiveLine = /* GraphQL */ `
+  subscription OnCreateInventoryReceiveLine {
+    onCreateInventoryReceiveLine {
       id
-      current
+      productId
+      productName
+      unitOfMeasure
       received
       comments
       InventoryReceived {
         id
         comments
+        status
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
-      }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
       }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      inventoryReceivedLineInventoryReceivedId
-      inventoryReceivedLineProductId
+      inventoryReceiveLineInventoryReceivedId
     }
   }
 `;
-export const onUpdateInventoryReceivedLine = /* GraphQL */ `
-  subscription OnUpdateInventoryReceivedLine {
-    onUpdateInventoryReceivedLine {
+export const onUpdateInventoryReceiveLine = /* GraphQL */ `
+  subscription OnUpdateInventoryReceiveLine {
+    onUpdateInventoryReceiveLine {
       id
-      current
+      productId
+      productName
+      unitOfMeasure
       received
       comments
       InventoryReceived {
         id
         comments
+        status
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
-      }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
       }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      inventoryReceivedLineInventoryReceivedId
-      inventoryReceivedLineProductId
+      inventoryReceiveLineInventoryReceivedId
     }
   }
 `;
-export const onDeleteInventoryReceivedLine = /* GraphQL */ `
-  subscription OnDeleteInventoryReceivedLine {
-    onDeleteInventoryReceivedLine {
+export const onDeleteInventoryReceiveLine = /* GraphQL */ `
+  subscription OnDeleteInventoryReceiveLine {
+    onDeleteInventoryReceiveLine {
       id
-      current
+      productId
+      productName
+      unitOfMeasure
       received
       comments
       InventoryReceived {
         id
         comments
+        status
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
-      }
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        quantity
-        unitOfMeasure
-        trackStock
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
       }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      inventoryReceivedLineInventoryReceivedId
-      inventoryReceivedLineProductId
+      inventoryReceiveLineInventoryReceivedId
     }
   }
 `;

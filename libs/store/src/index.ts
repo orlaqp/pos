@@ -15,7 +15,7 @@ import { fetchDefaultPrinter, printingsReducer } from '@pos/printings/data-acces
 import { ordersReducer } from '@pos/orders/data-access';
 import { observeOpenOrderChanges } from '@pos/orders/data-access';
 import { settingsReducer } from '@pos/settings/data-access';
-import { inventoryCountReducer, observeInventoryCountChanges } from '@pos/inventory/data-access';
+import { inventoryCountReducer, inventoryReceiveReducer, observeInventoryCountChanges, observeInventoryReceiveChanges } from '@pos/inventory/data-access';
 
 export const store = configureStore({
   reducer: {
@@ -30,6 +30,7 @@ export const store = configureStore({
       storeInfo: storeInfoReducer,
       settings: settingsReducer,
       inventoryCount: inventoryCountReducer,
+      inventoryReceive: inventoryReceiveReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 });
@@ -49,6 +50,6 @@ observeCategoryChanges(store.dispatch);
 observeBrandChanges(store.dispatch);
 observeOpenOrderChanges(store.dispatch);
 observeInventoryCountChanges(store.dispatch);
-// observeUnitOfMeasureChanges(store.dispatch);
+observeInventoryReceiveChanges(store.dispatch);
 
 export default store;

@@ -1631,8 +1631,8 @@ export const schema = {
                 }
             ]
         },
-        "InventoryReceived": {
-            "name": "InventoryReceived",
+        "InventoryReceive": {
+            "name": "InventoryReceive",
             "fields": {
                 "id": {
                     "name": "id",
@@ -1646,6 +1646,15 @@ export const schema = {
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
+                    "attributes": []
+                },
+                "status": {
+                    "name": "status",
+                    "isArray": false,
+                    "type": {
+                        "enum": "InventoryReceiveStatus"
+                    },
+                    "isRequired": true,
                     "attributes": []
                 },
                 "createdAt": {
@@ -1666,7 +1675,7 @@ export const schema = {
                 }
             },
             "syncable": true,
-            "pluralName": "InventoryReceiveds",
+            "pluralName": "InventoryReceives",
             "attributes": [
                 {
                     "type": "model",
@@ -1690,8 +1699,8 @@ export const schema = {
                 }
             ]
         },
-        "InventoryReceivedLine": {
-            "name": "InventoryReceivedLine",
+        "InventoryReceiveLine": {
+            "name": "InventoryReceiveLine",
             "fields": {
                 "id": {
                     "name": "id",
@@ -1700,10 +1709,24 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
-                "current": {
-                    "name": "current",
+                "productId": {
+                    "name": "productId",
                     "isArray": false,
-                    "type": "Float",
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "productName": {
+                    "name": "productName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "unitOfMeasure": {
+                    "name": "unitOfMeasure",
+                    "isArray": false,
+                    "type": "String",
                     "isRequired": true,
                     "attributes": []
                 },
@@ -1725,28 +1748,14 @@ export const schema = {
                     "name": "InventoryReceived",
                     "isArray": false,
                     "type": {
-                        "model": "InventoryReceived"
+                        "model": "InventoryReceive"
                     },
                     "isRequired": false,
                     "attributes": [],
                     "association": {
                         "connectionType": "HAS_ONE",
                         "associatedWith": "id",
-                        "targetName": "inventoryReceivedLineInventoryReceivedId"
-                    }
-                },
-                "Product": {
-                    "name": "Product",
-                    "isArray": false,
-                    "type": {
-                        "model": "Product"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "association": {
-                        "connectionType": "HAS_ONE",
-                        "associatedWith": "id",
-                        "targetName": "inventoryReceivedLineProductId"
+                        "targetName": "inventoryReceiveLineInventoryReceivedId"
                     }
                 },
                 "createdAt": {
@@ -1765,15 +1774,8 @@ export const schema = {
                     "attributes": [],
                     "isReadOnly": true
                 },
-                "inventoryReceivedLineInventoryReceivedId": {
-                    "name": "inventoryReceivedLineInventoryReceivedId",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "inventoryReceivedLineProductId": {
-                    "name": "inventoryReceivedLineProductId",
+                "inventoryReceiveLineInventoryReceivedId": {
+                    "name": "inventoryReceiveLineInventoryReceivedId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": false,
@@ -1781,7 +1783,7 @@ export const schema = {
                 }
             },
             "syncable": true,
-            "pluralName": "InventoryReceivedLines",
+            "pluralName": "InventoryReceiveLines",
             "attributes": [
                 {
                     "type": "model",
@@ -1982,8 +1984,15 @@ export const schema = {
                 "IN_PROGRESS",
                 "COMPLETED"
             ]
+        },
+        "InventoryReceiveStatus": {
+            "name": "InventoryReceiveStatus",
+            "values": [
+                "IN_PROGRESS",
+                "COMPLETED"
+            ]
         }
     },
     "nonModels": {},
-    "version": "4ac93630a203cf9e18d96dcc36353532"
+    "version": "1ec6f3d1c3cd4fa04d517d8a71df71ee"
 };
