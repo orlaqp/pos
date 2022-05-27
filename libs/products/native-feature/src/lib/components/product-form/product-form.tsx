@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Alert, View } from 'react-native';
+import { Alert, TextInput, View } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import {
     UIActions,
@@ -37,8 +37,8 @@ export function ProductForm({ navigation }: ProductFormProps) {
     const brands = useSelector(selectAllBrands);
     const ums = useSelector(selectAllUnitOfMeasures);
     const dispatch = useDispatch();
-    const [barcode, setBarcode] = useState(product?.barcode);
-    const [sku, setSku] = useState(product?.sku);
+    const barcodeRef = React.createRef<TextInput>();
+    const skuRef = React.createRef<TextInput>();
 
     const theme = useTheme();
     const styles = useSharedStyles();
@@ -90,6 +90,12 @@ export function ProductForm({ navigation }: ProductFormProps) {
             ]
         );
     };
+
+    useEffect(() => {
+        const values = form.getValues();
+        barcodeRef.current?.setNativeProps({ text: values.barcode });
+        skuRef.current?.setNativeProps({ text: values.sku });
+    }, [barcodeRef, skuRef, form]);
 
     return (
         <FormProvider {...form}>
@@ -182,6 +188,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                     lIcon="barcode"
                                 /> */}
                                 <Input
+                                    ref={barcodeRef}
                                     inputContainerStyle={styles.inputContainerStyle}
                                     inputStyle={styles.inputStyle}
                                     leftIcon={{
@@ -200,6 +207,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                     lIcon="barcode"
                                 /> */}
                                 <Input
+                                    ref={skuRef}
                                     inputContainerStyle={styles.inputContainerStyle}
                                     inputStyle={styles.inputStyle}
                                     leftIcon={{
@@ -207,7 +215,10 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                         type: 'material-community',
                                         color: theme.theme.colors.grey2,
                                     }}
-                                    onBlur={(e) => form.setValue('sku', e.nativeEvent.text)}
+                                    onBlur={(e) => {
+                                        debugger;
+                                        form.setValue('sku', e.nativeEvent.text)
+                                    }}
                                 />
                             </View>
                         </View>
