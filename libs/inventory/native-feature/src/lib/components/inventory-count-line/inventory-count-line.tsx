@@ -67,6 +67,7 @@ export function InventoryCountLine({
                     ]}
                     onFocus={() => setCount('')}
                     onBlur={(e) => updateCount(e.nativeEvent.text)}
+                    editable={!readOnly}
                 />
             </View>
             <View style={{ flex: 3 }}>
@@ -75,6 +76,7 @@ export function InventoryCountLine({
                     onChangeText={setComment}
                     onBlur={(e) => updateComment(e.nativeEvent.text)}
                     style={[styles.input, styles.primaryText]}
+                    editable={!readOnly}
                 />
             </View>
             { !readOnly &&

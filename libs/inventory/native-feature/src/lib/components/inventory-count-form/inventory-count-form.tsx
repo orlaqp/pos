@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
-import { Alert, FlatList, TextInput, View } from 'react-native';
+import { Alert, FlatList, TextInput, View, Text } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
-import { UIActions, UIInput, UISearchInput } from '@pos/shared/ui-native';
-import { FormProvider, useForm } from 'react-hook-form';
-import {
-    NativeStackNavigationProp,
-    NativeStackScreenProps,
-} from '@react-navigation/native-stack';
+import { UIActions, UISearchInput } from '@pos/shared/ui-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     inventoryCountActions,
@@ -22,7 +18,6 @@ import { InventoryCount, Product } from '@pos/shared/models';
 import { ProductService } from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
 import InventoryCountLine from '../inventory-count-line/inventory-count-line';
-import { includes } from 'lodash';
 import { confirm } from '@pos/shared/utils';
 import { NavigationParamList } from '@pos/sales/native-feature';
 
@@ -43,7 +38,7 @@ export interface InventoryFormParams {
 //     item: InventoryCountDTO;
 // }
 
-export function InventoryForm({
+export function InventoryCountForm({
     navigation,
     route,
 }: NativeStackScreenProps<NavigationParamList, 'Inventory Form'>) {
@@ -171,21 +166,41 @@ export function InventoryForm({
     return (
         // <FormProvider {...form}>
         <View style={[styles.page]}>
-            <View style={{ flexDirection: 'row' }}>
-                {/* <View style={{ flex: 4 }}>
-                        <UIInput name="comments" placeholder="Comments" />
-                    </View> */}
-                <View style={{ flex: 3, padding: 10 }}>
-                    <UISearchInput
-                        ref={ref}
-                        value={filter}
-                        placeholder="Search for products ..."
-                        debounceTime={700}
-                        onSubmit={searchSubmit}
-                        onClear={() => ref.current?.focus()}
-                    />
-                    {/* <TextInput onSubmitEditing={(e) => setFilter(e.nativeEvent.text)} style={{ borderColor: 'blue', borderWidth: 1 }} /> */}
-                </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                {route.params?.readOnly && (
+                    <View
+                        style={{
+                            width: '65%',
+                            padding: 5,
+                            marginVertical: 10,
+                            borderRadius: 10,
+                            backgroundColor: theme.theme.colors.warning,
+                        }}
+                    >
+                        <Text
+                            style={[
+                                styles.primaryText,
+                                styles.textCenter,
+                                styles.textBold,
+                            ]}
+                        >
+                            This count was already completed and cannot be changed
+                        </Text>
+                    </View>
+                )}
+                {!route.params?.readOnly && (
+                    <View style={{ flex: 3, padding: 10 }}>
+                        <UISearchInput
+                            ref={ref}
+                            value={filter}
+                            placeholder="Search for products ..."
+                            debounceTime={700}
+                            onSubmit={searchSubmit}
+                            onClear={() => ref.current?.focus()}
+                        />
+                        {/* <TextInput onSubmitEditing={(e) => setFilter(e.nativeEvent.text)} style={{ borderColor: 'blue', borderWidth: 1 }} /> */}
+                    </View>
+                )}
             </View>
             <FlatList
                 horizontal={false}
@@ -247,4 +262,4 @@ export function InventoryForm({
     );
 }
 
-export default InventoryForm;
+export default InventoryCountForm;
