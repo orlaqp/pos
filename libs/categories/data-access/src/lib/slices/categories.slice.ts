@@ -37,7 +37,7 @@ export const fetchCategories = createAsyncThunk(
 
 export const initialCategoriesState: CategoriesState =
   categoriesAdapter.getInitialState({
-    loadingStatus: 'not loaded',
+    loadingStatus: 'new',
     selected: undefined,
     filterQuery: undefined,
     filteredList: undefined

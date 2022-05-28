@@ -1,15 +1,26 @@
 
-import React from 'react';
-import { brandsActions, fetchBrands, selectFilteredList, selectIsEmpty, selectLoadingStatus } from '@pos/brands/data-access';
+import React, { useEffect } from 'react';
+import { brandsActions, selectFilteredList, selectIsEmpty, selectLoadingStatus, subscribeToBrandChanges } from '@pos/brands/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import BrandItem from '../brand-item/brand-item';
+import { useDispatch } from 'react-redux';
 
 export interface BrandListProps {
     navigation: NativeStackNavigationProp<any>;
 }
 
 export function BrandList({ navigation }: BrandListProps) {
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        const sub = subscribeToBrandChanges(dispatch);
+        return () => {
+            console.log('Closing brands subscription');
+            sub.unsubscribe()
+        }
+    }, [dispatch]);
+    
     const props: ItemListProps<any, any> = {
         ItemComponent: BrandItem,
         formNavName: 'Brand Form',
@@ -19,7 +30,7 @@ export function BrandList({ navigation }: BrandListProps) {
         filteredListSelector: selectFilteredList,
         clearSelectionAction: brandsActions.clearSelection,
         filterAction: brandsActions.filter,
-        fetchItemsAction: null,
+        fetchItemsAction: undefined,
     }
 
     return <UIGenericItemList {...props} />

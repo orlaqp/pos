@@ -12,3 +12,22 @@ export const syncCategories = (dispatch: Dispatch) => {
         ))
     );
 };
+
+export const subscribeToCategoryChanges = (dispatch: Dispatch) => {
+    return DataStore.observeQuery(Category).subscribe(({ isSynced, items }) => {
+        console.log('Category changes detected');
+        
+        if (isSynced) {
+            items.sort((a, b) => {
+                if (a.name > b.name) return 1;
+                if (a.name < b.name) return -1;
+
+                return 0;
+            })
+            dispatch(categoriesActions.setAll(
+                items
+                    .map(i => CategoryEntityMapper.fromCategory(i))
+            ));
+        }
+    });
+}

@@ -19,7 +19,7 @@ type Props = React.ComponentProps<typeof TextInput> & {
 export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
     const theme = useTheme();
     const styles = useSharedStyles();
-    const { name, rules, formatter, onValid, lIcon, rIcon, ...restOfProps } =
+    const { name, rules, formatter, onValid, lIcon, rIcon, textAlign, ...restOfProps } =
         props;
     const { control } = useFormContext();
 
@@ -63,6 +63,7 @@ export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
                 <Input
                     ref={ref}
                     {...restOfProps}
+                    textAlign={textAlign || 'left'}
                     placeholder={props.placeholder}
                     value={value}
                     onBlur={onBlur}
