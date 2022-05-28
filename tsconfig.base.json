@@ -26,15 +26,17 @@
             "@pos/brands/native-feature": [
                 "libs/brands/native-feature/src/index.ts"
             ],
-            "@pos/inventory/data-access": ["libs/inventory/data-access/src/index.ts"],
-            "@pos/inventory/native-feature": [
-                "libs/inventory/native-feature/src/index.ts"
-            ],
             "@pos/categories/data-access": [
                 "libs/categories/data-access/src/index.ts"
             ],
             "@pos/categories/native-feature": [
                 "libs/categories/native-feature/src/index.ts"
+            ],
+            "@pos/inventory/data-access": [
+                "libs/inventory/data-access/src/index.ts"
+            ],
+            "@pos/inventory/native-feature": [
+                "libs/inventory/native-feature/src/index.ts"
             ],
             "@pos/orders/data-access": ["libs/orders/data-access/src/index.ts"],
             "@pos/orders/native-feature": [
@@ -63,6 +65,7 @@
                 "libs/settings/native-feature/src/index.ts"
             ],
             "@pos/shared/api": ["libs/shared/api/src/index.ts"],
+            "@pos/shared/data-store": ["libs/shared/data-store/src/index.ts"],
             "@pos/shared/models": ["libs/shared/models/src/index.ts"],
             "@pos/shared/ui-native": ["libs/shared/ui-native/src/index.ts"],
             "@pos/shared/utils": ["libs/shared/utils/src/index.ts"],

@@ -7,3 +7,5 @@ export * from './lib/receive/inventory-receive.slice';
 export * from './lib/receive/inventory-receive.entity';
 export * from './lib/receive/inventory-receive-line.entity';
 export * from './lib/receive/inventory-receive.service';
+
+export * from './lib/data-store-sync';

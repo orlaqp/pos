@@ -8,6 +8,8 @@ import { ordersActions } from './slices/orders.slice';
 import { Alert } from 'react-native';
 import { DatesService } from '@pos/shared/utils';
 import { ZenObservable } from 'zen-observable-ts';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { User } from '@pos/auth/data-access';
 
 export class OrderService {
     static async payOrder(cart: CartState) {

@@ -16,6 +16,7 @@ import { ordersReducer } from '@pos/orders/data-access';
 import { observeOpenOrderChanges } from '@pos/orders/data-access';
 import { settingsReducer } from '@pos/settings/data-access';
 import { inventoryCountReducer, inventoryReceiveReducer, observeInventoryCountChanges, observeInventoryReceiveChanges } from '@pos/inventory/data-access';
+import { configureSyncExpressions } from '@pos/shared/data-store';
 
 export const store = configureStore({
   reducer: {
@@ -42,14 +43,14 @@ export const useAppDispatch = () => useDispatch<AppDispatch>() ;
 // fetch store info
 store.dispatch(fetchStoreInfo());
 // fetch default printer config
-store.dispatch(fetchDefaultPrinter());
+// store.dispatch(fetchDefaultPrinter());
 
 // subscriptions
-observeProductChanges(store.dispatch);
-observeCategoryChanges(store.dispatch);
-observeBrandChanges(store.dispatch);
-observeOpenOrderChanges(store.dispatch);
-observeInventoryCountChanges(store.dispatch);
-observeInventoryReceiveChanges(store.dispatch);
+// observeProductChanges(store.dispatch);
+// observeCategoryChanges(store.dispatch);
+// observeBrandChanges(store.dispatch);
+// observeOpenOrderChanges(store.dispatch);
+// observeInventoryCountChanges(store.dispatch);
+// observeInventoryReceiveChanges(store.dispatch);
 
 export default store;

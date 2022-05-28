@@ -6,19 +6,10 @@ import App from './app/App';
 
 import { Auth, Amplify, Storage, DataStore, Hub } from 'aws-amplify';
 import awsconfig from './aws-exports';
+import { initializeDataStore } from '@pos/shared/data-store';
+import { store } from '@pos/store';
 
 Amplify.configure(awsconfig);
+initializeDataStore(store.dispatch);
 
 AppRegistry.registerComponent('main', () => App);
-
-
-// Create listener
-const listener = Hub.listen('datastore', async hubData => {
-    const  { event, data } = hubData.payload;
-    console.log(`${event} - data: ${JSON.stringify(data)}`);
-
-    if (event === 'networkStatus') {
-      console.log(`User has a network connection: ${data.active}`)
-    }
-  })
-  
