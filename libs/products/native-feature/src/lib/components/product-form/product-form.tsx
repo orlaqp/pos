@@ -72,6 +72,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
             cost: product?.cost,
             barcode: product?.barcode,
             sku: product?.sku,
+            quantity: product?.quantity || 0,
             unitOfMeasure: product?.unitOfMeasure,
             trackStock: true,
             picture: product?.picture,

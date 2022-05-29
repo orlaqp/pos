@@ -1,3 +1,5 @@
+import { Product } from '@pos/shared/models';
+
 export interface CartHeader {
     orderNumber: string;
     orderDate: string;
@@ -18,6 +20,22 @@ export interface CartItem {
     id?: string;
     product: CartProduct;
     quantity: number;
+}
+
+export class CartItemMapper {
+    static fromProduct(p: Product, quantity: number): CartItem {
+        return {
+            product: {
+                id: p.id!,
+                name: p.name,
+                price: p.price,
+                unitOfMeasure: p.unitOfMeasure,
+                barcode: p.barcode,
+                sku: p.sku,
+            },
+            quantity,
+        }
+    }
 }
 
 export interface CartFooter {

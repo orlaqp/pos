@@ -5,13 +5,17 @@ import { Dialog, useTheme } from '@rneui/themed';
 
 import { View, StyleSheet, SafeAreaView, Alert, TextInput } from 'react-native';
 
-import { CategoryEntity } from '@pos/categories/data-access';
+import {
+    CategoryEntity,
+    subscribeToCategoryChanges,
+} from '@pos/categories/data-access';
 import CategorySelection from '../category-selection/category-selection';
 import ProductSelection from '../product-selection/product-selection';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     cartActions,
     CartItem,
+    CartItemMapper,
     CartState,
     selectActiveProduct,
 } from '@pos/sales/data-access';
@@ -22,6 +26,7 @@ import {
     ProductService,
     selectAllProducts,
     selectFilteredList,
+    subscribeToProductChanges,
 } from '@pos/products/data-access';
 import { ProductSearch } from '../product-search/product-search';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -30,7 +35,11 @@ import { RootState } from '@pos/store';
 import { Dictionary } from '@reduxjs/toolkit';
 import { EACH } from '@pos/unit-of-measures/data-access';
 import { PrinterEntity } from '@pos/printings/data-access';
-import { payOrder, submitOrder } from '@pos/orders/data-access';
+import {
+    payOrder,
+    submitOrder,
+    subscribeToOrderChanges,
+} from '@pos/orders/data-access';
 import { StoreInfoEntity } from '@pos/store-info/data-access';
 
 export interface NavigationParamList {
@@ -39,11 +48,11 @@ export interface NavigationParamList {
         mode: 'order' | 'payment';
     };
     'Inventory Count Form': {
-        readOnly: boolean
-    },
+        readOnly: boolean;
+    };
     'Inventory Receive Form': {
-        readOnly: boolean
-    }
+        readOnly: boolean;
+    };
 }
 
 /* eslint-disable-next-line */
@@ -66,6 +75,10 @@ export function SalesScreen({
         useState<ProductEntity[]>(allProducts);
     const deselectProduct = () => dispatch(cartActions.select(undefined));
 
+    console.log('====================================');
+    console.log('Sales re-rendered, filtered products: ', filteredProducts);
+    console.log('====================================');
+
     const upsertCart = (item: CartItem) => {
         dispatch(cartActions.upsert(item));
         deselectProduct();
@@ -85,9 +98,6 @@ export function SalesScreen({
         const res = await ProductService.search(allProducts, { text });
 
         if (!res.allNumbers || (res.allNumbers && text.length < 4)) {
-            console.log('Not all numbers');
-            console.log('result', res);
-
             setFilteredProducts(res.items);
             setFilter(text);
             setCategory(undefined);
@@ -102,21 +112,18 @@ export function SalesScreen({
             const p = res.items[0];
             // add product to cart directly
             dispatch(
-                cartActions.upsert({
-                    product: {
-                        id: p.id!,
-                        name: p.name,
-                        price: p.price,
-                        unitOfMeasure: p.unitOfMeasure,
-                        barcode: p.barcode,
-                        sku: p.sku,
-                    },
-                    quantity: p.unitOfMeasure === EACH ? 1 : 0,
-                })
+                cartActions.upsert(
+                    CartItemMapper.fromProduct(
+                        p,
+                        p.unitOfMeasure === EACH ? 1 : 0
+                    )
+                )
             );
 
             return '';
         }
+
+        return text;
     };
 
     const onProductSelected = useCallback(
@@ -167,6 +174,20 @@ export function SalesScreen({
     //         ]
     //     );
     // }
+
+    useEffect(() => {
+        const categoriesSub = subscribeToCategoryChanges(dispatch);
+        const productsSub = subscribeToProductChanges(dispatch);
+        const ordersSub = subscribeToOrderChanges(dispatch);
+        const orderLinesSub = subscribeToOrderChanges(dispatch);
+        return () => {
+            console.log('Closing sales subscriptions');
+            categoriesSub.unsubscribe();
+            productsSub.unsubscribe();
+            ordersSub.unsubscribe();
+            orderLinesSub.unsubscribe();
+        };
+    }, [dispatch]);
 
     useEffect(() => {
         searchRef.current?.focus();
