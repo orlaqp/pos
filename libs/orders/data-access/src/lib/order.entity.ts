@@ -1,5 +1,5 @@
-import { initialCartState } from './../../../../sales/data-access/src/lib/slices/cart.slice';
-import { CartState } from '@pos/sales/data-access';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { CartState, initialCartState } from '@pos/sales/data-access';
 import { Order, OrderLine, OrderStatus } from '@pos/shared/models';
 
 export interface OrderEntity {
@@ -8,6 +8,8 @@ export interface OrderEntity {
     tax: number;
     total: number;
     status: OrderStatus | keyof typeof OrderStatus;
+    employeeId: string,
+    employeeName: string,
     items?: OrderLineEntity[] | null;
     createdAt?: string | null;
     updatedAt?: string | null;
@@ -38,6 +40,8 @@ export class OrderEntityMapper {
             tax: p.tax,
             total: p.total,
             status: p.status,
+            employeeId: p.employeeId,
+            employeeName: p.employeeName,
             items: p.OrderItems?.filter((i) => i !== null).map((i) =>
                 OrderEntityMapper.fromLine(i!)
             ),
@@ -76,9 +80,10 @@ export class OrderEntityMapper {
             orderDate: o.createdAt!,
             orderNumber: o.id,
             status: o.status,
-            user: '',
+            employeeId: '',
+            employeeName: ''
         };
-        state.items = o.items.map((i) => ({
+        state.items = o.items?.map((i) => ({
             quantity: i?.quantity,
             id: i?.id,
             product: {

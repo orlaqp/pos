@@ -3,7 +3,8 @@ import { Product } from '@pos/shared/models';
 export interface CartHeader {
     orderNumber: string;
     orderDate: string;
-    user: string;
+    employeeId: string;
+    employeeName: string;
     status: string;
 }
 

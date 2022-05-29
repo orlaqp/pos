@@ -95,17 +95,22 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
             <View style={{ flex: 2 }}>
                 <Text
                     style={[styles.name, { textAlign: 'center' }]}
-                >{`${item.id.substring(0, 8)}...`}</Text>
+                >
+                    {`${item.id.substring(0, 8)}...`}
+                </Text>
             </View>
             <View style={{ flex: 3 }}>
+                <Text style={styles.name}>{item.employeeName}</Text>
+            </View>
+            {/* <View style={{ flex: 3 }}>
                 <Text style={styles.name}>
                     {new Date(item.createdAt!).toLocaleString()}
                 </Text>
-            </View>
+            </View> */}
             <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.items?.length} item(s)</Text>
             </View>
-            <View style={{ flex: 3 }}>
+            <View style={{ flex: 2 }}>
                 <Text style={[styles.name, { textAlign: 'right' }]}>
                     {`$ ${item.total.toFixed(2)}`}
                 </Text>
@@ -120,7 +125,7 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
             >
                 <Button
                     type="outline"
-                    title={item.status === 'OPEN' ? 'Open' : 'Print'}
+                    title={item.status === 'OPEN' ? 'Charge' : 'Print'}
                     icon={{
                         name:
                             item.status === 'OPEN'
