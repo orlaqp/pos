@@ -240,7 +240,7 @@ function filterList(state: OrdersState, options: FilterRequest) {
     state.loadingStatus = 'loaded';
 
     const lowerQuery = options.filter?.toLowerCase();
-
+    
     state.ids.forEach((id) => {
         const e = state.entities[id];
         
@@ -248,8 +248,10 @@ function filterList(state: OrdersState, options: FilterRequest) {
             return;
         }
 
-        if (lowerQuery && e?.id?.toLowerCase().indexOf(lowerQuery) === -1)
-            return;
+        if (lowerQuery &&
+            e?.id?.toLowerCase().indexOf(lowerQuery) === -1
+            && e?.employeeName?.toLowerCase().indexOf(lowerQuery) === -1
+        ) return;
 
         filteredList[id] = state.entities[id];
     });
