@@ -75,6 +75,13 @@ export function SalesScreen({
         useState<ProductEntity[]>(allProducts);
     const deselectProduct = () => dispatch(cartActions.select(undefined));
 
+    useEffect(() => {
+        console.log('====================================');
+        console.log('updating filters roduct list from all products');
+        console.log('====================================');
+        setFilteredProducts(allProducts);
+    }, [allProducts]);
+
     console.log('====================================');
     console.log('Sales re-rendered, filtered products: ', filteredProducts);
     console.log('====================================');

@@ -88,10 +88,10 @@ export class ProductService {
         return DataStore.delete(item);
     }
 
-    static async search(
+    static search(
         products: ProductEntity[],
         request: ProductSearchRequest
-    ): Promise<ProductSearchResponse> {
+    ): ProductSearchResponse {
         if (request.categoryId)
             return {
                 items: products.filter(
