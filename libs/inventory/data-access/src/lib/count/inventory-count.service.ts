@@ -6,12 +6,7 @@ import {
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
 import { inventoryCountActions } from './inventory-count.slice';
-import {
-    InventoryCountDTO,
-    InventoryCountMapper,
-} from './inventory-count.entity';
-import { ZenObservable } from 'zen-observable-ts';
-import { DatesService } from '@pos/shared/utils';
+import { InventoryCountDTO } from './inventory-count.entity';
 import { Alert } from 'react-native';
 
 export class InventoryCountService {
@@ -50,9 +45,6 @@ export class InventoryCountService {
         return DataStore.delete(item);
     }
 }
-
-export let icSubscription: ZenObservable.Subscription | null;
-export let iclSubscription: ZenObservable.Subscription | null;
 
 async function createCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
     const { lines, ...rest } = count;
@@ -142,43 +134,4 @@ const updateInventory = async (count: InventoryCountDTO) => {
     } catch (error) {
         Alert.alert('Error while updating inventory', (error as any).message);
     }
-}
-
-export function observeInventoryCountChanges(dispatch: Dispatch) {
-    const sevenDaysAgo = DatesService.daysAgo(365);
-    const isoDate = DatesService.toISO8601(sevenDaysAgo);
-
-    if (icSubscription) {
-        icSubscription.unsubscribe();
-        icSubscription = null;
-    }
-
-    icSubscription = DataStore.observeQuery(InventoryCount, (o) =>
-        o.createdAt('gt', isoDate)
-    ).subscribe(({ isSynced, items }) => {
-        if (isSynced) {
-            dispatch(
-                inventoryCountActions.setAll(
-                    items.map((i) => InventoryCountMapper.fromModel(i, []))
-                )
-            );
-        }
-    });
-
-    if (iclSubscription) {
-        iclSubscription.unsubscribe();
-        iclSubscription = null;
-    }
-
-    iclSubscription = DataStore.observeQuery(InventoryCountLine, (o) =>
-        o.createdAt('gt', isoDate)
-    ).subscribe(({ isSynced, items }) => {
-        if (isSynced) {
-            dispatch(
-                inventoryCountActions.setLines(
-                    items.map((i) => InventoryCountMapper.fromLine(i))
-                )
-            );
-        }
-    });
 }

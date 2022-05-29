@@ -24,7 +24,7 @@ export class InventoryReceiveLineMapper {
         };
     }
 
-    static fromModel(x: InventoryReceiveLine): InventoryReceiveLineDTO {
+    static fromLine(x: InventoryReceiveLine): InventoryReceiveLineDTO {
         return {
             id: x.id,
             productId: x.productId,

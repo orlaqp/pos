@@ -6,12 +6,7 @@ import {
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
 import { inventoryReceiveActions } from './inventory-receive.slice';
-import {
-    InventoryReceiveDTO,
-    InventoryReceiveMapper,
-} from './inventory-receive.entity';
-import { ZenObservable } from 'zen-observable-ts';
-import { DatesService } from '@pos/shared/utils';
+import { InventoryReceiveDTO } from './inventory-receive.entity';
 import { Alert } from 'react-native';
 
 export class InventoryReceiveService {
@@ -140,45 +135,3 @@ const updateInventory = async (count: InventoryReceiveDTO) => {
         Alert.alert('Error while updating inventory received', (error as any).message);
     }
 };
-
-export let irSubscription: ZenObservable.Subscription | null;
-export let irlSubscription: ZenObservable.Subscription | null;
-
-export function observeInventoryReceiveChanges(dispatch: Dispatch) {
-    const sevenDaysAgo = DatesService.daysAgo(365);
-    const isoDate = DatesService.toISO8601(sevenDaysAgo);
-
-    if (irSubscription) {
-        irSubscription.unsubscribe();
-        irSubscription = null;
-    }
-
-    irSubscription = DataStore.observeQuery(InventoryReceive, (o) =>
-        o.createdAt('gt', isoDate)
-    ).subscribe(({ isSynced, items }) => {
-        if (isSynced) {
-            dispatch(
-                inventoryReceiveActions.setAll(
-                    items.map((i) => InventoryReceiveMapper.fromModel(i, []))
-                )
-            );
-        }
-    });
-
-    if (irlSubscription) {
-        irlSubscription.unsubscribe();
-        irlSubscription = null;
-    }
-
-    irlSubscription = DataStore.observeQuery(InventoryReceiveLine, (o) =>
-        o.createdAt('gt', isoDate)
-    ).subscribe(({ isSynced, items }) => {
-        if (isSynced) {
-            dispatch(
-                inventoryReceiveActions.setLines(
-                    items.map((i) => InventoryReceiveMapper.fromLine(i))
-                )
-            );
-        }
-    });
-}
