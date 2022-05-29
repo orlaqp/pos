@@ -1,12 +1,6 @@
-import React, { useState } from 'react';
-import {
-    ordersActions,
-    selectFilteredList,
-} from '@pos/orders/data-access';
-import {
-    UIEmptyState,
-    UISearchInput,
-} from '@pos/shared/ui-native';
+import React, { useEffect, useState } from 'react';
+import { ordersActions, selectFilteredList, subscribeToOrderChanges, subscribeToOrderLineChanges } from '@pos/orders/data-access';
+import { UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import OrderItem from '../order-item/order-item';
 import { useSharedStyles } from '@pos/theme/native';
@@ -28,6 +22,16 @@ export function OrderList({ navigation }: OrderListProps) {
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
     const items = useSelector(selectFilteredList);
     const statusButtons: OrderStatus[] = [OrderStatus.OPEN, OrderStatus.PAID];
+
+    useEffect(() => {
+        const ordersSub = subscribeToOrderChanges(dispatch);
+        const linesSub = subscribeToOrderLineChanges(dispatch);
+        return () => {
+            console.log('Closing orders subscription');
+            ordersSub.unsubscribe();
+            linesSub.unsubscribe();
+        };
+    }, [dispatch]);
 
     const filter = (statusIndex: number, filter?: string) => {
         setSelectedIndex(statusIndex);
@@ -58,9 +62,7 @@ export function OrderList({ navigation }: OrderListProps) {
                     <View style={{ flex: 5 }}>
                         <UISearchInput
                             debounceTime={300}
-                            onSubmit={(text) =>
-                                filter(selectedIndex, text)
-                            }
+                            onSubmit={(text) => filter(selectedIndex, text)}
                         />
                     </View>
                 </View>

@@ -1,10 +1,10 @@
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import logger from 'redux-logger';
+import { configureStore } from '@reduxjs/toolkit'
+import { useDispatch } from 'react-redux';
 
 import { productsReducer } from './../../products/data-access/src/lib/slices/products.slice';
 import { authReducer } from '@pos/auth/data-access';
-import { configureStore } from '@reduxjs/toolkit'
-import { useDispatch } from 'react-redux';
 import { brandsReducer } from '@pos/brands/data-access';
 import { unitOfMeasuresReducer } from '@pos/unit-of-measures/data-access';
 import { cartReducer } from '@pos/sales/data-access';

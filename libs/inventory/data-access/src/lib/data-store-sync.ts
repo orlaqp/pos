@@ -7,6 +7,7 @@ import { inventoryReceiveActions } from './receive/inventory-receive.slice';
 import { InventoryReceiveMapper } from './receive/inventory-receive.entity';
 import { InventoryCountLineMapper } from './count/inventory-count-line.entity';
 import { InventoryReceiveLineMapper } from './receive/inventory-receive-line.entity';
+import { sortByCreatedAt } from '@pos/shared/utils';
 
 export const syncInventoryCounts = (dispatch: Dispatch) => {
     console.log('Syncing inventory counts to the store');
@@ -68,22 +69,6 @@ export const subscribeToInventoryReceiveLineChanges = (dispatch: Dispatch) => {
         updateInventoryReceiveLineStore(dispatch, items);
     });
 }
-
-
-const sortByCreatedAt = (items: { createdAt?: string | null | undefined }[]) => {
-    items.sort((a, b) => {
-        if (!a.createdAt && !b.createdAt) return 1;
-
-        if (!a.createdAt) return -1;
-        if (!b.createdAt) return 1;
-
-        if (a.createdAt > b.createdAt) return 1;
-        if (a.createdAt < b.createdAt) return -1;
-
-        return 0;
-    });
-}
-
 
 const updateInventoryCountStore = (dispatch: Dispatch, items: InventoryCount[]) => {
     sortByCreatedAt(items);

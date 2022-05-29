@@ -3,6 +3,7 @@ import { Dispatch } from '@reduxjs/toolkit';
 import { Brand } from '@pos/shared/models';
 import { brandsActions } from './slices/brands.slice';
 import { BrandEntityMapper } from './brand.entity';
+import { sortListBy } from '@pos/shared/utils';
 
 export const syncBrands = (dispatch: Dispatch) => {
     console.log('Syncing brands to the store');
@@ -19,12 +20,7 @@ export const subscribeToBrandChanges = (dispatch: Dispatch) => {
 };
 
 const updateStore = (dispatch: Dispatch, items: Brand[]) => {
-    items.sort((a, b) => {
-        if (a.name > b.name) return 1;
-        if (a.name < b.name) return -1;
-
-        return 0;
-    });
+    sortListBy(items, 'name');
     dispatch(
         brandsActions.setAll(items.map((b) => BrandEntityMapper.fromModel(b)))
     );

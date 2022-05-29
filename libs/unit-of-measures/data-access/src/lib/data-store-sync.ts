@@ -1,3 +1,4 @@
+import { sortListBy } from '@pos/shared/utils';
 import { DataStore } from 'aws-amplify';
 import { Dispatch } from '@reduxjs/toolkit';
 import { UnitOfMeasure } from '@pos/shared/models';
@@ -20,13 +21,8 @@ export const subscribeToUnitOfMeasureChanges = (dispatch: Dispatch) => {
     );
 };
 
-const updateStore = (dispatch: Dispatch, items: Category[]) => {
-    items.sort((a, b) => {
-        if (a.name > b.name) return 1;
-        if (a.name < b.name) return -1;
-
-        return 0;
-    });
+const updateStore = (dispatch: Dispatch, items: UnitOfMeasure[]) => {
+    sortListBy(items, 'name');
     dispatch(
         unitOfMeasuresActions.setAll(
             items.map((u) => UnitOfMeasureEntityMapper.fromModel(u))

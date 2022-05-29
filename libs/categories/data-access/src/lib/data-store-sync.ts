@@ -3,6 +3,7 @@ import { Dispatch } from '@reduxjs/toolkit';
 import { Category } from '@pos/shared/models';
 import { categoriesActions } from './slices/categories.slice';
 import { CategoryEntityMapper } from './category.entity';
+import { sortListBy } from '@pos/shared/utils';
 
 export const syncCategories = (dispatch: Dispatch) => {
     console.log('Syncing categories to the store');
@@ -21,12 +22,7 @@ export const subscribeToCategoryChanges = (dispatch: Dispatch) => {
 };
 
 const updateStore = (dispatch: Dispatch, items: Category[]) => {
-    items.sort((a, b) => {
-        if (a.name > b.name) return 1;
-        if (a.name < b.name) return -1;
-
-        return 0;
-    });
+    sortListBy(items, 'name');
     dispatch(
         categoriesActions.setAll(
             items.map((i) => CategoryEntityMapper.fromCategory(i))
