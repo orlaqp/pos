@@ -51,14 +51,17 @@ export function ProductForm({ navigation }: ProductFormProps) {
     const save = async () => {
         setBusy(true);
         const formValues: ProductEntity = form.getValues();
-
+        
         if (!formValues.id) {
             delete formValues.id;
         }
 
-        await ProductService.save(dispatch, formValues);
-        navigation.goBack();
+        const res = await ProductService.save(dispatch, formValues);
+
         setBusy(false);
+
+        if (!res) return;
+        navigation.goBack();
     };
 
     const form = useForm<ProductEntity>({
@@ -217,7 +220,6 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                         color: theme.theme.colors.grey2,
                                     }}
                                     onBlur={(e) => {
-                                        debugger;
                                         form.setValue('sku', e.nativeEvent.text)
                                     }}
                                 />

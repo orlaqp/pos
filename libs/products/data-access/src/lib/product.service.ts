@@ -3,6 +3,7 @@ import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
 import { productsActions } from './slices/products.slice';
 import { ProductEntity } from './product.entity';
+import { Alert } from 'react-native';
 
 export interface ProductSearchRequest {
     text?: string;
@@ -15,22 +16,32 @@ export interface ProductSearchResponse {
 }
 
 export class ProductService {
-    static async save(dispatch: Dispatch<any>, product: ProductEntity) {
+    static async save(dispatch: Dispatch<any>, product: ProductEntity): Promise<boolean> {
+        const validationRes = await validateNameBarcodeAndSku(product);
+
+        if (!validationRes) return false;
+
         if (!product.id) {
+            if (!validationRes) return false;
+
             const entity = new Product(product);
             const res = await DataStore.save(entity);
 
             product.id = res.id;
 
-            return dispatch(productsActions.add(product));
+            dispatch(productsActions.add(product));
+
+            return true;
         }
 
         const existing = await DataStore.query(Product, product.id);
 
         if (!existing) {
-            return console.log(
+            console.log(
                 `It seems that product: ${product.id} has been removed`
             );
+
+            return false;
         }
 
         await DataStore.save(
@@ -50,9 +61,11 @@ export class ProductService {
             })
         );
 
-        return dispatch(
+        dispatch(
             productsActions.update({ id: product.id, changes: product })
         );
+
+        return true;
     }
 
     static getAll() {
@@ -122,8 +135,43 @@ export class ProductService {
     }
 
     static async searchByCode(code: string) {
-        return DataStore.query(Product, (x) => x.or(
-            p => p.barcode('eq', code).sku('eq', code)
-        ));
+        return DataStore.query(Product, (x) =>
+            x.or((p) => p.barcode('eq', code).sku('eq', code))
+        );
     }
+}
+
+async function validateNameBarcodeAndSku(product: ProductEntity): Promise<boolean> {
+    const withSameName = await DataStore.query(Product, (p) =>
+        p.name('eq', product.name)
+    );
+
+    if (withSameName.length && product.id !== withSameName[0].id) {
+        Alert.alert('A product with same name already exist');
+        return false;
+    }
+
+    if (product.barcode) {
+        const withSameBarcode = await DataStore.query(Product, (p) =>
+            p.barcode('eq', product.barcode!).id('ne', product.id)
+        );
+
+        if (withSameBarcode.length) {
+            Alert.alert('A product with same barcode already exist');
+            return false;
+        }
+    }
+
+    if (product.sku) {
+        const withSameSku = await DataStore.query(Product, (p) =>
+            p.sku('eq', product.sku!).id('ne', product.id)
+        );
+
+        if (withSameSku.length) {
+            Alert.alert('A product with same sku already exist');
+            return false;
+        }
+    }
+
+    return true;
 }
