@@ -21,7 +21,7 @@ import {
     OrderEntityMapper,
     OrderLineEntity,
 } from '../order.entity';
-import { OrderService } from '../order.service';
+import { FilterRequest, OrderService } from '../order.service';
 
 export const ORDER_FEATURE_KEY = 'orders';
 
@@ -44,11 +44,6 @@ export interface OrdersState extends EntityState<OrderEntity> {
     selected?: OrderEntity;
     filterQuery: FilterRequest;
     filteredList?: Dictionary<OrderEntity>;
-}
-
-export interface FilterRequest {
-    status: OrderStatus;
-    filter?: string;
 }
 
 export const ordersAdapter = createEntityAdapter<OrderEntity>();
@@ -77,7 +72,7 @@ export const payOrder = createAsyncThunk(
     'order/pay',
     async (request: SubmitOrderRequest, thunkAPI) => {
         const o = await OrderService.payOrder(request.cart);
-        
+
         if (!o) return;
 
         return {
@@ -214,6 +209,12 @@ export const getOrdersState = (rootState: RootState): OrdersState =>
     rootState[ORDER_FEATURE_KEY];
 
 export const selectAllOrders = createSelector(getOrdersState, selectAll);
+export const selectOpenOrders = createSelector(getOrdersState, (state) =>
+    ordersAdapter
+        .getSelectors()
+        .selectAll(state)
+        .filter((o) => o.status === 'OPEN')
+);
 
 export const selectOrdersEntities = createSelector(
     getOrdersState,
@@ -239,22 +240,10 @@ function filterList(state: OrdersState, options: FilterRequest) {
     const filteredList: Dictionary<OrderEntity> = {};
     state.loadingStatus = 'loaded';
 
-    const lowerQuery = options.filter?.toLowerCase();
-    
-    state.ids.forEach((id) => {
-        const e = state.entities[id];
-        
-        if (e?.status !== options.status) {
-            return;
-        }
-
-        if (lowerQuery &&
-            e?.id?.toLowerCase().indexOf(lowerQuery) === -1
-            && e?.employeeName?.toLowerCase().indexOf(lowerQuery) === -1
-        ) return;
-
-        filteredList[id] = state.entities[id];
-    });
+    const orders = OrderService.search(
+        ordersAdapter.getSelectors().selectAll(state).filter(o => o.status === 'OPEN'),
+        options
+    );
 
     state.filteredList = filteredList;
 }

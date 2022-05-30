@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { ordersActions, selectFilteredList, subscribeToOrderChanges, subscribeToOrderLineChanges } from '@pos/orders/data-access';
+import {
+    OrderEntity,
+    ordersActions,
+    OrderService,
+    selectAllOrders,
+    selectFilteredList,
+    selectOpenOrders,
+    subscribeToOrderChanges,
+    subscribeToOrderLineChanges,
+} from '@pos/orders/data-access';
 import { UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import OrderItem from '../order-item/order-item';
@@ -9,19 +18,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ButtonGroup, useTheme } from '@rneui/themed';
 import { OrderStatus } from '@pos/shared/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import CompactOrderItem from '../compact-order-item/compact-order-item';
 
-export interface OrderListProps {
-    navigation?: NativeStackNavigationProp<any>;
+export interface CompactOrderListProps {
+    onSelect: () => void;
 }
 
-export function OrderList({ navigation }: OrderListProps) {
-    const theme = useTheme();
+export function CompactOrderList({ onSelect }: CompactOrderListProps) {
     const styles = useStyles();
     const dispatch = useDispatch();
     const [filterText, setFilterText] = useState<string>();
-    const [selectedIndex, setSelectedIndex] = useState<number>(0);
-    const items = useSelector(selectFilteredList);
-    const statusButtons: OrderStatus[] = [OrderStatus.OPEN, OrderStatus.PAID];
+    const openOrders = useSelector(selectOpenOrders);
+    const [filteredList, setFilteredList] = useState<OrderEntity[]>(openOrders);
 
     useEffect(() => {
         const ordersSub = subscribeToOrderChanges(dispatch);
@@ -33,50 +41,38 @@ export function OrderList({ navigation }: OrderListProps) {
         };
     }, [dispatch]);
 
-    const filter = (statusIndex: number, filter?: string) => {
-        setSelectedIndex(statusIndex);
-        setFilterText(filter);
-        dispatch(
-            ordersActions.filter({ status: statusButtons[statusIndex], filter })
+    useEffect(() => {
+        setFilteredList(
+            OrderService.search(openOrders, {
+                status: OrderStatus.OPEN,
+                filter: filterText,
+            })
         );
-    };
+    }, [filterText, openOrders]);
 
     return (
-        <SafeAreaView style={styles.page}>
+        <SafeAreaView>
             <View style={{ flexDirection: 'column' }}>
                 <View style={[styles.header, { alignItems: 'center' }]}>
-                    <View style={{ flex: 2 }}>
-                        <ButtonGroup
-                            buttons={statusButtons}
-                            selectedIndex={selectedIndex}
-                            onPress={(value) => filter(value, filterText)}
-                            containerStyle={[
-                                styles.page,
-                                {
-                                    borderWidth: 1,
-                                    borderColor: theme.theme.colors.grey4,
-                                },
-                            ]}
-                        />
-                    </View>
                     <View style={{ flex: 5 }}>
                         <UISearchInput
                             debounceTime={300}
-                            onSubmit={(text) => filter(selectedIndex, text)}
+                            onSubmit={(text) => setFilterText(text)}
                         />
                     </View>
                 </View>
                 <View style={{ padding: 20 }}>
-                    {!items?.length && (
+                    {filteredList.length === 0 && (
                         <UIEmptyState text="No orders found" />
                     )}
-                    {items?.length && (
+                    {filteredList.length > 0 && (
                         <FlatList
-                            data={items}
+                            data={filteredList}
                             renderItem={({ item }) => (
-                                <OrderItem
-                                    navigation={navigation}
+                                <CompactOrderItem
+                                    // navigation={navigation}
                                     item={item}
+                                    onSelect={onSelect}
                                 />
                             )}
                         />
@@ -102,4 +98,4 @@ const useStyles = () => {
     };
 };
 
-export default OrderList;
+export default CompactOrderList;

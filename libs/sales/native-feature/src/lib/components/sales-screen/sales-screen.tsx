@@ -224,7 +224,7 @@ export function SalesScreen({
             <Dialog
                 isVisible={!!product}
                 onBackdropPress={deselectProduct}
-                overlayStyle={styles.overlay}
+                overlayStyle={[styles.overlay, { maxWidth: 350 }]}
             >
                 <ProductDetails item={product!} upsertCart={upsertCart} />
             </Dialog>
@@ -239,13 +239,6 @@ const useStyles = () => {
     return {
         ...sharedStyles,
         ...StyleSheet.create({
-            overlay: {
-                maxWidth: 350,
-                backgroundColor: `${theme.theme.colors.background}`,
-                borderColor: theme.theme.colors.grey5,
-                borderWidth: 1,
-                borderRadius: 5,
-            },
             categories: {
                 flex: 0.7,
                 justifyContent: 'flex-start',

@@ -17,7 +17,7 @@ import { selectStore } from '@pos/store-info/data-access';
 
 export interface OrderItemProps {
     item: OrderEntity;
-    navigation: NativeStackNavigationProp<any>;
+    navigation?: NativeStackNavigationProp<any>;
 }
 
 export function OrderItem({ item, navigation }: OrderItemProps) {
@@ -44,7 +44,7 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
                 ...item,
                 items: orderLines
             }));
-            navigation.navigate('Sales', { mode: 'payment' });
+            navigation?.navigate('Sales', { mode: 'payment' });
         }
 
         if (item.status === 'PAID') {
@@ -73,25 +73,6 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
     return (
         <View style={styles.dataRow}>
             {busy && <ActivityIndicator size="small" />}
-            <View style={{ flex: 1.5 }}>
-                <View
-                    style={{
-                        marginHorizontal: 10,
-                        padding: 5,
-                        borderRadius: 50,
-                        backgroundColor: theme.theme.colors.primary,
-                    }}
-                >
-                    <Text
-                        style={{
-                            textAlign: 'center',
-                            color: theme.theme.colors.grey0,
-                        }}
-                    >
-                        {item.status}
-                    </Text>
-                </View>
-            </View>
             <View style={{ flex: 2 }}>
                 <Text
                     style={[styles.name, { textAlign: 'center' }]}
@@ -102,11 +83,6 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
             <View style={{ flex: 3 }}>
                 <Text style={styles.name}>{item.employeeName}</Text>
             </View>
-            {/* <View style={{ flex: 3 }}>
-                <Text style={styles.name}>
-                    {new Date(item.createdAt!).toLocaleString()}
-                </Text>
-            </View> */}
             <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.items?.length} item(s)</Text>
             </View>

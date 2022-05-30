@@ -110,6 +110,12 @@ export const useSharedStyles = () => {
             color: theme.theme.colors.grey1,
             paddingHorizontal: 10,
             textAlign: 'right',
-        }
+        },
+        overlay: {
+            backgroundColor: `${theme.theme.colors.background}`,
+            borderColor: theme.theme.colors.grey5,
+            borderWidth: 1,
+            borderRadius: 5,
+        },
     });
 } 
