@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { ActivityIndicator, Image, View, Text } from 'react-native';
-import { AssetsService, GetAssetResponse } from '@pos/shared/utils';
+import { AssetsService, CacheService, GetAssetResponse } from '@pos/shared/utils';
 import { cancellablePromise } from '@pos/shared/utils';
 import { Readable } from 'stream';
 import { Blob } from 'buffer';
@@ -39,13 +39,12 @@ export function UIS3Image({
 
         setBusy(true);
 
-        const { promise, cancel } = cancellablePromise<string>(
+        const { promise, cancel } = cancellablePromise<string | undefined>(
             AssetsService.getImage(s3Key)
+            // CacheService.getImage(s3Key)
         );
 
-        promise.then((base64Image: string) => {
-            debugger;
-            
+        promise.then((base64Image: string | undefined) => {
             setUri(base64Image);
             setBusy(false);
         });
