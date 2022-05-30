@@ -5,7 +5,7 @@ import React from 'react';
 import { useFormContext, Controller, RegisterOptions } from 'react-hook-form';
 import { TextInput } from 'react-native';
 
-type Props = React.ComponentProps<typeof TextInput> & {
+type Props = React.ComponentProps<typeof Input> & {
     name: string;
     allowDecimals?: boolean;
     rules?: RegisterOptions;
@@ -13,7 +13,7 @@ type Props = React.ComponentProps<typeof TextInput> & {
     rIcon?: string;
 };
 
-export const UINumericInput = React.forwardRef<TextInput, Props>(
+export const UINumericInput = React.forwardRef<typeof Input, Props>(
     (props, ref) => {
         const theme = useTheme();
         const styles = useSharedStyles();

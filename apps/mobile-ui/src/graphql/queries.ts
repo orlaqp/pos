@@ -414,6 +414,7 @@ export const getProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      plu
       quantity
       unitOfMeasure
       trackStock
@@ -468,6 +469,7 @@ export const listProducts = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -508,6 +510,7 @@ export const syncProducts = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -616,6 +619,7 @@ export const getPurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -861,6 +865,7 @@ export const getStock = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -1073,6 +1078,7 @@ export const getInventory = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -1163,6 +1169,7 @@ export const getInventoryChanges = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock

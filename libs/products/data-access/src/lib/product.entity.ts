@@ -10,6 +10,7 @@ export type ProductEntity = {
     barcode: string | null | undefined;
     unitOfMeasure: string;
     sku?: string | null | undefined;
+    plu?: string | null | undefined;
     quantity: number;
     trackStock: boolean;
     picture: string | null | undefined;
@@ -30,6 +31,7 @@ export class ProductEntityMapper {
             cost: p.cost,
             barcode: p.barcode,
             sku: p.sku,
+            plu: p.plu,
             quantity: p.quantity,
             unitOfMeasure: p.unitOfMeasure,
             trackStock: p.trackStock,

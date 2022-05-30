@@ -39,6 +39,9 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
                 ref={ref}
                 {...restOfProps}
                 // value={text}
+                autoComplete='off'
+                autoCapitalize='none'
+                autoFocus={true}
                 containerStyle={{
                     backgroundColor: theme.theme.colors.grey5,
                     borderRadius: 20,

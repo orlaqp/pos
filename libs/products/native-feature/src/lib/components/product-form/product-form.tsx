@@ -39,6 +39,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
     const dispatch = useDispatch();
     const barcodeRef = React.createRef<TextInput>();
     const skuRef = React.createRef<TextInput>();
+    const pluRef = React.createRef<TextInput>();
 
     const theme = useTheme();
     const styles = useSharedStyles();
@@ -75,6 +76,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
             cost: product?.cost,
             barcode: product?.barcode,
             sku: product?.sku,
+            plu: product?.plu,
             quantity: product?.quantity || 0,
             unitOfMeasure: product?.unitOfMeasure,
             trackStock: true,
@@ -145,12 +147,14 @@ export function ProductForm({ navigation }: ProductFormProps) {
                         <UIVerticalSpacer size="medium" />
                         <UIInput
                             name="name"
+                            label='Name'
                             placeholder="Name"
                             rules={{ required: 'Name is required' }}
                         />
                         <UIInput
                             name="description"
                             placeholder="Description"
+                            label='Description'
                             multiline={true}
                             numberOfLines={2}
                             style={{
@@ -163,6 +167,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 <UINumericInput
                                     keyboardType="decimal-pad"
                                     name="cost"
+                                    label='Cost'
                                     allowDecimals={true}
                                     placeholder="Cost"
                                     textAlign="right"
@@ -173,6 +178,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 <UINumericInput
                                     keyboardType="number-pad"
                                     name="price"
+                                    label='Price'
                                     allowDecimals={true}
                                     placeholder="Price"
                                     textAlign="right"
@@ -185,14 +191,10 @@ export function ProductForm({ navigation }: ProductFormProps) {
                         </View>
                         <View style={{ flexDirection: 'row' }}>
                             <View style={{ flex: 1 }}>
-                                {/* <UIInput
-                                    name="barcode"
-                                    placeholder="Barcode"
-                                    textAlign="right"
-                                    lIcon="barcode"
-                                /> */}
                                 <Input
                                     ref={barcodeRef}
+                                    placeholder='UPC'
+                                    label='UPC'
                                     inputContainerStyle={styles.inputContainerStyle}
                                     inputStyle={styles.inputStyle}
                                     leftIcon={{
@@ -204,14 +206,10 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 />
                             </View>
                             <View style={{ flex: 1 }}>
-                                {/* <UIInput
-                                    name="sku"
-                                    placeholder="SKU"
-                                    textAlign="right"
-                                    lIcon="barcode"
-                                /> */}
                                 <Input
                                     ref={skuRef}
+                                    placeholder='SKU'
+                                    label='SKU'
                                     inputContainerStyle={styles.inputContainerStyle}
                                     inputStyle={styles.inputStyle}
                                     leftIcon={{
@@ -221,6 +219,23 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                     }}
                                     onBlur={(e) => {
                                         form.setValue('sku', e.nativeEvent.text)
+                                    }}
+                                />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Input
+                                    ref={pluRef}
+                                    placeholder='PLU'
+                                    label='PLU'
+                                    inputContainerStyle={styles.inputContainerStyle}
+                                    inputStyle={styles.inputStyle}
+                                    leftIcon={{
+                                        name: 'barcode',
+                                        type: 'material-community',
+                                        color: theme.theme.colors.grey2,
+                                    }}
+                                    onBlur={(e) => {
+                                        form.setValue('plu', e.nativeEvent.text)
                                     }}
                                 />
                             </View>

@@ -19,3 +19,9 @@ pull down the codebase from the repo, remove the file amplify/team-provider-info
 execute amplify init and when prompted, select the 'newAccountProfile` profile.
 execute amplify push
 Or if you just want to access the same resources in the original account from another account, set up an IAM role for that, you can follow this document.
+
+## Barcode lookup service
+ ### https://upcdatabase.org/
+
+curl --location --request GET 'https://api.upcdatabase.org/product/073430005044?apikey=885046B131E08FC47ADF08D42C2EA493'
+curl --location --request GET 'https://api.upcdatabase.org/product/04963406?apikey=885046B131E08FC47ADF08D42C2EA493'

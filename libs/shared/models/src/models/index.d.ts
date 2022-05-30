@@ -185,6 +185,7 @@ export declare class Product {
   readonly cost?: number | null;
   readonly barcode?: string | null;
   readonly sku?: string | null;
+  readonly plu?: string | null;
   readonly quantity: number;
   readonly unitOfMeasure: string;
   readonly trackStock: boolean;

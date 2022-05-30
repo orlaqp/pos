@@ -111,7 +111,7 @@ export function SalesScreen({
                 cartActions.upsert(
                     CartItemMapper.fromProduct(
                         p,
-                        p.unitOfMeasure === EACH ? 1 : 0
+                        res.quantity || (p.unitOfMeasure === EACH ? 1 : 0)
                     )
                 )
             );

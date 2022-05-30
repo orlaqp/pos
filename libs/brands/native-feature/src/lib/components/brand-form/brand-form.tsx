@@ -1,19 +1,12 @@
-
 import React, { useState } from 'react';
 
 import { Alert, View } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
-import {
-    UIActions,
-    UIInput,
-} from '@pos/shared/ui-native';
+import { UIActions, UIInput } from '@pos/shared/ui-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-    BrandEntity,
-    BrandService,
-} from '@pos/brands/data-access';
+import { BrandEntity, BrandService } from '@pos/brands/data-access';
 import { RootState } from '@pos/store';
 import { Brand } from '@pos/shared/models';
 
@@ -23,7 +16,7 @@ export interface BrandFormParams {
 }
 
 export interface BrandFormProps {
-    navigation: NativeStackNavigationProp< BrandFormParams>;
+    navigation: NativeStackNavigationProp<BrandFormParams>;
 }
 
 export function BrandForm({ navigation }: BrandFormProps) {
@@ -35,7 +28,7 @@ export function BrandForm({ navigation }: BrandFormProps) {
     const save = async () => {
         setBusy(true);
         const formValues: BrandEntity = form.getValues();
-        
+
         if (!formValues.id) {
             delete formValues.id;
         }
@@ -45,7 +38,7 @@ export function BrandForm({ navigation }: BrandFormProps) {
         setBusy(false);
     };
 
-    const form = useForm< BrandEntity >({
+    const form = useForm<BrandEntity>({
         mode: 'onChange',
         defaultValues: {
             id: brand?.id,
@@ -63,7 +56,7 @@ export function BrandForm({ navigation }: BrandFormProps) {
                 { text: 'Yes', onPress: () => navigation.goBack() },
             ]
         );
-    }
+    };
 
     return (
         <View style={[styles.page, styles.centeredHorizontally]}>
@@ -75,10 +68,16 @@ export function BrandForm({ navigation }: BrandFormProps) {
                         marginTop: 50,
                     }}
                 >
-                    <UIInput name="name" placeholder="Name" rules={{ required: true }} />
+                    <UIInput
+                        name="name"
+                        placeholder="Name"
+                        label="Name"
+                        rules={{ required: true }}
+                    />
                     <UIInput
                         name="description"
                         placeholder="Description"
+                        label="Description"
                         multiline={true}
                         numberOfLines={3}
                         style={{ height: 100, textAlignVertical: 'top' }}

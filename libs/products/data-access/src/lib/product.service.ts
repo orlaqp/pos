@@ -13,10 +13,15 @@ export interface ProductSearchRequest {
 export interface ProductSearchResponse {
     items: ProductEntity[];
     allNumbers: boolean;
+    price?: number;
+    quantity?: number;
 }
 
 export class ProductService {
-    static async save(dispatch: Dispatch<any>, product: ProductEntity): Promise<boolean> {
+    static async save(
+        dispatch: Dispatch<any>,
+        product: ProductEntity
+    ): Promise<boolean> {
         const validationRes = await validateNameBarcodeAndSku(product);
 
         if (!validationRes) return false;
@@ -53,6 +58,7 @@ export class ProductService {
                 updated.cost = product?.cost;
                 updated.barcode = product?.barcode;
                 updated.sku = product?.sku;
+                updated.plu = product?.plu;
                 updated.unitOfMeasure = product?.unitOfMeasure;
                 updated.trackStock = product?.trackStock;
                 updated.picture = product?.picture;
@@ -61,9 +67,7 @@ export class ProductService {
             })
         );
 
-        dispatch(
-            productsActions.update({ id: product.id, changes: product })
-        );
+        dispatch(productsActions.update({ id: product.id, changes: product }));
 
         return true;
     }
@@ -108,6 +112,29 @@ export class ProductService {
         }
 
         const allNumbers = !!request.text?.match(/^\d*$/);
+        const len12 = request.text.length === 12;
+        const couldBeScaleBarcode = allNumbers && len12;
+
+        if (couldBeScaleBarcode) {
+            // Samples
+            // 2 1030 5 02745 3
+            // 2 1030 5 08415 9
+            // 2 1030 2 26640 4
+            const plu = request.text.substring(1, 5);
+            const prod = products.find((p) => p.plu === plu);
+
+            if (prod) {
+                const totalPrice = +request.text.substring(6, 11);
+                const quantity = totalPrice / 100 / prod.price; 
+
+                return {
+                    items: [prod],
+                    allNumbers: true,
+                    price: totalPrice,
+                    quantity
+                };
+            }
+        }
 
         if (allNumbers && request.text.length > 3) {
             return {
@@ -141,7 +168,9 @@ export class ProductService {
     }
 }
 
-async function validateNameBarcodeAndSku(product: ProductEntity): Promise<boolean> {
+async function validateNameBarcodeAndSku(
+    product: ProductEntity
+): Promise<boolean> {
     const withSameName = await DataStore.query(Product, (p) =>
         p.name('eq', product.name)
     );
@@ -169,6 +198,17 @@ async function validateNameBarcodeAndSku(product: ProductEntity): Promise<boolea
 
         if (withSameSku.length) {
             Alert.alert('A product with same sku already exist');
+            return false;
+        }
+    }
+
+    if (product.plu) {
+        const withSamePlu = await DataStore.query(Product, (p) =>
+            p.plu('eq', product.plu!).id('ne', product.id)
+        );
+
+        if (withSamePlu.length) {
+            Alert.alert('A product with same plu already exist');
             return false;
         }
     }

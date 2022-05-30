@@ -26,7 +26,7 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
     const [busy, setBusy] = useState<boolean>(false);
 
     const category = useSelector(selectCategory(item.productCategoryId));
-    
+
     const deleteItem = async () => {
         if (!item.id) return;
 
@@ -96,8 +96,9 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
                     color={theme.theme.colors.grey2}
                 />
                 <View style={{ marginLeft: 10 }}>
-                    <Text style={styles.barcode}>B/C: {item.barcode}</Text>
+                    <Text style={styles.barcode}>UPC: {item.barcode}</Text>
                     <Text style={styles.barcode}>SKU: {item.sku}</Text>
+                    <Text style={styles.barcode}>PLU: {item.plu}</Text>
                 </View>
             </View>
             <View

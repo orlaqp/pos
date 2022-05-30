@@ -96,11 +96,13 @@ export function CategoryForm({ navigation }: CategoryFormProps) {
                     <UIVerticalSpacer size="large" />
                     <UIInput
                         name="name"
+                        label="Name"
                         placeholder="Name"
                         rules={{ required: 'Name is required' }}
                     />
                     <UIInput
                         name="description"
+                        label="Description"
                         placeholder="Description"
                         multiline={true}
                         numberOfLines={3}

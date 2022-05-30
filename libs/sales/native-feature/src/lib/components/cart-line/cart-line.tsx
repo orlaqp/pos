@@ -53,7 +53,7 @@ export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
                         ]}
                     >
                         $ {item.product.price.toFixed(2)}x
-                        {`${item.quantity}${item.product.unitOfMeasure}`}
+                        {`${item.quantity.toFixed(2)}${item.product.unitOfMeasure}`}
                     </Text>
                     <Text
                         style={[

@@ -5,7 +5,7 @@ import React from 'react';
 import { useFormContext, Controller, RegisterOptions } from 'react-hook-form';
 import { TextInput } from 'react-native';
 
-type Props = React.ComponentProps<typeof TextInput> & {
+type Props = React.ComponentProps<typeof Input> & {
     name: string;
     placeholder: string;
     rules?: RegisterOptions;

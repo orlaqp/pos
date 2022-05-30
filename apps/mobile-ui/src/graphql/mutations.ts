@@ -388,6 +388,7 @@ export const createProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      plu
       quantity
       unitOfMeasure
       trackStock
@@ -440,6 +441,7 @@ export const updateProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      plu
       quantity
       unitOfMeasure
       trackStock
@@ -492,6 +494,7 @@ export const deleteProduct = /* GraphQL */ `
       cost
       barcode
       sku
+      plu
       quantity
       unitOfMeasure
       trackStock
@@ -630,6 +633,7 @@ export const createPurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -670,6 +674,7 @@ export const updatePurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -710,6 +715,7 @@ export const deletePurchaseOrderLine = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -876,6 +882,7 @@ export const createStock = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -915,6 +922,7 @@ export const updateStock = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -954,6 +962,7 @@ export const deleteStock = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -1093,6 +1102,7 @@ export const createInventory = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -1132,6 +1142,7 @@ export const updateInventory = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -1171,6 +1182,7 @@ export const deleteInventory = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -1214,6 +1226,7 @@ export const createInventoryChanges = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -1257,6 +1270,7 @@ export const updateInventoryChanges = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock
@@ -1300,6 +1314,7 @@ export const deleteInventoryChanges = /* GraphQL */ `
         cost
         barcode
         sku
+        plu
         quantity
         unitOfMeasure
         trackStock

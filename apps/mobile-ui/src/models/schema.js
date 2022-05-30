@@ -575,6 +575,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "plu": {
+                    "name": "plu",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "quantity": {
                     "name": "quantity",
                     "isArray": false,
@@ -1994,5 +2001,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "d78ec58063fae9f595d5e07f1c66d89e"
+    "version": "db249a595205b82d91c5ba1d8d812739"
 };

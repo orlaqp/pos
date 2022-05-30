@@ -99,6 +99,7 @@ export const useSharedStyles = () => {
             color: theme.theme.colors.grey3,
         },
         inputContainerStyle: {
+            marginTop: 10,
             borderRadius: 5,
             borderBottomWidth: 0,
             paddingLeft: 10,
