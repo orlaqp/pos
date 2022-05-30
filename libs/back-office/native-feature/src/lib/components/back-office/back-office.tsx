@@ -23,7 +23,7 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '@pos/auth/data-access';
 import { StoreInfoForm } from '@pos/store-info/native-feature';
 import { Settings } from '@pos/settings/native-feature';
-import { InventoryCounts, InventoryReceives } from '@pos/inventory/native-feature';
+import { InventoryCounts, InventoryList, InventoryReceives } from '@pos/inventory/native-feature';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 // const Logo = require('../../assets/logo.png');
 
@@ -76,6 +76,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                 
                 <View style={styles.rightSide}>
                     <Stack.Navigator screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="In Stock" component={InventoryList} />
                         <Stack.Screen name="Counts" component={InventoryCounts} />
                         <Stack.Screen name="Receives" component={InventoryReceives} />
                         <Stack.Screen name="Products" component={Products} />

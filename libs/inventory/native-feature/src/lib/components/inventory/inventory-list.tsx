@@ -1,51 +1,46 @@
 import React, { useEffect, useState } from 'react';
-import {
-    OrderEntity,
-    OrderService,
-    selectOpenOrders,
-    subscribeToOrderChanges,
-    subscribeToOrderLineChanges,
-} from '@pos/orders/data-access';
-import { UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
-import { useSharedStyles } from '@pos/theme/native';
-import { View, StyleSheet, FlatList } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { OrderStatus } from '@pos/shared/api';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import CompactOrderItem from '../compact-order-item/compact-order-item';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import {
+    ProductEntity,
+    ProductService,
+    selectAllProducts,
+    subscribeToProductChanges,
+} from '@pos/products/data-access';
+import { useSharedStyles } from '@pos/theme/native';
+import { FlatList, SafeAreaView, StyleSheet, View } from 'react-native';
+import { UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
+import InventoryLine from './inventory-line';
 
-export interface CompactOrderListProps {
-    onSelect: () => void;
+export interface InventoryListProps {
+    navigation: NativeStackNavigationProp<any>;
 }
 
-export function CompactOrderList({ onSelect }: CompactOrderListProps) {
+export function InventoryList({ navigation }: InventoryListProps) {
     const styles = useStyles();
     const dispatch = useDispatch();
+    const products = useSelector(selectAllProducts);
     const [filterText, setFilterText] = useState<string>();
-    const openOrders = useSelector(selectOpenOrders);
-    const [filteredList, setFilteredList] = useState<OrderEntity[]>(openOrders);
+    const [filteredList, setFilteredList] = useState<ProductEntity[]>(products);
 
     useEffect(() => {
-        const ordersSub = subscribeToOrderChanges(dispatch);
-        const linesSub = subscribeToOrderLineChanges(dispatch);
+        const products = subscribeToProductChanges(dispatch);
+
         return () => {
-            console.log('Closing orders subscription');
-            ordersSub.unsubscribe();
-            linesSub.unsubscribe();
+            console.log('Closing products subscription');
+            products.unsubscribe();
         };
     }, [dispatch]);
 
     useEffect(() => {
-        setFilteredList(
-            OrderService.search(openOrders, {
-                status: OrderStatus.OPEN,
-                filter: filterText,
-            })
-        );
-    }, [filterText, openOrders]);
+        const res = ProductService.search(products, {
+            text: filterText,
+        });
+        setFilteredList(res.items);
+    }, [filterText, products]);
 
     return (
-        <SafeAreaView>
+        <SafeAreaView style={styles.page}>
             <View style={{ flexDirection: 'column' }}>
                 <View style={[styles.header, { alignItems: 'center' }]}>
                     <View style={{ flex: 5 }}>
@@ -63,10 +58,7 @@ export function CompactOrderList({ onSelect }: CompactOrderListProps) {
                         <FlatList
                             data={filteredList}
                             renderItem={({ item }) => (
-                                <CompactOrderItem
-                                    item={item}
-                                    onSelect={onSelect}
-                                />
+                                <InventoryLine item={item} />
                             )}
                         />
                     )}
@@ -91,4 +83,4 @@ const useStyles = () => {
     };
 };
 
-export default CompactOrderList;
+export default InventoryList;

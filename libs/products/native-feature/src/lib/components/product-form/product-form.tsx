@@ -80,6 +80,8 @@ export function ProductForm({ navigation }: ProductFormProps) {
             quantity: product?.quantity || 0,
             unitOfMeasure: product?.unitOfMeasure,
             trackStock: true,
+            reorderPoint: product?.reorderPoint,
+            reorderQuantity: product?.reorderQuantity,
             picture: product?.picture,
             productCategoryId: product?.productCategoryId,
             productBrandId: product?.productBrandId,

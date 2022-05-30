@@ -603,6 +603,20 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "reorderPoint": {
+                    "name": "reorderPoint",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "reorderQuantity": {
+                    "name": "reorderQuantity",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "picture": {
                     "name": "picture",
                     "isArray": false,
@@ -2001,5 +2015,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "db249a595205b82d91c5ba1d8d812739"
+    "version": "143ba7f4d7681a80ec1e3d7b9dd3cf41"
 };

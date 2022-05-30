@@ -10,11 +10,9 @@ import {
     createEntityAdapter,
     createSelector,
     createSlice,
-    Dictionary,
     EntityId,
     EntityState,
     PayloadAction,
-    Update,
 } from '@reduxjs/toolkit';
 import {
     OrderEntity,
@@ -43,7 +41,7 @@ export interface OrdersState extends EntityState<OrderEntity> {
     submitError?: string;
     selected?: OrderEntity;
     filterQuery: FilterRequest;
-    filteredList?: Dictionary<OrderEntity>;
+    filteredList?: OrderEntity[];
 }
 
 export const ordersAdapter = createEntityAdapter<OrderEntity>();
@@ -237,13 +235,9 @@ export const selectFilteredList = createSelector(
 );
 
 function filterList(state: OrdersState, options: FilterRequest) {
-    const filteredList: Dictionary<OrderEntity> = {};
-    state.loadingStatus = 'loaded';
-
-    const orders = OrderService.search(
-        ordersAdapter.getSelectors().selectAll(state).filter(o => o.status === 'OPEN'),
+    state.filteredList = OrderService.search(
+        ordersAdapter.getSelectors().selectAll(state),
         options
     );
-
-    state.filteredList = filteredList;
+    state.loadingStatus = 'loaded';
 }

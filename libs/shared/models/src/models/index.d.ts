@@ -189,6 +189,8 @@ export declare class Product {
   readonly quantity: number;
   readonly unitOfMeasure: string;
   readonly trackStock: boolean;
+  readonly reorderPoint?: number | null;
+  readonly reorderQuantity?: number | null;
   readonly picture?: string | null;
   readonly Category?: Category | null;
   readonly Brand?: Brand | null;

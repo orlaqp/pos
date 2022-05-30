@@ -392,6 +392,8 @@ export const createProduct = /* GraphQL */ `
       quantity
       unitOfMeasure
       trackStock
+      reorderPoint
+      reorderQuantity
       picture
       Category {
         id
@@ -445,6 +447,8 @@ export const updateProduct = /* GraphQL */ `
       quantity
       unitOfMeasure
       trackStock
+      reorderPoint
+      reorderQuantity
       picture
       Category {
         id
@@ -498,6 +502,8 @@ export const deleteProduct = /* GraphQL */ `
       quantity
       unitOfMeasure
       trackStock
+      reorderPoint
+      reorderQuantity
       picture
       Category {
         id
@@ -637,6 +643,8 @@ export const createPurchaseOrderLine = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -678,6 +686,8 @@ export const updatePurchaseOrderLine = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -719,6 +729,8 @@ export const deletePurchaseOrderLine = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -886,6 +898,8 @@ export const createStock = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -926,6 +940,8 @@ export const updateStock = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -966,6 +982,8 @@ export const deleteStock = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -1106,6 +1124,8 @@ export const createInventory = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -1146,6 +1166,8 @@ export const updateInventory = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -1186,6 +1208,8 @@ export const deleteInventory = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -1230,6 +1254,8 @@ export const createInventoryChanges = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -1274,6 +1300,8 @@ export const updateInventoryChanges = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -1318,6 +1346,8 @@ export const deleteInventoryChanges = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt

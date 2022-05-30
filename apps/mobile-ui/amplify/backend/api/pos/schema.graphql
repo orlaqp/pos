@@ -70,6 +70,8 @@ type Product @model @auth(rules: [{allow: public}]) {
   quantity: Float!
   unitOfMeasure: String!
   trackStock: Boolean! 
+  reorderPoint: Float
+  reorderQuantity: Float
   picture: String
   Category: Category @hasOne
   Brand: Brand @hasOne

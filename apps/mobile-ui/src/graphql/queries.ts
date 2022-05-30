@@ -418,6 +418,8 @@ export const getProduct = /* GraphQL */ `
       quantity
       unitOfMeasure
       trackStock
+      reorderPoint
+      reorderQuantity
       picture
       Category {
         id
@@ -473,6 +475,8 @@ export const listProducts = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -514,6 +518,8 @@ export const syncProducts = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -623,6 +629,8 @@ export const getPurchaseOrderLine = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -869,6 +877,8 @@ export const getStock = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -1082,6 +1092,8 @@ export const getInventory = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt
@@ -1173,6 +1185,8 @@ export const getInventoryChanges = /* GraphQL */ `
         quantity
         unitOfMeasure
         trackStock
+        reorderPoint
+        reorderQuantity
         picture
         isActive
         createdAt

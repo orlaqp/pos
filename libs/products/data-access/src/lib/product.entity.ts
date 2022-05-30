@@ -13,6 +13,8 @@ export type ProductEntity = {
     plu?: string | null | undefined;
     quantity: number;
     trackStock: boolean;
+    reorderPoint: number | null | undefined;
+    reorderQuantity: number | null | undefined;
     picture: string | null | undefined;
     productCategoryId: string | null | undefined;
     productBrandId: string | null | undefined;
@@ -35,6 +37,8 @@ export class ProductEntityMapper {
             quantity: p.quantity,
             unitOfMeasure: p.unitOfMeasure,
             trackStock: p.trackStock,
+            reorderPoint: p.reorderPoint,
+            reorderQuantity: p.reorderQuantity,
             picture: p.picture,
             productCategoryId: p.productCategoryId,
             productBrandId: p.productBrandId,

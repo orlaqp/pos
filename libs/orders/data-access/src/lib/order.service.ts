@@ -124,6 +124,26 @@ export class OrderService {
 
         return result;
     }
+
+    static updateReorderPoint(id: string, value: number) {
+        DataStore.query(Product, p => p.id('eq', id)).then(p => {
+            if (!p?.length) return;
+
+            DataStore.save(Product.copyOf(p[0], updated => {
+                updated.reorderPoint = value
+            }))
+        });
+    }
+
+    static updateReorderQuantity(id: string, value: number): void {
+        DataStore.query(Product, p => p.id('eq', id)).then(p => {
+            if (!p?.length) return;
+
+            DataStore.save(Product.copyOf(p[0], updated => {
+                updated.reorderQuantity = value
+            }))
+        });
+    }
 }
 
 async function updateProductQuantity(id: string, quantity: number) {

@@ -61,6 +61,8 @@ export class ProductService {
                 updated.plu = product?.plu;
                 updated.unitOfMeasure = product?.unitOfMeasure;
                 updated.trackStock = product?.trackStock;
+                updated.reorderPoint = product?.reorderPoint;
+                updated.reorderQuantity = product?.reorderQuantity;
                 updated.picture = product?.picture;
                 updated.productCategoryId = product?.productCategoryId;
                 updated.productBrandId = product?.productBrandId;

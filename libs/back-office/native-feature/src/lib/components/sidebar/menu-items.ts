@@ -26,8 +26,9 @@ export const menuItems: SidebarItem[] = [
         title: 'Inventory',
         icon: 'warehouse',
         children: [
-            { id: '4-1', title: 'Counts' },
-            { id: '4-2', title: 'Receives' },
+            { id: '4-1', title: 'In Stock' },
+            { id: '4-2', title: 'Counts' },
+            { id: '4-3', title: 'Receives' },
         ],
         role: Role.Admin,
     },
