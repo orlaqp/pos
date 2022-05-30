@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { ordersActions, selectFilteredList, subscribeToOrderChanges, subscribeToOrderLineChanges } from '@pos/orders/data-access';
+import {
+    OrderEntity,
+    ordersActions,
+    selectFilteredList,
+    subscribeToOrderChanges,
+    subscribeToOrderLineChanges,
+} from '@pos/orders/data-access';
 import { UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import OrderItem from '../order-item/order-item';
 import { useSharedStyles } from '@pos/theme/native';
 import { View, StyleSheet, FlatList } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { ButtonGroup, useTheme } from '@rneui/themed';
+import { ButtonGroup, Dialog, useTheme } from '@rneui/themed';
 import { OrderStatus } from '@pos/shared/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import OrderVoidForm from '../order-void-form/order-void-form';
 
 export interface OrderListProps {
     navigation?: NativeStackNavigationProp<any>;
@@ -19,6 +26,7 @@ export function OrderList({ navigation }: OrderListProps) {
     const styles = useStyles();
     const dispatch = useDispatch();
     const [filterText, setFilterText] = useState<string>();
+    const [orderToVoid, setOrderToVoid] = useState<OrderEntity | undefined>(0);
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
     const items = useSelector(selectFilteredList);
     const statusButtons: OrderStatus[] = [OrderStatus.OPEN, OrderStatus.PAID];
@@ -67,9 +75,7 @@ export function OrderList({ navigation }: OrderListProps) {
                     </View>
                 </View>
                 <View style={{ padding: 20 }}>
-                    {!items?.length && (
-                        <UIEmptyState text="No orders found" />
-                    )}
+                    {!items?.length && <UIEmptyState text="No orders found" />}
                     {items?.length && (
                         <FlatList
                             data={items}
@@ -77,12 +83,21 @@ export function OrderList({ navigation }: OrderListProps) {
                                 <OrderItem
                                     navigation={navigation}
                                     item={item}
+                                    onVoid={(order) => setOrderToVoid(order)}
                                 />
                             )}
                         />
                     )}
                 </View>
             </View>
+
+            <Dialog
+                isVisible={!!orderToVoid}
+                onBackdropPress={() => setOrderToVoid(undefined)}
+                overlayStyle={[styles.overlay, { width: 700 }]}
+            >
+                <OrderVoidForm order={orderToVoid!} />
+            </Dialog>
         </SafeAreaView>
     );
 }

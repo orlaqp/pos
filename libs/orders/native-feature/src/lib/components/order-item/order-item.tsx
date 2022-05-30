@@ -18,9 +18,10 @@ import { selectStore } from '@pos/store-info/data-access';
 export interface OrderItemProps {
     item: OrderEntity;
     navigation?: NativeStackNavigationProp<any>;
+    onVoid: (order: OrderEntity) => void;
 }
 
-export function OrderItem({ item, navigation }: OrderItemProps) {
+export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
     const dispatch = useDispatch();
@@ -38,28 +39,30 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
     };
 
     const openItem = async () => {
-        if (item.status === 'OPEN') {
-            const orderLines = await OrderService.getLines(item);
-            dispatch(cartActions.set({
+        const orderLines = await OrderService.getLines(item);
+        dispatch(
+            cartActions.set({
                 ...item,
-                items: orderLines
-            }));
-            navigation?.navigate('Sales', { mode: 'payment' });
-        }
+                items: orderLines,
+            })
+        );
+        navigation?.navigate('Sales', { mode: 'payment' });
+    };
 
-        if (item.status === 'PAID') {
-            if (!store || !defaultPrinter) {
-                Alert.alert('Store info and printer setup needs ro be ready before closing an order');
-                return;
-            }
-
-            printReceipt(
-                store,
-                defaultPrinter,
-                OrderEntityMapper.asCartState(item),
-                item
+    const printItem = async () => {
+        if (!store || !defaultPrinter) {
+            Alert.alert(
+                'Store info and printer setup needs ro be ready before closing an order'
             );
+            return;
         }
+
+        printReceipt(
+            store,
+            defaultPrinter,
+            OrderEntityMapper.asCartState(item),
+            item
+        );
     };
 
     const confirmDeletion = () => {
@@ -74,9 +77,7 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
         <View style={styles.dataRow}>
             {busy && <ActivityIndicator size="small" />}
             <View style={{ flex: 2 }}>
-                <Text
-                    style={[styles.name, { textAlign: 'center' }]}
-                >
+                <Text style={[styles.name, { textAlign: 'center' }]}>
                     {`${item.id.substring(0, 8)}...`}
                 </Text>
             </View>
@@ -86,7 +87,7 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
             <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.items?.length} item(s)</Text>
             </View>
-            <View style={{ flex: 2 }}>
+            <View style={{ flex: 1 }}>
                 <Text style={[styles.name, { textAlign: 'right' }]}>
                     {`$ ${item.total.toFixed(2)}`}
                 </Text>
@@ -99,20 +100,45 @@ export function OrderItem({ item, navigation }: OrderItemProps) {
                     justifyContent: 'flex-end',
                 }}
             >
-                <Button
-                    type="outline"
-                    title={item.status === 'OPEN' ? 'Charge' : 'Print'}
-                    icon={{
-                        name:
-                            item.status === 'OPEN'
-                                ? 'folder-open-outline'
-                                : 'printer-outline',
-                        type: 'material-community',
-                        color: theme.theme.colors.primary,
-                    }}
-                    titleStyle={{ paddingRight: 10 }}
-                    onPress={openItem}
-                />
+                {item.status === 'OPEN' && (
+                    <Button
+                        type="clear"
+                        title="Charge"
+                        icon={{
+                            name: 'folder-open-outline',
+                            type: 'material-community',
+                            color: theme.theme.colors.primary,
+                        }}
+                        titleStyle={{ paddingRight: 10 }}
+                        onPress={openItem}
+                    />
+                )}
+                {item.status === 'PAID' && (
+                    <>
+                        <Button
+                            type="clear"
+                            title="Void"
+                            icon={{
+                                name: 'close-circle-outline',
+                                type: 'material-community',
+                                color: theme.theme.colors.primary,
+                            }}
+                            titleStyle={{ paddingRight: 10 }}
+                            onPress={() => onVoid(item)}
+                        />
+                        <Button
+                            type="clear"
+                            title="Print"
+                            icon={{
+                                name: 'printer-outline',
+                                type: 'material-community',
+                                color: theme.theme.colors.primary,
+                            }}
+                            titleStyle={{ paddingRight: 10 }}
+                            onPress={printItem}
+                        />
+                    </>
+                )}
                 <Button
                     type="clear"
                     icon={{

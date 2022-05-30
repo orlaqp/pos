@@ -214,6 +214,10 @@ export const selectOpenOrders = createSelector(getOrdersState, (state) =>
         .filter((o) => o.status === 'OPEN')
 );
 
+export const selectOrderLines = (id: string) => createSelector(getOrdersState, (state) =>
+    state.lines.filter((o) => o.orderID === id)
+);
+
 export const selectOrdersEntities = createSelector(
     getOrdersState,
     selectEntities
