@@ -1,5 +1,5 @@
 import { Category } from '@pos/shared/models';
-import { AssetsService } from '@pos/shared/ui-native';
+import { AssetsService } from '@pos/shared/utils';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
 import { CategoryEntity } from './category.entity';

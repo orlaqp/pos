@@ -25,7 +25,7 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
 
-    const category = useSelector(selectCategory(item.productCategoryId));
+    const category = useSelector(selectCategory(item.productCategoryId!));
 
     const deleteItem = async () => {
         if (!item.id) return;

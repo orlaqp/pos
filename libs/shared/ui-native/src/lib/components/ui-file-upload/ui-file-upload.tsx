@@ -9,7 +9,7 @@ import {
     ImageSourcePropType,
     TouchableOpacity,
 } from 'react-native';
-import { AssetsService } from './assets.service';
+import { AssetsService } from '@pos/shared/utils';
 import UISpinner from '../ui-spinner/ui-spinner';
 import { cancellablePromise } from '@pos/shared/utils';
 

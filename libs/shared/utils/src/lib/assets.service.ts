@@ -1,11 +1,15 @@
 import { Storage } from 'aws-amplify';
 import { launchImageLibrary, MediaType } from 'react-native-image-picker';
+import { Readable } from 'stream';
+import { blobToBase64 } from './conversion.service';
 
 export interface UploadResponse {
     cancel?: boolean;
     errorMessage?: string;
     key?: string;
 }
+
+export type GetAssetResponse = Readable | ReadableStream | Blob | undefined;
 
 export class AssetsService {
     static async uploadAsset(mediaType: MediaType, keyPrefix: string): Promise<UploadResponse | null> {
@@ -43,6 +47,16 @@ export class AssetsService {
     
     static getAssetUri(key: string) {
         return Storage.get(key, { download: false });
+    }
+
+    static async getImage(key: string): Promise<string> {
+        const res = await Storage.get(key, { download: true });
+        let base64: string = (await blobToBase64(res.Body)) as any;
+
+        const extension = key.split('.').pop();
+        base64 = base64.replace('data:binary/octet-stream;', `data:image/${extension};`)
+
+        return base64 as string;
     }
     
     static deleteAsset(key: string) {
