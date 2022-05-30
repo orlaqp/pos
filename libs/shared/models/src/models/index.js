@@ -4,9 +4,8 @@ import { schema } from './schema';
 
 const OrderStatus = {
   "OPEN": "OPEN",
-  "CANCELLED": "CANCELLED",
-  "PAID": "PAID",
-  "ONHOLD": "ONHOLD"
+  "REFUNDED": "REFUNDED",
+  "PAID": "PAID"
 };
 
 const InventoryCountStatus = {

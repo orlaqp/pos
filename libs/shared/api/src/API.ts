@@ -201,9 +201,8 @@ export type CreateOrderInput = {
 
 export enum OrderStatus {
   OPEN = "OPEN",
-  CANCELLED = "CANCELLED",
+  REFUNDED = "REFUNDED",
   PAID = "PAID",
-  ONHOLD = "ONHOLD",
 }
 
 

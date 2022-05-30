@@ -2,52 +2,85 @@ import React, { useEffect, useState } from 'react';
 
 import { View, Text, Alert, FlatList } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
-import { OrderEntity, OrderLineEntity } from '@pos/orders/data-access';
+import {
+    OrderEntity,
+    OrderLineEntity,
+    OrderService,
+} from '@pos/orders/data-access';
 import OrderVoidableItem from '../order-voidable-item/order-voidable-item';
 import { Button, useTheme } from '@rneui/themed';
+import { EACH } from '@pos/unit-of-measures/data-access';
 
 export interface OrderItemProps {
     order: OrderEntity;
+    onRefundComplete: () => void;
 }
 
-export function OrderVoidForm({ order }: OrderItemProps) {
+export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
     const [refundAmount, setRefundAmount] = useState<number>(0);
+    const [itemList, setItemList] = useState<OrderLineEntity[]>([]);
     const [newTotal, setNewTotal] = useState<number>(0);
-
-    // const deleteItem = async () => {
-    //     if (!item.id) return;
-
-    //     setBusy(true);
-    //     await OrderService.delete(item.id);
-    //     setBusy(false);
-    //     dispatch(ordersActions.remove(item.id));
-    // };
+    const [linesToRefund, setLinesToRefund] = useState<OrderLineEntity[]>([]);
+    const [busy, setBusy] = useState<boolean>(false);
 
     const onItemToggle = (line: OrderLineEntity, selected: boolean) => {
-        const subtotal = line.price * line.quantity;
         if (selected) {
-            setRefundAmount(refundAmount - subtotal);
+            setLinesToRefund((list) => [...list, line]);
         } else {
-            setRefundAmount(refundAmount + subtotal);
+            const newItems = [...linesToRefund];
+            newItems.splice(newItems.indexOf(line), 1);
+            setLinesToRefund((list) => [...newItems]);
         }
-    }
+    };
 
-    const confirmVoid = () => {
+    const processRefund = async () => {
+        setBusy(true);
+        await OrderService.refund(
+            order.id,
+            linesToRefund.map((l) => ({
+                productId: l.productId,
+                price: l.price,
+                quantity: l.quantity,
+            }))
+        );
+        setBusy(false);
+        onRefundComplete();
+    };
+
+    const confirmRefund = () => {
         Alert.alert(
             'Are you sure?',
             'You will not be able to undo this operation',
-            [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => console.log('confirming') },
-            ]
+            [{ text: 'No' }, { text: 'Yes', onPress: processRefund }]
         );
     };
 
     useEffect(() => {
-        setNewTotal(order.total + refundAmount);
-    }, [order, refundAmount]);
+        const refundAmount = linesToRefund.reduce(
+            (prev, next) => prev + next.price * next.quantity,
+            0
+        );
+
+        setRefundAmount(-1 * refundAmount);
+        setNewTotal(order.total - refundAmount);
+    }, [order, linesToRefund]);
+
+    useEffect(() => {
+        const spreadLines: OrderLineEntity[] = [];
+        order.items?.forEach((line) => {
+            if (line.unitOfMeasure === EACH) {
+                for (let i = 0; i < line.quantity; i++) {
+                    spreadLines.push({ ...line, quantity: 1 });
+                }
+            } else {
+                spreadLines.push(line);
+            }
+        });
+
+        setItemList(spreadLines);
+    }, [order]);
 
     return (
         <View
@@ -59,9 +92,10 @@ export function OrderVoidForm({ order }: OrderItemProps) {
             <View style={{ flex: 9 }}>
                 <FlatList
                     horizontal={false}
-                    data={order.items}
+                    data={itemList}
                     renderItem={(data) => (
                         <OrderVoidableItem
+                            key={data.index}
                             line={data.item}
                             onToggle={onItemToggle}
                         />
@@ -82,7 +116,7 @@ export function OrderVoidForm({ order }: OrderItemProps) {
                     }}
                 >
                     <Text style={[styles.secondaryText, { fontSize: 14 }]}>
-                        Original Total:
+                        Original Amount:
                     </Text>
                     <Text
                         style={[
@@ -102,7 +136,7 @@ export function OrderVoidForm({ order }: OrderItemProps) {
                     }}
                 >
                     <Text style={[styles.secondaryText, { fontSize: 14 }]}>
-                        To Refund:
+                        Refund Amount:
                     </Text>
                     <Text
                         style={[
@@ -125,7 +159,7 @@ export function OrderVoidForm({ order }: OrderItemProps) {
                     }}
                 >
                     <Text style={[styles.secondaryText, { fontSize: 14 }]}>
-                        New Total:
+                        New Amount:
                     </Text>
                     <Text
                         style={[
@@ -142,12 +176,18 @@ export function OrderVoidForm({ order }: OrderItemProps) {
                 </View>
                 <View style={{ flex: 2, paddingLeft: 60 }}>
                     <Button
-                        title="Save"
+                        title="Process"
                         icon={{
                             name: 'check',
                             type: 'material-community',
-                            color: styles.primaryText.color,
+                            color:
+                                refundAmount === 0
+                                    ? theme.theme.colors.grey2
+                                    : styles.primaryText.color,
                         }}
+                        disabled={refundAmount === 0}
+                        loading={busy}
+                        onPress={confirmRefund}
                     />
                 </View>
             </View>

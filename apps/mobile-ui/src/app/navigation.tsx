@@ -54,7 +54,6 @@ export function Navigation() {
                 isVisible={showOtherOrders}
                 onBackdropPress={() => setShowOtherOrders(false)}
                 overlayStyle={[styles.overlay, { width: 700 }]}
-                presentationStyle='pageSheet'
             >
                 <CompactOrderList onSelect={() => setShowOtherOrders(false)} />
             </Dialog>

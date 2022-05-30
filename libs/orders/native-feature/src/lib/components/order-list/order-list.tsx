@@ -74,9 +74,11 @@ export function OrderList({ navigation }: OrderListProps) {
                         />
                     </View>
                 </View>
-                <View style={{ padding: 20 }}>
-                    {!items?.length && <UIEmptyState text="No orders found" />}
-                    {items?.length && (
+                <View style={{ paddingHorizontal: 20 }}>
+                    {!items?.length === 0 && (
+                        <UIEmptyState text="No orders found" />
+                    )}
+                    {items?.length > 0 && (
                         <FlatList
                             data={items}
                             renderItem={({ item }) => (
@@ -96,7 +98,10 @@ export function OrderList({ navigation }: OrderListProps) {
                 onBackdropPress={() => setOrderToVoid(undefined)}
                 overlayStyle={[styles.overlay, { width: 700 }]}
             >
-                <OrderVoidForm order={orderToVoid!} />
+                <OrderVoidForm
+                    order={orderToVoid!}
+                    onRefundComplete={() => setOrderToVoid(undefined)}
+                />
             </Dialog>
         </SafeAreaView>
     );

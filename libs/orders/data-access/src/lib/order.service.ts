@@ -89,7 +89,9 @@ export class OrderService {
 
         const promises: Promise<unknown>[] = [];
         lines.forEach((l) => {
-            promises.push(updateProductQuantity(l.productId, l.quantity));
+            promises.push(
+                updateProductQuantity(order.status, l.productId, l.quantity)
+            );
         });
 
         Promise.all(promises);
@@ -126,33 +128,70 @@ export class OrderService {
     }
 
     static updateReorderPoint(id: string, value: number) {
-        DataStore.query(Product, p => p.id('eq', id)).then(p => {
+        DataStore.query(Product, (p) => p.id('eq', id)).then((p) => {
             if (!p?.length) return;
 
-            DataStore.save(Product.copyOf(p[0], updated => {
-                updated.reorderPoint = value
-            }))
+            DataStore.save(
+                Product.copyOf(p[0], (updated) => {
+                    updated.reorderPoint = value;
+                })
+            );
         });
     }
 
     static updateReorderQuantity(id: string, value: number): void {
-        DataStore.query(Product, p => p.id('eq', id)).then(p => {
+        DataStore.query(Product, (p) => p.id('eq', id)).then((p) => {
             if (!p?.length) return;
 
-            DataStore.save(Product.copyOf(p[0], updated => {
-                updated.reorderQuantity = value
-            }))
+            DataStore.save(
+                Product.copyOf(p[0], (updated) => {
+                    updated.reorderQuantity = value;
+                })
+            );
         });
+    }
+
+    static async refund(
+        id: string,
+        lines: { productId: string; price: number; quantity: number }[]
+    ) {
+        // First refund the entire original order
+        const orders = await DataStore.query(Order, (o) => o.id('eq', id));
+        const order = orders[0];
+        if (!order) return;
+
+        const newOrder = Order.copyOf(order, (o) => {
+            o.status = OrderStatus.REFUNDED;
+        });
+        
+        await DataStore.save(newOrder);
+        await OrderService.updateInventory(newOrder);
+
+        // then create a new one if necessary
+
     }
 }
 
-async function updateProductQuantity(id: string, quantity: number) {
+async function updateProductQuantity(
+    status: OrderStatus | keyof typeof OrderStatus,
+    id: string,
+    quantity: number
+) {
     const p = await DataStore.query(Product, id);
 
     if (!p) return;
 
     const updatedProduct = Product.copyOf(p, (updated) => {
-        updated.quantity = -1 * quantity;
+        switch (status) {
+            case 'PAID':
+                updated.quantity = -1 * quantity;
+                break;
+            case 'REFUNDED':
+                updated.quantity = quantity;
+                break;
+            default:
+                break;
+        }
     });
 
     return DataStore.save(updatedProduct);

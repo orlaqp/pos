@@ -52,9 +52,8 @@ type OrderLine @model @auth(rules: [{allow: public}]) {
 
 enum OrderStatus {
   OPEN
-  CANCELLED
+  REFUNDED
   PAID
-  ONHOLD
 }
 
 type Product @model @auth(rules: [{allow: public}]) {

@@ -2,9 +2,8 @@ import { ModelInit, MutableModel, PersistentModelConstructor } from "@aws-amplif
 
 export enum OrderStatus {
   OPEN = "OPEN",
-  CANCELLED = "CANCELLED",
-  PAID = "PAID",
-  ONHOLD = "ONHOLD"
+  REFUNDED = "REFUNDED",
+  PAID = "PAID"
 }
 
 export enum InventoryCountStatus {

@@ -1994,9 +1994,8 @@ export const schema = {
             "name": "OrderStatus",
             "values": [
                 "OPEN",
-                "CANCELLED",
-                "PAID",
-                "ONHOLD"
+                "REFUNDED",
+                "PAID"
             ]
         },
         "InventoryCountStatus": {
