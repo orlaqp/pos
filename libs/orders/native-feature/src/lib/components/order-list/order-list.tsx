@@ -29,7 +29,11 @@ export function OrderList({ navigation }: OrderListProps) {
     const [orderToVoid, setOrderToVoid] = useState<OrderEntity | undefined>(0);
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
     const items = useSelector(selectFilteredList);
-    const statusButtons: OrderStatus[] = [OrderStatus.OPEN, OrderStatus.PAID];
+    const statusButtons: OrderStatus[] = [
+        OrderStatus.OPEN,
+        OrderStatus.PAID,
+        OrderStatus.REFUNDED,
+    ];
 
     useEffect(() => {
         const ordersSub = subscribeToOrderChanges(dispatch);
@@ -53,7 +57,7 @@ export function OrderList({ navigation }: OrderListProps) {
         <SafeAreaView style={styles.page}>
             <View style={{ flexDirection: 'column' }}>
                 <View style={[styles.header, { alignItems: 'center' }]}>
-                    <View style={{ flex: 2 }}>
+                    <View style={{ flex: 4 }}>
                         <ButtonGroup
                             buttons={statusButtons}
                             selectedIndex={selectedIndex}
@@ -67,7 +71,7 @@ export function OrderList({ navigation }: OrderListProps) {
                             ]}
                         />
                     </View>
-                    <View style={{ flex: 5 }}>
+                    <View style={{ flex: 4 }}>
                         <UISearchInput
                             debounceTime={300}
                             onSubmit={(text) => filter(selectedIndex, text)}

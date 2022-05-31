@@ -87,9 +87,12 @@ export class OrderEntityMapper {
             quantity: i?.quantity,
             id: i?.id,
             product: {
+                id: i.productId,
                 name: i?.productName,
                 price: i?.price,
                 unitOfMeasure: i?.unitOfMeasure,
+                barcode: i.barcode,
+                sku: i.sku,
             },
         }));
         state.selected = initialCartState.selected;

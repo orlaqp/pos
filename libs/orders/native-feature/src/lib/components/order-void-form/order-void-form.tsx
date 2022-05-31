@@ -10,6 +10,8 @@ import {
 import OrderVoidableItem from '../order-voidable-item/order-voidable-item';
 import { Button, useTheme } from '@rneui/themed';
 import { EACH } from '@pos/unit-of-measures/data-access';
+import { useSelector } from 'react-redux';
+import { selectUser } from '@pos/auth/data-access';
 
 export interface OrderItemProps {
     order: OrderEntity;
@@ -24,6 +26,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     const [newTotal, setNewTotal] = useState<number>(0);
     const [linesToRefund, setLinesToRefund] = useState<OrderLineEntity[]>([]);
     const [busy, setBusy] = useState<boolean>(false);
+    const user = useSelector(selectUser);
 
     const onItemToggle = (line: OrderLineEntity, selected: boolean) => {
         if (selected) {
@@ -36,9 +39,15 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     };
 
     const processRefund = async () => {
+        if (!user) {
+            Alert.alert('Error', 'Refund is not possible because no login user was found');
+            return;
+        }
+
         setBusy(true);
         await OrderService.refund(
-            order.id,
+            user,
+            order,
             linesToRefund.map((l) => ({
                 productId: l.productId,
                 price: l.price,

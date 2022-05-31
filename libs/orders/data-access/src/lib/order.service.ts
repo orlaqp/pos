@@ -1,6 +1,10 @@
 import { Order, OrderLine, OrderStatus, Product } from '@pos/shared/models';
 import { DataStore } from 'aws-amplify';
-import { OrderEntity, OrderEntityMapper } from './order.entity';
+import {
+    OrderEntity,
+    OrderEntityMapper,
+    OrderLineEntity,
+} from './order.entity';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
@@ -152,23 +156,44 @@ export class OrderService {
     }
 
     static async refund(
-        id: string,
+        user: User,
+        oldOrder: OrderEntity,
         lines: { productId: string; price: number; quantity: number }[]
     ) {
+        debugger;
         // First refund the entire original order
-        const orders = await DataStore.query(Order, (o) => o.id('eq', id));
+        const orders = await DataStore.query(Order, (o) =>
+            o.id('eq', oldOrder.id)
+        );
         const order = orders[0];
         if (!order) return;
 
         const newOrder = Order.copyOf(order, (o) => {
             o.status = OrderStatus.REFUNDED;
         });
-        
+
         await DataStore.save(newOrder);
         await OrderService.updateInventory(newOrder);
 
         // then create a new one if necessary
+        const orderEntity = OrderEntityMapper.asCartState(oldOrder);
+        
+        lines.forEach((l) => {
+            const line = orderEntity.items?.find(
+                (li) => li.product.id === l.productId && li.quantity > 0
+            );
 
+            if (line) {
+                console.log(`Found product ${line.product.name}, removing 1`);
+                line.quantity -= l.quantity;
+            }
+        });
+
+        orderEntity.items = orderEntity.items?.filter(l => l.quantity > 0);
+
+        if (!orderEntity.items?.length) return;
+
+        await OrderService.saveOrder(user, orderEntity);
     }
 }
 
