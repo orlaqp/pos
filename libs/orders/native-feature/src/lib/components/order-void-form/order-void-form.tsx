@@ -49,7 +49,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
             user,
             order,
             linesToRefund.map((l) => ({
-                productId: l.productId,
+                id: l.id!,
                 price: l.price,
                 quantity: l.quantity,
             }))
@@ -95,7 +95,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
         <View
             style={
                 (styles.pageBackground,
-                { height: 500, flexDirection: 'column' })
+                { height: 500, flexDirection: 'column', margin: 20 })
             }
         >
             <View style={{ flex: 9 }}>

@@ -37,9 +37,13 @@ export class OrderService {
         return o;
     }
 
-    static async saveOrder(user: User, state: CartState) {
+    static async saveOrder(
+        user: User,
+        state: CartState,
+        status?: OrderStatus | keyof typeof OrderStatus
+    ) {
         let o = new Order({
-            status: 'OPEN',
+            status: status || 'OPEN',
             subtotal: state.footer.subtotal,
             tax: 0,
             total: state.footer.total,
@@ -158,9 +162,8 @@ export class OrderService {
     static async refund(
         user: User,
         oldOrder: OrderEntity,
-        lines: { productId: string; price: number; quantity: number }[]
+        lines: { id: string; price: number; quantity: number }[]
     ) {
-        debugger;
         // First refund the entire original order
         const orders = await DataStore.query(Order, (o) =>
             o.id('eq', oldOrder.id)
@@ -176,11 +179,11 @@ export class OrderService {
         await OrderService.updateInventory(newOrder);
 
         // then create a new one if necessary
-        const orderEntity = OrderEntityMapper.asCartState(oldOrder);
-        
+        const cartOrder = OrderEntityMapper.asCartState(oldOrder);
+
         lines.forEach((l) => {
-            const line = orderEntity.items?.find(
-                (li) => li.product.id === l.productId && li.quantity > 0
+            const line = cartOrder.items?.find(
+                (li) => li.id === l.id && li.quantity > 0
             );
 
             if (line) {
@@ -189,11 +192,12 @@ export class OrderService {
             }
         });
 
-        orderEntity.items = orderEntity.items?.filter(l => l.quantity > 0);
+        // cartOrder.items = cartOrder.items?.filter(l => l.quantity > 0);
+        const newCart = OrderEntityMapper.fromRefundedCart(user, cartOrder);
 
-        if (!orderEntity.items?.length) return;
+        if (!newCart.items?.length) return;
 
-        await OrderService.saveOrder(user, orderEntity);
+        await OrderService.saveOrder(user, newCart, OrderStatus.PAID);
     }
 }
 

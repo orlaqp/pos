@@ -1,6 +1,8 @@
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { User } from '@pos/auth/data-access';
 import { CartState, initialCartState } from '@pos/sales/data-access';
 import { Order, OrderLine, OrderStatus } from '@pos/shared/models';
+import { Alert } from 'react-native';
 
 export interface OrderEntity {
     id: string;
@@ -8,8 +10,8 @@ export interface OrderEntity {
     tax: number;
     total: number;
     status: OrderStatus | keyof typeof OrderStatus;
-    employeeId: string,
-    employeeName: string,
+    employeeId: string;
+    employeeName: string;
     items?: OrderLineEntity[] | null;
     createdAt?: string | null;
     updatedAt?: string | null;
@@ -80,8 +82,8 @@ export class OrderEntityMapper {
             orderDate: o.createdAt!,
             orderNumber: o.id,
             status: o.status,
-            employeeId: '',
-            employeeName: ''
+            employeeId: o.employeeId,
+            employeeName: o.employeeName,
         };
         state.items = o.items?.map((i) => ({
             quantity: i?.quantity,
@@ -96,6 +98,52 @@ export class OrderEntityMapper {
             },
         }));
         state.selected = initialCartState.selected;
+
+        return state;
+    }
+
+    static fromRefundedCart(user: User, cart: CartState) {
+        const state: CartState = { ...initialCartState };
+
+        if (!cart.header) {
+            Alert.alert('Cart header is missing, cannot recreate the order');
+        }
+        const header = cart.header!;
+
+        state.header = {
+            orderDate: header.orderDate,
+            orderNumber: header.orderNumber,
+            status: header.status,
+            employeeId: user.id,
+            employeeName: `${user.given_name} ${user.family_name}`,
+        };
+
+        state.items = cart.items
+            .filter((i) => i.quantity > 0)
+            ?.map((i) => ({
+                quantity: i?.quantity,
+                id: i?.id,
+                product: {
+                    id: i.product.id,
+                    name: i?.product.name,
+                    price: i?.product.price,
+                    unitOfMeasure: i?.product.unitOfMeasure,
+                    barcode: i.product.barcode,
+                    sku: i.product.sku,
+                },
+            }));
+
+        const total = state.items.reduce(
+            (prev, next) => prev + next.product.price * next.quantity,
+            0
+        );
+
+        state.footer = {
+            discount: 0,
+            subtotal: total,
+            tax: cart.footer.tax,
+            total: total,
+        };
 
         return state;
     }

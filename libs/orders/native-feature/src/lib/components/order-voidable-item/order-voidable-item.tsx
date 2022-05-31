@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
-import {
-    OrderLineEntity,
-} from '@pos/orders/data-access';
+import { OrderLineEntity } from '@pos/orders/data-access';
 import { useTheme } from '@rneui/themed';
+import { EACH } from '@pos/unit-of-measures/data-access';
 
 export interface CompactOrderItemProps {
     line: OrderLineEntity;
@@ -39,7 +38,10 @@ export function OrderVoidableItem({ line, onToggle }: CompactOrderItemProps) {
                 <Text style={styles.name}>{line.productName}</Text>
             </View>
             <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{line.quantity} item(s)</Text>
+                <Text style={styles.name}>
+                    {line.quantity}{' '}
+                    {line.unitOfMeasure === EACH ? '' : line.unitOfMeasure}
+                </Text>
             </View>
             <View style={{ flex: 1 }}>
                 <Text style={[styles.name, styles.textRight]}>
