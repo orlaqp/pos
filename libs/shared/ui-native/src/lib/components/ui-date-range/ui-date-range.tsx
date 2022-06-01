@@ -77,7 +77,6 @@ export function UIDateRange({ initialRange, onRangeChange }: UIDateRangeProps) {
                             styles.selectedDateContainerStyle
                         }
                         selectedDateStyle={styles.selectedDateStyle}
-                        
                     />
                 </View>
             )}
@@ -94,7 +93,10 @@ const useStyles = () => {
         ...StyleSheet.create({
             container: {
                 margin: 50,
-                backgroundColor: theme.theme.colors.grey0
+                backgroundColor:
+                    theme.theme.mode === 'dark'
+                        ? theme.theme.colors.grey0
+                        : theme.theme.colors.grey5,
             },
             selectedDateContainerStyle: {
                 height: 35,
