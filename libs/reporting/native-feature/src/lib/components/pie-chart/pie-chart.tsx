@@ -1,10 +1,12 @@
+import { useSharedStyles } from '@pos/theme/native';
 import React, { useState } from 'react';
 
 import { View, Text } from 'react-native';
 import { PieChart as PC } from 'react-native-chart-kit';
 
-/* eslint-disable-next-line */
-export interface PieChartProps {}
+export interface PieChartProps {
+    header: string;
+}
 
 const data = [
     {
@@ -44,7 +46,8 @@ const data = [
     },
 ];
 
-export function PieChart(props: PieChartProps) {
+export function PieChart({ header }: PieChartProps) {
+    const styles = useSharedStyles();
     const [width, setWidth] = useState<number>();
     const chartConfig = {
         backgroundGradientFrom: "#1E2923",
@@ -64,11 +67,11 @@ export function PieChart(props: PieChartProps) {
                 setWidth(width);
             }}
         >
-            
+                <Text style={[styles.secondaryText, { marginBottom: 10 }]}>{header}</Text>
                 <PC
                     data={data}
                     width={400}
-                    height={220}
+                    height={200}
                     chartConfig={chartConfig}
                     accessor={'population'}
                     backgroundColor={'transparent'}

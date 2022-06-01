@@ -1,12 +1,16 @@
+import { useSharedStyles } from '@pos/theme/native';
 import React, { useState } from 'react';
 
 import { View, Text, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
 /* eslint-disable-next-line */
-export interface LineChartProps {}
+export interface LineChartProps {
+    header: string;
+}
 
-export function LineChartComponent(props: LineChartProps) {
+export function LineChartComponent({ header }: LineChartProps) {
+    const styles = useSharedStyles();
     const [width, setWidth] = useState<number>();
 
     return (
@@ -17,6 +21,7 @@ export function LineChartComponent(props: LineChartProps) {
                 setWidth(width);
             }}
         >
+            <Text style={[styles.secondaryText, { marginBottom: 10 }]}>{header}</Text>
             {!!width && (
                 <LineChart
                     data={{
@@ -47,14 +52,14 @@ export function LineChartComponent(props: LineChartProps) {
                     yAxisSuffix="k"
                     yAxisInterval={1} // optional, defaults to 1
                     chartConfig={{
-                        backgroundColor: '#e26a00',
+                        // backgroundColor: '#e26a00',
                         // backgroundGradientFrom: '#fb8c00',
                         // backgroundGradientTo: '#ffa726',
+                        backgroundGradientFrom: `${styles.dataRow.backgroundColor}22`,
+                        backgroundGradientTo: `${styles.dataRow.backgroundColor}44`,
                         decimalPlaces: 2, // optional, defaults to 2dp
-                        color: (opacity = 1) =>
-                            `rgba(255, 255, 255, ${opacity})`,
-                        labelColor: (opacity = 1) =>
-                            `rgba(255, 255, 255, ${opacity})`,
+                        color: (opacity = 1) => styles.secondaryText.color,
+                        labelColor: (opacity = 1) => styles.secondaryText.color,
                         style: {
                             borderRadius: 2,
                         },
@@ -67,7 +72,7 @@ export function LineChartComponent(props: LineChartProps) {
                     bezier
                     style={{
                         marginVertical: 8,
-                        borderRadius: 16,
+                        borderRadius: 5,
                     }}
                 />
             )}
