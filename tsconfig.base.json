@@ -54,6 +54,9 @@
             "@pos/products/native-feature": [
                 "libs/products/native-feature/src/index.ts"
             ],
+            "@pos/reporting/native-feature": [
+                "libs/reporting/native-feature/src/index.ts"
+            ],
             "@pos/sales/data-access": ["libs/sales/data-access/src/index.ts"],
             "@pos/sales/native-feature": [
                 "libs/sales/native-feature/src/index.ts"

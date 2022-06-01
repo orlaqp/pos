@@ -34,6 +34,8 @@
     "react-native-uuid": "*",
     "react-native-vector-icons": "^9.1.0",
     "react-redux": "*",
-    "redux-logger": "*"
+    "redux-logger": "*",
+    "react-native-chart-kit": "*",
+    "react-native-daterange-picker": "*"
   }
 }

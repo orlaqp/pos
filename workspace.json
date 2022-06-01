@@ -19,6 +19,7 @@
         "printings-native-feature": "libs/printings/native-feature",
         "products-data-access": "libs/products/data-access",
         "products-native-feature": "libs/products/native-feature",
+        "reporting-native-feature": "libs/reporting/native-feature",
         "sales-data-access": "libs/sales/data-access",
         "sales-native-feature": "libs/sales/native-feature",
         "settings-data-access": "libs/settings/data-access",

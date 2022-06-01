@@ -11,21 +11,20 @@ import {
     createNativeStackNavigator,
     NativeStackNavigationProp,
 } from '@react-navigation/native-stack';
+import { useSelector } from 'react-redux';
+import { selectUser } from '@pos/auth/data-access';
 
 import { Brands } from '@pos/brands/native-feature';
 import { Categories } from '@pos/categories/native-feature';
 import { Products } from '@pos/products/native-feature';
 import { UnitOfMeasures } from '@pos/unit-of-measures/native-feature';
 import { PrinterList } from '@pos/printings/native-feature';
-
-import Logo from '../../assets/logo.png';
-import { useSelector } from 'react-redux';
-import { selectUser } from '@pos/auth/data-access';
 import { StoreInfoForm } from '@pos/store-info/native-feature';
 import { Settings } from '@pos/settings/native-feature';
 import { InventoryCounts, InventoryList, InventoryReceives } from '@pos/inventory/native-feature';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-// const Logo = require('../../assets/logo.png');
+import { Dashboard } from '@pos/reporting/native-feature';
+
+import Logo from '../../assets/logo.png';
 
 const Stack = createNativeStackNavigator();
 
@@ -76,6 +75,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                 
                 <View style={styles.rightSide}>
                     <Stack.Navigator screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="Dashboard" component={Dashboard} />
                         <Stack.Screen name="In Stock" component={InventoryList} />
                         <Stack.Screen name="Counts" component={InventoryCounts} />
                         <Stack.Screen name="Receives" component={InventoryReceives} />

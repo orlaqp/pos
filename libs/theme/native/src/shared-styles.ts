@@ -33,6 +33,15 @@ export const useSharedStyles = () => {
         column: {
             flexDirection: "column",
         },
+        smallMargin: {
+            margin: 10
+        },
+        mediumMargin: {
+            margin: 25
+        },
+        largeMargin: {
+            margin: 50
+        },
         rounded: {
             borderRadius: 5
         },
