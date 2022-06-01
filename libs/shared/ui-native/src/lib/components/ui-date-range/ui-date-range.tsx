@@ -2,17 +2,16 @@ import React, { useState } from 'react';
 
 import moment from 'moment';
 
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import DateRangePicker from 'rn-select-date-range';
+import { View, Text, StyleSheet } from 'react-native';
 import { Icon, useTheme } from '@rneui/themed';
 import { useSharedStyles } from '@pos/theme/native';
+import DateRangePicker from 'react-native-daterange-picker';
 
 export interface DateRange {
-    firstDate?: string;
-    secondDate?: string;
+    startDate: moment.Moment;
+    endDate: moment.Moment;
 }
 
-/* eslint-disable-next-line */
 export interface UIDateRangeProps {
     initialRange: DateRange;
     onRangeChange: (range: DateRange) => unknown;
@@ -20,66 +19,68 @@ export interface UIDateRangeProps {
 
 export function UIDateRange({ initialRange, onRangeChange }: UIDateRangeProps) {
     const styles = useStyles();
+    const [startDate, setStartDate] = useState<moment.Moment>(initialRange.startDate);
+    const [endDate, setEndDate] = useState<moment.Moment>(initialRange.endDate);
+    const [displayedDate, setDisplayedDate] = useState(initialRange.startDate);
 
-    const [showDataRange, setShowDateRange] = useState<boolean>();
-    const [selectedRange, setRange] = useState<DateRange>(initialRange);
+    const setDates = (value) => {
+        if (value.displayedDate) setDisplayedDate(value.displayedDate);
+        if (value.startDate) setStartDate(value.startDate);
+        if (value.endDate) setEndDate(value.endDate);
 
-    const updateDateRange = (range: DateRange) => {
-        setRange(range);
-        onRangeChange(range);
+        if (value.startDate && value.endDate) {
+            onRangeChange({ startDate: value.startDate, endDate: value.endDate });
+        }
     };
 
     return (
-        <View>
-            <TouchableOpacity
-                style={{
-                    backgroundColor: styles.dataRow.backgroundColor,
-                    padding: 15,
-                    borderRadius: 5,
-                    marginHorizontal: 10,
-                }}
-                onPress={() => setShowDateRange(!showDataRange)}
+        <View style={styles.container}>
+            <DateRangePicker
+                onChange={setDates}
+                endDate={endDate}
+                startDate={startDate}
+                displayedDate={displayedDate}
+                range
+                containerStyle={{ paddingHorizontal: 40, paddingVertical: 20 }}
             >
                 <View
                     style={{
-                        flexDirection: 'row',
-                        justifyContent: 'center',
-                        alignContent: 'center',
+                        backgroundColor: styles.dataRow.backgroundColor,
+                        padding: 15,
+                        borderRadius: 5,
+                        marginHorizontal: 10,
                     }}
                 >
-                    <View>
-                        <Icon
-                            name="calendar-text"
-                            type="material-community"
-                            color={styles.secondaryText.color}
-                        />
-                    </View>
-                    <View style={{ alignSelf: 'center', marginLeft: 20 }}>
-                        {selectedRange && (
-                            <Text style={{ color: styles.secondaryText.color }}>
-                                {`${selectedRange.firstDate} - ${selectedRange.secondDate}`}
-                            </Text>
-                        )}
-                    </View>
-                </View>
-            </TouchableOpacity>
-            {showDataRange && (
-                <View style={[styles.container, { flex: 1 }]}>
-                    <DateRangePicker
-                        onSelectDateRange={(range) => {
-                            updateDateRange(range);
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                            alignContent: 'center',
                         }}
-                        blockSingleDateSelection={true}
-                        responseFormat="YYYY-MM-DD"
-                        maxDate={moment()}
-                        // minDate={moment().subtract(100, 'days')}
-                        selectedDateContainerStyle={
-                            styles.selectedDateContainerStyle
-                        }
-                        selectedDateStyle={styles.selectedDateStyle}
-                    />
+                    >
+                        <View>
+                            <Icon
+                                name="calendar-text"
+                                type="material-community"
+                                color={styles.secondaryText.color}
+                            />
+                        </View>
+                        <View style={{ alignSelf: 'center', marginLeft: 20 }}>
+                            {startDate && (
+                                <Text
+                                    style={{
+                                        color: styles.secondaryText.color,
+                                    }}
+                                >
+                                    {`${startDate.format(
+                                        'YYYY-MM-DD'
+                                    )} - ${endDate?.format('YYYY-MM-DD')}`}
+                                </Text>
+                            )}
+                        </View>
+                    </View>
                 </View>
-            )}
+            </DateRangePicker>
         </View>
     );
 }
@@ -92,10 +93,17 @@ const useStyles = () => {
         ...sharedStyles,
         ...StyleSheet.create({
             container: {
-                margin: 50,
+                flex: 1,
+                zIndex: 10,
+                // backgroundColor: "#fff",
+                alignItems: 'center',
+                // marginTop: -100,
+                padding: 15,
+                // justifyContent: "center",
+                // margin: 50,
                 backgroundColor:
                     theme.theme.mode === 'dark'
-                        ? theme.theme.colors.grey0
+                        ? theme.theme.colors.white
                         : theme.theme.colors.grey5,
             },
             selectedDateContainerStyle: {

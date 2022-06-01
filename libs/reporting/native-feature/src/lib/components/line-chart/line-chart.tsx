@@ -55,8 +55,8 @@ export function LineChartComponent({ header }: LineChartProps) {
                         // backgroundColor: '#e26a00',
                         // backgroundGradientFrom: '#fb8c00',
                         // backgroundGradientTo: '#ffa726',
-                        backgroundGradientFrom: `${styles.dataRow.backgroundColor}22`,
-                        backgroundGradientTo: `${styles.dataRow.backgroundColor}44`,
+                        backgroundGradientFrom: `transparent`,
+                        backgroundGradientTo: `transparent`,
                         decimalPlaces: 2, // optional, defaults to 2dp
                         color: (opacity = 1) => styles.secondaryText.color,
                         labelColor: (opacity = 1) => styles.secondaryText.color,

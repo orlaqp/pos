@@ -1,5 +1,6 @@
 import { DateRange, UIDateRange } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
+import moment from 'moment';
 
 import React, { useState } from 'react';
 
@@ -18,11 +19,17 @@ export function Dashboard(props: DashboardProps) {
 
     const updateDateRange = (range: DateRange) => {
         console.log('Range changed to: ', range);
-    }
+    };
 
     return (
         <ScrollView style={[styles.page, { padding: 20 }]}>
-            <UIDateRange onRangeChange={updateDateRange} />
+            <UIDateRange
+                initialRange={{
+                    startDate: moment().add(-7, 'days'),
+                    endDate: moment(),
+                }}
+                onRangeChange={updateDateRange}
+            />
             <View style={styles.row}>
                 <View style={{ flex: 1 }}>
                     <Widget
@@ -74,4 +81,3 @@ export function Dashboard(props: DashboardProps) {
 }
 
 export default Dashboard;
-
