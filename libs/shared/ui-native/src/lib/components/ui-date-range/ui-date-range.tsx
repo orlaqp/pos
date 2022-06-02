@@ -69,12 +69,14 @@ export function UIDateRange({ initialRange, onRangeChange }: UIDateRangeProps) {
                             {startDate && (
                                 <Text
                                     style={{
-                                        color: styles.secondaryText.color,
+                                        color: styles.primaryText.color,
+                                        fontWeight: 'bold',
+                                        fontSize: 18
                                     }}
                                 >
                                     {`${startDate.format(
                                         'YYYY-MM-DD'
-                                    )} - ${endDate?.format('YYYY-MM-DD')}`}
+                                    )}  ->  ${endDate?.format('YYYY-MM-DD')}`}
                                 </Text>
                             )}
                         </View>
