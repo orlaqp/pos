@@ -12,7 +12,7 @@ module.exports = (async () => {
         getTransformOptions: async () => ({
           transform: {
             experimentalImportSupport: false,
-            inlineRequires: true,
+            inlineRequires: false,
           },
         }),
         babelTransformerPath: require.resolve('react-native-svg-transformer'),
@@ -21,7 +21,7 @@ module.exports = (async () => {
         assetExts: assetExts.filter((ext) => ext !== 'svg'),
         sourceExts: [...sourceExts, 'svg'],
         resolverMainFields: ['sbmodern', 'browser', 'main'],
-        blacklistRE: exclusionList([/\.\/dist\/.*/]),
+        blacklistRE: exclusionList([/\.\/dist\/.*/, /#current-cloud-backend\/.*/]),
       },
     },
     {

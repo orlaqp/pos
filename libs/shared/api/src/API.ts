@@ -195,6 +195,7 @@ export type CreateOrderInput = {
   status: OrderStatus,
   employeeId: string,
   employeeName: string,
+  createdAt?: string | null,
   _version?: number | null,
   orderCustomerId?: string | null,
 };
@@ -213,6 +214,7 @@ export type ModelOrderConditionInput = {
   status?: ModelOrderStatusInput | null,
   employeeId?: ModelStringInput | null,
   employeeName?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
   and?: Array< ModelOrderConditionInput | null > | null,
   or?: Array< ModelOrderConditionInput | null > | null,
   not?: ModelOrderConditionInput | null,
@@ -307,6 +309,7 @@ export type UpdateOrderInput = {
   status?: OrderStatus | null,
   employeeId?: string | null,
   employeeName?: string | null,
+  createdAt?: string | null,
   _version?: number | null,
   orderCustomerId?: string | null,
 };
@@ -329,6 +332,7 @@ export type CreateOrderLineInput = {
   discountType?: string | null,
   discountValue?: number | null,
   orderID: string,
+  createdAt?: string | null,
   _version?: number | null,
 };
 
@@ -344,6 +348,7 @@ export type ModelOrderLineConditionInput = {
   discountType?: ModelStringInput | null,
   discountValue?: ModelFloatInput | null,
   orderID?: ModelIDInput | null,
+  createdAt?: ModelStringInput | null,
   and?: Array< ModelOrderLineConditionInput | null > | null,
   or?: Array< ModelOrderLineConditionInput | null > | null,
   not?: ModelOrderLineConditionInput | null,
@@ -362,6 +367,7 @@ export type UpdateOrderLineInput = {
   discountType?: string | null,
   discountValue?: number | null,
   orderID?: string | null,
+  createdAt?: string | null,
   _version?: number | null,
 };
 
@@ -1211,6 +1217,27 @@ export type DeleteStationInput = {
   _version?: number | null,
 };
 
+export type SalesSummary = {
+  __typename: "SalesSummary",
+  products?:  Array<ProductSaleSummary | null > | null,
+  employees?:  Array<EmployeeSaleSummary | null > | null,
+  totalAmount: number,
+};
+
+export type ProductSaleSummary = {
+  __typename: "ProductSaleSummary",
+  productId: string,
+  categoryName: string,
+  quantity: number,
+  amount: number,
+};
+
+export type EmployeeSaleSummary = {
+  __typename: "EmployeeSaleSummary",
+  orders: number,
+  amount: number,
+};
+
 export type ModelBrandFilterInput = {
   id?: ModelIDInput | null,
   name?: ModelStringInput | null,
@@ -1274,6 +1301,7 @@ export type ModelOrderFilterInput = {
   status?: ModelOrderStatusInput | null,
   employeeId?: ModelStringInput | null,
   employeeName?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
   and?: Array< ModelOrderFilterInput | null > | null,
   or?: Array< ModelOrderFilterInput | null > | null,
   not?: ModelOrderFilterInput | null,
@@ -1300,6 +1328,7 @@ export type ModelOrderLineFilterInput = {
   discountType?: ModelStringInput | null,
   discountValue?: ModelFloatInput | null,
   orderID?: ModelIDInput | null,
+  createdAt?: ModelStringInput | null,
   and?: Array< ModelOrderLineFilterInput | null > | null,
   or?: Array< ModelOrderLineFilterInput | null > | null,
   not?: ModelOrderLineFilterInput | null,
@@ -3529,6 +3558,30 @@ export type DeleteStationMutation = {
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
+  } | null,
+};
+
+export type GetSalesSummaryQueryVariables = {
+  from: string,
+  to: string,
+};
+
+export type GetSalesSummaryQuery = {
+  getSalesSummary?:  {
+    __typename: "SalesSummary",
+    products?:  Array< {
+      __typename: "ProductSaleSummary",
+      productId: string,
+      categoryName: string,
+      quantity: number,
+      amount: number,
+    } | null > | null,
+    employees?:  Array< {
+      __typename: "EmployeeSaleSummary",
+      orders: number,
+      amount: number,
+    } | null > | null,
+    totalAmount: number,
   } | null,
 };
 

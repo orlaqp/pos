@@ -2,6 +2,23 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const getSalesSummary = /* GraphQL */ `
+  query GetSalesSummary($from: String!, $to: String!) {
+    getSalesSummary(from: $from, to: $to) {
+      products {
+        productId
+        categoryName
+        quantity
+        amount
+      }
+      employees {
+        orders
+        amount
+      }
+      totalAmount
+    }
+  }
+`;
 export const getBrand = /* GraphQL */ `
   query GetBrand($id: ID!) {
     getBrand(id: $id) {

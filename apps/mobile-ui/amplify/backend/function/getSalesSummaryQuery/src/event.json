@@ -1,0 +1,40 @@
+{
+    "typeName": "Query",
+    "fieldName": "getSalesSummary",
+    "arguments": {
+        "from": "2022-05-26T11:47:14.933Z",
+        "to": "2022-06-02T11:47:14.934Z"
+    },
+    "identity": null,
+    "source": null,
+    "request": {
+        "headers": {
+            "x-forwarded-for": "162.197.33.95, 130.176.92.148",
+            "accept-encoding": "gzip, deflate, br",
+            "cloudfront-is-tablet-viewer": "false",
+            "cloudfront-viewer-country": "US",
+            "x-amzn-requestid": "cadbabab-39e6-412a-a3e1-ffd5b9a04688",
+            "via": "2.0 fe11fb310085cd8e248689eeca81ec20.cloudfront.net (CloudFront)",
+            "x-api-key": "da2-5cpffpllinf45kanew3keaqb2e",
+            "cloudfront-forwarded-proto": "https",
+            "content-type": "application/json; charset=UTF-8",
+            "x-amzn-trace-id": "Root=1-6298a343-621bf9d9353f64882cd45aae",
+            "x-amz-cf-id": "DewkHibQtR8v4Du-q2wCjSEDri78tZH7Ky47toin7KB2M4ya39PoKQ==",
+            "content-length": "357",
+            "x-amz-user-agent": "aws-amplify/4.5.4 react-native",
+            "x-forwarded-proto": "https",
+            "accept-language": "en-US,en;q=0.9",
+            "host": "ms5rw46p3jflhdxc7kwp6g3vh4.appsync-api.us-east-1.amazonaws.com",
+            "user-agent": "aws-amplify/4.5.4 react-native",
+            "cloudfront-is-desktop-viewer": "true",
+            "accept": "application/json, text/plain, */*",
+            "cloudfront-is-mobile-viewer": "false",
+            "x-forwarded-port": "443",
+            "cloudfront-is-smarttv-viewer": "false"
+        },
+        "domainName": null
+    },
+    "prev": {
+        "result": {}
+    }
+}

@@ -333,9 +333,8 @@ export const schema = {
                     "name": "createdAt",
                     "isArray": false,
                     "type": "AWSDateTime",
-                    "isRequired": false,
-                    "attributes": [],
-                    "isReadOnly": true
+                    "isRequired": true,
+                    "attributes": []
                 },
                 "updatedAt": {
                     "name": "updatedAt",
@@ -359,6 +358,25 @@ export const schema = {
                 {
                     "type": "model",
                     "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byStatusByDate",
+                        "fields": [
+                            "status",
+                            "createdAt"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byDate",
+                        "fields": [
+                            "createdAt"
+                        ]
+                    }
                 },
                 {
                     "type": "auth",
@@ -469,9 +487,8 @@ export const schema = {
                     "name": "createdAt",
                     "isArray": false,
                     "type": "AWSDateTime",
-                    "isRequired": false,
-                    "attributes": [],
-                    "isReadOnly": true
+                    "isRequired": true,
+                    "attributes": []
                 },
                 "updatedAt": {
                     "name": "updatedAt",
@@ -495,6 +512,15 @@ export const schema = {
                         "name": "byOrder",
                         "fields": [
                             "orderID"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byDate",
+                        "fields": [
+                            "createdAt"
                         ]
                     }
                 },
@@ -2013,6 +2039,91 @@ export const schema = {
             ]
         }
     },
-    "nonModels": {},
-    "version": "143ba7f4d7681a80ec1e3d7b9dd3cf41"
+    "nonModels": {
+        "SalesSummary": {
+            "name": "SalesSummary",
+            "fields": {
+                "products": {
+                    "name": "products",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "ProductSaleSummary"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "employees": {
+                    "name": "employees",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "EmployeeSaleSummary"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "totalAmount": {
+                    "name": "totalAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
+        "ProductSaleSummary": {
+            "name": "ProductSaleSummary",
+            "fields": {
+                "productId": {
+                    "name": "productId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "categoryName": {
+                    "name": "categoryName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "quantity": {
+                    "name": "quantity",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "amount": {
+                    "name": "amount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
+        "EmployeeSaleSummary": {
+            "name": "EmployeeSaleSummary",
+            "fields": {
+                "orders": {
+                    "name": "orders",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "amount": {
+                    "name": "amount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        }
+    },
+    "version": "ab9882be85cccfb33809a392d1410c7c"
 };

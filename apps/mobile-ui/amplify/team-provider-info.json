@@ -14,6 +14,12 @@
     "categories": {
       "auth": {
         "pos0614c248": {}
+      },
+      "function": {
+        "getSalesSummaryQuery": {
+          "deploymentBucketName": "amplify-pos-dev-93830-deployment",
+          "s3Key": "amplify-builds/getSalesSummaryQuery-66426a394a566d554b45-build.zip"
+        }
       }
     }
   }

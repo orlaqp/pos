@@ -37,6 +37,7 @@
     "redux-logger": "*",
     "react-native-chart-kit": "*",
     "react-native-daterange-picker": "*",
-    "rn-select-date-range": "*"
+    "rn-select-date-range": "*",
+    "moment": "*"
   }
 }

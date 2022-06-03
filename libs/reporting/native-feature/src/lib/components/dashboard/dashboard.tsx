@@ -1,8 +1,13 @@
+import { GraphQLResult } from '@aws-amplify/api-graphql';
+import { getSalesSummary, listOrders } from '@pos/shared/api';
+import { SalesSummary } from '@pos/shared/models';
 import { DateRange, UIDateRange } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
+import { API, graphqlOperation } from 'aws-amplify';
+
 import moment from 'moment';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { View, ScrollView } from 'react-native';
 import { LineChartComponent } from '../line-chart/line-chart';
@@ -15,11 +20,29 @@ export interface DashboardProps {}
 
 export function Dashboard(props: DashboardProps) {
     const styles = useSharedStyles();
+    const [dateRange, setDateRange] = useState<DateRange>({
+        startDate: moment().add(-7, 'days'),
+        endDate: moment(),
+    });
     const value = 2500;
 
     const updateDateRange = (range: DateRange) => {
         console.log('Range changed to: ', range);
     };
+
+    useEffect(() => {
+        console.log('date range:', dateRange);
+        
+        const promise = API.graphql<SalesSummary>({
+            query: getSalesSummary,
+            variables: {
+                from: dateRange?.startDate.toISOString(),
+                to: dateRange?.endDate.toISOString(),
+            },
+        }) as Promise<GraphQLResult<SalesSummary>>;
+
+        promise.then((res) => console.log('Result', res));
+    }, [dateRange]);
 
     return (
         <ScrollView style={[styles.page, { padding: 20 }]}>

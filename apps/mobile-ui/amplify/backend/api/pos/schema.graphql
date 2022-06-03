@@ -28,15 +28,16 @@ type Order @model @auth(rules: [{allow: public}]) {
   subtotal: Float!
   tax: Float!
   total: Float!
-  status: OrderStatus!
+  status: OrderStatus! @index(name: "byStatusByDate", sortKeyFields: ["createdAt"])
   employeeId: String!
   employeeName: String!
   OrderItems: [OrderLine] @hasMany(indexName: "byOrder", fields: ["id"])
   Customer: Customer @hasOne
+  createdAt: AWSDateTime! @index(name: "byDate" )
 }
 
 type OrderLine @model @auth(rules: [{allow: public}]) {
-  id: ID!
+  id: ID! @primaryKey(sortKeyFields: ["createdAt"])
   productId: String!
   barcode: String
   sku: String
@@ -48,6 +49,7 @@ type OrderLine @model @auth(rules: [{allow: public}]) {
   discountType: String
   discountValue: Float
   orderID: ID! @index(name: "byOrder")
+  createdAt: AWSDateTime!
 }
 
 enum OrderStatus {
@@ -77,19 +79,19 @@ type Product @model @auth(rules: [{allow: public}]) {
   isActive: Boolean
 }
 
-type PurchaseOrder @model @auth(rules: [{allow: public}]) {
-  id: ID!
-  Supplier: Supplier @hasOne
-  purchaseDate: AWSDateTime
-  amount: Float
-}
+# type PurchaseOrder @model @auth(rules: [{allow: public}]) {
+#   id: ID!
+#   Supplier: Supplier @hasOne
+#   purchaseDate: AWSDateTime
+#   amount: Float
+# }
 
-type PurchaseOrderLine @model @auth(rules: [{allow: public}]) {
-  id: ID!
-  Product: Product @hasOne
-  unitPrice: Float
-  quantity: Float
-}
+# type PurchaseOrderLine @model @auth(rules: [{allow: public}]) {
+#   id: ID!
+#   Product: Product @hasOne
+#   unitPrice: Float
+#   quantity: Float
+# }
 
 type Store @model @auth(rules: [{allow: public}]) {
   id: ID!
@@ -202,4 +204,27 @@ type Station @model @auth(rules: [{allow: public}]) {
     id: ID!
     deviceId: String!
     alias: String!
+}
+
+type ProductSaleSummary {
+    productId: String!
+    productName: String!
+    categoryName: String!
+    quantity: Float!
+    amount: Float!
+}
+
+type EmployeeSaleSummary {
+    orders: Int!
+    amount: Float!
+}
+
+type SalesSummary {
+    products: [ProductSaleSummary]
+    employees: [EmployeeSaleSummary]
+    totalAmount: Float!
+}
+
+type Query {
+  getSalesSummary(from: String!, to: String!): SalesSummary @function (name: "getSalesSummaryQuery-${env}")
 }

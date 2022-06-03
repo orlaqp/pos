@@ -16,7 +16,26 @@ export enum InventoryReceiveStatus {
   COMPLETED = "COMPLETED"
 }
 
+export declare class SalesSummary {
+  readonly products?: (ProductSaleSummary | null)[] | null;
+  readonly employees?: (EmployeeSaleSummary | null)[] | null;
+  readonly totalAmount: number;
+  constructor(init: ModelInit<SalesSummary>);
+}
 
+export declare class ProductSaleSummary {
+  readonly productId: string;
+  readonly categoryName: string;
+  readonly quantity: number;
+  readonly amount: number;
+  constructor(init: ModelInit<ProductSaleSummary>);
+}
+
+export declare class EmployeeSaleSummary {
+  readonly orders: number;
+  readonly amount: number;
+  constructor(init: ModelInit<EmployeeSaleSummary>);
+}
 
 type BrandMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
@@ -31,11 +50,11 @@ type CustomerMetaData = {
 }
 
 type OrderMetaData = {
-  readOnlyFields: 'createdAt' | 'updatedAt';
+  readOnlyFields: 'updatedAt';
 }
 
 type OrderLineMetaData = {
-  readOnlyFields: 'createdAt' | 'updatedAt';
+  readOnlyFields: 'updatedAt';
 }
 
 type ProductMetaData = {
@@ -149,7 +168,7 @@ export declare class Order {
   readonly employeeName: string;
   readonly OrderItems?: (OrderLine | null)[] | null;
   readonly Customer?: Customer | null;
-  readonly createdAt?: string | null;
+  readonly createdAt: string;
   readonly updatedAt?: string | null;
   readonly orderCustomerId?: string | null;
   constructor(init: ModelInit<Order, OrderMetaData>);
@@ -169,7 +188,7 @@ export declare class OrderLine {
   readonly discountType?: string | null;
   readonly discountValue?: number | null;
   readonly orderID: string;
-  readonly createdAt?: string | null;
+  readonly createdAt: string;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<OrderLine, OrderLineMetaData>);
   static copyOf(source: OrderLine, mutator: (draft: MutableModel<OrderLine, OrderLineMetaData>) => MutableModel<OrderLine, OrderLineMetaData> | void): OrderLine;
