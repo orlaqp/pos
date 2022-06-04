@@ -13,7 +13,7 @@ export function SalesByEmployee(props: SalesByEmployeeProps) {
     const styles = useSharedStyles();
     const headers: ReportHeader[] = [
         { label: 'Employee', field: 'employee', width: 5 },
-        { label: 'Amount', field: 'amount', width: 1, align: 'right' },
+        { label: 'Amount', field: 'amount', width: 1, align: 'right', sum: true, format: 'money' },
     ];
 
     const getData = (range: DateRange) => {
@@ -24,7 +24,7 @@ export function SalesByEmployee(props: SalesByEmployeeProps) {
             console.log('summary data', summary);
             return summary?.employees?.map((e) => ({
                 employee: e?.employeeName,
-                amount: `$${e?.amount.toFixed(2)}`,
+                amount: e?.amount,
             }));
         });
     };

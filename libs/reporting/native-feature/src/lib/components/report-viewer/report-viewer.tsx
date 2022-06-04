@@ -8,8 +8,10 @@ import { FlatList, Text, View } from 'react-native';
 export interface ReportHeader {
     label: string;
     field: string;
+    format?: 'string' | 'integer' | 'float' | 'money';
     width: number;
     align?: 'auto' | 'left' | 'right' | 'center' | 'justify' | undefined;
+    sum?: boolean;
 }
 
 /* eslint-disable-next-line */
@@ -22,6 +24,7 @@ export interface ReportViewerProps {
 export function ReportViewer({ getData, headers }: ReportViewerProps) {
     const styles = useSharedStyles();
     const [loading, setLoading] = useState<boolean>(true);
+    const [totals, setTotals] = useState<Record<string, number>>();
     const [items, setItems] = useState<any[]>(true);
     const [dateRange, setDateRange] = useState<DateRange>({
         startDate: moment().add(-7, 'days'),
@@ -33,6 +36,27 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
         getData(dateRange).then((res) => setItems(res));
         setLoading(false);
     }, [getData, dateRange]);
+
+    useEffect(() => {
+        if (!items.length) return;
+
+        const totals: Record<string, number> = {};
+        items.reduce((total, item) => {
+            headers.forEach((h) => {
+                if (h.sum) {
+                    total[h.field] = (total[h.field] || 0) + item[h.field];
+                }
+            });
+
+            return total;
+        }, totals);
+
+        setTotals(totals);
+    }, [headers, items]);
+
+    console.log('====================================');
+    console.log('Totals', totals);
+    console.log('====================================');
 
     if (loading)
         return (
@@ -61,7 +85,11 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
                 </View>
 
                 <View
-                    style={{ flexDirection: 'row', marginBottom: 15, flex: .2 }}
+                    style={{
+                        flexDirection: 'row',
+                        marginBottom: 15,
+                        flex: 0.2,
+                    }}
                 >
                     {headers.map((h, idx) => (
                         <View key={idx} style={{ flex: h.width }}>
@@ -95,7 +123,11 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
                                                 { textAlign: h.align },
                                             ]}
                                         >
-                                            {data.item[h.field]}
+                                            {h.format === 'money'
+                                                ? `$${data.item[
+                                                      h.field
+                                                  ].toFixed(2)}`
+                                                : data.item[h.field]}
                                         </Text>
                                     </View>
                                 ))}
@@ -103,6 +135,23 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
                         )}
                     />
                 </View>
+
+                {totals && (
+                    <View style={{ flex: 1.2, marginTop: 5 }}>
+                        {headers.map((h, idx) => (
+                            <View key={idx} style={{ flex: h.width }}>
+                                <Text
+                                    style={[
+                                        styles.primaryText,
+                                        { textAlign: h.align, fontSize: 16, fontWeight: 'bold' },
+                                    ]}
+                                >
+                                    {h.sum ? `$${totals[h.field].toFixed(2)}` : ''}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+                )}
             </View>
         </View>
     );

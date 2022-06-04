@@ -13,7 +13,7 @@ export function SalesByProduct(props: SalesByProductProps) {
     const styles = useSharedStyles();
     const headers: ReportHeader[] = [
         { label: 'Product', field: 'product', width: 5 },
-        { label: 'Amount', field: 'amount', width: 1, align: 'right' },
+        { label: 'Amount', field: 'amount', width: 1, align: 'right', format: 'money', sum: true },
     ];
 
     const getData = (range: DateRange) => {
@@ -24,7 +24,7 @@ export function SalesByProduct(props: SalesByProductProps) {
             console.log('summary data', summary);
             return summary?.products?.map((e) => ({
                 product: e?.productName,
-                amount: `$${e?.amount.toFixed(2)}`,
+                amount: e?.amount,
             }));
         });
     };
