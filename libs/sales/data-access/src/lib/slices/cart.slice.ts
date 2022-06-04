@@ -33,7 +33,7 @@ export const cartSlice = createSlice({
         set: (state: CartState, action: PayloadAction<OrderEntity>) => {
             const o = action.payload;
 
-            if (!o.items) return;
+            if (!o.lines) return;
 
             state.footer = {
                 discount: 0,
@@ -42,14 +42,15 @@ export const cartSlice = createSlice({
                 total: o.total
             }
             state.header = {
-                orderDate: o.createdAt!,
+                orderDate: o.orderDate!,
                 orderNumber: o.id,
                 status: o.status,
-                user: '',
+                employeeId: o.employeeId,
+                employeeName: o.employeeName,
             }
-            state.items = o.items.map(i => ({
+            state.items = o.lines.map(i => ({
                 quantity: i?.quantity,
-                id: i?.id,
+                id: i?.identifier,
                 product: {
                     id: i.productId,
                     name: i?.productName,

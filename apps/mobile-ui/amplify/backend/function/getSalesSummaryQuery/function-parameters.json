@@ -1,15 +1,7 @@
 {
   "permissions": {
-    "api": {
-      "pos": [
-        "Query"
-      ]
-    },
     "storage": {
       "Order:@model(appsync)": [
-        "read"
-      ],
-      "OrderLine:@model(appsync)": [
         "read"
       ]
     }

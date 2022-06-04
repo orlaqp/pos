@@ -159,9 +159,16 @@ export const onCreateOrder = /* GraphQL */ `
       status
       employeeId
       employeeName
-      OrderItems {
-        nextToken
-        startedAt
+      lines {
+        identifier
+        productId
+        productName
+        unitOfMeasure
+        barcode
+        sku
+        quantity
+        tax
+        price
       }
       Customer {
         id
@@ -177,6 +184,7 @@ export const onCreateOrder = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
+      orderDate
       createdAt
       updatedAt
       _version
@@ -196,9 +204,16 @@ export const onUpdateOrder = /* GraphQL */ `
       status
       employeeId
       employeeName
-      OrderItems {
-        nextToken
-        startedAt
+      lines {
+        identifier
+        productId
+        productName
+        unitOfMeasure
+        barcode
+        sku
+        quantity
+        tax
+        price
       }
       Customer {
         id
@@ -214,6 +229,7 @@ export const onUpdateOrder = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
+      orderDate
       createdAt
       updatedAt
       _version
@@ -233,9 +249,16 @@ export const onDeleteOrder = /* GraphQL */ `
       status
       employeeId
       employeeName
-      OrderItems {
-        nextToken
-        startedAt
+      lines {
+        identifier
+        productId
+        productName
+        unitOfMeasure
+        barcode
+        sku
+        quantity
+        tax
+        price
       }
       Customer {
         id
@@ -251,81 +274,13 @@ export const onDeleteOrder = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
+      orderDate
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
       orderCustomerId
-    }
-  }
-`;
-export const onCreateOrderLine = /* GraphQL */ `
-  subscription OnCreateOrderLine {
-    onCreateOrderLine {
-      id
-      productId
-      barcode
-      sku
-      productName
-      unitOfMeasure
-      quantity
-      tax
-      price
-      discountType
-      discountValue
-      orderID
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onUpdateOrderLine = /* GraphQL */ `
-  subscription OnUpdateOrderLine {
-    onUpdateOrderLine {
-      id
-      productId
-      barcode
-      sku
-      productName
-      unitOfMeasure
-      quantity
-      tax
-      price
-      discountType
-      discountValue
-      orderID
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onDeleteOrderLine = /* GraphQL */ `
-  subscription OnDeleteOrderLine {
-    onDeleteOrderLine {
-      id
-      productId
-      barcode
-      sku
-      productName
-      unitOfMeasure
-      quantity
-      tax
-      price
-      discountType
-      discountValue
-      orderID
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
     }
   }
 `;
@@ -482,201 +437,6 @@ export const onDeleteProduct = /* GraphQL */ `
       _lastChangedAt
       productCategoryId
       productBrandId
-    }
-  }
-`;
-export const onCreatePurchaseOrder = /* GraphQL */ `
-  subscription OnCreatePurchaseOrder {
-    onCreatePurchaseOrder {
-      id
-      Supplier {
-        id
-        code
-        name
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      purchaseDate
-      amount
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderSupplierId
-    }
-  }
-`;
-export const onUpdatePurchaseOrder = /* GraphQL */ `
-  subscription OnUpdatePurchaseOrder {
-    onUpdatePurchaseOrder {
-      id
-      Supplier {
-        id
-        code
-        name
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      purchaseDate
-      amount
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderSupplierId
-    }
-  }
-`;
-export const onDeletePurchaseOrder = /* GraphQL */ `
-  subscription OnDeletePurchaseOrder {
-    onDeletePurchaseOrder {
-      id
-      Supplier {
-        id
-        code
-        name
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      purchaseDate
-      amount
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderSupplierId
-    }
-  }
-`;
-export const onCreatePurchaseOrderLine = /* GraphQL */ `
-  subscription OnCreatePurchaseOrderLine {
-    onCreatePurchaseOrderLine {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      unitPrice
-      quantity
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderLineProductId
-    }
-  }
-`;
-export const onUpdatePurchaseOrderLine = /* GraphQL */ `
-  subscription OnUpdatePurchaseOrderLine {
-    onUpdatePurchaseOrderLine {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      unitPrice
-      quantity
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderLineProductId
-    }
-  }
-`;
-export const onDeletePurchaseOrderLine = /* GraphQL */ `
-  subscription OnDeletePurchaseOrderLine {
-    onDeletePurchaseOrderLine {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      unitPrice
-      quantity
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderLineProductId
     }
   }
 `;

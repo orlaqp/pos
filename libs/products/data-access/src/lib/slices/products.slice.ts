@@ -24,7 +24,7 @@ export interface ProductFilterRequest {
 }
 
 export interface ProductsState extends EntityState< ProductEntity > {
-  loadingStatus: 'new' | 'saving' | 'saved' | 'error';
+  loadingStatus: 'not loaded' | 'loaded' | 'loading' | 'new' | 'error';
   error?: string;
   selected?: ProductEntity;
   filterQuery?: string;
@@ -56,7 +56,7 @@ export const productsSlice = createSlice({
   reducers: {
     setAll: (state: ProductsState, action: PayloadAction< ProductEntity[] >) =>{
         productsAdapter.setAll(state, action.payload);
-        state.loadingStatus = 'saved';
+        state.loadingStatus = 'loaded';
         filterList(state, state.filterQuery);
     },
     add: (state: ProductsState, action: PayloadAction< ProductEntity >) =>{
@@ -104,7 +104,7 @@ export const productsSlice = createSlice({
         (state: ProductsState, action: PayloadAction< ProductEntity[] >) => {
           productsAdapter.setAll(state, action.payload);
           filterList(state, state.filterQuery);
-          state.loadingStatus = 'saved';
+          state.loadingStatus = 'loaded';
         }
       )
       .addCase(fetchProducts.rejected, (state: ProductsState, action) => {

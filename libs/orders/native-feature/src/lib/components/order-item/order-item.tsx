@@ -39,13 +39,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
     };
 
     const openItem = async () => {
-        const orderLines = await OrderService.getLines(item);
-        dispatch(
-            cartActions.set({
-                ...item,
-                items: orderLines,
-            })
-        );
+        dispatch(cartActions.set({...item}));
         navigation?.navigate('Sales', { mode: 'payment' });
     };
 

@@ -13,8 +13,7 @@ export const AUTH_FEATURE_KEY = 'auth';
 export interface User {
     id: string;
     email_verified: boolean;
-    given_name: string;
-    family_name: string;
+    name: string;
     email: string;
     groups: string[];
 }
@@ -32,13 +31,12 @@ export const signIn = createAsyncThunk(
         const attrs = signInResponse.attributes;
         const currentUser = await Auth.currentAuthenticatedUser();
         const groups = currentUser?.signInUserSession?.accessToken?.payload['cognito:groups'];
-
+        
         return {
             id: attrs.sub,
             email: attrs.email,
             email_verified: attrs.email_verified,
-            family_name: attrs.family_name,
-            given_name: attrs.given_name,
+            name: attrs.name,
             groups,
         } as User;
     }

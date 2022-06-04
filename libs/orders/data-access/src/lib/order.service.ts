@@ -3,13 +3,13 @@ import { DataStore } from 'aws-amplify';
 import {
     OrderEntity,
     OrderEntityMapper,
-    OrderLineEntity,
 } from './order.entity';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { User } from '@pos/auth/data-access';
+import moment from 'moment';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -42,21 +42,15 @@ export class OrderService {
         state: CartState,
         status?: OrderStatus | keyof typeof OrderStatus
     ) {
-        let o = new Order({
+        const order = new Order({
             status: status || 'OPEN',
             subtotal: state.footer.subtotal,
             tax: 0,
             total: state.footer.total,
             employeeId: user.id,
-            employeeName: `${user.given_name} ${user.family_name}`,
-        });
-
-        o = await DataStore.save(o);
-
-        const promises: Promise<unknown>[] = [];
-        state.items.forEach((i) => {
-            const ol = new OrderLine({
-                orderID: o.id,
+            employeeName: user.name,
+            lines: state.items.map(i => new OrderLine({
+                identifier: i.id!,
                 quantity: i.quantity,
                 tax: 0,
                 price: i.product.price,
@@ -65,51 +59,30 @@ export class OrderService {
                 sku: i.product.sku,
                 productName: i.product.name,
                 unitOfMeasure: i.product.unitOfMeasure,
-            });
-            promises.push(DataStore.save(ol));
+            })),
+            orderDate: moment().toISOString(),
         });
 
-        await Promise.all(promises);
-
-        return o;
+        return await DataStore.save(order);
     }
 
     static async delete(id: string) {
         const item = await DataStore.query(Order, id);
         if (!item) return console.error(`Order Id: ${id} not found`);
-
-        const promises: Promise<unknown>[] = [];
-        const lines = await DataStore.query(OrderLine, (l) =>
-            l.orderID('eq', id)
-        );
-        lines.forEach((l) => {
-            promises.push(DataStore.delete(l));
-        });
-
-        await Promise.all(promises);
         return DataStore.delete(item);
     }
 
     static async updateInventory(order: Order) {
-        const lines = await DataStore.query(OrderLine, (l) =>
-            l.orderID('eq', order.id)
-        );
-
         const promises: Promise<unknown>[] = [];
-        lines.forEach((l) => {
+        order.lines.forEach((l) => {
+            if (!l) return;
+
             promises.push(
                 updateProductQuantity(order.status, l.productId, l.quantity)
             );
         });
 
         Promise.all(promises);
-    }
-
-    static async getLines(item: OrderEntity) {
-        const lines = await DataStore.query(OrderLine, (l) =>
-            l.orderID('eq', item.id)
-        );
-        return lines.map((l) => OrderEntityMapper.fromLine(l));
     }
 
     static search(items: OrderEntity[], options: FilterRequest) {

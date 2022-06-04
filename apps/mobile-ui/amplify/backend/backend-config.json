@@ -62,9 +62,7 @@
           "category": "api",
           "resourceName": "pos",
           "attributes": [
-            "GraphQLAPIIdOutput",
-            "GraphQLAPIEndpointOutput",
-            "GraphQLAPIKeyOutput"
+            "GraphQLAPIIdOutput"
           ]
         }
       ]

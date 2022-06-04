@@ -195,7 +195,8 @@ export type CreateOrderInput = {
   status: OrderStatus,
   employeeId: string,
   employeeName: string,
-  createdAt?: string | null,
+  lines: Array< OrderLineInput | null >,
+  orderDate: string,
   _version?: number | null,
   orderCustomerId?: string | null,
 };
@@ -207,6 +208,18 @@ export enum OrderStatus {
 }
 
 
+export type OrderLineInput = {
+  identifier: string,
+  productId: string,
+  productName: string,
+  unitOfMeasure: string,
+  barcode?: string | null,
+  sku?: string | null,
+  quantity: number,
+  tax: number,
+  price: number,
+};
+
 export type ModelOrderConditionInput = {
   subtotal?: ModelFloatInput | null,
   tax?: ModelFloatInput | null,
@@ -214,7 +227,7 @@ export type ModelOrderConditionInput = {
   status?: ModelOrderStatusInput | null,
   employeeId?: ModelStringInput | null,
   employeeName?: ModelStringInput | null,
-  createdAt?: ModelStringInput | null,
+  orderDate?: ModelStringInput | null,
   and?: Array< ModelOrderConditionInput | null > | null,
   or?: Array< ModelOrderConditionInput | null > | null,
   not?: ModelOrderConditionInput | null,
@@ -263,8 +276,9 @@ export type Order = {
   status: OrderStatus,
   employeeId: string,
   employeeName: string,
-  OrderItems?: ModelOrderLineConnection | null,
+  lines:  Array<OrderLine | null >,
   Customer?: Customer | null,
+  orderDate: string,
   createdAt: string,
   updatedAt: string,
   _version: number,
@@ -273,32 +287,17 @@ export type Order = {
   orderCustomerId?: string | null,
 };
 
-export type ModelOrderLineConnection = {
-  __typename: "ModelOrderLineConnection",
-  items:  Array<OrderLine | null >,
-  nextToken?: string | null,
-  startedAt?: number | null,
-};
-
 export type OrderLine = {
   __typename: "OrderLine",
-  id: string,
+  identifier: string,
   productId: string,
-  barcode?: string | null,
-  sku?: string | null,
   productName: string,
   unitOfMeasure: string,
+  barcode?: string | null,
+  sku?: string | null,
   quantity: number,
   tax: number,
   price: number,
-  discountType?: string | null,
-  discountValue?: number | null,
-  orderID: string,
-  createdAt: string,
-  updatedAt: string,
-  _version: number,
-  _deleted?: boolean | null,
-  _lastChangedAt: number,
 };
 
 export type UpdateOrderInput = {
@@ -309,69 +308,13 @@ export type UpdateOrderInput = {
   status?: OrderStatus | null,
   employeeId?: string | null,
   employeeName?: string | null,
-  createdAt?: string | null,
+  lines?: Array< OrderLineInput | null > | null,
+  orderDate?: string | null,
   _version?: number | null,
   orderCustomerId?: string | null,
 };
 
 export type DeleteOrderInput = {
-  id: string,
-  _version?: number | null,
-};
-
-export type CreateOrderLineInput = {
-  id?: string | null,
-  productId: string,
-  barcode?: string | null,
-  sku?: string | null,
-  productName: string,
-  unitOfMeasure: string,
-  quantity: number,
-  tax: number,
-  price: number,
-  discountType?: string | null,
-  discountValue?: number | null,
-  orderID: string,
-  createdAt?: string | null,
-  _version?: number | null,
-};
-
-export type ModelOrderLineConditionInput = {
-  productId?: ModelStringInput | null,
-  barcode?: ModelStringInput | null,
-  sku?: ModelStringInput | null,
-  productName?: ModelStringInput | null,
-  unitOfMeasure?: ModelStringInput | null,
-  quantity?: ModelFloatInput | null,
-  tax?: ModelFloatInput | null,
-  price?: ModelFloatInput | null,
-  discountType?: ModelStringInput | null,
-  discountValue?: ModelFloatInput | null,
-  orderID?: ModelIDInput | null,
-  createdAt?: ModelStringInput | null,
-  and?: Array< ModelOrderLineConditionInput | null > | null,
-  or?: Array< ModelOrderLineConditionInput | null > | null,
-  not?: ModelOrderLineConditionInput | null,
-};
-
-export type UpdateOrderLineInput = {
-  id: string,
-  productId?: string | null,
-  barcode?: string | null,
-  sku?: string | null,
-  productName?: string | null,
-  unitOfMeasure?: string | null,
-  quantity?: number | null,
-  tax?: number | null,
-  price?: number | null,
-  discountType?: string | null,
-  discountValue?: number | null,
-  orderID?: string | null,
-  createdAt?: string | null,
-  _version?: number | null,
-};
-
-export type DeleteOrderLineInput = {
   id: string,
   _version?: number | null,
 };
@@ -484,106 +427,6 @@ export type DeleteProductInput = {
   _version?: number | null,
 };
 
-export type CreatePurchaseOrderInput = {
-  id?: string | null,
-  purchaseDate?: string | null,
-  amount?: number | null,
-  _version?: number | null,
-  purchaseOrderSupplierId?: string | null,
-};
-
-export type ModelPurchaseOrderConditionInput = {
-  purchaseDate?: ModelStringInput | null,
-  amount?: ModelFloatInput | null,
-  and?: Array< ModelPurchaseOrderConditionInput | null > | null,
-  or?: Array< ModelPurchaseOrderConditionInput | null > | null,
-  not?: ModelPurchaseOrderConditionInput | null,
-  purchaseOrderSupplierId?: ModelIDInput | null,
-};
-
-export type PurchaseOrder = {
-  __typename: "PurchaseOrder",
-  id: string,
-  Supplier?: Supplier | null,
-  purchaseDate?: string | null,
-  amount?: number | null,
-  createdAt: string,
-  updatedAt: string,
-  _version: number,
-  _deleted?: boolean | null,
-  _lastChangedAt: number,
-  purchaseOrderSupplierId?: string | null,
-};
-
-export type Supplier = {
-  __typename: "Supplier",
-  id: string,
-  code?: string | null,
-  name: string,
-  createdAt: string,
-  updatedAt: string,
-  _version: number,
-  _deleted?: boolean | null,
-  _lastChangedAt: number,
-};
-
-export type UpdatePurchaseOrderInput = {
-  id: string,
-  purchaseDate?: string | null,
-  amount?: number | null,
-  _version?: number | null,
-  purchaseOrderSupplierId?: string | null,
-};
-
-export type DeletePurchaseOrderInput = {
-  id: string,
-  _version?: number | null,
-};
-
-export type CreatePurchaseOrderLineInput = {
-  id?: string | null,
-  unitPrice?: number | null,
-  quantity?: number | null,
-  _version?: number | null,
-  purchaseOrderLineProductId?: string | null,
-};
-
-export type ModelPurchaseOrderLineConditionInput = {
-  unitPrice?: ModelFloatInput | null,
-  quantity?: ModelFloatInput | null,
-  and?: Array< ModelPurchaseOrderLineConditionInput | null > | null,
-  or?: Array< ModelPurchaseOrderLineConditionInput | null > | null,
-  not?: ModelPurchaseOrderLineConditionInput | null,
-  purchaseOrderLineProductId?: ModelIDInput | null,
-};
-
-export type PurchaseOrderLine = {
-  __typename: "PurchaseOrderLine",
-  id: string,
-  Product?: Product | null,
-  unitPrice?: number | null,
-  quantity?: number | null,
-  createdAt: string,
-  updatedAt: string,
-  _version: number,
-  _deleted?: boolean | null,
-  _lastChangedAt: number,
-  purchaseOrderLineProductId?: string | null,
-};
-
-export type UpdatePurchaseOrderLineInput = {
-  id: string,
-  unitPrice?: number | null,
-  quantity?: number | null,
-  _version?: number | null,
-  purchaseOrderLineProductId?: string | null,
-};
-
-export type DeletePurchaseOrderLineInput = {
-  id: string,
-  _version?: number | null,
-};
-
 export type CreateStoreInput = {
   id?: string | null,
   name: string,
@@ -668,6 +511,18 @@ export type ModelSupplierConditionInput = {
   and?: Array< ModelSupplierConditionInput | null > | null,
   or?: Array< ModelSupplierConditionInput | null > | null,
   not?: ModelSupplierConditionInput | null,
+};
+
+export type Supplier = {
+  __typename: "Supplier",
+  id: string,
+  code?: string | null,
+  name: string,
+  createdAt: string,
+  updatedAt: string,
+  _version: number,
+  _deleted?: boolean | null,
+  _lastChangedAt: number,
 };
 
 export type UpdateSupplierInput = {
@@ -1227,6 +1082,7 @@ export type SalesSummary = {
 export type ProductSaleSummary = {
   __typename: "ProductSaleSummary",
   productId: string,
+  productName: string,
   categoryName: string,
   quantity: number,
   amount: number,
@@ -1301,7 +1157,7 @@ export type ModelOrderFilterInput = {
   status?: ModelOrderStatusInput | null,
   employeeId?: ModelStringInput | null,
   employeeName?: ModelStringInput | null,
-  createdAt?: ModelStringInput | null,
+  orderDate?: ModelStringInput | null,
   and?: Array< ModelOrderFilterInput | null > | null,
   or?: Array< ModelOrderFilterInput | null > | null,
   not?: ModelOrderFilterInput | null,
@@ -1313,25 +1169,6 @@ export type ModelOrderConnection = {
   items:  Array<Order | null >,
   nextToken?: string | null,
   startedAt?: number | null,
-};
-
-export type ModelOrderLineFilterInput = {
-  id?: ModelIDInput | null,
-  productId?: ModelStringInput | null,
-  barcode?: ModelStringInput | null,
-  sku?: ModelStringInput | null,
-  productName?: ModelStringInput | null,
-  unitOfMeasure?: ModelStringInput | null,
-  quantity?: ModelFloatInput | null,
-  tax?: ModelFloatInput | null,
-  price?: ModelFloatInput | null,
-  discountType?: ModelStringInput | null,
-  discountValue?: ModelFloatInput | null,
-  orderID?: ModelIDInput | null,
-  createdAt?: ModelStringInput | null,
-  and?: Array< ModelOrderLineFilterInput | null > | null,
-  or?: Array< ModelOrderLineFilterInput | null > | null,
-  not?: ModelOrderLineFilterInput | null,
 };
 
 export type ModelProductFilterInput = {
@@ -1361,40 +1198,6 @@ export type ModelProductFilterInput = {
 export type ModelProductConnection = {
   __typename: "ModelProductConnection",
   items:  Array<Product | null >,
-  nextToken?: string | null,
-  startedAt?: number | null,
-};
-
-export type ModelPurchaseOrderFilterInput = {
-  id?: ModelIDInput | null,
-  purchaseDate?: ModelStringInput | null,
-  amount?: ModelFloatInput | null,
-  and?: Array< ModelPurchaseOrderFilterInput | null > | null,
-  or?: Array< ModelPurchaseOrderFilterInput | null > | null,
-  not?: ModelPurchaseOrderFilterInput | null,
-  purchaseOrderSupplierId?: ModelIDInput | null,
-};
-
-export type ModelPurchaseOrderConnection = {
-  __typename: "ModelPurchaseOrderConnection",
-  items:  Array<PurchaseOrder | null >,
-  nextToken?: string | null,
-  startedAt?: number | null,
-};
-
-export type ModelPurchaseOrderLineFilterInput = {
-  id?: ModelIDInput | null,
-  unitPrice?: ModelFloatInput | null,
-  quantity?: ModelFloatInput | null,
-  and?: Array< ModelPurchaseOrderLineFilterInput | null > | null,
-  or?: Array< ModelPurchaseOrderLineFilterInput | null > | null,
-  not?: ModelPurchaseOrderLineFilterInput | null,
-  purchaseOrderLineProductId?: ModelIDInput | null,
-};
-
-export type ModelPurchaseOrderLineConnection = {
-  __typename: "ModelPurchaseOrderLineConnection",
-  items:  Array<PurchaseOrderLine | null >,
   nextToken?: string | null,
   startedAt?: number | null,
 };
@@ -1839,11 +1642,18 @@ export type CreateOrderMutation = {
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
-    OrderItems?:  {
-      __typename: "ModelOrderLineConnection",
-      nextToken?: string | null,
-      startedAt?: number | null,
-    } | null,
+    lines:  Array< {
+      __typename: "OrderLine",
+      identifier: string,
+      productId: string,
+      productName: string,
+      unitOfMeasure: string,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      tax: number,
+      price: number,
+    } | null >,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -1859,6 +1669,7 @@ export type CreateOrderMutation = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
+    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -1883,11 +1694,18 @@ export type UpdateOrderMutation = {
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
-    OrderItems?:  {
-      __typename: "ModelOrderLineConnection",
-      nextToken?: string | null,
-      startedAt?: number | null,
-    } | null,
+    lines:  Array< {
+      __typename: "OrderLine",
+      identifier: string,
+      productId: string,
+      productName: string,
+      unitOfMeasure: string,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      tax: number,
+      price: number,
+    } | null >,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -1903,6 +1721,7 @@ export type UpdateOrderMutation = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
+    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -1927,11 +1746,18 @@ export type DeleteOrderMutation = {
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
-    OrderItems?:  {
-      __typename: "ModelOrderLineConnection",
-      nextToken?: string | null,
-      startedAt?: number | null,
-    } | null,
+    lines:  Array< {
+      __typename: "OrderLine",
+      identifier: string,
+      productId: string,
+      productName: string,
+      unitOfMeasure: string,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      tax: number,
+      price: number,
+    } | null >,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -1947,96 +1773,13 @@ export type DeleteOrderMutation = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
+    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
     orderCustomerId?: string | null,
-  } | null,
-};
-
-export type CreateOrderLineMutationVariables = {
-  input: CreateOrderLineInput,
-  condition?: ModelOrderLineConditionInput | null,
-};
-
-export type CreateOrderLineMutation = {
-  createOrderLine?:  {
-    __typename: "OrderLine",
-    id: string,
-    productId: string,
-    barcode?: string | null,
-    sku?: string | null,
-    productName: string,
-    unitOfMeasure: string,
-    quantity: number,
-    tax: number,
-    price: number,
-    discountType?: string | null,
-    discountValue?: number | null,
-    orderID: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type UpdateOrderLineMutationVariables = {
-  input: UpdateOrderLineInput,
-  condition?: ModelOrderLineConditionInput | null,
-};
-
-export type UpdateOrderLineMutation = {
-  updateOrderLine?:  {
-    __typename: "OrderLine",
-    id: string,
-    productId: string,
-    barcode?: string | null,
-    sku?: string | null,
-    productName: string,
-    unitOfMeasure: string,
-    quantity: number,
-    tax: number,
-    price: number,
-    discountType?: string | null,
-    discountValue?: number | null,
-    orderID: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type DeleteOrderLineMutationVariables = {
-  input: DeleteOrderLineInput,
-  condition?: ModelOrderLineConditionInput | null,
-};
-
-export type DeleteOrderLineMutation = {
-  deleteOrderLine?:  {
-    __typename: "OrderLine",
-    id: string,
-    productId: string,
-    barcode?: string | null,
-    sku?: string | null,
-    productName: string,
-    unitOfMeasure: string,
-    quantity: number,
-    tax: number,
-    price: number,
-    discountType?: string | null,
-    discountValue?: number | null,
-    orderID: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
   } | null,
 };
 
@@ -2214,237 +1957,6 @@ export type DeleteProductMutation = {
     _lastChangedAt: number,
     productCategoryId?: string | null,
     productBrandId?: string | null,
-  } | null,
-};
-
-export type CreatePurchaseOrderMutationVariables = {
-  input: CreatePurchaseOrderInput,
-  condition?: ModelPurchaseOrderConditionInput | null,
-};
-
-export type CreatePurchaseOrderMutation = {
-  createPurchaseOrder?:  {
-    __typename: "PurchaseOrder",
-    id: string,
-    Supplier?:  {
-      __typename: "Supplier",
-      id: string,
-      code?: string | null,
-      name: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null,
-    purchaseDate?: string | null,
-    amount?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderSupplierId?: string | null,
-  } | null,
-};
-
-export type UpdatePurchaseOrderMutationVariables = {
-  input: UpdatePurchaseOrderInput,
-  condition?: ModelPurchaseOrderConditionInput | null,
-};
-
-export type UpdatePurchaseOrderMutation = {
-  updatePurchaseOrder?:  {
-    __typename: "PurchaseOrder",
-    id: string,
-    Supplier?:  {
-      __typename: "Supplier",
-      id: string,
-      code?: string | null,
-      name: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null,
-    purchaseDate?: string | null,
-    amount?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderSupplierId?: string | null,
-  } | null,
-};
-
-export type DeletePurchaseOrderMutationVariables = {
-  input: DeletePurchaseOrderInput,
-  condition?: ModelPurchaseOrderConditionInput | null,
-};
-
-export type DeletePurchaseOrderMutation = {
-  deletePurchaseOrder?:  {
-    __typename: "PurchaseOrder",
-    id: string,
-    Supplier?:  {
-      __typename: "Supplier",
-      id: string,
-      code?: string | null,
-      name: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null,
-    purchaseDate?: string | null,
-    amount?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderSupplierId?: string | null,
-  } | null,
-};
-
-export type CreatePurchaseOrderLineMutationVariables = {
-  input: CreatePurchaseOrderLineInput,
-  condition?: ModelPurchaseOrderLineConditionInput | null,
-};
-
-export type CreatePurchaseOrderLineMutation = {
-  createPurchaseOrderLine?:  {
-    __typename: "PurchaseOrderLine",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    unitPrice?: number | null,
-    quantity?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderLineProductId?: string | null,
-  } | null,
-};
-
-export type UpdatePurchaseOrderLineMutationVariables = {
-  input: UpdatePurchaseOrderLineInput,
-  condition?: ModelPurchaseOrderLineConditionInput | null,
-};
-
-export type UpdatePurchaseOrderLineMutation = {
-  updatePurchaseOrderLine?:  {
-    __typename: "PurchaseOrderLine",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    unitPrice?: number | null,
-    quantity?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderLineProductId?: string | null,
-  } | null,
-};
-
-export type DeletePurchaseOrderLineMutationVariables = {
-  input: DeletePurchaseOrderLineInput,
-  condition?: ModelPurchaseOrderLineConditionInput | null,
-};
-
-export type DeletePurchaseOrderLineMutation = {
-  deletePurchaseOrderLine?:  {
-    __typename: "PurchaseOrderLine",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    unitPrice?: number | null,
-    quantity?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderLineProductId?: string | null,
   } | null,
 };
 
@@ -3572,6 +3084,7 @@ export type GetSalesSummaryQuery = {
     products?:  Array< {
       __typename: "ProductSaleSummary",
       productId: string,
+      productName: string,
       categoryName: string,
       quantity: number,
       amount: number,
@@ -3827,11 +3340,18 @@ export type GetOrderQuery = {
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
-    OrderItems?:  {
-      __typename: "ModelOrderLineConnection",
-      nextToken?: string | null,
-      startedAt?: number | null,
-    } | null,
+    lines:  Array< {
+      __typename: "OrderLine",
+      identifier: string,
+      productId: string,
+      productName: string,
+      unitOfMeasure: string,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      tax: number,
+      price: number,
+    } | null >,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -3847,6 +3367,7 @@ export type GetOrderQuery = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
+    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -3874,6 +3395,7 @@ export type ListOrdersQuery = {
       status: OrderStatus,
       employeeId: string,
       employeeName: string,
+      orderDate: string,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -3905,108 +3427,13 @@ export type SyncOrdersQuery = {
       status: OrderStatus,
       employeeId: string,
       employeeName: string,
+      orderDate: string,
       createdAt: string,
       updatedAt: string,
       _version: number,
       _deleted?: boolean | null,
       _lastChangedAt: number,
       orderCustomerId?: string | null,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type GetOrderLineQueryVariables = {
-  id: string,
-};
-
-export type GetOrderLineQuery = {
-  getOrderLine?:  {
-    __typename: "OrderLine",
-    id: string,
-    productId: string,
-    barcode?: string | null,
-    sku?: string | null,
-    productName: string,
-    unitOfMeasure: string,
-    quantity: number,
-    tax: number,
-    price: number,
-    discountType?: string | null,
-    discountValue?: number | null,
-    orderID: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type ListOrderLinesQueryVariables = {
-  filter?: ModelOrderLineFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type ListOrderLinesQuery = {
-  listOrderLines?:  {
-    __typename: "ModelOrderLineConnection",
-    items:  Array< {
-      __typename: "OrderLine",
-      id: string,
-      productId: string,
-      barcode?: string | null,
-      sku?: string | null,
-      productName: string,
-      unitOfMeasure: string,
-      quantity: number,
-      tax: number,
-      price: number,
-      discountType?: string | null,
-      discountValue?: number | null,
-      orderID: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type SyncOrderLinesQueryVariables = {
-  filter?: ModelOrderLineFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-  lastSync?: number | null,
-};
-
-export type SyncOrderLinesQuery = {
-  syncOrderLines?:  {
-    __typename: "ModelOrderLineConnection",
-    items:  Array< {
-      __typename: "OrderLine",
-      id: string,
-      productId: string,
-      barcode?: string | null,
-      sku?: string | null,
-      productName: string,
-      unitOfMeasure: string,
-      quantity: number,
-      tax: number,
-      price: number,
-      discountType?: string | null,
-      discountValue?: number | null,
-      orderID: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
     } | null >,
     nextToken?: string | null,
     startedAt?: number | null,
@@ -4146,187 +3573,6 @@ export type SyncProductsQuery = {
       _lastChangedAt: number,
       productCategoryId?: string | null,
       productBrandId?: string | null,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type GetPurchaseOrderQueryVariables = {
-  id: string,
-};
-
-export type GetPurchaseOrderQuery = {
-  getPurchaseOrder?:  {
-    __typename: "PurchaseOrder",
-    id: string,
-    Supplier?:  {
-      __typename: "Supplier",
-      id: string,
-      code?: string | null,
-      name: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null,
-    purchaseDate?: string | null,
-    amount?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderSupplierId?: string | null,
-  } | null,
-};
-
-export type ListPurchaseOrdersQueryVariables = {
-  filter?: ModelPurchaseOrderFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type ListPurchaseOrdersQuery = {
-  listPurchaseOrders?:  {
-    __typename: "ModelPurchaseOrderConnection",
-    items:  Array< {
-      __typename: "PurchaseOrder",
-      id: string,
-      purchaseDate?: string | null,
-      amount?: number | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      purchaseOrderSupplierId?: string | null,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type SyncPurchaseOrdersQueryVariables = {
-  filter?: ModelPurchaseOrderFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-  lastSync?: number | null,
-};
-
-export type SyncPurchaseOrdersQuery = {
-  syncPurchaseOrders?:  {
-    __typename: "ModelPurchaseOrderConnection",
-    items:  Array< {
-      __typename: "PurchaseOrder",
-      id: string,
-      purchaseDate?: string | null,
-      amount?: number | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      purchaseOrderSupplierId?: string | null,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type GetPurchaseOrderLineQueryVariables = {
-  id: string,
-};
-
-export type GetPurchaseOrderLineQuery = {
-  getPurchaseOrderLine?:  {
-    __typename: "PurchaseOrderLine",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    unitPrice?: number | null,
-    quantity?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderLineProductId?: string | null,
-  } | null,
-};
-
-export type ListPurchaseOrderLinesQueryVariables = {
-  filter?: ModelPurchaseOrderLineFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type ListPurchaseOrderLinesQuery = {
-  listPurchaseOrderLines?:  {
-    __typename: "ModelPurchaseOrderLineConnection",
-    items:  Array< {
-      __typename: "PurchaseOrderLine",
-      id: string,
-      unitPrice?: number | null,
-      quantity?: number | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      purchaseOrderLineProductId?: string | null,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type SyncPurchaseOrderLinesQueryVariables = {
-  filter?: ModelPurchaseOrderLineFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-  lastSync?: number | null,
-};
-
-export type SyncPurchaseOrderLinesQuery = {
-  syncPurchaseOrderLines?:  {
-    __typename: "ModelPurchaseOrderLineConnection",
-    items:  Array< {
-      __typename: "PurchaseOrderLine",
-      id: string,
-      unitPrice?: number | null,
-      quantity?: number | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      purchaseOrderLineProductId?: string | null,
     } | null >,
     nextToken?: string | null,
     startedAt?: number | null,
@@ -5559,11 +4805,18 @@ export type OnCreateOrderSubscription = {
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
-    OrderItems?:  {
-      __typename: "ModelOrderLineConnection",
-      nextToken?: string | null,
-      startedAt?: number | null,
-    } | null,
+    lines:  Array< {
+      __typename: "OrderLine",
+      identifier: string,
+      productId: string,
+      productName: string,
+      unitOfMeasure: string,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      tax: number,
+      price: number,
+    } | null >,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -5579,6 +4832,7 @@ export type OnCreateOrderSubscription = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
+    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -5598,11 +4852,18 @@ export type OnUpdateOrderSubscription = {
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
-    OrderItems?:  {
-      __typename: "ModelOrderLineConnection",
-      nextToken?: string | null,
-      startedAt?: number | null,
-    } | null,
+    lines:  Array< {
+      __typename: "OrderLine",
+      identifier: string,
+      productId: string,
+      productName: string,
+      unitOfMeasure: string,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      tax: number,
+      price: number,
+    } | null >,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -5618,6 +4879,7 @@ export type OnUpdateOrderSubscription = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
+    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -5637,11 +4899,18 @@ export type OnDeleteOrderSubscription = {
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
-    OrderItems?:  {
-      __typename: "ModelOrderLineConnection",
-      nextToken?: string | null,
-      startedAt?: number | null,
-    } | null,
+    lines:  Array< {
+      __typename: "OrderLine",
+      identifier: string,
+      productId: string,
+      productName: string,
+      unitOfMeasure: string,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      tax: number,
+      price: number,
+    } | null >,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -5657,81 +4926,13 @@ export type OnDeleteOrderSubscription = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
+    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
     orderCustomerId?: string | null,
-  } | null,
-};
-
-export type OnCreateOrderLineSubscription = {
-  onCreateOrderLine?:  {
-    __typename: "OrderLine",
-    id: string,
-    productId: string,
-    barcode?: string | null,
-    sku?: string | null,
-    productName: string,
-    unitOfMeasure: string,
-    quantity: number,
-    tax: number,
-    price: number,
-    discountType?: string | null,
-    discountValue?: number | null,
-    orderID: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type OnUpdateOrderLineSubscription = {
-  onUpdateOrderLine?:  {
-    __typename: "OrderLine",
-    id: string,
-    productId: string,
-    barcode?: string | null,
-    sku?: string | null,
-    productName: string,
-    unitOfMeasure: string,
-    quantity: number,
-    tax: number,
-    price: number,
-    discountType?: string | null,
-    discountValue?: number | null,
-    orderID: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type OnDeleteOrderLineSubscription = {
-  onDeleteOrderLine?:  {
-    __typename: "OrderLine",
-    id: string,
-    productId: string,
-    barcode?: string | null,
-    sku?: string | null,
-    productName: string,
-    unitOfMeasure: string,
-    quantity: number,
-    tax: number,
-    price: number,
-    discountType?: string | null,
-    discountValue?: number | null,
-    orderID: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
   } | null,
 };
 
@@ -5894,207 +5095,6 @@ export type OnDeleteProductSubscription = {
     _lastChangedAt: number,
     productCategoryId?: string | null,
     productBrandId?: string | null,
-  } | null,
-};
-
-export type OnCreatePurchaseOrderSubscription = {
-  onCreatePurchaseOrder?:  {
-    __typename: "PurchaseOrder",
-    id: string,
-    Supplier?:  {
-      __typename: "Supplier",
-      id: string,
-      code?: string | null,
-      name: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null,
-    purchaseDate?: string | null,
-    amount?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderSupplierId?: string | null,
-  } | null,
-};
-
-export type OnUpdatePurchaseOrderSubscription = {
-  onUpdatePurchaseOrder?:  {
-    __typename: "PurchaseOrder",
-    id: string,
-    Supplier?:  {
-      __typename: "Supplier",
-      id: string,
-      code?: string | null,
-      name: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null,
-    purchaseDate?: string | null,
-    amount?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderSupplierId?: string | null,
-  } | null,
-};
-
-export type OnDeletePurchaseOrderSubscription = {
-  onDeletePurchaseOrder?:  {
-    __typename: "PurchaseOrder",
-    id: string,
-    Supplier?:  {
-      __typename: "Supplier",
-      id: string,
-      code?: string | null,
-      name: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null,
-    purchaseDate?: string | null,
-    amount?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderSupplierId?: string | null,
-  } | null,
-};
-
-export type OnCreatePurchaseOrderLineSubscription = {
-  onCreatePurchaseOrderLine?:  {
-    __typename: "PurchaseOrderLine",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    unitPrice?: number | null,
-    quantity?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderLineProductId?: string | null,
-  } | null,
-};
-
-export type OnUpdatePurchaseOrderLineSubscription = {
-  onUpdatePurchaseOrderLine?:  {
-    __typename: "PurchaseOrderLine",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    unitPrice?: number | null,
-    quantity?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderLineProductId?: string | null,
-  } | null,
-};
-
-export type OnDeletePurchaseOrderLineSubscription = {
-  onDeletePurchaseOrderLine?:  {
-    __typename: "PurchaseOrderLine",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    unitPrice?: number | null,
-    quantity?: number | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    purchaseOrderLineProductId?: string | null,
   } | null,
 };
 

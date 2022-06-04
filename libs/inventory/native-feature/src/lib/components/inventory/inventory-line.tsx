@@ -21,7 +21,6 @@ export function InventoryLine({ item }: InventoryLineProps) {
     const prevReorderQuantity = item.reorderPoint;
 
     const updateReorderPoint = (text: string) => {
-        debugger;
         const value = +text;
         if (!text || !value) {
             setReorderPoint(prevReorderPoint?.toString());

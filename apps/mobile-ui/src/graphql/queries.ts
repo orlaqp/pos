@@ -7,6 +7,7 @@ export const getSalesSummary = /* GraphQL */ `
     getSalesSummary(from: $from, to: $to) {
       products {
         productId
+        productName
         categoryName
         quantity
         amount
@@ -242,9 +243,16 @@ export const getOrder = /* GraphQL */ `
       status
       employeeId
       employeeName
-      OrderItems {
-        nextToken
-        startedAt
+      lines {
+        identifier
+        productId
+        productName
+        unitOfMeasure
+        barcode
+        sku
+        quantity
+        tax
+        price
       }
       Customer {
         id
@@ -260,6 +268,7 @@ export const getOrder = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
+      orderDate
       createdAt
       updatedAt
       _version
@@ -284,6 +293,7 @@ export const listOrders = /* GraphQL */ `
         status
         employeeId
         employeeName
+        orderDate
         createdAt
         updatedAt
         _version
@@ -317,103 +327,13 @@ export const syncOrders = /* GraphQL */ `
         status
         employeeId
         employeeName
+        orderDate
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
         orderCustomerId
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const getOrderLine = /* GraphQL */ `
-  query GetOrderLine($id: ID!) {
-    getOrderLine(id: $id) {
-      id
-      productId
-      barcode
-      sku
-      productName
-      unitOfMeasure
-      quantity
-      tax
-      price
-      discountType
-      discountValue
-      orderID
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const listOrderLines = /* GraphQL */ `
-  query ListOrderLines(
-    $filter: ModelOrderLineFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listOrderLines(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        productId
-        barcode
-        sku
-        productName
-        unitOfMeasure
-        quantity
-        tax
-        price
-        discountType
-        discountValue
-        orderID
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const syncOrderLines = /* GraphQL */ `
-  query SyncOrderLines(
-    $filter: ModelOrderLineFilterInput
-    $limit: Int
-    $nextToken: String
-    $lastSync: AWSTimestamp
-  ) {
-    syncOrderLines(
-      filter: $filter
-      limit: $limit
-      nextToken: $nextToken
-      lastSync: $lastSync
-    ) {
-      items {
-        id
-        productId
-        barcode
-        sku
-        productName
-        unitOfMeasure
-        quantity
-        tax
-        price
-        discountType
-        discountValue
-        orderID
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
       }
       nextToken
       startedAt
@@ -546,179 +466,6 @@ export const syncProducts = /* GraphQL */ `
         _lastChangedAt
         productCategoryId
         productBrandId
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const getPurchaseOrder = /* GraphQL */ `
-  query GetPurchaseOrder($id: ID!) {
-    getPurchaseOrder(id: $id) {
-      id
-      Supplier {
-        id
-        code
-        name
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      purchaseDate
-      amount
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderSupplierId
-    }
-  }
-`;
-export const listPurchaseOrders = /* GraphQL */ `
-  query ListPurchaseOrders(
-    $filter: ModelPurchaseOrderFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listPurchaseOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        purchaseDate
-        amount
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        purchaseOrderSupplierId
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const syncPurchaseOrders = /* GraphQL */ `
-  query SyncPurchaseOrders(
-    $filter: ModelPurchaseOrderFilterInput
-    $limit: Int
-    $nextToken: String
-    $lastSync: AWSTimestamp
-  ) {
-    syncPurchaseOrders(
-      filter: $filter
-      limit: $limit
-      nextToken: $nextToken
-      lastSync: $lastSync
-    ) {
-      items {
-        id
-        purchaseDate
-        amount
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        purchaseOrderSupplierId
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const getPurchaseOrderLine = /* GraphQL */ `
-  query GetPurchaseOrderLine($id: ID!) {
-    getPurchaseOrderLine(id: $id) {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      unitPrice
-      quantity
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderLineProductId
-    }
-  }
-`;
-export const listPurchaseOrderLines = /* GraphQL */ `
-  query ListPurchaseOrderLines(
-    $filter: ModelPurchaseOrderLineFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listPurchaseOrderLines(
-      filter: $filter
-      limit: $limit
-      nextToken: $nextToken
-    ) {
-      items {
-        id
-        unitPrice
-        quantity
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        purchaseOrderLineProductId
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const syncPurchaseOrderLines = /* GraphQL */ `
-  query SyncPurchaseOrderLines(
-    $filter: ModelPurchaseOrderLineFilterInput
-    $limit: Int
-    $nextToken: String
-    $lastSync: AWSTimestamp
-  ) {
-    syncPurchaseOrderLines(
-      filter: $filter
-      limit: $limit
-      nextToken: $nextToken
-      lastSync: $lastSync
-    ) {
-      items {
-        id
-        unitPrice
-        quantity
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        purchaseOrderLineProductId
       }
       nextToken
       startedAt

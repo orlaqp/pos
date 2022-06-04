@@ -25,6 +25,7 @@ export declare class SalesSummary {
 
 export declare class ProductSaleSummary {
   readonly productId: string;
+  readonly productName: string;
   readonly categoryName: string;
   readonly quantity: number;
   readonly amount: number;
@@ -35,6 +36,19 @@ export declare class EmployeeSaleSummary {
   readonly orders: number;
   readonly amount: number;
   constructor(init: ModelInit<EmployeeSaleSummary>);
+}
+
+export declare class OrderLine {
+  readonly identifier: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly unitOfMeasure: string;
+  readonly barcode?: string | null;
+  readonly sku?: string | null;
+  readonly quantity: number;
+  readonly tax: number;
+  readonly price: number;
+  constructor(init: ModelInit<OrderLine>);
 }
 
 type BrandMetaData = {
@@ -50,30 +64,18 @@ type CustomerMetaData = {
 }
 
 type OrderMetaData = {
-  readOnlyFields: 'updatedAt';
-}
-
-type OrderLineMetaData = {
-  readOnlyFields: 'updatedAt';
+  readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
 type ProductMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
-type PurchaseOrderMetaData = {
+type StoreMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
 type SupplierMetaData = {
-  readOnlyFields: 'createdAt' | 'updatedAt';
-}
-
-type PurchaseOrderLineMetaData = {
-  readOnlyFields: 'createdAt' | 'updatedAt';
-}
-
-type StoreMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
@@ -166,32 +168,14 @@ export declare class Order {
   readonly status: OrderStatus | keyof typeof OrderStatus;
   readonly employeeId: string;
   readonly employeeName: string;
-  readonly OrderItems?: (OrderLine | null)[] | null;
+  readonly lines: (OrderLine | null)[];
   readonly Customer?: Customer | null;
-  readonly createdAt: string;
+  readonly orderDate: string;
+  readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly orderCustomerId?: string | null;
   constructor(init: ModelInit<Order, OrderMetaData>);
   static copyOf(source: Order, mutator: (draft: MutableModel<Order, OrderMetaData>) => MutableModel<Order, OrderMetaData> | void): Order;
-}
-
-export declare class OrderLine {
-  readonly id: string;
-  readonly productId: string;
-  readonly barcode?: string | null;
-  readonly sku?: string | null;
-  readonly productName: string;
-  readonly unitOfMeasure: string;
-  readonly quantity: number;
-  readonly tax: number;
-  readonly price: number;
-  readonly discountType?: string | null;
-  readonly discountValue?: number | null;
-  readonly orderID: string;
-  readonly createdAt: string;
-  readonly updatedAt?: string | null;
-  constructor(init: ModelInit<OrderLine, OrderLineMetaData>);
-  static copyOf(source: OrderLine, mutator: (draft: MutableModel<OrderLine, OrderLineMetaData>) => MutableModel<OrderLine, OrderLineMetaData> | void): OrderLine;
 }
 
 export declare class Product {
@@ -221,40 +205,6 @@ export declare class Product {
   static copyOf(source: Product, mutator: (draft: MutableModel<Product, ProductMetaData>) => MutableModel<Product, ProductMetaData> | void): Product;
 }
 
-export declare class PurchaseOrder {
-  readonly id: string;
-  readonly Supplier?: Supplier | null;
-  readonly purchaseDate?: string | null;
-  readonly amount?: number | null;
-  readonly createdAt?: string | null;
-  readonly updatedAt?: string | null;
-  readonly purchaseOrderSupplierId?: string | null;
-  constructor(init: ModelInit<PurchaseOrder, PurchaseOrderMetaData>);
-  static copyOf(source: PurchaseOrder, mutator: (draft: MutableModel<PurchaseOrder, PurchaseOrderMetaData>) => MutableModel<PurchaseOrder, PurchaseOrderMetaData> | void): PurchaseOrder;
-}
-
-export declare class Supplier {
-  readonly id: string;
-  readonly code?: string | null;
-  readonly name: string;
-  readonly createdAt?: string | null;
-  readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Supplier, SupplierMetaData>);
-  static copyOf(source: Supplier, mutator: (draft: MutableModel<Supplier, SupplierMetaData>) => MutableModel<Supplier, SupplierMetaData> | void): Supplier;
-}
-
-export declare class PurchaseOrderLine {
-  readonly id: string;
-  readonly Product?: Product | null;
-  readonly unitPrice?: number | null;
-  readonly quantity?: number | null;
-  readonly createdAt?: string | null;
-  readonly updatedAt?: string | null;
-  readonly purchaseOrderLineProductId?: string | null;
-  constructor(init: ModelInit<PurchaseOrderLine, PurchaseOrderLineMetaData>);
-  static copyOf(source: PurchaseOrderLine, mutator: (draft: MutableModel<PurchaseOrderLine, PurchaseOrderLineMetaData>) => MutableModel<PurchaseOrderLine, PurchaseOrderLineMetaData> | void): PurchaseOrderLine;
-}
-
 export declare class Store {
   readonly id: string;
   readonly name: string;
@@ -271,6 +221,16 @@ export declare class Store {
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Store, StoreMetaData>);
   static copyOf(source: Store, mutator: (draft: MutableModel<Store, StoreMetaData>) => MutableModel<Store, StoreMetaData> | void): Store;
+}
+
+export declare class Supplier {
+  readonly id: string;
+  readonly code?: string | null;
+  readonly name: string;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  constructor(init: ModelInit<Supplier, SupplierMetaData>);
+  static copyOf(source: Supplier, mutator: (draft: MutableModel<Supplier, SupplierMetaData>) => MutableModel<Supplier, SupplierMetaData> | void): Supplier;
 }
 
 export declare class Stock {

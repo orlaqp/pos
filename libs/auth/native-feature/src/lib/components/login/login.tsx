@@ -34,7 +34,7 @@ export function LoginScreen(props: LoginProps) {
         mode: 'onChange',
         defaultValues: {
             email: 'orlaqp@gmail.com',
-            password: '12345678',
+            password: 'Password01$',
         },
     });
 

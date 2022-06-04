@@ -57,7 +57,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
         <View style={[sharedStyles.page, sharedStyles.centered]}>
             <View style={{ flexDirection: 'row' }}>
                 {paths.map((p) => {
-                    if (!user.groups.includes(p.role)) return null;
+                    if (!user.groups?.includes(p.role)) return null;
 
                     return (
                         <TouchableOpacity onPress={() => goto(p)} key={p.title}>

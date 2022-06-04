@@ -78,7 +78,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
 
     useEffect(() => {
         const spreadLines: OrderLineEntity[] = [];
-        order.items?.forEach((line) => {
+        order.lines?.forEach((line) => {
             if (line.unitOfMeasure === EACH) {
                 for (let i = 0; i < line.quantity; i++) {
                     spreadLines.push({ ...line, quantity: 1 });

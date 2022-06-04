@@ -1,4 +1,4 @@
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+/* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { User } from '@pos/auth/data-access';
 import { CartState, initialCartState } from '@pos/sales/data-access';
 import { Order, OrderLine, OrderStatus } from '@pos/shared/models';
@@ -12,13 +12,14 @@ export interface OrderEntity {
     status: OrderStatus | keyof typeof OrderStatus;
     employeeId: string;
     employeeName: string;
-    items?: OrderLineEntity[] | null;
+    lines?: OrderLineEntity[] | null;
+    orderDate?: string | null;
     createdAt?: string | null;
     updatedAt?: string | null;
 }
 
 export interface OrderLineEntity {
-    id?: string;
+    identifier: string;
     productId: string;
     barcode: string | null | undefined;
     sku: string | null | undefined;
@@ -29,9 +30,6 @@ export interface OrderLineEntity {
     price: number;
     discountType?: string | null;
     discountValue?: number | null;
-    orderID: string;
-    createdAt?: string | null;
-    updatedAt?: string | null;
 }
 
 export class OrderEntityMapper {
@@ -44,28 +42,12 @@ export class OrderEntityMapper {
             status: p.status,
             employeeId: p.employeeId,
             employeeName: p.employeeName,
-            items: p.OrderItems?.filter((i) => i !== null).map((i) =>
+            lines: p.lines?.filter((i) => i !== null).map((i) =>
                 OrderEntityMapper.fromLine(i!)
             ),
+            orderDate: p.orderDate,
             createdAt: p.createdAt,
             updatedAt: p.updatedAt,
-        };
-    }
-
-    static fromLine(l: OrderLine): OrderLineEntity {
-        return {
-            id: l.id,
-            orderID: l.orderID,
-            productId: l.productId,
-            barcode: l.barcode,
-            sku: l.sku,
-            productName: l.productName,
-            quantity: l.quantity,
-            tax: 0,
-            price: l.price,
-            unitOfMeasure: l.unitOfMeasure,
-            createdAt: l.createdAt,
-            updatedAt: l.updatedAt,
         };
     }
 
@@ -79,15 +61,15 @@ export class OrderEntityMapper {
             total: o.total,
         };
         state.header = {
-            orderDate: o.createdAt!,
+            orderDate: o.orderDate || new Date().toISOString(),
             orderNumber: o.id,
             status: o.status,
             employeeId: o.employeeId,
             employeeName: o.employeeName,
         };
-        state.items = o.items?.map((i) => ({
+        state.items = o.lines?.map((i) => ({
             quantity: i?.quantity,
-            id: i?.id,
+            identifier: i?.identifier,
             product: {
                 id: i.productId,
                 name: i?.productName,
@@ -100,6 +82,20 @@ export class OrderEntityMapper {
         state.selected = initialCartState.selected;
 
         return state;
+    }
+    
+    static fromLine(l: OrderLine): OrderLineEntity {
+        return {
+            identifier: l.identifier,
+            productId: l.productId,
+            barcode: l.barcode,
+            sku: l.sku,
+            productName: l.productName,
+            quantity: l.quantity,
+            tax: 0,
+            price: l.price,
+            unitOfMeasure: l.unitOfMeasure,
+        };
     }
 
     static fromRefundedCart(user: User, cart: CartState) {
@@ -115,7 +111,7 @@ export class OrderEntityMapper {
             orderNumber: header.orderNumber,
             status: header.status,
             employeeId: user.id,
-            employeeName: `${user.given_name} ${user.family_name}`,
+            employeeName: user.name,
         };
 
         state.items = cart.items
@@ -146,15 +142,5 @@ export class OrderEntityMapper {
         };
 
         return state;
-    }
-
-    static composeOrders(
-        orders: OrderEntity[],
-        lines: OrderLineEntity[]
-    ): OrderEntity[] {
-        return orders.map((o) => ({
-            ...o,
-            items: lines?.filter((l) => l.orderID === o.id),
-        }));
     }
 }

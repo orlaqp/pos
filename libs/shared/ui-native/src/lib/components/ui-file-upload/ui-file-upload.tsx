@@ -59,16 +59,37 @@ export function UiFileUpload({
     }
 
     useEffect(() => {
-        if (!s3Key) return setImageUri(undefined);
-        setBusy(true);
-        const { promise, cancel } = cancellablePromise<string>(AssetsService.getAssetUri(s3Key));
+        if (!s3Key) {
+            setBusy(false);
+            return setImageUri(undefined);
+        }
 
-        promise.then((uri: string) => {
-            setImageUri(uri);
+        setBusy(true);
+
+        const { promise, cancel } = cancellablePromise<string | undefined>(
+            AssetsService.getImage(s3Key)
+            // CacheService.getImage(s3Key)
+        );
+
+        promise.then((base64Image: string | undefined) => {
+            setImageUri(base64Image);
             setBusy(false);
         });
 
         return cancel;
+
+
+
+        // if (!s3Key) return setImageUri(undefined);
+        // setBusy(true);
+        // const { promise, cancel } = cancellablePromise<string>(AssetsService.getAssetUri(s3Key));
+
+        // promise.then((uri: string) => {
+        //     setImageUri(uri);
+        //     setBusy(false);
+        // });
+
+        // return cancel;
     }, [s3Key])
 
     const processUpload = async () => {
@@ -100,7 +121,7 @@ export function UiFileUpload({
                     height: height || 125,
                     borderRadius: 4,
                 }}
-                onPress={async () => await processUpload()}
+                onPress={processUpload}
             >
                 {imageUri && !busy && (
                     <Image

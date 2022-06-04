@@ -4,7 +4,6 @@ import {
     ordersActions,
     selectFilteredList,
     subscribeToOrderChanges,
-    subscribeToOrderLineChanges,
 } from '@pos/orders/data-access';
 import { UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -37,11 +36,9 @@ export function OrderList({ navigation }: OrderListProps) {
 
     useEffect(() => {
         const ordersSub = subscribeToOrderChanges(dispatch);
-        const linesSub = subscribeToOrderLineChanges(dispatch);
         return () => {
             console.log('Closing orders subscription');
             ordersSub.unsubscribe();
-            linesSub.unsubscribe();
         };
     }, [dispatch]);
 

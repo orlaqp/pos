@@ -189,9 +189,16 @@ export const createOrder = /* GraphQL */ `
       status
       employeeId
       employeeName
-      OrderItems {
-        nextToken
-        startedAt
+      lines {
+        identifier
+        productId
+        productName
+        unitOfMeasure
+        barcode
+        sku
+        quantity
+        tax
+        price
       }
       Customer {
         id
@@ -207,6 +214,7 @@ export const createOrder = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
+      orderDate
       createdAt
       updatedAt
       _version
@@ -229,9 +237,16 @@ export const updateOrder = /* GraphQL */ `
       status
       employeeId
       employeeName
-      OrderItems {
-        nextToken
-        startedAt
+      lines {
+        identifier
+        productId
+        productName
+        unitOfMeasure
+        barcode
+        sku
+        quantity
+        tax
+        price
       }
       Customer {
         id
@@ -247,6 +262,7 @@ export const updateOrder = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
+      orderDate
       createdAt
       updatedAt
       _version
@@ -269,9 +285,16 @@ export const deleteOrder = /* GraphQL */ `
       status
       employeeId
       employeeName
-      OrderItems {
-        nextToken
-        startedAt
+      lines {
+        identifier
+        productId
+        productName
+        unitOfMeasure
+        barcode
+        sku
+        quantity
+        tax
+        price
       }
       Customer {
         id
@@ -287,90 +310,13 @@ export const deleteOrder = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
+      orderDate
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
       orderCustomerId
-    }
-  }
-`;
-export const createOrderLine = /* GraphQL */ `
-  mutation CreateOrderLine(
-    $input: CreateOrderLineInput!
-    $condition: ModelOrderLineConditionInput
-  ) {
-    createOrderLine(input: $input, condition: $condition) {
-      id
-      productId
-      barcode
-      sku
-      productName
-      unitOfMeasure
-      quantity
-      tax
-      price
-      discountType
-      discountValue
-      orderID
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const updateOrderLine = /* GraphQL */ `
-  mutation UpdateOrderLine(
-    $input: UpdateOrderLineInput!
-    $condition: ModelOrderLineConditionInput
-  ) {
-    updateOrderLine(input: $input, condition: $condition) {
-      id
-      productId
-      barcode
-      sku
-      productName
-      unitOfMeasure
-      quantity
-      tax
-      price
-      discountType
-      discountValue
-      orderID
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const deleteOrderLine = /* GraphQL */ `
-  mutation DeleteOrderLine(
-    $input: DeleteOrderLineInput!
-    $condition: ModelOrderLineConditionInput
-  ) {
-    deleteOrderLine(input: $input, condition: $condition) {
-      id
-      productId
-      barcode
-      sku
-      productName
-      unitOfMeasure
-      quantity
-      tax
-      price
-      discountType
-      discountValue
-      orderID
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
     }
   }
 `;
@@ -536,219 +482,6 @@ export const deleteProduct = /* GraphQL */ `
       _lastChangedAt
       productCategoryId
       productBrandId
-    }
-  }
-`;
-export const createPurchaseOrder = /* GraphQL */ `
-  mutation CreatePurchaseOrder(
-    $input: CreatePurchaseOrderInput!
-    $condition: ModelPurchaseOrderConditionInput
-  ) {
-    createPurchaseOrder(input: $input, condition: $condition) {
-      id
-      Supplier {
-        id
-        code
-        name
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      purchaseDate
-      amount
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderSupplierId
-    }
-  }
-`;
-export const updatePurchaseOrder = /* GraphQL */ `
-  mutation UpdatePurchaseOrder(
-    $input: UpdatePurchaseOrderInput!
-    $condition: ModelPurchaseOrderConditionInput
-  ) {
-    updatePurchaseOrder(input: $input, condition: $condition) {
-      id
-      Supplier {
-        id
-        code
-        name
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      purchaseDate
-      amount
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderSupplierId
-    }
-  }
-`;
-export const deletePurchaseOrder = /* GraphQL */ `
-  mutation DeletePurchaseOrder(
-    $input: DeletePurchaseOrderInput!
-    $condition: ModelPurchaseOrderConditionInput
-  ) {
-    deletePurchaseOrder(input: $input, condition: $condition) {
-      id
-      Supplier {
-        id
-        code
-        name
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      purchaseDate
-      amount
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderSupplierId
-    }
-  }
-`;
-export const createPurchaseOrderLine = /* GraphQL */ `
-  mutation CreatePurchaseOrderLine(
-    $input: CreatePurchaseOrderLineInput!
-    $condition: ModelPurchaseOrderLineConditionInput
-  ) {
-    createPurchaseOrderLine(input: $input, condition: $condition) {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      unitPrice
-      quantity
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderLineProductId
-    }
-  }
-`;
-export const updatePurchaseOrderLine = /* GraphQL */ `
-  mutation UpdatePurchaseOrderLine(
-    $input: UpdatePurchaseOrderLineInput!
-    $condition: ModelPurchaseOrderLineConditionInput
-  ) {
-    updatePurchaseOrderLine(input: $input, condition: $condition) {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      unitPrice
-      quantity
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderLineProductId
-    }
-  }
-`;
-export const deletePurchaseOrderLine = /* GraphQL */ `
-  mutation DeletePurchaseOrderLine(
-    $input: DeletePurchaseOrderLineInput!
-    $condition: ModelPurchaseOrderLineConditionInput
-  ) {
-    deletePurchaseOrderLine(input: $input, condition: $condition) {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      unitPrice
-      quantity
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      purchaseOrderLineProductId
     }
   }
 `;

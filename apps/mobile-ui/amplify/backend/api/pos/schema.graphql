@@ -28,28 +28,24 @@ type Order @model @auth(rules: [{allow: public}]) {
   subtotal: Float!
   tax: Float!
   total: Float!
-  status: OrderStatus! @index(name: "byStatusByDate", sortKeyFields: ["createdAt"])
+  status: OrderStatus! @index(name: "byStatusByOrderDate", sortKeyFields: ["orderDate"])
   employeeId: String!
   employeeName: String!
-  OrderItems: [OrderLine] @hasMany(indexName: "byOrder", fields: ["id"])
+  lines: [OrderLine]!
   Customer: Customer @hasOne
-  createdAt: AWSDateTime! @index(name: "byDate" )
+  orderDate: AWSDateTime!
 }
 
-type OrderLine @model @auth(rules: [{allow: public}]) {
-  id: ID! @primaryKey(sortKeyFields: ["createdAt"])
+type OrderLine {
+  identifier: String!
   productId: String!
-  barcode: String
-  sku: String
   productName: String!
   unitOfMeasure: String!
+  barcode: String
+  sku: String
   quantity: Float!
   tax: Float!
   price: Float!
-  discountType: String
-  discountValue: Float
-  orderID: ID! @index(name: "byOrder")
-  createdAt: AWSDateTime!
 }
 
 enum OrderStatus {
@@ -213,6 +209,8 @@ type ProductSaleSummary {
     quantity: Float!
     amount: Float!
 }
+
+# Reporting
 
 type EmployeeSaleSummary {
     orders: Int!

@@ -34,7 +34,6 @@ export interface SubmitOrderResponse extends SubmitOrderRequest {
 }
 
 export interface OrdersState extends EntityState<OrderEntity> {
-    lines: OrderLineEntity[];
     loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
     submitStatus: 'not saved' | 'saving' | 'saved' | 'error';
     error?: string;
@@ -86,37 +85,14 @@ export const initialOrdersState: OrdersState = ordersAdapter.getInitialState({
     selected: undefined,
     filterQuery: { status: OrderStatus.OPEN },
     filteredList: undefined,
-    lines: [],
 });
 
 export const ordersSlice = createSlice({
     name: ORDER_FEATURE_KEY,
     initialState: initialOrdersState,
     reducers: {
-        // add: (state: OrdersState, action: PayloadAction<OrderEntity>) => {
-        //     ordersAdapter.addOne(state, action);
-        //     filterList(state, state.filterQuery);
-        // },
         setAll: (state: OrdersState, action: PayloadAction<OrderEntity[]>) => {
-            ordersAdapter.setAll(
-                state,
-                OrderEntityMapper.composeOrders(action.payload, state.lines)
-            );
-            filterList(state, state.filterQuery);
-            state.loadingStatus = 'loaded';
-        },
-        setLines: (
-            state: OrdersState,
-            action: PayloadAction<OrderLineEntity[]>
-        ) => {
-            state.lines = action.payload;
-            ordersAdapter.setAll(
-                state,
-                OrderEntityMapper.composeOrders(
-                    ordersAdapter.getSelectors().selectAll(state),
-                    state.lines
-                )
-            );
+            ordersAdapter.setAll(state, action.payload);
             filterList(state, state.filterQuery);
             state.loadingStatus = 'loaded';
         },
@@ -124,16 +100,6 @@ export const ordersSlice = createSlice({
             ordersAdapter.removeOne(state, action);
             filterList(state, state.filterQuery);
         },
-        // update: (
-        //     state: OrdersState,
-        //     action: PayloadAction<Update<OrderEntity>>
-        // ) => {
-        //     ordersAdapter.updateOne(state, action);
-        //     filterList(state, state.filterQuery);
-        // },
-        // select: (state: OrdersState, action: PayloadAction<OrderEntity>) => {
-        //     state.selected = action.payload;
-        // },
         clearSelection: (state: OrdersState) => {
             state.selected = undefined;
         },
@@ -160,8 +126,8 @@ export const ordersSlice = createSlice({
                     ordersAdapter.addOne(state, action.payload.order);
                     state.submitStatus = 'saved';
                     printReceipt(
-                        action.payload.storeInfo,
-                        action.payload.defaultPrinter,
+                        action.payload.storeInfo!,
+                        action.payload.defaultPrinter!,
                         action.payload.cart,
                         action.payload.order
                     );
@@ -185,8 +151,8 @@ export const ordersSlice = createSlice({
                     });
                     state.submitStatus = 'saved';
                     printReceipt(
-                        action.payload.storeInfo,
-                        action.payload.defaultPrinter,
+                        action.payload.storeInfo!,
+                        action.payload.defaultPrinter!,
                         action.payload.cart,
                         action.payload.order
                     );
@@ -215,7 +181,7 @@ export const selectOpenOrders = createSelector(getOrdersState, (state) =>
 );
 
 export const selectOrderLines = (id: string) => createSelector(getOrdersState, (state) =>
-    state.lines.filter((o) => o.orderID === id)
+    state.entities[id]?.lines
 );
 
 export const selectOrdersEntities = createSelector(

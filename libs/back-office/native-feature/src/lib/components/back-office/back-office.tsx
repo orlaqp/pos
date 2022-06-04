@@ -64,7 +64,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                         >
                             <Image source={Logo} style={styles.logo} />
                             <Text style={{ color: 'white' }}>
-                                { `${user?.given_name} ${user?.family_name}` }
+                                {user?.name}
                             </Text>
                         </View>
                         <View style={{ marginLeft: 10 }}>

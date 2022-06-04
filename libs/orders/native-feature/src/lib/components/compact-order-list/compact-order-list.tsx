@@ -4,7 +4,6 @@ import {
     OrderService,
     selectOpenOrders,
     subscribeToOrderChanges,
-    subscribeToOrderLineChanges,
 } from '@pos/orders/data-access';
 import { UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
@@ -27,11 +26,9 @@ export function CompactOrderList({ onSelect }: CompactOrderListProps) {
 
     useEffect(() => {
         const ordersSub = subscribeToOrderChanges(dispatch);
-        const linesSub = subscribeToOrderLineChanges(dispatch);
         return () => {
             console.log('Closing orders subscription');
             ordersSub.unsubscribe();
-            linesSub.unsubscribe();
         };
     }, [dispatch]);
 
