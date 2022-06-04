@@ -19,17 +19,35 @@ export interface UIDateRangeProps {
 
 export function UIDateRange({ initialRange, onRangeChange }: UIDateRangeProps) {
     const styles = useStyles();
-    const [startDate, setStartDate] = useState<moment.Moment>(initialRange.startDate);
+    const [startDate, setStartDate] = useState<moment.Moment>(
+        initialRange.startDate
+    );
     const [endDate, setEndDate] = useState<moment.Moment>(initialRange.endDate);
     const [displayedDate, setDisplayedDate] = useState(initialRange.startDate);
 
-    const setDates = (value) => {
-        if (value.displayedDate) setDisplayedDate(value.displayedDate);
-        if (value.startDate) setStartDate(value.startDate);
-        if (value.endDate) setEndDate(value.endDate);
+    const setDates = (value: {
+        displayedDate: moment.Moment;
+        startDate: moment.Moment;
+        endDate: moment.Moment;
+    }) => {
+        debugger;
+        const range = {
+            startDate: startDate,
+            endDate: endDate,
+        };
 
-        if (value.startDate && value.endDate) {
-            onRangeChange({ startDate: value.startDate, endDate: value.endDate });
+        if (value.displayedDate) setDisplayedDate(value.displayedDate);
+        if (value.startDate) {
+            setStartDate(value.startDate);
+            range.startDate = value.startDate;
+        }
+        if (value.endDate) {
+            setEndDate(value.endDate);
+            range.endDate = value.endDate;
+        }
+
+        if (range.startDate && range.endDate) {
+            onRangeChange(range);
         }
     };
 
@@ -71,7 +89,7 @@ export function UIDateRange({ initialRange, onRangeChange }: UIDateRangeProps) {
                                     style={{
                                         color: styles.primaryText.color,
                                         fontWeight: 'bold',
-                                        fontSize: 18
+                                        fontSize: 18,
                                     }}
                                 >
                                     {`${startDate.format(

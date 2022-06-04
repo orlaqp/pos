@@ -32,7 +32,7 @@ export class OrderService {
         });
 
         await DataStore.save(updatedOrder);
-        await OrderService.updateInventory(o);
+        await OrderService.updateInventory(updatedOrder);
 
         return o;
     }

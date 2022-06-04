@@ -30,24 +30,11 @@ export function Dashboard(props: DashboardProps) {
 
     const updateDateRange = (range: DateRange) => {
         console.log('Range changed to: ', range);
+        setDateRange(range);
     };
 
     useEffect(() => {
         console.log('date range:', dateRange);
-
-        // const p = new Parent({
-        //     name: 'New name',
-        //     Children: [
-        //         new Child({ property1: 'val1', property2: 'val2' }),
-        //         new Child({ property1: 'val2', property2: 'val4' }),
-        //         new Child({ property1: 'val3', property2: 'val5' }),
-        //     ]
-        // });
-
-        // DataStore.save(p);
-
-        DataStore.query(Parent, '0f2b8f4d-fcc7-4ad7-82f6-cc5fad52bec4').then(r => console.log('Parent object: ', r));
-        
         
         const promise = API.graphql<SalesSummary>({
             query: getSalesSummary,

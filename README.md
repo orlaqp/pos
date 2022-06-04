@@ -8,6 +8,8 @@
 - Icons: https://github.com/oblador/react-native-vector-icons 
 - Star Printers: https://github.com/infoxicator/react-native-star-prnt
 - Numeric control: https://www.npmjs.com/package/react-native-numeric-input
+- Charts: https://github.com/indiespirit/react-native-chart-kit
+- Device info: https://github.com/react-native-device-info/react-native-device-info
 
 ## Clone Amplify to another account
 

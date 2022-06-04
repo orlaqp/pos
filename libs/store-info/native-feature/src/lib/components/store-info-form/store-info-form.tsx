@@ -4,7 +4,7 @@ import { fetchStoreInfo, selectStore, StoreInfoEntity, StoreInfoService } from '
 import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
-import { View, Text, Alert } from 'react-native';
+import { View, Text, Alert, ScrollView } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -68,21 +68,21 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
     return (
         <View style={[styles.page, styles.centeredHorizontally]}>
             <FormProvider {...form}>
-                <View
+                <ScrollView
                     style={{
                         width: '60%',
                         flexDirection: 'column',
                         marginTop: 50,
                     }}
                 >
-                    <UIInput name="name" placeholder="Name" rules={{ required: true }} />
-                    <UIInput name="address" placeholder="Address" rules={{ required: true }} />
-                    <UIInput name="city" placeholder="City" rules={{ required: true }} />
-                    <UIInput name="state" placeholder="State" rules={{ required: true }} />
-                    <UIInput name="zipCode" placeholder="Zip Code" rules={{ required: true }} />
-                    <UIInput name="email" placeholder="Email" rules={{ required: true }} />
-                    <UIInput name="phone" placeholder="Phone" rules={{ required: true }} />
-                    <UIInput name="fax" placeholder="Fax" rules={{ required: true }} />
+                    <UIInput name="name" label="Name" placeholder="Name" rules={{ required: true }} />
+                    <UIInput name="address" label="Address" placeholder="Address" rules={{ required: true }} />
+                    <UIInput name="city" label="City" placeholder="City" rules={{ required: true }} />
+                    <UIInput name="state" label="State" placeholder="State" rules={{ required: true }} />
+                    <UIInput name="zipCode" label="Zip Code" placeholder="Zip Code" rules={{ required: true }} />
+                    <UIInput name="email" label="Email" placeholder="Email" rules={{ required: true }} />
+                    <UIInput name="phone" label="Phone" placeholder="Phone" rules={{ required: true }} />
+                    <UIInput name="fax" label="Fax" placeholder="Fax" rules={{ required: true }} />
                     <UIInput
                         name="disclaimer"
                         placeholder="Disclaimer"
@@ -96,7 +96,7 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
                         submitAction={form.handleSubmit(save)}
                         cancelAction={confirmCancel}
                     />
-                </View>
+                </ScrollView>
             </FormProvider>
         </View>
     );
