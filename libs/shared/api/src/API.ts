@@ -1083,7 +1083,6 @@ export type ProductSaleSummary = {
   __typename: "ProductSaleSummary",
   productId: string,
   productName: string,
-  categoryName: string,
   quantity: number,
   amount: number,
 };
@@ -3085,7 +3084,6 @@ export type GetSalesSummaryQuery = {
       __typename: "ProductSaleSummary",
       productId: string,
       productName: string,
-      categoryName: string,
       quantity: number,
       amount: number,
     } | null > | null,

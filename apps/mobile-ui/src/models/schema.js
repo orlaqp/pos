@@ -1764,13 +1764,6 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
-                "categoryName": {
-                    "name": "categoryName",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
                 "quantity": {
                     "name": "quantity",
                     "isArray": false,
@@ -1875,5 +1868,5 @@ export const schema = {
             }
         }
     },
-    "version": "f413931f7fee3288e07a710faefc83cb"
+    "version": "d7a6b20ed608018157b5b2093f10dd47"
 };

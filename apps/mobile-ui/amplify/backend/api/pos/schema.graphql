@@ -205,7 +205,6 @@ type Station @model @auth(rules: [{allow: public}]) {
 type ProductSaleSummary {
     productId: String!
     productName: String!
-    categoryName: String!
     quantity: Float!
     amount: Float!
 }

@@ -26,7 +26,6 @@ export declare class SalesSummary {
 export declare class ProductSaleSummary {
   readonly productId: string;
   readonly productName: string;
-  readonly categoryName: string;
   readonly quantity: number;
   readonly amount: number;
   constructor(init: ModelInit<ProductSaleSummary>);

@@ -31,15 +31,17 @@ const environment = process.env.ENV;
 
     console.log(`RESULT: ${JSON.stringify(res)}`);
 
-    return {
-        statusCode: 200,
-        //  Uncomment below to enable CORS requests
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Headers': '*',
-        },
-        body: JSON.stringify(res),
-    };
+    return res;
+
+    // return {
+    //     statusCode: 200,
+    //     //  Uncomment below to enable CORS requests
+    //     headers: {
+    //         'Access-Control-Allow-Origin': '*',
+    //         'Access-Control-Allow-Headers': '*',
+    //     },
+    //     body: JSON.stringify(res),
+    // };
 };
 
 async function getOrders(event) {
@@ -72,8 +74,10 @@ function processGroups(orders) {
         const employeeGroup = res.byEmployee[order.employeeId] || {
             employeeId: order.employeeId,
             employeeName: order.employeeName,
+            orders: 0,
             amount: 0,
         };
+        employeeGroup.orders += 1;
         employeeGroup.amount += order.total;
 
         order.lines.forEach(l => {

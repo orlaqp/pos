@@ -13,12 +13,12 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 import every from 'lodash/every';
 
-import EmptyCart from '../../../../assets/images/empty-cart.png';
-import CartLine from '../cart-line/cart-line';
 import { getDefaultPrinter, PrinterEntity } from '@pos/printings/data-access';
 import { selectStore, StoreInfoEntity } from '@pos/store-info/data-access';
-import { payOrder, submitOrder } from '@pos/orders/data-access';
 import { useSharedStyles } from '@pos/theme/native';
+
+import CartLine from '../cart-line/cart-line';
+import EmptyCart from '../../../../assets/images/empty-cart.png';
 
 export type CartMode = 'order' | 'payment';
 
@@ -47,17 +47,6 @@ export function Cart({ mode, onSubmit }: CartProps) {
     const onRemove = (item: CartItem) => {
         dispatch(cartActions.removeProduct(item));
     };
-
-    // const submit = () => {
-    //     if (mode === 'order') {
-    //         dispatch(submitOrder({ cart, defaultPrinter, storeInfo }));
-    //         dispatch(cartActions.reset());
-    //         return;
-    //     }
-
-    //     dispatch(payOrder({ cart, defaultPrinter, storeInfo }));
-    //     return;
-    // };
 
     useEffect(() => {
         setReady(

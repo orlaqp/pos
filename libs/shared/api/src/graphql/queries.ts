@@ -8,7 +8,6 @@ export const getSalesSummary = /* GraphQL */ `
       products {
         productId
         productName
-        categoryName
         quantity
         amount
       }
