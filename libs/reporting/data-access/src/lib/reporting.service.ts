@@ -8,8 +8,8 @@ export const getSalesSummaryForRange = (range: DateRange) => {
     const promise = API.graphql<SalesSummary>({
         query: getSalesSummary,
         variables: {
-            from: range?.startDate.startOf('day').toISOString(),
-            to: range?.endDate.endOf('day').toISOString(),
+            from: range?.startDate.toISOString(),
+            to: range?.endDate.toISOString(),
         },
     }) as Promise<GraphQLResult<{ getSalesSummary: SalesSummary }>>;
 

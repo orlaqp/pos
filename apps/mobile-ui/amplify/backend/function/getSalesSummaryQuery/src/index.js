@@ -35,10 +35,11 @@ async function getOrders(event) {
     var params = {
         TableName: process.env.API_POS_ORDERTABLE_NAME,
         IndexName: 'byStatusByOrderDate',
-        KeyConditionExpression: '#status = :status AND #orderDate > :from',
+        KeyConditionExpression: '#status = :status AND #orderDate BETWEEN :from AND :to',
         ExpressionAttributeValues: {
             ':status': 'PAID',
             ':from': event.arguments.from,
+            ':to': event.arguments.to,
         },
         ExpressionAttributeNames: {
             '#status': 'status',

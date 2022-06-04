@@ -1,6 +1,5 @@
-import { GraphQLResult } from '@aws-amplify/api-graphql';
-import { getSalesSummary, listOrders } from '@pos/shared/api';
-import { Child, SalesSummary } from '@pos/shared/models';
+import React, { useEffect, useState } from 'react';
+import { SalesSummary } from '@pos/shared/models';
 import {
     DateRange,
     UIDateRange,
@@ -8,11 +7,7 @@ import {
     UISpinner,
 } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
-import { API, DataStore, graphqlOperation } from 'aws-amplify';
-
 import moment from 'moment';
-
-import React, { useEffect, useState } from 'react';
 
 import { View, ScrollView } from 'react-native';
 import { LineChartComponent } from '../line-chart/line-chart';
@@ -20,7 +15,6 @@ import ListWidget from '../list-widget/list-widget';
 import PieChart from '../pie-chart/pie-chart';
 import Widget from '../widget/widget';
 
-import { Parent } from '@pos/shared/models';
 import { getSalesSummaryForRange } from '@pos/reporting/data-access';
 
 /* eslint-disable-next-line */
@@ -34,7 +28,6 @@ export function Dashboard(props: DashboardProps) {
     });
     const [salesSummary, setSalesSummary] = useState<SalesSummary>();
     const [loading, setLoading] = useState<boolean>(true);
-    const value = 2500;
 
     const updateDateRange = (range: DateRange) => {
         console.log('Range changed to: ', range);
@@ -50,6 +43,9 @@ export function Dashboard(props: DashboardProps) {
             endDate: moment(),
         };
 
+        range.startDate = range.startDate.startOf('day');
+        range.endDate = range.endDate.endOf('day');
+
         getSalesSummaryForRange(range).then((summary) => {
             console.log('Result', summary);
             setSalesSummary(summary);
@@ -64,80 +60,87 @@ export function Dashboard(props: DashboardProps) {
             </View>
         );
 
-    if (!salesSummary || salesSummary.totalAmount === 0)
-        return (
-            <View style={[styles.page, { paddingTop: 50 }]}>
-                <UIEmptyState text="No data found for this date range" />
-            </View>
-        );
-
     return (
         <ScrollView style={[styles.page, { padding: 20 }]}>
             <UIDateRange
                 initialRange={dateRange}
                 onRangeChange={updateDateRange}
             />
-            <View style={styles.row}>
-                <View style={{ flex: 1 }}>
-                    <Widget
-                        backgroundColor="#1976d2"
-                        icon="trending-up"
-                        text="Gross Income"
-                        value={`$ ${salesSummary.totalAmount.toFixed(2)}`}
-                    />
-                </View>
-                <View style={{ flex: 1 }}>
-                    <Widget
-                        backgroundColor="#e91e63"
-                        icon="sigma"
-                        text="Total Sales"
-                        value={salesSummary.totalOrders.toString()}
-                    />
-                </View>
-                <View style={{ flex: 1 }}>
-                    <Widget
-                        backgroundColor="#43a047"
-                        icon="account-multiple-plus-outline"
-                        text="New Customers"
-                        value="N/A"
-                    />
-                </View>
-            </View>
-            <View style={[styles.row, styles.smallMargin]}>
-                <View style={{ flex: 2 }}>
-                    <PieChart
-                        header="Top 5 Products"
-                        items={
-                            !salesSummary.products
-                                ? []
-                                : salesSummary.products
-                                      ?.slice(0, 5)
-                                      .map((p) => ({
-                                          name: p?.productName,
-                                          value: p?.amount,
-                                      }))
-                        }
-                    />
-                </View>
-                <View style={{ flex: 1, marginLeft: 40 }}>
-                    <ListWidget
-                        header="Top 5 Employees"
-                        items={
-                            !salesSummary.employees
-                                ? []
-                                : salesSummary.employees
-                                      ?.slice(0, 5)
-                                      .map((e) => ({
-                                          name: e?.employeeName,
-                                          value: e?.amount,
-                                      }))
-                        }
-                    />
-                </View>
-            </View>
-            <View style={[styles.row, styles.smallMargin]}>
-                <LineChartComponent header="Revenue over time" />
-            </View>
+
+            {!salesSummary ||
+                (salesSummary.totalAmount === 0 && (
+                    <View style={[styles.page, { paddingTop: 50 }]}>
+                        <UIEmptyState text="No data found for this date range" />
+                    </View>
+                ))}
+
+            {salesSummary?.totalAmount > 0 && (
+                <>
+                    <View style={styles.row}>
+                        <View style={{ flex: 1 }}>
+                            <Widget
+                                backgroundColor="#1976d2"
+                                icon="trending-up"
+                                text="Gross Income"
+                                value={`$ ${salesSummary.totalAmount.toFixed(
+                                    2
+                                )}`}
+                            />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Widget
+                                backgroundColor="#e91e63"
+                                icon="sigma"
+                                text="Total Sales"
+                                value={salesSummary.totalOrders.toString()}
+                            />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Widget
+                                backgroundColor="#43a047"
+                                icon="account-multiple-plus-outline"
+                                text="New Customers"
+                                value="N/A"
+                            />
+                        </View>
+                    </View>
+                    <View style={[styles.row, styles.smallMargin]}>
+                        <View style={{ flex: 2 }}>
+                            <PieChart
+                                header="Top 5 Products"
+                                items={
+                                    !salesSummary.products
+                                        ? []
+                                        : salesSummary.products
+                                              ?.slice(0, 5)
+                                              .map((p) => ({
+                                                  name: p?.productName,
+                                                  value: p?.amount,
+                                              }))
+                                }
+                            />
+                        </View>
+                        <View style={{ flex: 1, marginLeft: 40 }}>
+                            <ListWidget
+                                header="Top 5 Employees"
+                                items={
+                                    !salesSummary.employees
+                                        ? []
+                                        : salesSummary.employees
+                                              ?.slice(0, 5)
+                                              .map((e) => ({
+                                                  name: e?.employeeName,
+                                                  value: e?.amount,
+                                              }))
+                                }
+                            />
+                        </View>
+                    </View>
+                    <View style={[styles.row, styles.smallMargin]}>
+                        <LineChartComponent header="Revenue over time" />
+                    </View>
+                </>
+            )}
         </ScrollView>
     );
 }
