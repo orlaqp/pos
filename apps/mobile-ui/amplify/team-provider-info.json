@@ -36,7 +36,7 @@
       "function": {
         "getSalesSummaryQuery": {
           "deploymentBucketName": "amplify-pos-develop-110831-deployment",
-          "s3Key": "amplify-builds/getSalesSummaryQuery-4f666b6d764365763633-build.zip"
+          "s3Key": "amplify-builds/getSalesSummaryQuery-69394b51746e44713247-build.zip"
         }
       }
     }

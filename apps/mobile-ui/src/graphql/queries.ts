@@ -17,6 +17,11 @@ export const getSalesSummary = /* GraphQL */ `
         orders
         amount
       }
+      dates {
+        datePart
+        orders
+        amount
+      }
       totalAmount
       totalOrders
     }

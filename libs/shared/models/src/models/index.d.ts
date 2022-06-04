@@ -19,6 +19,7 @@ export enum InventoryReceiveStatus {
 export declare class SalesSummary {
   readonly products?: (ProductSaleSummary | null)[] | null;
   readonly employees?: (EmployeeSaleSummary | null)[] | null;
+  readonly dates?: (DatePartSaleSummary | null)[] | null;
   readonly totalAmount: number;
   readonly totalOrders: number;
   constructor(init: ModelInit<SalesSummary>);
@@ -38,6 +39,13 @@ export declare class EmployeeSaleSummary {
   readonly orders: number;
   readonly amount: number;
   constructor(init: ModelInit<EmployeeSaleSummary>);
+}
+
+export declare class DatePartSaleSummary {
+  readonly datePart: string;
+  readonly orders: number;
+  readonly amount: number;
+  constructor(init: ModelInit<DatePartSaleSummary>);
 }
 
 export declare class OrderLine {

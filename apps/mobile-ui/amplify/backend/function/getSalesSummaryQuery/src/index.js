@@ -13,10 +13,11 @@ const docClient = new AWS.DynamoDB.DocumentClient();
  exports.handler = async (event) => {
     console.log(`EVENT: ${JSON.stringify(event)}`);
 
-    const orders = await getOrders(event);
-    const groups = processGroups(orders);
+    const orders = await getOrders(event.arguments);
+    const groups = processGroups(orders, event.arguments);
     const employeeList = Object.values(groups.byEmployee);
     const productList = Object.values(groups.byProduct);
+    const dateList = Object.values(groups.byDate);
 
     sortListBy(productList, 'amount');
     sortListBy(employeeList, 'amount');
@@ -24,6 +25,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
     const res = {
         products: productList,
         employees: employeeList,
+        dates: dateList,
         totalAmount: employeeList.reduce((total, e) => total + e.amount, 0),
         totalOrders: employeeList.reduce((total, e) => total + e.orders, 0),
     };
@@ -31,15 +33,16 @@ const docClient = new AWS.DynamoDB.DocumentClient();
     return res;
 };
 
-async function getOrders(event) {
+async function getOrders(range) {
     var params = {
         TableName: process.env.API_POS_ORDERTABLE_NAME,
+        // TableName: 'Order-libe2xk2rvftbi24xplh4x5gnm-develop',
         IndexName: 'byStatusByOrderDate',
         KeyConditionExpression: '#status = :status AND #orderDate BETWEEN :from AND :to',
         ExpressionAttributeValues: {
             ':status': 'PAID',
-            ':from': event.arguments.from,
-            ':to': event.arguments.to,
+            ':from': range.from,
+            ':to': range.to,
         },
         ExpressionAttributeNames: {
             '#status': 'status',
@@ -52,11 +55,22 @@ async function getOrders(event) {
     return data.Items;
 }
 
-function processGroups(orders) {
+function processGroups(orders, range) {
     const res = {
         byEmployee: {},
         byProduct: {},
+        byDate: {}
     };
+
+    const from = new Date(range.from);
+    const to = new Date(range.to);
+    const daysDiff = (to - from) / 1000 / 86400;
+    
+    let dateGrouping = 'days';
+    if (daysDiff > 365) dateGrouping = 'year';
+    if (daysDiff > 31) dateGrouping = 'month';
+    
+    console.log('days diff', daysDiff);
 
     orders.forEach((order) => {
         const employeeGroup = res.byEmployee[order.employeeId] || {
@@ -67,6 +81,18 @@ function processGroups(orders) {
         };
         employeeGroup.orders += 1;
         employeeGroup.amount += order.total;
+        res.byEmployee[order.employeeId] = employeeGroup;
+
+        const datePiece = firstXOfDate(order.orderDate, dateGrouping);
+        const dateGroup = res.byDate[datePiece] || {
+            datePart: datePiece,
+            orders: 0,
+            amount: 0,
+        };
+        dateGroup.orders += 1;
+        dateGroup.amount += order.total;
+        res.byDate[datePiece] = dateGroup;
+
 
         order.lines.forEach(l => {
             const productGroup = res.byProduct[l.productId] || {
@@ -81,7 +107,6 @@ function processGroups(orders) {
             res.byProduct[l.productId] = productGroup;
         });
         
-        res.byEmployee[order.employeeId] = employeeGroup;
     }, {});
 
     return res;
@@ -95,3 +120,11 @@ const sortListBy = (items, key) => {
         return 0;
     });
 }
+
+const datePart = {
+    days: 10,
+    month: 7,
+    year: 4
+}
+
+const firstXOfDate = (dateStr, part) => dateStr.substring(0, datePart[part]);

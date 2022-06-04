@@ -137,7 +137,13 @@ export function Dashboard(props: DashboardProps) {
                         </View>
                     </View>
                     <View style={[styles.row, styles.smallMargin]}>
-                        <LineChartComponent header="Revenue over time" />
+                        <LineChartComponent
+                            header="Revenue over time"
+                            data={salesSummary?.dates?.map((i) => ({
+                                label: i?.datePart,
+                                values: [i?.amount],
+                            }))}
+                        />
                     </View>
                 </>
             )}

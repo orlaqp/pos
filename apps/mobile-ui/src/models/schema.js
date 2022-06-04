@@ -1738,6 +1738,16 @@ export const schema = {
                     "attributes": [],
                     "isArrayNullable": true
                 },
+                "dates": {
+                    "name": "dates",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "DatePartSaleSummary"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
                 "totalAmount": {
                     "name": "totalAmount",
                     "isArray": false,
@@ -1799,6 +1809,32 @@ export const schema = {
                 },
                 "employeeName": {
                     "name": "employeeName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "orders": {
+                    "name": "orders",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "amount": {
+                    "name": "amount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
+        "DatePartSaleSummary": {
+            "name": "DatePartSaleSummary",
+            "fields": {
+                "datePart": {
+                    "name": "datePart",
                     "isArray": false,
                     "type": "String",
                     "isRequired": true,
@@ -1889,5 +1925,5 @@ export const schema = {
             }
         }
     },
-    "version": "ce8904837ce92f149b196ef437b14ebe"
+    "version": "ac9a721ce6856efa1e807992b2e2b58d"
 };

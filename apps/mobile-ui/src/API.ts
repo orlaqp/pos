@@ -1076,6 +1076,7 @@ export type SalesSummary = {
   __typename: "SalesSummary",
   products?:  Array<ProductSaleSummary | null > | null,
   employees?:  Array<EmployeeSaleSummary | null > | null,
+  dates?:  Array<DatePartSaleSummary | null > | null,
   totalAmount: number,
   totalOrders: number,
 };
@@ -1092,6 +1093,13 @@ export type EmployeeSaleSummary = {
   __typename: "EmployeeSaleSummary",
   employeeId: string,
   employeeName: string,
+  orders: number,
+  amount: number,
+};
+
+export type DatePartSaleSummary = {
+  __typename: "DatePartSaleSummary",
+  datePart: string,
   orders: number,
   amount: number,
 };
@@ -3094,6 +3102,12 @@ export type GetSalesSummaryQuery = {
       __typename: "EmployeeSaleSummary",
       employeeId: string,
       employeeName: string,
+      orders: number,
+      amount: number,
+    } | null > | null,
+    dates?:  Array< {
+      __typename: "DatePartSaleSummary",
+      datePart: string,
       orders: number,
       amount: number,
     } | null > | null,

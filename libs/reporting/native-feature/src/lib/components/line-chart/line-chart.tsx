@@ -4,48 +4,92 @@ import React, { useState } from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
-/* eslint-disable-next-line */
-export interface LineChartProps {
-    header: string;
+export interface LineChartItem {
+    label: string;
+    values: number[];
 }
 
-export function LineChartComponent({ header }: LineChartProps) {
+export interface LineChartProps {
+    header: string;
+    data: LineChartItem[];
+}
+
+export function LineChartComponent({ header, data }: LineChartProps) {
     const styles = useSharedStyles();
     const [width, setWidth] = useState<number>();
 
+    if (!data?.length)
+        return (
+            <View style={styles.centered}>
+                <Text style={styles.secondaryText}>No data provided</Text>
+            </View>
+        );
+
+    const parsedData: { labels: string[]; datasets: { data: number[] }[] } = {
+        labels: [],
+        datasets: data[0].values.map(v => ({ data: [] })),
+    };
+
+    data.reduce((d, item) => {
+        d.labels.push(item.label);
+        item.values.forEach((v, idx) => d.datasets[idx].data.push(v))
+        return d;
+    }, parsedData);
+
     return (
         <View
-        style={{ width: '100%'}}
+            style={{ width: '100%' }}
             onLayout={(event) => {
                 const { x, y, width, height } = event.nativeEvent.layout;
                 setWidth(width);
             }}
         >
-            <Text style={[styles.secondaryText, { marginBottom: 10 }]}>{header}</Text>
+            <Text style={[styles.secondaryText, { marginBottom: 10 }]}>
+                {header}
+            </Text>
             {!!width && (
                 <LineChart
-                    data={{
-                        labels: [
-                            'January',
-                            'February',
-                            'March',
-                            'April',
-                            'May',
-                            'June',
-                        ],
-                        datasets: [
-                            {
-                                data: [
-                                    Math.random() * 100,
-                                    Math.random() * 100,
-                                    Math.random() * 100,
-                                    Math.random() * 100,
-                                    Math.random() * 100,
-                                    Math.random() * 100,
-                                ],
-                            },
-                        ],
-                    }}
+                    data={parsedData}
+                    // data={{
+                    //     labels: [
+                    //         'January',
+                    //         'February',
+                    //         'March',
+                    //         'April',
+                    //         'May',
+                    //         'June',
+                    //         'July',
+                    //         'Aug',
+                    //         'Sept',
+                    //         'Oct',
+                    //         'Nov',
+                    //         'Dec',
+                    //         'Oct',
+                    //         'Nov',
+                    //         'Dec',
+                    //     ],
+                    //     datasets: [
+                    //         {
+                    //             data: [
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //                 Math.random() * 100,
+                    //             ],
+                    //         },
+                    //     ],
+                    // }}
                     width={width} // from react-native
                     height={220}
                     yAxisLabel="$"

@@ -202,14 +202,14 @@ type Station @model @auth(rules: [{allow: public}]) {
     alias: String!
 }
 
+# Reporting
+
 type ProductSaleSummary {
     productId: String!
     productName: String!
     quantity: Float!
     amount: Float!
 }
-
-# Reporting
 
 type EmployeeSaleSummary {
     employeeId: String!
@@ -218,9 +218,16 @@ type EmployeeSaleSummary {
     amount: Float!
 }
 
+type DatePartSaleSummary {
+    datePart: String!
+    orders: Int!
+    amount: Float!
+}
+
 type SalesSummary {
     products: [ProductSaleSummary]
     employees: [EmployeeSaleSummary]
+    dates: [DatePartSaleSummary]
     totalAmount: Float!
     totalOrders: Float!
 }
