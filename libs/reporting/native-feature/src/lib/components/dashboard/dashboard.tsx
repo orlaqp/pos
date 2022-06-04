@@ -124,13 +124,13 @@ export function Dashboard(props: DashboardProps) {
                             <ListWidget
                                 header="Top 5 Employees"
                                 items={
-                                    !salesSummary.employees
+                                    !salesSummary?.employees
                                         ? []
-                                        : salesSummary.employees
+                                        : salesSummary?.employees
                                               ?.slice(0, 5)
                                               .map((e) => ({
                                                   name: e?.employeeName,
-                                                  value: e?.amount,
+                                                  value: `$${e?.amount.toFixed(2)}`,
                                               }))
                                 }
                             />
@@ -140,7 +140,7 @@ export function Dashboard(props: DashboardProps) {
                         <LineChartComponent
                             header="Revenue over time"
                             data={salesSummary?.dates?.map((i) => ({
-                                label: i?.datePart,
+                                label: i?.datePart.substring(5),
                                 values: [i?.amount],
                             }))}
                         />

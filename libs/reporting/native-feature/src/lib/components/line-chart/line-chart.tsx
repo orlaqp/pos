@@ -93,7 +93,7 @@ export function LineChartComponent({ header, data }: LineChartProps) {
                     width={width} // from react-native
                     height={220}
                     yAxisLabel="$"
-                    yAxisSuffix="k"
+                    yAxisSuffix=""
                     yAxisInterval={1} // optional, defaults to 1
                     chartConfig={{
                         // backgroundColor: '#e26a00',
