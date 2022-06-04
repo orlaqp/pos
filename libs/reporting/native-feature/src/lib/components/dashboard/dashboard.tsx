@@ -1,7 +1,7 @@
 import { GraphQLResult } from '@aws-amplify/api-graphql';
 import { getSalesSummary, listOrders } from '@pos/shared/api';
 import { Child, SalesSummary } from '@pos/shared/models';
-import { DateRange, UIDateRange } from '@pos/shared/ui-native';
+import { DateRange, UIDateRange, UIEmptyState, UISpinner } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { API, DataStore, graphqlOperation } from 'aws-amplify';
 
@@ -26,6 +26,8 @@ export function Dashboard(props: DashboardProps) {
         startDate: moment().add(-7, 'days'),
         endDate: moment(),
     });
+    const [salesSummary, setSalesSummary] = useState<SalesSummary>();
+    const [loading, setLoading] = useState<boolean>(true);
     const value = 2500;
 
     const updateDateRange = (range: DateRange) => {
@@ -35,25 +37,48 @@ export function Dashboard(props: DashboardProps) {
 
     useEffect(() => {
         console.log('date range:', dateRange);
-        
+        setLoading(true);
+
+        const range = dateRange || {
+            startDate: moment().add(-7, 'days'),
+            endDate: moment(),
+        };
+
         const promise = API.graphql<SalesSummary>({
             query: getSalesSummary,
             variables: {
-                from: dateRange?.startDate.toISOString(),
-                to: dateRange?.endDate.toISOString(),
+                from: range?.startDate.startOf('day').toISOString(),
+                to: range?.endDate.endOf('day').toISOString(),
             },
-        }) as Promise<GraphQLResult<SalesSummary>>;
+        }) as Promise<GraphQLResult<{ getSalesSummary: SalesSummary }>>;
 
-        promise.then((res) => console.log('Result', res));
+        promise.then((res) => {
+            console.log('Result', res.data?.getSalesSummary);
+            setSalesSummary(res.data?.getSalesSummary);
+            setLoading(false);
+        });
     }, [dateRange]);
+
+    if (loading) 
+        return (
+            <View style={[styles.page, { paddingTop: 50 }]}>
+                <UISpinner size="small" message="Loading..." />
+            </View>
+        );
+
+    if (!salesSummary || salesSummary.totalAmount === 0)
+        return (
+            <View style={[styles.page, { paddingTop: 50 }]}>
+                <UIEmptyState
+                    text='No data found for this date range'
+                />
+            </View>
+        );
 
     return (
         <ScrollView style={[styles.page, { padding: 20 }]}>
             <UIDateRange
-                initialRange={{
-                    startDate: moment().add(-7, 'days'),
-                    endDate: moment(),
-                }}
+                initialRange={dateRange}
                 onRangeChange={updateDateRange}
             />
             <View style={styles.row}>

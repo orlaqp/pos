@@ -30,7 +30,6 @@ export function UIDateRange({ initialRange, onRangeChange }: UIDateRangeProps) {
         startDate: moment.Moment;
         endDate: moment.Moment;
     }) => {
-        debugger;
         const range = {
             startDate: startDate,
             endDate: endDate,
@@ -46,7 +45,7 @@ export function UIDateRange({ initialRange, onRangeChange }: UIDateRangeProps) {
             range.endDate = value.endDate;
         }
 
-        if (range.startDate && range.endDate) {
+        if (value.endDate && range.startDate && range.endDate) {
             onRangeChange(range);
         }
     };
