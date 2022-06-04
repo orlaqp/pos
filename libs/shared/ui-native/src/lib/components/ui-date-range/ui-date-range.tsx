@@ -120,10 +120,10 @@ const useStyles = () => {
                 padding: 15,
                 // justifyContent: "center",
                 // margin: 50,
-                backgroundColor:
-                    theme.theme.mode === 'dark'
-                        ? theme.theme.colors.white
-                        : theme.theme.colors.grey5,
+                backgroundColor: 'transparent'
+                    // theme.theme.mode === 'dark'
+                    //     ? theme.theme.colors.white
+                    //     : theme.theme.colors.grey5,
             },
             selectedDateContainerStyle: {
                 height: 35,

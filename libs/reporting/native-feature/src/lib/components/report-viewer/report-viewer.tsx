@@ -43,23 +43,26 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
 
     return (
         <View style={[styles.page, { flexDirection: 'column', margin: 20 }]}>
-            <View style={{ flex: 1 }}>
-                <UIDateRange
-                    initialRange={dateRange}
-                    onRangeChange={setDateRange}
-                />
-            </View>
             <View
                 style={{
                     flex: 7,
                     backgroundColor: styles.dataRow.backgroundColor,
                     borderRadius: 5,
-                    marginHorizontal: 50,
+                    marginHorizontal: 150,
                     paddingHorizontal: 30,
                     paddingVertical: 20,
                 }}
             >
-                <View style={{ flexDirection: 'row', marginBottom: 15 }}>
+                <View style={{ flex: 1 }}>
+                    <UIDateRange
+                        initialRange={dateRange}
+                        onRangeChange={setDateRange}
+                    />
+                </View>
+
+                <View
+                    style={{ flexDirection: 'row', marginBottom: 15, flex: .2 }}
+                >
                     {headers.map((h, idx) => (
                         <View key={idx} style={{ flex: h.width }}>
                             <Text
@@ -74,25 +77,32 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
                     ))}
                 </View>
 
-                <FlatList
-                    data={items}
-                    renderItem={(data: any, idx: number) => (
-                        <View key={idx} style={{ flexDirection: 'row' }}>
-                            {headers.map((h) => (
-                                <View style={{ flex: h.width }}>
-                                    <Text
-                                        style={[
-                                            styles.primaryText,
-                                            { textAlign: h.align },
-                                        ]}
+                <View style={{ flex: 5 }}>
+                    <FlatList
+                        data={items}
+                        renderItem={(data: any, idx: number) => (
+                            <View key={idx} style={{ flexDirection: 'row' }}>
+                                {headers.map((h) => (
+                                    <View
+                                        style={{
+                                            flex: h.width,
+                                            marginBottom: 5,
+                                        }}
                                     >
-                                        {data.item[h.field]}
-                                    </Text>
-                                </View>
-                            ))}
-                        </View>
-                    )}
-                />
+                                        <Text
+                                            style={[
+                                                styles.primaryText,
+                                                { textAlign: h.align },
+                                            ]}
+                                        >
+                                            {data.item[h.field]}
+                                        </Text>
+                                    </View>
+                                ))}
+                            </View>
+                        )}
+                    />
+                </View>
             </View>
         </View>
     );
