@@ -14,13 +14,16 @@ export const menuItems: SidebarItem[] = [
     //     icon: 'account-box-multiple-outline',
     //     role: Role.Admin,
     // },
-    // {
-    //     id: '3',
-    //     title: 'Reports',
-    //     icon: 'clipboard-list-outline',
-    //     children: [],
-    //     role: Role.Admin,
-    // },
+    {
+        id: '3',
+        title: 'Reports',
+        icon: 'clipboard-list-outline',
+        children: [
+            { id: '3-1', title: 'By Employee' },
+            { id: '3-2', title: 'By Product' },
+        ],
+        role: Role.Admin,
+    },
     {
         id: '4',
         title: 'Inventory',

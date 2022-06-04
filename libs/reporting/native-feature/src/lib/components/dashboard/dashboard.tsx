@@ -22,12 +22,12 @@ export interface DashboardProps {}
 
 export function Dashboard(props: DashboardProps) {
     const styles = useSharedStyles();
+    const [loading, setLoading] = useState<boolean>(true);
     const [dateRange, setDateRange] = useState<DateRange>({
         startDate: moment().add(-7, 'days'),
         endDate: moment(),
     });
     const [salesSummary, setSalesSummary] = useState<SalesSummary>();
-    const [loading, setLoading] = useState<boolean>(true);
 
     const updateDateRange = (range: DateRange) => {
         console.log('Range changed to: ', range);
