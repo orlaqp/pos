@@ -1,7 +1,12 @@
 import { GraphQLResult } from '@aws-amplify/api-graphql';
 import { getSalesSummary, listOrders } from '@pos/shared/api';
 import { Child, SalesSummary } from '@pos/shared/models';
-import { DateRange, UIDateRange, UIEmptyState, UISpinner } from '@pos/shared/ui-native';
+import {
+    DateRange,
+    UIDateRange,
+    UIEmptyState,
+    UISpinner,
+} from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { API, DataStore, graphqlOperation } from 'aws-amplify';
 
@@ -16,6 +21,7 @@ import PieChart from '../pie-chart/pie-chart';
 import Widget from '../widget/widget';
 
 import { Parent } from '@pos/shared/models';
+import { getSalesSummaryForRange } from '@pos/reporting/data-access';
 
 /* eslint-disable-next-line */
 export interface DashboardProps {}
@@ -44,22 +50,14 @@ export function Dashboard(props: DashboardProps) {
             endDate: moment(),
         };
 
-        const promise = API.graphql<SalesSummary>({
-            query: getSalesSummary,
-            variables: {
-                from: range?.startDate.startOf('day').toISOString(),
-                to: range?.endDate.endOf('day').toISOString(),
-            },
-        }) as Promise<GraphQLResult<{ getSalesSummary: SalesSummary }>>;
-
-        promise.then((res) => {
-            console.log('Result', res.data?.getSalesSummary);
-            setSalesSummary(res.data?.getSalesSummary);
+        getSalesSummaryForRange(range).then((summary) => {
+            console.log('Result', summary);
+            setSalesSummary(summary);
             setLoading(false);
         });
     }, [dateRange]);
 
-    if (loading) 
+    if (loading)
         return (
             <View style={[styles.page, { paddingTop: 50 }]}>
                 <UISpinner size="small" message="Loading..." />
@@ -69,9 +67,7 @@ export function Dashboard(props: DashboardProps) {
     if (!salesSummary || salesSummary.totalAmount === 0)
         return (
             <View style={[styles.page, { paddingTop: 50 }]}>
-                <UIEmptyState
-                    text='No data found for this date range'
-                />
+                <UIEmptyState text="No data found for this date range" />
             </View>
         );
 
@@ -87,7 +83,7 @@ export function Dashboard(props: DashboardProps) {
                         backgroundColor="#1976d2"
                         icon="trending-up"
                         text="Gross Income"
-                        value={`$ ${value.toFixed(2)}`}
+                        value={`$ ${salesSummary.totalAmount.toFixed(2)}`}
                     />
                 </View>
                 <View style={{ flex: 1 }}>
@@ -95,32 +91,47 @@ export function Dashboard(props: DashboardProps) {
                         backgroundColor="#e91e63"
                         icon="sigma"
                         text="Total Sales"
-                        value="275"
+                        value={salesSummary.totalOrders.toString()}
                     />
                 </View>
                 <View style={{ flex: 1 }}>
                     <Widget
                         backgroundColor="#43a047"
-                        icon="cash-multiple"
-                        text="Revenue"
-                        value={`$ ${value.toFixed(2)}`}
+                        icon="account-multiple-plus-outline"
+                        text="New Customers"
+                        value="N/A"
                     />
                 </View>
             </View>
             <View style={[styles.row, styles.smallMargin]}>
                 <View style={{ flex: 2 }}>
-                    <PieChart header="Top 5 Products" />
+                    <PieChart
+                        header="Top 5 Products"
+                        items={
+                            !salesSummary.products
+                                ? []
+                                : salesSummary.products
+                                      ?.slice(0, 5)
+                                      .map((p) => ({
+                                          name: p?.productName,
+                                          value: p?.amount,
+                                      }))
+                        }
+                    />
                 </View>
                 <View style={{ flex: 1, marginLeft: 40 }}>
                     <ListWidget
                         header="Top 5 Employees"
-                        items={[
-                            { text: 'John Doe', value: '$ 2,110.00' },
-                            { text: 'Jane Doe', value: '$ 810.00' },
-                            { text: 'John Doe', value: '$ 500.00' },
-                            { text: 'John Doe', value: '$ 210.00' },
-                            { text: 'John Doe', value: '$ 200.00' },
-                        ]}
+                        items={
+                            !salesSummary.employees
+                                ? []
+                                : salesSummary.employees
+                                      ?.slice(0, 5)
+                                      .map((e) => ({
+                                          name: e?.employeeName,
+                                          value: e?.amount,
+                                      }))
+                        }
                     />
                 </View>
             </View>

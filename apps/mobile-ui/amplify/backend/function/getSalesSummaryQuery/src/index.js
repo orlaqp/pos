@@ -25,6 +25,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
         products: productList,
         employees: employeeList,
         totalAmount: employeeList.reduce((total, e) => total + e.amount, 0),
+        totalOrders: employeeList.reduce((total, e) => total + e.orders, 0),
     };
 
     return res;

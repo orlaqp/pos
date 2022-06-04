@@ -1744,6 +1744,13 @@ export const schema = {
                     "type": "Float",
                     "isRequired": true,
                     "attributes": []
+                },
+                "totalOrders": {
+                    "name": "totalOrders",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
                 }
             }
         },
@@ -1882,5 +1889,5 @@ export const schema = {
             }
         }
     },
-    "version": "0b7580bb1a7abfae4454e073c4f44a8c"
+    "version": "ce8904837ce92f149b196ef437b14ebe"
 };

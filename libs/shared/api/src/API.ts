@@ -1077,6 +1077,7 @@ export type SalesSummary = {
   products?:  Array<ProductSaleSummary | null > | null,
   employees?:  Array<EmployeeSaleSummary | null > | null,
   totalAmount: number,
+  totalOrders: number,
 };
 
 export type ProductSaleSummary = {
@@ -3097,6 +3098,7 @@ export type GetSalesSummaryQuery = {
       amount: number,
     } | null > | null,
     totalAmount: number,
+    totalOrders: number,
   } | null,
 };
 

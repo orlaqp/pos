@@ -20,6 +20,7 @@ export declare class SalesSummary {
   readonly products?: (ProductSaleSummary | null)[] | null;
   readonly employees?: (EmployeeSaleSummary | null)[] | null;
   readonly totalAmount: number;
+  readonly totalOrders: number;
   constructor(init: ModelInit<SalesSummary>);
 }
 

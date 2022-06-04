@@ -7,7 +7,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 /* eslint-disable-next-line */
 export interface ListWidgetProps {
     header: string;
-    items: { text: string; value: string; }[]
+    items: { name: string; value: string; }[]
 }
 
 export function ListWidget({ header, items }: ListWidgetProps) {
@@ -27,7 +27,7 @@ export function ListWidget({ header, items }: ListWidgetProps) {
             <ScrollView>
                 {items.map((item, idx) => (
                     <View key={idx} style={{ flexDirection: 'row', marginVertical: 8 }}>
-                        <Text style={[styles.primaryText, { flex: 2 }]}>{item.text}</Text>
+                        <Text style={[styles.primaryText, { flex: 2 }]}>{item.name}</Text>
                     <Text style={[styles.primaryText, styles.textRight, { flex: 1 }]}>{item.value}</Text>
                 </View>
                 ))}

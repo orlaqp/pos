@@ -222,6 +222,7 @@ type SalesSummary {
     products: [ProductSaleSummary]
     employees: [EmployeeSaleSummary]
     totalAmount: Float!
+    totalOrders: Float!
 }
 
 type Query {

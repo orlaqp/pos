@@ -18,6 +18,7 @@ export const getSalesSummary = /* GraphQL */ `
         amount
       }
       totalAmount
+      totalOrders
     }
   }
 `;
