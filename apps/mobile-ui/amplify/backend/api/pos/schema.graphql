@@ -212,6 +212,8 @@ type ProductSaleSummary {
 # Reporting
 
 type EmployeeSaleSummary {
+    employeeId: String!
+    employeeName: String!
     orders: Int!
     amount: Float!
 }

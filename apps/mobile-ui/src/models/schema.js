@@ -1783,6 +1783,20 @@ export const schema = {
         "EmployeeSaleSummary": {
             "name": "EmployeeSaleSummary",
             "fields": {
+                "employeeId": {
+                    "name": "employeeId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "employeeName": {
+                    "name": "employeeName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "orders": {
                     "name": "orders",
                     "isArray": false,
@@ -1868,5 +1882,5 @@ export const schema = {
             }
         }
     },
-    "version": "d7a6b20ed608018157b5b2093f10dd47"
+    "version": "0b7580bb1a7abfae4454e073c4f44a8c"
 };

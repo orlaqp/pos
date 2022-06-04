@@ -32,6 +32,8 @@ export declare class ProductSaleSummary {
 }
 
 export declare class EmployeeSaleSummary {
+  readonly employeeId: string;
+  readonly employeeName: string;
   readonly orders: number;
   readonly amount: number;
   constructor(init: ModelInit<EmployeeSaleSummary>);

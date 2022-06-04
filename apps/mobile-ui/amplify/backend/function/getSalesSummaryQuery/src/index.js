@@ -7,15 +7,10 @@ Amplify Params - DO NOT EDIT */
 const AWS = require('aws-sdk');
 const docClient = new AWS.DynamoDB.DocumentClient();
 
-const environment = process.env.ENV;
-// const apiGraphQLAPIIdOutput = process.env.API_MYPROJECT_GRAPHQLAPIIDOUTPUT;
-// const orderTable = `Order-${apiGraphQLAPIIdOutput}-${environment}`;
-
 /**
  * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
  */
  exports.handler = async (event) => {
-    console.log('Env', JSON.stringify(process.env));
     console.log(`EVENT: ${JSON.stringify(event)}`);
 
     const orders = await getOrders(event);
@@ -23,30 +18,21 @@ const environment = process.env.ENV;
     const employeeList = Object.values(groups.byEmployee);
     const productList = Object.values(groups.byProduct);
 
+    sortListBy(productList, 'amount');
+    sortListBy(employeeList, 'amount');
+
     const res = {
         products: productList,
         employees: employeeList,
         totalAmount: employeeList.reduce((total, e) => total + e.amount, 0),
     };
 
-    console.log(`RESULT: ${JSON.stringify(res)}`);
-
     return res;
-
-    // return {
-    //     statusCode: 200,
-    //     //  Uncomment below to enable CORS requests
-    //     headers: {
-    //         'Access-Control-Allow-Origin': '*',
-    //         'Access-Control-Allow-Headers': '*',
-    //     },
-    //     body: JSON.stringify(res),
-    // };
 };
 
 async function getOrders(event) {
     var params = {
-        TableName: 'Order-libe2xk2rvftbi24xplh4x5gnm-develop',
+        TableName: process.env.API_POS_ORDERTABLE_NAME,
         IndexName: 'byStatusByOrderDate',
         KeyConditionExpression: '#status = :status AND #orderDate > :from',
         ExpressionAttributeValues: {
@@ -97,4 +83,13 @@ function processGroups(orders) {
     }, {});
 
     return res;
+}
+
+const sortListBy = (items, key) => {
+    items.sort((a, b) => {
+        if (a[key] > b[key]) return 1;
+        if (a[key] < b[key]) return -1;
+
+        return 0;
+    });
 }

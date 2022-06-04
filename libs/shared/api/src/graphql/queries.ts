@@ -12,6 +12,8 @@ export const getSalesSummary = /* GraphQL */ `
         amount
       }
       employees {
+        employeeId
+        employeeName
         orders
         amount
       }

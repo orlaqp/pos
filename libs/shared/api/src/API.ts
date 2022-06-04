@@ -1089,6 +1089,8 @@ export type ProductSaleSummary = {
 
 export type EmployeeSaleSummary = {
   __typename: "EmployeeSaleSummary",
+  employeeId: string,
+  employeeName: string,
   orders: number,
   amount: number,
 };
@@ -3089,6 +3091,8 @@ export type GetSalesSummaryQuery = {
     } | null > | null,
     employees?:  Array< {
       __typename: "EmployeeSaleSummary",
+      employeeId: string,
+      employeeName: string,
       orders: number,
       amount: number,
     } | null > | null,
