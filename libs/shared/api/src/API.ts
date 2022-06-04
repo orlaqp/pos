@@ -3083,7 +3083,61 @@ export type DeleteStationMutation = {
   } | null,
 };
 
+export type GetSalesQueryVariables = {
+  status: OrderStatus,
+  from: string,
+  to: string,
+};
+
+export type GetSalesQuery = {
+  getSales?:  Array< {
+    __typename: "Order",
+    id: string,
+    subtotal: number,
+    tax: number,
+    total: number,
+    status: OrderStatus,
+    employeeId: string,
+    employeeName: string,
+    lines:  Array< {
+      __typename: "OrderLine",
+      identifier: string,
+      productId: string,
+      productName: string,
+      unitOfMeasure: string,
+      barcode?: string | null,
+      sku?: string | null,
+      quantity: number,
+      tax: number,
+      price: number,
+    } | null >,
+    Customer?:  {
+      __typename: "Customer",
+      id: string,
+      firstName: string,
+      lastName?: string | null,
+      middleName?: string | null,
+      dob?: string | null,
+      phone?: string | null,
+      email?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null,
+    orderDate: string,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+    orderCustomerId?: string | null,
+  } | null > | null,
+};
+
 export type GetSalesSummaryQueryVariables = {
+  status: OrderStatus,
   from: string,
   to: string,
 };

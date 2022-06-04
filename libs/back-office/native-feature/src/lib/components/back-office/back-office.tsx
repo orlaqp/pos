@@ -22,7 +22,7 @@ import { PrinterList } from '@pos/printings/native-feature';
 import { StoreInfoForm } from '@pos/store-info/native-feature';
 import { Settings } from '@pos/settings/native-feature';
 import { InventoryCounts, InventoryList, InventoryReceives } from '@pos/inventory/native-feature';
-import { Dashboard, SalesByEmployee, SalesByProduct } from '@pos/reporting/native-feature';
+import { Dashboard, Sales, SalesByEmployee, SalesByProduct } from '@pos/reporting/native-feature';
 
 import Logo from '../../assets/logo.png';
 
@@ -76,6 +76,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                 <View style={styles.rightSide}>
                     <Stack.Navigator screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="Dashboard" component={Dashboard} />
+                        <Stack.Screen name="Sale List" component={Sales} />
                         <Stack.Screen name="By Employee" component={SalesByEmployee} />
                         <Stack.Screen name="By Product" component={SalesByProduct} />
                         <Stack.Screen name="In Stock" component={InventoryList} />

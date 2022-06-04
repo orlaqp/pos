@@ -46,7 +46,7 @@ export function Dashboard(props: DashboardProps) {
         range.startDate = range.startDate.startOf('day');
         range.endDate = range.endDate.endOf('day');
 
-        getSalesSummaryForRange(range).then((summary) => {
+        getSalesSummaryForRange('PAID', range).then((summary) => {
             console.log('Result', summary);
             setSalesSummary(summary);
             setLoading(false);

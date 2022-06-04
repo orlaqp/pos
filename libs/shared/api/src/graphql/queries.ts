@@ -2,9 +2,54 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const getSales = /* GraphQL */ `
+  query GetSales($status: OrderStatus!, $from: String!, $to: String!) {
+    getSales(status: $status, from: $from, to: $to) {
+      id
+      subtotal
+      tax
+      total
+      status
+      employeeId
+      employeeName
+      lines {
+        identifier
+        productId
+        productName
+        unitOfMeasure
+        barcode
+        sku
+        quantity
+        tax
+        price
+      }
+      Customer {
+        id
+        firstName
+        lastName
+        middleName
+        dob
+        phone
+        email
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      orderDate
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      orderCustomerId
+    }
+  }
+`;
 export const getSalesSummary = /* GraphQL */ `
-  query GetSalesSummary($from: String!, $to: String!) {
-    getSalesSummary(from: $from, to: $to) {
+  query GetSalesSummary($status: OrderStatus!, $from: String!, $to: String!) {
+    getSalesSummary(status: $status, from: $from, to: $to) {
       products {
         productId
         productName

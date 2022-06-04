@@ -233,5 +233,6 @@ type SalesSummary {
 }
 
 type Query {
-  getSalesSummary(from: String!, to: String!): SalesSummary @function (name: "getSalesSummaryQuery-${env}")
+  getSales(status: OrderStatus!, from: String!, to: String!): [Order] @function (name: "getSales-${env}")
+  getSalesSummary(status: OrderStatus!, from: String!, to: String!): SalesSummary @function (name: "getSalesSummaryQuery-${env}")
 }

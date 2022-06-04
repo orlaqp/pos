@@ -20,7 +20,7 @@ export function SalesByEmployee(props: SalesByEmployeeProps) {
         range.startDate = range.startDate.startOf('day');
         range.endDate = range.endDate.endOf('day');
 
-        return getSalesSummaryForRange(range).then((summary) => {
+        return getSalesSummaryForRange('PAID', range).then((summary) => {
             console.log('summary data', summary);
             return summary?.employees?.map((e) => ({
                 employee: e?.employeeName,

@@ -19,8 +19,9 @@ export const menuItems: SidebarItem[] = [
         title: 'Reports',
         icon: 'clipboard-list-outline',
         children: [
-            { id: '3-1', title: 'By Employee' },
-            { id: '3-2', title: 'By Product' },
+            { id: '3-1', title: 'Sale List' },
+            { id: '3-2', title: 'By Employee' },
+            { id: '3-3', title: 'By Product' },
         ],
         role: Role.Admin,
     },
