@@ -54,7 +54,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
         props.navigation.navigate(details.path, details.params);
 
     return (
-        <View style={[sharedStyles.page, sharedStyles.centered]}>
+        <View style={[sharedStyles.page, sharedStyles.centered, { position: 'relative' }]}>
             <View style={{ flexDirection: 'row' }}>
                 {paths.map((p) => {
                     if (!user.groups?.includes(p.role)) return null;

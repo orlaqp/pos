@@ -7,7 +7,7 @@ import { SalesScreen } from '@pos/sales/native-feature';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@pos/store';
 import { BackOffice } from '@pos/back-office/native-feature';
-import { DataStore } from 'aws-amplify';
+import { Auth, DataStore } from 'aws-amplify';
 import { CompactOrderList, OrderList, Orders } from '@pos/orders/native-feature';
 import { Button, Dialog, useTheme } from '@rneui/themed';
 import { Alert, Text } from 'react-native';
@@ -15,6 +15,7 @@ import { cartActions, selectCart } from '@pos/sales/data-access';
 import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import { selectStore } from '@pos/store-info/data-access';
 import { useSharedStyles } from '@pos/theme/native';
+import { authActions } from '@pos/auth/data-access';
 
 /* eslint-disable-next-line */
 export interface NavigationParamList {
@@ -48,6 +49,16 @@ export function Navigation() {
         ]);
     };
 
+    const confirmLogoff = () => {
+        Alert.alert('Are you sure?', 'Press yes to confirm', [
+            { text: 'No' },
+            { text: 'Yes', onPress: () => {
+                Auth.signOut();
+                dispatch(authActions.logoff());
+            }},
+        ]);
+    };
+
     return (
         <>
             <Dialog
@@ -72,7 +83,18 @@ export function Navigation() {
                         <Stack.Screen
                             name="Home"
                             component={HomeScreen}
-                            options={{ headerShown: false }}
+                            options={{
+                                headerShown: true,
+                                headerTitle: '',
+                                headerRight: () => (
+                                    <Button
+                                        type="clear"
+                                        title="Logoff"
+                                        style={{ marginRight: 20 }}
+                                        onPress={confirmLogoff}
+                                    />
+                                )
+                            }}
                         />
                         <Stack.Screen
                             name="Sales"

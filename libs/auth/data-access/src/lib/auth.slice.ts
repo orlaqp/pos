@@ -51,7 +51,11 @@ export const initialAuthState: AuthState = {
 export const authSlice = createSlice({
     name: AUTH_FEATURE_KEY,
     initialState: initialAuthState,
-    reducers: {},
+    reducers: {
+        logoff: (state: AuthState) => {
+            state.user = undefined;
+        }
+    },
     extraReducers: (builder) => {
         builder
             .addCase(signIn.pending, (state: AuthState) => {
@@ -75,6 +79,7 @@ export const authSlice = createSlice({
  * Export reducer for store configuration.
  */
 export const authReducer = authSlice.reducer;
+export const authActions = authSlice.actions;
 export const getAuthState = (rootState: RootState): AuthState =>
     rootState[AUTH_FEATURE_KEY];
 
