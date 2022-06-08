@@ -54,9 +54,15 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
                     color: theme.theme.colors.grey2,
                     onPress: clearText,
                 }}
+                multiline={false}
                 renderErrorMessage={false}
-                // onChangeText={(text) => { setText(text); debouncedOnChange(text) }}
-                onSubmitEditing={(e) => onSubmit(e.nativeEvent.text)}
+                onChangeText={(text) => { 
+                    debugger;
+                 }}
+                onSubmitEditing={(e) => {
+                    debugger;
+                    onSubmit(e.nativeEvent.text);
+                }}
             />
         );
     }

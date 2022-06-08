@@ -52,6 +52,8 @@ export function ProductForm({ navigation }: ProductFormProps) {
     const save = async () => {
         setBusy(true);
         const formValues: ProductEntity = form.getValues();
+        formValues.cost = formValues.cost ? +formValues.cost : null;
+        formValues.price = +formValues.price;
         
         if (!formValues.id) {
             delete formValues.id;
@@ -66,7 +68,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
     };
 
     const form = useForm<ProductEntity>({
-        mode: 'onBlur',
+        mode: 'onChange',
         defaultValues: {
             id: product?.id,
             name: product?.name,

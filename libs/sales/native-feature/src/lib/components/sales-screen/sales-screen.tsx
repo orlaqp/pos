@@ -90,6 +90,7 @@ export function SalesScreen({
     };
 
     const onFilterChange = async (text: string) => {
+        debugger;
         searchRef.current?.focus();
         const res = await ProductService.search(allProducts, { text });
 
@@ -210,7 +211,7 @@ export function SalesScreen({
             <View style={styles.products}>
                 <ProductSearch
                     ref={searchRef}
-                    onFilterChange={async (text) => onFilterChange(text)}
+                    onFilterChange={onFilterChange}
                     filter={filter}
                 />
                 <ProductSelection

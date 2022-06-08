@@ -3,7 +3,6 @@ import { InputProps } from '@rneui/base';
 import { Input, useTheme } from '@rneui/themed';
 import React from 'react';
 import { useFormContext, Controller, RegisterOptions } from 'react-hook-form';
-import { TextInput } from 'react-native';
 
 type Props = React.ComponentProps<typeof Input> & {
     name: string;
@@ -38,16 +37,24 @@ export const UINumericInput = React.forwardRef<typeof Input, Props>(
             : undefined;
 
         const mergedRules = {
-            ...rules,
+            // ...rules,
             pattern: {
                 value: allowDecimals
-                    ? /^([0-9]+\.?[0-9]*|\.[0-9]+)$/
+                    ? /^(?:0\.(?:0[0-9]|[0-9]\d?)|[0-9]\d*(?:\.\d{1,2})?)(?:e[+-]?\d+)?$/
                     : /^([0-9]+)$/,
                 message: allowDecimals
-                    ? 'Only decimal values are allowed here'
+                    ? 'Only numbers are allowed here'
                     : 'Only integers are allowed here',
             },
         };
+
+        // const validate = (value: string) => {
+        //     debugger;
+        //     const matches = value.match(
+        //         /^(?:0\.(?:0[0-9]|[0-9]\d?)|[0-9]\d*(?:\.\d{1,2})?)(?:e[+-]?\d+)?$/
+        //     );
+        //     return matches && matches?.length > 0 || 'Not a Number';
+        // };
 
         return (
             <Controller
@@ -63,13 +70,16 @@ export const UINumericInput = React.forwardRef<typeof Input, Props>(
                         placeholder={props.placeholder}
                         value={value?.toString()}
                         onBlur={onBlur}
-                        onChangeText={(text) => onChange(+text)}
+                        onChange={onChange}
+                        onChangeText={(text) => onChange(text)}
+                        // onChangeText={(text)=>onChange(validate(text))}
                         errorMessage={error?.message}
                         inputContainerStyle={styles.inputContainerStyle}
                         inputStyle={styles.inputStyle}
                     />
                 )}
                 rules={mergedRules}
+                // rules={{ validate }}
             />
         );
     }
