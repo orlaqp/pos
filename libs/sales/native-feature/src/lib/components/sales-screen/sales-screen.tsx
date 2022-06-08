@@ -90,7 +90,6 @@ export function SalesScreen({
     };
 
     const onFilterChange = async (text: string) => {
-        debugger;
         searchRef.current?.focus();
         const res = await ProductService.search(allProducts, { text });
 

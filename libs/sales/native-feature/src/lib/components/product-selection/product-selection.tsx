@@ -36,9 +36,6 @@ export function ProductSelection({ products, onSelected }: ProductSelectionProps
                                 style={{
                                     ...styles.itemBackground,
                                     borderRadius: 5,
-                                    // borderColor: theme.theme.colors.grey4,
-                                    // backgroundColor: theme.theme.colors.grey4,
-                                    // borderWidth: 1,
                                     marginRight: 10,
                                     marginBottom: 10,
                                 }}

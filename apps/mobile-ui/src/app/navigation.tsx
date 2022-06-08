@@ -100,6 +100,7 @@ export function Navigation() {
                             name="Sales"
                             component={SalesScreen}
                             options={{
+                                headerTitle: user.name,
                                 headerRight: () => (
                                     <>
                                         <Button

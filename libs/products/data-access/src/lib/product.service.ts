@@ -114,14 +114,8 @@ export class ProductService {
         }
 
         const allNumbers = !!request.text?.match(/^\d*$/);
-        const len12 = request.text.length === 12;
-        const couldBeScaleBarcode = allNumbers && len12;
-
-        if (couldBeScaleBarcode) {
-            // Samples
-            // 2 1030 5 02745 3
-            // 2 1030 5 08415 9
-            // 2 1030 2 26640 4
+        
+        if (allNumbers) {
             const plu = request.text.substring(1, 5);
             const prod = products.find((p) => p.plu === plu);
 
@@ -139,26 +133,33 @@ export class ProductService {
         }
 
         if (allNumbers && request.text.length > 3) {
+            const items = products.filter(
+                (p) => {
+                    const result = (p.barcode && p.barcode === request.text!) ||
+                    (p.sku && p.sku === request.text!)
+
+                    return result;
+                }
+            );
+
             return {
-                items: products.filter(
-                    (p) =>
-                        p.sku?.indexOf(request.text!) !== -1 ||
-                        p.barcode?.indexOf(request.text!) !== -1
-                ),
+                items,
                 allNumbers,
             };
         }
 
         const lower = request.text.toLowerCase();
 
+        const filteredItems = products.filter(
+            (p) =>
+                p.name.toLowerCase().indexOf(lower) !== -1 ||
+                (p.barcode && p.barcode?.toLowerCase().indexOf(lower) !== -1) ||
+                (p.sku && p.sku?.toLowerCase().indexOf(lower) !== -1) ||
+                (p.description && p.description?.toLowerCase().indexOf(lower) !== -1)
+        );
+
         return {
-            items: products.filter(
-                (p) =>
-                    p.sku?.toLowerCase().indexOf(lower) !== -1 ||
-                    p.barcode?.toLowerCase().indexOf(lower) !== -1 ||
-                    p.description?.toLowerCase().indexOf(lower) !== -1 ||
-                    p.name.toLowerCase().indexOf(lower) !== -1
-            ),
+            items: filteredItems,
             allNumbers: false,
         };
     }

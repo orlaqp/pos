@@ -2,6 +2,7 @@ import { Storage } from 'aws-amplify';
 import { launchImageLibrary, MediaType } from 'react-native-image-picker';
 import { Readable } from 'stream';
 import { blobToBase64 } from './conversion.service';
+import { FsService } from './fs.service';
 
 export interface UploadResponse {
     cancel?: boolean;
@@ -50,11 +51,18 @@ export class AssetsService {
     }
 
     static async getImage(key: string): Promise<string> {
+        // check if image is stored in cache
+        const content = await FsService.get(key);
+
+        if (content) return content;
+
         const res = await Storage.get(key, { download: true });
         let base64: string = (await blobToBase64(res.Body)) as any;
 
         const extension = key.split('.').pop();
-        base64 = base64.replace('data:binary/octet-stream;', `data:image/${extension};`)
+        base64 = base64.replace('data:binary/octet-stream;', `data:image/${extension};`);
+
+        await FsService.save(key, base64);
 
         return base64 as string;
     }

@@ -40,6 +40,7 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
                 {...restOfProps}
                 // value={text}
                 autoComplete='off'
+                autoCorrect={false}
                 autoCapitalize='none'
                 autoFocus={true}
                 containerStyle={{
@@ -56,13 +57,7 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
                 }}
                 multiline={false}
                 renderErrorMessage={false}
-                onChangeText={(text) => { 
-                    debugger;
-                 }}
-                onSubmitEditing={(e) => {
-                    debugger;
-                    onSubmit(e.nativeEvent.text);
-                }}
+                onEndEditing={(e) => onSubmit(e.nativeEvent.text)}
             />
         );
     }

@@ -77,10 +77,16 @@ export const productsSlice = createSlice({
     clearSelection: (state: ProductsState) => {
         state.selected = undefined;
     },
-    filter: (state: ProductsState, action: PayloadAction<ProductFilterRequest>) => {
-        filterList(state, action.payload.filter, action.payload.categoryId);
-        state.filterQuery = action.payload.filter;
+    filter: (state: ProductsState, action: PayloadAction<string>) => {
+        debugger;
+        filterList(state, action.payload);
+        state.filterQuery = action.payload;
     },
+    // filterByCategory: (state: ProductsState, action: PayloadAction<string>) => {
+    //     debugger;
+    //     filterList(state, undefined, action.payload);
+    //     state.filterQuery = action.payload;
+    // },
     error: (state: ProductsState, action: PayloadAction<Error>) => {
         state.error = action.payload.message;
     },
