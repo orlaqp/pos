@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "auth": {
+      "pos0614c248": [
+        "create",
+        "read"
+      ]
+    }
+  },
+  "lambdaLayers": []
+}

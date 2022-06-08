@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { View, Text, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import {
@@ -50,11 +50,12 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
     };
 
     return (
-        <View
+        <TouchableOpacity
             style={[
                 styles.dataRow,
                 { justifyContent: 'center', alignItems: 'center' },
             ]}
+            onPress={editItem}
         >
             {busy && <ActivityIndicator size="small" />}
             {!item.picture && <View style={{ width: 50, height: 50 }} />}
@@ -108,7 +109,7 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
                     justifyContent: 'flex-end',
                 }}
             >
-                <Button
+                {/* <Button
                     type="clear"
                     title="Edit"
                     icon={{
@@ -116,7 +117,7 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
                         type: 'material-community',
                     }}
                     onPress={editItem}
-                />
+                /> */}
                 <Button
                     type="clear"
                     icon={{
@@ -127,7 +128,7 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
                     onPress={confirmDeletion}
                 />
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 

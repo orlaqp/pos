@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 
-import { View, Text, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { unitOfMeasuresActions, UnitOfMeasureEntity, UnitOfMeasureService } from '@pos/unit-of-measures/data-access';
@@ -30,6 +30,11 @@ export function UnitOfMeasureItem({ item, navigation }: UnitOfMeasureItemProps) 
     }
 
     const editItem = () => {
+        if (item.name === 'ea') {
+            Alert.alert('This item cannot be changed');
+            return;
+        }
+
         dispatch(unitOfMeasuresActions.select(item));
         navigation.navigate('UnitOfMeasure Form');
     }
@@ -46,7 +51,7 @@ export function UnitOfMeasureItem({ item, navigation }: UnitOfMeasureItemProps) 
     }
 
     return (
-        <View style={styles.dataRow}>
+        <TouchableOpacity style={styles.dataRow} onPress={editItem}>
             { busy &&
             <ActivityIndicator size='small' />
             }
@@ -80,7 +85,7 @@ export function UnitOfMeasureItem({ item, navigation }: UnitOfMeasureItemProps) 
                     onPress={confirmDeletion}
                 />
             </View> */}
-        </View>
+        </TouchableOpacity>
     );
 }
 

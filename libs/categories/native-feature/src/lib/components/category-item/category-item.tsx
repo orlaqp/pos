@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { View, Text, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { categoriesActions, CategoryEntity, CategoryService } from '@pos/categories/data-access';
@@ -46,7 +46,7 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
     }
 
     return (
-        <View style={styles.dataRow}>
+        <TouchableOpacity style={styles.dataRow} onPress={editItem}>
             { busy &&
             <ActivityIndicator size='small' />
             }
@@ -62,7 +62,7 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
                     justifyContent: 'flex-end',
                 }}
             >
-                <Button
+                {/* <Button
                     type="clear"
                     title="Edit"
                     icon={{
@@ -70,7 +70,7 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
                         type: 'material-community',
                     }}
                     onPress={editItem}
-                />
+                /> */}
                 <Button
                     type="clear"
                     icon={{
@@ -81,7 +81,7 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
                     onPress={confirmDeletion}
                 />
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 

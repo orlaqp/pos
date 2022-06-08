@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 
-import { View, Text, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { brandsActions, BrandEntity, BrandService } from '@pos/brands/data-access';
@@ -46,7 +46,7 @@ export function BrandItem({ item, navigation }: BrandItemProps) {
     }
 
     return (
-        <View style={styles.dataRow}>
+        <TouchableOpacity style={styles.dataRow} onPress={editItem}>
             { busy &&
             <ActivityIndicator size='small' />
             }
@@ -61,7 +61,7 @@ export function BrandItem({ item, navigation }: BrandItemProps) {
                     justifyContent: 'flex-end',
                 }}
             >
-                <Button
+                {/* <Button
                     type="clear"
                     title="Edit"
                     icon={{
@@ -69,7 +69,7 @@ export function BrandItem({ item, navigation }: BrandItemProps) {
                         type: 'material-community',
                     }}
                     onPress={editItem}
-                />
+                /> */}
                 <Button
                     type="clear"
                     icon={{
@@ -80,7 +80,7 @@ export function BrandItem({ item, navigation }: BrandItemProps) {
                     onPress={confirmDeletion}
                 />
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 
