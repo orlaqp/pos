@@ -87,7 +87,7 @@ export function SalesScreen({
 
     const onFilterChange = async (text: string) => {
         if (!text) return;
-        
+
         searchRef.current?.focus();
         const res = await ProductService.search(allProducts, { text });
 
@@ -168,9 +168,9 @@ export function SalesScreen({
         };
     }, [dispatch]);
 
-    useEffect(() => {
-        searchRef.current?.focus();
-    });
+    // useEffect(() => {
+    //     searchRef.current?.focus();
+    // });
 
     useEffect(() => {
         if (!products) return;

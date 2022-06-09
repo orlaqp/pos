@@ -46,7 +46,7 @@ export function CategorySelection({ onSelected }: CategorySelectionProps) {
 
     return (
         <SafeAreaView style={[styles.pageBackground, styles.list]}>
-            <UIButton item={allCategories} onSelected={onSelection} />
+            {/* <UIButton item={allCategories} onSelected={onSelection} /> */}
             <FlatList
                 data={categories}
                 renderItem={({ item }) => (
