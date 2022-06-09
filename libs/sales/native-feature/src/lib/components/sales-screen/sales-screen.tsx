@@ -63,8 +63,6 @@ export function SalesScreen({
     const styles = useStyles();
     const dispatch = useDispatch();
     const searchRef = React.createRef<TextInput>();
-    const [category, setCategory] = useState<CategoryEntity>();
-    const [filter, setFilter] = useState<string>();
     const product = useSelector(selectActiveProduct);
     const products = useSelector<
         RootState,
@@ -72,7 +70,7 @@ export function SalesScreen({
     >(selectFilteredList);
     const allProducts = useSelector(selectAllProducts);
     const [filteredProducts, setFilteredProducts] =
-        useState<ProductEntity[]>(allProducts);
+        useState<ProductEntity[]>([]);
     const deselectProduct = () => dispatch(cartActions.select(undefined));
 
     const upsertCart = (item: CartItem) => {
@@ -85,26 +83,22 @@ export function SalesScreen({
             categoryId: c.id,
         });
         setFilteredProducts(res.items);
-        setFilter(undefined);
-        setCategory(c);
     };
 
     const onFilterChange = async (text: string) => {
+        if (!text) return;
+        
         searchRef.current?.focus();
         const res = await ProductService.search(allProducts, { text });
 
         if (!res.allNumbers || (res.allNumbers && text.length < 4)) {
             setFilteredProducts(res.items);
-            setFilter(text);
-            setCategory(undefined);
-
             return text;
         }
 
         if (res.items.length === 1 && res.allNumbers) {
-            setFilter('');
-            setCategory(undefined);
-
+            searchRef.current?.clear();
+     
             const p = res.items[0];
             // add product to cart directly
             dispatch(
@@ -160,17 +154,6 @@ export function SalesScreen({
         ]);
     };
 
-    // const confirmGoBack = () => {
-    //     Alert.alert(
-    //         'Are you sure?',
-    //         'Press yes to confirm',
-    //         [
-    //             { text: 'No' },
-    //             { text: 'Yes', onPress: () => navigation.goBack() },
-    //         ]
-    //     );
-    // }
-
     useEffect(() => {
         const categoriesSub = subscribeToCategoryChanges(dispatch);
         const productsSub = subscribeToProductChanges(dispatch);
@@ -184,10 +167,6 @@ export function SalesScreen({
             orderLinesSub.unsubscribe();
         };
     }, [dispatch]);
-
-    useEffect(() => {
-        setFilteredProducts(allProducts);
-    }, [allProducts]);
 
     useEffect(() => {
         searchRef.current?.focus();
@@ -211,7 +190,6 @@ export function SalesScreen({
                 <ProductSearch
                     ref={searchRef}
                     onFilterChange={onFilterChange}
-                    filter={filter}
                 />
                 <ProductSelection
                     products={filteredProducts}

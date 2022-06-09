@@ -6,7 +6,7 @@ export class FsService {
 
     static save(name: string, content: string) {
         const path = getFullPath(name);
-        console.log(`Storing image: ${path}`);
+        // console.log(`Storing image: ${path}`);
 
         return writeFile(path, content);
     }
@@ -16,7 +16,7 @@ export class FsService {
         const wasFound = await exists(path);
 
         if (wasFound) {
-            console.log(`Found in cache: ${path}`);
+            // console.log(`Found in cache: ${path}`);
             return readFile(path);
         }
 

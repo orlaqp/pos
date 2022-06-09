@@ -56,7 +56,7 @@ export function Cart({ mode, onSubmit }: CartProps) {
 
     if (!cart.items.length) {
         return (
-            <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
+            <View style={{ marginTop: 150, flexDirection: 'column', justifyContent: 'center' }}>
                 <UIEmptyState
                     text="Cart is empty"
                     picture={EmptyCart}
@@ -67,8 +67,8 @@ export function Cart({ mode, onSubmit }: CartProps) {
     }
 
     return (
-        <View style={{ flex: 1, flexDirection: 'column' }}>
-            <View style={{ flex: 5 }}>
+        <View style={{ flexGrow: 1, flexDirection: 'column' }}>
+            <View style={{ flex: 5.5 }}>
                 <ScrollView>
                     {cart.items.map((i, idx) => (
                         <CartLine
@@ -80,7 +80,7 @@ export function Cart({ mode, onSubmit }: CartProps) {
                     ))}
                 </ScrollView>
             </View>
-            <View>
+            <View style={{ flex: 1 }}>
                 <Button
                     title={`$ ${cart.footer.total.toFixed(2)}\n${
                         mode === 'order' ? 'Print Order' : 'Paid'

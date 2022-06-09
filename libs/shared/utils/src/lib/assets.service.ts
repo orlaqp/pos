@@ -54,7 +54,10 @@ export class AssetsService {
         // check if image is stored in cache
         const content = await FsService.get(key);
 
-        if (content) return content;
+        if (content) {
+            console.log(`returned from cache: ${key}`);
+            return content;
+        }
 
         const res = await Storage.get(key, { download: true });
         let base64: string = (await blobToBase64(res.Body)) as any;

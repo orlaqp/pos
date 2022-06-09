@@ -34,8 +34,7 @@ export function UIEmptyState({
         <View
             style={[
                 {
-                    backgroundColor:
-                        backgroundColor || theme.theme.colors.background,
+                    backgroundColor: 'transparent'
                 },
                 styles.centered,
             ]}

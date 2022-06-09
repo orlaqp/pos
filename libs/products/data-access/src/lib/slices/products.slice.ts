@@ -78,15 +78,9 @@ export const productsSlice = createSlice({
         state.selected = undefined;
     },
     filter: (state: ProductsState, action: PayloadAction<string>) => {
-        debugger;
         filterList(state, action.payload);
         state.filterQuery = action.payload;
     },
-    // filterByCategory: (state: ProductsState, action: PayloadAction<string>) => {
-    //     debugger;
-    //     filterList(state, undefined, action.payload);
-    //     state.filterQuery = action.payload;
-    // },
     error: (state: ProductsState, action: PayloadAction<Error>) => {
         state.error = action.payload.message;
     },

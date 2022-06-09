@@ -1,7 +1,7 @@
 import { UISearchInput } from '@pos/shared/ui-native';
 import React, { useState } from 'react';
 
-import { TextInput, View } from 'react-native';
+import { Keyboard, TextInput, View } from 'react-native';
 import { Button, useTheme } from '@rneui/themed';
 
 /* eslint-disable-next-line */
@@ -35,7 +35,17 @@ export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((pr
                     alignItems: 'center',
                 }}
             >
-                <UISearchInput
+                    <UISearchInput
+                        ref={ref}
+                        debounceTime={300}
+                        placeholder="type to search by name, description, barcode and sku..."
+                        returnKeyType='search'
+                        autoComplete='off'
+                        autoCorrect={false}
+                        autoCapitalize='none'
+                        onSubmit={onFilterChange}
+                    />
+                {/* <UISearchInput
                     ref={ref}
                     value={filter}
                     placeholder="type to search by name, description, barcode and sku..."
@@ -46,7 +56,7 @@ export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((pr
                     autoCorrect={false}
                     autoCapitalize='none'
                     onSubmit={onFilterChange}
-                />
+                /> */}
                 <Button
                     icon={{
                         name: 'keyboard-outline',

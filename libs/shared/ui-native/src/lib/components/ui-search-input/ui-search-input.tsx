@@ -57,7 +57,8 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
                 }}
                 multiline={false}
                 renderErrorMessage={false}
-                onEndEditing={(e) => onSubmit(e.nativeEvent.text)}
+                clearButtonMode='always'
+                onSubmitEditing={(e) => onSubmit(e.nativeEvent.text)}
             />
         );
     }
