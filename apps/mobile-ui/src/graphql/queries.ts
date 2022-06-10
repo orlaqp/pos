@@ -72,6 +72,94 @@ export const getSalesSummary = /* GraphQL */ `
     }
   }
 `;
+export const getStore = /* GraphQL */ `
+  query GetStore($id: ID!) {
+    getStore(id: $id) {
+      id
+      name
+      address
+      city
+      state
+      zipCode
+      country
+      phone
+      fax
+      email
+      disclaimer
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const listStores = /* GraphQL */ `
+  query ListStores(
+    $filter: ModelStoreFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listStores(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        name
+        address
+        city
+        state
+        zipCode
+        country
+        phone
+        fax
+        email
+        disclaimer
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncStores = /* GraphQL */ `
+  query SyncStores(
+    $filter: ModelStoreFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncStores(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        name
+        address
+        city
+        state
+        zipCode
+        country
+        phone
+        fax
+        email
+        disclaimer
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
 export const getBrand = /* GraphQL */ `
   query GetBrand($id: ID!) {
     getBrand(id: $id) {
@@ -274,6 +362,91 @@ export const syncCustomers = /* GraphQL */ `
         dob
         phone
         email
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const getEmployee = /* GraphQL */ `
+  query GetEmployee($id: ID!) {
+    getEmployee(id: $id) {
+      id
+      firstName
+      lastName
+      middleName
+      dob
+      phone
+      email
+      pin
+      roles
+      active
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const listEmployees = /* GraphQL */ `
+  query ListEmployees(
+    $filter: ModelEmployeeFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listEmployees(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        firstName
+        lastName
+        middleName
+        dob
+        phone
+        email
+        pin
+        roles
+        active
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncEmployees = /* GraphQL */ `
+  query SyncEmployees(
+    $filter: ModelEmployeeFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncEmployees(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        firstName
+        lastName
+        middleName
+        dob
+        phone
+        email
+        pin
+        roles
+        active
         createdAt
         updatedAt
         _version
@@ -524,308 +697,6 @@ export const syncProducts = /* GraphQL */ `
     }
   }
 `;
-export const getStore = /* GraphQL */ `
-  query GetStore($id: ID!) {
-    getStore(id: $id) {
-      id
-      name
-      address
-      city
-      state
-      zipCode
-      country
-      phone
-      fax
-      email
-      disclaimer
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const listStores = /* GraphQL */ `
-  query ListStores(
-    $filter: ModelStoreFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listStores(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        name
-        address
-        city
-        state
-        zipCode
-        country
-        phone
-        fax
-        email
-        disclaimer
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const syncStores = /* GraphQL */ `
-  query SyncStores(
-    $filter: ModelStoreFilterInput
-    $limit: Int
-    $nextToken: String
-    $lastSync: AWSTimestamp
-  ) {
-    syncStores(
-      filter: $filter
-      limit: $limit
-      nextToken: $nextToken
-      lastSync: $lastSync
-    ) {
-      items {
-        id
-        name
-        address
-        city
-        state
-        zipCode
-        country
-        phone
-        fax
-        email
-        disclaimer
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const getSupplier = /* GraphQL */ `
-  query GetSupplier($id: ID!) {
-    getSupplier(id: $id) {
-      id
-      code
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const listSuppliers = /* GraphQL */ `
-  query ListSuppliers(
-    $filter: ModelSupplierFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listSuppliers(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        code
-        name
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const syncSuppliers = /* GraphQL */ `
-  query SyncSuppliers(
-    $filter: ModelSupplierFilterInput
-    $limit: Int
-    $nextToken: String
-    $lastSync: AWSTimestamp
-  ) {
-    syncSuppliers(
-      filter: $filter
-      limit: $limit
-      nextToken: $nextToken
-      lastSync: $lastSync
-    ) {
-      items {
-        id
-        code
-        name
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const getStock = /* GraphQL */ `
-  query GetStock($id: ID!) {
-    getStock(id: $id) {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      quantity
-      updatedAt
-      createdAt
-      _version
-      _deleted
-      _lastChangedAt
-      stockProductId
-    }
-  }
-`;
-export const listStocks = /* GraphQL */ `
-  query ListStocks(
-    $filter: ModelStockFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listStocks(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        quantity
-        updatedAt
-        createdAt
-        _version
-        _deleted
-        _lastChangedAt
-        stockProductId
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const syncStocks = /* GraphQL */ `
-  query SyncStocks(
-    $filter: ModelStockFilterInput
-    $limit: Int
-    $nextToken: String
-    $lastSync: AWSTimestamp
-  ) {
-    syncStocks(
-      filter: $filter
-      limit: $limit
-      nextToken: $nextToken
-      lastSync: $lastSync
-    ) {
-      items {
-        id
-        quantity
-        updatedAt
-        createdAt
-        _version
-        _deleted
-        _lastChangedAt
-        stockProductId
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const getTag = /* GraphQL */ `
-  query GetTag($id: ID!) {
-    getTag(id: $id) {
-      id
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const listTags = /* GraphQL */ `
-  query ListTags(
-    $filter: ModelTagFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listTags(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        name
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const syncTags = /* GraphQL */ `
-  query SyncTags(
-    $filter: ModelTagFilterInput
-    $limit: Int
-    $nextToken: String
-    $lastSync: AWSTimestamp
-  ) {
-    syncTags(
-      filter: $filter
-      limit: $limit
-      nextToken: $nextToken
-      lastSync: $lastSync
-    ) {
-      items {
-        id
-        name
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
 export const getUnitOfMeasure = /* GraphQL */ `
   query GetUnitOfMeasure($id: ID!) {
     getUnitOfMeasure(id: $id) {
@@ -884,95 +755,6 @@ export const syncUnitOfMeasures = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const getInventory = /* GraphQL */ `
-  query GetInventory($id: ID!) {
-    getInventory(id: $id) {
-      id
-      quantity
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryProductId
-    }
-  }
-`;
-export const listInventories = /* GraphQL */ `
-  query ListInventories(
-    $filter: ModelInventoryFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listInventories(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        quantity
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        inventoryProductId
-      }
-      nextToken
-      startedAt
-    }
-  }
-`;
-export const syncInventories = /* GraphQL */ `
-  query SyncInventories(
-    $filter: ModelInventoryFilterInput
-    $limit: Int
-    $nextToken: String
-    $lastSync: AWSTimestamp
-  ) {
-    syncInventories(
-      filter: $filter
-      limit: $limit
-      nextToken: $nextToken
-      lastSync: $lastSync
-    ) {
-      items {
-        id
-        quantity
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        inventoryProductId
       }
       nextToken
       startedAt

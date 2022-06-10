@@ -32,6 +32,12 @@
             "@pos/categories/native-feature": [
                 "libs/categories/native-feature/src/index.ts"
             ],
+            "@pos/employees/data-access": [
+                "libs/employees/data-access/src/index.ts"
+            ],
+            "@pos/employees/native-feature": [
+                "libs/employees/native-feature/src/index.ts"
+            ],
             "@pos/inventory/data-access": [
                 "libs/inventory/data-access/src/index.ts"
             ],

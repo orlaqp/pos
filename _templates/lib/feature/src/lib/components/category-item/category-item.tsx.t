@@ -8,7 +8,7 @@ singularCapitalized = h.singularCapitalized(name)
 %>
 import React, { useState } from 'react';
 
-import { View, Text, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { <%= plural %>Actions, <%= singularCapitalized %>Entity, <%= singularCapitalized %>Service } from '@pos/<%= pluralParamCase %>/data-access';
@@ -53,11 +53,10 @@ export function <%= singularCapitalized %>Item({ item, navigation }: <%= singula
     }
 
     return (
-        <View style={styles.dataRow}>
+        <TouchableOpacity style={styles.dataRow} onPress={editItem}>
             { busy &&
             <ActivityIndicator size='small' />
             }
-            <UIS3Image s3Key={item.picture} width={50} height={50} />
             <View style={{ flex: 5 }}>
                 <Text style={styles.name}>Sample name</Text>
             </View>
@@ -70,15 +69,6 @@ export function <%= singularCapitalized %>Item({ item, navigation }: <%= singula
             >
                 <Button
                     type="clear"
-                    title="Edit"
-                    icon={{
-                        name: 'pencil-outline',
-                        type: 'material-community',
-                    }}
-                    onPress={editItem}
-                />
-                <Button
-                    type="clear"
                     icon={{
                         name: 'trash-can',
                         type: 'material-community',
@@ -87,7 +77,7 @@ export function <%= singularCapitalized %>Item({ item, navigation }: <%= singula
                     onPress={confirmDeletion}
                 />
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 

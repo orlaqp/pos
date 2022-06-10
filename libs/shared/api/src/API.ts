@@ -2,19 +2,35 @@
 /* eslint-disable */
 //  This file was automatically generated and should not be edited.
 
-export type CreateBrandInput = {
+export type CreateStoreInput = {
   id?: string | null,
   name: string,
-  description?: string | null,
+  address: string,
+  city: string,
+  state: string,
+  zipCode: string,
+  country: string,
+  phone: string,
+  fax?: string | null,
+  email: string,
+  disclaimer?: string | null,
   _version?: number | null,
 };
 
-export type ModelBrandConditionInput = {
+export type ModelStoreConditionInput = {
   name?: ModelStringInput | null,
-  description?: ModelStringInput | null,
-  and?: Array< ModelBrandConditionInput | null > | null,
-  or?: Array< ModelBrandConditionInput | null > | null,
-  not?: ModelBrandConditionInput | null,
+  address?: ModelStringInput | null,
+  city?: ModelStringInput | null,
+  state?: ModelStringInput | null,
+  zipCode?: ModelStringInput | null,
+  country?: ModelStringInput | null,
+  phone?: ModelStringInput | null,
+  fax?: ModelStringInput | null,
+  email?: ModelStringInput | null,
+  disclaimer?: ModelStringInput | null,
+  and?: Array< ModelStoreConditionInput | null > | null,
+  or?: Array< ModelStoreConditionInput | null > | null,
+  not?: ModelStoreConditionInput | null,
 };
 
 export type ModelStringInput = {
@@ -55,6 +71,61 @@ export type ModelSizeInput = {
   ge?: number | null,
   gt?: number | null,
   between?: Array< number | null > | null,
+};
+
+export type Store = {
+  __typename: "Store",
+  id: string,
+  name: string,
+  address: string,
+  city: string,
+  state: string,
+  zipCode: string,
+  country: string,
+  phone: string,
+  fax?: string | null,
+  email: string,
+  disclaimer?: string | null,
+  createdAt: string,
+  updatedAt: string,
+  _version: number,
+  _deleted?: boolean | null,
+  _lastChangedAt: number,
+};
+
+export type UpdateStoreInput = {
+  id: string,
+  name?: string | null,
+  address?: string | null,
+  city?: string | null,
+  state?: string | null,
+  zipCode?: string | null,
+  country?: string | null,
+  phone?: string | null,
+  fax?: string | null,
+  email?: string | null,
+  disclaimer?: string | null,
+  _version?: number | null,
+};
+
+export type DeleteStoreInput = {
+  id: string,
+  _version?: number | null,
+};
+
+export type CreateBrandInput = {
+  id?: string | null,
+  name: string,
+  description?: string | null,
+  _version?: number | null,
+};
+
+export type ModelBrandConditionInput = {
+  name?: ModelStringInput | null,
+  description?: ModelStringInput | null,
+  and?: Array< ModelBrandConditionInput | null > | null,
+  or?: Array< ModelBrandConditionInput | null > | null,
+  not?: ModelBrandConditionInput | null,
 };
 
 export type Brand = {
@@ -183,6 +254,80 @@ export type UpdateCustomerInput = {
 };
 
 export type DeleteCustomerInput = {
+  id: string,
+  _version?: number | null,
+};
+
+export type CreateEmployeeInput = {
+  id?: string | null,
+  firstName: string,
+  lastName?: string | null,
+  middleName?: string | null,
+  dob?: string | null,
+  phone?: string | null,
+  email?: string | null,
+  pin: string,
+  roles: Array< string | null >,
+  active: boolean,
+  _version?: number | null,
+};
+
+export type ModelEmployeeConditionInput = {
+  firstName?: ModelStringInput | null,
+  lastName?: ModelStringInput | null,
+  middleName?: ModelStringInput | null,
+  dob?: ModelStringInput | null,
+  phone?: ModelStringInput | null,
+  email?: ModelStringInput | null,
+  pin?: ModelStringInput | null,
+  roles?: ModelStringInput | null,
+  active?: ModelBooleanInput | null,
+  and?: Array< ModelEmployeeConditionInput | null > | null,
+  or?: Array< ModelEmployeeConditionInput | null > | null,
+  not?: ModelEmployeeConditionInput | null,
+};
+
+export type ModelBooleanInput = {
+  ne?: boolean | null,
+  eq?: boolean | null,
+  attributeExists?: boolean | null,
+  attributeType?: ModelAttributeTypes | null,
+};
+
+export type Employee = {
+  __typename: "Employee",
+  id: string,
+  firstName: string,
+  lastName?: string | null,
+  middleName?: string | null,
+  dob?: string | null,
+  phone?: string | null,
+  email?: string | null,
+  pin: string,
+  roles: Array< string | null >,
+  active: boolean,
+  createdAt: string,
+  updatedAt: string,
+  _version: number,
+  _deleted?: boolean | null,
+  _lastChangedAt: number,
+};
+
+export type UpdateEmployeeInput = {
+  id: string,
+  firstName?: string | null,
+  lastName?: string | null,
+  middleName?: string | null,
+  dob?: string | null,
+  phone?: string | null,
+  email?: string | null,
+  pin?: string | null,
+  roles?: Array< string | null > | null,
+  active?: boolean | null,
+  _version?: number | null,
+};
+
+export type DeleteEmployeeInput = {
   id: string,
   _version?: number | null,
 };
@@ -364,13 +509,6 @@ export type ModelProductConditionInput = {
   productBrandId?: ModelIDInput | null,
 };
 
-export type ModelBooleanInput = {
-  ne?: boolean | null,
-  eq?: boolean | null,
-  attributeExists?: boolean | null,
-  attributeType?: ModelAttributeTypes | null,
-};
-
 export type Product = {
   __typename: "Product",
   id: string,
@@ -427,194 +565,6 @@ export type DeleteProductInput = {
   _version?: number | null,
 };
 
-export type CreateStoreInput = {
-  id?: string | null,
-  name: string,
-  address: string,
-  city: string,
-  state: string,
-  zipCode: string,
-  country: string,
-  phone: string,
-  fax?: string | null,
-  email: string,
-  disclaimer?: string | null,
-  _version?: number | null,
-};
-
-export type ModelStoreConditionInput = {
-  name?: ModelStringInput | null,
-  address?: ModelStringInput | null,
-  city?: ModelStringInput | null,
-  state?: ModelStringInput | null,
-  zipCode?: ModelStringInput | null,
-  country?: ModelStringInput | null,
-  phone?: ModelStringInput | null,
-  fax?: ModelStringInput | null,
-  email?: ModelStringInput | null,
-  disclaimer?: ModelStringInput | null,
-  and?: Array< ModelStoreConditionInput | null > | null,
-  or?: Array< ModelStoreConditionInput | null > | null,
-  not?: ModelStoreConditionInput | null,
-};
-
-export type Store = {
-  __typename: "Store",
-  id: string,
-  name: string,
-  address: string,
-  city: string,
-  state: string,
-  zipCode: string,
-  country: string,
-  phone: string,
-  fax?: string | null,
-  email: string,
-  disclaimer?: string | null,
-  createdAt: string,
-  updatedAt: string,
-  _version: number,
-  _deleted?: boolean | null,
-  _lastChangedAt: number,
-};
-
-export type UpdateStoreInput = {
-  id: string,
-  name?: string | null,
-  address?: string | null,
-  city?: string | null,
-  state?: string | null,
-  zipCode?: string | null,
-  country?: string | null,
-  phone?: string | null,
-  fax?: string | null,
-  email?: string | null,
-  disclaimer?: string | null,
-  _version?: number | null,
-};
-
-export type DeleteStoreInput = {
-  id: string,
-  _version?: number | null,
-};
-
-export type CreateSupplierInput = {
-  id?: string | null,
-  code?: string | null,
-  name: string,
-  _version?: number | null,
-};
-
-export type ModelSupplierConditionInput = {
-  code?: ModelStringInput | null,
-  name?: ModelStringInput | null,
-  and?: Array< ModelSupplierConditionInput | null > | null,
-  or?: Array< ModelSupplierConditionInput | null > | null,
-  not?: ModelSupplierConditionInput | null,
-};
-
-export type Supplier = {
-  __typename: "Supplier",
-  id: string,
-  code?: string | null,
-  name: string,
-  createdAt: string,
-  updatedAt: string,
-  _version: number,
-  _deleted?: boolean | null,
-  _lastChangedAt: number,
-};
-
-export type UpdateSupplierInput = {
-  id: string,
-  code?: string | null,
-  name?: string | null,
-  _version?: number | null,
-};
-
-export type DeleteSupplierInput = {
-  id: string,
-  _version?: number | null,
-};
-
-export type CreateStockInput = {
-  id?: string | null,
-  quantity: number,
-  updatedAt?: string | null,
-  _version?: number | null,
-  stockProductId?: string | null,
-};
-
-export type ModelStockConditionInput = {
-  quantity?: ModelFloatInput | null,
-  updatedAt?: ModelStringInput | null,
-  and?: Array< ModelStockConditionInput | null > | null,
-  or?: Array< ModelStockConditionInput | null > | null,
-  not?: ModelStockConditionInput | null,
-  stockProductId?: ModelIDInput | null,
-};
-
-export type Stock = {
-  __typename: "Stock",
-  id: string,
-  Product?: Product | null,
-  quantity: number,
-  updatedAt?: string | null,
-  createdAt: string,
-  _version: number,
-  _deleted?: boolean | null,
-  _lastChangedAt: number,
-  stockProductId?: string | null,
-};
-
-export type UpdateStockInput = {
-  id: string,
-  quantity?: number | null,
-  updatedAt?: string | null,
-  _version?: number | null,
-  stockProductId?: string | null,
-};
-
-export type DeleteStockInput = {
-  id: string,
-  _version?: number | null,
-};
-
-export type CreateTagInput = {
-  id?: string | null,
-  name: string,
-  _version?: number | null,
-};
-
-export type ModelTagConditionInput = {
-  name?: ModelStringInput | null,
-  and?: Array< ModelTagConditionInput | null > | null,
-  or?: Array< ModelTagConditionInput | null > | null,
-  not?: ModelTagConditionInput | null,
-};
-
-export type Tag = {
-  __typename: "Tag",
-  id: string,
-  name: string,
-  createdAt: string,
-  updatedAt: string,
-  _version: number,
-  _deleted?: boolean | null,
-  _lastChangedAt: number,
-};
-
-export type UpdateTagInput = {
-  id: string,
-  name?: string | null,
-  _version?: number | null,
-};
-
-export type DeleteTagInput = {
-  id: string,
-  _version?: number | null,
-};
-
 export type CreateUnitOfMeasureInput = {
   id?: string | null,
   name: string,
@@ -650,46 +600,6 @@ export type UpdateUnitOfMeasureInput = {
 };
 
 export type DeleteUnitOfMeasureInput = {
-  id: string,
-  _version?: number | null,
-};
-
-export type CreateInventoryInput = {
-  id?: string | null,
-  quantity: number,
-  _version?: number | null,
-  inventoryProductId?: string | null,
-};
-
-export type ModelInventoryConditionInput = {
-  quantity?: ModelFloatInput | null,
-  and?: Array< ModelInventoryConditionInput | null > | null,
-  or?: Array< ModelInventoryConditionInput | null > | null,
-  not?: ModelInventoryConditionInput | null,
-  inventoryProductId?: ModelIDInput | null,
-};
-
-export type Inventory = {
-  __typename: "Inventory",
-  id: string,
-  quantity: number,
-  Product?: Product | null,
-  createdAt: string,
-  updatedAt: string,
-  _version: number,
-  _deleted?: boolean | null,
-  _lastChangedAt: number,
-  inventoryProductId?: string | null,
-};
-
-export type UpdateInventoryInput = {
-  id: string,
-  quantity?: number | null,
-  _version?: number | null,
-  inventoryProductId?: string | null,
-};
-
-export type DeleteInventoryInput = {
   id: string,
   _version?: number | null,
 };
@@ -1104,6 +1014,30 @@ export type DatePartSaleSummary = {
   amount: number,
 };
 
+export type ModelStoreFilterInput = {
+  id?: ModelIDInput | null,
+  name?: ModelStringInput | null,
+  address?: ModelStringInput | null,
+  city?: ModelStringInput | null,
+  state?: ModelStringInput | null,
+  zipCode?: ModelStringInput | null,
+  country?: ModelStringInput | null,
+  phone?: ModelStringInput | null,
+  fax?: ModelStringInput | null,
+  email?: ModelStringInput | null,
+  disclaimer?: ModelStringInput | null,
+  and?: Array< ModelStoreFilterInput | null > | null,
+  or?: Array< ModelStoreFilterInput | null > | null,
+  not?: ModelStoreFilterInput | null,
+};
+
+export type ModelStoreConnection = {
+  __typename: "ModelStoreConnection",
+  items:  Array<Store | null >,
+  nextToken?: string | null,
+  startedAt?: number | null,
+};
+
 export type ModelBrandFilterInput = {
   id?: ModelIDInput | null,
   name?: ModelStringInput | null,
@@ -1155,6 +1089,29 @@ export type ModelCustomerFilterInput = {
 export type ModelCustomerConnection = {
   __typename: "ModelCustomerConnection",
   items:  Array<Customer | null >,
+  nextToken?: string | null,
+  startedAt?: number | null,
+};
+
+export type ModelEmployeeFilterInput = {
+  id?: ModelIDInput | null,
+  firstName?: ModelStringInput | null,
+  lastName?: ModelStringInput | null,
+  middleName?: ModelStringInput | null,
+  dob?: ModelStringInput | null,
+  phone?: ModelStringInput | null,
+  email?: ModelStringInput | null,
+  pin?: ModelStringInput | null,
+  roles?: ModelStringInput | null,
+  active?: ModelBooleanInput | null,
+  and?: Array< ModelEmployeeFilterInput | null > | null,
+  or?: Array< ModelEmployeeFilterInput | null > | null,
+  not?: ModelEmployeeFilterInput | null,
+};
+
+export type ModelEmployeeConnection = {
+  __typename: "ModelEmployeeConnection",
+  items:  Array<Employee | null >,
   nextToken?: string | null,
   startedAt?: number | null,
 };
@@ -1212,78 +1169,6 @@ export type ModelProductConnection = {
   startedAt?: number | null,
 };
 
-export type ModelStoreFilterInput = {
-  id?: ModelIDInput | null,
-  name?: ModelStringInput | null,
-  address?: ModelStringInput | null,
-  city?: ModelStringInput | null,
-  state?: ModelStringInput | null,
-  zipCode?: ModelStringInput | null,
-  country?: ModelStringInput | null,
-  phone?: ModelStringInput | null,
-  fax?: ModelStringInput | null,
-  email?: ModelStringInput | null,
-  disclaimer?: ModelStringInput | null,
-  and?: Array< ModelStoreFilterInput | null > | null,
-  or?: Array< ModelStoreFilterInput | null > | null,
-  not?: ModelStoreFilterInput | null,
-};
-
-export type ModelStoreConnection = {
-  __typename: "ModelStoreConnection",
-  items:  Array<Store | null >,
-  nextToken?: string | null,
-  startedAt?: number | null,
-};
-
-export type ModelSupplierFilterInput = {
-  id?: ModelIDInput | null,
-  code?: ModelStringInput | null,
-  name?: ModelStringInput | null,
-  and?: Array< ModelSupplierFilterInput | null > | null,
-  or?: Array< ModelSupplierFilterInput | null > | null,
-  not?: ModelSupplierFilterInput | null,
-};
-
-export type ModelSupplierConnection = {
-  __typename: "ModelSupplierConnection",
-  items:  Array<Supplier | null >,
-  nextToken?: string | null,
-  startedAt?: number | null,
-};
-
-export type ModelStockFilterInput = {
-  id?: ModelIDInput | null,
-  quantity?: ModelFloatInput | null,
-  updatedAt?: ModelStringInput | null,
-  and?: Array< ModelStockFilterInput | null > | null,
-  or?: Array< ModelStockFilterInput | null > | null,
-  not?: ModelStockFilterInput | null,
-  stockProductId?: ModelIDInput | null,
-};
-
-export type ModelStockConnection = {
-  __typename: "ModelStockConnection",
-  items:  Array<Stock | null >,
-  nextToken?: string | null,
-  startedAt?: number | null,
-};
-
-export type ModelTagFilterInput = {
-  id?: ModelIDInput | null,
-  name?: ModelStringInput | null,
-  and?: Array< ModelTagFilterInput | null > | null,
-  or?: Array< ModelTagFilterInput | null > | null,
-  not?: ModelTagFilterInput | null,
-};
-
-export type ModelTagConnection = {
-  __typename: "ModelTagConnection",
-  items:  Array<Tag | null >,
-  nextToken?: string | null,
-  startedAt?: number | null,
-};
-
 export type ModelUnitOfMeasureFilterInput = {
   id?: ModelIDInput | null,
   name?: ModelStringInput | null,
@@ -1296,22 +1181,6 @@ export type ModelUnitOfMeasureFilterInput = {
 export type ModelUnitOfMeasureConnection = {
   __typename: "ModelUnitOfMeasureConnection",
   items:  Array<UnitOfMeasure | null >,
-  nextToken?: string | null,
-  startedAt?: number | null,
-};
-
-export type ModelInventoryFilterInput = {
-  id?: ModelIDInput | null,
-  quantity?: ModelFloatInput | null,
-  and?: Array< ModelInventoryFilterInput | null > | null,
-  or?: Array< ModelInventoryFilterInput | null > | null,
-  not?: ModelInventoryFilterInput | null,
-  inventoryProductId?: ModelIDInput | null,
-};
-
-export type ModelInventoryConnection = {
-  __typename: "ModelInventoryConnection",
-  items:  Array<Inventory | null >,
   nextToken?: string | null,
   startedAt?: number | null,
 };
@@ -1443,6 +1312,87 @@ export type ModelStationConnection = {
   items:  Array<Station | null >,
   nextToken?: string | null,
   startedAt?: number | null,
+};
+
+export type CreateStoreMutationVariables = {
+  input: CreateStoreInput,
+  condition?: ModelStoreConditionInput | null,
+};
+
+export type CreateStoreMutation = {
+  createStore?:  {
+    __typename: "Store",
+    id: string,
+    name: string,
+    address: string,
+    city: string,
+    state: string,
+    zipCode: string,
+    country: string,
+    phone: string,
+    fax?: string | null,
+    email: string,
+    disclaimer?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type UpdateStoreMutationVariables = {
+  input: UpdateStoreInput,
+  condition?: ModelStoreConditionInput | null,
+};
+
+export type UpdateStoreMutation = {
+  updateStore?:  {
+    __typename: "Store",
+    id: string,
+    name: string,
+    address: string,
+    city: string,
+    state: string,
+    zipCode: string,
+    country: string,
+    phone: string,
+    fax?: string | null,
+    email: string,
+    disclaimer?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type DeleteStoreMutationVariables = {
+  input: DeleteStoreInput,
+  condition?: ModelStoreConditionInput | null,
+};
+
+export type DeleteStoreMutation = {
+  deleteStore?:  {
+    __typename: "Store",
+    id: string,
+    name: string,
+    address: string,
+    city: string,
+    state: string,
+    zipCode: string,
+    country: string,
+    phone: string,
+    fax?: string | null,
+    email: string,
+    disclaimer?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
 };
 
 export type CreateBrandMutationVariables = {
@@ -1629,6 +1579,84 @@ export type DeleteCustomerMutation = {
     dob?: string | null,
     phone?: string | null,
     email?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type CreateEmployeeMutationVariables = {
+  input: CreateEmployeeInput,
+  condition?: ModelEmployeeConditionInput | null,
+};
+
+export type CreateEmployeeMutation = {
+  createEmployee?:  {
+    __typename: "Employee",
+    id: string,
+    firstName: string,
+    lastName?: string | null,
+    middleName?: string | null,
+    dob?: string | null,
+    phone?: string | null,
+    email?: string | null,
+    pin: string,
+    roles: Array< string | null >,
+    active: boolean,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type UpdateEmployeeMutationVariables = {
+  input: UpdateEmployeeInput,
+  condition?: ModelEmployeeConditionInput | null,
+};
+
+export type UpdateEmployeeMutation = {
+  updateEmployee?:  {
+    __typename: "Employee",
+    id: string,
+    firstName: string,
+    lastName?: string | null,
+    middleName?: string | null,
+    dob?: string | null,
+    phone?: string | null,
+    email?: string | null,
+    pin: string,
+    roles: Array< string | null >,
+    active: boolean,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type DeleteEmployeeMutationVariables = {
+  input: DeleteEmployeeInput,
+  condition?: ModelEmployeeConditionInput | null,
+};
+
+export type DeleteEmployeeMutation = {
+  deleteEmployee?:  {
+    __typename: "Employee",
+    id: string,
+    firstName: string,
+    lastName?: string | null,
+    middleName?: string | null,
+    dob?: string | null,
+    phone?: string | null,
+    email?: string | null,
+    pin: string,
+    roles: Array< string | null >,
+    active: boolean,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -1970,333 +1998,6 @@ export type DeleteProductMutation = {
   } | null,
 };
 
-export type CreateStoreMutationVariables = {
-  input: CreateStoreInput,
-  condition?: ModelStoreConditionInput | null,
-};
-
-export type CreateStoreMutation = {
-  createStore?:  {
-    __typename: "Store",
-    id: string,
-    name: string,
-    address: string,
-    city: string,
-    state: string,
-    zipCode: string,
-    country: string,
-    phone: string,
-    fax?: string | null,
-    email: string,
-    disclaimer?: string | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type UpdateStoreMutationVariables = {
-  input: UpdateStoreInput,
-  condition?: ModelStoreConditionInput | null,
-};
-
-export type UpdateStoreMutation = {
-  updateStore?:  {
-    __typename: "Store",
-    id: string,
-    name: string,
-    address: string,
-    city: string,
-    state: string,
-    zipCode: string,
-    country: string,
-    phone: string,
-    fax?: string | null,
-    email: string,
-    disclaimer?: string | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type DeleteStoreMutationVariables = {
-  input: DeleteStoreInput,
-  condition?: ModelStoreConditionInput | null,
-};
-
-export type DeleteStoreMutation = {
-  deleteStore?:  {
-    __typename: "Store",
-    id: string,
-    name: string,
-    address: string,
-    city: string,
-    state: string,
-    zipCode: string,
-    country: string,
-    phone: string,
-    fax?: string | null,
-    email: string,
-    disclaimer?: string | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type CreateSupplierMutationVariables = {
-  input: CreateSupplierInput,
-  condition?: ModelSupplierConditionInput | null,
-};
-
-export type CreateSupplierMutation = {
-  createSupplier?:  {
-    __typename: "Supplier",
-    id: string,
-    code?: string | null,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type UpdateSupplierMutationVariables = {
-  input: UpdateSupplierInput,
-  condition?: ModelSupplierConditionInput | null,
-};
-
-export type UpdateSupplierMutation = {
-  updateSupplier?:  {
-    __typename: "Supplier",
-    id: string,
-    code?: string | null,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type DeleteSupplierMutationVariables = {
-  input: DeleteSupplierInput,
-  condition?: ModelSupplierConditionInput | null,
-};
-
-export type DeleteSupplierMutation = {
-  deleteSupplier?:  {
-    __typename: "Supplier",
-    id: string,
-    code?: string | null,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type CreateStockMutationVariables = {
-  input: CreateStockInput,
-  condition?: ModelStockConditionInput | null,
-};
-
-export type CreateStockMutation = {
-  createStock?:  {
-    __typename: "Stock",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    quantity: number,
-    updatedAt?: string | null,
-    createdAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    stockProductId?: string | null,
-  } | null,
-};
-
-export type UpdateStockMutationVariables = {
-  input: UpdateStockInput,
-  condition?: ModelStockConditionInput | null,
-};
-
-export type UpdateStockMutation = {
-  updateStock?:  {
-    __typename: "Stock",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    quantity: number,
-    updatedAt?: string | null,
-    createdAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    stockProductId?: string | null,
-  } | null,
-};
-
-export type DeleteStockMutationVariables = {
-  input: DeleteStockInput,
-  condition?: ModelStockConditionInput | null,
-};
-
-export type DeleteStockMutation = {
-  deleteStock?:  {
-    __typename: "Stock",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    quantity: number,
-    updatedAt?: string | null,
-    createdAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    stockProductId?: string | null,
-  } | null,
-};
-
-export type CreateTagMutationVariables = {
-  input: CreateTagInput,
-  condition?: ModelTagConditionInput | null,
-};
-
-export type CreateTagMutation = {
-  createTag?:  {
-    __typename: "Tag",
-    id: string,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type UpdateTagMutationVariables = {
-  input: UpdateTagInput,
-  condition?: ModelTagConditionInput | null,
-};
-
-export type UpdateTagMutation = {
-  updateTag?:  {
-    __typename: "Tag",
-    id: string,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type DeleteTagMutationVariables = {
-  input: DeleteTagInput,
-  condition?: ModelTagConditionInput | null,
-};
-
-export type DeleteTagMutation = {
-  deleteTag?:  {
-    __typename: "Tag",
-    id: string,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
 export type CreateUnitOfMeasureMutationVariables = {
   input: CreateUnitOfMeasureInput,
   condition?: ModelUnitOfMeasureConditionInput | null,
@@ -2351,141 +2052,6 @@ export type DeleteUnitOfMeasureMutation = {
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
-  } | null,
-};
-
-export type CreateInventoryMutationVariables = {
-  input: CreateInventoryInput,
-  condition?: ModelInventoryConditionInput | null,
-};
-
-export type CreateInventoryMutation = {
-  createInventory?:  {
-    __typename: "Inventory",
-    id: string,
-    quantity: number,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    inventoryProductId?: string | null,
-  } | null,
-};
-
-export type UpdateInventoryMutationVariables = {
-  input: UpdateInventoryInput,
-  condition?: ModelInventoryConditionInput | null,
-};
-
-export type UpdateInventoryMutation = {
-  updateInventory?:  {
-    __typename: "Inventory",
-    id: string,
-    quantity: number,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    inventoryProductId?: string | null,
-  } | null,
-};
-
-export type DeleteInventoryMutationVariables = {
-  input: DeleteInventoryInput,
-  condition?: ModelInventoryConditionInput | null,
-};
-
-export type DeleteInventoryMutation = {
-  deleteInventory?:  {
-    __typename: "Inventory",
-    id: string,
-    quantity: number,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    inventoryProductId?: string | null,
   } | null,
 };
 
@@ -3170,6 +2736,99 @@ export type GetSalesSummaryQuery = {
   } | null,
 };
 
+export type GetStoreQueryVariables = {
+  id: string,
+};
+
+export type GetStoreQuery = {
+  getStore?:  {
+    __typename: "Store",
+    id: string,
+    name: string,
+    address: string,
+    city: string,
+    state: string,
+    zipCode: string,
+    country: string,
+    phone: string,
+    fax?: string | null,
+    email: string,
+    disclaimer?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type ListStoresQueryVariables = {
+  filter?: ModelStoreFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListStoresQuery = {
+  listStores?:  {
+    __typename: "ModelStoreConnection",
+    items:  Array< {
+      __typename: "Store",
+      id: string,
+      name: string,
+      address: string,
+      city: string,
+      state: string,
+      zipCode: string,
+      country: string,
+      phone: string,
+      fax?: string | null,
+      email: string,
+      disclaimer?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type SyncStoresQueryVariables = {
+  filter?: ModelStoreFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  lastSync?: number | null,
+};
+
+export type SyncStoresQuery = {
+  syncStores?:  {
+    __typename: "ModelStoreConnection",
+    items:  Array< {
+      __typename: "Store",
+      id: string,
+      name: string,
+      address: string,
+      city: string,
+      state: string,
+      zipCode: string,
+      country: string,
+      phone: string,
+      fax?: string | null,
+      email: string,
+      disclaimer?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
 export type GetBrandQueryVariables = {
   id: string,
 };
@@ -3387,6 +3046,96 @@ export type SyncCustomersQuery = {
       dob?: string | null,
       phone?: string | null,
       email?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type GetEmployeeQueryVariables = {
+  id: string,
+};
+
+export type GetEmployeeQuery = {
+  getEmployee?:  {
+    __typename: "Employee",
+    id: string,
+    firstName: string,
+    lastName?: string | null,
+    middleName?: string | null,
+    dob?: string | null,
+    phone?: string | null,
+    email?: string | null,
+    pin: string,
+    roles: Array< string | null >,
+    active: boolean,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type ListEmployeesQueryVariables = {
+  filter?: ModelEmployeeFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListEmployeesQuery = {
+  listEmployees?:  {
+    __typename: "ModelEmployeeConnection",
+    items:  Array< {
+      __typename: "Employee",
+      id: string,
+      firstName: string,
+      lastName?: string | null,
+      middleName?: string | null,
+      dob?: string | null,
+      phone?: string | null,
+      email?: string | null,
+      pin: string,
+      roles: Array< string | null >,
+      active: boolean,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type SyncEmployeesQueryVariables = {
+  filter?: ModelEmployeeFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  lastSync?: number | null,
+};
+
+export type SyncEmployeesQuery = {
+  syncEmployees?:  {
+    __typename: "ModelEmployeeConnection",
+    items:  Array< {
+      __typename: "Employee",
+      id: string,
+      firstName: string,
+      lastName?: string | null,
+      middleName?: string | null,
+      dob?: string | null,
+      phone?: string | null,
+      email?: string | null,
+      pin: string,
+      roles: Array< string | null >,
+      active: boolean,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -3651,329 +3400,6 @@ export type SyncProductsQuery = {
   } | null,
 };
 
-export type GetStoreQueryVariables = {
-  id: string,
-};
-
-export type GetStoreQuery = {
-  getStore?:  {
-    __typename: "Store",
-    id: string,
-    name: string,
-    address: string,
-    city: string,
-    state: string,
-    zipCode: string,
-    country: string,
-    phone: string,
-    fax?: string | null,
-    email: string,
-    disclaimer?: string | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type ListStoresQueryVariables = {
-  filter?: ModelStoreFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type ListStoresQuery = {
-  listStores?:  {
-    __typename: "ModelStoreConnection",
-    items:  Array< {
-      __typename: "Store",
-      id: string,
-      name: string,
-      address: string,
-      city: string,
-      state: string,
-      zipCode: string,
-      country: string,
-      phone: string,
-      fax?: string | null,
-      email: string,
-      disclaimer?: string | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type SyncStoresQueryVariables = {
-  filter?: ModelStoreFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-  lastSync?: number | null,
-};
-
-export type SyncStoresQuery = {
-  syncStores?:  {
-    __typename: "ModelStoreConnection",
-    items:  Array< {
-      __typename: "Store",
-      id: string,
-      name: string,
-      address: string,
-      city: string,
-      state: string,
-      zipCode: string,
-      country: string,
-      phone: string,
-      fax?: string | null,
-      email: string,
-      disclaimer?: string | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type GetSupplierQueryVariables = {
-  id: string,
-};
-
-export type GetSupplierQuery = {
-  getSupplier?:  {
-    __typename: "Supplier",
-    id: string,
-    code?: string | null,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type ListSuppliersQueryVariables = {
-  filter?: ModelSupplierFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type ListSuppliersQuery = {
-  listSuppliers?:  {
-    __typename: "ModelSupplierConnection",
-    items:  Array< {
-      __typename: "Supplier",
-      id: string,
-      code?: string | null,
-      name: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type SyncSuppliersQueryVariables = {
-  filter?: ModelSupplierFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-  lastSync?: number | null,
-};
-
-export type SyncSuppliersQuery = {
-  syncSuppliers?:  {
-    __typename: "ModelSupplierConnection",
-    items:  Array< {
-      __typename: "Supplier",
-      id: string,
-      code?: string | null,
-      name: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type GetStockQueryVariables = {
-  id: string,
-};
-
-export type GetStockQuery = {
-  getStock?:  {
-    __typename: "Stock",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    quantity: number,
-    updatedAt?: string | null,
-    createdAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    stockProductId?: string | null,
-  } | null,
-};
-
-export type ListStocksQueryVariables = {
-  filter?: ModelStockFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type ListStocksQuery = {
-  listStocks?:  {
-    __typename: "ModelStockConnection",
-    items:  Array< {
-      __typename: "Stock",
-      id: string,
-      quantity: number,
-      updatedAt?: string | null,
-      createdAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      stockProductId?: string | null,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type SyncStocksQueryVariables = {
-  filter?: ModelStockFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-  lastSync?: number | null,
-};
-
-export type SyncStocksQuery = {
-  syncStocks?:  {
-    __typename: "ModelStockConnection",
-    items:  Array< {
-      __typename: "Stock",
-      id: string,
-      quantity: number,
-      updatedAt?: string | null,
-      createdAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      stockProductId?: string | null,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type GetTagQueryVariables = {
-  id: string,
-};
-
-export type GetTagQuery = {
-  getTag?:  {
-    __typename: "Tag",
-    id: string,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type ListTagsQueryVariables = {
-  filter?: ModelTagFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type ListTagsQuery = {
-  listTags?:  {
-    __typename: "ModelTagConnection",
-    items:  Array< {
-      __typename: "Tag",
-      id: string,
-      name: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type SyncTagsQueryVariables = {
-  filter?: ModelTagFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-  lastSync?: number | null,
-};
-
-export type SyncTagsQuery = {
-  syncTags?:  {
-    __typename: "ModelTagConnection",
-    items:  Array< {
-      __typename: "Tag",
-      id: string,
-      name: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
 export type GetUnitOfMeasureQueryVariables = {
   id: string,
 };
@@ -4037,101 +3463,6 @@ export type SyncUnitOfMeasuresQuery = {
       _version: number,
       _deleted?: boolean | null,
       _lastChangedAt: number,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type GetInventoryQueryVariables = {
-  id: string,
-};
-
-export type GetInventoryQuery = {
-  getInventory?:  {
-    __typename: "Inventory",
-    id: string,
-    quantity: number,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    inventoryProductId?: string | null,
-  } | null,
-};
-
-export type ListInventoriesQueryVariables = {
-  filter?: ModelInventoryFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type ListInventoriesQuery = {
-  listInventories?:  {
-    __typename: "ModelInventoryConnection",
-    items:  Array< {
-      __typename: "Inventory",
-      id: string,
-      quantity: number,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      inventoryProductId?: string | null,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type SyncInventoriesQueryVariables = {
-  filter?: ModelInventoryFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-  lastSync?: number | null,
-};
-
-export type SyncInventoriesQuery = {
-  syncInventories?:  {
-    __typename: "ModelInventoryConnection",
-    items:  Array< {
-      __typename: "Inventory",
-      id: string,
-      quantity: number,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      inventoryProductId?: string | null,
     } | null >,
     nextToken?: string | null,
     startedAt?: number | null,
@@ -4720,6 +4051,72 @@ export type SyncStationsQuery = {
   } | null,
 };
 
+export type OnCreateStoreSubscription = {
+  onCreateStore?:  {
+    __typename: "Store",
+    id: string,
+    name: string,
+    address: string,
+    city: string,
+    state: string,
+    zipCode: string,
+    country: string,
+    phone: string,
+    fax?: string | null,
+    email: string,
+    disclaimer?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnUpdateStoreSubscription = {
+  onUpdateStore?:  {
+    __typename: "Store",
+    id: string,
+    name: string,
+    address: string,
+    city: string,
+    state: string,
+    zipCode: string,
+    country: string,
+    phone: string,
+    fax?: string | null,
+    email: string,
+    disclaimer?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnDeleteStoreSubscription = {
+  onDeleteStore?:  {
+    __typename: "Store",
+    id: string,
+    name: string,
+    address: string,
+    city: string,
+    state: string,
+    zipCode: string,
+    country: string,
+    phone: string,
+    fax?: string | null,
+    email: string,
+    disclaimer?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
 export type OnCreateBrandSubscription = {
   onCreateBrand?:  {
     __typename: "Brand",
@@ -4859,6 +4256,69 @@ export type OnDeleteCustomerSubscription = {
     dob?: string | null,
     phone?: string | null,
     email?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnCreateEmployeeSubscription = {
+  onCreateEmployee?:  {
+    __typename: "Employee",
+    id: string,
+    firstName: string,
+    lastName?: string | null,
+    middleName?: string | null,
+    dob?: string | null,
+    phone?: string | null,
+    email?: string | null,
+    pin: string,
+    roles: Array< string | null >,
+    active: boolean,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnUpdateEmployeeSubscription = {
+  onUpdateEmployee?:  {
+    __typename: "Employee",
+    id: string,
+    firstName: string,
+    lastName?: string | null,
+    middleName?: string | null,
+    dob?: string | null,
+    phone?: string | null,
+    email?: string | null,
+    pin: string,
+    roles: Array< string | null >,
+    active: boolean,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnDeleteEmployeeSubscription = {
+  onDeleteEmployee?:  {
+    __typename: "Employee",
+    id: string,
+    firstName: string,
+    lastName?: string | null,
+    middleName?: string | null,
+    dob?: string | null,
+    phone?: string | null,
+    email?: string | null,
+    pin: string,
+    roles: Array< string | null >,
+    active: boolean,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -5170,273 +4630,6 @@ export type OnDeleteProductSubscription = {
   } | null,
 };
 
-export type OnCreateStoreSubscription = {
-  onCreateStore?:  {
-    __typename: "Store",
-    id: string,
-    name: string,
-    address: string,
-    city: string,
-    state: string,
-    zipCode: string,
-    country: string,
-    phone: string,
-    fax?: string | null,
-    email: string,
-    disclaimer?: string | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type OnUpdateStoreSubscription = {
-  onUpdateStore?:  {
-    __typename: "Store",
-    id: string,
-    name: string,
-    address: string,
-    city: string,
-    state: string,
-    zipCode: string,
-    country: string,
-    phone: string,
-    fax?: string | null,
-    email: string,
-    disclaimer?: string | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type OnDeleteStoreSubscription = {
-  onDeleteStore?:  {
-    __typename: "Store",
-    id: string,
-    name: string,
-    address: string,
-    city: string,
-    state: string,
-    zipCode: string,
-    country: string,
-    phone: string,
-    fax?: string | null,
-    email: string,
-    disclaimer?: string | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type OnCreateSupplierSubscription = {
-  onCreateSupplier?:  {
-    __typename: "Supplier",
-    id: string,
-    code?: string | null,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type OnUpdateSupplierSubscription = {
-  onUpdateSupplier?:  {
-    __typename: "Supplier",
-    id: string,
-    code?: string | null,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type OnDeleteSupplierSubscription = {
-  onDeleteSupplier?:  {
-    __typename: "Supplier",
-    id: string,
-    code?: string | null,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type OnCreateStockSubscription = {
-  onCreateStock?:  {
-    __typename: "Stock",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    quantity: number,
-    updatedAt?: string | null,
-    createdAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    stockProductId?: string | null,
-  } | null,
-};
-
-export type OnUpdateStockSubscription = {
-  onUpdateStock?:  {
-    __typename: "Stock",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    quantity: number,
-    updatedAt?: string | null,
-    createdAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    stockProductId?: string | null,
-  } | null,
-};
-
-export type OnDeleteStockSubscription = {
-  onDeleteStock?:  {
-    __typename: "Stock",
-    id: string,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    quantity: number,
-    updatedAt?: string | null,
-    createdAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    stockProductId?: string | null,
-  } | null,
-};
-
-export type OnCreateTagSubscription = {
-  onCreateTag?:  {
-    __typename: "Tag",
-    id: string,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type OnUpdateTagSubscription = {
-  onUpdateTag?:  {
-    __typename: "Tag",
-    id: string,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
-export type OnDeleteTagSubscription = {
-  onDeleteTag?:  {
-    __typename: "Tag",
-    id: string,
-    name: string,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-  } | null,
-};
-
 export type OnCreateUnitOfMeasureSubscription = {
   onCreateUnitOfMeasure?:  {
     __typename: "UnitOfMeasure",
@@ -5476,126 +4669,6 @@ export type OnDeleteUnitOfMeasureSubscription = {
     _version: number,
     _deleted?: boolean | null,
     _lastChangedAt: number,
-  } | null,
-};
-
-export type OnCreateInventorySubscription = {
-  onCreateInventory?:  {
-    __typename: "Inventory",
-    id: string,
-    quantity: number,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    inventoryProductId?: string | null,
-  } | null,
-};
-
-export type OnUpdateInventorySubscription = {
-  onUpdateInventory?:  {
-    __typename: "Inventory",
-    id: string,
-    quantity: number,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    inventoryProductId?: string | null,
-  } | null,
-};
-
-export type OnDeleteInventorySubscription = {
-  onDeleteInventory?:  {
-    __typename: "Inventory",
-    id: string,
-    quantity: number,
-    Product?:  {
-      __typename: "Product",
-      id: string,
-      name: string,
-      description?: string | null,
-      price: number,
-      tags?: string | null,
-      cost?: number | null,
-      barcode?: string | null,
-      sku?: string | null,
-      plu?: string | null,
-      quantity: number,
-      unitOfMeasure: string,
-      trackStock: boolean,
-      reorderPoint?: number | null,
-      reorderQuantity?: number | null,
-      picture?: string | null,
-      isActive?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-      productCategoryId?: string | null,
-      productBrandId?: string | null,
-    } | null,
-    createdAt: string,
-    updatedAt: string,
-    _version: number,
-    _deleted?: boolean | null,
-    _lastChangedAt: number,
-    inventoryProductId?: string | null,
   } | null,
 };
 

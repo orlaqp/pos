@@ -18,20 +18,17 @@ const InventoryReceiveStatus = {
   "COMPLETED": "COMPLETED"
 };
 
-const { Order, Customer, Brand, Category, Product, Store, Supplier, Stock, Tag, UnitOfMeasure, Inventory, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, OrderLine, SalesSummary, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary } = initSchema(schema);
+const { Order, Customer, Store, Brand, Category, Employee, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, OrderLine, SalesSummary, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary } = initSchema(schema);
 
 export {
   Order,
   Customer,
+  Store,
   Brand,
   Category,
+  Employee,
   Product,
-  Store,
-  Supplier,
-  Stock,
-  Tag,
   UnitOfMeasure,
-  Inventory,
   InventoryChanges,
   InventoryCount,
   InventoryCountLine,

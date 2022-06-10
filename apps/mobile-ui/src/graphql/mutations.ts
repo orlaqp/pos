@@ -2,6 +2,81 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const createStore = /* GraphQL */ `
+  mutation CreateStore(
+    $input: CreateStoreInput!
+    $condition: ModelStoreConditionInput
+  ) {
+    createStore(input: $input, condition: $condition) {
+      id
+      name
+      address
+      city
+      state
+      zipCode
+      country
+      phone
+      fax
+      email
+      disclaimer
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const updateStore = /* GraphQL */ `
+  mutation UpdateStore(
+    $input: UpdateStoreInput!
+    $condition: ModelStoreConditionInput
+  ) {
+    updateStore(input: $input, condition: $condition) {
+      id
+      name
+      address
+      city
+      state
+      zipCode
+      country
+      phone
+      fax
+      email
+      disclaimer
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const deleteStore = /* GraphQL */ `
+  mutation DeleteStore(
+    $input: DeleteStoreInput!
+    $condition: ModelStoreConditionInput
+  ) {
+    deleteStore(input: $input, condition: $condition) {
+      id
+      name
+      address
+      city
+      state
+      zipCode
+      country
+      phone
+      fax
+      email
+      disclaimer
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
 export const createBrand = /* GraphQL */ `
   mutation CreateBrand(
     $input: CreateBrandInput!
@@ -168,6 +243,78 @@ export const deleteCustomer = /* GraphQL */ `
       dob
       phone
       email
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const createEmployee = /* GraphQL */ `
+  mutation CreateEmployee(
+    $input: CreateEmployeeInput!
+    $condition: ModelEmployeeConditionInput
+  ) {
+    createEmployee(input: $input, condition: $condition) {
+      id
+      firstName
+      lastName
+      middleName
+      dob
+      phone
+      email
+      pin
+      roles
+      active
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const updateEmployee = /* GraphQL */ `
+  mutation UpdateEmployee(
+    $input: UpdateEmployeeInput!
+    $condition: ModelEmployeeConditionInput
+  ) {
+    updateEmployee(input: $input, condition: $condition) {
+      id
+      firstName
+      lastName
+      middleName
+      dob
+      phone
+      email
+      pin
+      roles
+      active
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const deleteEmployee = /* GraphQL */ `
+  mutation DeleteEmployee(
+    $input: DeleteEmployeeInput!
+    $condition: ModelEmployeeConditionInput
+  ) {
+    deleteEmployee(input: $input, condition: $condition) {
+      id
+      firstName
+      lastName
+      middleName
+      dob
+      phone
+      email
+      pin
+      roles
+      active
       createdAt
       updatedAt
       _version
@@ -485,306 +632,6 @@ export const deleteProduct = /* GraphQL */ `
     }
   }
 `;
-export const createStore = /* GraphQL */ `
-  mutation CreateStore(
-    $input: CreateStoreInput!
-    $condition: ModelStoreConditionInput
-  ) {
-    createStore(input: $input, condition: $condition) {
-      id
-      name
-      address
-      city
-      state
-      zipCode
-      country
-      phone
-      fax
-      email
-      disclaimer
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const updateStore = /* GraphQL */ `
-  mutation UpdateStore(
-    $input: UpdateStoreInput!
-    $condition: ModelStoreConditionInput
-  ) {
-    updateStore(input: $input, condition: $condition) {
-      id
-      name
-      address
-      city
-      state
-      zipCode
-      country
-      phone
-      fax
-      email
-      disclaimer
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const deleteStore = /* GraphQL */ `
-  mutation DeleteStore(
-    $input: DeleteStoreInput!
-    $condition: ModelStoreConditionInput
-  ) {
-    deleteStore(input: $input, condition: $condition) {
-      id
-      name
-      address
-      city
-      state
-      zipCode
-      country
-      phone
-      fax
-      email
-      disclaimer
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const createSupplier = /* GraphQL */ `
-  mutation CreateSupplier(
-    $input: CreateSupplierInput!
-    $condition: ModelSupplierConditionInput
-  ) {
-    createSupplier(input: $input, condition: $condition) {
-      id
-      code
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const updateSupplier = /* GraphQL */ `
-  mutation UpdateSupplier(
-    $input: UpdateSupplierInput!
-    $condition: ModelSupplierConditionInput
-  ) {
-    updateSupplier(input: $input, condition: $condition) {
-      id
-      code
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const deleteSupplier = /* GraphQL */ `
-  mutation DeleteSupplier(
-    $input: DeleteSupplierInput!
-    $condition: ModelSupplierConditionInput
-  ) {
-    deleteSupplier(input: $input, condition: $condition) {
-      id
-      code
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const createStock = /* GraphQL */ `
-  mutation CreateStock(
-    $input: CreateStockInput!
-    $condition: ModelStockConditionInput
-  ) {
-    createStock(input: $input, condition: $condition) {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      quantity
-      updatedAt
-      createdAt
-      _version
-      _deleted
-      _lastChangedAt
-      stockProductId
-    }
-  }
-`;
-export const updateStock = /* GraphQL */ `
-  mutation UpdateStock(
-    $input: UpdateStockInput!
-    $condition: ModelStockConditionInput
-  ) {
-    updateStock(input: $input, condition: $condition) {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      quantity
-      updatedAt
-      createdAt
-      _version
-      _deleted
-      _lastChangedAt
-      stockProductId
-    }
-  }
-`;
-export const deleteStock = /* GraphQL */ `
-  mutation DeleteStock(
-    $input: DeleteStockInput!
-    $condition: ModelStockConditionInput
-  ) {
-    deleteStock(input: $input, condition: $condition) {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      quantity
-      updatedAt
-      createdAt
-      _version
-      _deleted
-      _lastChangedAt
-      stockProductId
-    }
-  }
-`;
-export const createTag = /* GraphQL */ `
-  mutation CreateTag(
-    $input: CreateTagInput!
-    $condition: ModelTagConditionInput
-  ) {
-    createTag(input: $input, condition: $condition) {
-      id
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const updateTag = /* GraphQL */ `
-  mutation UpdateTag(
-    $input: UpdateTagInput!
-    $condition: ModelTagConditionInput
-  ) {
-    updateTag(input: $input, condition: $condition) {
-      id
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const deleteTag = /* GraphQL */ `
-  mutation DeleteTag(
-    $input: DeleteTagInput!
-    $condition: ModelTagConditionInput
-  ) {
-    deleteTag(input: $input, condition: $condition) {
-      id
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
 export const createUnitOfMeasure = /* GraphQL */ `
   mutation CreateUnitOfMeasure(
     $input: CreateUnitOfMeasureInput!
@@ -833,132 +680,6 @@ export const deleteUnitOfMeasure = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-    }
-  }
-`;
-export const createInventory = /* GraphQL */ `
-  mutation CreateInventory(
-    $input: CreateInventoryInput!
-    $condition: ModelInventoryConditionInput
-  ) {
-    createInventory(input: $input, condition: $condition) {
-      id
-      quantity
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryProductId
-    }
-  }
-`;
-export const updateInventory = /* GraphQL */ `
-  mutation UpdateInventory(
-    $input: UpdateInventoryInput!
-    $condition: ModelInventoryConditionInput
-  ) {
-    updateInventory(input: $input, condition: $condition) {
-      id
-      quantity
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryProductId
-    }
-  }
-`;
-export const deleteInventory = /* GraphQL */ `
-  mutation DeleteInventory(
-    $input: DeleteInventoryInput!
-    $condition: ModelInventoryConditionInput
-  ) {
-    deleteInventory(input: $input, condition: $condition) {
-      id
-      quantity
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryProductId
     }
   }
 `;

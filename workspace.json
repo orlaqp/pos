@@ -8,6 +8,8 @@
         "brands-native-feature": "libs/brands/native-feature",
         "categories-data-access": "libs/categories/data-access",
         "categories-native-feature": "libs/categories/native-feature",
+        "employees-data-access": "libs/employees/data-access",
+        "employees-native-feature": "libs/employees/native-feature",
         "inventory-data-access": "libs/inventory/data-access",
         "inventory-native-feature": "libs/inventory/native-feature",
         "mobile-ui": "apps/mobile-ui",

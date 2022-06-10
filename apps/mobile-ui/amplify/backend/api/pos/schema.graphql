@@ -1,3 +1,17 @@
+type Store @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String!
+  address: String!
+  city: String!
+  state: String!
+  zipCode: String!
+  country: String!
+  phone: String!
+  fax: String
+  email: String!
+  disclaimer: String
+}
+
 type Brand @model @auth(rules: [{allow: public}]) {
   id: ID!
   name: String!
@@ -21,6 +35,19 @@ type Customer @model @auth(rules: [{allow: public}]) {
   dob: AWSDate
   phone: String
   email: String
+}
+
+type Employee @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  firstName: String!
+  lastName: String
+  middleName: String
+  dob: AWSDate
+  phone: String
+  email: String
+  pin: String!
+  roles: [String]!
+  active: Boolean!
 }
 
 type Order @model @auth(rules: [{allow: public}]) {
@@ -89,37 +116,24 @@ type Product @model @auth(rules: [{allow: public}]) {
 #   quantity: Float
 # }
 
-type Store @model @auth(rules: [{allow: public}]) {
-  id: ID!
-  name: String!
-  address: String!
-  city: String!
-  state: String!
-  zipCode: String!
-  country: String!
-  phone: String!
-  fax: String
-  email: String!
-  disclaimer: String
-}
 
-type Supplier @model @auth(rules: [{allow: public}]) {
-  id: ID!
-  code: String
-  name: String!
-}
+# type Supplier @model @auth(rules: [{allow: public}]) {
+#   id: ID!
+#   code: String
+#   name: String!
+# }
 
-type Stock @model @auth(rules: [{allow: public}]) {
-  id: ID!
-  Product: Product @hasOne
-  quantity: Float!
-  updatedAt: AWSDateTime
-}
+# type Stock @model @auth(rules: [{allow: public}]) {
+#   id: ID!
+#   Product: Product @hasOne
+#   quantity: Float!
+#   updatedAt: AWSDateTime
+# }
 
-type Tag @model @auth(rules: [{allow: public}]) {
-  id: ID!
-  name: String!
-}
+# type Tag @model @auth(rules: [{allow: public}]) {
+#   id: ID!
+#   name: String!
+# }
 
 type UnitOfMeasure @model @auth(rules: [{allow: public}]) {
   id: ID!
@@ -127,11 +141,11 @@ type UnitOfMeasure @model @auth(rules: [{allow: public}]) {
   description: String
 }
 
-type Inventory @model @auth(rules: [{allow: public}]) {
-    id: ID!
-    quantity: Float!
-    Product: Product @hasOne
-}
+# type Inventory @model @auth(rules: [{allow: public}]) {
+#     id: ID!
+#     quantity: Float!
+#     Product: Product @hasOne
+# }
 
 type InventoryChanges @model @auth(rules: [{allow: public}]) {
     id: ID!

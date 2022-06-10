@@ -41,6 +41,10 @@
         "getSales": {
           "deploymentBucketName": "amplify-pos-develop-110831-deployment",
           "s3Key": "amplify-builds/getSales-426e2b4a476b76597973-build.zip"
+        },
+        "createEmployee": {
+          "deploymentBucketName": "amplify-pos-develop-110831-deployment",
+          "s3Key": "amplify-builds/createEmployee-74316b6f765a366f6837-build.zip"
         }
       }
     }

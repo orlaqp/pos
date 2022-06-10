@@ -176,6 +176,7 @@ const useStyles = () => {
             },
             content: {
                 padding: 20,
+                height: '94%'
             },
             columnHeader: {
                 color: theme.theme.colors.grey3,

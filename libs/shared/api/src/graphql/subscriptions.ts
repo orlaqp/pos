@@ -2,6 +2,72 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const onCreateStore = /* GraphQL */ `
+  subscription OnCreateStore {
+    onCreateStore {
+      id
+      name
+      address
+      city
+      state
+      zipCode
+      country
+      phone
+      fax
+      email
+      disclaimer
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onUpdateStore = /* GraphQL */ `
+  subscription OnUpdateStore {
+    onUpdateStore {
+      id
+      name
+      address
+      city
+      state
+      zipCode
+      country
+      phone
+      fax
+      email
+      disclaimer
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onDeleteStore = /* GraphQL */ `
+  subscription OnDeleteStore {
+    onDeleteStore {
+      id
+      name
+      address
+      city
+      state
+      zipCode
+      country
+      phone
+      fax
+      email
+      disclaimer
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
 export const onCreateBrand = /* GraphQL */ `
   subscription OnCreateBrand {
     onCreateBrand {
@@ -141,6 +207,69 @@ export const onDeleteCustomer = /* GraphQL */ `
       dob
       phone
       email
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onCreateEmployee = /* GraphQL */ `
+  subscription OnCreateEmployee {
+    onCreateEmployee {
+      id
+      firstName
+      lastName
+      middleName
+      dob
+      phone
+      email
+      pin
+      roles
+      active
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onUpdateEmployee = /* GraphQL */ `
+  subscription OnUpdateEmployee {
+    onUpdateEmployee {
+      id
+      firstName
+      lastName
+      middleName
+      dob
+      phone
+      email
+      pin
+      roles
+      active
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onDeleteEmployee = /* GraphQL */ `
+  subscription OnDeleteEmployee {
+    onDeleteEmployee {
+      id
+      firstName
+      lastName
+      middleName
+      dob
+      phone
+      email
+      pin
+      roles
+      active
       createdAt
       updatedAt
       _version
@@ -440,270 +569,6 @@ export const onDeleteProduct = /* GraphQL */ `
     }
   }
 `;
-export const onCreateStore = /* GraphQL */ `
-  subscription OnCreateStore {
-    onCreateStore {
-      id
-      name
-      address
-      city
-      state
-      zipCode
-      country
-      phone
-      fax
-      email
-      disclaimer
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onUpdateStore = /* GraphQL */ `
-  subscription OnUpdateStore {
-    onUpdateStore {
-      id
-      name
-      address
-      city
-      state
-      zipCode
-      country
-      phone
-      fax
-      email
-      disclaimer
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onDeleteStore = /* GraphQL */ `
-  subscription OnDeleteStore {
-    onDeleteStore {
-      id
-      name
-      address
-      city
-      state
-      zipCode
-      country
-      phone
-      fax
-      email
-      disclaimer
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onCreateSupplier = /* GraphQL */ `
-  subscription OnCreateSupplier {
-    onCreateSupplier {
-      id
-      code
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onUpdateSupplier = /* GraphQL */ `
-  subscription OnUpdateSupplier {
-    onUpdateSupplier {
-      id
-      code
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onDeleteSupplier = /* GraphQL */ `
-  subscription OnDeleteSupplier {
-    onDeleteSupplier {
-      id
-      code
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onCreateStock = /* GraphQL */ `
-  subscription OnCreateStock {
-    onCreateStock {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      quantity
-      updatedAt
-      createdAt
-      _version
-      _deleted
-      _lastChangedAt
-      stockProductId
-    }
-  }
-`;
-export const onUpdateStock = /* GraphQL */ `
-  subscription OnUpdateStock {
-    onUpdateStock {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      quantity
-      updatedAt
-      createdAt
-      _version
-      _deleted
-      _lastChangedAt
-      stockProductId
-    }
-  }
-`;
-export const onDeleteStock = /* GraphQL */ `
-  subscription OnDeleteStock {
-    onDeleteStock {
-      id
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      quantity
-      updatedAt
-      createdAt
-      _version
-      _deleted
-      _lastChangedAt
-      stockProductId
-    }
-  }
-`;
-export const onCreateTag = /* GraphQL */ `
-  subscription OnCreateTag {
-    onCreateTag {
-      id
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onUpdateTag = /* GraphQL */ `
-  subscription OnUpdateTag {
-    onUpdateTag {
-      id
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onDeleteTag = /* GraphQL */ `
-  subscription OnDeleteTag {
-    onDeleteTag {
-      id
-      name
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
 export const onCreateUnitOfMeasure = /* GraphQL */ `
   subscription OnCreateUnitOfMeasure {
     onCreateUnitOfMeasure {
@@ -743,123 +608,6 @@ export const onDeleteUnitOfMeasure = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-    }
-  }
-`;
-export const onCreateInventory = /* GraphQL */ `
-  subscription OnCreateInventory {
-    onCreateInventory {
-      id
-      quantity
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryProductId
-    }
-  }
-`;
-export const onUpdateInventory = /* GraphQL */ `
-  subscription OnUpdateInventory {
-    onUpdateInventory {
-      id
-      quantity
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryProductId
-    }
-  }
-`;
-export const onDeleteInventory = /* GraphQL */ `
-  subscription OnDeleteInventory {
-    onDeleteInventory {
-      id
-      quantity
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryProductId
     }
   }
 `;

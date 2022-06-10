@@ -69,8 +69,9 @@ export function SalesScreen({
         Dictionary<ProductEntity> | undefined
     >(selectFilteredList);
     const allProducts = useSelector(selectAllProducts);
-    const [filteredProducts, setFilteredProducts] =
-        useState<ProductEntity[]>([]);
+    const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
+        []
+    );
     const deselectProduct = () => dispatch(cartActions.select(undefined));
 
     const upsertCart = (item: CartItem) => {
@@ -98,7 +99,7 @@ export function SalesScreen({
 
         if (res.items.length === 1 && res.allNumbers) {
             searchRef.current?.clear();
-     
+
             const p = res.items[0];
             // add product to cart directly
             dispatch(
@@ -221,11 +222,11 @@ const useStyles = () => {
                 flex: 0.7,
                 justifyContent: 'flex-start',
                 flexDirection: 'column',
-                ...sharedStyles.darkBackground,
             },
             products: {
                 ...sharedStyles.darkBackground,
                 flex: 5,
+                height: '96%',
                 flexDirection: 'column',
                 marginHorizontal: 10,
             },

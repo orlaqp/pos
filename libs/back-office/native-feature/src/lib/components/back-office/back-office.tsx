@@ -16,6 +16,7 @@ import { selectUser } from '@pos/auth/data-access';
 
 import { Brands } from '@pos/brands/native-feature';
 import { Categories } from '@pos/categories/native-feature';
+import { Employees } from '@pos/employees/native-feature';
 import { Products } from '@pos/products/native-feature';
 import { UnitOfMeasures } from '@pos/unit-of-measures/native-feature';
 import { PrinterList } from '@pos/printings/native-feature';
@@ -75,6 +76,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                 
                 <View style={styles.rightSide}>
                     <Stack.Navigator screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="Employees" component={Employees} />
                         <Stack.Screen name="Dashboard" component={Dashboard} />
                         <Stack.Screen name="Sale List" component={Sales} />
                         <Stack.Screen name="By Employee" component={SalesByEmployee} />

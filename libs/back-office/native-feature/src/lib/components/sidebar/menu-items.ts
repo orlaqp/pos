@@ -59,6 +59,12 @@ export const menuItems: SidebarItem[] = [
     //     ],
     // },
     {
+        id: '8',
+        title: 'Employees',
+        icon: 'account-group-outline',
+        role: Role.Admin,
+    },
+    {
         id: '7',
         title: 'Settings',
         icon: 'cog-outline',
