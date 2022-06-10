@@ -24,15 +24,15 @@ export class EmployeeService {
 
         await DataStore.save(
             Employee.copyOf(existing, updated => {
-                updated.firstName = existing.firstName;
-                updated.lastName = existing.lastName;
-                updated.middleName = existing.middleName;
-                updated.dob = existing.dob;
-                updated.phone = existing.phone;
-                updated.email = existing.email;
-                updated.pin = existing.pin;
-                updated.roles = existing.roles;
-                updated.active = existing.active;
+                updated.firstName = employee.firstName;
+                updated.lastName = employee.lastName;
+                updated.middleName = employee.middleName;
+                updated.dob = employee.dob;
+                updated.phone = employee.phone;
+                updated.email = employee.email;
+                updated.pin = employee.pin;
+                updated.roles = employee.roles;
+                updated.active = employee.active;
             })
         );
         

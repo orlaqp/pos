@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Alert, View, Text } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
@@ -97,6 +97,18 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
         );
     };
 
+    useEffect(() => {
+        if (!employee?.roles) return;
+
+        const employeeRoles: Record<string, boolean> = {};
+        Object.values(Role).reduce((eRoles, role) => {
+            eRoles[role] = employee.roles.includes(role);
+            return eRoles;
+        }, employeeRoles);
+
+        setRoles(employeeRoles);
+    }, [employee]);
+
     return (
         <View style={[styles.page, styles.centeredHorizontally]}>
             <FormProvider {...form}>
@@ -166,6 +178,7 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
                         <View style={styles.row}>
                             {roleList.map((r) => (
                                 <CheckBox
+                                    key={r}
                                     center
                                     title={r}
                                     checked={roles[r]}

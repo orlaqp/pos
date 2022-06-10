@@ -70,12 +70,12 @@ export function EmployeeItem({ item, navigation }: EmployeeItemProps) {
                     {item.active ? 'Active' : 'Inactive' }
                 </Text>
             </View>
-            <View style={{ flex: 2 }}>
+            <View style={{ flex: 3 }}>
                 <Text style={styles.name}>
                     {item.firstName} {item.lastName}
                 </Text>
                 <Text style={styles.secondaryText}>
-                    {item.roles.join(', ')}
+                    {item?.roles?.join(', ')}
                 </Text>
             </View>
             <View style={{ flex: 2 }}>
