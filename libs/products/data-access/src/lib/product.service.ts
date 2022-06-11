@@ -78,7 +78,7 @@ export class ProductService {
         try {
             return DataStore.query(Product);
         } catch (error) {
-            console.error('error querying produtcs', error);
+            console.error('error querying products', error);
             return [];
         }
     }

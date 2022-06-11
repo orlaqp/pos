@@ -141,10 +141,13 @@ function filterList(state: EmployeesState, query?: string) {
 
     const lowerQuery = query.toLowerCase();
     
-    // const queryString = query || state.filterQuery;
-    
     state.ids.forEach(id => {
-        if (state.entities[id]?.name?.toLowerCase().indexOf(lowerQuery) === -1)
+        if (
+            state.entities[id]?.firstName?.toLowerCase().indexOf(lowerQuery) === -1
+            && state.entities[id]?.lastName?.toLowerCase().indexOf(lowerQuery) === -1
+            && state.entities[id]?.email?.toLowerCase().indexOf(lowerQuery) === -1
+            && state.entities[id]?.phone?.toLowerCase().indexOf(lowerQuery) === -1
+        )
             return;
 
         filteredList[id] = state.entities[id];

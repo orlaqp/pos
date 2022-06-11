@@ -90,16 +90,26 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
                     $ {item.price.toFixed(2)}
                 </Text>
             </View>
-            <View style={{ flex: 2, flexDirection: 'row' }}>
-                <Icon
-                    name="barcode"
-                    type="material-community"
-                    color={theme.theme.colors.grey2}
-                />
-                <View style={{ marginLeft: 10 }}>
+            <View style={{ flex: 2, flexDirection: 'row', justifyContent: 'center' }}>
+                { (!!item.barcode || !!item.sku || !!item.plu) &&
+                <View>
+                    <Icon
+                        name="barcode"
+                        type="material-community"
+                        color={theme.theme.colors.grey2}
+                    />
+                </View>
+                }
+                <View style={{ marginLeft: 10, alignSelf: 'center' }}>
+                    { !!item.barcode &&
                     <Text style={styles.barcode}>UPC: {item.barcode}</Text>
+                    }
+                    { !!item.sku &&
                     <Text style={styles.barcode}>SKU: {item.sku}</Text>
+                    }
+                    { !!item.plu &&
                     <Text style={styles.barcode}>PLU: {item.plu}</Text>
+                    }
                 </View>
             </View>
             <View

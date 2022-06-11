@@ -15,6 +15,8 @@ export const subscribeEvents = (dispatch: Dispatch) => Hub.listen('datastore', a
         case 'modelSynced':
             syncModelsWithStore(dispatch, (data as ModelSyncedEvent).model.name);
             break;
+        // case 'outboxMutationProcessed':
+            
         default:
             break;
     }

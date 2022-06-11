@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import {
     categoriesActions,
+    fetchCategories,
     selectFilteredList,
     selectIsEmpty,
     selectLoadingStatus,
@@ -35,7 +36,7 @@ export function CategoryList({ navigation }: CategoryListProps) {
         filteredListSelector: selectFilteredList,
         clearSelectionAction: categoriesActions.clearSelection,
         filterAction: categoriesActions.filter,
-        fetchItemsAction: undefined,
+        fetchItemsAction: fetchCategories,
     };
 
     return <UIGenericItemList {...props} />;

@@ -116,6 +116,7 @@ export function UIGenericItemList({
                         <UISearchInput
                             debounceTime={300}
                             onSubmit={filterList}
+                            returnKeyType='search'
                         />
                     </View>
                     <Button

@@ -20,7 +20,7 @@ export function Sidebar({ navigation }: SidebarProps) {
         if (item === selected) return;
 
         setSelected(item);
-        navigation.navigate(item.title, item.params);
+        navigation.replace(item.title, item.params);
     }
 
     return (
