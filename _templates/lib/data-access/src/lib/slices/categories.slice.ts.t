@@ -40,14 +40,7 @@ export const fetch<%= pluralUpper %> = createAsyncThunk(
   '<%= plural %>/fetchStatus',
   async (_, thunkAPI) => {
     const <%= plural %> = await <%= className %>Service.getAll();
-    return <%= plural %>.map(c => ({
-        id: c.id,
-        
-        // TODO: Assign rest of properties here
-
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt
-    }))
+    return <%= plural %>.map(x => <%= className %>EntityMapper.fromModel(x))
   }
 );
 

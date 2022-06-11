@@ -12,7 +12,7 @@ import {
     PayloadAction,
     Update,
 } from '@reduxjs/toolkit';
-import { EmployeeEntity } from '../employee.entity';
+import { EmployeeEntity, EmployeeEntityMapper } from '../employee.entity';
 import { EmployeeService } from '../employee.service';
 
 export const EMPLOYEE_FEATURE_KEY = 'employees';
@@ -31,14 +31,7 @@ export const fetchEmployees = createAsyncThunk(
   'employees/fetchStatus',
   async (_, thunkAPI) => {
     const employees = await EmployeeService.getAll();
-    return employees.map(c => ({
-        id: c.id,
-        
-        // TODO: Assign rest of properties here
-
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt
-    }))
+    return employees.map(x => EmployeeEntityMapper.fromModel(x));
   }
 );
 
