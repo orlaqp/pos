@@ -56,8 +56,8 @@ export const ordersAdapter = createEntityAdapter<OrderEntity>();
 export const submitOrder = createAsyncThunk(
     'order/save',
     async (request: SubmitOrderRequest, thunkAPI) => {
-        const user = (thunkAPI.getState() as RootState).auth.user!;
-        const o = await OrderService.saveOrder(user, request.cart);
+        const employee = (thunkAPI.getState() as RootState).employees.loginEmployee!;
+        const o = await OrderService.saveOrder(employee, request.cart);
         return {
             ...request,
             order: OrderEntityMapper.fromModel(o),

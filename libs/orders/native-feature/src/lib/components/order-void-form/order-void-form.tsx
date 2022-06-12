@@ -12,6 +12,7 @@ import { Button, useTheme } from '@rneui/themed';
 import { EACH } from '@pos/unit-of-measures/data-access';
 import { useSelector } from 'react-redux';
 import { selectUser } from '@pos/auth/data-access';
+import { selectLoginEmployee } from '@pos/employees/data-access';
 
 export interface OrderItemProps {
     order: OrderEntity;
@@ -26,7 +27,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     const [newTotal, setNewTotal] = useState<number>(0);
     const [linesToRefund, setLinesToRefund] = useState<OrderLineEntity[]>([]);
     const [busy, setBusy] = useState<boolean>(false);
-    const user = useSelector(selectUser);
+    const employee = useSelector(selectLoginEmployee);
 
     const onItemToggle = (line: OrderLineEntity, selected: boolean) => {
         if (selected) {
@@ -39,14 +40,14 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     };
 
     const processRefund = async () => {
-        if (!user) {
-            Alert.alert('Error', 'Refund is not possible because no login user was found');
+        if (!employee) {
+            Alert.alert('Error', 'Refund is not possible because no login employee was found');
             return;
         }
 
         setBusy(true);
         await OrderService.refund(
-            user,
+            employee,
             order,
             linesToRefund.map((l) => ({
                 id: l.id!,

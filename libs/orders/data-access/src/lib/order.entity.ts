@@ -1,5 +1,6 @@
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { User } from '@pos/auth/data-access';
+import { EmployeeEntity } from '@pos/employees/data-access';
 import { CartState, initialCartState } from '@pos/sales/data-access';
 import { Order, OrderLine, OrderStatus } from '@pos/shared/models';
 import { Alert } from 'react-native';
@@ -98,7 +99,7 @@ export class OrderEntityMapper {
         };
     }
 
-    static fromRefundedCart(user: User, cart: CartState) {
+    static fromRefundedCart(employee: EmployeeEntity, cart: CartState) {
         const state: CartState = { ...initialCartState };
 
         if (!cart.header) {
@@ -110,8 +111,8 @@ export class OrderEntityMapper {
             orderDate: header.orderDate,
             orderNumber: header.orderNumber,
             status: header.status,
-            employeeId: user.id,
-            employeeName: user.name,
+            employeeId: employee.id!,
+            employeeName: `${employee.firstName} ${employee.lastName}`,
         };
 
         state.items = cart.items

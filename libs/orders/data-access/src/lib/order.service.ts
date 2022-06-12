@@ -10,6 +10,7 @@ import { Alert } from 'react-native';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { User } from '@pos/auth/data-access';
 import moment from 'moment';
+import { EmployeeEntity } from '@pos/employees/data-access';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -38,7 +39,7 @@ export class OrderService {
     }
 
     static async saveOrder(
-        user: User,
+        employee: EmployeeEntity,
         state: CartState,
         status?: OrderStatus | keyof typeof OrderStatus
     ) {
@@ -47,8 +48,8 @@ export class OrderService {
             subtotal: state.footer.subtotal,
             tax: 0,
             total: state.footer.total,
-            employeeId: user.id,
-            employeeName: user.name,
+            employeeId: employee.id!,
+            employeeName: `${employee.firstName} ${employee.lastName}`,
             lines: state.items.map(i => new OrderLine({
                 identifier: i.id!,
                 quantity: i.quantity,
@@ -133,7 +134,7 @@ export class OrderService {
     }
 
     static async refund(
-        user: User,
+        employee: EmployeeEntity,
         oldOrder: OrderEntity,
         lines: { id: string; price: number; quantity: number }[]
     ) {
@@ -166,11 +167,11 @@ export class OrderService {
         });
 
         // cartOrder.items = cartOrder.items?.filter(l => l.quantity > 0);
-        const newCart = OrderEntityMapper.fromRefundedCart(user, cartOrder);
+        const newCart = OrderEntityMapper.fromRefundedCart(employee, cartOrder);
 
         if (!newCart.items?.length) return;
 
-        await OrderService.saveOrder(user, newCart, OrderStatus.PAID);
+        await OrderService.saveOrder(employee, newCart, OrderStatus.PAID);
     }
 }
 
