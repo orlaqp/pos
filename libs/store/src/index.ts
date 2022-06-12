@@ -15,6 +15,7 @@ import { inventoryCountReducer, inventoryReceiveReducer, INVENTORY_COUNT_FEATURE
 import { categoriesReducer, CATEGORIES_FEATURE_KEY } from '@pos/categories/data-access';
 import { employeesReducer, EMPLOYEE_FEATURE_KEY } from '@pos/employees/data-access';
 import { productsReducer, PRODUCT_FEATURE_KEY } from '@pos/products/data-access';
+import { eventsReducer, EVENTS_FEATURE_KEY } from '@pos/shared/data-store';
 
 export const store = configureStore({
   reducer: {
@@ -31,6 +32,7 @@ export const store = configureStore({
       [SETTINGS_FEATURE_KEY]: settingsReducer,
       [INVENTORY_COUNT_FEATURE_KEY]: inventoryCountReducer,
       [INVENTORY_RECEIVE_FEATURE_KEY]: inventoryReceiveReducer,
+      [EVENTS_FEATURE_KEY]: eventsReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 });

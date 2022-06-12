@@ -21,7 +21,7 @@ import { Products } from '@pos/products/native-feature';
 import { UnitOfMeasures } from '@pos/unit-of-measures/native-feature';
 import { PrinterList } from '@pos/printings/native-feature';
 import { StoreInfoForm } from '@pos/store-info/native-feature';
-import { Settings } from '@pos/settings/native-feature';
+import { LogList, Settings } from '@pos/settings/native-feature';
 import { InventoryCounts, InventoryList, InventoryReceives } from '@pos/inventory/native-feature';
 import { Dashboard, Sales, SalesByEmployee, SalesByProduct } from '@pos/reporting/native-feature';
 
@@ -77,6 +77,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                 <View style={styles.rightSide}>
                     <Stack.Navigator screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="Employees" component={Employees} />
+                        <Stack.Screen name="Logs" component={LogList} />
                         <Stack.Screen name="Dashboard" component={Dashboard} />
                         <Stack.Screen name="Sale List" component={Sales} />
                         <Stack.Screen name="By Employee" component={SalesByEmployee} />
