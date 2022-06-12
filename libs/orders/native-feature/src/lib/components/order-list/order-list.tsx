@@ -75,8 +75,8 @@ export function OrderList({ navigation }: OrderListProps) {
                         />
                     </View>
                 </View>
-                <View style={{ paddingHorizontal: 20 }}>
-                    {!items?.length === 0 && (
+                <View style={{ paddingHorizontal: 20, height: '90%' }}>
+                    {items?.length === 0 && (
                         <UIEmptyState text="No orders found" />
                     )}
                     {items?.length > 0 && (
