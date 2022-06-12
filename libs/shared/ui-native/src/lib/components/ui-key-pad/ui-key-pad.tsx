@@ -34,10 +34,10 @@ export function UIKeyPad({ initialValue, onChange }: UIKeyPadProps) {
             <Text style={[styles.secondaryText, styles.textCenter, { fontSize: 24, marginBottom: 10 }]}>
                 Enter your pin:
             </Text>
-            {padMatrix.map(r => (
-                <View style={styles.row}>
-                    {r.map(b => (
-                        <View style={{ width: 150 }}>
+            {padMatrix.map((r, index) => (
+                <View key={index} style={styles.row}>
+                    {r.map((b, idx) => (
+                        <View key={b || idx + 50} style={{ width: 150 }}>
                             {b !== null &&
                                 <TouchableOpacity style={styles.button} onPress={() => onPress(b)}>
                                     <Text style={styles.buttonText}>{b}</Text>

@@ -16,6 +16,7 @@ import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import { selectStore } from '@pos/store-info/data-access';
 import { useSharedStyles } from '@pos/theme/native';
 import { authActions } from '@pos/auth/data-access';
+import { employeesActions } from '@pos/employees/data-access';
 
 /* eslint-disable-next-line */
 export interface NavigationParamList {
@@ -53,8 +54,8 @@ export function Navigation() {
         Alert.alert('Are you sure?', 'Press yes to confirm', [
             { text: 'No' },
             { text: 'Yes', onPress: () => {
-                Auth.signOut();
-                dispatch(authActions.logoff());
+                // Auth.signOut();
+                dispatch(employeesActions.logoffEmployee());
             }},
         ]);
     };

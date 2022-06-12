@@ -71,8 +71,11 @@ export const employeesSlice = createSlice({
         filterList(state, action.payload);
         state.filterQuery = action.payload;
     },
-    setLoginEmployee: (state: EmployeesState, action: PayloadAction<EmployeeEntity>) => {
+    loginEmployee: (state: EmployeesState, action: PayloadAction<EmployeeEntity>) => {
         state.loginEmployee = action.payload;
+    },
+    logoffEmployee: (state: EmployeesState) => {
+        state.loginEmployee = undefined;
     }
     
   },

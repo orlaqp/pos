@@ -162,6 +162,7 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
                             name="pin"
                             keyboardType="decimal-pad"
                             placeholder="Pin"
+                            rules={{ minLength: 4, maxLength: 4 }}
                         />
                     </View>
                     <View style={{ flexDirection: 'column', marginBottom: 50 }}>

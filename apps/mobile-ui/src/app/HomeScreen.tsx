@@ -11,7 +11,7 @@ import chart from '../../assets/chart.png';
 import { useDispatch, useSelector } from 'react-redux';
 import { Role, selectEmployee, selectUser } from '@pos/auth/data-access';
 import { UIKeyPad } from '@pos/shared/ui-native';
-import { employeesActions, EmployeeService } from '@pos/employees/data-access';
+import { employeesActions, EmployeeService, selectLoginEmployee } from '@pos/employees/data-access';
 
 interface PathDetails {
     title: string;
@@ -33,7 +33,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const theme = useTheme();
     const sharedStyles = useSharedStyles();
     const styles = useStyles();
-    const employee = useSelector(selectEmployee);
+    const employee = useSelector(selectLoginEmployee);
     const [pin, setPin] = useState<string>();
     const paths: PathDetails[] = [
         {
@@ -64,17 +64,25 @@ export const HomeScreen = (props: HomeScreenProps) => {
 
         if (pin.length === 4) {
             setPin(pin);
+            return '';
         }
 
-        return pin.length === 4 ? '' : pin;
+        return pin;
     }
 
     useEffect(() => {
+        if (!pin) return;
+
         EmployeeService.getEmployee(pin).then(emp => {
             if (!emp) return;
-            dispatch(employeesActions.setLoginEmployee(emp));
+            console.log(`Employee found`, emp);
+            dispatch(employeesActions.loginEmployee(emp));
         })
     }, [pin]);
+
+    useEffect(() => {
+        setPin('');
+    }, [employee]);
 
     return (
         <View style={[sharedStyles.page, sharedStyles.centered, { position: 'relative' }]}>
@@ -88,7 +96,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
             { employee &&
             <View style={{ flexDirection: 'row' }}>
                 {paths.map((p) => {
-                    if (!user.groups?.includes(p.role)) return null;
+                    if (!employee.roles?.includes(p.role)) return null;
 
                     return (
                         <TouchableOpacity onPress={() => goto(p)} key={p.title}>
