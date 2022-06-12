@@ -23,6 +23,7 @@ export interface EmployeesState extends EntityState< EmployeeEntity > {
   selected?: EmployeeEntity;
   filterQuery?: string;
   filteredList?: Dictionary< EmployeeEntity >;
+  loginEmployee?: EmployeeEntity;
 }
 
 export const employeesAdapter = createEntityAdapter< EmployeeEntity >();
@@ -40,7 +41,8 @@ export const initialEmployeesState: EmployeesState =
     loadingStatus: 'not loaded',
     selected: undefined,
     filterQuery: undefined,
-    filteredList: undefined
+    filteredList: undefined,
+    loginEmployee: undefined,
   });
 
 export const employeesSlice = createSlice({
@@ -68,6 +70,9 @@ export const employeesSlice = createSlice({
     filter: (state: EmployeesState, action: PayloadAction<string>) => {
         filterList(state, action.payload);
         state.filterQuery = action.payload;
+    },
+    setLoginEmployee: (state: EmployeesState, action: PayloadAction<EmployeeEntity>) => {
+        state.loginEmployee = action.payload;
     }
     
   },
@@ -125,6 +130,11 @@ export const selectIsEmpty = createSelector(
 export const selectFilteredList = createSelector(
     getEmployeesState,
     (state: EmployeesState) => state.filteredList
+)
+
+export const selectLoginEmployee = createSelector(
+    getEmployeesState,
+    (state: EmployeesState) => state.loginEmployee
 )
 
 

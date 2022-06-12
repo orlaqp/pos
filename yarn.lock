@@ -12848,6 +12848,11 @@ react-native-vector-icons@^9.1.0:
     prop-types "^15.7.2"
     yargs "^16.1.1"
 
+react-native-virtual-keyboard@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/react-native-virtual-keyboard/-/react-native-virtual-keyboard-1.2.1.tgz#f40d4ae66e8dc7625381bea6dabcbda5445f5621"
+  integrity sha512-3CsEILMS+yv2QMFFUB+ATnMuCi1ENMAVq5X5NYtJSKB8XxeU/WUxgsMFn1wDkmD+cgdRGfrOwm95QCYGCCbInA==
+
 react-native@0.67.4:
   version "0.67.4"
   resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.67.4.tgz#57a1503daa81f66a61f521ff67b259f126d87f9c"

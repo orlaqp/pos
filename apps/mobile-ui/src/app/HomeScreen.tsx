@@ -1,14 +1,17 @@
 import { useSharedStyles } from '@pos/theme/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useTheme, Button, Card } from '@rneui/themed';
-import React from 'react';
+import { useTheme, Button, Card, CheckBox } from '@rneui/themed';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
 
 import emptyCart from '../../assets/empty-cart.png';
 import payment from '../../assets/payment.png';
 import chart from '../../assets/chart.png';
-import { useSelector } from 'react-redux';
-import { Role, selectUser } from '@pos/auth/data-access';
+
+import { useDispatch, useSelector } from 'react-redux';
+import { Role, selectEmployee, selectUser } from '@pos/auth/data-access';
+import { UIKeyPad } from '@pos/shared/ui-native';
+import { employeesActions, EmployeeService } from '@pos/employees/data-access';
 
 interface PathDetails {
     title: string;
@@ -25,10 +28,13 @@ interface HomeScreenProps {
 }
 
 export const HomeScreen = (props: HomeScreenProps) => {
+    const dispatch = useDispatch();
     const user = useSelector(selectUser);
     const theme = useTheme();
     const sharedStyles = useSharedStyles();
     const styles = useStyles();
+    const employee = useSelector(selectEmployee);
+    const [pin, setPin] = useState<string>();
     const paths: PathDetails[] = [
         {
             title: 'Sales',
@@ -53,8 +59,33 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const goto = (details: PathDetails) =>
         props.navigation.navigate(details.path, details.params);
 
+    const onPinUpdated = (pin) => {
+        console.log(pin);
+
+        if (pin.length === 4) {
+            setPin(pin);
+        }
+
+        return pin.length === 4 ? '' : pin;
+    }
+
+    useEffect(() => {
+        EmployeeService.getEmployee(pin).then(emp => {
+            if (!emp) return;
+            dispatch(employeesActions.setLoginEmployee(emp));
+        })
+    }, [pin]);
+
     return (
         <View style={[sharedStyles.page, sharedStyles.centered, { position: 'relative' }]}>
+
+            { !employee &&
+            <View>
+                <UIKeyPad initialValue={''} onChange={onPinUpdated} />
+            </View>
+            }
+
+            { employee &&
             <View style={{ flexDirection: 'row' }}>
                 {paths.map((p) => {
                     if (!user.groups?.includes(p.role)) return null;
@@ -83,14 +114,17 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     );
                 })}
             </View>
+            }
         </View>
     );
 };
 
 const useStyles = () => {
     const theme = useTheme();
+    const sharedStyles = useSharedStyles();
 
     return StyleSheet.create({
+        ...sharedStyles,
         icon: {
             color: theme.theme.colors.white,
         },

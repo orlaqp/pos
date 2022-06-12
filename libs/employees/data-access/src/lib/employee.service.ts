@@ -4,6 +4,7 @@ import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
 import { employeesActions } from './slices/employees.slice';
 import { EmployeeEntity } from './employee.entity';
+import { EmployeeEntityMapper } from '..';
 
 export class EmployeeService {
     static async save(dispatch: Dispatch<any>, employee: EmployeeEntity) {
@@ -49,5 +50,10 @@ export class EmployeeService {
             return console.error(`Employee Id: ${id} not found`);
         
         return DataStore.delete(item);
+    }
+
+    static async getEmployee(pin: string) {
+        const emp = await DataStore.query(Employee, e => e.pin('eq', pin));
+        return emp[0] ? EmployeeEntityMapper.fromModel(emp[0]): null;
     }
 }

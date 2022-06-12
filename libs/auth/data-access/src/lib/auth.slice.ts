@@ -8,6 +8,7 @@ import {
 import { Auth } from 'aws-amplify';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
+import { EmployeeEntity } from '@pos/employees/data-access';
 
 export const AUTH_FEATURE_KEY = 'auth';
 export interface User {
@@ -86,6 +87,11 @@ export const getAuthState = (rootState: RootState): AuthState =>
 export const selectUser = createSelector(
     getAuthState,
     (state: AuthState) => state.user
+);
+
+export const selectEmployee = createSelector(
+    getAuthState,
+    (state: AuthState) => state.employee
 );   
 
 // export const selectAuthEntities = createSelector(getAuthState, selectEntities);
