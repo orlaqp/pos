@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { UIEmptyState, UISearchInput, UISpinner } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, FAB, useTheme } from '@rneui/themed';
@@ -7,6 +7,8 @@ import { View, StyleSheet, FlatList, Alert } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Dictionary } from '@reduxjs/toolkit';
+
+const PAGE_SIZE = 10;
 
 export interface ItemComponentProps<TEntityType> {
     item: TEntityType;
@@ -20,7 +22,7 @@ export interface ItemListProps<TState, TEntityType> {
     // selectors
     isEmptySelector: (state: TState) => boolean;
     loadingStatusSelector: (state: TState) => unknown;
-    filteredListSelector: (state: TState) => Dictionary<unknown> | undefined;
+    filteredListSelector: (state: TState) => unknown[] | undefined;
     // actions
     clearSelectionAction: () => unknown;
     filterAction: (query: string) => unknown;
@@ -59,6 +61,8 @@ export function UIGenericItemList({
     const isEmpty = useSelector(isEmptySelector);
     const loadingStatus = useSelector(loadingStatusSelector);
     const items = useSelector(filteredListSelector);
+    const [visibleItems, setVisibleItems] = useState<unknown[]>();
+    const [lastIndex, setLastIndex] = useState<number>(10);
 
     const createNew = () => {
         dispatch(clearSelectionAction());
@@ -74,6 +78,12 @@ export function UIGenericItemList({
             dispatch(fetchItemsAction());
     }, [loadingStatus, dispatch, fetchItemsAction]);
 
+    useEffect(() => {
+        if (!items) setVisibleItems(undefined);
+        setVisibleItems(items?.slice(0, lastIndex));
+    }, [items, lastIndex]);
+
+    
     if (loadingStatus === 'loading' || loadingStatus === 'not loaded')
         return (
             <View style={[styles.page, { paddingTop: 50 }]}>
@@ -106,6 +116,19 @@ export function UIGenericItemList({
             { text: 'Yes', onPress: () => navigation.goBack() },
         ]);
     };
+
+    const showMoreItems = () => {
+        if (!items) return;
+
+        const totalItems = items?.length;
+        const delta = totalItems - lastIndex;
+
+        if (delta > 0) {
+            setLastIndex(
+                delta > PAGE_SIZE ? lastIndex + PAGE_SIZE : lastIndex + delta
+            );
+        }
+    }
 
     return (
         <View style={styles.detailsPage}>
@@ -149,11 +172,16 @@ export function UIGenericItemList({
             <View style={styles.content}>
                 {items && (
                     <FlatList
-                        data={Object.keys(items)}
+                        data={visibleItems}
+                        getItemLayout={(data, index) => (
+                            {length: 100, offset: 100 * index, index}
+                        )}
+                        onEndReachedThreshold={0.2}
+                        onEndReached={showMoreItems}
                         renderItem={({ item }) => (
                             <ItemComponent
                                 navigation={navigation}
-                                item={items[item]!}
+                                item={item}
                             />
                         )}
                     />

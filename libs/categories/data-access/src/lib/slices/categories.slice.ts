@@ -21,7 +21,7 @@ export interface CategoriesState extends EntityState<CategoryEntity> {
   error?: string;
   selected?: CategoryEntity;
   filterQuery?: string;
-  filteredList?: Dictionary<CategoryEntity>;
+  filteredList?: CategoryEntity[];
 }
 
 export const categoriesAdapter = createEntityAdapter<CategoryEntity>();
@@ -175,28 +175,15 @@ export const selectCategory = (id: string) => createSelector(
     (state: CategoriesState) => state.entities[id]
 )
 
-
-
-
 function filterList(state: CategoriesState, query?: string) {
-    const filteredList: Dictionary<CategoryEntity> = {};
+    const all = selectAll(state);
     
     if (!query) {
-        state.filteredList = state.entities;
+        state.filteredList = all;
         return;
     }
 
     const lowerQuery = query.toLowerCase();
-    
-    // const queryString = query || state.filterQuery;
-    
-    state.ids.forEach(id => {
-        if (state.entities[id]?.name?.toLowerCase().indexOf(lowerQuery) === -1)
-            return;
-
-        filteredList[id] = state.entities[id];
-    });
-
-    state.filteredList = filteredList;
+    state.filteredList = all.filter(x => x.name.toLowerCase().indexOf(lowerQuery) !== -1);
 }
 

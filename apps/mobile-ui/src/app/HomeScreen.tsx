@@ -2,7 +2,7 @@ import { useSharedStyles } from '@pos/theme/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme, Button, Card, CheckBox } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Image, Alert } from 'react-native';
 
 import emptyCart from '../../assets/empty-cart.png';
 import payment from '../../assets/payment.png';
@@ -74,7 +74,10 @@ export const HomeScreen = (props: HomeScreenProps) => {
         if (!pin) return;
 
         EmployeeService.getEmployee(pin).then(emp => {
-            if (!emp) return;
+            if (!emp) {
+                Alert.alert('The PIN number you entered is not valid')
+                return;
+            }
             console.log(`Employee found`, emp);
             dispatch(employeesActions.loginEmployee(emp));
         })

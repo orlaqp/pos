@@ -31,7 +31,7 @@ export interface <%= pluralUpper %>State extends EntityState< <%= className %>En
   error?: string;
   selected?: <%= className %>Entity;
   filterQuery?: string;
-  filteredList?: Dictionary< <%= className %>Entity >;
+  filteredList?: <%= className %>Entity[];
 }
 
 export const <%= plural %>Adapter = createEntityAdapter< <%= className %>Entity >();
@@ -137,28 +137,15 @@ export const selectFilteredList = createSelector(
 )
 
 
-
-
 function filterList(state: <%= pluralUpper %>State, query?: string) {
-    const filteredList: Dictionary< <%= className %>Entity> = {};
-    state.loadingStatus = 'loaded';
-    
-    if (!query) {
-        state.filteredList = state.entities;
-        return;
-    }
+  const all = selectAll(state);
+  
+  if (!query) {
+      state.filteredList = all;
+      return;
+  }
 
-    const lowerQuery = query.toLowerCase();
-    
-    // const queryString = query || state.filterQuery;
-    
-    state.ids.forEach(id => {
-        if (state.entities[id]?.name?.toLowerCase().indexOf(lowerQuery) === -1)
-            return;
-
-        filteredList[id] = state.entities[id];
-    });
-
-    state.filteredList = filteredList;
+  const lowerQuery = query.toLowerCase();
+  state.filteredList = all.filter(x => x.name.toLowerCase().indexOf(lowerQuery) !== -1)
 }
 

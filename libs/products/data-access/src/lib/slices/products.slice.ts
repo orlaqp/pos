@@ -28,7 +28,7 @@ export interface ProductsState extends EntityState< ProductEntity > {
   error?: string;
   selected?: ProductEntity;
   filterQuery?: string;
-  filteredList?: Dictionary< ProductEntity >;
+  filteredList?: ProductEntity[];
 }
 
 export const productsAdapter = createEntityAdapter< ProductEntity >();
@@ -173,47 +173,10 @@ export const selectProductsByCategory = (id?: string) => createSelector(
 )
 
 function filterList(state: ProductsState, text?: string, categoryId?: string) {
-    const filteredList: Dictionary<ProductEntity> = {};
-
     const allProducts = productsAdapter.getSelectors().selectAll(state);
     const res = ProductService.search(allProducts, { text, categoryId });
 
-    res.items.forEach(i => filteredList[i.id] = i);
-    state.filteredList = filteredList;
-    
-    // if (categoryId && !text) {
-    //     state.ids.forEach(id => {
-    //         const entity = state.entities[id];
-    //         if (entity?.productCategoryId === categoryId) {
-    //             filteredList[id] = entity;
-    //         }
-    //     });
-
-    //     return state.filteredList = filteredList;
-    // }
-
-    // if (!text) {
-    //     state.filteredList = state.entities;
-    //     return;
-    // }
-
-    // const lowerQuery = text.toLowerCase();
-    
-    // // const queryString = query || state.filterQuery;
-    
-    // state.ids.forEach(id => {
-    //     const entity = state.entities[id];
-    //     if (
-    //         entity?.name?.toLowerCase().indexOf(lowerQuery) !== -1
-    //         || entity.description?.toLowerCase().indexOf(lowerQuery) !== -1
-    //         || entity.barcode?.toLowerCase().indexOf(lowerQuery) !== -1
-    //         || entity.sku?.toLowerCase().indexOf(lowerQuery) !== -1
-    //     ) {
-    //         filteredList[id] = entity;
-    //     }
-
-    // });
-
-    // state.filteredList = filteredList;
+    // res.items.forEach(i => filteredList[i.id] = i);
+    state.filteredList = res.items;
 }
 

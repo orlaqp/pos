@@ -22,7 +22,7 @@ export interface BrandsState extends EntityState< BrandEntity > {
   error?: string;
   selected?: BrandEntity;
   filterQuery?: string;
-  filteredList?: Dictionary< BrandEntity >;
+  filteredList?: BrandEntity[];
 }
 
 export const brandsAdapter = createEntityAdapter< BrandEntity >();
@@ -178,24 +178,14 @@ export const selectBrand = (id: string | null | undefined) => createSelector(
 
 
 function filterList(state: BrandsState, query?: string) {
-    const filteredList: Dictionary<BrandEntity> = {};
+    const all = selectAll(state);
     
     if (!query) {
-        state.filteredList = state.entities;
+        state.filteredList = all;
         return;
     }
 
     const lowerQuery = query.toLowerCase();
-    
-    // const queryString = query || state.filterQuery;
-    
-    state.ids.forEach(id => {
-        if (state.entities[id]?.name?.toLowerCase().indexOf(lowerQuery) === -1)
-            return;
-
-        filteredList[id] = state.entities[id];
-    });
-
-    state.filteredList = filteredList;
+    state.filteredList = all.filter(x => x.name.toLowerCase().indexOf(lowerQuery) !== -1)
 }
 

@@ -23,7 +23,7 @@ export interface InventoryCountState extends EntityState< InventoryCountDTO > {
   error?: string;
   selected?: InventoryCountDTO;
   filterQuery?: string;
-  filteredList?: Dictionary< InventoryCountDTO >;
+  filteredList?: InventoryCountDTO[];
   lines: InventoryCountLineDTO[];
 }
 
@@ -154,28 +154,16 @@ export const selectInventoryCountFilteredList = createSelector(
 )
 
 
-
-
 function filterList(state: InventoryCountState, query?: string) {
-    const filteredList: Dictionary< InventoryCountDTO> = {};
     state.loadingStatus = 'loaded';
+    const all = selectAll(state);
     
     if (!query) {
-        state.filteredList = state.entities;
+        state.filteredList = all;
         return;
     }
 
     const lowerQuery = query.toLowerCase();
-    
-    // const queryString = query || state.filterQuery;
-    
-    state.ids.forEach(id => {
-        if (state.entities[id]?.comments?.toLowerCase().indexOf(lowerQuery) === -1)
-            return;
-
-        filteredList[id] = state.entities[id];
-    });
-
-    state.filteredList = filteredList;
+    state.filteredList = all.filter(x => x.comments?.toLowerCase().indexOf(lowerQuery) !== -1);
 }
 

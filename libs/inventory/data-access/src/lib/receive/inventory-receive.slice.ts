@@ -23,7 +23,7 @@ export interface InventoryReceiveState extends EntityState< InventoryReceiveDTO 
   error?: string;
   selected?: InventoryReceiveDTO;
   filterQuery?: string;
-  filteredList?: Dictionary< InventoryReceiveDTO >;
+  filteredList?: InventoryReceiveDTO[];
   lines: InventoryReceiveLineDTO[];
 }
 
@@ -154,26 +154,15 @@ export const selectInventoryReceiveFilteredList = createSelector(
 )
 
 
-
-
 function filterList(state: InventoryReceiveState, query?: string) {
-    const filteredList: Dictionary< InventoryReceiveDTO> = {};
-    state.loadingStatus = 'loaded';
-    
-    if (!query) {
-        state.filteredList = state.entities;
-        return;
-    }
+  state.loadingStatus = 'loaded';
+  const all = selectAll(state);
+  
+  if (!query) {
+      state.filteredList = all;
+      return;
+  }
 
-    const lowerQuery = query.toLowerCase();
-    
-    state.ids.forEach(id => {
-        if (state.entities[id]?.comments?.toLowerCase().indexOf(lowerQuery) === -1)
-            return;
-
-        filteredList[id] = state.entities[id];
-    });
-
-    state.filteredList = filteredList;
+  const lowerQuery = query.toLowerCase();
+  state.filteredList = all.filter(x => x.comments?.toLowerCase().indexOf(lowerQuery) !== -1);
 }
-

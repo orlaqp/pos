@@ -37,7 +37,7 @@ export function UIKeyPad({ initialValue, onChange }: UIKeyPadProps) {
             {padMatrix.map((r, index) => (
                 <View key={index} style={styles.row}>
                     {r.map((b, idx) => (
-                        <View key={b || idx + 50} style={{ width: 150 }}>
+                        <View key={b || idx + 50} style={{ width: 115 }}>
                             {b !== null &&
                                 <TouchableOpacity style={styles.button} onPress={() => onPress(b)}>
                                     <Text style={styles.buttonText}>{b}</Text>
