@@ -71,6 +71,7 @@ export function ProductSelection({
                                         borderRadius: 5,
                                         marginRight: 10,
                                         marginBottom: 10,
+                                        width: 180
                                     }}
                                 >
                                     <UIButton
