@@ -22,7 +22,7 @@ export interface EmployeesState extends EntityState< EmployeeEntity > {
   error?: string;
   selected?: EmployeeEntity;
   filterQuery?: string;
-  filteredList?: Dictionary< EmployeeEntity >;
+  filteredList?: EmployeeEntity[];
   loginEmployee?: EmployeeEntity;
 }
 
@@ -144,28 +144,20 @@ export const selectLoginEmployee = createSelector(
 
 
 function filterList(state: EmployeesState, query?: string) {
-    const filteredList: Dictionary< EmployeeEntity> = {};
     state.loadingStatus = 'loaded';
+    const all = selectAll(state);
     
     if (!query) {
-        state.filteredList = state.entities;
+        state.filteredList = all;
         return;
     }
 
     const lowerQuery = query.toLowerCase();
-    
-    state.ids.forEach(id => {
-        if (
-            state.entities[id]?.firstName?.toLowerCase().indexOf(lowerQuery) === -1
-            && state.entities[id]?.lastName?.toLowerCase().indexOf(lowerQuery) === -1
-            && state.entities[id]?.email?.toLowerCase().indexOf(lowerQuery) === -1
-            && state.entities[id]?.phone?.toLowerCase().indexOf(lowerQuery) === -1
-        )
-            return;
-
-        filteredList[id] = state.entities[id];
-    });
-
-    state.filteredList = filteredList;
+    state.filteredList = all.filter(x => 
+      x.firstName?.toLowerCase().indexOf(lowerQuery) !== -1
+      || x.lastName?.toLowerCase().indexOf(lowerQuery) !== -1
+      || x.email?.toLowerCase().indexOf(lowerQuery) !== -1
+      || x.phone?.toLowerCase().indexOf(lowerQuery) !== -1
+    );
 }
 

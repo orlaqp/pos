@@ -8,7 +8,7 @@ import {
     subscribeToProductChanges,
 } from '@pos/products/data-access';
 import { useSharedStyles } from '@pos/theme/native';
-import { FlatList, SafeAreaView, StyleSheet, View } from 'react-native';
+import { FlatList, SafeAreaView, StyleSheet, View, Text } from 'react-native';
 import { UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
 import InventoryLine from './inventory-line';
 
@@ -55,12 +55,27 @@ export function InventoryList({ navigation }: InventoryListProps) {
                         <UIEmptyState text="No orders found" />
                     )}
                     {filteredList.length > 0 && (
+                        <>
+                        <View style={styles.smallDataRow}>
+                            <View style={{flex: 4}}></View>
+                            <View style={{flex: 1}}>
+                                <Text style={[styles.primaryText, styles.textCenter]}>
+                                    Reorder Point
+                                </Text>
+                            </View>
+                            <View style={{flex: 1}}>
+                                <Text style={[styles.primaryText, styles.textCenter]}>
+                                    Reorder Qty
+                                </Text>
+                            </View>
+                        </View>
                         <FlatList
                             data={filteredList}
                             renderItem={({ item }) => (
                                 <InventoryLine item={item} />
                             )}
                         />
+                        </>
                     )}
                 </View>
             </View>
