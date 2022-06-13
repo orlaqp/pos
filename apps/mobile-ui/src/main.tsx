@@ -9,6 +9,10 @@ import awsconfig from './aws-exports';
 import { initializeDataStore } from '@pos/shared/data-store';
 import { store } from '@pos/store';
 
+import awsConfig from './aws-exports';
+import { awsConfigActions } from '@pos/settings/data-access';
+store.dispatch(awsConfigActions.set(awsConfig));
+
 // Amplify.Logger.LOG_LEVEL = 'DEBUG';
 Amplify.configure(awsconfig);
 initializeDataStore(store.dispatch);

@@ -22,6 +22,7 @@
     "react-native-config": "*",
     "react-native-device-info": "*",
     "react-native-fs": "^2.20.0",
+    "react-native-fast-image": "*",
     "react-native-gesture-handler": "^2.4.1",
     "react-native-image-picker": "^4.8.2",
     "react-native-numeric-input": "*",

@@ -12717,6 +12717,11 @@ react-native-device-info@^8.7.1:
   resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-8.7.1.tgz#fbb06f87dbbc4423abe713874699fb2e6e99fd15"
   integrity sha512-cVMZztFa2Qn6qpQa601W61CtUwZQ1KXfqCOeltejAWEXmgIWivC692WGSdtGudj4upSi1UgMSaGcvKjfcpdGjg==
 
+react-native-fast-image@^8.5.11:
+  version "8.5.11"
+  resolved "https://registry.yarnpkg.com/react-native-fast-image/-/react-native-fast-image-8.5.11.tgz#e3dc969d0e4e8df026646bf18194465aa55cbc2b"
+  integrity sha512-cNW4bIJg3nvKaheG8vGMfqCt5LMWX9MS5+wMudgKIHbGO51spRr4sgnlhVgwHLcZ5aeNOVJ8CPRxDIWKRq/0QA==
+
 react-native-fs@^2.20.0:
   version "2.20.0"
   resolved "https://registry.yarnpkg.com/react-native-fs/-/react-native-fs-2.20.0.tgz#05a9362b473bfc0910772c0acbb73a78dbc810f6"
@@ -12847,11 +12852,6 @@ react-native-vector-icons@^9.1.0:
   dependencies:
     prop-types "^15.7.2"
     yargs "^16.1.1"
-
-react-native-virtual-keyboard@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/react-native-virtual-keyboard/-/react-native-virtual-keyboard-1.2.1.tgz#f40d4ae66e8dc7625381bea6dabcbda5445f5621"
-  integrity sha512-3CsEILMS+yv2QMFFUB+ATnMuCi1ENMAVq5X5NYtJSKB8XxeU/WUxgsMFn1wDkmD+cgdRGfrOwm95QCYGCCbInA==
 
 react-native@0.67.4:
   version "0.67.4"

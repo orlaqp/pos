@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { selectAwsConfig } from '@pos/settings/data-access';
+import React from 'react';
 
-import { ActivityIndicator, Image, View, Text } from 'react-native';
-import { AssetsService, CacheService, GetAssetResponse } from '@pos/shared/utils';
-import { cancellablePromise } from '@pos/shared/utils';
-import { Readable } from 'stream';
-import { Blob } from 'buffer';
+import FastImage from 'react-native-fast-image';
+import { useSelector } from 'react-redux';
 
 /* eslint-disable-next-line */
 export interface UIS3ImageProps {
@@ -28,29 +26,30 @@ export function UIS3Image({
     height,
     factor,
 }: UIS3ImageProps) {
-    const [uri, setUri] = useState<string | undefined>();
-    const [busy, setBusy] = useState<boolean>(false);
+    const awsConfig = useSelector(selectAwsConfig);
+    // const [uri, setUri] = useState<string | undefined>();
+    // const [busy, setBusy] = useState<boolean>(false);
 
-    useEffect(() => {
-        if (!s3Key) {
-            setBusy(false);
-            return setUri(undefined);
-        }
+    // useEffect(() => {
+    //     if (!s3Key) {
+    //         setBusy(false);
+    //         return setUri(undefined);
+    //     }
 
-        setBusy(true);
+    //     setBusy(true);
 
-        const { promise, cancel } = cancellablePromise<string | undefined>(
-            AssetsService.getImage(s3Key)
-            // CacheService.getImage(s3Key)
-        );
+    //     const { promise, cancel } = cancellablePromise<string | undefined>(
+    //         AssetsService.getImage(s3Key)
+    //         // CacheService.getImage(s3Key)
+    //     );
 
-        promise.then((base64Image: string | undefined) => {
-            setUri(base64Image);
-            setBusy(false);
-        });
+    //     promise.then((base64Image: string | undefined) => {
+    //         setUri(base64Image);
+    //         setBusy(false);
+    //     });
 
-        return cancel;
-    }, [s3Key]);
+    //     return cancel;
+    // }, [s3Key]);
 
     // useEffect(() => {
     //     if (!s3Key) {
@@ -71,25 +70,34 @@ export function UIS3Image({
     // }, [s3Key]);
 
     return (
-        <>
-            {busy && (
-                <View style={{ width, height }}>
-                    <ActivityIndicator size={size || 'small'} />
-                </View>
-            )}
-            {!busy && uri && (
-                <Image
-                    source={{ uri }}
-                    // style={{ width: width || 95, height: height || 115 }}
-                    resizeMode="contain"
-                    style={{
-                        flex: 1.3,
-                        height: (factor || 2) * 25,
-                        width: (factor || 2) * 100,
-                    }}
-                />
-            )}
-        </>
+        <FastImage
+            style={{height, width, flex: 1.3 }}
+            //source={{uri: `https://pos-assets-667d29297354387b6c48c731f59df31110831-develop.s3.amazonaws.com/public/${s3Key}`}}
+            source={{uri: `https://${awsConfig?.aws_user_files_s3_bucket}.s3.amazonaws.com/public/${s3Key}`}}
+            resizeMode="contain"
+        />
+
+        // source={{uri: `https://${awsConfig?.aws_user_files_s3_bucket}.s3.amazonaws.com/public/${s3Key}`}}
+
+        // <>
+        //     {busy && (
+        //         <View style={{ width, height }}>
+        //             <ActivityIndicator size={size || 'small'} />
+        //         </View>
+        //     )}
+        //     {!busy && uri && (
+        //         <Image
+        //             source={{ uri }}
+        //             // style={{ width: width || 95, height: height || 115 }}
+        //             resizeMode="contain"
+        //             style={{
+        //                 flex: 1.3,
+        //                 height: (factor || 2) * 25,
+        //                 width: (factor || 2) * 100,
+        //             }}
+        //         />
+        //     )}
+        // </>
     );
 }
 

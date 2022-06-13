@@ -8,7 +8,6 @@ import {
 import { Auth } from 'aws-amplify';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
-import { EmployeeEntity } from '@pos/employees/data-access';
 
 export const AUTH_FEATURE_KEY = 'auth';
 export interface User {
