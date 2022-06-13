@@ -99,7 +99,7 @@ export const cartSlice = createSlice({
             updateTotals(state);
         },
         removeProduct: (state: CartState, action: PayloadAction<CartItem>) => {
-            state.items.splice(state.items.findIndex(i => i === action.payload), 1);
+            state.items.splice(state.items.findIndex(i => i.id === action.payload.id), 1);
             updateTotals(state);
         },
         reset: (state: CartState) => {
