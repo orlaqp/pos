@@ -68,7 +68,7 @@ export function Cart({ mode, onSubmit }: CartProps) {
 
     return (
         <View style={{ flexGrow: 1, flexDirection: 'column' }}>
-            <View style={{ flex: 5.5 }}>
+            <View style={{ flex: 11 }}>
                 <ScrollView>
                     {cart.items.map((i, idx) => (
                         <CartLine
