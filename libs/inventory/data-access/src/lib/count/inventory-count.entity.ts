@@ -1,3 +1,4 @@
+import { ProductEntity } from '@pos/products/data-access';
 import { InventoryCount, InventoryCountLine, InventoryCountStatus } from '@pos/shared/models';
 import { InventoryCountLineDTO } from './inventory-count-line.entity';
 
