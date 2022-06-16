@@ -52,19 +52,17 @@ export class InventoryCountLineMapper {
 
     static toSelectable(
         products: Dictionary<ProductEntity>,
-        lines?: InventoryCountLineDTO[]
+        count?: InventoryCountDTO
     ): Dictionary<Selectable<InventoryCountLineDTO>> {
         if (!products) return {};
 
-        const linesObj = Transform.toObject<InventoryCountLineDTO>(lines, 'productId');
+        const linesObj = Transform.toObject<InventoryCountLineDTO>(count?.lines, 'productId');
         const output: Dictionary<Selectable<InventoryCountLineDTO>> = {};
 
         Object.entries(products).reduce((obj, [id, p]) => {
             const line = linesObj[id];
 
-            if (line) {
-                console.log('line found', line);
-            }
+            if (count?.status === 'COMPLETED' && !line) return obj;
 
             obj[id!] = {
                 selected: !!line,
@@ -72,6 +70,7 @@ export class InventoryCountLineMapper {
                     ? InventoryCountLineMapper.fromProduct(p!)
                     : line,
             };
+
             return obj;
         }, output);
 

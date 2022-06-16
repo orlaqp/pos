@@ -128,7 +128,7 @@ const updateInventory = async (count: InventoryCountDTO) => {
             }
 
             await DataStore.save(Product.copyOf(p[0], updated => {
-                updated.quantity = l.newCount - l.current;
+                updated.quantity = l.newCount! - l.current;
             }))
         }
     } catch (error) {

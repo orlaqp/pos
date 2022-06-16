@@ -51,7 +51,7 @@ export function InventoryCountForm({
     const ref = React.createRef<TextInput>();
 
     useEffect(() => {
-        setLines(InventoryCountLineMapper.toSelectable(products, inventoryCount?.lines));
+        setLines(InventoryCountLineMapper.toSelectable(products, inventoryCount));
     }, [inventoryCount, products]);
 
     const save = async (updateInv: boolean) => {
@@ -134,7 +134,10 @@ export function InventoryCountForm({
 
         const searchResult = ProductService.search(productList, { text: filter });
         const filteredResult: Dictionary<Selectable<InventoryCountLineDTO>> = {};
+        
         searchResult.items.reduce((res, p) => {
+            if (!lines[p.id]) return res;
+            
             res[p.id!] = lines[p.id];
             return res;
         }, filteredResult);

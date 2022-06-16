@@ -26,14 +26,9 @@ export const menuItems: SidebarItem[] = [
         role: Role.Admin,
     },
     {
-        id: '4',
-        title: 'Inventory',
-        icon: 'warehouse',
-        children: [
-            { id: '4-1', title: 'In Stock' },
-            { id: '4-2', title: 'Counts' },
-            { id: '4-3', title: 'Receives' },
-        ],
+        id: '8',
+        title: 'Employees',
+        icon: 'account-group-outline',
         role: Role.Admin,
     },
     {
@@ -48,6 +43,17 @@ export const menuItems: SidebarItem[] = [
             { id: '5-4', title: 'Brands' },
         ],
     },
+    {
+        id: '4',
+        title: 'Inventory',
+        icon: 'warehouse',
+        children: [
+            { id: '4-1', title: 'In Stock' },
+            { id: '4-2', title: 'Counts' },
+            { id: '4-3', title: 'Receives' },
+        ],
+        role: Role.Admin,
+    },
     // {
     //     id: '6',
     //     title: 'Users',
@@ -58,12 +64,6 @@ export const menuItems: SidebarItem[] = [
     //         { id: '6-2', title: 'Roles' },
     //     ],
     // },
-    {
-        id: '8',
-        title: 'Employees',
-        icon: 'account-group-outline',
-        role: Role.Admin,
-    },
     {
         id: '7',
         title: 'Settings',
