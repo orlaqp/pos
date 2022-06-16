@@ -15,7 +15,7 @@ import {
 } from '@pos/inventory/data-access';
 import { RootState } from '@pos/store';
 import { InventoryCount } from '@pos/shared/models';
-import { ProductService, selectAllProducts, selectProductsEntities } from '@pos/products/data-access';
+import { fetchProducts, productsActions, ProductService, selectAllProducts, selectProductsEntities } from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
 import InventoryCountLine from '../inventory-counts/inventory-count-line';
 import { confirm, Selectable } from '@pos/shared/utils';
@@ -79,6 +79,11 @@ export function InventoryCountForm({
 
         await InventoryCountService.save(dispatch, inv, updateInv);
         dispatch(inventoryCountActions.clearSelection());
+
+        if (inv.status === 'COMPLETED') {
+            dispatch(productsActions.updateQuantities(inv.lines));
+        }
+        
         navigation.goBack();
         setBusy(false);
     };

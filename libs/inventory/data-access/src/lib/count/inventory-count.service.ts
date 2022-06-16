@@ -25,7 +25,6 @@ export class InventoryCountService {
         if (!updateInv || !updateCount) return;
 
         await updateInventory(updatedCount!);
-
     }
 
     static getAll() {
@@ -127,9 +126,14 @@ const updateInventory = async (count: InventoryCountDTO) => {
                 Alert.alert('Error', `Product ${l.productName} was not found while updating the inventory`);
             }
 
-            await DataStore.save(Product.copyOf(p[0], updated => {
+            // current    new     operation
+            //   9         4          -5
+            //   12        20         +8
+
+            const updatedProduct = Product.copyOf(p[0], updated => {
                 updated.quantity = l.newCount! - l.current;
-            }))
+            });
+            await DataStore.save(updatedProduct);
         }
     } catch (error) {
         Alert.alert('Error while updating inventory', (error as any).message);
