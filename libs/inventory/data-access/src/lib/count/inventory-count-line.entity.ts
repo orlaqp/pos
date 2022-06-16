@@ -1,4 +1,12 @@
-import { InventoryCount, InventoryCountLine, Product } from '@pos/shared/models';
+import { ProductEntity } from '@pos/products/data-access';
+import {
+    InventoryCount,
+    InventoryCountLine,
+    Product,
+} from '@pos/shared/models';
+import { Selectable, Transform } from '@pos/shared/utils';
+import { Dictionary } from '@reduxjs/toolkit';
+import { InventoryCountDTO } from './inventory-count.entity';
 
 export type InventoryCountLineDTO = {
     id?: string;
@@ -6,7 +14,7 @@ export type InventoryCountLineDTO = {
     productName: string;
     unitOfMeasure: string;
     current: number;
-    newCount: number;
+    newCount?: number;
     comments: string | null | undefined;
     createdAt?: string | null | undefined;
     updatedAt?: string | null | undefined;
@@ -14,15 +22,14 @@ export type InventoryCountLineDTO = {
 };
 
 export class InventoryCountLineMapper {
-    static fromProduct(x: Product) {
+    static fromProduct(x: Product): InventoryCountLineDTO {
         return {
             productId: x.id,
             productName: x.name,
             unitOfMeasure: x.unitOfMeasure,
             comments: '',
             current: x.quantity,
-            newCount: x.quantity,
-            inventoryCountLineProductId: x.id,
+            newCount: undefined,
             inventoryCountLineInventoryCountId: '',
         };
     }
@@ -38,9 +45,36 @@ export class InventoryCountLineMapper {
             comments: x.comments,
             createdAt: x.createdAt,
             updatedAt: x.updatedAt,
-            inventoryCountLineInventoryCountId: x.inventoryCountLineInventoryCountId,
+            inventoryCountLineInventoryCountId:
+                x.inventoryCountLineInventoryCountId,
         };
     }
+
+    static toSelectable(
+        products: Dictionary<ProductEntity>,
+        lines?: InventoryCountLineDTO[]
+    ): Dictionary<Selectable<InventoryCountLineDTO>> {
+        if (!products) return {};
+
+        const linesObj = Transform.toObject<InventoryCountLineDTO>(lines, 'productId');
+        const output: Dictionary<Selectable<InventoryCountLineDTO>> = {};
+
+        Object.entries(products).reduce((obj, [id, p]) => {
+            const line = linesObj[id];
+
+            if (line) {
+                console.log('line found', line);
+            }
+
+            obj[id!] = {
+                selected: !!line,
+                payload: !line
+                    ? InventoryCountLineMapper.fromProduct(p!)
+                    : line,
+            };
+            return obj;
+        }, output);
+
+        return output;
+    }
 }
-
-

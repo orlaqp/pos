@@ -14,12 +14,13 @@ import {
     InventoryCountService,
 } from '@pos/inventory/data-access';
 import { RootState } from '@pos/store';
-import { InventoryCount, Product } from '@pos/shared/models';
-import { ProductService, selectAllProducts } from '@pos/products/data-access';
+import { InventoryCount } from '@pos/shared/models';
+import { ProductService, selectAllProducts, selectProductsEntities } from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
 import InventoryCountLine from '../inventory-counts/inventory-count-line';
-import { confirm } from '@pos/shared/utils';
+import { confirm, Selectable } from '@pos/shared/utils';
 import { NavigationParamList } from '@pos/sales/native-feature';
+import { Dictionary } from '@reduxjs/toolkit';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -38,39 +39,38 @@ export function InventoryCountForm({
     const inventoryCount = useSelector(
         (state: RootState) => state.inventoryCount.selected
     );
-    const products = useSelector(selectAllProducts);
-    const [lines, setLines] = useState<InventoryCountLineDTO[]>([]);
-    const [filteredLines, setFilteredLines] = useState<InventoryCountLineDTO[]>();
+    const products = useSelector(selectProductsEntities);
+    const productList = useSelector(selectAllProducts);
+    const [lines, setLines] = useState<
+        Dictionary<Selectable<InventoryCountLineDTO>>
+    >({});
+    const [filteredLines, setFilteredLines] = useState<
+        Dictionary<Selectable<InventoryCountLineDTO>>
+    >({});
 
     const ref = React.createRef<TextInput>();
 
     useEffect(() => {
-        if (!inventoryCount) {
-            setLines(products
-                ? products.map(p => InventoryCountLineMapper.fromProduct(p))
-                : []
-            );
-            return;
-        }
-
-        setLines(inventoryCount.lines.map((l) => ({ ...l })));
+        setLines(InventoryCountLineMapper.toSelectable(products, inventoryCount?.lines));
     }, [inventoryCount, products]);
 
     const save = async (updateInv: boolean) => {
         setBusy(true);
         let inv: InventoryCountDTO;
 
+        const countLines = Object.values(lines).filter(x => x?.selected).map(x => x?.payload);
+
         if (inventoryCount) {
             inv = {
                 comments: inventoryCount.comments,
-                lines: lines,
+                lines: countLines,
                 status: inventoryCount.status,
                 id: inventoryCount.id,
                 createdAt: inventoryCount.createdAt,
             };
         } else {
             inv = InventoryCountMapper.newCount();
-            inv.lines = lines;
+            inv.lines = countLines;
         }
 
         if (updateInv) {
@@ -109,14 +109,15 @@ export function InventoryCountForm({
     };
 
     const updateItem = (item: InventoryCountLineDTO) => {
-        const idx = lines.findIndex((i) => i.productId === item.productId);
+        const line = lines[item.productId];
 
-        if (idx === -1) return;
+        if (!line) return;
 
-        lines[idx].newCount = item.newCount;
-        lines[idx].comments = item.comments;
+        line.payload.newCount = item.newCount;
+        line.payload.comments = item.comments;
+        line.selected = true;
 
-        setLines((res) => [...lines]);
+        setLines({...lines});
     };
 
     const deleteItem = (item: InventoryCountLineDTO) => {
@@ -124,16 +125,22 @@ export function InventoryCountForm({
     };
 
     useEffect(() => {
+        console.log('Running search');
+        
         if (!filter) {
             setFilteredLines(lines);
             return;
         }
 
-        const searchResult = ProductService.search(products, { text: filter });
-        const filteredLines = lines.filter(l => searchResult.items.findIndex(p => p.id === l.productId) !== -1);
-        setFilteredLines(filteredLines);
-        
-    }, [filter, lines, products]);
+        const searchResult = ProductService.search(productList, { text: filter });
+        const filteredResult: Dictionary<Selectable<InventoryCountLineDTO>> = {};
+        searchResult.items.reduce((res, p) => {
+            res[p.id!] = lines[p.id];
+            return res;
+        }, filteredResult);
+
+        setFilteredLines(filteredResult);
+    }, [filter, lines, productList]);
 
     return (
         // <FormProvider {...form}>
@@ -156,7 +163,8 @@ export function InventoryCountForm({
                                 styles.textBold,
                             ]}
                         >
-                            This count was already completed and cannot be changed
+                            This count was already completed and cannot be
+                            changed
                         </Text>
                     </View>
                 )}
@@ -167,17 +175,16 @@ export function InventoryCountForm({
                             placeholder="Search for products ..."
                             onSubmit={setFilter}
                         />
-                        {/* <TextInput onSubmitEditing={(e) => setFilter(e.nativeEvent.text)} style={{ borderColor: 'blue', borderWidth: 1 }} /> */}
                     </View>
                 )}
             </View>
             <FlatList
                 horizontal={false}
-                data={filteredLines}
+                data={Object.values(filteredLines)}
                 renderItem={(data) => (
                     <InventoryCountLine
                         readOnly={route.params?.readOnly}
-                        item={data.item}
+                        item={data.item?.payload}
                         key={data.index}
                         navigation={navigation}
                         onUpdate={updateItem}

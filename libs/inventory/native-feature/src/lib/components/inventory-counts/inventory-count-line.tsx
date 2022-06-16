@@ -24,12 +24,13 @@ export function InventoryCountLine({
 }: InventoryCountLineProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
-    const [count, setCount] = useState<string>(item.newCount.toString());
+    const [count, setCount] = useState<string | undefined>(item.newCount?.toString());
     const [comment, setComment] = useState<string | undefined>(
         item.comments || undefined
     );
     
     const originalCount = item.newCount;
+    const originalComment = item.comments;
 
     const confirmDeletion = () => {
         Alert.alert(
@@ -40,13 +41,18 @@ export function InventoryCountLine({
     };
 
     const updateCount = (count: string) => {
-        const validatedCount = count || originalCount?.toString();
-        setCount(validatedCount);
-        onUpdate({ ...item, newCount: +validatedCount });
+        if (!count) {
+            setCount(originalCount?.toString());
+            return;
+        }
+
+        setCount(count);
+        onUpdate({ ...item, newCount: +count });
     };
-    const updateComment = (comments: string) => {
-        setComment(comments);
-        onUpdate({ ...item, comments });
+    const updateComment = (finalComment: string) => {
+        if ((!originalComment && !finalComment) || originalComment === finalComment) return;
+
+        onUpdate({ ...item, comments: finalComment });
     };
 
     return (
