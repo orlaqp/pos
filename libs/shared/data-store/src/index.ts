@@ -1,5 +1,4 @@
 import { Dispatch } from '@reduxjs/toolkit';
-import { configureDataStore } from './config';
 import { subscribeEvents } from './events';
 
 export * from './lib/events.slice';

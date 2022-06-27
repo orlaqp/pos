@@ -81,7 +81,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
             console.log(`Employee found`, emp);
             dispatch(employeesActions.loginEmployee(emp));
         })
-    }, [pin]);
+    }, [dispatch, pin]);
 
     useEffect(() => {
         setPin('');

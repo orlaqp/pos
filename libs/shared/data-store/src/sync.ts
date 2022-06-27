@@ -1,5 +1,6 @@
 import { syncBrands } from '@pos/brands/data-access';
 import { syncCategories } from '@pos/categories/data-access';
+import { syncEmployees } from '@pos/employees/data-access';
 import { syncInventoryCountLines, syncInventoryCounts, syncInventoryReceiveLines, syncInventoryReceives } from '@pos/inventory/data-access';
 import { syncOrderLines, syncOrders } from '@pos/orders/data-access';
 import { syncDefaultPrinter } from '@pos/printings/data-access';
@@ -74,6 +75,9 @@ export const syncModelsWithStore = (dispatch: Dispatch, model: string) => {
             break;
         case 'Brand':
             syncBrands(dispatch);
+            break;
+        case 'Employee':
+            syncEmployees(dispatch);
             break;
         default:
             break;

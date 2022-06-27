@@ -6,7 +6,6 @@ import {
     createEntityAdapter,
     createSelector,
     createSlice,
-    Dictionary,
     EntityId,
     EntityState,
     PayloadAction,
@@ -76,8 +75,12 @@ export const employeesSlice = createSlice({
     },
     logoffEmployee: (state: EmployeesState) => {
         state.loginEmployee = undefined;
-    }
-    
+    },
+    setAll: (state: EmployeesState, action: PayloadAction<EmployeeEntity[] >) =>{
+        employeesAdapter.setAll(state, action.payload);
+        state.loadingStatus = 'loaded';
+        filterList(state, state.filterQuery);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -86,7 +89,7 @@ export const employeesSlice = createSlice({
       })
       .addCase(
         fetchEmployees.fulfilled,
-        (state: EmployeesState, action: PayloadAction< EmployeeEntity[] >) => {
+        (state: EmployeesState, action: PayloadAction<EmployeeEntity[] >) => {
           employeesAdapter.setAll(state, action.payload);
           filterList(state, state.filterQuery);
           state.loadingStatus = 'loaded';
