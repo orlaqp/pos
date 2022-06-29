@@ -105,6 +105,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
         const values = form.getValues();
         barcodeRef.current?.setNativeProps({ text: values.barcode });
         skuRef.current?.setNativeProps({ text: values.sku });
+        pluRef.current?.setNativeProps({ text: values.plu });
     }, [barcodeRef, skuRef, form]);
 
     return (
