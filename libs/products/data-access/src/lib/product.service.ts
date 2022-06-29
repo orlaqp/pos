@@ -115,12 +115,13 @@ export class ProductService {
 
         const allNumbers = !!request.text?.match(/^\d*$/);
         
+        // ex: 206110115089
         if (allNumbers) {
-            const plu = request.text.substring(1, 5);
+            const plu = request.text.substring(2, 6);
             const prod = products.find((p) => p.plu === plu);
 
             if (prod) {
-                const totalPrice = +request.text.substring(6, 11);
+                const totalPrice = +request.text.substring(7, 11);
                 const quantity = totalPrice / 100 / prod.price; 
 
                 return {
