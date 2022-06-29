@@ -67,14 +67,14 @@ export function PrinterItem({
                     justifyContent: 'flex-end',
                 }}
             >
-                {!defaultPrinter && setAsDefault && (
+                {(defaultPrinter?.identifier !== item.identifier) && setAsDefault && (
                     <Button
                         type="outline"
                         title="Set as Default"
                         onPress={() => setAsDefault(item)}
                     />
                 )}
-                {defaultPrinter && (
+                {defaultPrinter?.identifier === item.identifier && (
                     <View
                         style={{
                             paddingVertical: 5,

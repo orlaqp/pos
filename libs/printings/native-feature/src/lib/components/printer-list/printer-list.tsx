@@ -14,7 +14,7 @@ import {
     PrinterEntity,
     stopDiscovery,
 } from '@pos/printings/data-access';
-import { UISpinner } from '@pos/shared/ui-native';
+import { UIEmptyState, UISpinner } from '@pos/shared/ui-native';
 
 const deviceId = DeviceInfo.getUniqueId();
 
@@ -61,28 +61,29 @@ export function PrinterList({ navigation }: PrintingListProps) {
         };
     }, [setPrinters]);
 
+    if (!busy && !printers?.length)
+        return (
+            <View style={[styles.page, { paddingTop: 50 }]}>
+                <UIEmptyState text= 'No printers were found' />
+            </View>
+        );
+
     return (
         <View style={styles.page}>
-            {defaultPrinter && (
+            {/* {defaultPrinter && (
                 <PrinterItem
                     key='default'
                     item={defaultPrinter}
                     navigation={navigation}
                     defaultPrinter={defaultPrinter}
                 />
-            )}
+            )} */}
             {busy && (
                 <View style={[styles.page, { paddingTop: 150 }]}>
                     <UISpinner size="small" message="Looking for printers..." />
                 </View>
             )}
-            {printers
-                ?.filter(
-                    (p) =>
-                        !defaultPrinter ||
-                        p.identifier !== defaultPrinter.identifier
-                )
-                .map((p) => (
+            {!busy && printers?.map((p) => (
                     <PrinterItem
                         key={p.identifier}
                         item={p}
