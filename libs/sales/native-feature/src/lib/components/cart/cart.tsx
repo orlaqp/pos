@@ -5,7 +5,7 @@ import {
     selectCart,
 } from '@pos/sales/data-access';
 import { UIEmptyState } from '@pos/shared/ui-native';
-import { Button, useTheme } from '@rneui/themed';
+import { Button } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
 
 import { View } from 'react-native';

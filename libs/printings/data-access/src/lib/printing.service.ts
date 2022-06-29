@@ -73,7 +73,7 @@ export const printReceipt = async (
     // TODO: Restore printing service
     // return;
 
-    print((builder) => {
+    print(printerInfo, (builder) => {
         const date = new Date();
 
         const printerBuilder = new StarXpandCommand.PrinterBuilder()
@@ -167,12 +167,13 @@ export const printReceipt = async (
 };
 
 export const print = async (
+    printerInfo: PrinterEntity,
     dataBuilder: (builder: StarXpandCommand.StarXpandCommandBuilder) => void
 ): Promise<void> => {
     // Specify your printer connection settings.
     const settings = new StarConnectionSettings();
     settings.interfaceType = InterfaceType.Lan;
-    settings.identifier = '0011621BF5B2';
+    settings.identifier = printerInfo.identifier; // '0011621BF5B2';
     const printer = new StarPrinter(settings);
 
     try {
