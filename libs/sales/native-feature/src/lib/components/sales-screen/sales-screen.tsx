@@ -89,7 +89,10 @@ export function SalesScreen({
     const onFilterChange = async (text: string) => {
         if (!text) return;
 
-        searchRef.current?.focus();
+        setTimeout(() => {
+            searchRef.current?.focus();
+        }, 0);
+
         const res = await ProductService.search(allProducts, { text });
 
         if (!res.allNumbers || (res.allNumbers && text.length < 4)) {
