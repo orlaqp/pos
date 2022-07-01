@@ -89,19 +89,16 @@ export function SalesScreen({
     const onFilterChange = async (text: string) => {
         if (!text) return;
 
-        setTimeout(() => {
-            searchRef.current?.focus();
-        }, 0);
-
+        searchRef.current?.focus();
         const res = await ProductService.search(allProducts, { text });
 
         if (!res.allNumbers || (res.allNumbers && text.length < 4)) {
             setFilteredProducts(res.items);
-            return text;
+            // return text;
         }
 
         if (res.items.length === 1 && res.allNumbers) {
-            searchRef.current?.clear();
+            // searchRef.current?.clear();
 
             const p = res.items[0];
             // add product to cart directly
@@ -114,10 +111,11 @@ export function SalesScreen({
                 )
             );
 
-            return '';
+            // return '';
         }
 
-        return text;
+        searchRef.current?.clear();
+        return '';
     };
 
     const onProductSelected = useCallback(
@@ -159,6 +157,10 @@ export function SalesScreen({
     };
 
     useEffect(() => {
+        searchRef.current?.focus();
+    });
+
+    useEffect(() => {
         const categoriesSub = subscribeToCategoryChanges(dispatch);
         const productsSub = subscribeToProductChanges(dispatch);
         const ordersSub = subscribeToOrderChanges(dispatch);
@@ -185,23 +187,32 @@ export function SalesScreen({
         }
     }, [onProductSelected, products]);
 
+    useEffect(() => {
+        setTimeout(() => {
+            searchRef.current?.focus();
+            // console.log('[sales screen]: setting focus');
+        }, 25);
+    }, [onProductSelected, filteredProducts, allProducts, products, searchRef])
+
     return (
         <SafeAreaView style={[styles.page, styles.row]}>
             <View style={styles.categories}>
-                <CategorySelection onSelected={onCategoryChange} />
+                <CategorySelection key='categorySelection' onSelected={onCategoryChange} />
             </View>
             <View style={styles.products}>
                 <ProductSearch
+                    key='productSearch'
                     ref={searchRef}
                     onFilterChange={onFilterChange}
                 />
                 <ProductSelection
+                    key='productSelection'
                     products={filteredProducts}
                     onSelected={onProductSelected}
                 />
             </View>
             <View style={styles.cart}>
-                <Cart mode={route.params.mode} onSubmit={onCartSubmit} />
+                <Cart key='cart' mode={route.params.mode} onSubmit={onCartSubmit} searchRef={searchRef} />
             </View>
             <Dialog
                 isVisible={!!product}

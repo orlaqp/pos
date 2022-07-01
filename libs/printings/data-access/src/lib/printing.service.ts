@@ -73,6 +73,8 @@ export const printReceipt = async (
     // TODO: Restore printing service
     // return;
 
+    // return print(printerInfo, (builder) => buildData(builder));
+
     print(printerInfo, (builder) => {
         const date = new Date();
 
@@ -271,8 +273,8 @@ export const buildData = (
                 .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
                 .actionPrintBarcode(
                     new StarXpandCommand.Printer.BarcodeParameter(
-                        '0123456',
-                        StarXpandCommand.Printer.BarcodeSymbology.Jan8
+                        '202090372801',
+                        StarXpandCommand.Printer.BarcodeSymbology.Ean13
                     )
                         .setBarDots(3)
                         .setBarRatioLevel(

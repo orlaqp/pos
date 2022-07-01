@@ -8,7 +8,7 @@ import { UIEmptyState } from '@pos/shared/ui-native';
 import { Button } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
 
-import { View } from 'react-native';
+import { View, TextInput } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 import every from 'lodash/every';
@@ -30,9 +30,10 @@ export interface CartProps {
         printer?: PrinterEntity,
         storeInfo?: StoreInfoEntity
     ) => void;
+    searchRef: React.RefObject<TextInput>;
 }
 
-export function Cart({ mode, onSubmit }: CartProps) {
+export function Cart({ mode, onSubmit, searchRef }: CartProps) {
     const styles = useSharedStyles();
     const dispatch = useDispatch();
     const cart = useSelector(selectCart);
@@ -52,7 +53,14 @@ export function Cart({ mode, onSubmit }: CartProps) {
         setReady(
             cart.items.length > 0 && every(cart.items, (i) => i.quantity > 0)
         );
-    }, [cart]);
+
+        setTimeout(() => {
+            searchRef.current?.focus();
+            // console.log('[cart]: setting focus');
+        }, 25);
+        
+
+    }, [cart, searchRef]);
 
     if (!cart.items.length) {
         return (

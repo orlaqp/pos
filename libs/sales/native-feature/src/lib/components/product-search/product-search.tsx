@@ -37,6 +37,8 @@ export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((pr
             >
                     <UISearchInput
                         ref={ref}
+                        autoFocus={true}
+                        clearTextOnFocus={true}
                         debounceTime={300}
                         placeholder="type to search by name, description, barcode and sku..."
                         returnKeyType='search'
