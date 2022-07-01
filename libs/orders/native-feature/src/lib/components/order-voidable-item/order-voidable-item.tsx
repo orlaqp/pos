@@ -39,7 +39,7 @@ export function OrderVoidableItem({ line, onToggle }: CompactOrderItemProps) {
             </View>
             <View style={{ flex: 1 }}>
                 <Text style={styles.name}>
-                    {line.quantity}{' '}
+                    {line.quantity % 1 === 0 ? line.quantity.toString() : line.quantity.toFixed(2)}{' '}
                     {line.unitOfMeasure === EACH ? '' : line.unitOfMeasure}
                 </Text>
             </View>
