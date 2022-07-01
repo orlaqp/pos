@@ -1,4 +1,3 @@
-import { orderLinesSubscription } from './../../../../../orders/data-access/src/lib/order.service';
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { RootState } from '@pos/store';
 import {
@@ -10,20 +9,20 @@ import {
 import { DataStore } from 'aws-amplify';
 
 import { productsSubscription, productsActions } from '@pos/products/data-access';
-import { categoriesSubscription } from '@pos/categories/data-access';
-import { brandsSubscription } from '@pos/brands/data-access';
-import { ordersSubscription } from '@pos/orders/data-access';
+import { AvailableLanguage, setI18nConfig } from '../language/language.utils';
 
 export const SETTINGS_FEATURE_KEY = 'settings';
 
 export interface SettingsState {
     darkTheme: boolean;
     dataStoreStatus: 'not synced' | 'resetting' | 'error' | 'synced';
+    languageTag: AvailableLanguage;
 }
 
 export const initialSettingsState: SettingsState = {
     darkTheme: false,
     dataStoreStatus: 'not synced',
+    languageTag: 'en',
 };
 
 export const resetDataStore = createAsyncThunk(
@@ -32,11 +31,7 @@ export const resetDataStore = createAsyncThunk(
         thunkApi.dispatch(productsActions.reset());
 
         productsSubscription?.unsubscribe();
-        categoriesSubscription?.unsubscribe();
-        brandsSubscription?.unsubscribe();
-        ordersSubscription?.unsubscribe();
-        orderLinesSubscription?.unsubscribe();
-
+        
         await DataStore.stop();
         await DataStore.clear();
         await DataStore.start();
@@ -50,6 +45,10 @@ export const settingsSlice = createSlice({
         set: (state: SettingsState, action: PayloadAction<boolean>) => {
             state.darkTheme = action.payload;
         },
+        setLanguage: (state: SettingsState, action: PayloadAction<AvailableLanguage>) => {
+            state.languageTag = action.payload;
+            setI18nConfig(action.payload);
+        }
     },
     extraReducers: (builder) => builder
         .addCase(resetDataStore.pending, (state: SettingsState) => {

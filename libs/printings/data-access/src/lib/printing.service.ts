@@ -86,33 +86,25 @@ export const printReceipt = async (
             .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
             .styleBold(true)
             .actionPrintText(`${store.name}\n`)
-            .styleBold(false)
+            // .styleBold(false)
             .actionPrintText(
                 `${store.address}\n${store.city}, ${store.state} ${store.zipCode}\nP: ${store.phone}\nF: ${store.fax}\n${store.email}\n\n`
             )
             .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
             .actionPrintText(
                 `Date:${date.toLocaleString()}\n` +
-                    '--------------------------------\n' +
+                    // '--------------------------------\n' +
                     '\n'
             )
             .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
             .actionPrintText(
                 // 'SKU   Description        Total\n' +
-                'Description        Qty   Total\n' +
+                'Description        Qty    Total\n' +
+                '-------------------------------\n' +
                     // cart.items.map(i => `${i.product.sku?.padEnd(5, ' ')} ${i.quantity.toString().padStart(2, ' ')}x${i.product.name.substring(0, 13).padEnd(13, ' ')} ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`).join('\n') +
                     cart.items
-                        .map(
-                            (i) =>
-                                `${i.product.name
-                                    .substring(0, 17)
-                                    .padEnd(17, ' ')}  ${i.quantity
-                                    .toString()
-                                    .padStart(2, ' ')}  ${(
-                                    i.product.price * i.quantity
-                                )
-                                    .toFixed(2)
-                                    .padStart(7, ' ')}`
+                        .map((i) =>
+                                `${i.product.name.substring(0, 15).padEnd(15, ' ')}  ${(i.quantity % 1 === 0 ? i.quantity.toString() : i.quantity.toFixed(2)).padStart(5, ' ')}  ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`
                         )
                         .join('\n') +
                     '\n\n' +

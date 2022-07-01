@@ -12,6 +12,7 @@ import { signIn } from '@pos/auth/data-access';
 import { RootState } from '@pos/store';
 
 import logo from '../assets/logo.png';
+import { translate } from '@pos/settings/data-access';
 
 /* eslint-disable-next-line */
 export interface LoginProps {
@@ -77,7 +78,7 @@ export function LoginScreen(props: LoginProps) {
 
                     <View style={{ paddingHorizontal: 100 }}>
                         <Button
-                            title="Login"
+                            title={translate('LOGIN_Login')}
                             type="solid"
                             containerStyle={styles.topMargin}
                             onPress={formMethods.handleSubmit(login)}

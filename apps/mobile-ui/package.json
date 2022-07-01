@@ -39,6 +39,8 @@
     "react-native-chart-kit": "*",
     "react-native-daterange-picker": "*",
     "rn-select-date-range": "*",
-    "moment": "*"
+    "moment": "*",
+    "react-native-i18n": "*",
+    "react-native-localize": "*"
   }
 }
