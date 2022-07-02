@@ -1,5 +1,5 @@
 import { StoreInfoEntity } from '@pos/store-info/data-access';
-import { CartState, OrderEntity } from '@pos/sales/data-access';
+import { CartState } from '@pos/sales/data-access';
 import {
     InterfaceType,
     StarConnectionSettings,
@@ -12,6 +12,7 @@ import { PrinterEntity } from './slices/printer.entity';
 import { Alert } from 'react-native';
 import { CutType } from 'react-native-star-io10/src/StarXpandCommand/Printer/CutType';
 import { Alignment } from 'react-native-star-io10/src/StarXpandCommand/Printer/Alignment';
+import { OrderEntity } from '@pos/orders/data-access';
 
 let starManager: StarDeviceDiscoveryManager;
 
@@ -63,7 +64,7 @@ export const printReceipt = async (
     store: StoreInfoEntity,
     printerInfo: PrinterEntity,
     cart: CartState,
-    order?: OrderEntity
+    order?: OrderEntity,
 ) => {
     if (!store || !printerInfo) {
         Alert.alert('Store and printer should be available in order to print');
@@ -133,6 +134,10 @@ export const printReceipt = async (
                         .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
                         .actionPrintText(` ${store.disclaimer} \n`)
                 )
+                .actionFeedLine(1)
+                .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
+                .actionPrintText(order.status === 'OPEN' ? '** Customer Copy **' : '** Merchant Copy **')
+                .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
                 .actionFeedLine(1)
                 .actionPrintQRCode(
                     new StarXpandCommand.Printer.QRCodeParameter(

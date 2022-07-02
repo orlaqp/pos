@@ -123,6 +123,7 @@ export const ordersSlice = createSlice({
                     state: OrdersState,
                     action: PayloadAction<SubmitOrderResponse>
                 ) => {
+                    debugger;
                     ordersAdapter.addOne(state, action.payload.order);
                     state.submitStatus = 'saved';
                     printReceipt(

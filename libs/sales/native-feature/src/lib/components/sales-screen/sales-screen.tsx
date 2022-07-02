@@ -141,6 +141,7 @@ export function SalesScreen({
             {
                 text: 'Yes',
                 onPress: () => {
+                    debugger;
                     if (route.params.mode === 'order') {
                         dispatch(
                             submitOrder({ cart, defaultPrinter, storeInfo })

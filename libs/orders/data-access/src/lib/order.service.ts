@@ -29,10 +29,10 @@ export class OrderService {
             updated.status = 'PAID';
         });
 
-        await DataStore.save(updatedOrder);
+        const paidOrder = await DataStore.save(updatedOrder);
         await OrderService.updateInventory(updatedOrder);
 
-        return o;
+        return paidOrder;
     }
 
     static async saveOrder(
