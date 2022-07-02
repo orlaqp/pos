@@ -1,9 +1,6 @@
 import { Order, OrderLine, OrderStatus, Product } from '@pos/shared/models';
 import { DataStore } from 'aws-amplify';
-import {
-    OrderEntity,
-    OrderEntityMapper,
-} from './order.entity';
+import { OrderEntity, OrderEntityMapper } from './order.entity';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
@@ -43,28 +40,66 @@ export class OrderService {
         state: CartState,
         status?: OrderStatus | keyof typeof OrderStatus
     ) {
-        const order = new Order({
-            status: status || 'OPEN',
-            subtotal: state.footer.subtotal,
-            tax: 0,
-            total: state.footer.total,
-            employeeId: employee.id!,
-            employeeName: `${employee.firstName} ${employee.lastName}`,
-            lines: state.items.map(i => new OrderLine({
-                identifier: i.id!,
-                quantity: i.quantity,
+        if (!state.id) {
+            const order = new Order({
+                status: status || 'OPEN',
+                subtotal: state.footer.subtotal,
                 tax: 0,
-                price: i.product.price,
-                productId: i.product.id!,
-                barcode: i.product.barcode,
-                sku: i.product.sku,
-                productName: i.product.name,
-                unitOfMeasure: i.product.unitOfMeasure,
-            })),
-            orderDate: moment().toISOString(),
-        });
+                total: state.footer.total,
+                employeeId: employee.id!,
+                employeeName: `${employee.firstName} ${employee.lastName}`,
+                lines: state.items.map(
+                    (i) =>
+                        new OrderLine({
+                            identifier: i.id!,
+                            quantity: i.quantity,
+                            tax: 0,
+                            price: i.product.price,
+                            productId: i.product.id!,
+                            barcode: i.product.barcode,
+                            sku: i.product.sku,
+                            productName: i.product.name,
+                            unitOfMeasure: i.product.unitOfMeasure,
+                        })
+                ),
+                orderDate: moment().toISOString(),
+            });
 
-        return await DataStore.save(order);
+            return await DataStore.save(order);
+        }
+
+        const existing = await DataStore.query(Order, state.id);
+
+        if (!existing) {
+            return console.log(`It seems that order: ${employee.id} has been removed`);
+        }
+
+        return await DataStore.save(
+            Order.copyOf(existing, o => {
+                o.status = status || 'OPEN';
+                o.subtotal = state.footer.subtotal;
+                o.tax = 0;
+                o.total = state.footer.total;
+                o.employeeId = employee.id!;
+                o.employeeName = `${employee.firstName} ${employee.lastName}`;
+                o.lines = state.items.map(
+                    (i) =>
+                        new OrderLine({
+                            identifier: i.id!,
+                            quantity: i.quantity,
+                            tax: 0,
+                            price: i.product.price,
+                            productId: i.product.id!,
+                            barcode: i.product.barcode,
+                            sku: i.product.sku,
+                            productName: i.product.name,
+                            unitOfMeasure: i.product.unitOfMeasure,
+                        })
+                );
+                o.orderDate = moment().toISOString();
+            })
+        );
+
     }
 
     static async delete(id: string) {

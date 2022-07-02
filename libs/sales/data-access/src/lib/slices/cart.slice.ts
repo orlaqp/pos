@@ -15,6 +15,7 @@ import { OrderEntity } from '@pos/orders/data-access';
 export const CART_FEATURE_KEY = 'cart';
 
 export const initialCartState: CartState = {
+    id: undefined,
     header: undefined,
     items: [],
     footer: {
@@ -35,6 +36,7 @@ export const cartSlice = createSlice({
 
             if (!o.lines) return;
 
+            state.id = action.payload.id;
             state.footer = {
                 discount: 0,
                 subtotal: o.subtotal,
@@ -104,6 +106,7 @@ export const cartSlice = createSlice({
             updateTotals(state);
         },
         reset: (state: CartState) => {
+            state.id = initialCartState.id;
             state.footer = initialCartState.footer;
             state.header = initialCartState.header;
             state.items = initialCartState.items;

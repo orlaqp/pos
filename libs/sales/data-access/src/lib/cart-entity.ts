@@ -47,6 +47,7 @@ export interface CartFooter {
 }
 
 export interface CartState {
+    id?: string;
     header?: CartHeader;
     items: CartItem[];
     footer: CartFooter;
