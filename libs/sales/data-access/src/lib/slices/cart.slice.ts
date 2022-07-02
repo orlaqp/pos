@@ -75,6 +75,7 @@ export const cartSlice = createSlice({
 
             if (sameCartItem) {
                 sameCartItem.quantity = action.payload.quantity;
+                updateTotals(state);
                 return;
             }
 

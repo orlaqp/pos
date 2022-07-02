@@ -76,7 +76,7 @@ export function InventoryLine({ item }: InventoryLineProps) {
                 <Text style={styles.secondaryText}>{item.description}</Text>
             </View>
             <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.quantity}</Text>
+                <Text style={styles.name}>{item.quantity % 1 === 0 ? item.quantity : item.quantity.toFixed(2) }</Text>
             </View>
             <View style={{ flex: 1 }}>
                 <TextInput

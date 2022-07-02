@@ -42,6 +42,7 @@ export function Cart({ mode, onSubmit, searchRef }: CartProps) {
     const defaultPrinter = useSelector(getDefaultPrinter);
 
     const onSelect = (item: CartItem) => {
+        debugger;
         dispatch(cartActions.select(item));
     };
 
