@@ -67,6 +67,9 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
         );
     };
 
+    const orderDate = new Date(item.orderDate!);
+    const orderDateString = `${orderDate.toLocaleDateString()} ${orderDate.toLocaleTimeString()}`;
+
     return (
         <View style={styles.dataRow}>
             {busy && <ActivityIndicator size="small" />}
@@ -76,7 +79,8 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                 </Text>
             </View>
             <View style={{ flex: 3 }}>
-                <Text style={styles.name}>{item.employeeName}</Text>
+                <Text style={styles.primaryText}>{item.employeeName}</Text>
+                <Text style={styles.secondaryText}>{orderDateString}</Text>
             </View>
             {/* <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.items?.length} item(s)</Text>
