@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import {
     OrderEntity,
-    ordersActions,
-    selectFilteredList,
+    OrderService,
+    selectAllOrders,
     subscribeToOrderChanges,
 } from '@pos/orders/data-access';
 import { UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import OrderItem from '../order-item/order-item';
 import { useSharedStyles } from '@pos/theme/native';
-import { View, StyleSheet, FlatList } from 'react-native';
+import { View, StyleSheet, FlatList, TextInput } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { ButtonGroup, Dialog, useTheme } from '@rneui/themed';
 import { OrderStatus } from '@pos/shared/api';
@@ -20,20 +20,23 @@ export interface OrderListProps {
     navigation?: NativeStackNavigationProp<any>;
 }
 
+const orderStatusList: OrderStatus[] = [
+    OrderStatus.OPEN,
+    OrderStatus.PAID,
+    OrderStatus.REFUNDED,
+];
+
 export function OrderList({ navigation }: OrderListProps) {
     const theme = useTheme();
     const styles = useStyles();
     const dispatch = useDispatch();
+    const searchRef = React.createRef<TextInput>();
     const [filterText, setFilterText] = useState<string>();
     const [orderToVoid, setOrderToVoid] = useState<OrderEntity | undefined>(0);
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
-    const items = useSelector(selectFilteredList);
-    const statusButtons: OrderStatus[] = [
-        OrderStatus.OPEN,
-        OrderStatus.PAID,
-        OrderStatus.REFUNDED,
-    ];
-
+    const allOrders = useSelector(selectAllOrders);
+    const [filteredOrders, setFilteredOrders] = useState<OrderEntity[]>();
+    
     useEffect(() => {
         const ordersSub = subscribeToOrderChanges(dispatch);
         return () => {
@@ -42,12 +45,32 @@ export function OrderList({ navigation }: OrderListProps) {
         };
     }, [dispatch]);
 
+    useEffect(() => {
+        const searchResult = OrderService.search(allOrders, {
+            status: orderStatusList[selectedIndex],
+            filter: filterText,
+        });
+
+        console.log('====================================');
+        console.log('Search result', searchResult);
+        console.log('====================================');
+
+        setFilteredOrders((items) => [...searchResult]);
+    }, [allOrders, selectedIndex, filterText]);
+
+    useEffect(() => {
+        setTimeout(() => {
+            searchRef.current?.focus();
+        }, 50);
+    }, [filteredOrders, filterText, searchRef]);
+
     const filter = (statusIndex: number, filter?: string) => {
         setSelectedIndex(statusIndex);
         setFilterText(filter);
-        dispatch(
-            ordersActions.filter({ status: statusButtons[statusIndex], filter })
-        );
+        // dispatch(
+        //     ordersActions.filter({ status: orderStatusList[statusIndex], filter })
+        // );
+        searchRef.current?.clear();
     };
 
     return (
@@ -56,9 +79,9 @@ export function OrderList({ navigation }: OrderListProps) {
                 <View style={[styles.header, { alignItems: 'center' }]}>
                     <View style={{ flex: 4 }}>
                         <ButtonGroup
-                            buttons={statusButtons}
+                            buttons={orderStatusList}
                             selectedIndex={selectedIndex}
-                            onPress={(value) => filter(value, filterText)}
+                            onPress={(value) => filter(value, '')}
                             containerStyle={[
                                 styles.page,
                                 {
@@ -70,18 +93,21 @@ export function OrderList({ navigation }: OrderListProps) {
                     </View>
                     <View style={{ flex: 4 }}>
                         <UISearchInput
+                            ref={searchRef}
                             debounceTime={300}
                             onSubmit={(text) => filter(selectedIndex, text)}
+                            autoFocus={true}
+                            returnKeyType="search"
                         />
                     </View>
                 </View>
                 <View style={{ paddingHorizontal: 20, height: '90%' }}>
-                    {items?.length === 0 && (
+                    {filteredOrders?.length === 0 && (
                         <UIEmptyState text="No orders found" />
                     )}
-                    {items?.length > 0 && (
+                    {filteredOrders?.length > 0 && (
                         <FlatList
-                            data={items}
+                            data={filteredOrders}
                             renderItem={({ item }) => (
                                 <OrderItem
                                     navigation={navigation}

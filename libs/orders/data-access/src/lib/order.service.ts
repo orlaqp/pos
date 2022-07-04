@@ -8,6 +8,7 @@ import { Alert } from 'react-native';
 import { User } from '@pos/auth/data-access';
 import moment from 'moment';
 import { EmployeeEntity } from '@pos/employees/data-access';
+import { lowerCase } from 'lodash';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -122,26 +123,31 @@ export class OrderService {
     }
 
     static search(items: OrderEntity[], options: FilterRequest) {
-        const result: OrderEntity[] = [];
-        const lowerQuery = options.filter?.toLowerCase();
+        // const lowerQuery = options.filter?.toLowerCase() || '';
 
-        items.forEach((e) => {
-            if (e.status !== options.status) {
-                return;
+        return items.filter(i => {
+            return i.status === options.status
+                && (!options.filter || i.id?.indexOf(options.filter) !== -1);
             }
+        );
 
-            if (!lowerQuery) result.push(e);
+        // items.forEach((e) => {
+        //     if (e.status !== options.status) {
+        //         return;
+        //     }
 
-            if (
-                lowerQuery &&
-                (e.id?.toLowerCase().indexOf(lowerQuery) !== -1 ||
-                    e.employeeName?.toLowerCase().indexOf(lowerQuery) !== -1)
-            ) {
-                result.push(e);
-            }
-        });
+        //     if (!lowerQuery) result.push(e);
 
-        return result;
+        //     if (
+        //         lowerQuery &&
+        //         (e.id?.toLowerCase().indexOf(lowerQuery) !== -1 ||
+        //             e.employeeName?.toLowerCase().indexOf(lowerQuery) !== -1)
+        //     ) {
+        //         result.push(e);
+        //     }
+        // });
+
+        // return result;
     }
 
     static updateReorderPoint(id: string, value: number) {

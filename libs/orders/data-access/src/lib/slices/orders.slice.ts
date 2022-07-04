@@ -199,7 +199,7 @@ export const selectIsEmpty = createSelector(
     (state: OrdersState) => state.ids.length === 0
 );
 
-export const selectFilteredList = createSelector(
+export const selectFilteredOrderList = createSelector(
     getOrdersState,
     (state: OrdersState) => state.filteredList
 );
