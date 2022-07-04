@@ -137,7 +137,6 @@ export const printReceipt = async (
                 .actionFeedLine(1)
                 .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
                 .actionPrintText(order.status === 'OPEN' ? '** Customer Copy **' : '** Merchant Copy **')
-                .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
                 .actionFeedLine(1)
                 .actionPrintQRCode(
                     new StarXpandCommand.Printer.QRCodeParameter(
