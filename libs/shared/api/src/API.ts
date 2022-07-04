@@ -260,6 +260,7 @@ export type DeleteCustomerInput = {
 
 export type CreateEmployeeInput = {
   id?: string | null,
+  code: string,
   firstName: string,
   lastName?: string | null,
   middleName?: string | null,
@@ -273,6 +274,7 @@ export type CreateEmployeeInput = {
 };
 
 export type ModelEmployeeConditionInput = {
+  code?: ModelStringInput | null,
   firstName?: ModelStringInput | null,
   lastName?: ModelStringInput | null,
   middleName?: ModelStringInput | null,
@@ -297,6 +299,7 @@ export type ModelBooleanInput = {
 export type Employee = {
   __typename: "Employee",
   id: string,
+  code: string,
   firstName: string,
   lastName?: string | null,
   middleName?: string | null,
@@ -315,6 +318,7 @@ export type Employee = {
 
 export type UpdateEmployeeInput = {
   id: string,
+  code?: string | null,
   firstName?: string | null,
   lastName?: string | null,
   middleName?: string | null,
@@ -334,6 +338,7 @@ export type DeleteEmployeeInput = {
 
 export type CreateOrderInput = {
   id?: string | null,
+  orderNo: string,
   subtotal: number,
   tax: number,
   total: number,
@@ -366,6 +371,7 @@ export type OrderLineInput = {
 };
 
 export type ModelOrderConditionInput = {
+  orderNo?: ModelStringInput | null,
   subtotal?: ModelFloatInput | null,
   tax?: ModelFloatInput | null,
   total?: ModelFloatInput | null,
@@ -415,6 +421,7 @@ export type ModelIDInput = {
 export type Order = {
   __typename: "Order",
   id: string,
+  orderNo: string,
   subtotal: number,
   tax: number,
   total: number,
@@ -447,6 +454,7 @@ export type OrderLine = {
 
 export type UpdateOrderInput = {
   id: string,
+  orderNo?: string | null,
   subtotal?: number | null,
   tax?: number | null,
   total?: number | null,
@@ -1095,6 +1103,7 @@ export type ModelCustomerConnection = {
 
 export type ModelEmployeeFilterInput = {
   id?: ModelIDInput | null,
+  code?: ModelStringInput | null,
   firstName?: ModelStringInput | null,
   lastName?: ModelStringInput | null,
   middleName?: ModelStringInput | null,
@@ -1118,6 +1127,7 @@ export type ModelEmployeeConnection = {
 
 export type ModelOrderFilterInput = {
   id?: ModelIDInput | null,
+  orderNo?: ModelStringInput | null,
   subtotal?: ModelFloatInput | null,
   tax?: ModelFloatInput | null,
   total?: ModelFloatInput | null,
@@ -1596,6 +1606,7 @@ export type CreateEmployeeMutation = {
   createEmployee?:  {
     __typename: "Employee",
     id: string,
+    code: string,
     firstName: string,
     lastName?: string | null,
     middleName?: string | null,
@@ -1622,6 +1633,7 @@ export type UpdateEmployeeMutation = {
   updateEmployee?:  {
     __typename: "Employee",
     id: string,
+    code: string,
     firstName: string,
     lastName?: string | null,
     middleName?: string | null,
@@ -1648,6 +1660,7 @@ export type DeleteEmployeeMutation = {
   deleteEmployee?:  {
     __typename: "Employee",
     id: string,
+    code: string,
     firstName: string,
     lastName?: string | null,
     middleName?: string | null,
@@ -1674,6 +1687,7 @@ export type CreateOrderMutation = {
   createOrder?:  {
     __typename: "Order",
     id: string,
+    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -1726,6 +1740,7 @@ export type UpdateOrderMutation = {
   updateOrder?:  {
     __typename: "Order",
     id: string,
+    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -1778,6 +1793,7 @@ export type DeleteOrderMutation = {
   deleteOrder?:  {
     __typename: "Order",
     id: string,
+    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -2659,6 +2675,7 @@ export type GetSalesQuery = {
   getSales?:  Array< {
     __typename: "Order",
     id: string,
+    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -3065,6 +3082,7 @@ export type GetEmployeeQuery = {
   getEmployee?:  {
     __typename: "Employee",
     id: string,
+    code: string,
     firstName: string,
     lastName?: string | null,
     middleName?: string | null,
@@ -3094,6 +3112,7 @@ export type ListEmployeesQuery = {
     items:  Array< {
       __typename: "Employee",
       id: string,
+      code: string,
       firstName: string,
       lastName?: string | null,
       middleName?: string | null,
@@ -3127,6 +3146,7 @@ export type SyncEmployeesQuery = {
     items:  Array< {
       __typename: "Employee",
       id: string,
+      code: string,
       firstName: string,
       lastName?: string | null,
       middleName?: string | null,
@@ -3155,6 +3175,7 @@ export type GetOrderQuery = {
   getOrder?:  {
     __typename: "Order",
     id: string,
+    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -3210,6 +3231,7 @@ export type ListOrdersQuery = {
     items:  Array< {
       __typename: "Order",
       id: string,
+      orderNo: string,
       subtotal: number,
       tax: number,
       total: number,
@@ -3242,6 +3264,7 @@ export type SyncOrdersQuery = {
     items:  Array< {
       __typename: "Order",
       id: string,
+      orderNo: string,
       subtotal: number,
       tax: number,
       total: number,
@@ -4268,6 +4291,7 @@ export type OnCreateEmployeeSubscription = {
   onCreateEmployee?:  {
     __typename: "Employee",
     id: string,
+    code: string,
     firstName: string,
     lastName?: string | null,
     middleName?: string | null,
@@ -4289,6 +4313,7 @@ export type OnUpdateEmployeeSubscription = {
   onUpdateEmployee?:  {
     __typename: "Employee",
     id: string,
+    code: string,
     firstName: string,
     lastName?: string | null,
     middleName?: string | null,
@@ -4310,6 +4335,7 @@ export type OnDeleteEmployeeSubscription = {
   onDeleteEmployee?:  {
     __typename: "Employee",
     id: string,
+    code: string,
     firstName: string,
     lastName?: string | null,
     middleName?: string | null,
@@ -4331,6 +4357,7 @@ export type OnCreateOrderSubscription = {
   onCreateOrder?:  {
     __typename: "Order",
     id: string,
+    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -4378,6 +4405,7 @@ export type OnUpdateOrderSubscription = {
   onUpdateOrder?:  {
     __typename: "Order",
     id: string,
+    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -4425,6 +4453,7 @@ export type OnDeleteOrderSubscription = {
   onDeleteOrder?:  {
     __typename: "Order",
     id: string,
+    orderNo: string,
     subtotal: number,
     tax: number,
     total: number,

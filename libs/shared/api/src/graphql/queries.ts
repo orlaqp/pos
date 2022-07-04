@@ -6,6 +6,7 @@ export const getSales = /* GraphQL */ `
   query GetSales($status: OrderStatus!, $from: String!, $to: String!) {
     getSales(status: $status, from: $from, to: $to) {
       id
+      orderNo
       subtotal
       tax
       total
@@ -377,6 +378,7 @@ export const getEmployee = /* GraphQL */ `
   query GetEmployee($id: ID!) {
     getEmployee(id: $id) {
       id
+      code
       firstName
       lastName
       middleName
@@ -403,6 +405,7 @@ export const listEmployees = /* GraphQL */ `
     listEmployees(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        code
         firstName
         lastName
         middleName
@@ -438,6 +441,7 @@ export const syncEmployees = /* GraphQL */ `
     ) {
       items {
         id
+        code
         firstName
         lastName
         middleName
@@ -462,6 +466,7 @@ export const getOrder = /* GraphQL */ `
   query GetOrder($id: ID!) {
     getOrder(id: $id) {
       id
+      orderNo
       subtotal
       tax
       total
@@ -512,6 +517,7 @@ export const listOrders = /* GraphQL */ `
     listOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        orderNo
         subtotal
         tax
         total
@@ -546,6 +552,7 @@ export const syncOrders = /* GraphQL */ `
     ) {
       items {
         id
+        orderNo
         subtotal
         tax
         total

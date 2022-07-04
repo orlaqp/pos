@@ -123,6 +123,7 @@ type StationMetaData = {
 
 export declare class Order {
   readonly id: string;
+  readonly orderNo: string;
   readonly subtotal: number;
   readonly tax: number;
   readonly total: number;
@@ -196,6 +197,7 @@ export declare class Category {
 
 export declare class Employee {
   readonly id: string;
+  readonly code: string;
   readonly firstName: string;
   readonly lastName?: string | null;
   readonly middleName?: string | null;

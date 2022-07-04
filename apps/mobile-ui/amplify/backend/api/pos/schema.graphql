@@ -39,6 +39,7 @@ type Customer @model @auth(rules: [{allow: public}]) {
 
 type Employee @model @auth(rules: [{allow: public}]) {
   id: ID!
+  code: String!
   firstName: String!
   lastName: String
   middleName: String
@@ -52,6 +53,7 @@ type Employee @model @auth(rules: [{allow: public}]) {
 
 type Order @model @auth(rules: [{allow: public}]) {
   id: ID!
+  orderNo: String!
   subtotal: Float!
   tax: Float!
   total: Float!

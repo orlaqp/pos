@@ -1,14 +1,11 @@
+/* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { Order, OrderLine, OrderStatus, Product } from '@pos/shared/models';
 import { DataStore } from 'aws-amplify';
 import { OrderEntity, OrderEntityMapper } from './order.entity';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { User } from '@pos/auth/data-access';
 import moment from 'moment';
 import { EmployeeEntity } from '@pos/employees/data-access';
-import { lowerCase } from 'lodash';
 
 export interface FilterRequest {
     status: OrderStatus;

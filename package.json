@@ -65,6 +65,8 @@
     "tslib": "^2.0.0"
   },
   "devDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.121.0",
+    "@aws-sdk/lib-dynamodb": "^3.121.0",
     "@nrwl/cli": "^14.1.9",
     "@nrwl/detox": "13.10.3",
     "@nrwl/eslint-plugin-nx": "13.10.3",
@@ -91,6 +93,7 @@
     "@types/react-native": "0.67.3",
     "@typescript-eslint/eslint-plugin": "~5.18.0",
     "@typescript-eslint/parser": "~5.18.0",
+    "aws-sdk": "^2.1167.0",
     "babel-jest": "27.2.3",
     "change-case": "^4.1.2",
     "detox": "19.5.7",

@@ -41,6 +41,7 @@
     "rn-select-date-range": "*",
     "moment": "*",
     "react-native-i18n": "*",
-    "react-native-localize": "*"
+    "react-native-localize": "*",
+    "aws-sdk": "*"
   }
 }

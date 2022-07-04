@@ -219,6 +219,7 @@ export const onCreateEmployee = /* GraphQL */ `
   subscription OnCreateEmployee {
     onCreateEmployee {
       id
+      code
       firstName
       lastName
       middleName
@@ -240,6 +241,7 @@ export const onUpdateEmployee = /* GraphQL */ `
   subscription OnUpdateEmployee {
     onUpdateEmployee {
       id
+      code
       firstName
       lastName
       middleName
@@ -261,6 +263,7 @@ export const onDeleteEmployee = /* GraphQL */ `
   subscription OnDeleteEmployee {
     onDeleteEmployee {
       id
+      code
       firstName
       lastName
       middleName
@@ -282,6 +285,7 @@ export const onCreateOrder = /* GraphQL */ `
   subscription OnCreateOrder {
     onCreateOrder {
       id
+      orderNo
       subtotal
       tax
       total
@@ -327,6 +331,7 @@ export const onUpdateOrder = /* GraphQL */ `
   subscription OnUpdateOrder {
     onUpdateOrder {
       id
+      orderNo
       subtotal
       tax
       total
@@ -372,6 +377,7 @@ export const onDeleteOrder = /* GraphQL */ `
   subscription OnDeleteOrder {
     onDeleteOrder {
       id
+      orderNo
       subtotal
       tax
       total

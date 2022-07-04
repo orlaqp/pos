@@ -258,6 +258,7 @@ export const createEmployee = /* GraphQL */ `
   ) {
     createEmployee(input: $input, condition: $condition) {
       id
+      code
       firstName
       lastName
       middleName
@@ -282,6 +283,7 @@ export const updateEmployee = /* GraphQL */ `
   ) {
     updateEmployee(input: $input, condition: $condition) {
       id
+      code
       firstName
       lastName
       middleName
@@ -306,6 +308,7 @@ export const deleteEmployee = /* GraphQL */ `
   ) {
     deleteEmployee(input: $input, condition: $condition) {
       id
+      code
       firstName
       lastName
       middleName
@@ -330,6 +333,7 @@ export const createOrder = /* GraphQL */ `
   ) {
     createOrder(input: $input, condition: $condition) {
       id
+      orderNo
       subtotal
       tax
       total
@@ -378,6 +382,7 @@ export const updateOrder = /* GraphQL */ `
   ) {
     updateOrder(input: $input, condition: $condition) {
       id
+      orderNo
       subtotal
       tax
       total
@@ -426,6 +431,7 @@ export const deleteOrder = /* GraphQL */ `
   ) {
     deleteOrder(input: $input, condition: $condition) {
       id
+      orderNo
       subtotal
       tax
       total
