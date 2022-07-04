@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { Alert, View, Text } from 'react-native';
+import { Alert, View, Text, ScrollView } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import {
     UIActions,
@@ -53,6 +53,7 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
         mode: 'onChange',
         defaultValues: {
             id: employee?.id,
+            code: employee?.code,
             firstName: employee?.firstName,
             lastName: employee?.lastName,
             middleName: employee?.middleName,
@@ -110,9 +111,11 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
     }, [employee]);
 
     return (
-        <View style={[styles.page, styles.centeredHorizontally]}>
+        <ScrollView
+            contentContainerStyle={[styles.page, styles.centeredHorizontally]}
+        >
             <FormProvider {...form}>
-                <View style={[styles.page, { width: '50%', marginTop: 50 }]}>
+                <View style={[styles.page, { width: '75%', marginTop: 50 }]}>
                     <View
                         style={{
                             flexDirection: 'row',
@@ -135,35 +138,60 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
                             <UISwitch name="active" />
                         </View>
                     </View>
-                    <View>
-                        <UIInput name="firstName" placeholder="First name" />
+                    <View style={styles.row}>
+                        <View style={{ flex: 1 }}>
+                            <UIInput
+                                label="First Name"
+                                name="firstName"
+                                placeholder="First name"
+                            />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <UIInput
+                                label="Last Name"
+                                name="lastName"
+                                placeholder="Last name"
+                            />
+                        </View>
                     </View>
-                    <View>
-                        <UIInput name="lastName" placeholder="Last name" />
+                    <View style={styles.row}>
+                        <View style={{ flex: 1 }}>
+                            <UIInput
+                                name="phone"
+                                label="Phone"
+                                keyboardType="phone-pad"
+                                placeholder="Phone Number"
+                            />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <UIInput
+                                name="email"
+                                label="Email"
+                                keyboardType="email-address"
+                                placeholder="Email Address"
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                            />
+                        </View>
                     </View>
-                    <View>
-                        <UIInput
-                            name="phone"
-                            keyboardType="phone-pad"
-                            placeholder="Phone Number"
-                        />
-                    </View>
-                    <View>
-                        <UIInput
-                            name="email"
-                            keyboardType="email-address"
-                            placeholder="Email Address"
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                        />
-                    </View>
-                    <View>
-                        <UIInput
-                            name="pin"
-                            keyboardType="decimal-pad"
-                            placeholder="Pin"
-                            rules={{ minLength: 4, maxLength: 4 }}
-                        />
+                    <View style={styles.row}>
+                        <View style={{ flex: 1 }}>
+                            <UIInput
+                                label="Code"
+                                name="code"
+                                placeholder="Code"
+                            />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <UIInput
+                                name="pin"
+                                label="Pin"
+                                keyboardType="decimal-pad"
+                                placeholder="Pin"
+                                rules={{ minLength: 4, maxLength: 4 }}
+                                secureTextEntry={true}
+                            />
+                        </View>
                     </View>
                     <View style={{ flexDirection: 'column', marginBottom: 50 }}>
                         <View
@@ -195,7 +223,7 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
                     />
                 </View>
             </FormProvider>
-        </View>
+        </ScrollView>
     );
 }
 

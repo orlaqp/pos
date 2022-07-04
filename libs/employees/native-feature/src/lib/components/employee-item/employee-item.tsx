@@ -16,8 +16,6 @@ import {
 } from '@pos/employees/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { utimesSync } from 'fs';
-import { iteratorSymbol } from 'immer/dist/internal';
 
 export interface EmployeeItemProps {
     item: EmployeeEntity;
@@ -68,6 +66,11 @@ export function EmployeeItem({ item, navigation }: EmployeeItemProps) {
                     ]}
                 >
                     {item.active ? 'Active' : 'Inactive' }
+                </Text>
+            </View>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.name}>
+                    {item.code}
                 </Text>
             </View>
             <View style={{ flex: 3 }}>

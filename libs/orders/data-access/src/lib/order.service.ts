@@ -40,6 +40,7 @@ export class OrderService {
     ) {
         if (!state.id) {
             const order = new Order({
+                orderNo: '00-00-000000-00000',
                 status: status || 'OPEN',
                 subtotal: state.footer.subtotal,
                 tax: 0,

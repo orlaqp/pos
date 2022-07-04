@@ -3,6 +3,7 @@ import { Employee } from '@pos/shared/models';
 export type EmployeeEntity = {
     id?: string;
     
+    code: string;
     firstName: string;
     lastName: string | null | undefined;
     middleName: string | null | undefined;
@@ -21,7 +22,7 @@ export class EmployeeEntityMapper {
     static fromModel(x: Employee): EmployeeEntity {
         return {
             id: x.id,
-            
+            code: x.code,
             firstName: x.firstName,
             lastName: x.lastName,
             middleName: x.middleName,

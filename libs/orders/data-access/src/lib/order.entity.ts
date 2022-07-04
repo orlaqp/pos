@@ -1,5 +1,4 @@
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
-import { User } from '@pos/auth/data-access';
 import { EmployeeEntity } from '@pos/employees/data-access';
 import { CartState, initialCartState } from '@pos/sales/data-access';
 import { Order, OrderLine, OrderStatus } from '@pos/shared/models';
@@ -7,6 +6,7 @@ import { Alert } from 'react-native';
 
 export interface OrderEntity {
     id: string;
+    orderNo: string;
     subtotal: number;
     tax: number;
     total: number;
@@ -37,6 +37,7 @@ export class OrderEntityMapper {
     static fromModel(p: Order): OrderEntity {
         return {
             id: p.id,
+            orderNo: p.orderNo,
             subtotal: p.subtotal,
             tax: p.tax,
             total: p.total,
@@ -55,6 +56,8 @@ export class OrderEntityMapper {
     static asCartState(o: OrderEntity): CartState {
         const state: CartState = { ...initialCartState };
 
+        state.id = o.id;
+        state.orderNo = o.orderNo;
         state.footer = {
             discount: 0,
             subtotal: o.subtotal,
@@ -81,7 +84,7 @@ export class OrderEntityMapper {
             },
         }));
         state.selected = initialCartState.selected;
-
+        
         return state;
     }
     
@@ -115,6 +118,8 @@ export class OrderEntityMapper {
             employeeName: `${employee.firstName} ${employee.lastName}`,
         };
 
+        state.id = cart.id;
+        state.orderNo = cart.orderNo;
         state.items = cart.items
             .filter((i) => i.quantity > 0)
             ?.map((i) => ({

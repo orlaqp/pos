@@ -25,6 +25,7 @@ export class EmployeeService {
 
         await DataStore.save(
             Employee.copyOf(existing, updated => {
+                updated.code = employee.code;
                 updated.firstName = employee.firstName;
                 updated.lastName = employee.lastName;
                 updated.middleName = employee.middleName;
