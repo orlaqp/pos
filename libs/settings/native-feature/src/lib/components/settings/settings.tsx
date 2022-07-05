@@ -3,8 +3,9 @@ import {
     selectSettings,
     settingsActions,
 } from '@pos/settings/data-access';
+import { UIInput } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
-import { Button, Switch, useTheme } from '@rneui/themed';
+import { Button, Input, Switch, useTheme } from '@rneui/themed';
 import { DataStore } from 'aws-amplify';
 import React, { useState } from 'react';
 
@@ -32,24 +33,27 @@ export function Settings(props: SettingsProps) {
         <SafeAreaView
             style={[styles.page, styles.centeredHorizontally, { padding: 40 }]}
         >
-            <View style={[styles.row, styles.centered]}>
-                <Text style={[styles.primaryText, { marginRight: 30 }]}>
-                    Use Dark Theme:
+            <View style={{ width: '65%' }}>
+                <View style={[styles.row, styles.alignEnd]}>
+                    <Text style={[styles.primaryText, { marginRight: 30 }]}>
+                        Use Dark Theme:
+                    </Text>
+                    <Switch
+                        value={settings.darkTheme}
+                        onValueChange={(value) => updateThemeMode(value)}
+                    ></Switch>
+                </View>
+                
+                <Text style={[styles.primaryText, { marginVertical: 30 }]}>
+                    Important: by clicking the button below you will wipe out
+                    all cached data in this device. Please use it carefully
                 </Text>
-                <Switch
-                    value={settings.darkTheme}
-                    onValueChange={(value) => updateThemeMode(value)}
-                ></Switch>
+                <Button
+                    title="Reset Data"
+                    onPress={() => dispatch(resetDataStore())}
+                    loading={settings.dataStoreStatus === 'resetting'}
+                />
             </View>
-            <Text style={[styles.primaryText, { marginVertical: 30 }]}>
-                Important: by clicking the button below you will wipe out all
-                cached data in this device. Please use it carefully
-            </Text>
-            <Button
-                title="Reset Data"
-                onPress={() => dispatch(resetDataStore())}
-                loading={settings.dataStoreStatus === 'resetting'}
-            />
         </SafeAreaView>
     );
 }

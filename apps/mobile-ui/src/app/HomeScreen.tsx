@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Role, selectEmployee, selectUser } from '@pos/auth/data-access';
 import { UIKeyPad } from '@pos/shared/ui-native';
 import { employeesActions, EmployeeService, selectLoginEmployee } from '@pos/employees/data-access';
+import { StationService } from '@pos/settings/data-access';
 
 interface PathDetails {
     title: string;
@@ -21,6 +22,7 @@ interface PathDetails {
     role: string;
     params?: object;
     action?: () => void;
+    validate?: () => Promise<string>;
 }
 
 interface HomeScreenProps {
@@ -42,6 +44,10 @@ export const HomeScreen = (props: HomeScreenProps) => {
             image: emptyCart,
             role: Role.Sales,
             params: { mode: 'order' },
+            validate: async () => {
+                const res = await StationService.isStationNumberSet();
+                return res ? null : 'Please make sure station number is set before making sales';
+            }
         },
         {
             title: 'Payments',
@@ -56,8 +62,18 @@ export const HomeScreen = (props: HomeScreenProps) => {
             role: Role.Admin,
         },
     ];
-    const goto = (details: PathDetails) =>
-        props.navigation.navigate(details.path, details.params);
+    const goto = (details: PathDetails) => {
+        if (!details.validate)
+            return props.navigation.navigate(details.path, details.params);
+
+        details.validate().then(msg => {
+            if (!msg) {
+                return props.navigation.navigate(details.path, details.params);
+            }
+
+            Alert.alert(msg);
+        });
+    }
 
     const onPinUpdated = (pin) => {
         console.log(pin);

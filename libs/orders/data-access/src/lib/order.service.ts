@@ -6,6 +6,7 @@ import { CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
 import moment from 'moment';
 import { EmployeeEntity } from '@pos/employees/data-access';
+import { StationService } from '@pos/settings/data-access';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -40,7 +41,7 @@ export class OrderService {
     ) {
         if (!state.id) {
             const order = new Order({
-                orderNo: '00-00-000000-00000',
+                orderNo: await StationService.getNextOrderNumber(employee),
                 status: status || 'OPEN',
                 subtotal: state.footer.subtotal,
                 tax: 0,
@@ -238,3 +239,7 @@ async function updateProductQuantity(
 
     return DataStore.save(updatedProduct);
 }
+function getNextOrderNumber(): string {
+    throw new Error('Function not implemented.');
+}
+
