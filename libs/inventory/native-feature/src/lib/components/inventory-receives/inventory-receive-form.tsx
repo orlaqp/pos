@@ -15,11 +15,16 @@ import {
 } from '@pos/inventory/data-access';
 import { RootState } from '@pos/store';
 import { InventoryReceive, Product } from '@pos/shared/models';
-import { ProductService } from '@pos/products/data-access';
-import { Button, useTheme } from '@rneui/themed';
+import {
+    ProductEntity,
+    ProductService,
+    selectAllProducts,
+} from '@pos/products/data-access';
+import { Button, Dialog, useTheme } from '@rneui/themed';
 import InventoryReceiveLine from '../inventory-receives/inventory-receive-line';
 import { confirm } from '@pos/shared/utils';
 import { NavigationParamList } from '@pos/sales/native-feature';
+import { SearchItem } from './search-product-item';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -36,9 +41,13 @@ export function InventoryReceiveForm({
     const dispatch = useDispatch();
     const theme = useTheme();
     const styles = useSharedStyles();
+    const products = useSelector(selectAllProducts);
     const [busy, setBusy] = useState<boolean>(false);
     const [filter, setFilter] = useState<string>();
     const [lines, setLines] = useState<InventoryReceiveLineDTO[]>([]);
+    const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
+        []
+    );
     const ref = React.createRef<TextInput>();
 
     useEffect(() => {
@@ -122,29 +131,25 @@ export function InventoryReceiveForm({
         setLines((res) => res.filter((i) => i.productId !== item.productId));
     };
 
+    const addItem = (product: ProductEntity) => {
+        if (lines.find((i) => i.productId === product.id)) return;
+
+        setLines((res) => [
+            ...res,
+            InventoryReceiveLineMapper.fromProduct(product),
+        ]);
+
+        setFilter('');
+    };
+
     useEffect(() => {
-        if (!filter) return;
+        if (!filter)
+            setFilteredProducts(prev => []);
 
-        const addItem = (product: Product) => {
-            if (lines.find((i) => i.productId === product.id)) return;
-
-            setLines((res) => [
-                ...res,
-                InventoryReceiveLineMapper.fromProduct(product),
-            ]);
-        };
-
-        const searchProduct = async (text?: string) => {
-            if (!text) return;
-
-            const products = await ProductService.searchByCode(text);
-            
-            if (products.length !== 1) return;
-            addItem(products[0]);
-        };
-
-        searchProduct(filter);
-    }, [lines, filter]);
+        const searchResult = ProductService.search(products, { text: filter });
+        setFilteredProducts((prev) => [...searchResult.items]);
+    
+    }, [filter, products]);
 
     return (
         <View style={[styles.page]}>
@@ -166,7 +171,8 @@ export function InventoryReceiveForm({
                                 styles.textBold,
                             ]}
                         >
-                            This receive was already completed and cannot be changed
+                            This receive was already completed and cannot be
+                            changed
                         </Text>
                     </View>
                 )}
@@ -184,6 +190,26 @@ export function InventoryReceiveForm({
                     </View>
                 )}
             </View>
+            {!route.params?.readOnly && filteredProducts.length > 0 && (
+                <Dialog
+                    isVisible={filteredProducts.length > 0}
+                    onBackdropPress={() => setFilteredProducts(prev => [])}
+                    overlayStyle={[styles.overlay, { width: 700 }]}
+                >
+                    <View>
+                        <View style={{ marginBottom: 20 }}>
+                            <Text style={styles.secondaryText}>Products found: </Text>
+                        </View>
+                        <FlatList
+                            data={filteredProducts}
+                            renderItem={({ item }) => (
+                                <SearchItem product={item} onAdd={prod => addItem(prod)} />
+                            )}
+                        />
+                    </View>
+                </Dialog>
+            )}
+
             <FlatList
                 horizontal={false}
                 data={lines}

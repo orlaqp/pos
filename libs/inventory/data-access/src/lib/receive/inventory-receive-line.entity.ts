@@ -1,3 +1,4 @@
+import { ProductEntity } from '@pos/products/data-access';
 import { InventoryReceiveLine, Product } from '@pos/shared/models';
 
 export type InventoryReceiveLineDTO = {
@@ -13,7 +14,7 @@ export type InventoryReceiveLineDTO = {
 };
 
 export class InventoryReceiveLineMapper {
-    static fromProduct(x: Product): InventoryReceiveLineDTO {
+    static fromProduct(x: ProductEntity): InventoryReceiveLineDTO {
         return {
             productId: x.id,
             productName: x.name,

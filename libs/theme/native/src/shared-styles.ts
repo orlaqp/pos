@@ -101,6 +101,16 @@ export const useSharedStyles = () => {
             borderRadius: 10,
             marginBottom: 5,
         },
+        miniDataRow: {
+            flexDirection: "row",
+            flexWrap: "wrap",
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: `${theme.theme.colors.grey5}44`,
+            padding: 5,
+            borderRadius: 10,
+            marginBottom: 5,
+        },
         name: {
             fontSize: 18,
             color: theme.theme.colors.grey0,

@@ -17,7 +17,6 @@ import {
 import {
     OrderEntity,
     OrderEntityMapper,
-    OrderLineEntity,
 } from '../order.entity';
 import { FilterRequest, OrderService } from '../order.service';
 
