@@ -58,7 +58,12 @@ export const employeesSlice = createSlice({
     },
     update: (state: EmployeesState, action: PayloadAction<Update< EmployeeEntity>>) => {
         employeesAdapter.updateOne(state, action);
+
         filterList(state, state.filterQuery);
+
+        if (state.loginEmployee?.id === action.payload.id) {
+            state.loginEmployee = state.entities[action.payload.id!];
+        }
     },
     select: (state: EmployeesState, action: PayloadAction< EmployeeEntity >) => {
         state.selected = action.payload;
@@ -71,7 +76,7 @@ export const employeesSlice = createSlice({
         state.filterQuery = action.payload;
     },
     loginEmployee: (state: EmployeesState, action: PayloadAction<EmployeeEntity>) => {
-        state.loginEmployee = action.payload;
+        state.loginEmployee = state.entities[action.payload.id!]; //  action.payload;
     },
     logoffEmployee: (state: EmployeesState) => {
         state.loginEmployee = undefined;

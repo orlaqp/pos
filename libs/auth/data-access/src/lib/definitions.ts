@@ -8,6 +8,6 @@ export const Role = {
     Payments: 'Payments',
     Sales: 'Sales',
     Checks: 'Receive Check Payment',
-    Voids: 'Void Sales',
+    VoidOrder: 'Void Sales',
     RemoveSale: 'Remove Sales',
 }

@@ -14,6 +14,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { cartActions } from '@pos/sales/data-access';
 import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import { selectStore } from '@pos/store-info/data-access';
+import { Role } from '@pos/auth/data-access';
+import { selectLoginEmployee } from '@pos/employees/data-access';
 
 export interface OrderItemProps {
     item: OrderEntity;
@@ -26,6 +28,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
     const styles = useSharedStyles();
     const dispatch = useDispatch();
     const defaultPrinter = useSelector(getDefaultPrinter);
+    const employee = useSelector(selectLoginEmployee);
     const store = useSelector(selectStore);
     const [busy, setBusy] = useState<boolean>(false);
 
@@ -113,6 +116,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                 )}
                 {item.status === 'PAID' && (
                     <>
+                        { employee?.roles.includes(Role.VoidOrder) &&
                         <Button
                             type="clear"
                             title="Void"
@@ -124,6 +128,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                             titleStyle={{ paddingRight: 10 }}
                             onPress={() => onVoid(item)}
                         />
+                        }
                         <Button
                             type="clear"
                             title="Print"
@@ -137,6 +142,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                         />
                     </>
                 )}
+                { employee?.roles.includes(Role.RemoveSale) &&
                 <Button
                     type="clear"
                     icon={{
@@ -146,6 +152,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                     }}
                     onPress={confirmDeletion}
                 />
+                }
             </View>
         </View>
     );
