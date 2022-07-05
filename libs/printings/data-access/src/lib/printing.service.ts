@@ -140,14 +140,14 @@ export const printReceipt = async (
                 .actionFeedLine(1)
                 .actionPrintQRCode(
                     new StarXpandCommand.Printer.QRCodeParameter(
-                        `${order?.id}\n`
+                        `${order?.orderNo}\n`
                     )
                         .setModel(StarXpandCommand.Printer.QRCodeModel.Model2)
                         .setLevel(StarXpandCommand.Printer.QRCodeLevel.L)
                         .setCellSize(8)
                 )
                 .actionFeedLine(1)
-                .actionPrintText(`${order?.id.substring(0, 6)}...\n`)
+                .actionPrintText(`${order?.orderNo}\n`)
                 .actionFeedLine(1);
         } else {
             printerBuilder

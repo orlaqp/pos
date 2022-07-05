@@ -51,7 +51,7 @@ export function StationForm({ navigation }: StationFormProps) {
         mode: 'onChange',
         defaultValues: {
             currentDate: stationInfo?.currentDate,
-            orderNumber: stationInfo?.orderNumber?.toString().padStart(5, '0'),
+            orderNumber: stationInfo?.orderNumber?.toString().padStart(4, '0'),
             stationNumber: stationInfo?.stationNumber
         },
     });

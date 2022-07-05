@@ -51,10 +51,6 @@ export function OrderList({ navigation }: OrderListProps) {
             filter: filterText,
         });
 
-        console.log('====================================');
-        console.log('Search result', searchResult);
-        console.log('====================================');
-
         setFilteredOrders((items) => [...searchResult]);
     }, [allOrders, selectedIndex, filterText]);
 

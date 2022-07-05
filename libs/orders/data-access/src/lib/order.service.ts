@@ -7,6 +7,8 @@ import { Alert } from 'react-native';
 import moment from 'moment';
 import { EmployeeEntity } from '@pos/employees/data-access';
 import { StationService } from '@pos/settings/data-access';
+import { sortDescListBy, sortListBy } from '@pos/shared/utils';
+import uuid from 'react-native-uuid';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -51,7 +53,7 @@ export class OrderService {
                 lines: state.items.map(
                     (i) =>
                         new OrderLine({
-                            identifier: i.id!,
+                            identifier: i.id || uuid.v4().toString(),
                             quantity: i.quantity,
                             tax: 0,
                             price: i.product.price,
@@ -124,11 +126,19 @@ export class OrderService {
     static search(items: OrderEntity[], options: FilterRequest) {
         // const lowerQuery = options.filter?.toLowerCase() || '';
 
-        return items.filter(i => {
+        const searchResult = items.filter(i => {
             return i.status === options.status
-                && (!options.filter || i.id?.indexOf(options.filter) !== -1);
+                && (!options.filter || i.orderNo?.indexOf(options.filter) !== -1);
             }
         );
+
+        if (options.status === 'OPEN') {
+            sortListBy(searchResult, 'createdAt');
+        } else {
+            sortDescListBy(searchResult, 'createdAt');
+        }
+
+        return searchResult;
 
         // items.forEach((e) => {
         //     if (e.status !== options.status) {
@@ -175,27 +185,31 @@ export class OrderService {
 
     static async refund(
         employee: EmployeeEntity,
-        oldOrder: OrderEntity,
-        lines: { id: string; price: number; quantity: number }[]
+        originalOrder: OrderEntity,
+        refundedLines: { id: string; price: number; quantity: number }[]
     ) {
         // First refund the entire original order
         const orders = await DataStore.query(Order, (o) =>
-            o.id('eq', oldOrder.id)
+            o.id('eq', originalOrder.id)
         );
         const order = orders[0];
         if (!order) return;
 
-        const newOrder = Order.copyOf(order, (o) => {
+        debugger;
+
+        const refundedOrder = Order.copyOf(order, (o) => {
             o.status = OrderStatus.REFUNDED;
         });
 
-        await DataStore.save(newOrder);
-        await OrderService.updateInventory(newOrder);
+        console.log('Refunded order', refundedOrder);
+        
+        await DataStore.save(refundedOrder);
+        await OrderService.updateInventory(refundedOrder);
 
         // then create a new one if necessary
-        const cartOrder = OrderEntityMapper.asCartState(oldOrder);
+        const cartOrder = OrderEntityMapper.asCartState(originalOrder);
 
-        lines.forEach((l) => {
+        refundedLines.forEach((l) => {
             const line = cartOrder.items?.find(
                 (li) => li.id === l.id && li.quantity > 0
             );
@@ -207,8 +221,10 @@ export class OrderService {
         });
 
         // cartOrder.items = cartOrder.items?.filter(l => l.quantity > 0);
-        const newCart = OrderEntityMapper.fromRefundedCart(employee, cartOrder);
+        const newCart = await OrderEntityMapper.fromRefundedCart(employee, cartOrder);
 
+        console.log('New order', newCart);
+        
         if (!newCart.items?.length) return;
 
         await OrderService.saveOrder(employee, newCart, OrderStatus.PAID);

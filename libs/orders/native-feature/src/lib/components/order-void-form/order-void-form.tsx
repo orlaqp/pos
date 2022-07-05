@@ -11,7 +11,6 @@ import OrderVoidableItem from '../order-voidable-item/order-voidable-item';
 import { Button, useTheme } from '@rneui/themed';
 import { EACH } from '@pos/unit-of-measures/data-access';
 import { useSelector } from 'react-redux';
-import { selectUser } from '@pos/auth/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 
 export interface OrderItemProps {
@@ -40,6 +39,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     };
 
     const processRefund = async () => {
+        debugger;
         if (!employee) {
             Alert.alert('Error', 'Refund is not possible because no login employee was found');
             return;

@@ -1,5 +1,5 @@
+/* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { EmployeeEntity } from '@pos/employees/data-access';
-import { OrderEntityMapper } from '@pos/orders/data-access';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import { Alert } from 'react-native';
@@ -57,7 +57,7 @@ export class StationService {
 
         await StationService.save(config);
 
-        return `${config.stationNumber}-${employee.code}-${orderDateString}-${config.orderNumber.toString().padStart(5, '0')}`;
+        return `${config.stationNumber}-${employee.code}-${orderDateString}-${config.orderNumber.toString().padStart(4, '0')}`;
     }
 
     private static save(info: StationConfig) {

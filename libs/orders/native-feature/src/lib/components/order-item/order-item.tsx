@@ -78,7 +78,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
             {busy && <ActivityIndicator size="small" />}
             <View style={{ flex: 2 }}>
                 <Text style={[styles.name, { textAlign: 'center' }]}>
-                    {`${item.id.substring(0, 8)}...`}
+                    {item.orderNo}
                 </Text>
             </View>
             <View style={{ flex: 3 }}>
