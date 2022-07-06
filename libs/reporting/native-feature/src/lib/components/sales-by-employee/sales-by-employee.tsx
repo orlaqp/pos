@@ -1,5 +1,6 @@
 import { getSalesSummaryForRange } from '@pos/reporting/data-access';
 import { DateRange } from '@pos/shared/ui-native';
+import { sortDescListBy } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
 import React from 'react';
 
@@ -21,7 +22,8 @@ export function SalesByEmployee(props: SalesByEmployeeProps) {
         range.endDate = range.endDate.endOf('day');
 
         return getSalesSummaryForRange('PAID', range).then((summary) => {
-            console.log('summary data', summary);
+            sortDescListBy(summary?.employees as any, 'amount');
+
             return summary?.employees?.map((e) => ({
                 employee: e?.employeeName,
                 amount: e?.amount,

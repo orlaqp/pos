@@ -27,8 +27,8 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
     const [totals, setTotals] = useState<Record<string, number>>();
     const [items, setItems] = useState<any[]>(true);
     const [dateRange, setDateRange] = useState<DateRange>({
-        startDate: moment().add(-7, 'days'),
-        endDate: moment(),
+        startDate: moment().startOf('day'),
+        endDate: moment().endOf('day'),
     });
 
     useEffect(() => {
@@ -54,10 +54,6 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
         setTotals(totals);
     }, [headers, items]);
 
-    console.log('====================================');
-    console.log('Totals', totals);
-    console.log('====================================');
-
     if (loading)
         return (
             <View style={[styles.page, { paddingTop: 50 }]}>
@@ -74,7 +70,7 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
                     borderRadius: 5,
                     marginHorizontal: 150,
                     paddingHorizontal: 30,
-                    paddingVertical: 20,
+                    // paddingVertical: 20,
                 }}
             >
                 <View style={{ flex: 1 }}>
@@ -105,7 +101,7 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
                     ))}
                 </View>
 
-                <View style={{ flex: 5 }}>
+                <View style={{ flex: 6 }}>
                     <FlatList
                         data={items}
                         renderItem={(data: any, idx: number) => (
@@ -137,13 +133,13 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
                 </View>
 
                 {totals && (
-                    <View style={{ flex: 1.2, marginTop: 5 }}>
+                    <View style={{ flex: .3 }}>
                         {headers.map((h, idx) => (
                             <View key={idx} style={{ flex: h.width }}>
                                 <Text
                                     style={[
                                         styles.primaryText,
-                                        { textAlign: h.align, fontSize: 16, fontWeight: 'bold' },
+                                        { textAlign: h.align, fontSize: 16, fontWeight: 'bold', marginTop: -20 },
                                     ]}
                                 >
                                     {h.sum ? `$${totals[h.field].toFixed(2)}` : ''}

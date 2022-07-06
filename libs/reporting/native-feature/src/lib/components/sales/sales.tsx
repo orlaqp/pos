@@ -14,7 +14,7 @@ export interface SalesProps {}
 export function Sales(props: SalesProps) {
     const styles = useSharedStyles();
     const headers: ReportHeader[] = [
-        { label: 'Date/Time', field: 'orderDate', width: 2 },
+        { label: 'Number', field: 'orderNo', width: 3 },
         { label: 'Employee', field: 'employee', width: 3 },
         { label: 'Amount', field: 'amount', width: 1, format: 'money', align: 'right', sum: true },
     ];
@@ -25,6 +25,7 @@ export function Sales(props: SalesProps) {
 
         return getSalesForRange(OrderStatus.PAID, range).then((sales) => {
             return sales?.map((s) => ({
+                orderNo: s.orderNo,
                 orderDate: moment(s.orderDate).format('YYYY-MM-DD hh:MM'),
                 employee: s.employeeName,
                 amount: s.total,
