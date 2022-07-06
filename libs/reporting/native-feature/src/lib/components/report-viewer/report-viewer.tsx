@@ -63,6 +63,13 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
 
     return (
         <View style={[styles.page, { flexDirection: 'column', margin: 20 }]}>
+            <View style={{ flex: 1, zIndex: 2000 }}>
+                    <UIDateRange
+                        initialRange={dateRange}
+                        onRangeChange={setDateRange}
+                    />
+                </View>
+
             <View
                 style={{
                     flex: 7,
@@ -73,13 +80,6 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
                     // paddingVertical: 20,
                 }}
             >
-                <View style={{ flex: 1 }}>
-                    <UIDateRange
-                        initialRange={dateRange}
-                        onRangeChange={setDateRange}
-                    />
-                </View>
-
                 <View
                     style={{
                         flexDirection: 'row',
