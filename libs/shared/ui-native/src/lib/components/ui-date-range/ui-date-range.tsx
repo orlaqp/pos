@@ -92,8 +92,8 @@ export function UIDateRange({ initialRange, onRangeChange }: UIDateRangeProps) {
                                     }}
                                 >
                                     {`${startDate.format(
-                                        'YYYY-MM-DD'
-                                    )}  ->  ${endDate?.format('YYYY-MM-DD')}`}
+                                        'MM-DD-YYYY'
+                                    )}  ->  ${endDate?.format('MM-DD-YYYY')}`}
                                 </Text>
                             )}
                         </View>
@@ -113,7 +113,7 @@ const useStyles = () => {
         ...StyleSheet.create({
             container: {
                 flex: 1,
-                zIndex: 10,
+                zIndex: 1000,
                 // backgroundColor: "#fff",
                 alignItems: 'center',
                 // marginTop: -100,

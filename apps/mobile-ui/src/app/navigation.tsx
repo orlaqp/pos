@@ -16,7 +16,7 @@ import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import { selectStore } from '@pos/store-info/data-access';
 import { useSharedStyles } from '@pos/theme/native';
 import { authActions } from '@pos/auth/data-access';
-import { employeesActions } from '@pos/employees/data-access';
+import { employeesActions, selectLoginEmployee } from '@pos/employees/data-access';
 
 /* eslint-disable-next-line */
 export interface NavigationParamList {
@@ -32,6 +32,7 @@ export function Navigation() {
     const theme = useTheme();
     const styles = useSharedStyles();
     const user = useSelector((state: RootState) => state.auth.user);
+    const employee = useSelector(selectLoginEmployee);
     const dispatch = useDispatch();
     const cart = useSelector(selectCart);
     const defaultPrinter = useSelector(getDefaultPrinter);
@@ -86,7 +87,7 @@ export function Navigation() {
                             component={HomeScreen}
                             options={{
                                 headerShown: true,
-                                headerTitle: '',
+                                headerTitle: 'Home',
                                 headerRight: () => (
                                     <Button
                                         type="clear"
@@ -101,7 +102,7 @@ export function Navigation() {
                             name="Sales"
                             component={SalesScreen}
                             options={{
-                                headerTitle: user.name,
+                                headerTitle: employee ? `${employee.firstName} ${employee.lastName}` : user.name,
                                 headerRight: () => (
                                     <>
                                         <Button

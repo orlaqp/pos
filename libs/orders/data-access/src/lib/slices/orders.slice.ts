@@ -67,7 +67,9 @@ export const submitOrder = createAsyncThunk(
 export const payOrder = createAsyncThunk(
     'order/pay',
     async (request: SubmitOrderRequest, thunkAPI) => {
-        const o = await OrderService.payOrder(request.cart);
+        const employee = (thunkAPI.getState() as RootState).employees.loginEmployee!;
+        const o = await OrderService.saveOrder(employee, request.cart, 'PAID');
+        // const o = await OrderService.payOrder(request.cart);
 
         if (!o) return;
 

@@ -1,6 +1,6 @@
 import { useSharedStyles } from '@pos/theme/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useTheme, Button, Card, CheckBox } from '@rneui/themed';
+import { useTheme } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Image, Alert } from 'react-native';
 
@@ -9,7 +9,7 @@ import payment from '../../assets/payment.png';
 import chart from '../../assets/chart.png';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { Role, selectEmployee, selectUser } from '@pos/auth/data-access';
+import { Role } from '@pos/auth/data-access';
 import { UIKeyPad } from '@pos/shared/ui-native';
 import { employeesActions, EmployeeService, selectLoginEmployee } from '@pos/employees/data-access';
 import { StationService } from '@pos/settings/data-access';
@@ -31,7 +31,6 @@ interface HomeScreenProps {
 
 export const HomeScreen = (props: HomeScreenProps) => {
     const dispatch = useDispatch();
-    const user = useSelector(selectUser);
     const theme = useTheme();
     const sharedStyles = useSharedStyles();
     const styles = useStyles();
@@ -94,7 +93,6 @@ export const HomeScreen = (props: HomeScreenProps) => {
                 Alert.alert('The PIN number you entered is not valid')
                 return;
             }
-            console.log(`Employee found`, emp);
             dispatch(employeesActions.loginEmployee(emp));
         })
     }, [dispatch, pin]);
