@@ -26,6 +26,7 @@ import { InventoryCounts, InventoryList, InventoryReceives } from '@pos/inventor
 import { Dashboard, Sales, SalesByEmployee, SalesByProduct } from '@pos/reporting/native-feature';
 
 import Logo from '../../assets/logo.png';
+import { selectLoginEmployee } from '@pos/employees/data-access';
 
 const Stack = createNativeStackNavigator();
 
@@ -37,7 +38,7 @@ export interface BackOfficeProps {
 export function BackOffice({ navigation }: BackOfficeProps) {
     const theme = useTheme();
     const styles = useStyles();
-    const user = useSelector(selectUser);
+    const employee = useSelector(selectLoginEmployee);
 
     const confirmGoBack = () => {
         Alert.alert(
@@ -65,7 +66,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                         >
                             <Image source={Logo} style={styles.logo} />
                             <Text style={{ color: 'white' }}>
-                                {user?.name}
+                                {`${employee?.firstName} ${employee?.lastName}`}
                             </Text>
                         </View>
                         <View style={{ marginLeft: 10 }}>

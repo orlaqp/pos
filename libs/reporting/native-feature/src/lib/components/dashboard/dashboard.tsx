@@ -16,6 +16,7 @@ import PieChart from '../pie-chart/pie-chart';
 import Widget from '../widget/widget';
 
 import { getSalesSummaryForRange } from '@pos/reporting/data-access';
+import { sortDescListBy, sortListBy } from '@pos/shared/utils';
 
 /* eslint-disable-next-line */
 export interface DashboardProps {}
@@ -24,8 +25,8 @@ export function Dashboard(props: DashboardProps) {
     const styles = useSharedStyles();
     const [loading, setLoading] = useState<boolean>(true);
     const [dateRange, setDateRange] = useState<DateRange>({
-        startDate: moment().add(-7, 'days'),
-        endDate: moment(),
+        startDate: moment().startOf('day'),
+        endDate: moment().endOf('day'),
     });
     const [salesSummary, setSalesSummary] = useState<SalesSummary>();
 
@@ -39,8 +40,8 @@ export function Dashboard(props: DashboardProps) {
         setLoading(true);
 
         const range = dateRange || {
-            startDate: moment().add(-7, 'days'),
-            endDate: moment(),
+            startDate: moment().startOf('day'),
+            endDate: moment().endOf('day'),
         };
 
         range.startDate = range.startDate.startOf('day');
@@ -48,6 +49,10 @@ export function Dashboard(props: DashboardProps) {
 
         getSalesSummaryForRange('PAID', range).then((summary) => {
             console.log('Result', summary);
+
+            sortDescListBy(summary?.employees as any, 'amount');
+            sortDescListBy(summary?.products as any, 'amount');
+
             setSalesSummary(summary);
             setLoading(false);
         });
@@ -74,7 +79,7 @@ export function Dashboard(props: DashboardProps) {
                     </View>
                 ))}
 
-            {salesSummary?.totalAmount > 0 && (
+            {salesSummary && salesSummary?.totalAmount > 0 && (
                 <>
                     <View style={styles.row}>
                         <View style={{ flex: 1 }}>
@@ -113,9 +118,10 @@ export function Dashboard(props: DashboardProps) {
                                         ? []
                                         : salesSummary.products
                                               ?.slice(0, 5)
+                                              .filter(p => p && p?.amount > 0)
                                               .map((p) => ({
                                                   name: p?.productName,
-                                                  value: p?.amount,
+                                                  value: +((p.amount).toFixed(2)),
                                               }))
                                 }
                             />

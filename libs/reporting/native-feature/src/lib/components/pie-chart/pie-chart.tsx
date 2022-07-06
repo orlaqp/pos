@@ -95,7 +95,7 @@ export function PieChart({ header, items }: PieChartProps) {
                 <Text style={[styles.secondaryText, { marginBottom: 10 }]}>{header}</Text>
                 <PC
                     data={data}
-                    width={400}
+                    width={500}
                     height={200}
                     chartConfig={chartConfig}
                     accessor={'value'}
