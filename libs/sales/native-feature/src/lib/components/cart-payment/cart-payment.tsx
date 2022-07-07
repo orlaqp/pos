@@ -1,4 +1,5 @@
 import { PaymentEntity } from '@pos/orders/data-access';
+import { CartPayment as ICartPayment } from '@pos/sales/data-access';
 import { PaymentType } from '@pos/shared/models';
 import {
     UINumericInput,
@@ -18,7 +19,7 @@ const PaymentMethod = {
     check: 'Check',
 };
 
-export interface PaymentInfo {
+interface PaymentInfo {
     withcash: boolean;
     cash: number;
     withcheck: boolean;
@@ -30,13 +31,12 @@ export interface PaymentInfo {
 /* eslint-disable-next-line */
 export interface CartPaymentProps {
     total: number;
-    onPaymentEntered: (info: PaymentInfo) => void;
+    onPaymentEntered: (payments: ICartPayment[]) => void;
 }
 
 export function CartPayment({ total, onPaymentEntered }: CartPaymentProps) {
     const styles = useSharedStyles();
     const [formValue, setFormValue] = useState<PaymentInfo>();
-
     const form = useForm<PaymentInfo>({
         mode: 'onChange',
         defaultValues: {
@@ -48,6 +48,24 @@ export function CartPayment({ total, onPaymentEntered }: CartPaymentProps) {
             cc: 0,
         },
     });
+
+    const completeOrder = (info: PaymentInfo) => {
+        const result: ICartPayment[] = [];
+
+        if (info.cash > 0) {
+            result.push({ type: PaymentType.CASH, amount: info.cash });
+        }
+        
+        if (info.cc > 0) {
+            result.push({ type: PaymentType.CC, amount: info.cc });
+        }
+
+        if (info.check > 0) {
+            result.push({ type: PaymentType.CHECK, amount: info.check });
+        }
+
+        onPaymentEntered(result);
+    }
 
     useEffect(() => {
         const subscription = form.watch((value, { name, type }) => {
@@ -87,8 +105,6 @@ export function CartPayment({ total, onPaymentEntered }: CartPaymentProps) {
         });
         return () => subscription.unsubscribe();
     }, [form]);
-
-    const onMethodChange = (method: string, active: boolean) => {};
 
     return (
         <View>
@@ -147,7 +163,7 @@ export function CartPayment({ total, onPaymentEntered }: CartPaymentProps) {
                             type: 'material-community',
                             color: styles.primaryText.color,
                         }}
-                        onPress={() => onPaymentEntered(form.getValues())}
+                        onPress={() => completeOrder(form.getValues())}
                     />
                 </View>
             </FormProvider>

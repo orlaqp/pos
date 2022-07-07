@@ -24,6 +24,30 @@ export interface CartItem {
     quantity: number;
 }
 
+export interface CartPayment {
+    type: string;
+    amount: number;
+}
+
+export interface CartFooter {
+    subtotal: number;
+    tax: number;
+    discount: number;
+    total: number;
+    payments?: CartPayment[];
+}
+
+export interface CartState {
+    id?: string;
+    orderNo?: string;
+    header?: CartHeader;
+    items: CartItem[];
+    payments?: PaymentEntity[];
+    footer: CartFooter;
+    selected?: CartItem;
+}
+
+
 export class CartItemMapper {
     static fromProduct(p: Product, quantity: number): CartItem {
         return {
@@ -39,21 +63,5 @@ export class CartItemMapper {
             quantity,
         }
     }
-}
 
-export interface CartFooter {
-    subtotal: number;
-    tax: number;
-    discount: number;
-    total: number;
-}
-
-export interface CartState {
-    id?: string;
-    orderNo?: string;
-    header?: CartHeader;
-    items: CartItem[];
-    payments?: PaymentEntity[];
-    footer: CartFooter;
-    selected?: CartItem;
 }

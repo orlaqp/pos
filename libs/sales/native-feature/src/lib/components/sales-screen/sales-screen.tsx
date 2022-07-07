@@ -16,6 +16,7 @@ import {
     cartActions,
     CartItem,
     CartItemMapper,
+    CartPayment,
     CartState,
     selectActiveProduct,
 } from '@pos/sales/data-access';
@@ -34,13 +35,13 @@ import { ButtonItemType } from '@pos/shared/ui-native';
 import { RootState } from '@pos/store';
 import { Dictionary } from '@reduxjs/toolkit';
 import { EACH } from '@pos/unit-of-measures/data-access';
-import { PrinterEntity } from '@pos/printings/data-access';
+import { getDefaultPrinter, PrinterEntity } from '@pos/printings/data-access';
 import {
     payOrder,
-    submitOrder,
+    createOrder,
     subscribeToOrderChanges,
 } from '@pos/orders/data-access';
-import { StoreInfoEntity } from '@pos/store-info/data-access';
+import { selectStore, StoreInfoEntity } from '@pos/store-info/data-access';
 
 export interface NavigationParamList {
     [key: string]: object | undefined;
@@ -63,12 +64,13 @@ export function SalesScreen({
     const styles = useStyles();
     const dispatch = useDispatch();
     const searchRef = React.createRef<TextInput>();
-    const [askForPayment, setAskForPayment] = useState<boolean>();
     const product = useSelector(selectActiveProduct);
     const products = useSelector<
         RootState,
         Dictionary<ProductEntity> | undefined
     >(selectFilteredList);
+    const storeInfo = useSelector(selectStore);
+    const defaultPrinter = useSelector(getDefaultPrinter);
     const allProducts = useSelector(selectAllProducts);
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
         []
@@ -132,11 +134,7 @@ export function SalesScreen({
         [dispatch]
     );
 
-    const onCartSubmit = (
-        cart: CartState,
-        defaultPrinter?: PrinterEntity,
-        storeInfo?: StoreInfoEntity
-    ) => {
+    const onCartSubmit = (cart: CartState, payments?: CartPayment[]) => {
         Alert.alert('Are you sure?', 'Press yes to confirm', [
             { text: 'No' },
             {
@@ -144,10 +142,15 @@ export function SalesScreen({
                 onPress: () => {
                     if (route.params.mode === 'order') {
                         dispatch(
-                            submitOrder({ cart, defaultPrinter, storeInfo })
+                            createOrder({ cart, defaultPrinter, storeInfo })
                         );
                     } else {
-                        dispatch(payOrder({ cart, defaultPrinter, storeInfo }));
+                        if (!payments) {
+                            Alert.alert('An order cannot be marked as paid without payment information');
+                            return;
+                        }
+                        
+                        dispatch(payOrder({ cart, payments, defaultPrinter, storeInfo }));
                         navigation.goBack();
                     }
                     dispatch(cartActions.reset());

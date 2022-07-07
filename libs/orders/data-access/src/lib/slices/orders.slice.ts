@@ -1,7 +1,7 @@
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { PrinterEntity, printReceipt } from '@pos/printings/data-access';
-import { CartState } from '@pos/sales/data-access';
+import { CartPayment, CartState } from '@pos/sales/data-access';
 import { OrderStatus } from '@pos/shared/models';
 import { RootState } from '@pos/store';
 import { StoreInfoEntity } from '@pos/store-info/data-access';
@@ -22,13 +22,17 @@ import { FilterRequest, OrderService } from '../order.service';
 
 export const ORDER_FEATURE_KEY = 'orders';
 
-export interface SubmitOrderRequest {
+export interface CreateOrderRequest {
     storeInfo?: StoreInfoEntity;
     defaultPrinter?: PrinterEntity;
     cart: CartState;
 }
 
-export interface SubmitOrderResponse extends SubmitOrderRequest {
+export interface PayOrderRequest extends CreateOrderRequest {
+    payments: CartPayment[];
+}
+
+export interface SubmitOrderResponse extends CreateOrderRequest {
     order: OrderEntity;
 }
 
@@ -52,9 +56,9 @@ export const ordersAdapter = createEntityAdapter<OrderEntity>();
 //     }
 // );
 
-export const submitOrder = createAsyncThunk(
+export const createOrder = createAsyncThunk(
     'order/save',
-    async (request: SubmitOrderRequest, thunkAPI) => {
+    async (request: CreateOrderRequest, thunkAPI) => {
         const employee = (thunkAPI.getState() as RootState).employees.loginEmployee!;
         const o = await OrderService.saveOrder(employee, request.cart);
         return {
@@ -66,9 +70,10 @@ export const submitOrder = createAsyncThunk(
 
 export const payOrder = createAsyncThunk(
     'order/pay',
-    async (request: SubmitOrderRequest, thunkAPI) => {
+    async (request: PayOrderRequest, thunkAPI) => {
         const employee = (thunkAPI.getState() as RootState).employees.loginEmployee!;
-        const o = await OrderService.saveOrder(employee, request.cart, 'PAID');
+        debugger;
+        const o = await OrderService.saveOrder(employee, request.cart, 'PAID', request.payments);
         // const o = await OrderService.payOrder(request.cart);
 
         if (!o) return;
@@ -115,11 +120,11 @@ export const ordersSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(submitOrder.pending, (state: OrdersState) => {
+            .addCase(createOrder.pending, (state: OrdersState) => {
                 state.submitStatus = 'saving';
             })
             .addCase(
-                submitOrder.fulfilled,
+                createOrder.fulfilled,
                 (
                     state: OrdersState,
                     action: PayloadAction<SubmitOrderResponse>
@@ -134,7 +139,7 @@ export const ordersSlice = createSlice({
                     );
                 }
             )
-            .addCase(submitOrder.rejected, (state: OrdersState, action) => {
+            .addCase(createOrder.rejected, (state: OrdersState, action) => {
                 state.submitStatus = 'error';
                 state.error = action.error.message;
             })

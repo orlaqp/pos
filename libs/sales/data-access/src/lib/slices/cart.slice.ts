@@ -8,7 +8,7 @@ import {
     createSlice,
     PayloadAction,
 } from '@reduxjs/toolkit';
-import { CartItem, CartState } from '../cart-entity';
+import { CartItem, CartPayment, CartState } from '../cart-entity';
 import uuid from 'react-native-uuid';
 import { OrderEntity } from '@pos/orders/data-access';
 
@@ -104,6 +104,9 @@ export const cartSlice = createSlice({
         removeProduct: (state: CartState, action: PayloadAction<CartItem>) => {
             state.items.splice(state.items.findIndex(i => i.identifier === action.payload.identifier), 1);
             updateTotals(state);
+        },
+        addPayment: (state: CartState, action: PayloadAction<CartPayment[]>) => {
+            state.footer.payments = action.payload;
         },
         reset: (state: CartState) => {
             state.id = initialCartState.id;

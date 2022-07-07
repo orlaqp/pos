@@ -2,7 +2,7 @@
 import { Order, OrderLine, OrderStatus, Payment, Product } from '@pos/shared/models';
 import { DataStore } from 'aws-amplify';
 import { OrderEntity, OrderEntityMapper } from './order.entity';
-import { CartState } from '@pos/sales/data-access';
+import { CartPayment, CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
 import moment from 'moment';
 import { EmployeeEntity } from '@pos/employees/data-access';
@@ -39,8 +39,10 @@ export class OrderService {
     static async saveOrder(
         employee: EmployeeEntity,
         state: CartState,
-        status?: OrderStatus | keyof typeof OrderStatus
+        status?: OrderStatus | keyof typeof OrderStatus,
+        payments?: CartPayment[]
     ) {
+        debugger;
         if (!state.id) {
             const order = new Order({
                 orderNo: await StationService.getNextOrderNumber(employee),
@@ -64,8 +66,8 @@ export class OrderService {
                             unitOfMeasure: i.product.unitOfMeasure,
                         })
                 ),
-                payments: state.payments?.map(p => new Payment({
-                    type: p.type,
+                payments: payments?.map(p => new Payment({
+                    type: p.type.toUpperCase() as any,
                     amount: p.amount
                 })),
                 orderDate: moment().toISOString(),
@@ -106,8 +108,14 @@ export class OrderService {
                     })
             );
             o.orderDate = moment().toISOString();
+            o.payments = payments?.map(p => new Payment({
+                type: p.type.toUpperCase() as any,
+                amount: p.amount
+            }));
         });
 
+        console.log('Updated order', updatedOrder);
+        
         return await DataStore.save(updatedOrder);
     }
 

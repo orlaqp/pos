@@ -1,6 +1,7 @@
 import {
     cartActions,
     CartItem,
+    CartPayment as ICartPayment,
     CartState,
     selectCart,
 } from '@pos/sales/data-access';
@@ -13,24 +14,18 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 import every from 'lodash/every';
 
-import { getDefaultPrinter, PrinterEntity } from '@pos/printings/data-access';
-import { selectStore, StoreInfoEntity } from '@pos/store-info/data-access';
 import { useSharedStyles } from '@pos/theme/native';
 
 import CartLine from '../cart-line/cart-line';
 import EmptyCart from '../../../../assets/images/empty-cart.png';
-import CartPayment, { PaymentInfo } from '../cart-payment/cart-payment';
+import CartPayment from '../cart-payment/cart-payment';
 
 export type CartMode = 'order' | 'payment';
 
 /* eslint-disable-next-line */
 export interface CartProps {
     mode: CartMode;
-    onSubmit: (
-        cart: CartState,
-        printer?: PrinterEntity,
-        storeInfo?: StoreInfoEntity
-    ) => void;
+    onSubmit: (cart: CartState, payments?: ICartPayment[]) => void;
     searchRef: React.RefObject<TextInput>;
 }
 
@@ -40,9 +35,7 @@ export function Cart({ mode, onSubmit, searchRef }: CartProps) {
     const cart = useSelector(selectCart);
     const [ready, setReady] = useState(false);
     const [receivePayment, setReceivePayment] = useState<boolean>(false);
-    const storeInfo = useSelector(selectStore);
-    const defaultPrinter = useSelector(getDefaultPrinter);
-
+    
     const onSelect = (item: CartItem) => {
         dispatch(cartActions.select(item));
     };
@@ -51,18 +44,16 @@ export function Cart({ mode, onSubmit, searchRef }: CartProps) {
         dispatch(cartActions.removeProduct(item));
     };
 
-    const paymentEntered = (info: PaymentInfo) => {
+    const paymentEntered = (payments: ICartPayment[]) => {
         setReceivePayment(false);
-        console.log('====================================');
-        console.log('Payment info received', info);
-        console.log('====================================');
+        onSubmit(cart, payments);
     }
 
     const submitOrder = () => {
         if (mode === 'payment') {
             setReceivePayment(true);
         } else {
-            onSubmit(cart, defaultPrinter, storeInfo);
+            onSubmit(cart);
         }
     }
 
