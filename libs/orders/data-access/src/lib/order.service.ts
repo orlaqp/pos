@@ -53,7 +53,7 @@ export class OrderService {
                 lines: state.items.map(
                     (i) =>
                         new OrderLine({
-                            identifier: i.id || uuid.v4().toString(),
+                            identifier: i.identifier || uuid.v4().toString(),
                             quantity: i.quantity,
                             tax: 0,
                             price: i.product.price,
@@ -71,45 +71,44 @@ export class OrderService {
                 orderDate: moment().toISOString(),
             });
 
+            console.log('Order status: ' + status, order);
+
             return await DataStore.save(order);
         }
 
         const existing = await DataStore.query(Order, state.id);
 
         if (!existing) {
-            return console.log(`It seems that order: ${employee.id} has been removed`);
+            return console.log(
+                `It seems that order: ${employee.id} has been removed`
+            );
         }
 
-        return await DataStore.save(
-            Order.copyOf(existing, o => {
-                o.status = status || 'OPEN';
-                o.subtotal = state.footer.subtotal;
-                o.tax = 0;
-                o.total = state.footer.total;
-                o.employeeId = employee.id!;
-                o.employeeName = `${employee.firstName} ${employee.lastName}`;
-                o.lines = state.items.map(
-                    (i) =>
-                        new OrderLine({
-                            identifier: i.id!,
-                            quantity: i.quantity,
-                            tax: 0,
-                            price: i.product.price,
-                            productId: i.product.id!,
-                            barcode: i.product.barcode,
-                            sku: i.product.sku,
-                            productName: i.product.name,
-                            unitOfMeasure: i.product.unitOfMeasure,
-                        })
-                );
-                o.payments = state.payments?.map(p => new Payment({
-                    type: p.type,
-                    amount: p.amount
-                }));
-                o.orderDate = moment().toISOString();
-            })
-        );
+        const updatedOrder = Order.copyOf(existing, (o) => {
+            o.status = status || 'OPEN';
+            o.subtotal = state.footer.subtotal;
+            o.tax = 0;
+            o.total = state.footer.total;
+            o.employeeId = employee.id!;
+            o.employeeName = `${employee.firstName} ${employee.lastName}`;
+            o.lines = state.items.map(
+                (i) =>
+                    new OrderLine({
+                        identifier: i.identifier!,
+                        quantity: i.quantity,
+                        tax: 0,
+                        price: i.product.price,
+                        productId: i.product.id!,
+                        barcode: i.product.barcode,
+                        sku: i.product.sku,
+                        productName: i.product.name,
+                        unitOfMeasure: i.product.unitOfMeasure,
+                    })
+            );
+            o.orderDate = moment().toISOString();
+        });
 
+        return await DataStore.save(updatedOrder);
     }
 
     static async delete(id: string) {
@@ -134,11 +133,12 @@ export class OrderService {
     static search(items: OrderEntity[], options: FilterRequest) {
         // const lowerQuery = options.filter?.toLowerCase() || '';
 
-        const searchResult = items.filter(i => {
-            return i.status === options.status
-                && (!options.filter || i.orderNo?.indexOf(options.filter) !== -1);
-            }
-        );
+        const searchResult = items.filter((i) => {
+            return (
+                i.status === options.status &&
+                (!options.filter || i.orderNo?.indexOf(options.filter) !== -1)
+            );
+        });
 
         if (options.status === 'OPEN') {
             sortListBy(searchResult, 'createdAt');
@@ -194,7 +194,7 @@ export class OrderService {
     static async refund(
         employee: EmployeeEntity,
         originalOrder: OrderEntity,
-        refundedLines: { id: string; price: number; quantity: number }[]
+        refundedLines: { identifier: string; price: number; quantity: number }[]
     ) {
         // First refund the entire original order
         const orders = await DataStore.query(Order, (o) =>
@@ -215,7 +215,7 @@ export class OrderService {
 
         refundedLines.forEach((l) => {
             const line = cartOrder.items?.find(
-                (li) => li.id === l.id && li.quantity > 0
+                (li) => li.identifier === l.identifier && li.quantity > 0
             );
 
             if (line) {
@@ -224,7 +224,10 @@ export class OrderService {
             }
         });
 
-        const newCart = await OrderEntityMapper.fromRefundedCart(employee, cartOrder);
+        const newCart = await OrderEntityMapper.fromRefundedCart(
+            employee,
+            cartOrder
+        );
 
         if (!newCart.items?.length) return;
 
@@ -256,4 +259,3 @@ async function updateProductQuantity(
 
     return DataStore.save(updatedProduct);
 }
-

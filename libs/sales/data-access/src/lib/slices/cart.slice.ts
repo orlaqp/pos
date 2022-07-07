@@ -52,7 +52,7 @@ export const cartSlice = createSlice({
             }
             state.items = o.lines.map(i => ({
                 quantity: i?.quantity,
-                id: i?.identifier,
+                identifier: i?.identifier,
                 product: {
                     id: i.productId,
                     name: i?.productName,
@@ -66,10 +66,10 @@ export const cartSlice = createSlice({
             state.selected = action.payload;
         },
         upsert: (state: CartState, action: PayloadAction<CartItem>) => {
-            const sameCartItem = state.items.find(i => action.payload.id && i.id === action.payload.id);
+            const sameCartItem = state.items.find(i => action.payload.identifier && i.identifier === action.payload.identifier);
             const addItem = (state: CartState, item: CartItem) => {
                 state.items?.push({
-                    id: uuid.v4().toString(),
+                    identifier: uuid.v4().toString(),
                     product: action.payload.product,
                     quantity: action.payload.quantity
                 });
@@ -102,7 +102,7 @@ export const cartSlice = createSlice({
             updateTotals(state);
         },
         removeProduct: (state: CartState, action: PayloadAction<CartItem>) => {
-            state.items.splice(state.items.findIndex(i => i.id === action.payload.id), 1);
+            state.items.splice(state.items.findIndex(i => i.identifier === action.payload.identifier), 1);
             updateTotals(state);
         },
         reset: (state: CartState) => {

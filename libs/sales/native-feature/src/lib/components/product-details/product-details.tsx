@@ -105,10 +105,10 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
             <Button
                 style={{ marginTop: 35 }}
                 type="clear"
-                title={item.id ? 'Update cart' : 'Add to cart'}
+                title={item.identifier ? 'Update cart' : 'Add to cart'}
                 onPress={() =>
                     upsertCart({
-                        id: item.id,
+                        identifier: item.identifier,
                         product: item.product,
                         quantity: quantity === '' ? 0 : +quantity,
                     })

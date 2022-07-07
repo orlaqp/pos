@@ -19,7 +19,7 @@ export interface CartProduct {
 }
 
 export interface CartItem {
-    id?: string;
+    identifier?: string;
     product: CartProduct;
     quantity: number;
 }
@@ -27,6 +27,7 @@ export interface CartItem {
 export class CartItemMapper {
     static fromProduct(p: Product, quantity: number): CartItem {
         return {
+            identifier: undefined,
             product: {
                 id: p.id!,
                 name: p.name,

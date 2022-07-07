@@ -50,7 +50,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
             employee,
             order,
             linesToRefund.map((l) => ({
-                id: l.id!,
+                identifier: l.identifier,
                 price: l.price,
                 quantity: l.quantity,
             }))
