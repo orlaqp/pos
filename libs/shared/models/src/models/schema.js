@@ -92,6 +92,16 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "payments": {
+                    "name": "payments",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "Payment"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -1545,6 +1555,14 @@ export const schema = {
                 "PAID"
             ]
         },
+        "PaymentType": {
+            "name": "PaymentType",
+            "values": [
+                "CASH",
+                "CHECK",
+                "CC"
+            ]
+        },
         "InventoryCountStatus": {
             "name": "InventoryCountStatus",
             "values": [
@@ -1622,6 +1640,27 @@ export const schema = {
                 },
                 "price": {
                     "name": "price",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
+        "Payment": {
+            "name": "Payment",
+            "fields": {
+                "type": {
+                    "name": "type",
+                    "isArray": false,
+                    "type": {
+                        "enum": "PaymentType"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "amount": {
+                    "name": "amount",
                     "isArray": false,
                     "type": "Float",
                     "isRequired": true,
@@ -1771,5 +1810,5 @@ export const schema = {
             }
         }
     },
-    "version": "4463a58cf4484a38e875bf22f6414544"
+    "version": "d09fc1105fa23d4495d8f9f9020d34da"
 };

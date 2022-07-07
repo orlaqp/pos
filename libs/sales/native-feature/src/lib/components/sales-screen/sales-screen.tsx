@@ -63,6 +63,7 @@ export function SalesScreen({
     const styles = useStyles();
     const dispatch = useDispatch();
     const searchRef = React.createRef<TextInput>();
+    const [askForPayment, setAskForPayment] = useState<boolean>();
     const product = useSelector(selectActiveProduct);
     const products = useSelector<
         RootState,

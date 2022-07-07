@@ -5,7 +5,7 @@ import {
     selectCart,
 } from '@pos/sales/data-access';
 import { UIEmptyState } from '@pos/shared/ui-native';
-import { Button } from '@rneui/themed';
+import { Button, Dialog } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
 
 import { View, TextInput } from 'react-native';
@@ -19,6 +19,7 @@ import { useSharedStyles } from '@pos/theme/native';
 
 import CartLine from '../cart-line/cart-line';
 import EmptyCart from '../../../../assets/images/empty-cart.png';
+import CartPayment from '../cart-payment/cart-payment';
 
 export type CartMode = 'order' | 'payment';
 
@@ -38,6 +39,7 @@ export function Cart({ mode, onSubmit, searchRef }: CartProps) {
     const dispatch = useDispatch();
     const cart = useSelector(selectCart);
     const [ready, setReady] = useState(false);
+    const [receivePayment, setReceivePayment] = useState<boolean>(false);
     const storeInfo = useSelector(selectStore);
     const defaultPrinter = useSelector(getDefaultPrinter);
 
@@ -48,6 +50,14 @@ export function Cart({ mode, onSubmit, searchRef }: CartProps) {
     const onRemove = (item: CartItem) => {
         dispatch(cartActions.removeProduct(item));
     };
+
+    const submitOrder = () => {
+        if (mode === 'payment') {
+            setReceivePayment(true);
+        } else {
+            onSubmit(cart, defaultPrinter, storeInfo);
+        }
+    }
 
     useEffect(() => {
         setReady(
@@ -95,10 +105,18 @@ export function Cart({ mode, onSubmit, searchRef }: CartProps) {
                     }`}
                     type="solid"
                     disabled={!ready}
-                    onPress={() => onSubmit(cart, defaultPrinter, storeInfo)}
+                    onPress={submitOrder}
                     // loading={orderStatus === 'saving'}
                 />
             </View>
+
+            <Dialog
+                    isVisible={receivePayment}
+                    onBackdropPress={() => setReceivePayment(false)}
+                    overlayStyle={[styles.overlay, { width: 450 }]}
+                >
+                    <CartPayment total={cart.footer.total} />
+                </Dialog>
         </View>
     );
 }

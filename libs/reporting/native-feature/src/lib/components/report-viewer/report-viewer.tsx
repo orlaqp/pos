@@ -64,11 +64,11 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
     return (
         <View style={[styles.page, { flexDirection: 'column', margin: 20 }]}>
             <View style={{ flex: 1, zIndex: 2000 }}>
-                    <UIDateRange
-                        initialRange={dateRange}
-                        onRangeChange={setDateRange}
-                    />
-                </View>
+                <UIDateRange
+                    initialRange={dateRange}
+                    onRangeChange={setDateRange}
+                />
+            </View>
 
             <View
                 style={{

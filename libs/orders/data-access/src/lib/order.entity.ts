@@ -2,7 +2,7 @@
 import { EmployeeEntity } from '@pos/employees/data-access';
 import { CartState, initialCartState } from '@pos/sales/data-access';
 import { StationService } from '@pos/settings/data-access';
-import { Order, OrderLine, OrderStatus } from '@pos/shared/models';
+import { Order, OrderLine, OrderStatus, Payment, PaymentType } from '@pos/shared/models';
 import { Alert } from 'react-native';
 
 export interface OrderEntity {
@@ -15,9 +15,15 @@ export interface OrderEntity {
     employeeId: string;
     employeeName: string;
     lines?: OrderLineEntity[] | null;
+    payments?: PaymentEntity[] | null;
     orderDate?: string | null;
     createdAt?: string | null;
     updatedAt?: string | null;
+}
+
+export interface PaymentEntity {
+    type: PaymentType | keyof typeof PaymentType;
+    amount: number;
 }
 
 export interface OrderLineEntity {
@@ -48,12 +54,13 @@ export class OrderEntityMapper {
             lines: p.lines?.filter((i) => i !== null).map((i) =>
                 OrderEntityMapper.fromLine(i!)
             ),
+            payments: p.payments?.filter(p => !!p).map(p => OrderEntityMapper.fromPayment(p)),
             orderDate: p.orderDate,
             createdAt: p.createdAt,
             updatedAt: p.updatedAt,
         };
     }
-
+    
     static asCartState(o: OrderEntity): CartState {
         const state: CartState = { ...initialCartState };
 
@@ -83,6 +90,10 @@ export class OrderEntityMapper {
                 barcode: i.barcode,
                 sku: i.sku,
             },
+        }));
+        state.payments = o.payments?.map(p => ({
+            type: p.type,
+            amount: p.amount
         }));
         state.selected = initialCartState.selected;
         
@@ -148,5 +159,12 @@ export class OrderEntityMapper {
         };
 
         return state;
+    }
+
+    static fromPayment(p: Payment): PaymentEntity {
+        return {
+            type: p?.type,
+            amount: p?.amount
+        };
     }
 }

@@ -1,5 +1,5 @@
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
-import { Order, OrderLine, OrderStatus, Product } from '@pos/shared/models';
+import { Order, OrderLine, OrderStatus, Payment, Product } from '@pos/shared/models';
 import { DataStore } from 'aws-amplify';
 import { OrderEntity, OrderEntityMapper } from './order.entity';
 import { CartState } from '@pos/sales/data-access';
@@ -64,6 +64,10 @@ export class OrderService {
                             unitOfMeasure: i.product.unitOfMeasure,
                         })
                 ),
+                payments: state.payments?.map(p => new Payment({
+                    type: p.type,
+                    amount: p.amount
+                })),
                 orderDate: moment().toISOString(),
             });
 
@@ -98,6 +102,10 @@ export class OrderService {
                             unitOfMeasure: i.product.unitOfMeasure,
                         })
                 );
+                o.payments = state.payments?.map(p => new Payment({
+                    type: p.type,
+                    amount: p.amount
+                }));
                 o.orderDate = moment().toISOString();
             })
         );
@@ -195,14 +203,10 @@ export class OrderService {
         const order = orders[0];
         if (!order) return;
 
-        debugger;
-
         const refundedOrder = Order.copyOf(order, (o) => {
             o.status = OrderStatus.REFUNDED;
         });
 
-        console.log('Refunded order', refundedOrder);
-        
         await DataStore.save(refundedOrder);
         await OrderService.updateInventory(refundedOrder);
 
@@ -220,11 +224,8 @@ export class OrderService {
             }
         });
 
-        // cartOrder.items = cartOrder.items?.filter(l => l.quantity > 0);
         const newCart = await OrderEntityMapper.fromRefundedCart(employee, cartOrder);
 
-        console.log('New order', newCart);
-        
         if (!newCart.items?.length) return;
 
         await OrderService.saveOrder(employee, newCart, OrderStatus.PAID);
@@ -254,8 +255,5 @@ async function updateProductQuantity(
     });
 
     return DataStore.save(updatedProduct);
-}
-function getNextOrderNumber(): string {
-    throw new Error('Function not implemented.');
 }
 

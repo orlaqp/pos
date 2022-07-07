@@ -63,6 +63,7 @@ type Order @model @auth(rules: [{allow: public}]) {
   lines: [OrderLine]!
   Customer: Customer @hasOne
   orderDate: AWSDateTime!
+  payments: [Payment]
 }
 
 type OrderLine {
@@ -75,6 +76,17 @@ type OrderLine {
   quantity: Float!
   tax: Float!
   price: Float!
+}
+
+enum PaymentType {
+    CASH
+    CHECK
+    CC
+}
+
+type Payment {
+    type: PaymentType!
+    amount: Float! 
 }
 
 enum OrderStatus {

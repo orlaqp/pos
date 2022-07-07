@@ -8,6 +8,12 @@ const OrderStatus = {
   "PAID": "PAID"
 };
 
+const PaymentType = {
+  "CASH": "CASH",
+  "CHECK": "CHECK",
+  "CC": "CC"
+};
+
 const InventoryCountStatus = {
   "IN_PROGRESS": "IN_PROGRESS",
   "COMPLETED": "COMPLETED"
@@ -18,7 +24,7 @@ const InventoryReceiveStatus = {
   "COMPLETED": "COMPLETED"
 };
 
-const { Order, Customer, Store, Brand, Category, Employee, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, OrderLine, SalesSummary, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary } = initSchema(schema);
+const { Order, Customer, Store, Brand, Category, Employee, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, OrderLine, Payment, SalesSummary, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary } = initSchema(schema);
 
 export {
   Order,
@@ -37,9 +43,11 @@ export {
   Printer,
   Station,
   OrderStatus,
+  PaymentType,
   InventoryCountStatus,
   InventoryReceiveStatus,
   OrderLine,
+  Payment,
   SalesSummary,
   ProductSaleSummary,
   EmployeeSaleSummary,

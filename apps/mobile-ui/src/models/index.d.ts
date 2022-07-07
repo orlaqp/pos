@@ -6,6 +6,12 @@ export enum OrderStatus {
   PAID = "PAID"
 }
 
+export enum PaymentType {
+  CASH = "CASH",
+  CHECK = "CHECK",
+  CC = "CC"
+}
+
 export enum InventoryCountStatus {
   IN_PROGRESS = "IN_PROGRESS",
   COMPLETED = "COMPLETED"
@@ -27,6 +33,12 @@ export declare class OrderLine {
   readonly tax: number;
   readonly price: number;
   constructor(init: ModelInit<OrderLine>);
+}
+
+export declare class Payment {
+  readonly type: PaymentType | keyof typeof PaymentType;
+  readonly amount: number;
+  constructor(init: ModelInit<Payment>);
 }
 
 export declare class SalesSummary {
@@ -133,6 +145,7 @@ export declare class Order {
   readonly lines: (OrderLine | null)[];
   readonly Customer?: Customer | null;
   readonly orderDate: string;
+  readonly payments?: (Payment | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly orderCustomerId?: string | null;
