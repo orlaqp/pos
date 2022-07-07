@@ -19,7 +19,7 @@ import { useSharedStyles } from '@pos/theme/native';
 
 import CartLine from '../cart-line/cart-line';
 import EmptyCart from '../../../../assets/images/empty-cart.png';
-import CartPayment from '../cart-payment/cart-payment';
+import CartPayment, { PaymentInfo } from '../cart-payment/cart-payment';
 
 export type CartMode = 'order' | 'payment';
 
@@ -50,6 +50,13 @@ export function Cart({ mode, onSubmit, searchRef }: CartProps) {
     const onRemove = (item: CartItem) => {
         dispatch(cartActions.removeProduct(item));
     };
+
+    const paymentEntered = (info: PaymentInfo) => {
+        setReceivePayment(false);
+        console.log('====================================');
+        console.log('Payment info received', info);
+        console.log('====================================');
+    }
 
     const submitOrder = () => {
         if (mode === 'payment') {
@@ -115,7 +122,7 @@ export function Cart({ mode, onSubmit, searchRef }: CartProps) {
                     onBackdropPress={() => setReceivePayment(false)}
                     overlayStyle={[styles.overlay, { width: 450 }]}
                 >
-                    <CartPayment total={cart.footer.total} />
+                    <CartPayment total={cart.footer.total} onPaymentEntered={paymentEntered} />
                 </Dialog>
         </View>
     );

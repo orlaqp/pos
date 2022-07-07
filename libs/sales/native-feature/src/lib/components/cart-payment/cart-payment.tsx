@@ -18,7 +18,7 @@ const PaymentMethod = {
     check: 'Check',
 };
 
-interface PaymentInfo {
+export interface PaymentInfo {
     withcash: boolean;
     cash: number;
     withcheck: boolean;
@@ -30,9 +30,10 @@ interface PaymentInfo {
 /* eslint-disable-next-line */
 export interface CartPaymentProps {
     total: number;
+    onPaymentEntered: (info: PaymentInfo) => void;
 }
 
-export function CartPayment({ total }: CartPaymentProps) {
+export function CartPayment({ total, onPaymentEntered }: CartPaymentProps) {
     const styles = useSharedStyles();
     const [formValue, setFormValue] = useState<PaymentInfo>();
 
@@ -118,7 +119,7 @@ export function CartPayment({ total }: CartPaymentProps) {
                                 style={[
                                     formValue && formValue[`with${m}`]
                                         ? styles.primaryText
-                                        : styles.secondaryText,
+                                        : styles.veryLightText,
                                     { fontWeight: 'bold' },
                                 ]}
                             >
@@ -146,6 +147,7 @@ export function CartPayment({ total }: CartPaymentProps) {
                             type: 'material-community',
                             color: styles.primaryText.color,
                         }}
+                        onPress={() => onPaymentEntered(form.getValues())}
                     />
                 </View>
             </FormProvider>
