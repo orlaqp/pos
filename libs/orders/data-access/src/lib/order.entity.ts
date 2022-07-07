@@ -124,7 +124,7 @@ export class OrderEntityMapper {
             .filter((i) => i.quantity > 0)
             ?.map((i) => ({
                 quantity: i?.quantity,
-                id: i?.id,
+                id: i?.identifier,
                 product: {
                     id: i.product.id,
                     name: i?.product.name,
