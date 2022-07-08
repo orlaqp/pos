@@ -1,5 +1,6 @@
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { EmployeeEntity, EmployeeService } from '@pos/employees/data-access';
 import { PrinterEntity, printReceipt } from '@pos/printings/data-access';
 import { CartPayment, CartState } from '@pos/sales/data-access';
 import { OrderStatus } from '@pos/shared/models';
@@ -14,6 +15,7 @@ import {
     EntityState,
     PayloadAction,
 } from '@reduxjs/toolkit';
+import { Alert } from 'react-native';
 import {
     OrderEntity,
     OrderEntityMapper,
@@ -71,7 +73,19 @@ export const createOrder = createAsyncThunk(
 export const payOrder = createAsyncThunk(
     'order/pay',
     async (request: PayOrderRequest, thunkAPI) => {
-        const employee = (thunkAPI.getState() as RootState).employees.loginEmployee!;
+        // const employee = (thunkAPI.getState() as RootState).employees.loginEmployee!;
+        if (!request.cart.header?.employeeId) {
+            Alert.alert('Employee is information is missing');
+            return;
+        }
+
+        const employee = await EmployeeService.getById(request.cart.header.employeeId);
+
+        if (!employee) {
+            Alert.alert(`Employee id: ${request.cart.header.employeeId} could not be found`);
+            return;
+        }
+
         debugger;
         const o = await OrderService.saveOrder(employee, request.cart, 'PAID', request.payments);
         // const o = await OrderService.payOrder(request.cart);
