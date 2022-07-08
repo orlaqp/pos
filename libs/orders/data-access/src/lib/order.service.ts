@@ -42,7 +42,6 @@ export class OrderService {
         status?: OrderStatus | keyof typeof OrderStatus,
         payments?: CartPayment[]
     ) {
-        debugger;
         if (!state.id) {
             const order = new Order({
                 orderNo: await StationService.getNextOrderNumber(employee),

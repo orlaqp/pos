@@ -39,7 +39,6 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     };
 
     const processRefund = async () => {
-        debugger;
         if (!employee) {
             Alert.alert('Error', 'Refund is not possible because no login employee was found');
             return;

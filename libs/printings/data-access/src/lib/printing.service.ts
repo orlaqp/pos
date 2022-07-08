@@ -66,6 +66,7 @@ export const printReceipt = async (
     cart: CartState,
     order?: OrderEntity,
 ) => {
+    debugger;
     if (!store || !printerInfo) {
         Alert.alert('Store and printer should be available in order to print');
         return;
@@ -136,6 +137,9 @@ export const printReceipt = async (
                 )
                 .actionFeedLine(1)
                 .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
+                .actionPrintText(
+                    cart.footer.payments?.map(p => `${p.type}: ${p.amount}`).join('\n') || ''
+                )
                 .actionPrintText(order.status === 'OPEN' ? '** Customer Copy **' : '** Merchant Copy **')
                 .actionFeedLine(1)
                 .actionPrintQRCode(
