@@ -57,4 +57,9 @@ export class EmployeeService {
         const emp = await DataStore.query(Employee, e => e.pin('eq', pin).active('eq', true));
         return emp[0] ? EmployeeEntityMapper.fromModel(emp[0]): null;
     }
+
+    static async getById(employeeId: string): EmployeeEntity | null {
+        const emp = await DataStore.query(Employee, e => e.id('eq', employeeId));
+        return emp[0] ? EmployeeEntityMapper.fromModel(emp[0]): null;
+    }
 }
