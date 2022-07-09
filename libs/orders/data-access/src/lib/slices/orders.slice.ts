@@ -62,7 +62,7 @@ export const createOrder = createAsyncThunk(
     'order/save',
     async (request: CreateOrderRequest, thunkAPI) => {
         const employee = (thunkAPI.getState() as RootState).employees.loginEmployee!;
-        const o = await OrderService.saveOrder(employee, request.cart);
+        const o = await OrderService.upsertOrder(employee, request.cart);
         return {
             ...request,
             order: OrderEntityMapper.fromModel(o),
@@ -73,21 +73,7 @@ export const createOrder = createAsyncThunk(
 export const payOrder = createAsyncThunk(
     'order/pay',
     async (request: PayOrderRequest, thunkAPI) => {
-        // const employee = (thunkAPI.getState() as RootState).employees.loginEmployee!;
-        if (!request.cart.header?.employeeId) {
-            Alert.alert('Employee is information is missing');
-            return;
-        }
-
-        const employee = await EmployeeService.getById(request.cart.header.employeeId);
-
-        if (!employee) {
-            Alert.alert(`Employee id: ${request.cart.header.employeeId} could not be found`);
-            return;
-        }
-
-        debugger;
-        const o = await OrderService.saveOrder(employee, request.cart, 'PAID', request.payments);
+        const o = await OrderService.payOrder(employee, request.cart, 'PAID', request.payments);
         // const o = await OrderService.payOrder(request.cart);
 
         if (!o) return;

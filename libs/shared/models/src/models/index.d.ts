@@ -35,6 +35,20 @@ export declare class OrderLine {
   constructor(init: ModelInit<OrderLine>);
 }
 
+export declare class RefundInfo {
+  readonly employeeId: string;
+  readonly employeeName: string;
+  readonly comments: string;
+  constructor(init: ModelInit<RefundInfo>);
+}
+
+export declare class PaymentInfo {
+  readonly employeeId: string;
+  readonly employeeName: string;
+  readonly payments?: (Payment | null)[] | null;
+  constructor(init: ModelInit<PaymentInfo>);
+}
+
 export declare class Payment {
   readonly type: PaymentType | keyof typeof PaymentType;
   readonly amount: number;
@@ -136,6 +150,7 @@ type StationMetaData = {
 export declare class Order {
   readonly id: string;
   readonly orderNo: string;
+  readonly orderDate: string;
   readonly subtotal: number;
   readonly tax: number;
   readonly total: number;
@@ -143,9 +158,9 @@ export declare class Order {
   readonly employeeId: string;
   readonly employeeName: string;
   readonly lines: (OrderLine | null)[];
+  readonly refundInfo?: RefundInfo | null;
+  readonly paymentInfo?: PaymentInfo | null;
   readonly Customer?: Customer | null;
-  readonly orderDate: string;
-  readonly payments?: (Payment | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly orderCustomerId?: string | null;

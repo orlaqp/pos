@@ -51,9 +51,22 @@ type Employee @model @auth(rules: [{allow: public}]) {
   active: Boolean!
 }
 
+type PaymentInfo {
+  employeeId: String!
+  employeeName: String!
+  payments: [Payment]
+}
+
+type RefundInfo {
+  employeeId: String!
+  employeeName: String!
+  comments: String!
+}
+
 type Order @model @auth(rules: [{allow: public}]) {
   id: ID!
   orderNo: String!
+  orderDate: AWSDateTime!
   subtotal: Float!
   tax: Float!
   total: Float!
@@ -61,9 +74,9 @@ type Order @model @auth(rules: [{allow: public}]) {
   employeeId: String!
   employeeName: String!
   lines: [OrderLine]!
+  refundInfo: RefundInfo
+  paymentInfo: PaymentInfo 
   Customer: Customer @hasOne
-  orderDate: AWSDateTime!
-  payments: [Payment]
 }
 
 type OrderLine {

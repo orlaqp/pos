@@ -17,6 +17,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "orderDate": {
+                    "name": "orderDate",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "subtotal": {
                     "name": "subtotal",
                     "isArray": false,
@@ -71,6 +78,24 @@ export const schema = {
                     "attributes": [],
                     "isArrayNullable": false
                 },
+                "refundInfo": {
+                    "name": "refundInfo",
+                    "isArray": false,
+                    "type": {
+                        "nonModel": "RefundInfo"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "paymentInfo": {
+                    "name": "paymentInfo",
+                    "isArray": false,
+                    "type": {
+                        "nonModel": "PaymentInfo"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "Customer": {
                     "name": "Customer",
                     "isArray": false,
@@ -84,23 +109,6 @@ export const schema = {
                         "associatedWith": "id",
                         "targetName": "orderCustomerId"
                     }
-                },
-                "orderDate": {
-                    "name": "orderDate",
-                    "isArray": false,
-                    "type": "AWSDateTime",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "payments": {
-                    "name": "payments",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "Payment"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "isArrayNullable": true
                 },
                 "createdAt": {
                     "name": "createdAt",
@@ -1647,6 +1655,61 @@ export const schema = {
                 }
             }
         },
+        "RefundInfo": {
+            "name": "RefundInfo",
+            "fields": {
+                "employeeId": {
+                    "name": "employeeId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "employeeName": {
+                    "name": "employeeName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "comments": {
+                    "name": "comments",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
+        "PaymentInfo": {
+            "name": "PaymentInfo",
+            "fields": {
+                "employeeId": {
+                    "name": "employeeId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "employeeName": {
+                    "name": "employeeName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "payments": {
+                    "name": "payments",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "Payment"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                }
+            }
+        },
         "Payment": {
             "name": "Payment",
             "fields": {
@@ -1810,5 +1873,5 @@ export const schema = {
             }
         }
     },
-    "version": "d09fc1105fa23d4495d8f9f9020d34da"
+    "version": "64100134d2915cb396aa64259e37af4c"
 };

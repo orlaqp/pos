@@ -1,11 +1,11 @@
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
-import { Order, OrderLine, OrderStatus, Payment, Product } from '@pos/shared/models';
+import { Order, OrderLine, OrderStatus, Payment, PaymentInfo, Product, RefundInfo } from '@pos/shared/models';
 import { DataStore } from 'aws-amplify';
 import { OrderEntity, OrderEntityMapper } from './order.entity';
 import { CartPayment, CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
 import moment from 'moment';
-import { EmployeeEntity } from '@pos/employees/data-access';
+import { EmployeeEntity, EmployeeService } from '@pos/employees/data-access';
 import { StationService } from '@pos/settings/data-access';
 import { sortDescListBy, sortListBy } from '@pos/shared/utils';
 import uuid from 'react-native-uuid';
@@ -15,11 +15,31 @@ export interface FilterRequest {
     filter?: string;
 }
 
-export class OrderService {
-    static async payOrder(cart: CartState) {
-        if (!cart.header?.orderNumber) return;
+export interface UpsertOrderRequest {
+    createdBy: EmployeeEntity;
+    order: CartState;
+    status?: OrderStatus | keyof typeof OrderStatus;
+    paymentInfo: PaymentInfo;
+    refundInfo: RefundInfo;
+}
 
-        const o = await DataStore.query(Order, cart.header.orderNumber);
+export class OrderService {
+    static async payOrder(employee: EmployeeEntity, cart: CartState, payments: CartPayment[]) {
+        // if (!cart.header?.orderNumber) return;
+        // const employee = (thunkAPI.getState() as RootState).employees.loginEmployee!;
+        if (!cart.header?.employeeId) {
+            Alert.alert('Employee is information is missing');
+            return;
+        }
+
+        const createdBy = await EmployeeService.getById(cart.header.employeeId);
+
+        if (!employee) {
+            Alert.alert(`Employee id: ${cart.header.employeeId} could not be found`);
+            return;
+        }
+
+        const o = await OrderService.upsertOrder(employee, cart, 'PAID', payments);
 
         if (!o) {
             Alert.alert(`Order ${cart.header.orderNumber} not found`);
@@ -36,21 +56,21 @@ export class OrderService {
         return paidOrder;
     }
 
-    static async saveOrder(
-        employee: EmployeeEntity,
+    static async upsertOrder(
+        createdBy: EmployeeEntity,
         state: CartState,
         status?: OrderStatus | keyof typeof OrderStatus,
         payments?: CartPayment[]
     ) {
         if (!state.id) {
             const order = new Order({
-                orderNo: await StationService.getNextOrderNumber(employee),
+                orderNo: await StationService.getNextOrderNumber(createdBy),
                 status: status || 'OPEN',
                 subtotal: state.footer.subtotal,
                 tax: 0,
                 total: state.footer.total,
-                employeeId: employee.id!,
-                employeeName: `${employee.firstName} ${employee.lastName}`,
+                employeeId: createdBy.id!,
+                employeeName: `${createdBy.firstName} ${createdBy.lastName}`,
                 lines: state.items.map(
                     (i) =>
                         new OrderLine({
@@ -81,7 +101,7 @@ export class OrderService {
 
         if (!existing) {
             return console.log(
-                `It seems that order: ${employee.id} has been removed`
+                `It seems that order: ${createdBy.id} has been removed`
             );
         }
 
@@ -90,8 +110,8 @@ export class OrderService {
             o.subtotal = state.footer.subtotal;
             o.tax = 0;
             o.total = state.footer.total;
-            o.employeeId = employee.id!;
-            o.employeeName = `${employee.firstName} ${employee.lastName}`;
+            o.employeeId = createdBy.id!;
+            o.employeeName = `${createdBy.firstName} ${createdBy.lastName}`;
             o.lines = state.items.map(
                 (i) =>
                     new OrderLine({
@@ -238,7 +258,7 @@ export class OrderService {
 
         if (!newCart.items?.length) return;
 
-        await OrderService.saveOrder(employee, newCart, OrderStatus.PAID);
+        await OrderService.upsertOrder(employee, newCart, OrderStatus.PAID);
     }
 }
 
