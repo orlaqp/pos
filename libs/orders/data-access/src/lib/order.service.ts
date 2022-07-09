@@ -56,22 +56,17 @@ export class OrderService {
         return paidOrder;
     }
 
-    static async upsertOrder(
-        createdBy: EmployeeEntity,
-        state: CartState,
-        status?: OrderStatus | keyof typeof OrderStatus,
-        payments?: CartPayment[]
-    ) {
-        if (!state.id) {
+    static async upsertOrder(request: UpsertOrderRequest) {
+        if (!request.order.id) {
             const order = new Order({
-                orderNo: await StationService.getNextOrderNumber(createdBy),
-                status: status || 'OPEN',
-                subtotal: state.footer.subtotal,
+                orderNo: await StationService.getNextOrderNumber(request.createdBy),
+                status: request.status || 'OPEN',
+                subtotal: request.order.footer.subtotal,
                 tax: 0,
-                total: state.footer.total,
-                employeeId: createdBy.id!,
-                employeeName: `${createdBy.firstName} ${createdBy.lastName}`,
-                lines: state.items.map(
+                total: request.order.footer.total,
+                employeeId: request.createdBy.id!,
+                employeeName: `${request.createdBy.firstName} ${request.createdBy.lastName}`,
+                lines: request.order.items.map(
                     (i) =>
                         new OrderLine({
                             identifier: i.identifier || uuid.v4().toString(),
@@ -85,10 +80,14 @@ export class OrderService {
                             unitOfMeasure: i.product.unitOfMeasure,
                         })
                 ),
-                payments: payments?.map(p => new Payment({
-                    type: p.type.toUpperCase() as any,
-                    amount: p.amount
-                })),
+                paymentInfo: {
+                    employeeId: string;
+                    employeeName: string;
+                    payments: request.paymentInfo.payments?.map(p => new Payment({
+                        type: p.type.toUpperCase() as any,
+                        amount: p.amount
+                    }))
+                },
                 orderDate: moment().toISOString(),
             });
 
@@ -97,7 +96,7 @@ export class OrderService {
             return await DataStore.save(order);
         }
 
-        const existing = await DataStore.query(Order, state.id);
+        const existing = await DataStore.query(Order, request.order.id);
 
         if (!existing) {
             return console.log(
@@ -107,12 +106,12 @@ export class OrderService {
 
         const updatedOrder = Order.copyOf(existing, (o) => {
             o.status = status || 'OPEN';
-            o.subtotal = state.footer.subtotal;
+            o.subtotal = request.order.footer.subtotal;
             o.tax = 0;
-            o.total = state.footer.total;
+            o.total = request.order.footer.total;
             o.employeeId = createdBy.id!;
             o.employeeName = `${createdBy.firstName} ${createdBy.lastName}`;
-            o.lines = state.items.map(
+            o.lines = request.order.items.map(
                 (i) =>
                     new OrderLine({
                         identifier: i.identifier!,
