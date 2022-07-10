@@ -1,5 +1,6 @@
+import { MutableModel } from '@aws-amplify/datastore';
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
-import { Order, OrderLine, OrderStatus, Payment, PaymentInfo, Product, RefundInfo } from '@pos/shared/models';
+import { Order, OrderLine, OrderMetaData, OrderStatus, Payment, PaymentInfo, Product, RefundInfo } from '@pos/shared/models';
 import { DataStore } from 'aws-amplify';
 import { OrderEntity, OrderEntityMapper } from './order.entity';
 import { CartPayment, CartState } from '@pos/sales/data-access';
@@ -15,15 +16,178 @@ export interface FilterRequest {
     filter?: string;
 }
 
-export interface UpsertOrderRequest {
-    createdBy: EmployeeEntity;
+export interface CreateOrderRequest {
+    by: Omit<EmployeeEntity, 'id'> & { id: string };
     order: CartState;
+}
+
+export interface UpdateOrderRequest extends CreateOrderRequest {
+    id: string;
+    order: Omit<CartState, 'id'>;
+}
+
+export interface CloseOrderRequest extends UpdateOrderRequest {
+    payments: CartPayment[];
+}
+
+export interface RefundOrderRequest extends UpdateOrderRequest {
+    refundedLines: { identifier: string; quantity: number }[]
+}
+
+export interface UpsertOrderRequest extends CreateOrderRequest {
     status?: OrderStatus | keyof typeof OrderStatus;
     paymentInfo: PaymentInfo;
     refundInfo: RefundInfo;
 }
 
 export class OrderService {
+
+    /**
+     * Create a new order
+     *
+     * @static
+     * @param {CreateOrderRequest} request
+     * @return {Order} 
+     * @memberof OrderService
+     */
+    static async create(request: CreateOrderRequest) {
+        const order = new Order({
+            orderNo: await StationService.getNextOrderNumber(request.by),
+            status: 'OPEN',
+            subtotal: request.order.footer.subtotal,
+            tax: 0,
+            total: request.order.footer.total,
+            employeeId: request.by.id!,
+            employeeName: `${request.by.firstName} ${request.by.lastName}`,
+            lines: request.order.items.map(
+                (i) =>
+                    new OrderLine({
+                        identifier: i.identifier || uuid.v4().toString(),
+                        quantity: i.quantity,
+                        tax: 0,
+                        price: i.product.price,
+                        productId: i.product.id!,
+                        barcode: i.product.barcode,
+                        sku: i.product.sku,
+                        productName: i.product.name,
+                        unitOfMeasure: i.product.unitOfMeasure,
+                    })
+            ),
+            createdBy: {
+                id: request.by.id,
+                name: `${request.by.firstName} ${request.by.lastName}`
+            },
+            orderDate: moment().toISOString(),
+        });
+
+        return await DataStore.save(order);
+    }
+
+    /**
+     * Allow you to update order products
+     *
+     * @static
+     * @param {UpdateOrderRequest} request
+     * @return {*}  {(Promise<Order | null>)}
+     * @memberof OrderService
+     */
+    static async update(request: UpdateOrderRequest): Promise<Order | null> {
+        const updatedOrder = await OrderService.getUpdatedOrder(request);
+
+        if (!updatedOrder) return null;
+
+        return await DataStore.save(updatedOrder);
+    }
+
+    static async closeOrder(request: CloseOrderRequest) {
+        const updatedOrder = await OrderService.getUpdatedOrder(request, (o) => {
+            o.status = 'PAID';
+            o.updatedBy = {
+                id: request.by.id,
+                name: `${request.by.firstName} ${request.by.lastName}`
+            };
+            o.paymentInfo = {
+                employeeId: request.by.id,
+                employeeName: `${request.by.firstName} ${request.by.lastName}`,
+                payments: request.payments?.map(p => new Payment({
+                    type: p.type.toUpperCase() as any,
+                    amount: p.amount
+                }))
+            };
+        });
+
+        if (!updatedOrder) return null;
+
+        return await DataStore.save(updatedOrder);
+    }
+
+    static async refundOrder(request: RefundOrderRequest) {
+        const existing = await DataStore.query(Order, request.id);
+        
+        if (!existing) {
+            Alert.alert(`Order ${request.id} no found`);
+            return null;
+        }
+
+        const refundedOrder = Order.copyOf(existing, (o) => {
+            o.status = 'REFUNDED';
+        });
+
+        
+
+        const updatedOrder = await OrderService.getUpdatedOrder(request, (o) => {
+            o.status = 'REFUNDED';
+        });
+
+
+        return await DataStore.save(updatedOrder);
+    }
+
+
+    private static async getUpdatedOrder(
+        req: UpdateOrderRequest,
+        cb?: (order: MutableModel<Order, OrderMetaData>
+    ) => void) {
+        const existing = await DataStore.query(Order, req.id);
+
+        if (!existing) {
+            Alert.alert(`It seems that order: ${req.id} does not exist`);
+            return null;
+        }
+
+        return Order.copyOf(existing, (o) => {
+            o.subtotal = req.order.footer.subtotal;
+            o.tax = 0;
+            o.total = req.order.footer.total;
+            o.lines = req.order.items.map(
+                (i) =>
+                    new OrderLine({
+                        identifier: i.identifier!,
+                        quantity: i.quantity,
+                        tax: 0,
+                        price: i.product.price,
+                        productId: i.product.id!,
+                        barcode: i.product.barcode,
+                        sku: i.product.sku,
+                        productName: i.product.name,
+                        unitOfMeasure: i.product.unitOfMeasure,
+                    })
+                );
+
+                o.updatedBy = {
+                    id: req.by.id,
+                    name: `${req.by.firstName} ${req.by.lastName}`
+                }
+
+            if (!cb) return;
+
+            cb(o);
+        });
+    }
+
+
+
+
     static async payOrder(employee: EmployeeEntity, cart: CartState, payments: CartPayment[]) {
         // if (!cart.header?.orderNumber) return;
         // const employee = (thunkAPI.getState() as RootState).employees.loginEmployee!;

@@ -63,6 +63,11 @@ type RefundInfo {
   comments: String!
 }
 
+type ByEmployee {
+    id: String!
+    name: String!
+}
+
 type Order @model @auth(rules: [{allow: public}]) {
   id: ID!
   orderNo: String!
@@ -74,9 +79,11 @@ type Order @model @auth(rules: [{allow: public}]) {
   employeeId: String!
   employeeName: String!
   lines: [OrderLine]!
-  refundInfo: RefundInfo
   paymentInfo: PaymentInfo 
+  refundInfo: RefundInfo
   Customer: Customer @hasOne
+  createdBy: ByEmployee
+  updatedBy: ByEmployee
 }
 
 type OrderLine {

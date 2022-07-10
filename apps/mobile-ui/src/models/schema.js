@@ -78,20 +78,20 @@ export const schema = {
                     "attributes": [],
                     "isArrayNullable": false
                 },
-                "refundInfo": {
-                    "name": "refundInfo",
-                    "isArray": false,
-                    "type": {
-                        "nonModel": "RefundInfo"
-                    },
-                    "isRequired": false,
-                    "attributes": []
-                },
                 "paymentInfo": {
                     "name": "paymentInfo",
                     "isArray": false,
                     "type": {
                         "nonModel": "PaymentInfo"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "refundInfo": {
+                    "name": "refundInfo",
+                    "isArray": false,
+                    "type": {
+                        "nonModel": "RefundInfo"
                     },
                     "isRequired": false,
                     "attributes": []
@@ -109,6 +109,24 @@ export const schema = {
                         "associatedWith": "id",
                         "targetName": "orderCustomerId"
                     }
+                },
+                "createdBy": {
+                    "name": "createdBy",
+                    "isArray": false,
+                    "type": {
+                        "nonModel": "ByEmployee"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "updatedBy": {
+                    "name": "updatedBy",
+                    "isArray": false,
+                    "type": {
+                        "nonModel": "ByEmployee"
+                    },
+                    "isRequired": false,
+                    "attributes": []
                 },
                 "createdAt": {
                     "name": "createdAt",
@@ -1655,32 +1673,6 @@ export const schema = {
                 }
             }
         },
-        "RefundInfo": {
-            "name": "RefundInfo",
-            "fields": {
-                "employeeId": {
-                    "name": "employeeId",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "employeeName": {
-                    "name": "employeeName",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "comments": {
-                    "name": "comments",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                }
-            }
-        },
         "PaymentInfo": {
             "name": "PaymentInfo",
             "fields": {
@@ -1726,6 +1718,51 @@ export const schema = {
                     "name": "amount",
                     "isArray": false,
                     "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
+        "RefundInfo": {
+            "name": "RefundInfo",
+            "fields": {
+                "employeeId": {
+                    "name": "employeeId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "employeeName": {
+                    "name": "employeeName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "comments": {
+                    "name": "comments",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
+        "ByEmployee": {
+            "name": "ByEmployee",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "name": {
+                    "name": "name",
+                    "isArray": false,
+                    "type": "String",
                     "isRequired": true,
                     "attributes": []
                 }
@@ -1873,5 +1910,5 @@ export const schema = {
             }
         }
     },
-    "version": "64100134d2915cb396aa64259e37af4c"
+    "version": "be8d39620fd6a2272c946dd84ed71527"
 };

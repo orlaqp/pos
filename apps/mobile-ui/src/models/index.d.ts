@@ -35,13 +35,6 @@ export declare class OrderLine {
   constructor(init: ModelInit<OrderLine>);
 }
 
-export declare class RefundInfo {
-  readonly employeeId: string;
-  readonly employeeName: string;
-  readonly comments: string;
-  constructor(init: ModelInit<RefundInfo>);
-}
-
 export declare class PaymentInfo {
   readonly employeeId: string;
   readonly employeeName: string;
@@ -53,6 +46,19 @@ export declare class Payment {
   readonly type: PaymentType | keyof typeof PaymentType;
   readonly amount: number;
   constructor(init: ModelInit<Payment>);
+}
+
+export declare class RefundInfo {
+  readonly employeeId: string;
+  readonly employeeName: string;
+  readonly comments: string;
+  constructor(init: ModelInit<RefundInfo>);
+}
+
+export declare class ByEmployee {
+  readonly id: string;
+  readonly name: string;
+  constructor(init: ModelInit<ByEmployee>);
 }
 
 export declare class SalesSummary {
@@ -158,9 +164,11 @@ export declare class Order {
   readonly employeeId: string;
   readonly employeeName: string;
   readonly lines: (OrderLine | null)[];
-  readonly refundInfo?: RefundInfo | null;
   readonly paymentInfo?: PaymentInfo | null;
+  readonly refundInfo?: RefundInfo | null;
   readonly Customer?: Customer | null;
+  readonly createdBy?: ByEmployee | null;
+  readonly updatedBy?: ByEmployee | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly orderCustomerId?: string | null;
