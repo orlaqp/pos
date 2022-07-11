@@ -133,14 +133,33 @@ export class OrderService {
             o.status = 'REFUNDED';
         });
 
-        
+        await DataStore.save(refundedOrder);
+        await OrderService.updateInventory(refundedOrder);
 
-        const updatedOrder = await OrderService.getUpdatedOrder(request, (o) => {
-            o.status = 'REFUNDED';
+        const cartOrder = OrderEntityMapper.asCartState(request.order);
+
+        request.refundedLines.forEach((l) => {
+            const line = cartOrder.items?.find(
+                (li) => li.identifier === l.identifier && li.quantity > 0
+            );
+
+            if (line) {
+                console.log(`Found product ${line.product.name}, removing 1`);
+                line.quantity -= l.quantity;
+            }
         });
 
+        const newCart = await OrderEntityMapper.fromRefundedCart(
+            request.by,
+            cartOrder
+        );
 
-        return await DataStore.save(updatedOrder);
+        if (!newCart.items?.length) return;
+
+        await OrderService.create({
+            by: ,// get original employee
+            order: newCart
+        }) // .upsertOrder(employee, newCart, OrderStatus.PAID);
     }
 
 
