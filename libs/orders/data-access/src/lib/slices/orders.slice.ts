@@ -16,10 +16,7 @@ import {
     PayloadAction,
 } from '@reduxjs/toolkit';
 import { Alert } from 'react-native';
-import {
-    OrderEntity,
-    OrderEntityMapper,
-} from '../order.entity';
+import { OrderEntity, OrderEntityMapper } from '../order.entity';
 import { FilterRequest, OrderService } from '../order.service';
 
 export const ORDER_FEATURE_KEY = 'orders';
@@ -61,8 +58,12 @@ export const ordersAdapter = createEntityAdapter<OrderEntity>();
 export const createOrder = createAsyncThunk(
     'order/save',
     async (request: CreateOrderRequest, thunkAPI) => {
-        const employee = (thunkAPI.getState() as RootState).employees.loginEmployee!;
-        const o = await OrderService.upsertOrder(employee, request.cart);
+        const employee = (thunkAPI.getState() as RootState).employees
+            .loginEmployee!;
+        const o = await OrderService.create({
+            by: employee as any,
+            order: request.cart,
+        });
         return {
             ...request,
             order: OrderEntityMapper.fromModel(o),
@@ -73,7 +74,14 @@ export const createOrder = createAsyncThunk(
 export const payOrder = createAsyncThunk(
     'order/pay',
     async (request: PayOrderRequest, thunkAPI) => {
-        const o = await OrderService.payOrder(employee, request.cart, 'PAID', request.payments);
+        const employee = (thunkAPI.getState() as RootState).employees
+            .loginEmployee!;
+        const o = await OrderService.closeOrder({
+            id: request.cart.id!,
+            by: employee as any,
+            order: request.cart,
+            payments: request.payments,
+        });
         // const o = await OrderService.payOrder(request.cart);
 
         if (!o) return;
@@ -186,9 +194,8 @@ export const selectOpenOrders = createSelector(getOrdersState, (state) =>
         .filter((o) => o.status === 'OPEN')
 );
 
-export const selectOrderLines = (id: string) => createSelector(getOrdersState, (state) =>
-    state.entities[id]?.lines
-);
+export const selectOrderLines = (id: string) =>
+    createSelector(getOrdersState, (state) => state.entities[id]?.lines);
 
 export const selectOrdersEntities = createSelector(
     getOrdersState,

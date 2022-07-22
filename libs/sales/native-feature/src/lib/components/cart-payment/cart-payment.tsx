@@ -11,7 +11,7 @@ import { Button } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
-import { View, Text } from 'react-native';
+import { View, Text, Alert } from 'react-native';
 
 const PaymentMethod = {
     cc: 'Credit Card',
@@ -51,17 +51,26 @@ export function CartPayment({ total, onPaymentEntered }: CartPaymentProps) {
 
     const completeOrder = (info: PaymentInfo) => {
         const result: ICartPayment[] = [];
-
+        let received = 0;
+        
         if (info.cash > 0) {
-            result.push({ type: PaymentType.CASH, amount: info.cash });
+            result.push({ type: PaymentType.CASH, amount: +info.cash });
+            received += +info.cash;
         }
         
         if (info.cc > 0) {
-            result.push({ type: PaymentType.CC, amount: info.cc });
+            result.push({ type: PaymentType.CC, amount: +info.cc });
+            received += +info.cc;
         }
 
         if (info.check > 0) {
-            result.push({ type: PaymentType.CHECK, amount: info.check });
+            result.push({ type: PaymentType.CHECK, amount: +info.check });
+            received += +info.check;
+        }
+
+        if ((+received.toFixed(2)) < total) {
+            Alert.alert('Received payment cannot be less than the total');
+            return;
         }
 
         onPaymentEntered(result);
@@ -117,7 +126,7 @@ export function CartPayment({ total, onPaymentEntered }: CartPaymentProps) {
                             { fontSize: 32, marginBottom: 20 },
                         ]}
                     >
-                        Payment type(s):
+                        $ {total.toFixed(2)}
                     </Text>
                 </View>
                 {Object.keys(PaymentMethod).map((m) => (

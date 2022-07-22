@@ -81,9 +81,9 @@ type Order @model @auth(rules: [{allow: public}]) {
   lines: [OrderLine]!
   paymentInfo: PaymentInfo 
   refundInfo: RefundInfo
-  Customer: Customer @hasOne
   createdBy: ByEmployee
   updatedBy: ByEmployee
+  Customer: Customer @hasOne
 }
 
 type OrderLine {

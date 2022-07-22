@@ -54,7 +54,7 @@ export class OrderEntityMapper {
             lines: p.lines?.filter((i) => i !== null).map((i) =>
                 OrderEntityMapper.fromLine(i!)
             ),
-            payments: p.payments?.filter(p => !!p).map(p => OrderEntityMapper.fromPayment(p)),
+            payments: p.paymentInfo?.payments?.filter(p => !!p).map(p => OrderEntityMapper.fromPayment(p)),
             orderDate: p.orderDate,
             createdAt: p.createdAt,
             updatedAt: p.updatedAt,

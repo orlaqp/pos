@@ -80,6 +80,8 @@ export class OrderService {
             orderDate: moment().toISOString(),
         });
 
+        console.log('[create]: order to be stored', order);
+        
         return await DataStore.save(order);
     }
 
@@ -96,6 +98,9 @@ export class OrderService {
 
         if (!updatedOrder) return null;
 
+        console.log('[update]: order to be updated', updatedOrder);
+        
+
         return await DataStore.save(updatedOrder);
     }
 
@@ -111,17 +116,20 @@ export class OrderService {
                 employeeName: `${request.by.firstName} ${request.by.lastName}`,
                 payments: request.payments?.map(p => new Payment({
                     type: p.type.toUpperCase() as any,
-                    amount: p.amount
+                    amount: +p.amount
                 }))
             };
         });
+
+        console.log('[closeOrder]: order to be closed', updatedOrder);
+        
 
         if (!updatedOrder) return null;
 
         return await DataStore.save(updatedOrder);
     }
 
-    static async refundOrder(request: RefundOrderRequest) {
+    static async refund(request: RefundOrderRequest) {
         const existing = await DataStore.query(Order, request.id);
         
         if (!existing) {
@@ -155,9 +163,15 @@ export class OrderService {
         );
 
         if (!newCart.items?.length) return;
+        const createdBy = await EmployeeService.getById(refundedOrder.employeeId);
+
+        if  (!createdBy) {
+            Alert.alert(`Employee ${refundedOrder.employeeId} not found`);
+            return;
+        }
 
         await OrderService.create({
-            by: ,// get original employee
+            by: createdBy,// get original employee
             order: newCart
         }) // .upsertOrder(employee, newCart, OrderStatus.PAID);
     }
@@ -205,120 +219,118 @@ export class OrderService {
     }
 
 
+    // static async payOrder(employee: EmployeeEntity, cart: CartState, payments: CartPayment[]) {
+    //     // if (!cart.header?.orderNumber) return;
+    //     // const employee = (thunkAPI.getState() as RootState).employees.loginEmployee!;
+    //     if (!cart.header?.employeeId) {
+    //         Alert.alert('Employee is information is missing');
+    //         return;
+    //     }
 
+    //     const createdBy = await EmployeeService.getById(cart.header.employeeId);
 
-    static async payOrder(employee: EmployeeEntity, cart: CartState, payments: CartPayment[]) {
-        // if (!cart.header?.orderNumber) return;
-        // const employee = (thunkAPI.getState() as RootState).employees.loginEmployee!;
-        if (!cart.header?.employeeId) {
-            Alert.alert('Employee is information is missing');
-            return;
-        }
+    //     if (!employee) {
+    //         Alert.alert(`Employee id: ${cart.header.employeeId} could not be found`);
+    //         return;
+    //     }
 
-        const createdBy = await EmployeeService.getById(cart.header.employeeId);
+    //     const o = await OrderService.upsertOrder(employee, cart, 'PAID', payments);
 
-        if (!employee) {
-            Alert.alert(`Employee id: ${cart.header.employeeId} could not be found`);
-            return;
-        }
+    //     if (!o) {
+    //         Alert.alert(`Order ${cart.header.orderNumber} not found`);
+    //         return;
+    //     }
 
-        const o = await OrderService.upsertOrder(employee, cart, 'PAID', payments);
+    //     const updatedOrder = Order.copyOf(o, (updated) => {
+    //         updated.status = 'PAID';
+    //     });
 
-        if (!o) {
-            Alert.alert(`Order ${cart.header.orderNumber} not found`);
-            return;
-        }
+    //     const paidOrder = await DataStore.save(updatedOrder);
+    //     await OrderService.updateInventory(updatedOrder);
 
-        const updatedOrder = Order.copyOf(o, (updated) => {
-            updated.status = 'PAID';
-        });
+    //     return paidOrder;
+    // }
 
-        const paidOrder = await DataStore.save(updatedOrder);
-        await OrderService.updateInventory(updatedOrder);
+    // static async upsertOrder(request: UpsertOrderRequest) {
+    //     if (!request.order.id) {
+    //         const order = new Order({
+    //             orderNo: await StationService.getNextOrderNumber(request.createdBy),
+    //             status: request.status || 'OPEN',
+    //             subtotal: request.order.footer.subtotal,
+    //             tax: 0,
+    //             total: request.order.footer.total,
+    //             employeeId: request.createdBy.id!,
+    //             employeeName: `${request.createdBy.firstName} ${request.createdBy.lastName}`,
+    //             lines: request.order.items.map(
+    //                 (i) =>
+    //                     new OrderLine({
+    //                         identifier: i.identifier || uuid.v4().toString(),
+    //                         quantity: i.quantity,
+    //                         tax: 0,
+    //                         price: i.product.price,
+    //                         productId: i.product.id!,
+    //                         barcode: i.product.barcode,
+    //                         sku: i.product.sku,
+    //                         productName: i.product.name,
+    //                         unitOfMeasure: i.product.unitOfMeasure,
+    //                     })
+    //             ),
+    //             paymentInfo: {
+    //                 employeeId: string;
+    //                 employeeName: string;
+    //                 payments: request.paymentInfo.payments?.map(p => new Payment({
+    //                     type: p.type.toUpperCase() as any,
+    //                     amount: p.amount
+    //                 }))
+    //             },
+    //             orderDate: moment().toISOString(),
+    //         });
 
-        return paidOrder;
-    }
+    //         console.log('Order status: ' + status, order);
 
-    static async upsertOrder(request: UpsertOrderRequest) {
-        if (!request.order.id) {
-            const order = new Order({
-                orderNo: await StationService.getNextOrderNumber(request.createdBy),
-                status: request.status || 'OPEN',
-                subtotal: request.order.footer.subtotal,
-                tax: 0,
-                total: request.order.footer.total,
-                employeeId: request.createdBy.id!,
-                employeeName: `${request.createdBy.firstName} ${request.createdBy.lastName}`,
-                lines: request.order.items.map(
-                    (i) =>
-                        new OrderLine({
-                            identifier: i.identifier || uuid.v4().toString(),
-                            quantity: i.quantity,
-                            tax: 0,
-                            price: i.product.price,
-                            productId: i.product.id!,
-                            barcode: i.product.barcode,
-                            sku: i.product.sku,
-                            productName: i.product.name,
-                            unitOfMeasure: i.product.unitOfMeasure,
-                        })
-                ),
-                paymentInfo: {
-                    employeeId: string;
-                    employeeName: string;
-                    payments: request.paymentInfo.payments?.map(p => new Payment({
-                        type: p.type.toUpperCase() as any,
-                        amount: p.amount
-                    }))
-                },
-                orderDate: moment().toISOString(),
-            });
+    //         return await DataStore.save(order);
+    //     }
 
-            console.log('Order status: ' + status, order);
+    //     const existing = await DataStore.query(Order, request.order.id);
 
-            return await DataStore.save(order);
-        }
+    //     if (!existing) {
+    //         return console.log(
+    //             `It seems that order: ${createdBy.id} has been removed`
+    //         );
+    //     }
 
-        const existing = await DataStore.query(Order, request.order.id);
+    //     const updatedOrder = Order.copyOf(existing, (o) => {
+    //         o.status = status || 'OPEN';
+    //         o.subtotal = request.order.footer.subtotal;
+    //         o.tax = 0;
+    //         o.total = request.order.footer.total;
+    //         o.employeeId = createdBy.id!;
+    //         o.employeeName = `${createdBy.firstName} ${createdBy.lastName}`;
+    //         o.lines = request.order.items.map(
+    //             (i) =>
+    //                 new OrderLine({
+    //                     identifier: i.identifier!,
+    //                     quantity: i.quantity,
+    //                     tax: 0,
+    //                     price: i.product.price,
+    //                     productId: i.product.id!,
+    //                     barcode: i.product.barcode,
+    //                     sku: i.product.sku,
+    //                     productName: i.product.name,
+    //                     unitOfMeasure: i.product.unitOfMeasure,
+    //                 })
+    //         );
+    //         o.orderDate = moment().toISOString();
+    //         o.payments = payments?.map(p => new Payment({
+    //             type: p.type.toUpperCase() as any,
+    //             amount: p.amount
+    //         }));
+    //     });
 
-        if (!existing) {
-            return console.log(
-                `It seems that order: ${createdBy.id} has been removed`
-            );
-        }
-
-        const updatedOrder = Order.copyOf(existing, (o) => {
-            o.status = status || 'OPEN';
-            o.subtotal = request.order.footer.subtotal;
-            o.tax = 0;
-            o.total = request.order.footer.total;
-            o.employeeId = createdBy.id!;
-            o.employeeName = `${createdBy.firstName} ${createdBy.lastName}`;
-            o.lines = request.order.items.map(
-                (i) =>
-                    new OrderLine({
-                        identifier: i.identifier!,
-                        quantity: i.quantity,
-                        tax: 0,
-                        price: i.product.price,
-                        productId: i.product.id!,
-                        barcode: i.product.barcode,
-                        sku: i.product.sku,
-                        productName: i.product.name,
-                        unitOfMeasure: i.product.unitOfMeasure,
-                    })
-            );
-            o.orderDate = moment().toISOString();
-            o.payments = payments?.map(p => new Payment({
-                type: p.type.toUpperCase() as any,
-                amount: p.amount
-            }));
-        });
-
-        console.log('Updated order', updatedOrder);
+    //     console.log('Updated order', updatedOrder);
         
-        return await DataStore.save(updatedOrder);
-    }
+    //     return await DataStore.save(updatedOrder);
+    // }
 
     static async delete(id: string) {
         const item = await DataStore.query(Order, id);
@@ -356,24 +368,6 @@ export class OrderService {
         }
 
         return searchResult;
-
-        // items.forEach((e) => {
-        //     if (e.status !== options.status) {
-        //         return;
-        //     }
-
-        //     if (!lowerQuery) result.push(e);
-
-        //     if (
-        //         lowerQuery &&
-        //         (e.id?.toLowerCase().indexOf(lowerQuery) !== -1 ||
-        //             e.employeeName?.toLowerCase().indexOf(lowerQuery) !== -1)
-        //     ) {
-        //         result.push(e);
-        //     }
-        // });
-
-        // return result;
     }
 
     static updateReorderPoint(id: string, value: number) {
@@ -400,48 +394,48 @@ export class OrderService {
         });
     }
 
-    static async refund(
-        employee: EmployeeEntity,
-        originalOrder: OrderEntity,
-        refundedLines: { identifier: string; price: number; quantity: number }[]
-    ) {
-        // First refund the entire original order
-        const orders = await DataStore.query(Order, (o) =>
-            o.id('eq', originalOrder.id)
-        );
-        const order = orders[0];
-        if (!order) return;
+    // static async refund(
+    //     employee: EmployeeEntity,
+    //     originalOrder: OrderEntity,
+    //     refundedLines: { identifier: string; price: number; quantity: number }[]
+    // ) {
+    //     // First refund the entire original order
+    //     const orders = await DataStore.query(Order, (o) =>
+    //         o.id('eq', originalOrder.id)
+    //     );
+    //     const order = orders[0];
+    //     if (!order) return;
 
-        const refundedOrder = Order.copyOf(order, (o) => {
-            o.status = OrderStatus.REFUNDED;
-        });
+    //     const refundedOrder = Order.copyOf(order, (o) => {
+    //         o.status = OrderStatus.REFUNDED;
+    //     });
 
-        await DataStore.save(refundedOrder);
-        await OrderService.updateInventory(refundedOrder);
+    //     await DataStore.save(refundedOrder);
+    //     await OrderService.updateInventory(refundedOrder);
 
-        // then create a new one if necessary
-        const cartOrder = OrderEntityMapper.asCartState(originalOrder);
+    //     // then create a new one if necessary
+    //     const cartOrder = OrderEntityMapper.asCartState(originalOrder);
 
-        refundedLines.forEach((l) => {
-            const line = cartOrder.items?.find(
-                (li) => li.identifier === l.identifier && li.quantity > 0
-            );
+    //     refundedLines.forEach((l) => {
+    //         const line = cartOrder.items?.find(
+    //             (li) => li.identifier === l.identifier && li.quantity > 0
+    //         );
 
-            if (line) {
-                console.log(`Found product ${line.product.name}, removing 1`);
-                line.quantity -= l.quantity;
-            }
-        });
+    //         if (line) {
+    //             console.log(`Found product ${line.product.name}, removing 1`);
+    //             line.quantity -= l.quantity;
+    //         }
+    //     });
 
-        const newCart = await OrderEntityMapper.fromRefundedCart(
-            employee,
-            cartOrder
-        );
+    //     const newCart = await OrderEntityMapper.fromRefundedCart(
+    //         employee,
+    //         cartOrder
+    //     );
 
-        if (!newCart.items?.length) return;
+    //     if (!newCart.items?.length) return;
 
-        await OrderService.upsertOrder(employee, newCart, OrderStatus.PAID);
-    }
+    //     await OrderService.upsertOrder(employee, newCart, OrderStatus.PAID);
+    // }
 }
 
 async function updateProductQuantity(

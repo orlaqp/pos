@@ -66,7 +66,6 @@ export const printReceipt = async (
     cart: CartState,
     order?: OrderEntity,
 ) => {
-    debugger;
     if (!store || !printerInfo) {
         Alert.alert('Store and printer should be available in order to print');
         return;
@@ -101,12 +100,13 @@ export const printReceipt = async (
             .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
             .actionPrintText(
                 // 'SKU   Description        Total\n' +
-                'Description        Qty    Total\n' +
+                // 'Description        Qty    Total\n' +
+                'Qty    Description        Total\n' +
                 '-------------------------------\n' +
                     // cart.items.map(i => `${i.product.sku?.padEnd(5, ' ')} ${i.quantity.toString().padStart(2, ' ')}x${i.product.name.substring(0, 13).padEnd(13, ' ')} ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`).join('\n') +
                     cart.items
                         .map((i) =>
-                                `${i.product.name.substring(0, 15).padEnd(15, ' ')}  ${(i.quantity % 1 === 0 ? i.quantity.toString() : i.quantity.toFixed(2)).padStart(5, ' ')}  ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`
+                                `${(i.quantity % 1 === 0 ? i.quantity.toString() : i.quantity.toFixed(2)).padEnd(5, ' ')}  ${i.product.name.substring(0, 15).padEnd(15, ' ')}  ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`
                         )
                         .join('\n') +
                     '\n\n' +
@@ -125,10 +125,15 @@ export const printReceipt = async (
                     )
             )
             .actionPrintText('--------------------------------\n')
-            .actionFeedLine(1);            
-
+            
         if (order?.id) {
             printerBuilder
+                .styleAlignment(StarXpandCommand.Printer.Alignment.Right)
+                .actionPrintText(
+                    order.payments?.map(p => `${p.type}: $ ${p.amount.toFixed(2)}`).join('\n') || ''
+                    )
+                .actionFeedLine(2)
+                .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
                 .add(
                     new StarXpandCommand.PrinterBuilder()
                         .styleInvert(true)
@@ -136,10 +141,6 @@ export const printReceipt = async (
                         .actionPrintText(` ${store.disclaimer} \n`)
                 )
                 .actionFeedLine(1)
-                .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
-                .actionPrintText(
-                    cart.footer.payments?.map(p => `${p.type}: ${p.amount}`).join('\n') || ''
-                )
                 .actionPrintText(order.status === 'OPEN' ? '** Customer Copy **' : '** Merchant Copy **')
                 .actionFeedLine(1)
                 .actionPrintQRCode(

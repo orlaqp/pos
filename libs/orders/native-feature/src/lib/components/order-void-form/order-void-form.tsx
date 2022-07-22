@@ -45,15 +45,16 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
         }
 
         setBusy(true);
-        await OrderService.refund(
-            employee,
+        await OrderService.refund({
+            by: employee as any,
+            id: order.id,
             order,
-            linesToRefund.map((l) => ({
+            refundedLines: linesToRefund.map((l) => ({
                 identifier: l.identifier,
                 price: l.price,
                 quantity: l.quantity,
             }))
-        );
+        });
         setBusy(false);
         onRefundComplete();
     };

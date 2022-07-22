@@ -58,8 +58,8 @@ export class EmployeeService {
         return emp[0] ? EmployeeEntityMapper.fromModel(emp[0]): null;
     }
 
-    static async getById(employeeId: string): EmployeeEntity | null {
+    static async getById(employeeId: string): Promise<Omit<EmployeeEntity, "id"> & { id: string; } | null> {
         const emp = await DataStore.query(Employee, e => e.id('eq', employeeId));
-        return emp[0] ? EmployeeEntityMapper.fromModel(emp[0]): null;
+        return emp[0] ? EmployeeEntityMapper.fromModel(emp[0]): null as any;
     }
 }
