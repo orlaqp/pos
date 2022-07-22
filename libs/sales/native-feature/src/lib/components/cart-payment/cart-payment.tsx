@@ -31,10 +31,11 @@ interface PaymentInfo {
 /* eslint-disable-next-line */
 export interface CartPaymentProps {
     total: number;
+    canReceiveChecks: boolean;
     onPaymentEntered: (payments: ICartPayment[]) => void;
 }
 
-export function CartPayment({ total, onPaymentEntered }: CartPaymentProps) {
+export function CartPayment({ total, canReceiveChecks, onPaymentEntered }: CartPaymentProps) {
     const styles = useSharedStyles();
     const [formValue, setFormValue] = useState<PaymentInfo>();
     const form = useForm<PaymentInfo>({
@@ -48,6 +49,8 @@ export function CartPayment({ total, onPaymentEntered }: CartPaymentProps) {
             cc: 0,
         },
     });
+    debugger;
+    const paymentMethods = Object.keys(PaymentMethod).filter(x => x !== 'check' || canReceiveChecks)
 
     const completeOrder = (info: PaymentInfo) => {
         const result: ICartPayment[] = [];
@@ -129,7 +132,7 @@ export function CartPayment({ total, onPaymentEntered }: CartPaymentProps) {
                         $ {total.toFixed(2)}
                     </Text>
                 </View>
-                {Object.keys(PaymentMethod).map((m) => (
+                {paymentMethods.map((m) => (
                     <View key={m} style={[styles.miniDataRow]}>
                         <View style={{ flex: 1, paddingLeft: 15 }}>
                             <UISwitch name={`with${m}`} />

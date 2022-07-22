@@ -19,6 +19,8 @@ import { useSharedStyles } from '@pos/theme/native';
 import CartLine from '../cart-line/cart-line';
 import EmptyCart from '../../../../assets/images/empty-cart.png';
 import CartPayment from '../cart-payment/cart-payment';
+import { selectLoginEmployee } from '@pos/employees/data-access';
+import { Role } from '@pos/auth/data-access';
 
 export type CartMode = 'order' | 'payment';
 
@@ -33,6 +35,7 @@ export function Cart({ mode, onSubmit, searchRef }: CartProps) {
     const styles = useSharedStyles();
     const dispatch = useDispatch();
     const cart = useSelector(selectCart);
+    const employee = useSelector(selectLoginEmployee);
     const [ready, setReady] = useState(false);
     const [receivePayment, setReceivePayment] = useState<boolean>(false);
     
@@ -113,7 +116,11 @@ export function Cart({ mode, onSubmit, searchRef }: CartProps) {
                     onBackdropPress={() => setReceivePayment(false)}
                     overlayStyle={[styles.overlay, { width: 450 }]}
                 >
-                    <CartPayment total={cart.footer.total} onPaymentEntered={paymentEntered} />
+                    <CartPayment
+                        total={cart.footer.total}
+                        canReceiveChecks={employee?.roles.includes(Role.Checks) || false}
+                        onPaymentEntered={paymentEntered}
+                    />
                 </Dialog>
         </View>
     );
