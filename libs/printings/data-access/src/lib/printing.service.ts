@@ -130,8 +130,8 @@ export const printReceipt = async (
             printerBuilder
                 .styleAlignment(StarXpandCommand.Printer.Alignment.Right)
                 .actionPrintText(
-                    order.payments?.map(p => `${p.type}: $ ${p.amount.toFixed(2)}`).join('\n') || ''
-                    )
+                    order.paymentInfo?.payments?.map(p => `${p.type}: $ ${p.amount.toFixed(2)}`).join('\n') || ''
+                )
                 .actionFeedLine(2)
                 .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
                 .add(

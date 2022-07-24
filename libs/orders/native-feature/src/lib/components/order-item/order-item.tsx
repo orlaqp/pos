@@ -80,6 +80,16 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                 <Text style={[styles.name, { textAlign: 'center' }]}>
                     {item.orderNo}
                 </Text>
+                {item.status === 'PAID' &&
+                <Text style={[styles.name, { textAlign: 'center' }]}>
+                        <Text style={styles.secondaryText}>By: {item?.paymentInfo?.employeeName || 'N/A'}</Text>
+                </Text>
+                }
+                {item.status === 'REFUNDED' &&
+                <Text style={[styles.name, { textAlign: 'center' }]}>
+                        <Text style={styles.secondaryText}>By: {item?.refundInfo?.employeeName || 'N/A'}</Text>
+                </Text>
+                }
             </View>
             <View style={{ flex: 3 }}>
                 <Text style={styles.primaryText}>{item.employeeName}</Text>

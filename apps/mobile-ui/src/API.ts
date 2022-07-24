@@ -339,6 +339,7 @@ export type DeleteEmployeeInput = {
 export type CreateOrderInput = {
   id?: string | null,
   orderNo: string,
+  orderDate: string,
   subtotal: number,
   tax: number,
   total: number,
@@ -346,7 +347,10 @@ export type CreateOrderInput = {
   employeeId: string,
   employeeName: string,
   lines: Array< OrderLineInput | null >,
-  orderDate: string,
+  paymentInfo?: PaymentInfoInput | null,
+  refundInfo?: RefundInfoInput | null,
+  createdBy?: ByEmployeeInput | null,
+  updatedBy?: ByEmployeeInput | null,
   _version?: number | null,
   orderCustomerId?: string | null,
 };
@@ -370,15 +374,44 @@ export type OrderLineInput = {
   price: number,
 };
 
+export type PaymentInfoInput = {
+  employeeId: string,
+  employeeName: string,
+  payments?: Array< PaymentInput | null > | null,
+};
+
+export type PaymentInput = {
+  type: PaymentType,
+  amount: number,
+};
+
+export enum PaymentType {
+  CASH = "CASH",
+  CHECK = "CHECK",
+  CC = "CC",
+}
+
+
+export type RefundInfoInput = {
+  employeeId: string,
+  employeeName: string,
+  comments?: string | null,
+};
+
+export type ByEmployeeInput = {
+  id: string,
+  name: string,
+};
+
 export type ModelOrderConditionInput = {
   orderNo?: ModelStringInput | null,
+  orderDate?: ModelStringInput | null,
   subtotal?: ModelFloatInput | null,
   tax?: ModelFloatInput | null,
   total?: ModelFloatInput | null,
   status?: ModelOrderStatusInput | null,
   employeeId?: ModelStringInput | null,
   employeeName?: ModelStringInput | null,
-  orderDate?: ModelStringInput | null,
   and?: Array< ModelOrderConditionInput | null > | null,
   or?: Array< ModelOrderConditionInput | null > | null,
   not?: ModelOrderConditionInput | null,
@@ -422,6 +455,7 @@ export type Order = {
   __typename: "Order",
   id: string,
   orderNo: string,
+  orderDate: string,
   subtotal: number,
   tax: number,
   total: number,
@@ -429,8 +463,11 @@ export type Order = {
   employeeId: string,
   employeeName: string,
   lines:  Array<OrderLine | null >,
+  paymentInfo?: PaymentInfo | null,
+  refundInfo?: RefundInfo | null,
+  createdBy?: ByEmployee | null,
+  updatedBy?: ByEmployee | null,
   Customer?: Customer | null,
-  orderDate: string,
   createdAt: string,
   updatedAt: string,
   _version: number,
@@ -452,9 +489,36 @@ export type OrderLine = {
   price: number,
 };
 
+export type PaymentInfo = {
+  __typename: "PaymentInfo",
+  employeeId: string,
+  employeeName: string,
+  payments?:  Array<Payment | null > | null,
+};
+
+export type Payment = {
+  __typename: "Payment",
+  type: PaymentType,
+  amount: number,
+};
+
+export type RefundInfo = {
+  __typename: "RefundInfo",
+  employeeId: string,
+  employeeName: string,
+  comments?: string | null,
+};
+
+export type ByEmployee = {
+  __typename: "ByEmployee",
+  id: string,
+  name: string,
+};
+
 export type UpdateOrderInput = {
   id: string,
   orderNo?: string | null,
+  orderDate?: string | null,
   subtotal?: number | null,
   tax?: number | null,
   total?: number | null,
@@ -462,7 +526,10 @@ export type UpdateOrderInput = {
   employeeId?: string | null,
   employeeName?: string | null,
   lines?: Array< OrderLineInput | null > | null,
-  orderDate?: string | null,
+  paymentInfo?: PaymentInfoInput | null,
+  refundInfo?: RefundInfoInput | null,
+  createdBy?: ByEmployeeInput | null,
+  updatedBy?: ByEmployeeInput | null,
   _version?: number | null,
   orderCustomerId?: string | null,
 };
@@ -1128,13 +1195,13 @@ export type ModelEmployeeConnection = {
 export type ModelOrderFilterInput = {
   id?: ModelIDInput | null,
   orderNo?: ModelStringInput | null,
+  orderDate?: ModelStringInput | null,
   subtotal?: ModelFloatInput | null,
   tax?: ModelFloatInput | null,
   total?: ModelFloatInput | null,
   status?: ModelOrderStatusInput | null,
   employeeId?: ModelStringInput | null,
   employeeName?: ModelStringInput | null,
-  orderDate?: ModelStringInput | null,
   and?: Array< ModelOrderFilterInput | null > | null,
   or?: Array< ModelOrderFilterInput | null > | null,
   not?: ModelOrderFilterInput | null,
@@ -1688,6 +1755,7 @@ export type CreateOrderMutation = {
     __typename: "Order",
     id: string,
     orderNo: string,
+    orderDate: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -1706,6 +1774,27 @@ export type CreateOrderMutation = {
       tax: number,
       price: number,
     } | null >,
+    paymentInfo?:  {
+      __typename: "PaymentInfo",
+      employeeId: string,
+      employeeName: string,
+    } | null,
+    refundInfo?:  {
+      __typename: "RefundInfo",
+      employeeId: string,
+      employeeName: string,
+      comments?: string | null,
+    } | null,
+    createdBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
+    updatedBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -1721,7 +1810,6 @@ export type CreateOrderMutation = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -1741,6 +1829,7 @@ export type UpdateOrderMutation = {
     __typename: "Order",
     id: string,
     orderNo: string,
+    orderDate: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -1759,6 +1848,27 @@ export type UpdateOrderMutation = {
       tax: number,
       price: number,
     } | null >,
+    paymentInfo?:  {
+      __typename: "PaymentInfo",
+      employeeId: string,
+      employeeName: string,
+    } | null,
+    refundInfo?:  {
+      __typename: "RefundInfo",
+      employeeId: string,
+      employeeName: string,
+      comments?: string | null,
+    } | null,
+    createdBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
+    updatedBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -1774,7 +1884,6 @@ export type UpdateOrderMutation = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -1794,6 +1903,7 @@ export type DeleteOrderMutation = {
     __typename: "Order",
     id: string,
     orderNo: string,
+    orderDate: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -1812,6 +1922,27 @@ export type DeleteOrderMutation = {
       tax: number,
       price: number,
     } | null >,
+    paymentInfo?:  {
+      __typename: "PaymentInfo",
+      employeeId: string,
+      employeeName: string,
+    } | null,
+    refundInfo?:  {
+      __typename: "RefundInfo",
+      employeeId: string,
+      employeeName: string,
+      comments?: string | null,
+    } | null,
+    createdBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
+    updatedBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -1827,7 +1958,6 @@ export type DeleteOrderMutation = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -2676,6 +2806,7 @@ export type GetSalesQuery = {
     __typename: "Order",
     id: string,
     orderNo: string,
+    orderDate: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -2694,6 +2825,27 @@ export type GetSalesQuery = {
       tax: number,
       price: number,
     } | null >,
+    paymentInfo?:  {
+      __typename: "PaymentInfo",
+      employeeId: string,
+      employeeName: string,
+    } | null,
+    refundInfo?:  {
+      __typename: "RefundInfo",
+      employeeId: string,
+      employeeName: string,
+      comments?: string | null,
+    } | null,
+    createdBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
+    updatedBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -2709,7 +2861,6 @@ export type GetSalesQuery = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -3176,6 +3327,7 @@ export type GetOrderQuery = {
     __typename: "Order",
     id: string,
     orderNo: string,
+    orderDate: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -3194,6 +3346,27 @@ export type GetOrderQuery = {
       tax: number,
       price: number,
     } | null >,
+    paymentInfo?:  {
+      __typename: "PaymentInfo",
+      employeeId: string,
+      employeeName: string,
+    } | null,
+    refundInfo?:  {
+      __typename: "RefundInfo",
+      employeeId: string,
+      employeeName: string,
+      comments?: string | null,
+    } | null,
+    createdBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
+    updatedBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -3209,7 +3382,6 @@ export type GetOrderQuery = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -3232,13 +3404,13 @@ export type ListOrdersQuery = {
       __typename: "Order",
       id: string,
       orderNo: string,
+      orderDate: string,
       subtotal: number,
       tax: number,
       total: number,
       status: OrderStatus,
       employeeId: string,
       employeeName: string,
-      orderDate: string,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -3265,13 +3437,13 @@ export type SyncOrdersQuery = {
       __typename: "Order",
       id: string,
       orderNo: string,
+      orderDate: string,
       subtotal: number,
       tax: number,
       total: number,
       status: OrderStatus,
       employeeId: string,
       employeeName: string,
-      orderDate: string,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -4358,6 +4530,7 @@ export type OnCreateOrderSubscription = {
     __typename: "Order",
     id: string,
     orderNo: string,
+    orderDate: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -4376,6 +4549,27 @@ export type OnCreateOrderSubscription = {
       tax: number,
       price: number,
     } | null >,
+    paymentInfo?:  {
+      __typename: "PaymentInfo",
+      employeeId: string,
+      employeeName: string,
+    } | null,
+    refundInfo?:  {
+      __typename: "RefundInfo",
+      employeeId: string,
+      employeeName: string,
+      comments?: string | null,
+    } | null,
+    createdBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
+    updatedBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -4391,7 +4585,6 @@ export type OnCreateOrderSubscription = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -4406,6 +4599,7 @@ export type OnUpdateOrderSubscription = {
     __typename: "Order",
     id: string,
     orderNo: string,
+    orderDate: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -4424,6 +4618,27 @@ export type OnUpdateOrderSubscription = {
       tax: number,
       price: number,
     } | null >,
+    paymentInfo?:  {
+      __typename: "PaymentInfo",
+      employeeId: string,
+      employeeName: string,
+    } | null,
+    refundInfo?:  {
+      __typename: "RefundInfo",
+      employeeId: string,
+      employeeName: string,
+      comments?: string | null,
+    } | null,
+    createdBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
+    updatedBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -4439,7 +4654,6 @@ export type OnUpdateOrderSubscription = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -4454,6 +4668,7 @@ export type OnDeleteOrderSubscription = {
     __typename: "Order",
     id: string,
     orderNo: string,
+    orderDate: string,
     subtotal: number,
     tax: number,
     total: number,
@@ -4472,6 +4687,27 @@ export type OnDeleteOrderSubscription = {
       tax: number,
       price: number,
     } | null >,
+    paymentInfo?:  {
+      __typename: "PaymentInfo",
+      employeeId: string,
+      employeeName: string,
+    } | null,
+    refundInfo?:  {
+      __typename: "RefundInfo",
+      employeeId: string,
+      employeeName: string,
+      comments?: string | null,
+    } | null,
+    createdBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
+    updatedBy?:  {
+      __typename: "ByEmployee",
+      id: string,
+      name: string,
+    } | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -4487,7 +4723,6 @@ export type OnDeleteOrderSubscription = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    orderDate: string,
     createdAt: string,
     updatedAt: string,
     _version: number,

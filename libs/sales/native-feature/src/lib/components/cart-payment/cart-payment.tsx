@@ -136,11 +136,6 @@ export function CartPayment({ total, canReceiveChecks, onPaymentEntered }: CartP
                     <View key={m} style={[styles.miniDataRow]}>
                         <View style={{ flex: 1, paddingLeft: 15 }}>
                             <UISwitch name={`with${m}`} />
-                            {/* <Switch
-                                onValueChange={(value) =>
-                                    onMethodChange(m, value)
-                                }
-                            /> */}
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text
@@ -161,6 +156,7 @@ export function CartPayment({ total, canReceiveChecks, onPaymentEntered }: CartP
                                 allowDecimals={true}
                                 textAlign="right"
                                 lIcon="currency-usd"
+                                clearTextOnFocus={true}
                                 disabled={!formValue || !formValue[`with${m}`]}
                             />
                         </View>

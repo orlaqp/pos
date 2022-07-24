@@ -60,7 +60,7 @@ type PaymentInfo {
 type RefundInfo {
   employeeId: String!
   employeeName: String!
-  comments: String!
+  comments: String
 }
 
 type ByEmployee {

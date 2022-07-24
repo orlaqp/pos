@@ -51,7 +51,7 @@ export declare class Payment {
 export declare class RefundInfo {
   readonly employeeId: string;
   readonly employeeName: string;
-  readonly comments: string;
+  readonly comments?: string | null;
   constructor(init: ModelInit<RefundInfo>);
 }
 
@@ -166,9 +166,9 @@ export declare class Order {
   readonly lines: (OrderLine | null)[];
   readonly paymentInfo?: PaymentInfo | null;
   readonly refundInfo?: RefundInfo | null;
-  readonly Customer?: Customer | null;
   readonly createdBy?: ByEmployee | null;
   readonly updatedBy?: ByEmployee | null;
+  readonly Customer?: Customer | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly orderCustomerId?: string | null;

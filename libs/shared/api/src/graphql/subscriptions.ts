@@ -286,6 +286,7 @@ export const onCreateOrder = /* GraphQL */ `
     onCreateOrder {
       id
       orderNo
+      orderDate
       subtotal
       tax
       total
@@ -303,6 +304,23 @@ export const onCreateOrder = /* GraphQL */ `
         tax
         price
       }
+      paymentInfo {
+        employeeId
+        employeeName
+      }
+      refundInfo {
+        employeeId
+        employeeName
+        comments
+      }
+      createdBy {
+        id
+        name
+      }
+      updatedBy {
+        id
+        name
+      }
       Customer {
         id
         firstName
@@ -317,7 +335,6 @@ export const onCreateOrder = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
-      orderDate
       createdAt
       updatedAt
       _version
@@ -332,6 +349,7 @@ export const onUpdateOrder = /* GraphQL */ `
     onUpdateOrder {
       id
       orderNo
+      orderDate
       subtotal
       tax
       total
@@ -349,6 +367,23 @@ export const onUpdateOrder = /* GraphQL */ `
         tax
         price
       }
+      paymentInfo {
+        employeeId
+        employeeName
+      }
+      refundInfo {
+        employeeId
+        employeeName
+        comments
+      }
+      createdBy {
+        id
+        name
+      }
+      updatedBy {
+        id
+        name
+      }
       Customer {
         id
         firstName
@@ -363,7 +398,6 @@ export const onUpdateOrder = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
-      orderDate
       createdAt
       updatedAt
       _version
@@ -378,6 +412,7 @@ export const onDeleteOrder = /* GraphQL */ `
     onDeleteOrder {
       id
       orderNo
+      orderDate
       subtotal
       tax
       total
@@ -395,6 +430,23 @@ export const onDeleteOrder = /* GraphQL */ `
         tax
         price
       }
+      paymentInfo {
+        employeeId
+        employeeName
+      }
+      refundInfo {
+        employeeId
+        employeeName
+        comments
+      }
+      createdBy {
+        id
+        name
+      }
+      updatedBy {
+        id
+        name
+      }
       Customer {
         id
         firstName
@@ -409,7 +461,6 @@ export const onDeleteOrder = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
-      orderDate
       createdAt
       updatedAt
       _version

@@ -96,20 +96,6 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "Customer": {
-                    "name": "Customer",
-                    "isArray": false,
-                    "type": {
-                        "model": "Customer"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "association": {
-                        "connectionType": "HAS_ONE",
-                        "associatedWith": "id",
-                        "targetName": "orderCustomerId"
-                    }
-                },
                 "createdBy": {
                     "name": "createdBy",
                     "isArray": false,
@@ -127,6 +113,20 @@ export const schema = {
                     },
                     "isRequired": false,
                     "attributes": []
+                },
+                "Customer": {
+                    "name": "Customer",
+                    "isArray": false,
+                    "type": {
+                        "model": "Customer"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "HAS_ONE",
+                        "associatedWith": "id",
+                        "targetName": "orderCustomerId"
+                    }
                 },
                 "createdAt": {
                     "name": "createdAt",
@@ -1744,7 +1744,7 @@ export const schema = {
                     "name": "comments",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 }
             }
@@ -1910,5 +1910,5 @@ export const schema = {
             }
         }
     },
-    "version": "be8d39620fd6a2272c946dd84ed71527"
+    "version": "3164350c141a5aa81ab8f6b74d9c8a25"
 };

@@ -140,6 +140,10 @@ export class OrderService {
 
         const refundedOrder = Order.copyOf(existing, (o) => {
             o.status = 'REFUNDED';
+            o.refundInfo = {
+                employeeId: request.by.id,
+                employeeName: `${request.by.firstName} ${request.by.lastName}`
+            }
         });
 
         await DataStore.save(refundedOrder);

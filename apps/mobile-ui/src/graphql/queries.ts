@@ -7,6 +7,7 @@ export const getSales = /* GraphQL */ `
     getSales(status: $status, from: $from, to: $to) {
       id
       orderNo
+      orderDate
       subtotal
       tax
       total
@@ -24,6 +25,23 @@ export const getSales = /* GraphQL */ `
         tax
         price
       }
+      paymentInfo {
+        employeeId
+        employeeName
+      }
+      refundInfo {
+        employeeId
+        employeeName
+        comments
+      }
+      createdBy {
+        id
+        name
+      }
+      updatedBy {
+        id
+        name
+      }
       Customer {
         id
         firstName
@@ -38,7 +56,6 @@ export const getSales = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
-      orderDate
       createdAt
       updatedAt
       _version
@@ -467,6 +484,7 @@ export const getOrder = /* GraphQL */ `
     getOrder(id: $id) {
       id
       orderNo
+      orderDate
       subtotal
       tax
       total
@@ -484,6 +502,23 @@ export const getOrder = /* GraphQL */ `
         tax
         price
       }
+      paymentInfo {
+        employeeId
+        employeeName
+      }
+      refundInfo {
+        employeeId
+        employeeName
+        comments
+      }
+      createdBy {
+        id
+        name
+      }
+      updatedBy {
+        id
+        name
+      }
       Customer {
         id
         firstName
@@ -498,7 +533,6 @@ export const getOrder = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
-      orderDate
       createdAt
       updatedAt
       _version
@@ -518,13 +552,13 @@ export const listOrders = /* GraphQL */ `
       items {
         id
         orderNo
+        orderDate
         subtotal
         tax
         total
         status
         employeeId
         employeeName
-        orderDate
         createdAt
         updatedAt
         _version
@@ -553,13 +587,13 @@ export const syncOrders = /* GraphQL */ `
       items {
         id
         orderNo
+        orderDate
         subtotal
         tax
         total
         status
         employeeId
         employeeName
-        orderDate
         createdAt
         updatedAt
         _version

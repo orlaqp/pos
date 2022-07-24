@@ -5,6 +5,18 @@ import { StationService } from '@pos/settings/data-access';
 import { Order, OrderLine, OrderStatus, Payment, PaymentType } from '@pos/shared/models';
 import { Alert } from 'react-native';
 
+export interface PaymentInfoEntity {
+    employeeId?: string;
+    employeeName?: string;
+    payments?: PaymentEntity[];
+}
+
+export interface RefundInfoEntity {
+    employeeId?: string;
+    employeeName?: string;
+    comments?: string;
+}
+
 export interface OrderEntity {
     id: string;
     orderNo: string;
@@ -16,6 +28,8 @@ export interface OrderEntity {
     employeeName: string;
     lines?: OrderLineEntity[] | null;
     payments?: PaymentEntity[] | null;
+    paymentInfo?: PaymentInfoEntity | null;
+    refundInfo?: RefundInfoEntity | null;
     orderDate?: string | null;
     createdAt?: string | null;
     updatedAt?: string | null;
@@ -54,7 +68,17 @@ export class OrderEntityMapper {
             lines: p.lines?.filter((i) => i !== null).map((i) =>
                 OrderEntityMapper.fromLine(i!)
             ),
-            payments: p.paymentInfo?.payments?.filter(p => !!p).map(p => OrderEntityMapper.fromPayment(p)),
+            // payments: p.paymentInfo?.payments?.filter(p => !!p).map(p => OrderEntityMapper.fromPayment(p)),
+            paymentInfo: {
+                employeeId: p.paymentInfo?.employeeId,
+                employeeName: p.paymentInfo?.employeeName,
+                payments: p.paymentInfo?.payments?.filter(p => !!p).map(p => OrderEntityMapper.fromPayment(p)),
+            },
+            refundInfo: {
+                employeeId: p.refundInfo?.employeeId,
+                employeeName: p.refundInfo?.employeeName,
+                comments: p.refundInfo?.comments
+            },
             orderDate: p.orderDate,
             createdAt: p.createdAt,
             updatedAt: p.updatedAt,
