@@ -35,13 +35,13 @@ import { ButtonItemType } from '@pos/shared/ui-native';
 import { RootState } from '@pos/store';
 import { Dictionary } from '@reduxjs/toolkit';
 import { EACH } from '@pos/unit-of-measures/data-access';
-import { getDefaultPrinter, PrinterEntity } from '@pos/printings/data-access';
+import { getDefaultPrinter } from '@pos/printings/data-access';
 import {
     payOrder,
-    createOrder,
+    upsertOrder,
     subscribeToOrderChanges,
 } from '@pos/orders/data-access';
-import { selectStore, StoreInfoEntity } from '@pos/store-info/data-access';
+import { selectStore } from '@pos/store-info/data-access';
 
 export interface NavigationParamList {
     [key: string]: object | undefined;
@@ -142,7 +142,7 @@ export function SalesScreen({
                 onPress: () => {
                     if (route.params.mode === 'order') {
                         dispatch(
-                            createOrder({ cart, defaultPrinter, storeInfo })
+                            upsertOrder({ cart, defaultPrinter, storeInfo })
                         );
                     } else {
                         if (!payments) {

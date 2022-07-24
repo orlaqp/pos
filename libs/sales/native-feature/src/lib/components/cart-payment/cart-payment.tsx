@@ -49,7 +49,7 @@ export function CartPayment({ total, canReceiveChecks, onPaymentEntered }: CartP
             cc: 0,
         },
     });
-    debugger;
+    
     const paymentMethods = Object.keys(PaymentMethod).filter(x => x !== 'check' || canReceiveChecks)
 
     const completeOrder = (info: PaymentInfo) => {

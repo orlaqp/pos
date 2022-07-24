@@ -1,9 +1,8 @@
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { EmployeeEntity, EmployeeService } from '@pos/employees/data-access';
 import { PrinterEntity, printReceipt } from '@pos/printings/data-access';
 import { CartPayment, CartState } from '@pos/sales/data-access';
-import { OrderStatus } from '@pos/shared/models';
+import { Order, OrderStatus } from '@pos/shared/models';
 import { RootState } from '@pos/store';
 import { StoreInfoEntity } from '@pos/store-info/data-access';
 import {
@@ -15,7 +14,6 @@ import {
     EntityState,
     PayloadAction,
 } from '@reduxjs/toolkit';
-import { Alert } from 'react-native';
 import { OrderEntity, OrderEntityMapper } from '../order.entity';
 import { FilterRequest, OrderService } from '../order.service';
 
@@ -55,15 +53,26 @@ export const ordersAdapter = createEntityAdapter<OrderEntity>();
 //     }
 // );
 
-export const createOrder = createAsyncThunk(
+export const upsertOrder = createAsyncThunk(
     'order/save',
     async (request: CreateOrderRequest, thunkAPI) => {
         const employee = (thunkAPI.getState() as RootState).employees
             .loginEmployee!;
-        const o = await OrderService.create({
-            by: employee as any,
-            order: request.cart,
-        });
+
+        let o: Order;
+        if (!request.cart.id) {
+            o = await OrderService.create({
+                by: employee as any,
+                order: request.cart,
+            });
+        } else {
+            o = await OrderService.update({
+                id: request.cart.id,
+                by: employee as any,
+                order: request.cart,
+            });
+        }
+
         return {
             ...request,
             order: OrderEntityMapper.fromModel(o),
@@ -128,11 +137,11 @@ export const ordersSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(createOrder.pending, (state: OrdersState) => {
+            .addCase(upsertOrder.pending, (state: OrdersState) => {
                 state.submitStatus = 'saving';
             })
             .addCase(
-                createOrder.fulfilled,
+                upsertOrder.fulfilled,
                 (
                     state: OrdersState,
                     action: PayloadAction<SubmitOrderResponse>
@@ -147,7 +156,7 @@ export const ordersSlice = createSlice({
                     );
                 }
             )
-            .addCase(createOrder.rejected, (state: OrdersState, action) => {
+            .addCase(upsertOrder.rejected, (state: OrdersState, action) => {
                 state.submitStatus = 'error';
                 state.error = action.error.message;
             })
