@@ -79,6 +79,21 @@ export function CartPayment({ total, canReceiveChecks, onPaymentEntered }: CartP
         onPaymentEntered(result);
     }
 
+    const amountChanged = (type: string, amount: number) => {
+        if (isNaN(amount)) return;
+
+        const values: Record<string, string | number | boolean> = form.getValues();
+        const selectedPaymentTypes =
+                Object.keys(PaymentMethod).filter((m) => values[`with${m}`]);
+
+        if (selectedPaymentTypes.length > 2) return;
+        
+        const delta = total - amount;
+        const otherPaymentType = selectedPaymentTypes.filter(t => t !== type);
+
+        form.setValue(`${otherPaymentType[0]}` as any, delta > 0 ? delta : 0);
+    }
+
     useEffect(() => {
         const subscription = form.watch((value, { name, type }) => {
             if (!name?.startsWith('with')) return;
@@ -158,6 +173,7 @@ export function CartPayment({ total, canReceiveChecks, onPaymentEntered }: CartP
                                 lIcon="currency-usd"
                                 clearTextOnFocus={true}
                                 disabled={!formValue || !formValue[`with${m}`]}
+                                onChangeText={(text) => amountChanged(m, +text)}
                             />
                         </View>
                     </View>

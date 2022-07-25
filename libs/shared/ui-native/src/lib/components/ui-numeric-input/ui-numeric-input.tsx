@@ -71,7 +71,10 @@ export const UINumericInput = React.forwardRef<typeof Input, Props>(
                         value={value?.toString()}
                         onBlur={onBlur}
                         onChange={onChange}
-                        onChangeText={(text) => onChange(text)}
+                        onChangeText={(text) => {
+                            onChange(text);
+                            if (props.onChangeText) props.onChangeText(text); 
+                        }}
                         // onChangeText={(text)=>onChange(validate(text))}
                         errorMessage={error?.message}
                         inputContainerStyle={styles.inputContainerStyle}
