@@ -61,7 +61,7 @@ export function InventoryCountLine({
                 <Text style={styles.name}>{item.productName}</Text>
             </View>
             <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.current}</Text>
+                <Text style={styles.name}>{item.current.toFixed(2)}</Text>
             </View>
             <View style={{ flex: 1 }}>
                 <TextInput

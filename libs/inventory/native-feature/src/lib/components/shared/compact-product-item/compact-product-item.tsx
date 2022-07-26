@@ -10,8 +10,7 @@ export interface SearchItemProps {
     onAdd: (product: ProductEntity) => void;
 }
 
-export function SearchItem({ product, onAdd }: SearchItemProps) {
-    const theme = useTheme();
+export function CompactProductItem({ product, onAdd }: SearchItemProps) {
     const styles = useSharedStyles();
 
     return (
@@ -46,4 +45,4 @@ export function SearchItem({ product, onAdd }: SearchItemProps) {
     );
 }
 
-export default SearchItem;
+export default CompactProductItem;

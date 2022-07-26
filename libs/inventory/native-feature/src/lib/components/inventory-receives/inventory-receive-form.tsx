@@ -14,7 +14,7 @@ import {
     InventoryReceiveService,
 } from '@pos/inventory/data-access';
 import { RootState } from '@pos/store';
-import { InventoryReceive, Product } from '@pos/shared/models';
+import { InventoryReceive } from '@pos/shared/models';
 import {
     ProductEntity,
     ProductService,
@@ -24,7 +24,8 @@ import { Button, Dialog, useTheme } from '@rneui/themed';
 import InventoryReceiveLine from '../inventory-receives/inventory-receive-line';
 import { confirm } from '@pos/shared/utils';
 import { NavigationParamList } from '@pos/sales/native-feature';
-import { SearchItem } from './search-product-item';
+import { CompactProductItem } from '../shared/compact-product-item/compact-product-item';
+import CompactProductList from '../shared/compact-product-list/compact-product-list';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -42,6 +43,8 @@ export function InventoryReceiveForm({
     const theme = useTheme();
     const styles = useSharedStyles();
     const products = useSelector(selectAllProducts);
+    const [productListVisible, setProductListVisible] =
+        useState<boolean>(false);
     const [busy, setBusy] = useState<boolean>(false);
     const [filter, setFilter] = useState<string>();
     const [lines, setLines] = useState<InventoryReceiveLineDTO[]>([]);
@@ -113,7 +116,7 @@ export function InventoryReceiveForm({
 
     const searchSubmit = (text: string) => {
         setFilter(text);
-        ref.current?.clear();
+        // ref.current?.clear();
     };
 
     const updateItem = (item: InventoryReceiveLineDTO) => {
@@ -143,12 +146,10 @@ export function InventoryReceiveForm({
     };
 
     useEffect(() => {
-        if (!filter)
-            setFilteredProducts(prev => []);
+        if (!filter) setFilteredProducts((prev) => []);
 
         const searchResult = ProductService.search(products, { text: filter });
         setFilteredProducts((prev) => [...searchResult.items]);
-    
     }, [filter, products]);
 
     return (
@@ -190,24 +191,13 @@ export function InventoryReceiveForm({
                     </View>
                 )}
             </View>
-            {!route.params?.readOnly && filteredProducts.length > 0 && (
-                <Dialog
-                    isVisible={filteredProducts.length > 0}
-                    onBackdropPress={() => setFilteredProducts(prev => [])}
-                    overlayStyle={[styles.overlay, { width: 700 }]}
-                >
-                    <View>
-                        <View style={{ marginBottom: 20 }}>
-                            <Text style={styles.secondaryText}>Products found: </Text>
-                        </View>
-                        <FlatList
-                            data={filteredProducts}
-                            renderItem={({ item }) => (
-                                <SearchItem product={item} onAdd={prod => addItem(prod)} />
-                            )}
-                        />
-                    </View>
-                </Dialog>
+            {!route.params?.readOnly && (
+                <CompactProductList
+                    visible={!!filter}
+                    products={filteredProducts}
+                    onAdd={addItem}
+                    onClose={() => setFilter('')}
+                />
             )}
 
             <FlatList

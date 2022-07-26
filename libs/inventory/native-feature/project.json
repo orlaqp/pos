@@ -1,7 +1,7 @@
 
 {
-  "root": "libs/inventory/native",
-  "sourceRoot": "libs/inventory/native/src",
+  "root": "libs/inventory/native-feature",
+  "sourceRoot": "libs/inventory/native-feature/src",
   "projectType": "library",
   "tags": [],
   "targets": {
@@ -10,15 +10,15 @@
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": [
-          "libs/inventory/native/**/*.{ts,tsx,js,jsx}"
+          "libs/inventory/native-feature/**/*.{ts,tsx,js,jsx}"
         ]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/inventory/native"],
+      "outputs": ["coverage/libs/inventory/native-feature"],
       "options": {
-        "jestConfig": "libs/inventory/native/jest.config.js",
+        "jestConfig": "libs/inventory/native-feature/jest.config.js",
         "passWithNoTests": true
       }
     }
