@@ -6,6 +6,7 @@ import {
     UISwitch,
     UIVerticalSpacer,
 } from '@pos/shared/ui-native';
+import { round2Dec } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
@@ -71,7 +72,7 @@ export function CartPayment({ total, canReceiveChecks, onPaymentEntered }: CartP
             received += +info.check;
         }
 
-        if ((+received.toFixed(2)) < total) {
+        if (round2Dec(received) < round2Dec(total)) {
             Alert.alert('Received payment cannot be less than the total');
             return;
         }
@@ -110,7 +111,7 @@ export function CartPayment({ total, canReceiveChecks, onPaymentEntered }: CartP
 
             if (typeSelected && currentVal !== total) {
                 if (noPaymentTypeEntered()) {
-                    form.setValue(amountFieldName, total);
+                    form.setValue(amountFieldName, total.toFixed(2));
                 } else {
                     clearAllPayments();
                 }

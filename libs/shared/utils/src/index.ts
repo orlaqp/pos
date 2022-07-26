@@ -6,4 +6,5 @@ export * from './lib/sorting';
 export * from './lib/services/cache.service';
 export * from './lib/services/assets.service';
 export * from './lib/services/conversion.service';
+export * from './lib/services/math.service';
 export * from './lib/services/transform.service';
