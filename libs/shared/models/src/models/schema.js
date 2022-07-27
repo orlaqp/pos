@@ -1078,6 +1078,15 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "createdBy": {
+                    "name": "createdBy",
+                    "isArray": false,
+                    "type": {
+                        "nonModel": "ByEmployee"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -1257,6 +1266,15 @@ export const schema = {
                     "isArray": false,
                     "type": {
                         "enum": "InventoryReceiveStatus"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "createdBy": {
+                    "name": "createdBy",
+                    "isArray": false,
+                    "type": {
+                        "nonModel": "ByEmployee"
                     },
                     "isRequired": true,
                     "attributes": []
@@ -1910,5 +1928,5 @@ export const schema = {
             }
         }
     },
-    "version": "3164350c141a5aa81ab8f6b74d9c8a25"
+    "version": "9c2ceb9ed3756712b069943723f13fb6"
 };

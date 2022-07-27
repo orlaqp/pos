@@ -200,6 +200,7 @@ type InventoryCount @model @auth(rules: [{allow: public}]) {
     id: ID!
     comments: String
     status: InventoryCountStatus!
+    createdBy: ByEmployee!
 }
 
 type InventoryCountLine @model @auth(rules: [{allow: public}]) {
@@ -222,6 +223,7 @@ type InventoryReceive @model @auth(rules: [{allow: public}]) {
     id: ID!
     comments: String   
     status: InventoryReceiveStatus! 
+    createdBy: ByEmployee!
 }
 
 type InventoryReceiveLine @model @auth(rules: [{allow: public}]) {

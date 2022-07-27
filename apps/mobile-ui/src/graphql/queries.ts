@@ -913,6 +913,10 @@ export const getInventoryCount = /* GraphQL */ `
       id
       comments
       status
+      createdBy {
+        id
+        name
+      }
       createdAt
       updatedAt
       _version
@@ -1070,6 +1074,10 @@ export const getInventoryReceive = /* GraphQL */ `
       id
       comments
       status
+      createdBy {
+        id
+        name
+      }
       createdAt
       updatedAt
       _version

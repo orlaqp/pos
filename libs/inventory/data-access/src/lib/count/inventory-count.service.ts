@@ -15,6 +15,7 @@ export class InventoryCountService {
         count: InventoryCountDTO,
         updateInv: boolean
     ) {
+        debugger;
         let updatedCount: InventoryCountDTO | null;
         if (!count.id) {
             updatedCount = await createCount(count, dispatch);

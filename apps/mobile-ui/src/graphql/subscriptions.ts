@@ -803,6 +803,10 @@ export const onCreateInventoryCount = /* GraphQL */ `
       id
       comments
       status
+      createdBy {
+        id
+        name
+      }
       createdAt
       updatedAt
       _version
@@ -817,6 +821,10 @@ export const onUpdateInventoryCount = /* GraphQL */ `
       id
       comments
       status
+      createdBy {
+        id
+        name
+      }
       createdAt
       updatedAt
       _version
@@ -831,6 +839,10 @@ export const onDeleteInventoryCount = /* GraphQL */ `
       id
       comments
       status
+      createdBy {
+        id
+        name
+      }
       createdAt
       updatedAt
       _version
@@ -932,6 +944,10 @@ export const onCreateInventoryReceive = /* GraphQL */ `
       id
       comments
       status
+      createdBy {
+        id
+        name
+      }
       createdAt
       updatedAt
       _version
@@ -946,6 +962,10 @@ export const onUpdateInventoryReceive = /* GraphQL */ `
       id
       comments
       status
+      createdBy {
+        id
+        name
+      }
       createdAt
       updatedAt
       _version
@@ -960,6 +980,10 @@ export const onDeleteInventoryReceive = /* GraphQL */ `
       id
       comments
       status
+      createdBy {
+        id
+        name
+      }
       createdAt
       updatedAt
       _version

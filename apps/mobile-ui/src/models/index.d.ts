@@ -305,6 +305,7 @@ export declare class InventoryCount {
   readonly id: string;
   readonly comments?: string | null;
   readonly status: InventoryCountStatus | keyof typeof InventoryCountStatus;
+  readonly createdBy: ByEmployee;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<InventoryCount, InventoryCountMetaData>);
@@ -331,6 +332,7 @@ export declare class InventoryReceive {
   readonly id: string;
   readonly comments?: string | null;
   readonly status: InventoryReceiveStatus | keyof typeof InventoryReceiveStatus;
+  readonly createdBy: ByEmployee;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<InventoryReceive, InventoryReceiveMetaData>);

@@ -153,6 +153,11 @@ export const selectInventoryCountFilteredList = createSelector(
     (state: InventoryCountState) => state.filteredList
 )
 
+export const selectInventoryCountSelected = createSelector(
+    getInventoryCountState,
+    (state: InventoryCountState) => state.selected
+)
+
 
 function filterList(state: InventoryCountState, query?: string) {
     state.loadingStatus = 'loaded';

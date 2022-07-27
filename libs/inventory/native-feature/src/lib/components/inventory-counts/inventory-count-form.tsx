@@ -12,16 +12,17 @@ import {
     InventoryCountLineMapper,
     InventoryCountMapper,
     InventoryCountService,
+    selectInventoryCountSelected,
 } from '@pos/inventory/data-access';
-import { RootState } from '@pos/store';
 import { InventoryCount } from '@pos/shared/models';
-import { fetchProducts, ProductEntity, productsActions, ProductService, selectAllProducts, selectProductsEntities } from '@pos/products/data-access';
+import { ProductEntity, productsActions, ProductService, selectAllProducts } from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
 import InventoryCountLine from '../inventory-counts/inventory-count-line';
-import { confirm, Selectable } from '@pos/shared/utils';
+import { confirm } from '@pos/shared/utils';
 import { NavigationParamList } from '@pos/sales/native-feature';
-import { Dictionary } from '@reduxjs/toolkit';
 import CompactProductList from '../shared/compact-product-list/compact-product-list';
+import { selectLoginEmployee } from '@pos/employees/data-access';
+import { useForm } from 'react-hook-form';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -37,25 +38,20 @@ export function InventoryCountForm({
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
     const [filter, setFilter] = useState<string>();
-    const inventoryCount = useSelector(
-        (state: RootState) => state.inventoryCount.selected
+    const inventoryCount = useSelector(selectInventoryCountSelected);
+    const [lines, setLines] = useState<InventoryCountLineDTO[]>(
+        inventoryCount ? inventoryCount.lines.map(l => ({...l})) : []
     );
-    // const products = useSelector(selectProductsEntities);
-    const productList = useSelector(selectAllProducts);
-    const [lines, setLines] = useState<InventoryCountLineDTO[]>([]);
-    const [filteredLines, setFilteredLines] = useState<
-        Dictionary<Selectable<InventoryCountLineDTO>>
-    >({});
-
     const ref = React.createRef<TextInput>();
     const products = useSelector(selectAllProducts);
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
         []
     );
+    const employee = useSelector(selectLoginEmployee);
 
     const searchSubmit = (text: string) => {
         setFilter(text);
-        // ref.current?.clear();
+        ref.current?.clear();
     };
 
     const addItem = (product: ProductEntity) => {
@@ -70,7 +66,6 @@ export function InventoryCountForm({
     };
 
     const updateItem = (item: InventoryCountLineDTO) => {
-        debugger;
         const line = lines.find(l => l.productId === item.productId);
 
         if (!line) return;
@@ -78,7 +73,7 @@ export function InventoryCountForm({
         line.newCount = item.newCount;
         line.comments = item.comments;
 
-        setLines({...lines});
+        setLines([...lines]);
     };
 
     const deleteItem = (item: InventoryCountLineDTO) => {
@@ -86,6 +81,13 @@ export function InventoryCountForm({
     };
 
     const save = async (updateInv: boolean) => {
+        const missingQuantity = lines.some(x => x.newCount === undefined || x.newCount === null);
+
+        if (missingQuantity) {
+            Alert.alert('Make sure all products have a new count value')
+            return;
+        }
+
         setBusy(true);
         let inv: InventoryCountDTO;
 
@@ -95,10 +97,20 @@ export function InventoryCountForm({
                 lines,
                 status: inventoryCount.status,
                 id: inventoryCount.id,
+                createdBy: {
+                    id: employee?.id,
+                    name: `${employee?.firstName} ${employee?.lastName}`
+                },
                 createdAt: inventoryCount.createdAt,
+                
             };
         } else {
-            inv = InventoryCountMapper.newCount();
+            if (!employee) {
+                Alert.alert('No employee found');
+                return;
+            }
+
+            inv = InventoryCountMapper.newCount(employee);
             inv.lines = lines;
         }
 
@@ -141,6 +153,29 @@ export function InventoryCountForm({
             ]
         );
     };
+
+    const form = useForm<InventoryCountDTO>({
+        mode: 'onChange',
+        defaultValues: {
+            id: inventoryCount?.id,
+            comments: inventoryCount?.comments,
+            createdAt: inventoryCount?.createdAt,
+            createdBy: inventoryCount?.createdBy,
+            lines: inventoryCount?.lines.map(l => ({
+                id: l.id,
+                comments: l.comments,
+                createdAt: l.createdAt,
+                current: l.current,
+                newCount: l.newCount,
+                productId: l.productId,
+                productName: l.productName,
+                unitOfMeasure: l.unitOfMeasure,
+                updatedAt: l.updatedAt
+            })),
+            status: inventoryCount?.status,
+            updatedAt: inventoryCount?.updatedAt
+        },
+    });
 
 
     useEffect(() => {
@@ -277,6 +312,7 @@ export function InventoryCountForm({
                         </Text>
                     </View>
                 )}
+              
                 {!route.params?.readOnly && (
                     <View style={{ flex: 3, padding: 10 }}>
                         <UISearchInput

@@ -66,13 +66,14 @@ export function InventoryCountLine({
             <View style={{ flex: 1 }}>
                 <TextInput
                     value={count}
-                    onChangeText={setCount}
+                    onChangeText={(text) => { setCount(text); updateCount(text); }}
+                    placeholder='#'
                     style={[
                         styles.input, styles.primaryText,
                         { marginRight: 25 },
                     ]}
                     onFocus={() => setCount('')}
-                    onBlur={(e) => updateCount(e.nativeEvent.text)}
+                    // onBlur={(e) => updateCount(e.nativeEvent.text)}
                     editable={!readOnly}
                 />
             </View>
@@ -80,6 +81,7 @@ export function InventoryCountLine({
                 <TextInput
                     value={comment}
                     onChangeText={setComment}
+                    placeholder='comments ...'
                     onBlur={(e) => updateComment(e.nativeEvent.text)}
                     style={[styles.input, styles.primaryText]}
                     editable={!readOnly}
