@@ -348,13 +348,30 @@ export class OrderService {
 
     static async updateInventory(order: Order) {
         const promises: Promise<unknown>[] = [];
-        order.lines.forEach((l) => {
-            if (!l) return;
 
+        // sum product quantities so we update only once
+        const summary: Record<string, number> = {};
+
+        order.lines.reduce((s, line) => {
+            if (!line) return s;
+            s[line.productId] = (s[line.productId] || 0) + line.quantity;
+
+            return s;
+        }, summary)
+
+        Object.keys(summary).forEach((key) => {
             promises.push(
-                updateProductQuantity(order.status, l.productId, l.quantity)
+                updateProductQuantity(order.status, key, summary[key])
             );
         });
+
+        // order.lines.forEach((l) => {
+        //     if (!l) return;
+
+        //     promises.push(
+        //         updateProductQuantity(order.status, l.productId, l.quantity)
+        //     );
+        // });
 
         Promise.all(promises);
     }
