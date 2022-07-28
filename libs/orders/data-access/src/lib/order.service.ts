@@ -127,7 +127,10 @@ export class OrderService {
 
         if (!updatedOrder) return null;
 
-        return await DataStore.save(updatedOrder);
+        const closedOrder = await DataStore.save(updatedOrder);
+        await OrderService.updateInventory(closedOrder);
+
+        return closedOrder;
     }
 
     static async refund(request: RefundOrderRequest) {

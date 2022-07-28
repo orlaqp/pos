@@ -15,7 +15,7 @@ import {
     selectInventoryCountSelected,
 } from '@pos/inventory/data-access';
 import { InventoryCount } from '@pos/shared/models';
-import { ProductEntity, productsActions, ProductService, selectAllProducts } from '@pos/products/data-access';
+import { ProductEntity, productsActions, ProductService, selectAllProducts, subscribeToProductChanges } from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
 import InventoryCountLine from '../inventory-counts/inventory-count-line';
 import { confirm } from '@pos/shared/utils';
@@ -177,11 +177,26 @@ export function InventoryCountForm({
         },
     });
 
+    useEffect(() => {
+        const productsSub = subscribeToProductChanges(dispatch);
+        return () => {
+            console.log('Closing products subscriptions');
+            productsSub.unsubscribe();
+        };
+    }, [dispatch]);
+
 
     useEffect(() => {
         if (!filter) setFilteredProducts((prev) => []);
 
         const searchResult = ProductService.search(products, { text: filter });
+
+        if (searchResult.items.length === 1) {
+            addItem(searchResult.items[0]);
+            setFilteredProducts((prev) => []);
+            return;
+        }
+
         setFilteredProducts((prev) => [...searchResult.items]);
     }, [filter, products]);
 
