@@ -113,8 +113,6 @@ export function SalesScreen({
                     )
                 )
             );
-
-            // return '';
         }
 
         searchRef.current?.clear();
@@ -178,10 +176,6 @@ export function SalesScreen({
         };
     }, [dispatch]);
 
-    // useEffect(() => {
-    //     searchRef.current?.focus();
-    // });
-
     useEffect(() => {
         if (!products) return;
 
@@ -194,7 +188,6 @@ export function SalesScreen({
     useEffect(() => {
         setTimeout(() => {
             searchRef.current?.focus();
-            // console.log('[sales screen]: setting focus');
         }, 25);
     }, [onProductSelected, filteredProducts, allProducts, products, searchRef])
 
@@ -230,7 +223,6 @@ export function SalesScreen({
 }
 
 const useStyles = () => {
-    const theme = useTheme();
     const sharedStyles = useSharedStyles();
 
     return {

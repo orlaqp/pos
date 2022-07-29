@@ -71,6 +71,7 @@ export const getSalesSummary = /* GraphQL */ `
       products {
         productId
         productName
+        unitOfMeasure
         quantity
         amount
       }

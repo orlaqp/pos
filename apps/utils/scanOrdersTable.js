@@ -11,15 +11,17 @@ const tableName = 'Order-libe2xk2rvftbi24xplh4x5gnm-develop';
 
 const params = {
     // Specify which items in the results are returned.
-    //   FilterExpression: "Subtitle = :topic AND Season = :s AND Episode = :e",
+    FilterExpression: "createdAt >= :createdAt",
     // Define the expression attribute value, which are substitutes for the values you want to compare.
-    //   ExpressionAttributeValues: {
-    //     ":topic": {S: "SubTitle2"},
+    ExpressionAttributeValues: {
+        ":createdAt": "2022-07-28T00:00:00.000Z",
     //     ":s": {N: 1},
     //     ":e": {N: 2},
-    //   },
+    },
     // Set the projection expression, which are the attributes that you want.
-    ProjectionExpression: 'id, employeeId, employeeName',
+    // ProjectionExpression: '#id, #empId, #empName',
+    // ProjectionExpression: 'id, empId, empName',
+    // ProjectionAttributeNames: '{ "#id": "id", "#empId": "employeeId", "#empName": "employeeName", "#l": "orderNo" }',
     TableName: tableName,
 };
 
@@ -27,17 +29,24 @@ const scanTable = async () => {
     try {
         const data = await ddbDocClient.send(new ScanCommand(params));
         //   console.log("success", data.Items);
-
+        let total = 0;
         data.Items.forEach(async function (element, index, array) {
             // console.log(
             //     'printing',
             //     element.id.S + ' (' + element.employeeName.S + ')'
             // );
 
-            console.log(`Updating: ${element.id}`);
+            element.lines.forEach(l => {
+                if (l.productName === 'Frijol negro') {
+                    console.log(element.id, l);
+                }
+            })
 
-            await update(tableName, '00-00-000000-00000', element.id);
+            total++;
         });
+
+        console.log('Total', total);
+
     } catch (err) {
         console.log('Error', err);
     }
@@ -45,20 +54,3 @@ const scanTable = async () => {
 
 scanTable();
 
-// update(tableName, '0000000000000', '6146745c-6bd6-4698-8265-f5ab720627ad');
-
-// ddb.scan(params, function (err, data) {
-//     if (err) {
-//         console.log('Error', err);
-//     } else {
-//         console.log('Success', data);
-//         data.Items.forEach(function (element, index, array) {
-//             console.log(
-//                 'printing',
-//                 element.id.S + ' (' + element.employeeName.S + ')'
-//             );
-
-//             update(tableName, '0000000000000', element.id.S);
-//         });
-//     }
-// });

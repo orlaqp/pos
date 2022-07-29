@@ -1,14 +1,10 @@
 import { ProductEntity } from '@pos/products/data-access';
-import { cartActions } from '@pos/sales/data-access';
 import { ButtonItemType, UIButton, UIEmptyState } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
-import { Dictionary } from '@reduxjs/toolkit';
-import { useTheme } from '@rneui/themed';
-import { iteratorSymbol } from 'immer/dist/internal';
+import { EACH } from '@pos/unit-of-measures/data-access';
 import React, { useEffect, useState } from 'react';
 
 import { View, Text, FlatList } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
 
 /* eslint-disable-next-line */
 export interface ProductSelectionProps {
@@ -23,6 +19,15 @@ export function ProductSelection({
     const styles = useSharedStyles();
     const [rows, setRows] = useState<ProductEntity[][]>();
     const [rowsToShow, setRowsToShow] = useState<number>(6);
+
+    const productBackgroundColor = (product: ProductEntity) => {
+        if (product.quantity <= 0)
+            return styles.dangerBackground;
+        if (product.reorderPoint && product.quantity > 0 && product.quantity <= product.reorderPoint)
+            return styles.warningBackground;
+
+        return styles.itemBackground;
+    }
 
     useEffect(() => {
         const chunkSize = 3;
@@ -67,7 +72,7 @@ export function ProductSelection({
                                 <View
                                     key={p.id}
                                     style={{
-                                        ...styles.itemBackground,
+                                        ...productBackgroundColor(p),
                                         borderRadius: 5,
                                         marginRight: 10,
                                         marginBottom: 10,
@@ -85,6 +90,17 @@ export function ProductSelection({
                                                 padding: 4,
                                             }}
                                         >
+                                            <Text
+                                                style={[
+                                                    styles.labelText,
+                                                    {
+                                                        fontWeight: 'bold',
+                                                        fontSize: 14,
+                                                    },
+                                                ]}
+                                            >
+                                                In stock: {p.unitOfMeasure === EACH ? p.quantity : p.quantity.toFixed(2)}
+                                            </Text>
                                             <Text
                                                 style={[
                                                     styles.labelText,

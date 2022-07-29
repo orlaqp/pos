@@ -17,6 +17,7 @@ import Widget from '../widget/widget';
 
 import { getSalesSummaryForRange } from '@pos/reporting/data-access';
 import { sortDescListBy, sortListBy } from '@pos/shared/utils';
+import { EACH } from '@pos/unit-of-measures/data-access';
 
 /* eslint-disable-next-line */
 export interface DashboardProps {}
@@ -51,7 +52,7 @@ export function Dashboard(props: DashboardProps) {
             console.log('Result', summary);
 
             sortDescListBy(summary?.employees as any, 'amount');
-            sortDescListBy(summary?.products as any, 'amount');
+            sortDescListBy(summary?.products as any, 'quantity');
 
             setSalesSummary(summary);
             setLoading(false);
@@ -120,8 +121,8 @@ export function Dashboard(props: DashboardProps) {
                                               ?.slice(0, 5)
                                               .filter(p => p && p?.amount > 0)
                                               .map((p) => ({
-                                                  name: p?.productName,
-                                                  value: +((p.amount).toFixed(2)),
+                                                  name: `${p.unitOfMeasure} - ${p?.productName}`,
+                                                  value: p.unitOfMeasure === EACH ? p.quantity : +((p.quantity).toFixed(2)),
                                               }))
                                 }
                             />

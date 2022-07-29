@@ -57,6 +57,12 @@ export const useSharedStyles = () => {
         itemBackground: {
             backgroundColor: `${theme.theme.colors.grey5}44`,
         },
+        dangerBackground: {
+            backgroundColor: `${theme.theme.colors.error}88`,
+        },
+        warningBackground: {
+            backgroundColor: `${theme.theme.colors.warning}88`,
+        },
         labelText: {
             color: theme.theme.colors.grey1
         },

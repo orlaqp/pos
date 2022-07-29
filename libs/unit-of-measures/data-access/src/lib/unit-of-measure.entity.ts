@@ -1,6 +1,7 @@
 import { UnitOfMeasure } from '@pos/shared/models';
 
 export const EACH = 'ea';
+export const POUND = 'lb';
 
 export type UnitOfMeasureEntity = {
     id?: string;

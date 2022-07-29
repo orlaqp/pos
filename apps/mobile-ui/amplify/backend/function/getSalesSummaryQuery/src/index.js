@@ -98,6 +98,7 @@ function processGroups(orders, range) {
             const productGroup = res.byProduct[l.productId] || {
                 productId: l.productId,
                 productName: l.productName,
+                unitOfMeasure: l.unitOfMeasure,
                 amount: 0,
                 quantity: 0,
             };

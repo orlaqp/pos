@@ -1852,6 +1852,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "unitOfMeasure": {
+                    "name": "unitOfMeasure",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "quantity": {
                     "name": "quantity",
                     "isArray": false,
@@ -1928,5 +1935,5 @@ export const schema = {
             }
         }
     },
-    "version": "9c2ceb9ed3756712b069943723f13fb6"
+    "version": "c03df013b8e0a0a5fcccd23f871236db"
 };
