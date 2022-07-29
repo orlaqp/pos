@@ -50,10 +50,11 @@ export function InventoryReceiveItem({ item, navigation }: InventoryItemProps) {
 
     return (
         <View style={[styles.dataRow, styles.centered]}>
-            <View style={{ flex: 4, flexDirection: 'row' }}>
+            <View style={{ flex: 4 }}>
                 <Text style={styles.name}>{item.createdAt}</Text>
+                <Text style={styles.name}>By: {item.createdBy?.name || 'N/A'}</Text>
             </View>
-            <View style={{ flex: 2, flexDirection: 'row' }}>
+            <View style={{ flex: 2 }}>
                 <Text style={styles.name}>{item.status}</Text>
             </View>
             <View

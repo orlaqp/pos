@@ -26,6 +26,7 @@ import { confirm } from '@pos/shared/utils';
 import { NavigationParamList } from '@pos/sales/native-feature';
 import { CompactProductItem } from '../shared/compact-product-item/compact-product-item';
 import CompactProductList from '../shared/compact-product-list/compact-product-list';
+import { selectLoginEmployee } from '@pos/employees/data-access';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -43,14 +44,11 @@ export function InventoryReceiveForm({
     const theme = useTheme();
     const styles = useSharedStyles();
     const products = useSelector(selectAllProducts);
-    const [productListVisible, setProductListVisible] =
-        useState<boolean>(false);
+    const employee = useSelector(selectLoginEmployee);
     const [busy, setBusy] = useState<boolean>(false);
     const [filter, setFilter] = useState<string>();
     const [lines, setLines] = useState<InventoryReceiveLineDTO[]>([]);
-    const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
-        []
-    );
+    const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>([]);
     const ref = React.createRef<TextInput>();
 
     useEffect(() => {
@@ -75,7 +73,12 @@ export function InventoryReceiveForm({
                 createdAt: inventoryReceive.createdAt,
             };
         } else {
-            inv = InventoryReceiveMapper.newReceive();
+            if (!employee) {
+                Alert.alert('The system could not find the details of the logged in employee');
+                return;
+            }
+
+            inv = InventoryReceiveMapper.newReceive(employee);
             inv.lines = lines;
         }
 

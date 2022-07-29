@@ -1,21 +1,32 @@
-import { InventoryCountLine, InventoryReceive, InventoryReceiveLine, InventoryReceiveStatus } from '@pos/shared/models';
+import { EmployeeEntity } from '@pos/employees/data-access';
+import { InventoryReceive, InventoryReceiveLine, InventoryReceiveStatus } from '@pos/shared/models';
 import { InventoryReceiveLineDTO } from './inventory-receive-line.entity';
+import moment from 'moment';
 
 export type InventoryReceiveDTO = {
     id?: string;
     comments: string | null | undefined;
     status: InventoryReceiveStatus | keyof typeof InventoryReceiveStatus;
     lines: InventoryReceiveLineDTO[];
+    createdBy: {
+        id?: string;
+        name?: string;
+    },
     createdAt?: string | null | undefined;
     updatedAt?: string | null | undefined;
 };
 
 export class InventoryReceiveMapper {
-    static newReceive(): InventoryReceiveDTO {
+    static newReceive(employee: EmployeeEntity): InventoryReceiveDTO {
         return {
             status: 'IN_PROGRESS',
             comments: 'n/a',
-            lines: []
+            lines: [],
+            createdBy: {
+                id: employee.id,
+                name: `${employee.firstName} ${employee.lastName}`
+            },
+            createdAt: moment().toISOString()
         }
     }
 
