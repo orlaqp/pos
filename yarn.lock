@@ -4078,12 +4078,12 @@
   dependencies:
     nx "13.10.3"
 
-"@nrwl/cli@14.1.9", "@nrwl/cli@^14.1.9":
-  version "14.1.9"
-  resolved "https://registry.yarnpkg.com/@nrwl/cli/-/cli-14.1.9.tgz#b54c539ebd72ec8fab3de070cd0bf81ffee8704c"
-  integrity sha512-7T03yVUNxXXR478L9TRRYlg1gsxvERpikSa1dppW+YjL0K4L2PLkZEPJqDMbrPmyAryeZpUCn9vLVOIThW47rA==
+"@nrwl/cli@14.5.1", "@nrwl/cli@^14.5.1":
+  version "14.5.1"
+  resolved "https://registry.yarnpkg.com/@nrwl/cli/-/cli-14.5.1.tgz#60b7ed1386601a56bedb04d7e8fdb6c2407a4cbe"
+  integrity sha512-CWYAK5Oz/hZw82aeReKI0kPKKA0nCgtmf3fw4wVMNfTySW5Umt+08D5ZXG8xshtd4JODa4Lvvqtd7ig2mLh9sw==
   dependencies:
-    nx "14.1.9"
+    nx "14.5.1"
 
 "@nrwl/cypress@13.10.3":
   version "13.10.3"
@@ -4256,12 +4256,12 @@
   dependencies:
     nx "13.10.3"
 
-"@nrwl/tao@14.1.9":
-  version "14.1.9"
-  resolved "https://registry.yarnpkg.com/@nrwl/tao/-/tao-14.1.9.tgz#116d2e23cb4bc28b3a41e5208b9274a60015a6a8"
-  integrity sha512-XUmnYJIrLd2Lui94LsVbXteFhWpNHTjIDDlt/krysEJD8lqE8uoD44uvjKaqIMZXTH8AOH1M4leWraqBSVU0ig==
+"@nrwl/tao@14.5.1":
+  version "14.5.1"
+  resolved "https://registry.yarnpkg.com/@nrwl/tao/-/tao-14.5.1.tgz#aa58abfcf8cf981256ac7982caee72d252d60095"
+  integrity sha512-7A35jJ89Y9W64wLsq1WZfduEIG9Iz1Alb8OWBXB9tpt4ZOuQw2o0LphbxpCPv039c5xQQGMtkD2owd3Xi73bvQ==
   dependencies:
-    nx "14.1.9"
+    nx "14.5.1"
 
 "@nrwl/web@13.10.3":
   version "13.10.3"
@@ -5115,7 +5115,7 @@
   resolved "https://registry.yarnpkg.com/@swc/core-win32-x64-msvc/-/core-win32-x64-msvc-1.2.194.tgz#39cd340c6c2e0e6221f92d64f6c30ca749bcf0cc"
   integrity sha512-c3tiShCGY03XbJqXpliHRHMBBB/KGWS1kcbKn2GhaZN4fY8UgD5kZk3XJDwDJ6oqwlgkBdWXRAgD5Td2aAKMRg==
 
-"@swc/core@^1.2.152", "@swc/core@^1.2.172", "@swc/core@^1.2.173":
+"@swc/core@^1.2.152", "@swc/core@^1.2.172":
   version "1.2.194"
   resolved "https://registry.yarnpkg.com/@swc/core/-/core-1.2.194.tgz#698d9ea07fd0b55273e7651e3f95b1c5cf4b61ae"
   integrity sha512-+Jg3qxad32CqnFmw4pqwm/5JCVWGkoM8P5pqPlyj5sokHFUJluMkCeaikuvIZhJCabR9q84lEnXlIjMu42ZfKA==
@@ -10528,6 +10528,13 @@ js-cookie@^2.2.1:
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
   integrity sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==
 
+js-yaml@4.1.0, js-yaml@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-4.1.0.tgz#c1fb65f8f5017901cdd2c951864ba18458a10602"
+  integrity sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==
+  dependencies:
+    argparse "^2.0.1"
+
 js-yaml@^3.13.1:
   version "3.14.1"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.14.1.tgz#dae812fdb3825fa306609a8717383c50c36a0537"
@@ -10535,13 +10542,6 @@ js-yaml@^3.13.1:
   dependencies:
     argparse "^1.0.7"
     esprima "^4.0.0"
-
-js-yaml@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-4.1.0.tgz#c1fb65f8f5017901cdd2c951864ba18458a10602"
-  integrity sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==
-  dependencies:
-    argparse "^2.0.1"
 
 jsc-android@^250230.2.1:
   version "250230.2.1"
@@ -11916,6 +11916,13 @@ minimatch@3.0.4:
   dependencies:
     brace-expansion "^1.1.7"
 
+minimatch@3.0.5:
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.0.5.tgz#4da8f1290ee0f0f8e83d60ca69f8f134068604a3"
+  integrity sha512-tUpxzX0VAzJHjLu0xUfFv1gwVp9ba3IOuRAVH2EGuRW8a5emA2FlACLqiT/lDVtS1W+TGNwqz3sWaNyLgDJWuw==
+  dependencies:
+    brace-expansion "^1.1.7"
+
 minimatch@^5.0.1:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-5.1.0.tgz#1717b464f4971b144f6aabe8f2d0b8e4511e09c7"
@@ -12216,16 +12223,14 @@ nx@13.10.3:
     yargs "^17.4.0"
     yargs-parser "21.0.1"
 
-nx@14.1.9:
-  version "14.1.9"
-  resolved "https://registry.yarnpkg.com/nx/-/nx-14.1.9.tgz#3de911ca250f2188f319addddde4ce5152576322"
-  integrity sha512-O+zpqtGrJkiTNqh4qK4MwXN1OLgWXCm7YWNO+F7y9kKGfOlGC/krx2lmSSGbMEOPgIP4Z2MMTXGlVULqZyRVHw==
+nx@14.5.1:
+  version "14.5.1"
+  resolved "https://registry.yarnpkg.com/nx/-/nx-14.5.1.tgz#4725d260e02a891a16ddf886f80f197373d9b3f1"
+  integrity sha512-0QimStCyaw4HpgiJYpdH7NWMEVULKMcXEgPG/Mu3XDQtda/+8plDJ+ftfVo3MfjXIzQ6T7+zo//xESUez0pZ5w==
   dependencies:
-    "@nrwl/cli" "14.1.9"
-    "@nrwl/tao" "14.1.9"
+    "@nrwl/cli" "14.5.1"
+    "@nrwl/tao" "14.5.1"
     "@parcel/watcher" "2.0.4"
-    "@swc-node/register" "^1.4.2"
-    "@swc/core" "^1.2.173"
     chalk "4.1.0"
     chokidar "^3.5.1"
     cli-cursor "3.1.0"
@@ -12239,8 +12244,9 @@ nx@14.1.9:
     fs-extra "^10.1.0"
     glob "7.1.4"
     ignore "^5.0.4"
+    js-yaml "4.1.0"
     jsonc-parser "3.0.0"
-    minimatch "3.0.4"
+    minimatch "3.0.5"
     npm-run-path "^4.0.1"
     open "^8.4.0"
     semver "7.3.4"
@@ -13365,6 +13371,13 @@ react-native-config@1.4.5:
   resolved "https://registry.yarnpkg.com/react-native-config/-/react-native-config-1.4.5.tgz#6fe5895410b75e44fe4f4bf00caaf894a0981f3a"
   integrity sha512-5oiAsoW88SOYDg/0cleJ2vJDqv98FJUbFQYEnH4sdMtEn3AAT3lb7BkTGW8HO/t3Vk9VOruwxUUnO4tzuxzCsw==
 
+react-native-date-picker@^4.2.5:
+  version "4.2.5"
+  resolved "https://registry.yarnpkg.com/react-native-date-picker/-/react-native-date-picker-4.2.5.tgz#d2e3ff6c8616313bdd75c48ac56a84a57d8a27a3"
+  integrity sha512-YjwiMpZEnVVS+ymLvmJDicVZ3pSR+nJHgtAhctMl6fO8f7iRNcYhY427gemlTBf2Ji+XIAK0Agyl255DhaemFw==
+  dependencies:
+    prop-types "^15.8.1"
+
 react-native-daterange-picker@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/react-native-daterange-picker/-/react-native-daterange-picker-1.5.1.tgz#3f180e14c0c8089dd6fa88048ddee6d02d8abf29"
@@ -13377,6 +13390,11 @@ react-native-device-info@^8.7.1:
   version "8.7.1"
   resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-8.7.1.tgz#fbb06f87dbbc4423abe713874699fb2e6e99fd15"
   integrity sha512-cVMZztFa2Qn6qpQa601W61CtUwZQ1KXfqCOeltejAWEXmgIWivC692WGSdtGudj4upSi1UgMSaGcvKjfcpdGjg==
+
+react-native-dropdown-picker@^5.4.2:
+  version "5.4.2"
+  resolved "https://registry.yarnpkg.com/react-native-dropdown-picker/-/react-native-dropdown-picker-5.4.2.tgz#3d17de3d8a84cb8e74a2ffda6be417d287245b81"
+  integrity sha512-cZBPyN+k52jA9XguFnKoF5tLf31z6gjZ8GijO/pfVNSSEtPwZ14UTUrr87JiiOnMh5K/O2kRzZ/jZN8D0MmUMA==
 
 react-native-fast-image@^8.5.11:
   version "8.5.11"

@@ -54,6 +54,9 @@ export const useSharedStyles = () => {
         darkBackground: {
             backgroundColor: `${theme.theme.colors.background}44`
         },
+        backgroundColor: {
+            backgroundColor: theme.theme.colors.background
+        },
         itemBackground: {
             backgroundColor: `${theme.theme.colors.grey5}44`,
         },
@@ -77,6 +80,9 @@ export const useSharedStyles = () => {
         },
         textCenter: { textAlign: 'center'},
         textRight: { textAlign: 'right'},
+        textSuccess: { color: theme.theme.colors.success },
+        textWarning: { color: theme.theme.colors.warning },
+        textError: { color: theme.theme.colors.error },
         textBold: { fontWeight: 'bold' },
         input: {
             padding: 5,
@@ -99,6 +105,13 @@ export const useSharedStyles = () => {
             padding: 20,
             borderRadius: 10,
             marginBottom: 10,
+        },
+        box: {
+            backgroundColor: `${theme.theme.colors.grey5}44`,
+            padding: 20,
+            borderRadius: 10,
+            marginBottom: 10,
+            zIndex: 0
         },
         smallDataRow: {
             flexDirection: "row",

@@ -23,7 +23,7 @@ import { PrinterList } from '@pos/printings/native-feature';
 import { StationForm, StoreInfoForm } from '@pos/store-info/native-feature';
 import { LogList, Settings } from '@pos/settings/native-feature';
 import { InventoryCounts, InventoryList, InventoryReceives } from '@pos/inventory/native-feature';
-import { Dashboard, Sales, SalesByEmployee, SalesByProduct } from '@pos/reporting/native-feature';
+import { Dashboard, EndOfDay, Sales, SalesByEmployee, SalesByProduct } from '@pos/reporting/native-feature';
 
 import Logo from '../../assets/logo.png';
 import { selectLoginEmployee } from '@pos/employees/data-access';
@@ -82,6 +82,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                         <Stack.Screen name="Station" component={StationForm} />
                         <Stack.Screen name="By Employee" component={SalesByEmployee} />
                         <Stack.Screen name="By Product" component={SalesByProduct} />
+                        <Stack.Screen name="End of Day" component={EndOfDay} />
                         <Stack.Screen name="In Stock" component={InventoryList} />
                         <Stack.Screen name="Counts" component={InventoryCounts} />
                         <Stack.Screen name="Receives" component={InventoryReceives} />
