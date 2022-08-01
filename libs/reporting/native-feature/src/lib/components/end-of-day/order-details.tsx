@@ -36,17 +36,25 @@ export function OrderDetails({ order, productId }: OrderDetailsProps) {
                 <View style={{ flex: .5 }}></View>
                 <View style={[styles.column, { marginRight: 45 }]}>
                     <Text style={[styles.secondaryText, styles.textRight ]}>Total</Text>
-                    <Text style={[styles.primaryText, styles.textSuccess, styles.textBold ]}>$ {order.total.toFixed(2)}</Text>
+                    <Text style={[styles.primaryText, styles.textWarning, styles.textBold ]}>$ {order.total.toFixed(2)}</Text>
                 </View>
             </View>
-            <View style={[styles.box, { marginLeft: 200, marginRight: 26, marginTop: 10 }]}>
-                <View style={styles.row}>
-                    <Text style={[styles.secondaryText, styles.textRight, { flex: 1, marginRight: 30 }]}>Quantity</Text>
-                    <Text style={[styles.secondaryText, { flex: 3 }]}>Name</Text>
-                    <Text style={[styles.secondaryText, styles.textRight, { flex: 1 }]}>Price</Text>
-                    <Text style={[styles.secondaryText, styles.textRight, { flex: 1 }]}>Total</Text>
+            <View style={[styles.row, { marginRight: 26, marginTop: 10 }]}>
+                <View style={{ flex: 2 }}>
+                    <Text style={styles.secondaryText}>Payments</Text>
+                    {order.paymentInfo?.payments?.map(p => (
+                        <Text style={styles.primaryText}>{p?.type}: ${p?.amount.toFixed(2)}</Text>
+                    ))}
                 </View>
-                {order.lines.map(l => !l ? null : <OrderLineDetails key={l.identifier} line={l} productId={productId} />)}
+                <View style={[styles.box, { flex: 6 }]}>
+                    <View style={[styles.row]}>
+                        <Text style={[styles.secondaryText, styles.textRight, { flex: 1, marginRight: 30 }]}>Quantity</Text>
+                        <Text style={[styles.secondaryText, { flex: 3 }]}>Name</Text>
+                        <Text style={[styles.secondaryText, styles.textRight, { flex: 1 }]}>Price</Text>
+                        <Text style={[styles.secondaryText, styles.textRight, { flex: 1 }]}>Total</Text>
+                    </View>
+                    {order.lines.map(l => !l ? null : <OrderLineDetails key={l.identifier} line={l} productId={productId} />)}
+                </View>
             </View>
         </View>
     );
