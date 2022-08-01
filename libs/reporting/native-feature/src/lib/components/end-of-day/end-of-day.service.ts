@@ -23,7 +23,7 @@ export const getProductItems = (products: ProductEntity[]) => {
 export interface OrdersFilterRequest {
     openedBy?: null | undefined | string;
     closedBy?: null | undefined | string;
-    productId?: string;
+    productId?: null | undefined | string;
 }
 
 export interface PaymentMethodsSummary {
@@ -43,8 +43,10 @@ export const filterOrders = (orders: Order[], request: OrdersFilterRequest) => {
         o.paymentInfo?.payments?.forEach(p => {
             summary[p?.type] += p?.amount;
         });
-        
-        return true;
+
+        if (!request.productId) return true;
+
+        return o.lines.some(p => p?.productId === request.productId);
     });   
 
     return {

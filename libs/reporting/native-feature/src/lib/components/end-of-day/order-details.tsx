@@ -9,9 +9,10 @@ import { OrderLineDetails } from './order-line-details';
 /* eslint-disable-next-line */
 export interface OrderDetailsProps {
     order: Order;
+    productId: string | null;
 }
 
-export function OrderDetails({ order }: OrderDetailsProps) {
+export function OrderDetails({ order, productId }: OrderDetailsProps) {
     const styles = useSharedStyles();
 
     return (
@@ -45,7 +46,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                     <Text style={[styles.secondaryText, styles.textRight, { flex: 1 }]}>Price</Text>
                     <Text style={[styles.secondaryText, styles.textRight, { flex: 1 }]}>Total</Text>
                 </View>
-                {order.lines.map(l => !l ? null : <OrderLineDetails key={l.identifier} line={l} />)}
+                {order.lines.map(l => !l ? null : <OrderLineDetails key={l.identifier} line={l} productId={productId} />)}
             </View>
         </View>
     );

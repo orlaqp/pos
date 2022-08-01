@@ -41,7 +41,7 @@ export function EndOfDay(props: EndOfDayProps) {
     )
     
     const [productsOpen, setProductsOpen] = useState(false);
-    const [productValue, setProductValue] = useState(null);
+    const [productValue, setProductValue] = useState<string | null>(null);
     const products = useSelector(selectAllProducts);
     const [productItems, setProductItems] = useState<ItemType<string>[]>(
         getProductItems(products)
@@ -72,7 +72,8 @@ export function EndOfDay(props: EndOfDayProps) {
     useEffect(() => {
         const filterResponse = filterOrders(orders, {
             openedBy: employeeValue,
-            closedBy: closedByValue
+            closedBy: closedByValue,
+            productId: productValue
         });
         setFilteredOrders(prev => filterResponse.orders);
         setPaymentMethodsSummary(prev => filterResponse.summary);
@@ -154,6 +155,14 @@ export function EndOfDay(props: EndOfDayProps) {
                 {!loading &&
                 <>
                     <View style={{ flexDirection: 'row' }}>
+                        <View style={{ flex: .7 }}>
+                            <Widget
+                                height={100}
+                                backgroundColor={styles.dataRow.backgroundColor}
+                                text="Sales"
+                                value={`${filteredOrders.length}`}
+                            />
+                        </View>
                         <View style={{ flex: 1 }}>
                             <Widget
                                 height={100}
@@ -184,7 +193,7 @@ export function EndOfDay(props: EndOfDayProps) {
                         style={{ marginTop: 10 }}
                         data={filteredOrders}
                         renderItem={({ item }) => (
-                            <OrderDetails key={item.id} order={item} />
+                            <OrderDetails key={item.id} order={item} productId={productValue} />
                         )}
                     />
                 </>
