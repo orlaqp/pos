@@ -47,13 +47,9 @@ export function EndOfDay(props: EndOfDayProps) {
         getProductItems(products)
     )
 
-    const [categoriesOpen, setCategoriesOpen] = useState(false);
-    const [categoryValue, setCategoryValue] = useState(null);
-    const categories = useSelector(selectAllCategories);
-    const [categoryItems, setCategoryItems] = useState<ItemType<string>[]>(
-        getCategoryItems(categories)
-    )
-
+    const [closedByOpen, setClosedByOpen] = useState(false);
+    const [closedByValue, setClosedByValue] = useState(null);
+    
     const updateDate = (date) => {
         setDate(date);
         const dateRange = {
@@ -74,15 +70,17 @@ export function EndOfDay(props: EndOfDayProps) {
     }
 
     useEffect(() => {
-        const filterResponse = filterOrders(orders, { employeeId: employeeValue });
+        const filterResponse = filterOrders(orders, {
+            openedBy: employeeValue,
+            closedBy: closedByValue
+        });
         setFilteredOrders(prev => filterResponse.orders);
         setPaymentMethodsSummary(prev => filterResponse.summary);
         
-    }, [orders, employeeValue, categoryValue, productValue])
+    }, [orders, employeeValue, closedByValue, productValue])
 
     return (
         <View style={styles.page}>
-            
             <View style={[styles.box, { height: '100%' }]}>
                 <View style={[styles.row, { zIndex: 1000 }]}>
                     <View style={{ flex: .5, paddingRight: 10, flexDirection: 'column' }}>
@@ -103,7 +101,7 @@ export function EndOfDay(props: EndOfDayProps) {
                         />
                     </View>
                     <View style={{ flex: 1, paddingRight: 10, flexDirection: 'column' }}>
-                        <Text style={[styles.secondaryText, { marginBottom: 5 }]}>Employee</Text>
+                        <Text style={[styles.secondaryText, { marginBottom: 5 }]}>Opened by</Text>
                         <DropDownPicker
                             style={[styles.backgroundColor]}
                             dropDownContainerStyle={[styles.backgroundColor]}
@@ -117,17 +115,16 @@ export function EndOfDay(props: EndOfDayProps) {
                         />
                     </View>
                     <View style={{ flex: 1, paddingLeft: 10, flexDirection: 'column' }}>
-                        <Text style={[styles.secondaryText, { marginBottom: 5 }]}>Category(s)</Text>
+                        <Text style={[styles.secondaryText, { marginBottom: 5 }]}>Closed by</Text>
                         <DropDownPicker
                             style={styles.backgroundColor}
                             dropDownContainerStyle={styles.backgroundColor}
-                            searchable={true}
-                            open={categoriesOpen}
-                            value={categoryValue}
-                            items={categoryItems}
-                            setOpen={setCategoriesOpen}
-                            setValue={setCategoryValue}
-                            setItems={setCategoryItems}
+                            open={closedByOpen}
+                            value={closedByValue}
+                            items={employeeItems}
+                            setOpen={setClosedByOpen}
+                            setValue={setClosedByValue}
+                            setItems={setEmployeeItems}
                             theme='DARK'
                         />
                     </View>
@@ -181,22 +178,18 @@ export function EndOfDay(props: EndOfDayProps) {
                                 value={`$${paymentMethodsSummary.CHECK.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
                             />
                         </View>
-                        
                     </View>  
 
                     <FlatList
-                    style={{ marginTop: 10 }}
-                    data={filteredOrders}
-                    renderItem={({ item }) => (
-                        <OrderDetails key={item.id} order={item} />
-                    )}
-                />
+                        style={{ marginTop: 10 }}
+                        data={filteredOrders}
+                        renderItem={({ item }) => (
+                            <OrderDetails key={item.id} order={item} />
+                        )}
+                    />
                 </>
                 }
             </View>
-
-            {/* <View style={[styles.box, { height: '83%' }]}></View> */}
-
         </View>
     );
 }
