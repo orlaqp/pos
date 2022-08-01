@@ -3,12 +3,11 @@ import React, { useEffect, useState } from 'react';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
 
-import { View, Text, ScrollView, FlatList } from 'react-native';
+import { View, Text, FlatList } from 'react-native';
 import { useSelector } from 'react-redux';
 import { selectAllEmployees } from '@pos/employees/data-access';
 import { selectAllProducts } from '@pos/products/data-access';
-import { filterOrders, getCategoryItems, getEmployeeItems, getProductItems, getWidgetsInfo, PaymentMethodsSummary } from './end-of-day.service';
-import { selectAllCategories } from '@pos/categories/data-access';
+import { filterOrders, getEmployeeItems, getProductItems, PaymentMethodsSummary } from './end-of-day.service';
 import DatePicker from 'react-native-date-picker';
 import { Button } from '@rneui/themed';
 import { getSalesForRange } from '@pos/reporting/data-access';
@@ -157,7 +156,7 @@ export function EndOfDay(props: EndOfDayProps) {
                     <View style={{ flexDirection: 'row' }}>
                         <View style={{ flex: .7 }}>
                             <Widget
-                                height={100}
+                                height={80}
                                 backgroundColor={styles.dataRow.backgroundColor}
                                 text="Sales"
                                 value={`${filteredOrders.length}`}
@@ -165,26 +164,42 @@ export function EndOfDay(props: EndOfDayProps) {
                         </View>
                         <View style={{ flex: 1 }}>
                             <Widget
-                                height={100}
+                                height={80}
+                                backgroundColor={styles.dataRow.backgroundColor}
+                                text="Total"
+                                value={`$ ${(paymentMethodsSummary.CASH + paymentMethodsSummary.CC + paymentMethodsSummary.CHECK).toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+                                primaryTextSize={16}
+                                secondaryTextSize={12}
+                            />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Widget
+                                height={80}
                                 backgroundColor="#1976d2"
                                 text="Credit Card"
                                 value={`$${paymentMethodsSummary.CC.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+                                primaryTextSize={16}
+                                secondaryTextSize={12}
                             />
                         </View>
                         <View style={{ flex: 1 }}>
                             <Widget
-                                height={100}
+                                height={80}
                                 backgroundColor="#e91e63"
                                 text="Cash"
                                 value={`$${paymentMethodsSummary.CASH.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+                                primaryTextSize={16}
+                                secondaryTextSize={12}
                             />
                         </View>
                         <View style={{ flex: 1 }}>
                             <Widget
-                                height={100}
+                                height={80}
                                 backgroundColor="#43a047"
                                 text="Checks"
                                 value={`$${paymentMethodsSummary.CHECK.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+                                primaryTextSize={16}
+                                secondaryTextSize={12}
                             />
                         </View>
                     </View>  

@@ -11,6 +11,8 @@ export interface WidgetProps {
     height?: number | string;
     primaryTextColor?: string;
     secondaryTextColor?: string;
+    primaryTextSize?: number;
+    secondaryTextSize?: number;
     backgroundColor?: string;
 }
 
@@ -21,6 +23,8 @@ export function Widget({
     height,
     primaryTextColor,
     backgroundColor,
+    primaryTextSize,
+    secondaryTextSize,
 }: WidgetProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
@@ -54,7 +58,7 @@ export function Widget({
                 }
             </View>
             <View style={{ alignSelf: 'center', marginLeft: 10 }}>
-                <Text style={{ fontSize: 28, color: primaryColor }}>
+                <Text style={{ fontSize: primaryTextSize || 28, color: primaryColor }}>
                     {value}
                 </Text>
             </View>
@@ -62,7 +66,7 @@ export function Widget({
                 <Text
                     style={[
                         styles.secondaryText,
-                        { fontSize: 14, color: `${primaryColor}aa` },
+                        { fontSize: secondaryTextSize || 14, color: `${primaryColor}aa` },
                     ]}
                 >
                     {text}
