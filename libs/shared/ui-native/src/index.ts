@@ -17,6 +17,7 @@ export * from './lib/components/ui-button/ui-button';
 export * from './lib/components/ui-label/ui-label';
 export * from './lib/components/ui-date-range/ui-date-range';
 export * from './lib/components/ui-key-pad/ui-key-pad';
+export * from './lib/components/ui-info/ui-info';
 
 export * from './lib/hocs/with-page/with-page';
 export * from './lib/hocs/with-centered-page/with-centered-page';

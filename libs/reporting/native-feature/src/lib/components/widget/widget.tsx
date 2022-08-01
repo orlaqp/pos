@@ -5,9 +5,10 @@ import React from 'react';
 import { View, Text } from 'react-native';
 
 export interface WidgetProps {
-    icon: string;
+    icon?: string;
     text: string;
     value: string;
+    height?: number | string;
     primaryTextColor?: string;
     secondaryTextColor?: string;
     backgroundColor?: string;
@@ -17,6 +18,7 @@ export function Widget({
     icon,
     text,
     value,
+    height,
     primaryTextColor,
     backgroundColor,
 }: WidgetProps) {
@@ -36,18 +38,20 @@ export function Widget({
                 ...styles.smallMargin,
                 backgroundColor: backgroundC,
                 borderRadius: 5,
-                height: 130,
+                height: height || 130,
                 flexDirection: 'column',
                 padding: 20,
             }}
         >
             <View style={{ alignSelf: 'flex-end' }}>
+                { icon &&
                 <Icon
                     name={icon}
                     type="material-community"
                     size={28}
                     color={primaryColor}
                 />
+                }
             </View>
             <View style={{ alignSelf: 'center', marginLeft: 10 }}>
                 <Text style={{ fontSize: 28, color: primaryColor }}>

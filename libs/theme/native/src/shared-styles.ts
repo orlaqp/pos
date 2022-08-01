@@ -84,6 +84,9 @@ export const useSharedStyles = () => {
         textWarning: { color: theme.theme.colors.warning },
         textError: { color: theme.theme.colors.error },
         textBold: { fontWeight: 'bold' },
+        backgroundSuccess: { backgroundColor: theme.theme.colors.success },
+        backgroundWarning: { backgroundColor: theme.theme.colors.warning },
+        backgroundError: { backgroundColor: theme.theme.colors.error },
         input: {
             padding: 5,
             backgroundColor: theme.theme.colors.grey5,

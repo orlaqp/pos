@@ -95,8 +95,7 @@ export class OrderService {
      */
     static async update(request: UpdateOrderRequest): Promise<Order | null> {
         const updatedOrder = await OrderService.getUpdatedOrder(request);
-        debugger;
-
+        
         if (!updatedOrder) return null;
 
         console.log('[update]: order to be updated', updatedOrder);
