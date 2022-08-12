@@ -13,6 +13,7 @@ import { Role } from '@pos/auth/data-access';
 import { UIKeyPad } from '@pos/shared/ui-native';
 import { employeesActions, EmployeeService, selectLoginEmployee } from '@pos/employees/data-access';
 import { StationService } from '@pos/settings/data-access';
+import { cartActions } from '@pos/sales/data-access';
 
 interface PathDetails {
     title: string;
@@ -44,6 +45,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
             role: Role.Sales,
             params: { mode: 'order' },
             validate: async () => {
+                dispatch(cartActions.reset());
                 const res = await StationService.isStationNumberSet();
                 return res ? null : 'Please make sure station number is set before making sales';
             }
