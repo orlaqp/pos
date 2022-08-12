@@ -15,6 +15,9 @@ import { ButtonGroup, Dialog, useTheme } from '@rneui/themed';
 import { OrderStatus } from '@pos/shared/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import OrderVoidForm from '../order-void-form/order-void-form';
+import { eventsActions } from '@pos/shared/data-store';
+import uuid from 'react-native-uuid';
+
 
 export interface OrderListProps {
     navigation?: NativeStackNavigationProp<any>;
@@ -51,8 +54,20 @@ export function OrderList({ navigation }: OrderListProps) {
             filter: filterText,
         });
 
+        dispatch(
+            eventsActions.add({
+                id: uuid.v4().toString(),
+                event: 'Order search',
+                data: JSON.stringify({
+                    filter: filterText,
+                    result: searchResult
+                }).substring(0, 350),
+                timestamp: (new Date()).toISOString()
+            })
+        );
+
         setFilteredOrders((items) => [...searchResult]);
-    }, [allOrders, selectedIndex, filterText]);
+    }, [dispatch, allOrders, selectedIndex, filterText]);
 
     useEffect(() => {
         setTimeout(() => {

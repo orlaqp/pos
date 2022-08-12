@@ -35,8 +35,9 @@ export const cartSlice = createSlice({
             const o = action.payload;
 
             if (!o.lines) return;
-
+            
             state.id = action.payload.id;
+            state.orderNo = action.payload.orderNo;
             state.footer = {
                 discount: 0,
                 subtotal: o.subtotal,
@@ -60,6 +61,7 @@ export const cartSlice = createSlice({
                     unitOfMeasure: i?.unitOfMeasure
                 }
             }))
+            state.payments = [];
             state.selected = initialCartState.selected;
         },
         select: (state: CartState, action: PayloadAction<CartItem | undefined>) => {
@@ -109,11 +111,18 @@ export const cartSlice = createSlice({
             state.footer.payments = action.payload;
         },
         reset: (state: CartState) => {
-            state.id = initialCartState.id;
-            state.footer = initialCartState.footer;
-            state.header = initialCartState.header;
-            state.items = initialCartState.items;
-            state.selected = initialCartState.selected;
+            state.id = undefined;
+            state.orderNo = undefined;
+            state.header = undefined;
+            state.items = [];
+            state.footer = {
+                discount: 0,
+                subtotal: 0,
+                tax: 0,
+                total: 0
+            };
+            state.selected = undefined;
+            state.payments = [];
         },
     },
 });

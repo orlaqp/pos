@@ -89,7 +89,7 @@ export function CartPayment({ total, canReceiveChecks, onPaymentEntered }: CartP
 
         if (selectedPaymentTypes.length > 2) return;
         
-        const delta = total - amount;
+        const delta = Math.round((total - amount) * 100) / 100;
         const otherPaymentType = selectedPaymentTypes.filter(t => t !== type);
 
         form.setValue(`${otherPaymentType[0]}` as any, delta > 0 ? delta : 0);

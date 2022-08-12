@@ -107,7 +107,7 @@ export function Navigation() {
                                     <>
                                         <Button
                                             type="clear"
-                                            title="View Others"
+                                            title="Open Orders"
                                             style={{ marginRight: 20 }}
                                             onPress={() => setShowOtherOrders(true)}
                                         />
