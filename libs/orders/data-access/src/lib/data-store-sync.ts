@@ -7,16 +7,14 @@ import { ordersActions } from './slices/orders.slice';
 
 export const syncOrders = (dispatch: Dispatch) => {
     console.log('Syncing orders to the store');
-    DataStore.query(Order).then((orders) =>
-        dispatch(
-            ordersActions.setAll(
-                orders.map((r) => OrderEntityMapper.fromModel(r))
-            )
-        )
-    );
+    DataStore.query(Order).then((orders) => updateStoreOrders(dispatch, orders));
 };
 
 export const subscribeToOrderChanges = (dispatch: Dispatch) => {
+    // DataStore.observe(Order).subscribe(msg => {
+    //     console.log(msg.model, msg.opType, msg.element);
+    // });
+    
     return DataStore.observeQuery(Order).subscribe(({ isSynced, items }) => {
         if (!isSynced) return;
         console.log('Order changes detected');

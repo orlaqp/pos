@@ -1,17 +1,15 @@
-import formatISO from 'date-fns/formatISO';
-import addDays from 'date-fns/addDays';
 import intervalToDuration from 'date-fns/intervalToDuration';
 import formatDuration from 'date-fns/formatDuration'
-
+import moment from 'moment';
 
 export class DatesService {
 
     static daysAgo(days: number) {
-        return addDays(new Date(), Math.abs(days) * -1);
+        return moment().subtract(days); //  addDays(new Date(), Math.abs(days) * -1);
     }
 
-    static toISO8601(date: Date) {
-        return formatISO(date);
+    static toISO8601(m: moment.Moment) {
+        return m.toISOString();
     }
 
     static humanReadableDuration(start: Date, end: Date) {

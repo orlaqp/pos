@@ -1,8 +1,9 @@
+/* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { syncBrands } from '@pos/brands/data-access';
 import { syncCategories } from '@pos/categories/data-access';
 import { syncEmployees } from '@pos/employees/data-access';
 import { syncInventoryCountLines, syncInventoryCounts, syncInventoryReceiveLines, syncInventoryReceives } from '@pos/inventory/data-access';
-import { syncOrderLines, syncOrders } from '@pos/orders/data-access';
+import { syncOrders } from '@pos/orders/data-access';
 import { syncDefaultPrinter } from '@pos/printings/data-access';
 import { syncProducts } from '@pos/products/data-access';
 import { syncStoreInfo } from '@pos/store-info/data-access';
@@ -49,9 +50,6 @@ export const syncModelsWithStore = (dispatch: Dispatch, model: string) => {
         // case 'Station':
         //     syncStations(dispatch);
         //     break;
-        case 'OrderLine':
-            syncOrderLines(dispatch);
-            break;
         // case 'InventoryChanges':
         //     sync...(dispatch);
         //     break;

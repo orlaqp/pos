@@ -49,6 +49,7 @@ export function InventoryReceiveForm({
     const [filter, setFilter] = useState<string>();
     const [lines, setLines] = useState<InventoryReceiveLineDTO[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>([]);
+    
     const ref = React.createRef<TextInput>();
 
     useEffect(() => {
@@ -70,7 +71,12 @@ export function InventoryReceiveForm({
                 lines: lines,
                 status: inventoryReceive.status,
                 id: inventoryReceive.id,
-                createdAt: inventoryReceive.createdAt,
+                // createdAt: inventoryReceive.createdAt,
+                createdBy: {
+                    id: employee?.id,
+                    name: `${employee?.firstName} ${employee?.lastName}`
+                }
+
             };
         } else {
             if (!employee) {

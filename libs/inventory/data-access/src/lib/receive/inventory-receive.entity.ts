@@ -1,7 +1,7 @@
+/* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { EmployeeEntity } from '@pos/employees/data-access';
 import { InventoryReceive, InventoryReceiveLine, InventoryReceiveStatus } from '@pos/shared/models';
 import { InventoryReceiveLineDTO } from './inventory-receive-line.entity';
-import moment from 'moment';
 
 export type InventoryReceiveDTO = {
     id?: string;
@@ -25,8 +25,7 @@ export class InventoryReceiveMapper {
             createdBy: {
                 id: employee.id,
                 name: `${employee.firstName} ${employee.lastName}`
-            },
-            createdAt: moment().toISOString()
+            }
         }
     }
 
@@ -36,6 +35,7 @@ export class InventoryReceiveMapper {
             comments: x.comments,
             status: x.status,
             lines,
+            createdBy: x.createdBy,
             createdAt: x.createdAt,
             updatedAt: x.updatedAt,
         };
