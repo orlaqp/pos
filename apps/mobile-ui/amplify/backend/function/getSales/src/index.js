@@ -43,5 +43,5 @@ async function getOrders(range) {
         params.ExclusiveStartKey  = data.LastEvaluatedKey;
     } while(typeof data.LastEvaluatedKey !== "undefined");
     
-    return scanResults;
+    return scanResults.filter(i => !i._deleted);
 }
