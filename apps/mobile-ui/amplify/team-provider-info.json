@@ -36,11 +36,11 @@
       "function": {
         "getSalesSummaryQuery": {
           "deploymentBucketName": "amplify-pos-develop-110831-deployment",
-          "s3Key": "amplify-builds/getSalesSummaryQuery-6f476973365531793332-build.zip"
+          "s3Key": "amplify-builds/getSalesSummaryQuery-356d7a64437262795a4d-build.zip"
         },
         "getSales": {
           "deploymentBucketName": "amplify-pos-develop-110831-deployment",
-          "s3Key": "amplify-builds/getSales-426e2b4a476b76597973-build.zip"
+          "s3Key": "amplify-builds/getSales-705449735a6f48485a77-build.zip"
         },
         "createEmployee": {
           "deploymentBucketName": "amplify-pos-develop-110831-deployment",

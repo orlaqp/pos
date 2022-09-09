@@ -18,24 +18,30 @@ exports.handler = async (event) => {
     return getOrders(event.arguments);
 };
 
-async function getOrders(args) {
+async function getOrders(range) {
     var params = {
         TableName: process.env.API_POS_ORDERTABLE_NAME,
         // TableName: 'Order-libe2xk2rvftbi24xplh4x5gnm-develop',
         IndexName: 'byStatusByOrderDate',
         KeyConditionExpression: '#status = :status AND #orderDate BETWEEN :from AND :to',
         ExpressionAttributeValues: {
-            ':status': args.status,
-            ':from': args.from,
-            ':to': args.to,
+            ':status': 'PAID',
+            ':from': range.from,
+            ':to': range.to,
         },
         ExpressionAttributeNames: {
             '#status': 'status',
             '#orderDate': 'orderDate',
         },
     };
-
-    const data = await docClient.query(params).promise();
     
-    return data.Items;
+    const scanResults = [];
+    let data;
+    do {
+        data = await docClient.query(params).promise();
+        data.Items.forEach((item) => scanResults.push(item));
+        params.ExclusiveStartKey  = data.LastEvaluatedKey;
+    } while(typeof data.LastEvaluatedKey !== "undefined");
+    
+    return scanResults;
 }

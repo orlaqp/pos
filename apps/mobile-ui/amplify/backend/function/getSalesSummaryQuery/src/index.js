@@ -49,10 +49,16 @@ async function getOrders(range) {
             '#orderDate': 'orderDate',
         },
     };
-
-    const data = await docClient.query(params).promise();
     
-    return data.Items;
+    const scanResults = [];
+    let data;
+    do {
+        data = await docClient.query(params).promise();
+        data.Items.forEach((item) => scanResults.push(item));
+        params.ExclusiveStartKey  = data.LastEvaluatedKey;
+    } while(typeof data.LastEvaluatedKey !== "undefined");
+    
+    return scanResults;
 }
 
 function processGroups(orders, range) {

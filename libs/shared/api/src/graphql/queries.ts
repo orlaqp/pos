@@ -28,10 +28,6 @@ export const getSales = /* GraphQL */ `
       paymentInfo {
         employeeId
         employeeName
-        payments {
-            type
-            amount
-        }
       }
       refundInfo {
         employeeId
