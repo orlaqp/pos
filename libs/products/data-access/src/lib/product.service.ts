@@ -114,9 +114,8 @@ export class ProductService {
         }
 
         const allNumbers = !!request.text?.match(/^\d*$/);
-        
         // ex: 206110115089
-        if (allNumbers) {
+        if (allNumbers && request.text.length > 11) {
             const plu = request.text.substring(2, 6);
             const prod = products.find((p) => p.plu === plu);
 

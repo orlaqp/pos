@@ -162,6 +162,24 @@ export const schema = {
                 {
                     "type": "key",
                     "properties": {
+                        "name": "byOrderNo",
+                        "fields": [
+                            "orderNo"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byOrderDate",
+                        "fields": [
+                            "orderDate"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
                         "name": "byStatusByOrderDate",
                         "fields": [
                             "status",

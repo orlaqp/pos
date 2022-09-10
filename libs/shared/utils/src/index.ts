@@ -8,3 +8,4 @@ export * from './lib/services/assets.service';
 export * from './lib/services/conversion.service';
 export * from './lib/services/math.service';
 export * from './lib/services/transform.service';
+export * from './lib/services/identifier.service';

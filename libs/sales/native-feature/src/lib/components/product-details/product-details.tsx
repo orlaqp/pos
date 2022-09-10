@@ -5,9 +5,9 @@ import { UIS3Image } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { EACH } from '@pos/unit-of-measures/data-access';
 import { Button, Input, useTheme } from '@rneui/themed';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TextInput } from 'react-native';
 import NumericInput from 'react-native-numeric-input';
 import { useSelector } from 'react-redux';
 
@@ -20,8 +20,9 @@ export interface ProductDetailsProps {
 export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
     const theme = useTheme();
     const styles = useStyles();
+    const ref = React.createRef<TextInput>();
     const [quantity, setQuantity] = useState<string>(
-        item.quantity.toString() || '0'
+        item.quantity === 0 ? '' : item.quantity.toString()
     );
     const [price, setPrice] = useState<number>(item.product.price);
     const product = useSelector(selectProduct(item.product.id));
@@ -31,6 +32,10 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
     useEffect(() => {
         setPrice(+quantity * item.product.price);
     }, [item, quantity]);
+
+    useEffect(() => {
+        ref.current?.focus();
+    }, []);
 
     return (
         <View style={styles.productDetailsContainer}>
@@ -73,15 +78,16 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
                 {!each && (
                     <View style={{ width: 150, flexDirection: 'row', justifyContent: 'center' }}>
                         <Input
-                            value={quantity === '0' ? '' : quantity.toString()}
+                            ref={ref}
+                            value={quantity.toString()}
                             placeholder="Weight ..."
                             keyboardType="decimal-pad"
                             style={{ fontSize: 32 }}
                             textAlign="center"
                             onChangeText={(text) => {
                                 const val = +text;
-
-                                if (isNaN(val) && !text.match(/^[0-9]+\.$/))
+                                
+                                if (text.length > 0 && (isNaN(val) || !text.match(/^[0-9]+(\.[0-9]*)*$/)))
                                     return;
 
                                 setQuantity(text);

@@ -8,7 +8,7 @@ import { Alert } from 'react-native';
 import moment from 'moment';
 import { EmployeeEntity, EmployeeService } from '@pos/employees/data-access';
 import { StationService } from '@pos/settings/data-access';
-import { sortDescListBy, sortListBy } from '@pos/shared/utils';
+import { isOrderNumber, sortDescListBy, sortListBy } from '@pos/shared/utils';
 import uuid from 'react-native-uuid';
 
 export interface FilterRequest {
@@ -377,13 +377,21 @@ export class OrderService {
 
     static search(items: OrderEntity[], options: FilterRequest) {
         // const lowerQuery = options.filter?.toLowerCase() || '';
+        let searchResult: OrderEntity[];
+        const fullOrderNumber = options.filter && isOrderNumber(options.filter);
 
-        const searchResult = items.filter((i) => {
-            return (
-                i.status === options.status &&
-                (!options.filter || i.orderNo?.indexOf(options.filter) !== -1)
-            );
-        });
+        if (fullOrderNumber) {
+            console.log('Found full order number');
+            
+            searchResult = items.filter(i => i.status === options.status && i.orderNo === options.filter)
+        } else {
+            searchResult = items.filter((i) => {
+                return (
+                    i.status === options.status &&
+                    (!options.filter || i.orderNo?.indexOf(options.filter) !== -1)
+                );
+            });
+        }
 
         if (options.status === 'OPEN') {
             sortListBy(searchResult, 'createdAt');

@@ -12,11 +12,13 @@ import { useSharedStyles } from '@pos/theme/native';
 import { View, StyleSheet, FlatList, TextInput } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { ButtonGroup, Dialog, useTheme } from '@rneui/themed';
-import { OrderStatus } from '@pos/shared/api';
+import { listOrders, OrderStatus } from '@pos/shared/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import OrderVoidForm from '../order-void-form/order-void-form';
 import { eventsActions } from '@pos/shared/data-store';
 import uuid from 'react-native-uuid';
+import { API } from 'aws-amplify';
+import { isOrderNumber } from '@pos/shared/utils';
 
 
 export interface OrderListProps {
@@ -44,7 +46,7 @@ export function OrderList({ navigation }: OrderListProps) {
         const ordersSub = subscribeToOrderChanges(dispatch);
         return () => {
             console.log('Closing orders subscription');
-            ordersSub.unsubscribe();
+            ordersSub?.unsubscribe();
         };
     }, [dispatch]);
 
@@ -53,6 +55,14 @@ export function OrderList({ navigation }: OrderListProps) {
             status: orderStatusList[selectedIndex],
             filter: filterText,
         });
+
+        // if (filterText && !searchResult?.length && isOrderNumber(filterText)) {
+        //     API.graphql({
+        //         query: listOrders,
+        //         variables: { orderNo:  }
+        //     })
+        // }
+
 
         dispatch(
             eventsActions.add({
@@ -116,7 +126,7 @@ export function OrderList({ navigation }: OrderListProps) {
                     {filteredOrders?.length === 0 && (
                         <UIEmptyState text="No orders found" />
                     )}
-                    {filteredOrders?.length > 0 && (
+                    {filteredOrders && filteredOrders?.length > 0 && (
                         <FlatList
                             data={filteredOrders}
                             renderItem={({ item }) => (

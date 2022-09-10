@@ -70,8 +70,8 @@ type ByEmployee {
 
 type Order @model @auth(rules: [{allow: public}]) {
   id: ID!
-  orderNo: String!
-  orderDate: AWSDateTime!
+  orderNo: String! @index(name: "byOrderNo")
+  orderDate: AWSDateTime! @index(name: "byOrderDate")
   subtotal: Float!
   tax: Float!
   total: Float!

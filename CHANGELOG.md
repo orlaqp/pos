@@ -61,6 +61,34 @@ Este seria el mismo ejemplo pero explicado horizontalmente:
 
 El nuevo formato del recibo va a incluir esta nueva informacion. Se va a reemplazar el QA code actual que represent el GUID de la orden por este nuevo formato.
 
-### Nota:
 
-El tiempo estimado para completar todos estos features seria de 4 semanas. Cada feature se iria entregando a medida que esten listos.
+
+# v1.0.52
+
+## Enhancements
+
+- Reduce the cache size of orders to last 5 days
+
+## Bugfixes
+
+- Fixed issue returning orders by date range (implemented pagination due to the 1Mb limitation from dynamodb)
+- Removed deleted order from order reports
+- Fixed issue searching by numbers when the search length is less that 3
+- Fixed order search with scanner
+- Fixed issue entering weight under 1.0 unit measure
+
+# v1.0.53
+
+## Bugfixes
+
+- Search for entire order no when a full number has been provided (probably from scanner)
+
+
+
+PENDING
+
+
+- los iPad votan la aplicación varias veces al día .
+- cuando se busca un tíquet pagado no siempre aparecen.
+- en ocasiones cuando se va el programa al volver abrir pierde el número de estación y la frecuencia como si se borrara y reinstalara .
+-hay ventas que aunque se sierren se quedan en cualquier máquina como si estuvieran abiertas.

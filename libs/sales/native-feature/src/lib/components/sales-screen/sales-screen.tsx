@@ -165,14 +165,12 @@ export function SalesScreen({
     useEffect(() => {
         const categoriesSub = subscribeToCategoryChanges(dispatch);
         const productsSub = subscribeToProductChanges(dispatch);
-        const ordersSub = subscribeToOrderChanges(dispatch);
-        const orderLinesSub = subscribeToOrderChanges(dispatch);
+        // const ordersSub = subscribeToOrderChanges(dispatch);
         return () => {
             console.log('Closing sales subscriptions');
             categoriesSub.unsubscribe();
             productsSub.unsubscribe();
-            ordersSub.unsubscribe();
-            orderLinesSub.unsubscribe();
+            // ordersSub.unsubscribe();
         };
     }, [dispatch]);
 
