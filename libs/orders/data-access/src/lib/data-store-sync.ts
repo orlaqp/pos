@@ -6,6 +6,8 @@ import { DataStore } from 'aws-amplify';
 import { OrderEntityMapper } from './order.entity';
 import { ordersActions } from './slices/orders.slice';
 import { Role } from '@pos/auth/data-access';
+import { Alert } from 'react-native';
+
 import moment from 'moment';
 
 const LAST_X_DAYS = 3;
@@ -21,11 +23,13 @@ export const subscribeToOrderChanges = (dispatch: Dispatch, employee?: EmployeeE
     // DataStore.observe(Order).subscribe(msg => {
     //     console.log(msg.model, msg.opType, msg.element);
     // });
-    if ( !employee) return;
     
-    return DataStore.observeQuery(Order, employee.roles.includes(Role.Payments)
-        ? (o) => o.orderDate('gt', moment().subtract(LAST_X_DAYS, 'days').toISOString())
-        : (o) => o.status('eq', 'OPEN').orderDate('gt', moment().subtract(LAST_X_DAYS, 'days').toISOString())
+    // return DataStore.observeQuery(Order, employee.roles.includes(Role.Payments)
+    //     ? (o) => o.orderDate('gt', moment().subtract(LAST_X_DAYS, 'days').toISOString())
+    //     : (o) => o.status('eq', 'OPEN').orderDate('gt', moment().subtract(LAST_X_DAYS, 'days').toISOString())
+    // )
+    return DataStore.observeQuery(Order, 
+        (o) => o.orderDate('gt', moment().subtract(LAST_X_DAYS, 'days').toISOString())
     )
     .subscribe(({ isSynced, items }) => {
         if (!isSynced) return;

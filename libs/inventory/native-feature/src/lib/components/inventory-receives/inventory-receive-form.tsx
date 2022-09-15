@@ -19,6 +19,7 @@ import {
     ProductEntity,
     ProductService,
     selectAllProducts,
+    subscribeToProductChanges,
 } from '@pos/products/data-access';
 import { Button, Dialog, useTheme } from '@rneui/themed';
 import InventoryReceiveLine from '../inventory-receives/inventory-receive-line';
@@ -76,7 +77,6 @@ export function InventoryReceiveForm({
                     id: employee?.id,
                     name: `${employee?.firstName} ${employee?.lastName}`
                 }
-
             };
         } else {
             if (!employee) {
@@ -160,6 +160,14 @@ export function InventoryReceiveForm({
         const searchResult = ProductService.search(products, { text: filter });
         setFilteredProducts((prev) => [...searchResult.items]);
     }, [filter, products]);
+
+    useEffect(() => {
+        const productsSub = subscribeToProductChanges(dispatch);
+        return () => {
+            console.log('Closing inventory receive form subscriptions');
+            productsSub.unsubscribe();
+        };
+    }, [dispatch]);
 
     return (
         <View style={[styles.page]}>

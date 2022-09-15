@@ -32,7 +32,7 @@ export function CompactOrderList({ onSelect }: CompactOrderListProps) {
             console.log('Closing orders subscription');
             ordersSub?.unsubscribe();
         };
-    }, [dispatch]);
+    }, [dispatch, employee]);
 
     useEffect(() => {
         setFilteredList(
