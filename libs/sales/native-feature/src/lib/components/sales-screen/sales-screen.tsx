@@ -41,6 +41,7 @@ import {
     upsertOrder,
 } from '@pos/orders/data-access';
 import { selectStore } from '@pos/store-info/data-access';
+import { getGlobalSettings, subscribeToGlobalSettingsChanges } from '@pos/settings/data-access';
 
 export interface NavigationParamList {
     [key: string]: object | undefined;
@@ -71,6 +72,8 @@ export function SalesScreen({
     const storeInfo = useSelector(selectStore);
     const defaultPrinter = useSelector(getDefaultPrinter);
     const allProducts = useSelector(selectAllProducts);
+    const globalSettings = useSelector(getGlobalSettings);
+
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
         []
     );
@@ -122,6 +125,12 @@ export function SalesScreen({
     const onProductSelected = useCallback(
         (p: ButtonItemType) => {
             const product = p as ProductEntity;
+
+            if (globalSettings?.enforceSalesBasedOnInventory && product.quantity <=0) {
+                Alert.alert('Not Available', 'We do not have this product in inventory at the moment');
+                return;
+            }
+
             dispatch(
                 cartActions.select({
                     product,
@@ -165,12 +174,13 @@ export function SalesScreen({
     useEffect(() => {
         const categoriesSub = subscribeToCategoryChanges(dispatch);
         const productsSub = subscribeToProductChanges(dispatch);
-        // const ordersSub = subscribeToOrderChanges(dispatch);
+        const globalSettingsSub = subscribeToGlobalSettingsChanges(dispatch);
+        
         return () => {
             console.log('Closing sales subscriptions');
             categoriesSub.unsubscribe();
             productsSub.unsubscribe();
-            // ordersSub.unsubscribe();
+            globalSettingsSub.unsubscribe();
         };
     }, [dispatch]);
 
@@ -214,7 +224,10 @@ export function SalesScreen({
                 onBackdropPress={deselectProduct}
                 overlayStyle={[styles.overlay, { maxWidth: 350 }]}
             >
-                <ProductDetails item={product!} upsertCart={upsertCart} />
+                <ProductDetails
+                    item={product!}
+                    upsertCart={upsertCart}
+                    enforceSalesBasedOnInventory={globalSettings?.enforceSalesBasedOnInventory} />
             </Dialog>
         </SafeAreaView>
     );

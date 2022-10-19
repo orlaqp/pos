@@ -94,11 +94,6 @@ export declare class DatePartSaleSummary {
   constructor(init: ModelInit<DatePartSaleSummary>);
 }
 
-export declare class GlobalSettings {
-  readonly AllowSalesBasedOnInventory: boolean;
-  constructor(init: ModelInit<GlobalSettings>);
-}
-
 type OrderMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
@@ -156,6 +151,10 @@ type PrinterMetaData = {
 }
 
 type StationMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type GlobalSettingsMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
@@ -382,4 +381,13 @@ export declare class Station {
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Station, StationMetaData>);
   static copyOf(source: Station, mutator: (draft: MutableModel<Station, StationMetaData>) => MutableModel<Station, StationMetaData> | void): Station;
+}
+
+export declare class GlobalSettings {
+  readonly id: string;
+  readonly enforceSalesBasedOnInventory: boolean;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  constructor(init: ModelInit<GlobalSettings, GlobalSettingsMetaData>);
+  static copyOf(source: GlobalSettings, mutator: (draft: MutableModel<GlobalSettings, GlobalSettingsMetaData>) => MutableModel<GlobalSettings, GlobalSettingsMetaData> | void): GlobalSettings;
 }

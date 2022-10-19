@@ -1606,6 +1606,65 @@ export const schema = {
                     }
                 }
             ]
+        },
+        "GlobalSettings": {
+            "name": "GlobalSettings",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "enforceSalesBasedOnInventory": {
+                    "name": "enforceSalesBasedOnInventory",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "GlobalSettings",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "allow": "public",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
         }
     },
     "enums": {
@@ -1951,19 +2010,7 @@ export const schema = {
                     "attributes": []
                 }
             }
-        },
-        "GlobalSettings": {
-            "name": "GlobalSettings",
-            "fields": {
-                "AllowSalesBasedOnInventory": {
-                    "name": "AllowSalesBasedOnInventory",
-                    "isArray": false,
-                    "type": "Boolean",
-                    "isRequired": true,
-                    "attributes": []
-                }
-            }
         }
     },
-    "version": "0c587da8b69acb53ec0c711f0c2c373f"
+    "version": "e73e6c313eef278f0429fe6ab171736f"
 };

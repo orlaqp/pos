@@ -252,6 +252,9 @@ type Station @model @auth(rules: [{allow: public}]) {
     alias: String!
 }
 
+type GlobalSettings @model @auth(rules: [{allow: public}]) {
+    enforceSalesBasedOnInventory: Boolean! @default(value: "false")
+}
 # Reporting
 
 type ProductSaleSummary {
@@ -281,10 +284,6 @@ type SalesSummary {
     dates: [DatePartSaleSummary]
     totalAmount: Float!
     totalOrders: Float!
-}
-
-type GlobalSettings {
-    AllowSalesBasedOnInventory: Boolean!
 }
 
 type Query {

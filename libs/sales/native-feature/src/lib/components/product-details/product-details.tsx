@@ -7,7 +7,7 @@ import { EACH } from '@pos/unit-of-measures/data-access';
 import { Button, Input, useTheme } from '@rneui/themed';
 import React, { useEffect, useRef, useState } from 'react';
 
-import { View, Text, StyleSheet, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Alert } from 'react-native';
 import NumericInput from 'react-native-numeric-input';
 import { useSelector } from 'react-redux';
 
@@ -15,9 +15,10 @@ import { useSelector } from 'react-redux';
 export interface ProductDetailsProps {
     item: CartItem;
     upsertCart: (item: CartItem) => void;
+    enforceSalesBasedOnInventory?: boolean;
 }
 
-export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
+export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory }: ProductDetailsProps) {
     const theme = useTheme();
     const styles = useStyles();
     const ref = React.createRef<TextInput>();
@@ -28,6 +29,20 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
     const product = useSelector(selectProduct(item.product.id));
     const brand = useSelector(selectBrand(product?.productBrandId));
     const each = item.product.unitOfMeasure === EACH;
+
+    const validateInfo = () => {
+        const q = quantity === '' ? 0 : +quantity;
+        if (enforceSalesBasedOnInventory && product && product?.quantity - q < 0 ) {
+            Alert.alert('Cannot sale this much', 'You are trying to sale a bigger quantity than what is available in inventory');
+            return;
+        }
+
+        upsertCart({
+            identifier: item.identifier,
+            product: item.product,
+            quantity: quantity === '' ? 0 : +quantity,
+        });
+    }
 
     useEffect(() => {
         setPrice(+quantity * item.product.price);
@@ -112,13 +127,7 @@ export function ProductDetails({ item, upsertCart }: ProductDetailsProps) {
                 style={{ marginTop: 35 }}
                 type="clear"
                 title={item.identifier ? 'Update cart' : 'Add to cart'}
-                onPress={() =>
-                    upsertCart({
-                        identifier: item.identifier,
-                        product: item.product,
-                        quantity: quantity === '' ? 0 : +quantity,
-                    })
-                }
+                onPress={validateInfo}
             />
         </View>
     );
