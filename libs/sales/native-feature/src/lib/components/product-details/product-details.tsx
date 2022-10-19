@@ -33,7 +33,7 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
     const validateInfo = () => {
         const q = quantity === '' ? 0 : +quantity;
         if (enforceSalesBasedOnInventory && product && product?.quantity - q < 0 ) {
-            Alert.alert('Cannot sale this much', 'You are trying to sale a bigger quantity than what is available in inventory');
+            Alert.alert('Cannot sale this much', 'There is not enough inventory to fulfill your request');
             return;
         }
 
