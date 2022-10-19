@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { DataStore } from 'aws-amplify';
 import { Dispatch } from '@reduxjs/toolkit';
 import { InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine } from '@pos/shared/models';
@@ -7,7 +8,7 @@ import { inventoryReceiveActions } from './receive/inventory-receive.slice';
 import { InventoryReceiveMapper } from './receive/inventory-receive.entity';
 import { InventoryCountLineMapper } from './count/inventory-count-line.entity';
 import { InventoryReceiveLineMapper } from './receive/inventory-receive-line.entity';
-import { sortByCreatedAt } from '@pos/shared/utils';
+import { sortDescListBy } from '@pos/shared/utils';
 
 export const syncInventoryCounts = (dispatch: Dispatch) => {
     console.log('Syncing inventory counts to the store');
@@ -71,38 +72,54 @@ export const subscribeToInventoryReceiveLineChanges = (dispatch: Dispatch) => {
 }
 
 const updateInventoryCountStore = (dispatch: Dispatch, items: InventoryCount[]) => {
-    sortByCreatedAt(items);
+    sortDescListBy(items, 'createdAt');
+    const thirtyDaysBefore = moment().subtract(30, 'days').toISOString();
+    
     dispatch(
         inventoryCountActions.setAll(
-            items.map((i) => InventoryCountMapper.fromModel(i, []))
+            items
+                .filter(i => i.createdAt && i.createdAt >= thirtyDaysBefore)
+                .map((i) => InventoryCountMapper.fromModel(i, []))
         )
     );
 };
 
 const updateInventoryLineCountStore = (dispatch: Dispatch, items: InventoryCountLine[]) => {
-    sortByCreatedAt(items);
+    sortDescListBy(items, 'createdAt');
+    const thirtyDaysBefore = moment().subtract(30, 'days').toISOString();
+
     dispatch(
         inventoryCountActions.setLines(
-            items.map((i) => InventoryCountLineMapper.fromModel(i))
+            items
+                .filter(i => i.createdAt && i.createdAt >= thirtyDaysBefore)
+                .map((i) => InventoryCountLineMapper.fromModel(i))
         )
     );
 };
 
 
 const updateInventoryReceiveStore = (dispatch: Dispatch, items: InventoryReceive[]) => {
-    sortByCreatedAt(items);
+    sortDescListBy(items, 'createdAt');
+    const thirtyDaysBefore = moment().subtract(30, 'days').toISOString();
+
     dispatch(
         inventoryReceiveActions.setAll(
-            items.map((i) => InventoryReceiveMapper.fromModel(i, []))
+            items
+                .filter(i => i.createdAt && i.createdAt >= thirtyDaysBefore)
+                .map((i) => InventoryReceiveMapper.fromModel(i, []))
         )
     );
 };
 
 const updateInventoryReceiveLineStore = (dispatch: Dispatch, items: InventoryReceiveLine[]) => {
-    sortByCreatedAt(items);
+    sortDescListBy(items, 'createdAt');
+    const thirtyDaysBefore = moment().subtract(30, 'days').toISOString();
+
     dispatch(
         inventoryReceiveActions.setLines(
-            items.map((i) => InventoryReceiveLineMapper.fromLine(i))
+            items
+                .filter(i => i.createdAt && i.createdAt >= thirtyDaysBefore)
+                .map((i) => InventoryReceiveLineMapper.fromLine(i))
         )
     );
 };

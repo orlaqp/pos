@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { useSharedStyles } from '@pos/theme/native';
-import { Dialog, useTheme } from '@rneui/themed';
+import { Dialog } from '@rneui/themed';
 
 import { View, StyleSheet, SafeAreaView, Alert, TextInput } from 'react-native';
 
@@ -39,7 +39,6 @@ import { getDefaultPrinter } from '@pos/printings/data-access';
 import {
     payOrder,
     upsertOrder,
-    subscribeToOrderChanges,
 } from '@pos/orders/data-access';
 import { selectStore } from '@pos/store-info/data-access';
 
@@ -85,6 +84,7 @@ export function SalesScreen({
     const onCategoryChange = async (c: CategoryEntity) => {
         const res = await ProductService.search(allProducts, {
             categoryId: c.id,
+            onlyActive: true
         });
         setFilteredProducts(res.items);
     };
@@ -93,7 +93,7 @@ export function SalesScreen({
         if (!text) return;
 
         searchRef.current?.focus();
-        const res = await ProductService.search(allProducts, { text });
+        const res = await ProductService.search(allProducts, { text, onlyActive: true });
 
         if (!res.allNumbers || (res.allNumbers && text.length < 4)) {
             setFilteredProducts(res.items);

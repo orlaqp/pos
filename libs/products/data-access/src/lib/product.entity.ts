@@ -20,6 +20,7 @@ export type ProductEntity = {
     productBrandId: string | null | undefined;
     createdAt?: string | null | undefined;
     updatedAt?: string | null | undefined;
+    isActive: boolean;
 };
 
 export class ProductEntityMapper {
@@ -43,7 +44,8 @@ export class ProductEntityMapper {
             productCategoryId: p.productCategoryId,
             productBrandId: p.productBrandId,
             createdAt: p.createdAt,
-            updatedAt: p.updatedAt
+            updatedAt: p.updatedAt,
+            isActive: p.isActive
         }
     }
 }

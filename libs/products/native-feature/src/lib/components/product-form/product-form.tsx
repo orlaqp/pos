@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { Alert, TextInput, View } from 'react-native';
+import { Alert, TextInput, View, Text } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import {
     UIActions,
@@ -87,6 +87,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
             picture: product?.picture,
             productCategoryId: product?.productCategoryId,
             productBrandId: product?.productBrandId,
+            isActive: product?.isActive,
         },
     });
 
@@ -147,6 +148,14 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 selectedId={product?.unitOfMeasure}
                                 rules={{ required: true }}
                             />
+                            <View style={[styles.row, { marginTop: 12, marginLeft: 90, alignItems: 'center' }]}>
+                                <Text style={[styles.primaryText, { marginRight: 30 }]}>
+                                    Available for sale: 
+                                </Text>
+                                <View style={{ flex: 1, paddingLeft: 15 }}>
+                                    <UISwitch name='isActive' />
+                                </View>
+                            </View>
                         </View>
                         <UIVerticalSpacer size="large" />
                         <UIVerticalSpacer size="medium" />

@@ -84,6 +84,18 @@ El nuevo formato del recibo va a incluir esta nueva informacion. Se va a reempla
 - Search for entire order no when a full number has been provided (probably from scanner)
 
 
+# v1.0.57
+
+## New Features
+
+- Inventory count and receive limit to 1 month and sorted descendent
+- Featue flag to allow selling products with no inbventory
+- Feature flag to disable products from being sold even if in inventory
+
+## Bugfixes
+
+- Fix quantiry issue in inventory receiving when receiving quantity matches current inventory
+
 
 PENDING
 

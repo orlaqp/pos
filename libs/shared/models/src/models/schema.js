@@ -837,7 +837,7 @@ export const schema = {
                     "name": "isActive",
                     "isArray": false,
                     "type": "Boolean",
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": []
                 },
                 "createdAt": {
@@ -1951,7 +1951,19 @@ export const schema = {
                     "attributes": []
                 }
             }
+        },
+        "GlobalSettings": {
+            "name": "GlobalSettings",
+            "fields": {
+                "AllowSalesBasedOnInventory": {
+                    "name": "AllowSalesBasedOnInventory",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
         }
     },
-    "version": "c03df013b8e0a0a5fcccd23f871236db"
+    "version": "0c587da8b69acb53ec0c711f0c2c373f"
 };

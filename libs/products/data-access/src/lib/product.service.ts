@@ -8,6 +8,7 @@ import { Alert } from 'react-native';
 export interface ProductSearchRequest {
     text?: string;
     categoryId?: string;
+    onlyActive?: boolean;
 }
 
 export interface ProductSearchResponse {
@@ -66,6 +67,7 @@ export class ProductService {
                 updated.picture = product?.picture;
                 updated.productCategoryId = product?.productCategoryId;
                 updated.productBrandId = product?.productBrandId;
+                updated.isActive = product.isActive;
             })
         );
 
@@ -96,31 +98,39 @@ export class ProductService {
 
     static search(
         products: ProductEntity[],
-        request: ProductSearchRequest
+        { categoryId, text, onlyActive = false }: ProductSearchRequest,
     ): ProductSearchResponse {
-        if (request.categoryId)
+        if (categoryId)
             return {
                 items: products.filter(
-                    (p) => p.productCategoryId === request.categoryId
+                    (p) => {
+                        return onlyActive
+                            ? p.isActive && p.productCategoryId === categoryId
+                            : p.productCategoryId === categoryId;
+                    }
                 ),
                 allNumbers: false,
             };
 
-        if (!request.text) {
+        if (!text) {
             return {
                 items: products,
                 allNumbers: false,
             };
         }
 
-        const allNumbers = !!request.text?.match(/^\d*$/);
+        const allNumbers = !!text?.match(/^\d*$/);
         // ex: 206110115089
-        if (allNumbers && request.text.length > 11) {
-            const plu = request.text.substring(2, 6);
-            const prod = products.find((p) => p.plu === plu);
+        if (allNumbers && text.length > 11) {
+            const plu = text.substring(2, 6);
+            const prod = products.find((p) => {
+                return onlyActive
+                    ? p.isActive && p.plu === plu
+                    : p.plu === plu;
+            });
 
             if (prod) {
-                const totalPrice = +request.text.substring(7, 11);
+                const totalPrice = +text.substring(7, 11);
                 const quantity = totalPrice / 100 / prod.price; 
 
                 return {
@@ -132,13 +142,12 @@ export class ProductService {
             }
         }
 
-        if (allNumbers && request.text.length > 3) {
+        if (allNumbers && text.length > 3) {
             const items = products.filter(
                 (p) => {
-                    const result = (p.barcode && p.barcode === request.text!) ||
-                    (p.sku && p.sku === request.text!)
-
-                    return result;
+                    return onlyActive 
+                        ? p.isActive && ((p.barcode && p.barcode === text!) || (p.sku && p.sku === text!))
+                        : (p.barcode && p.barcode === text!) || (p.sku && p.sku === text!);
                 }
             );
 
@@ -148,14 +157,21 @@ export class ProductService {
             };
         }
 
-        const lower = request.text.toLowerCase();
+        const lower = text.toLowerCase();
 
         const filteredItems = products.filter(
-            (p) =>
-                p.name.toLowerCase().indexOf(lower) !== -1 ||
-                (p.barcode && p.barcode?.toLowerCase().indexOf(lower) !== -1) ||
-                (p.sku && p.sku?.toLowerCase().indexOf(lower) !== -1) ||
-                (p.description && p.description?.toLowerCase().indexOf(lower) !== -1)
+            (p) => {
+                return onlyActive
+                    ?  p.isActive && (p.name.toLowerCase().indexOf(lower) !== -1 ||
+                        (p.barcode && p.barcode?.toLowerCase().indexOf(lower) !== -1) ||
+                        (p.sku && p.sku?.toLowerCase().indexOf(lower) !== -1) ||
+                        (p.description && p.description?.toLowerCase().indexOf(lower) !== -1))
+                    : p.name.toLowerCase().indexOf(lower) !== -1 ||
+                        (p.barcode && p.barcode?.toLowerCase().indexOf(lower) !== -1) ||
+                        (p.sku && p.sku?.toLowerCase().indexOf(lower) !== -1) ||
+                        (p.description && p.description?.toLowerCase().indexOf(lower) !== -1);
+            }
+                
         );
 
         return {

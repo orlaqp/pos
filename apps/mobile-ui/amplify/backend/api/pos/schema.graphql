@@ -133,7 +133,7 @@ type Product @model @auth(rules: [{allow: public}]) {
   picture: String
   Category: Category @hasOne
   Brand: Brand @hasOne
-  isActive: Boolean
+  isActive: Boolean!
 }
 
 # type PurchaseOrder @model @auth(rules: [{allow: public}]) {
@@ -281,6 +281,10 @@ type SalesSummary {
     dates: [DatePartSaleSummary]
     totalAmount: Float!
     totalOrders: Float!
+}
+
+type GlobalSettings {
+    AllowSalesBasedOnInventory: Boolean!
 }
 
 type Query {

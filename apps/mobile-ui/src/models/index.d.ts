@@ -94,6 +94,11 @@ export declare class DatePartSaleSummary {
   constructor(init: ModelInit<DatePartSaleSummary>);
 }
 
+export declare class GlobalSettings {
+  readonly AllowSalesBasedOnInventory: boolean;
+  constructor(init: ModelInit<GlobalSettings>);
+}
+
 type OrderMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
@@ -268,7 +273,7 @@ export declare class Product {
   readonly picture?: string | null;
   readonly Category?: Category | null;
   readonly Brand?: Brand | null;
-  readonly isActive?: boolean | null;
+  readonly isActive: boolean;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly productCategoryId?: string | null;
