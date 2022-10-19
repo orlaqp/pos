@@ -9,7 +9,7 @@ import uuid from 'react-native-uuid';
 export const subscribeEvents = (dispatch: Dispatch) =>
     Hub.listen('datastore', async (hubData) => {
         const { event, data } = hubData.payload;
-        console.log(`${event} - data: ${JSON.stringify(data)}`);
+        console.log(`${hubData.source} - ${event} - data: ${JSON.stringify(data)}`);
 
         dispatch(
             eventsActions.add({

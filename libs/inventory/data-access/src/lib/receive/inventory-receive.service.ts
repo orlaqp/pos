@@ -124,12 +124,41 @@ const updateInventory = async (count: InventoryReceiveDTO) => {
                     `Product ${l.productName} was not found while updating the inventory`
                 );
             }
+            
+            if (p[0].quantity !== l.received)
+                return await DataStore.save(
+                    Product.copyOf(p[0], (updated) => {
+                        updated.quantity = l.received;
+                    })
+                );
 
-            await DataStore.save(
-                Product.copyOf(p[0], (updated) => {
-                    updated.quantity = l.received;
+            
+            const halfQuantity = +((l.received / 2).toFixed(2));
+            await DataStore.save(Product.copyOf(p[0], (updated) => { updated.quantity = halfQuantity }));
+
+            const subs = DataStore.observeQuery(Product, (prod) => prod.id('eq', p[0].id))
+                .subscribe(async res => {
+                    const newProd = res.items[0];
+                    console.log('*********************** prod received', newProd);
+                    if (
+                        (newProd as any)._version === (p[0] as any)._version
+                     || newProd.quantity === halfQuantity
+                    ) return;
+
+                    console.log('Saving the other half');
+                    
+                    await DataStore.save(Product.copyOf(newProd, (updated) => { updated.quantity = halfQuantity }));
+                    subs.unsubscribe();
                 })
-            );
+
+            // console.log('====================================');
+            // console.log(`Half quantity: ${halfQuantity}`);
+            // console.log('====================================');
+            // setTimeout(() => {
+            //     DataStore.save(Product.copyOf(res, (updated) => { updated.quantity = halfQuantity }));
+            // }, 2000);    
+                
+            
         }
     } catch (error) {
         Alert.alert('Error while updating inventory received', (error as any).message);
