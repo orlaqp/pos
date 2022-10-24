@@ -125,31 +125,37 @@ const updateInventory = async (count: InventoryReceiveDTO) => {
                 );
             }
             
-            if (p[0].quantity !== l.received)
-                return await DataStore.save(
+            if (p[0].quantity !== l.received) {
+                await DataStore.save(
                     Product.copyOf(p[0], (updated) => {
                         updated.quantity = l.received;
                     })
                 );
+            } else {
+                const halfQuantity = +((l.received / 2).toFixed(2));
+                await DataStore.save(Product.copyOf(p[0], (updated) => { updated.quantity = halfQuantity }));
+    
+                await new Promise((resolve, reject) => {
+                    const subs = DataStore.observeQuery(Product, (prod) => prod.id('eq', p[0].id))
+                    .subscribe(async res => {
+                        const newProd = res.items[0];
+                       
+                        if (
+                            (newProd as any)._version === (p[0] as any)._version
+                         || newProd.quantity === halfQuantity
+                        ) return;
+    
+                        console.log('Saving the other half');
+                        
+                        const updatedProd = await DataStore.save(Product.copyOf(newProd, (updated) => { updated.quantity = halfQuantity }));
+                        subs.unsubscribe();
+                        resolve(updatedProd);
+                    });
+                });
+            }
+
 
             
-            const halfQuantity = +((l.received / 2).toFixed(2));
-            await DataStore.save(Product.copyOf(p[0], (updated) => { updated.quantity = halfQuantity }));
-
-            const subs = DataStore.observeQuery(Product, (prod) => prod.id('eq', p[0].id))
-                .subscribe(async res => {
-                    const newProd = res.items[0];
-                    console.log('*********************** prod received', newProd);
-                    if (
-                        (newProd as any)._version === (p[0] as any)._version
-                     || newProd.quantity === halfQuantity
-                    ) return;
-
-                    console.log('Saving the other half');
-                    
-                    await DataStore.save(Product.copyOf(newProd, (updated) => { updated.quantity = halfQuantity }));
-                    subs.unsubscribe();
-                })
 
             // console.log('====================================');
             // console.log(`Half quantity: ${halfQuantity}`);
