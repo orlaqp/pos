@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import moment from 'moment';
 
 import { View, Text, Alert } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
@@ -51,7 +52,7 @@ export function InventoryCountItem({ item, navigation }: InventoryItemProps) {
     return (
         <View style={[styles.dataRow, styles.centered]}>
             <View style={{ flex: 4 }}>
-                <Text style={styles.name}>{item.createdAt}</Text>
+                <Text style={styles.name}>{moment(item.createdAt).local().format('L LT')}</Text>
                 <Text style={styles.name}>By: {item.createdBy.name}</Text>
             </View>
             <View style={{ flex: 2 }}>
