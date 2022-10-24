@@ -555,7 +555,7 @@ export type CreateProductInput = {
   reorderPoint?: number | null,
   reorderQuantity?: number | null,
   picture?: string | null,
-  isActive?: boolean | null,
+  isActive: boolean,
   _version?: number | null,
   productCategoryId?: string | null,
   productBrandId?: string | null,
@@ -603,7 +603,7 @@ export type Product = {
   picture?: string | null,
   Category?: Category | null,
   Brand?: Brand | null,
-  isActive?: boolean | null,
+  isActive: boolean,
   createdAt: string,
   updatedAt: string,
   _version: number,
@@ -1063,6 +1063,41 @@ export type DeleteStationInput = {
   _version?: number | null,
 };
 
+export type CreateGlobalSettingsInput = {
+  enforceSalesBasedOnInventory: boolean,
+  id?: string | null,
+  _version?: number | null,
+};
+
+export type ModelGlobalSettingsConditionInput = {
+  enforceSalesBasedOnInventory?: ModelBooleanInput | null,
+  and?: Array< ModelGlobalSettingsConditionInput | null > | null,
+  or?: Array< ModelGlobalSettingsConditionInput | null > | null,
+  not?: ModelGlobalSettingsConditionInput | null,
+};
+
+export type GlobalSettings = {
+  __typename: "GlobalSettings",
+  enforceSalesBasedOnInventory: boolean,
+  id: string,
+  createdAt: string,
+  updatedAt: string,
+  _version: number,
+  _deleted?: boolean | null,
+  _lastChangedAt: number,
+};
+
+export type UpdateGlobalSettingsInput = {
+  enforceSalesBasedOnInventory?: boolean | null,
+  id: string,
+  _version?: number | null,
+};
+
+export type DeleteGlobalSettingsInput = {
+  id: string,
+  _version?: number | null,
+};
+
 export type SalesSummary = {
   __typename: "SalesSummary",
   products?:  Array<ProductSaleSummary | null > | null,
@@ -1394,6 +1429,20 @@ export type ModelStationFilterInput = {
 export type ModelStationConnection = {
   __typename: "ModelStationConnection",
   items:  Array<Station | null >,
+  nextToken?: string | null,
+  startedAt?: number | null,
+};
+
+export type ModelGlobalSettingsFilterInput = {
+  enforceSalesBasedOnInventory?: ModelBooleanInput | null,
+  and?: Array< ModelGlobalSettingsFilterInput | null > | null,
+  or?: Array< ModelGlobalSettingsFilterInput | null > | null,
+  not?: ModelGlobalSettingsFilterInput | null,
+};
+
+export type ModelGlobalSettingsConnection = {
+  __typename: "ModelGlobalSettingsConnection",
+  items:  Array<GlobalSettings | null >,
   nextToken?: string | null,
   startedAt?: number | null,
 };
@@ -2022,7 +2071,7 @@ export type CreateProductMutation = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    isActive?: boolean | null,
+    isActive: boolean,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -2081,7 +2130,7 @@ export type UpdateProductMutation = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    isActive?: boolean | null,
+    isActive: boolean,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -2140,7 +2189,7 @@ export type DeleteProductMutation = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    isActive?: boolean | null,
+    isActive: boolean,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -2239,7 +2288,7 @@ export type CreateInventoryChangesMutation = {
       reorderPoint?: number | null,
       reorderQuantity?: number | null,
       picture?: string | null,
-      isActive?: boolean | null,
+      isActive: boolean,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -2288,7 +2337,7 @@ export type UpdateInventoryChangesMutation = {
       reorderPoint?: number | null,
       reorderQuantity?: number | null,
       picture?: string | null,
-      isActive?: boolean | null,
+      isActive: boolean,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -2337,7 +2386,7 @@ export type DeleteInventoryChangesMutation = {
       reorderPoint?: number | null,
       reorderQuantity?: number | null,
       picture?: string | null,
-      isActive?: boolean | null,
+      isActive: boolean,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -2824,6 +2873,60 @@ export type DeleteStationMutation = {
     id: string,
     deviceId: string,
     alias: string,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type CreateGlobalSettingsMutationVariables = {
+  input: CreateGlobalSettingsInput,
+  condition?: ModelGlobalSettingsConditionInput | null,
+};
+
+export type CreateGlobalSettingsMutation = {
+  createGlobalSettings?:  {
+    __typename: "GlobalSettings",
+    enforceSalesBasedOnInventory: boolean,
+    id: string,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type UpdateGlobalSettingsMutationVariables = {
+  input: UpdateGlobalSettingsInput,
+  condition?: ModelGlobalSettingsConditionInput | null,
+};
+
+export type UpdateGlobalSettingsMutation = {
+  updateGlobalSettings?:  {
+    __typename: "GlobalSettings",
+    enforceSalesBasedOnInventory: boolean,
+    id: string,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type DeleteGlobalSettingsMutationVariables = {
+  input: DeleteGlobalSettingsInput,
+  condition?: ModelGlobalSettingsConditionInput | null,
+};
+
+export type DeleteGlobalSettingsMutation = {
+  deleteGlobalSettings?:  {
+    __typename: "GlobalSettings",
+    enforceSalesBasedOnInventory: boolean,
+    id: string,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -3541,7 +3644,7 @@ export type GetProductQuery = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    isActive?: boolean | null,
+    isActive: boolean,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -3578,7 +3681,7 @@ export type ListProductsQuery = {
       reorderPoint?: number | null,
       reorderQuantity?: number | null,
       picture?: string | null,
-      isActive?: boolean | null,
+      isActive: boolean,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -3619,7 +3722,7 @@ export type SyncProductsQuery = {
       reorderPoint?: number | null,
       reorderQuantity?: number | null,
       picture?: string | null,
-      isActive?: boolean | null,
+      isActive: boolean,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -3732,7 +3835,7 @@ export type GetInventoryChangesQuery = {
       reorderPoint?: number | null,
       reorderQuantity?: number | null,
       picture?: string | null,
-      isActive?: boolean | null,
+      isActive: boolean,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -4294,6 +4397,72 @@ export type SyncStationsQuery = {
   } | null,
 };
 
+export type GetGlobalSettingsQueryVariables = {
+  id: string,
+};
+
+export type GetGlobalSettingsQuery = {
+  getGlobalSettings?:  {
+    __typename: "GlobalSettings",
+    enforceSalesBasedOnInventory: boolean,
+    id: string,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type ListGlobalSettingsQueryVariables = {
+  filter?: ModelGlobalSettingsFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListGlobalSettingsQuery = {
+  listGlobalSettings?:  {
+    __typename: "ModelGlobalSettingsConnection",
+    items:  Array< {
+      __typename: "GlobalSettings",
+      enforceSalesBasedOnInventory: boolean,
+      id: string,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type SyncGlobalSettingsQueryVariables = {
+  filter?: ModelGlobalSettingsFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  lastSync?: number | null,
+};
+
+export type SyncGlobalSettingsQuery = {
+  syncGlobalSettings?:  {
+    __typename: "ModelGlobalSettingsConnection",
+    items:  Array< {
+      __typename: "GlobalSettings",
+      enforceSalesBasedOnInventory: boolean,
+      id: string,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
 export type OnCreateStoreSubscription = {
   onCreateStore?:  {
     __typename: "Store",
@@ -4823,7 +4992,7 @@ export type OnCreateProductSubscription = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    isActive?: boolean | null,
+    isActive: boolean,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -4877,7 +5046,7 @@ export type OnUpdateProductSubscription = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    isActive?: boolean | null,
+    isActive: boolean,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -4931,7 +5100,7 @@ export type OnDeleteProductSubscription = {
       _deleted?: boolean | null,
       _lastChangedAt: number,
     } | null,
-    isActive?: boolean | null,
+    isActive: boolean,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -5010,7 +5179,7 @@ export type OnCreateInventoryChangesSubscription = {
       reorderPoint?: number | null,
       reorderQuantity?: number | null,
       picture?: string | null,
-      isActive?: boolean | null,
+      isActive: boolean,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -5054,7 +5223,7 @@ export type OnUpdateInventoryChangesSubscription = {
       reorderPoint?: number | null,
       reorderQuantity?: number | null,
       picture?: string | null,
-      isActive?: boolean | null,
+      isActive: boolean,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -5098,7 +5267,7 @@ export type OnDeleteInventoryChangesSubscription = {
       reorderPoint?: number | null,
       reorderQuantity?: number | null,
       picture?: string | null,
-      isActive?: boolean | null,
+      isActive: boolean,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -5495,6 +5664,45 @@ export type OnDeleteStationSubscription = {
     id: string,
     deviceId: string,
     alias: string,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnCreateGlobalSettingsSubscription = {
+  onCreateGlobalSettings?:  {
+    __typename: "GlobalSettings",
+    enforceSalesBasedOnInventory: boolean,
+    id: string,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnUpdateGlobalSettingsSubscription = {
+  onUpdateGlobalSettings?:  {
+    __typename: "GlobalSettings",
+    enforceSalesBasedOnInventory: boolean,
+    id: string,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnDeleteGlobalSettingsSubscription = {
+  onDeleteGlobalSettings?:  {
+    __typename: "GlobalSettings",
+    enforceSalesBasedOnInventory: boolean,
+    id: string,
     createdAt: string,
     updatedAt: string,
     _version: number,

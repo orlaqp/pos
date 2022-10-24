@@ -1172,3 +1172,42 @@ export const onDeleteStation = /* GraphQL */ `
     }
   }
 `;
+export const onCreateGlobalSettings = /* GraphQL */ `
+  subscription OnCreateGlobalSettings {
+    onCreateGlobalSettings {
+      enforceSalesBasedOnInventory
+      id
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onUpdateGlobalSettings = /* GraphQL */ `
+  subscription OnUpdateGlobalSettings {
+    onUpdateGlobalSettings {
+      enforceSalesBasedOnInventory
+      id
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onDeleteGlobalSettings = /* GraphQL */ `
+  subscription OnDeleteGlobalSettings {
+    onDeleteGlobalSettings {
+      enforceSalesBasedOnInventory
+      id
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;

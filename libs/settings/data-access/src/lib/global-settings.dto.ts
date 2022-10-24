@@ -8,7 +8,9 @@ export type GlobalSettingsDTO = {
 }
 
 export class GlobalSettingsEntityMapper {
-    static from(p: GlobalSettings): GlobalSettingsDTO {
+    static from(p?: GlobalSettings): GlobalSettingsDTO | null {
+        if (!p) return null;
+
         return {
             id: p.id,
             enforceSalesBasedOnInventory: p.enforceSalesBasedOnInventory,

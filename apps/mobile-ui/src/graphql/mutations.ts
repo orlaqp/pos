@@ -1307,3 +1307,51 @@ export const deleteStation = /* GraphQL */ `
     }
   }
 `;
+export const createGlobalSettings = /* GraphQL */ `
+  mutation CreateGlobalSettings(
+    $input: CreateGlobalSettingsInput!
+    $condition: ModelGlobalSettingsConditionInput
+  ) {
+    createGlobalSettings(input: $input, condition: $condition) {
+      enforceSalesBasedOnInventory
+      id
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const updateGlobalSettings = /* GraphQL */ `
+  mutation UpdateGlobalSettings(
+    $input: UpdateGlobalSettingsInput!
+    $condition: ModelGlobalSettingsConditionInput
+  ) {
+    updateGlobalSettings(input: $input, condition: $condition) {
+      enforceSalesBasedOnInventory
+      id
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const deleteGlobalSettings = /* GraphQL */ `
+  mutation DeleteGlobalSettings(
+    $input: DeleteGlobalSettingsInput!
+    $condition: ModelGlobalSettingsConditionInput
+  ) {
+    deleteGlobalSettings(input: $input, condition: $condition) {
+      enforceSalesBasedOnInventory
+      id
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;

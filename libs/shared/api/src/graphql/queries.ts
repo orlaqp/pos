@@ -1371,3 +1371,64 @@ export const syncStations = /* GraphQL */ `
     }
   }
 `;
+export const getGlobalSettings = /* GraphQL */ `
+  query GetGlobalSettings($id: ID!) {
+    getGlobalSettings(id: $id) {
+      enforceSalesBasedOnInventory
+      id
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const listGlobalSettings = /* GraphQL */ `
+  query ListGlobalSettings(
+    $filter: ModelGlobalSettingsFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listGlobalSettings(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        enforceSalesBasedOnInventory
+        id
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncGlobalSettings = /* GraphQL */ `
+  query SyncGlobalSettings(
+    $filter: ModelGlobalSettingsFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncGlobalSettings(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        enforceSalesBasedOnInventory
+        id
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;

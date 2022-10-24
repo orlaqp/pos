@@ -61,7 +61,7 @@ export const settingsSlice = createSlice({
             state.languageTag = action.payload;
             setI18nConfig(action.payload);
         },
-        setGlobalSettings: (state: SettingsState, action: PayloadAction<GlobalSettingsDTO>) => {
+        setGlobalSettings: (state: SettingsState, action: PayloadAction<GlobalSettingsDTO | null>) => {
             state.globalSettings = action.payload;
         }
     },

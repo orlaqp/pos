@@ -5,12 +5,18 @@ export class GlobalSettingsService {
 
     static async updateSettings(newSettings: GlobalSettingsDTO) {
         const settingList = await DataStore.query(GlobalSettings);
-        
-        return DataStore.save(
-            GlobalSettings.copyOf(settingList[0], (updated) => {
-                updated.enforceSalesBasedOnInventory = newSettings.enforceSalesBasedOnInventory;
-            })
-        );
+        const settings = settingList[0];
+
+        if (settings) 
+            return DataStore.save(
+                GlobalSettings.copyOf(settings, (updated) => {
+                    updated.enforceSalesBasedOnInventory = newSettings.enforceSalesBasedOnInventory;
+                })
+            );
+
+        return DataStore.save(new GlobalSettings({
+            enforceSalesBasedOnInventory: newSettings.enforceSalesBasedOnInventory || false
+        }));
     }
 
 }
