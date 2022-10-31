@@ -84,7 +84,7 @@ El nuevo formato del recibo va a incluir esta nueva informacion. Se va a reempla
 - Search for entire order no when a full number has been provided (probably from scanner)
 
 
-# v1.0.57
+# 2210.23
 
 ## New Features
 
@@ -103,4 +103,4 @@ PENDING
 - los iPad votan la aplicación varias veces al día .
 - cuando se busca un tíquet pagado no siempre aparecen.
 - en ocasiones cuando se va el programa al volver abrir pierde el número de estación y la frecuencia como si se borrara y reinstalara .
--hay ventas que aunque se sierren se quedan en cualquier máquina como si estuvieran abiertas.
+
