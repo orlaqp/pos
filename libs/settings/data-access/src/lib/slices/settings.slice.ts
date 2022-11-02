@@ -42,8 +42,15 @@ export const resetDataStore = createAsyncThunk(
     }
 );
 
+export const fetchGlobalSettings = createAsyncThunk(
+    'globalSettings/fetch',
+    async (_, thunkAPI) => {
+        return await GlobalSettingsService.fetch();
+    }
+);
+
 export const updateGlobalSettings = createAsyncThunk(
-    'settings/reset',
+    'gllbalSettings/update',
     async (settings: GlobalSettingsDTO, thunkApi) => {
         await GlobalSettingsService.updateSettings(settings);
         thunkApi.dispatch(settingsActions.setGlobalSettings(settings));
@@ -74,7 +81,10 @@ export const settingsSlice = createSlice({
         })
         .addCase(resetDataStore.rejected, (state: SettingsState) => {
             state.dataStoreStatus = 'error';
-        }),
+        })
+        .addCase(fetchGlobalSettings.fulfilled, (state: SettingsState, action: PayloadAction<GlobalSettingsDTO | null>) => {
+            state.globalSettings = action.payload;
+        })
 });
 
 export const settingsReducer = settingsSlice.reducer;

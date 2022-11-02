@@ -18,6 +18,7 @@ import {
     CartItemMapper,
     CartPayment,
     CartState,
+    MINIMUM_INVENTORY_FOR_SALE,
     selectActiveProduct,
 } from '@pos/sales/data-access';
 import ProductDetails from '../product-details/product-details';
@@ -126,7 +127,8 @@ export function SalesScreen({
         (p: ButtonItemType) => {
             const product = p as ProductEntity;
 
-            if (globalSettings?.enforceSalesBasedOnInventory && product.quantity <=0) {
+            debugger;
+            if (globalSettings?.enforceSalesBasedOnInventory && product.quantity < MINIMUM_INVENTORY_FOR_SALE) {
                 Alert.alert('Not Available', 'We do not have this product in inventory at the moment');
                 return;
             }

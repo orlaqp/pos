@@ -1,7 +1,12 @@
 import { GlobalSettings } from '@pos/shared/models';
 import { DataStore } from 'aws-amplify';
-import { GlobalSettingsDTO } from './../global-settings.dto';
+import { GlobalSettingsDTO, GlobalSettingsEntityMapper } from './../global-settings.dto';
 export class GlobalSettingsService {
+
+    static async fetch() {
+        const settingList = await DataStore.query(GlobalSettings);
+        return GlobalSettingsEntityMapper.from(settingList[0]);
+    }
 
     static async updateSettings(newSettings: GlobalSettingsDTO) {
         const settingList = await DataStore.query(GlobalSettings);

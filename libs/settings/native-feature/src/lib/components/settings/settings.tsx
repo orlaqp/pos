@@ -2,7 +2,7 @@ import {
     resetDataStore,
     selectSettings,
     settingsActions,
-    updateGlobalSettings,
+    fetchGlobalSettings,
 } from '@pos/settings/data-access';
 import { UIInput } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
@@ -31,7 +31,7 @@ export function Settings(props: SettingsProps) {
     };
 
     const setGlobalSettings = (enforce: boolean) => {
-        dispatch(updateGlobalSettings({
+        dispatch(fetchGlobalSettings({
             ...settings.globalSettings!,
             enforceSalesBasedOnInventory: enforce
         }));

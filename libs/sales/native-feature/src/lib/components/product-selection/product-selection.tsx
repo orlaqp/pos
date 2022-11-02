@@ -1,4 +1,5 @@
 import { ProductEntity } from '@pos/products/data-access';
+import { MINIMUM_INVENTORY_FOR_SALE } from '@pos/sales/data-access';
 import { ButtonItemType, UIButton, UIEmptyState } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { EACH } from '@pos/unit-of-measures/data-access';
@@ -21,7 +22,7 @@ export function ProductSelection({
     const [rowsToShow, setRowsToShow] = useState<number>(6);
 
     const productBackgroundColor = (product: ProductEntity) => {
-        if (product.quantity <= 0)
+        if (product.quantity < MINIMUM_INVENTORY_FOR_SALE)
             return styles.dangerBackground;
         if (product.reorderPoint && product.quantity > 0 && product.quantity <= product.reorderPoint)
             return styles.warningBackground;
