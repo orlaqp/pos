@@ -217,7 +217,7 @@ export function SalesScreen({
                 />
             </View>
             <View style={styles.cart}>
-                <Cart key='cart' mode={route.params.mode} onSubmit={onCartSubmit} searchRef={searchRef} />
+                <Cart key='cart' mode={route.params.mode} onSubmit={onCartSubmit} searchRef={searchRef} products={allProducts} />
             </View>
             <Dialog
                 isVisible={!!product}

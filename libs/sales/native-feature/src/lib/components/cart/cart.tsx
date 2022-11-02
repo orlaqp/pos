@@ -9,7 +9,7 @@ import { UIEmptyState } from '@pos/shared/ui-native';
 import { Button, Dialog } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
 
-import { View, TextInput } from 'react-native';
+import { View, TextInput, Alert } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 import every from 'lodash/every';
@@ -21,17 +21,20 @@ import EmptyCart from '../../../../assets/images/empty-cart.png';
 import CartPayment from '../cart-payment/cart-payment';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { Role } from '@pos/auth/data-access';
+import { ProductEntity } from '@pos/products/data-access';
 
 export type CartMode = 'order' | 'payment';
+type ProductSummary = { product: ProductEntity, totalQuantity: number, delta: number };
 
 /* eslint-disable-next-line */
 export interface CartProps {
     mode: CartMode;
     onSubmit: (cart: CartState, payments?: ICartPayment[]) => void;
     searchRef: React.RefObject<TextInput>;
+    products: ProductEntity[];
 }
 
-export function Cart({ mode, onSubmit, searchRef }: CartProps) {
+export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
     const styles = useSharedStyles();
     const dispatch = useDispatch();
     const cart = useSelector(selectCart);
@@ -53,11 +56,42 @@ export function Cart({ mode, onSubmit, searchRef }: CartProps) {
     }
 
     const submitOrder = () => {
+        if (!validateProductInventory())
+            return;
+
         if (mode === 'payment') {
             setReceivePayment(true);
         } else {
             onSubmit(cart);
         }
+    }
+
+    const validateProductInventory = () => {
+        // aggregate product quantities
+        const summary: Record<string, ProductSummary> = {};
+
+        cart.items.reduce((s, item) => {
+            const product = products.find(x => x.id === item.product.id);
+            const pSummary: ProductSummary = s[item.product.id] || {
+                product,
+                totalQuantity: 0,
+                delta: 0
+            };
+
+            pSummary.totalQuantity += item.quantity;
+            pSummary.delta = (product?.quantity || 0) - pSummary.totalQuantity;
+            summary[item.product.id] = pSummary;
+
+            return summary;
+        }, summary);
+
+        const notAvailableProducts = Object.keys(summary).filter(x => summary[x].delta < 0);
+
+        if (notAvailableProducts.length) {
+            Alert.alert('Product(s) not available', `You do not have enough of these product(s) in inventory:\n${notAvailableProducts.map(x => `${summary[x].product.name} -> ${summary[x].delta}`)}`);
+        }
+
+        return !notAvailableProducts.length;
     }
 
     useEffect(() => {
