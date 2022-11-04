@@ -4,9 +4,9 @@ import { OrderStatus } from '@pos/shared/models';
 import { DateRange } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 
-import { View } from 'react-native';
-import ReportViewer, { ReportHeader } from '../report-viewer/report-viewer';
 import moment from 'moment';
+import { HtmlReportViewer } from '../html-report-viewer/html-report-viewer';
+import { ReportHeader } from '../html-report-viewer/definitions';
 
 /* eslint-disable-next-line */
 export interface SalesProps {}
@@ -34,8 +34,13 @@ export function Sales(props: SalesProps) {
     };
 
     return (
-        <View style={styles.page}>
-            <ReportViewer getData={getData} headers={headers} />
-        </View>
+        // <View style={styles.page}>
+            <HtmlReportViewer 
+                title="Sales List"
+                getData={getData}
+                headers={headers}
+                spacing='comfortable'
+            />
+        // </View>
     );
 }

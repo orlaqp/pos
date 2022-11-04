@@ -23,7 +23,7 @@ import { PrinterList } from '@pos/printings/native-feature';
 import { StationForm, StoreInfoForm } from '@pos/store-info/native-feature';
 import { LogList, Settings } from '@pos/settings/native-feature';
 import { InventoryCounts, InventoryList, InventoryReceives } from '@pos/inventory/native-feature';
-import { Dashboard, EndOfDay, Sales, SalesByEmployee, SalesByProduct } from '@pos/reporting/native-feature';
+import { Dashboard, EndOfDay, HtmlReportViewer, Sales, SalesByEmployee, SalesByProduct } from '@pos/reporting/native-feature';
 
 import Logo from '../../assets/logo.png';
 import { selectLoginEmployee } from '@pos/employees/data-access';
@@ -95,6 +95,7 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                         <Stack.Screen name="General" component={Settings} />
                         <Stack.Screen name="Employees" component={Employees} />
                         <Stack.Screen name="Logs" component={LogList} />
+                        <Stack.Screen name="HTML Test" component={HtmlReportViewer} />
                     </Stack.Navigator>
                 </View>
             </View>

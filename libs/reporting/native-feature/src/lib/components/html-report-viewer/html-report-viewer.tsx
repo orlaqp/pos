@@ -1,31 +1,36 @@
-import { DateRange, UIDateRange, UISpinner } from '@pos/shared/ui-native';
+import {
+    DateRange,
+    UIDateRange,
+    UIEmptyState,
+    UISpinner,
+} from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
+import { Text, useTheme } from '@rneui/themed';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 
-import { FlatList, Text, View } from 'react-native';
-
-export interface ReportHeader {
-    label: string;
-    field: string;
-    format?: 'string' | 'integer' | 'float' | 'money';
-    width: number;
-    align?: 'auto' | 'left' | 'right' | 'center' | 'justify' | undefined;
-    sum?: boolean;
-}
+import { View, useWindowDimensions } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
+import RenderHtml, { MixedStyleRecord } from 'react-native-render-html';
+import { ReportHeader } from './definitions';
+import { HtmlTable, TableLayout } from './html-table';
 
 /* eslint-disable-next-line */
-export interface ReportViewerProps {
-    total: number;
+export interface HtmlReportViewerProps {
+    title?: string;
     headers: ReportHeader[];
-    getData: (range: DateRange) => Promise<any[]>;
+    getData: (range: DateRange) => Promise<any[] | undefined>;
+    spacing: keyof (typeof TableLayout);
 }
 
-export function ReportViewer({ getData, headers }: ReportViewerProps) {
+export function HtmlReportViewer({ title, getData, headers, spacing }: HtmlReportViewerProps) {
+    const { width } = useWindowDimensions();
+
     const styles = useSharedStyles();
+    const theme = useTheme();
     const [loading, setLoading] = useState<boolean>(true);
     const [totals, setTotals] = useState<Record<string, number>>();
-    const [items, setItems] = useState<any[]>(true);
+    const [items, setItems] = useState<any[] | undefined>(true);
     const [dateRange, setDateRange] = useState<DateRange>({
         startDate: moment().startOf('day'),
         endDate: moment().endOf('day'),
@@ -37,22 +42,22 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
         setLoading(false);
     }, [getData, dateRange]);
 
-    useEffect(() => {
-        if (!items.length) return;
+    // useEffect(() => {
+    //     if (!items.length) return;
 
-        const totals: Record<string, number> = {};
-        items.reduce((total, item) => {
-            headers.forEach((h) => {
-                if (h.sum) {
-                    total[h.field] = (total[h.field] || 0) + item[h.field];
-                }
-            });
+    //     const totals: Record<string, number> = {};
+    //     items.reduce((total, item) => {
+    //         headers.forEach((h) => {
+    //             if (h.sum) {
+    //                 total[h.field] = (total[h.field] || 0) + item[h.field];
+    //             }
+    //         });
 
-            return total;
-        }, totals);
+    //         return total;
+    //     }, totals);
 
-        setTotals(totals);
-    }, [headers, items]);
+    //     setTotals(totals);
+    // }, [headers, items]);
 
     if (loading)
         return (
@@ -61,96 +66,43 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
             </View>
         );
 
+    if (!items?.length) {
+        return <UIEmptyState text="No information found for this date range" />;
+    }
+
+    const source = {
+        html: `
+            <h3 style="text-align: center;">${title}</h3>
+            ${HtmlTable({ headers, items, spacing })}
+        `,
+    };
+
+    const style: MixedStyleRecord = {
+        body: {
+            padding: '0 80px 40px 80px',
+        },
+        p: {
+            textAlign: 'center',
+        },
+    };
+
     return (
-        <View style={[styles.page, { flexDirection: 'column', margin: 20 }]}>
-            <View style={{ flex: 1, zIndex: 2000 }}>
+        <View style={[{ flexDirection: 'column', margin: 20, height: '100%' }]}>
+            <View style={{ flex: .55, zIndex: 2000 }}>
                 <UIDateRange
                     initialRange={dateRange}
                     onRangeChange={setDateRange}
                 />
             </View>
-
-            <View
-                style={{
-                    flex: 7,
-                    backgroundColor: styles.dataRow.backgroundColor,
-                    borderRadius: 5,
-                    marginHorizontal: 150,
-                    paddingHorizontal: 30,
-                    // paddingVertical: 20,
-                }}
-            >
-                <View
-                    style={{
-                        flexDirection: 'row',
-                        marginBottom: 15,
-                        flex: 0.2,
-                    }}
-                >
-                    {headers.map((h, idx) => (
-                        <View key={idx} style={{ flex: h.width }}>
-                            <Text
-                                style={[
-                                    styles.secondaryText,
-                                    { textAlign: h.align },
-                                ]}
-                            >
-                                {h.label}
-                            </Text>
-                        </View>
-                    ))}
-                </View>
-
-                <View style={{ flex: 6 }}>
-                    <FlatList
-                        data={items}
-                        renderItem={(data: any, idx: number) => (
-                            <View key={idx} style={{ flexDirection: 'row' }}>
-                                {headers.map((h) => (
-                                    <View
-                                        style={{
-                                            flex: h.width,
-                                            marginBottom: 5,
-                                        }}
-                                    >
-                                        <Text
-                                            style={[
-                                                styles.primaryText,
-                                                { textAlign: h.align },
-                                            ]}
-                                        >
-                                            {h.format === 'money'
-                                                ? `$${data.item[
-                                                      h.field
-                                                  ].toFixed(2)}`
-                                                : data.item[h.field]}
-                                        </Text>
-                                    </View>
-                                ))}
-                            </View>
-                        )}
-                    />
-                </View>
-
-                {totals && (
-                    <View style={{ flex: .3 }}>
-                        {headers.map((h, idx) => (
-                            <View key={idx} style={{ flex: h.width }}>
-                                <Text
-                                    style={[
-                                        styles.primaryText,
-                                        { textAlign: h.align, fontSize: 16, fontWeight: 'bold', marginTop: -20 },
-                                    ]}
-                                >
-                                    {h.sum ? `$${totals[h.field].toFixed(2)}` : ''}
-                                </Text>
-                            </View>
-                        ))}
-                    </View>
-                )}
+            <View style={{ flex: 4 }}>
+            <ScrollView >
+                <RenderHtml
+                    contentWidth={width}
+                    source={source}
+                    tagsStyles={style}
+                />
+            </ScrollView>
             </View>
         </View>
     );
 }
-
-export default ReportViewer;

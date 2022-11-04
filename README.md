@@ -10,6 +10,9 @@
 - Numeric control: https://www.npmjs.com/package/react-native-numeric-input
 - Charts: https://github.com/indiespirit/react-native-chart-kit
 - Device info: https://github.com/react-native-device-info/react-native-device-info
+- React native Render HTML https://github.com/meliorence/react-native-render-html
+- React Native HTML to PDF https://github.com/christopherdro/react-native-html-to-pdf
+- React Native Print https://github.com/christopherdro/react-native-print
 
 ## Clone Amplify to another account
 

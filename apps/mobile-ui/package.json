@@ -44,6 +44,7 @@
     "react-redux": "*",
     "redux-logger": "*",
     "rn-select-date-range": "*",
-    "react-native-date-picker": "*"
+    "react-native-date-picker": "*",
+    "react-native-render-html": "*"
   }
 }
