@@ -1,9 +1,13 @@
-import RNHTMLtoPDF from 'react-native-html-to-pdf';
+import * as HTMLtoPDF from 'react-native-html-to-pdf';
 
 export class PDFService {
 
     static async create(html: string, fileName: string) {
-        return await RNHTMLtoPDF.convert({ html, fileName, directory: 'Documents' });
+        console.log('====================================');
+        console.log(html);
+        console.log('====================================');
+        debugger;
+        return await (HTMLtoPDF as any).default.convert({ html, fileName, directory: 'Documents' });
     }
 
 }

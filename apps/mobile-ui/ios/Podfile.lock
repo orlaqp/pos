@@ -287,9 +287,13 @@ PODS:
     - React-Core
   - react-native-date-picker (4.2.5):
     - React-Core
+  - react-native-html-to-pdf (0.12.0):
+    - React-Core
   - react-native-image-picker (4.8.3):
     - React-Core
   - react-native-netinfo (8.3.0):
+    - React-Core
+  - react-native-print (0.10.0):
     - React-Core
   - react-native-safe-area-context (4.2.5):
     - RCT-Folly
@@ -470,8 +474,10 @@ DEPENDENCIES:
   - React-logger (from `../../../node_modules/react-native/ReactCommon/logger`)
   - react-native-config (from `../../../node_modules/react-native-config`)
   - react-native-date-picker (from `../../../node_modules/react-native-date-picker`)
+  - react-native-html-to-pdf (from `../../../node_modules/react-native-html-to-pdf`)
   - react-native-image-picker (from `../../../node_modules/react-native-image-picker`)
   - "react-native-netinfo (from `../../../node_modules/@react-native-community/netinfo`)"
+  - react-native-print (from `../../../node_modules/react-native-print`)
   - react-native-safe-area-context (from `../../../node_modules/react-native-safe-area-context`)
   - react-native-star-io10 (from `../../../node_modules/react-native-star-io10`)
   - React-perflogger (from `../../../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -559,10 +565,14 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native-config"
   react-native-date-picker:
     :path: "../../../node_modules/react-native-date-picker"
+  react-native-html-to-pdf:
+    :path: "../../../node_modules/react-native-html-to-pdf"
   react-native-image-picker:
     :path: "../../../node_modules/react-native-image-picker"
   react-native-netinfo:
     :path: "../../../node_modules/@react-native-community/netinfo"
+  react-native-print:
+    :path: "../../../node_modules/react-native-print"
   react-native-safe-area-context:
     :path: "../../../node_modules/react-native-safe-area-context"
   react-native-star-io10:
@@ -652,8 +662,10 @@ SPEC CHECKSUMS:
   React-logger: a1f028f6d8639a3f364ef80419e5e862e1115250
   react-native-config: 6502b1879f97ed5ac570a029961fc35ea606cd14
   react-native-date-picker: 55193347d8d0f40948f441ffd4e5db6f0a8fbe13
+  react-native-html-to-pdf: 4c5c6e26819fe202971061594058877aa9b25265
   react-native-image-picker: e95b4785b685cfc06609bc50ed6fb55b59990c99
   react-native-netinfo: 3671b091c4843fda5e153612866ef4024b8f5d62
+  react-native-print: 1ae7a4ce4bf673b975f2ec9c4e00ad0c9b60e8aa
   react-native-safe-area-context: ebf8c413eb8b5f7c392a036a315eb7b46b96845f
   react-native-star-io10: 21afc32e6319db95ae5b46af0b7e5546298f1f04
   React-perflogger: 0afaf2f01a47fd0fc368a93bfbb5bd3b26db6e7f

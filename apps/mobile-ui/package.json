@@ -45,6 +45,8 @@
     "redux-logger": "*",
     "rn-select-date-range": "*",
     "react-native-date-picker": "*",
-    "react-native-render-html": "*"
+    "react-native-render-html": "*",
+    "react-native-html-to-pdf": "*",
+    "react-native-print": "*"
   }
 }

@@ -10,11 +10,13 @@ export const TableLayout = {
 /* eslint-disable-next-line */
 export interface HtmlTableProps {
     headers: ReportHeader[];
-    items: any[];
+    items?: any[];
     spacing: keyof (typeof TableLayout);
 }
 
 export function HtmlTable({ items, headers, spacing = 'compact' }: HtmlTableProps) {
+    if (!items.length) return null;
+
     const headerCount = headers.length - 1;
     const itemsCount = items.length - 1;
 
