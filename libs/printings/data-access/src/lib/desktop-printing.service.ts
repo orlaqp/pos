@@ -3,7 +3,7 @@ import * as RNPrint from 'react-native-print';
 export class DesktopPrintingService {
 
     static selectPrinter = async () => {
-        const selectedPrinter = await RNPrint.default.selectPrinter({ x: '100px', y: '100px' })
+        const selectedPrinter = await RNPrint.default.selectPrinter({ x: 1000, y: 100 })
         return selectedPrinter;
     }
 

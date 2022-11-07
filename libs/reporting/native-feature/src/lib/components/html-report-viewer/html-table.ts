@@ -15,7 +15,7 @@ export interface HtmlTableProps {
 }
 
 export function HtmlTable({ items, headers, spacing = 'compact' }: HtmlTableProps) {
-    if (!items.length) return null;
+    if (!items?.length) return null;
 
     const headerCount = headers.length - 1;
     const itemsCount = items.length - 1;

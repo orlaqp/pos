@@ -14,9 +14,9 @@ export interface SalesProps {}
 export function Sales(props: SalesProps) {
     const styles = useSharedStyles();
     const headers: ReportHeader[] = [
-        { label: 'Number', field: 'orderNo', width: 3 },
-        { label: 'Employee', field: 'employee', width: 3 },
-        { label: 'Amount', field: 'amount', width: 1, format: 'money', align: 'right', sum: true },
+        { label: 'Number', field: 'orderNo', width: 250 },
+        { label: 'Employee', field: 'employee', width: 300 },
+        { label: 'Amount', field: 'amount', width: 150, format: 'money', align: 'right', sum: true },
     ];
 
     const getData = (range: DateRange) => {

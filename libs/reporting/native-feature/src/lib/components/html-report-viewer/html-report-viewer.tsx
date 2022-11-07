@@ -48,6 +48,7 @@ export function HtmlReportViewer({ title, getData, headers, spacing }: HtmlRepor
     const style: MixedStyleRecord = {
         body: {
             padding: '0 80px 40px 80px',
+            backgroundColor: 'transparent',
         },
         p: {
             textAlign: 'center',
@@ -64,7 +65,7 @@ export function HtmlReportViewer({ title, getData, headers, spacing }: HtmlRepor
 
     const print = async () => {
         await DesktopPrintingService.selectPrinter();
-        await DesktopPrintingService.printHTML(source.html);
+        // await DesktopPrintingService.printHTML(source.html);
     }
 
     useEffect(() => {

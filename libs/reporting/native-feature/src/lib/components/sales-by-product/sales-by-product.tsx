@@ -8,7 +8,9 @@ import React, { useState } from 'react';
 
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
-import ReportViewer, { ReportHeader } from '../report-viewer/report-viewer';
+import { ReportHeader } from '../html-report-viewer/definitions';
+import { HtmlReportViewer } from '../html-report-viewer/html-report-viewer';
+import ReportViewer from '../report-viewer/report-viewer';
 
 /* eslint-disable-next-line */
 export interface SalesByProductProps {
@@ -38,8 +40,8 @@ export function SalesByProduct(props: SalesByProductProps) {
     };
 
     return (
-        <View style={styles.page}>
-            <View style={{ justifyContent: 'center' }}>
+        <View style={{ flexDirection: 'column' }}>
+            <View style={{ justifyContent: 'center', width: '50%', alignSelf: 'center' }}>
                 <ButtonGroup
                     buttons={unitOfMeasures?.map((u, index) => u.name)}
                     selectedIndex={selectedIndex}
@@ -49,7 +51,12 @@ export function SalesByProduct(props: SalesByProductProps) {
                     containerStyle={{ marginBottom: 20, backgroundColor: 'transparent', borderWidth: 0 }}
                 />
             </View>
-            <ReportViewer getData={getData} headers={headers} />
+            <HtmlReportViewer 
+                title="Sales by product"
+                getData={getData}
+                headers={headers}
+                spacing='comfortable'
+            />
         </View>
     );
 }

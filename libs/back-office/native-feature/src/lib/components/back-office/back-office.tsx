@@ -95,7 +95,6 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                         <Stack.Screen name="General" component={Settings} />
                         <Stack.Screen name="Employees" component={Employees} />
                         <Stack.Screen name="Logs" component={LogList} />
-                        <Stack.Screen name="HTML Test" component={HtmlReportViewer} />
                     </Stack.Navigator>
                 </View>
             </View>

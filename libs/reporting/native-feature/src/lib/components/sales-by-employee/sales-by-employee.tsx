@@ -5,7 +5,9 @@ import { useSharedStyles } from '@pos/theme/native';
 import React from 'react';
 
 import { View, Text } from 'react-native';
-import ReportViewer, { ReportHeader } from '../report-viewer/report-viewer';
+import { ReportHeader } from '../html-report-viewer/definitions';
+import { HtmlReportViewer } from '../html-report-viewer/html-report-viewer';
+import ReportViewer from '../report-viewer/report-viewer';
 
 /* eslint-disable-next-line */
 export interface SalesByEmployeeProps {}
@@ -32,9 +34,12 @@ export function SalesByEmployee(props: SalesByEmployeeProps) {
     };
 
     return (
-        <View style={styles.page}>
-            <ReportViewer getData={getData} headers={headers} />
-        </View>
+        <HtmlReportViewer 
+            title="Sales by Employee"
+            getData={getData}
+            headers={headers}
+            spacing='comfortable'
+        />        
     );
 }
 
