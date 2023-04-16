@@ -2,6 +2,12 @@
 
 # Pos
 
+## Specifications
+
+- NodeJS: 16.13.0
+
+
+
 ## Packages
 
 - UI Library: https://github.com/react-native-elements/react-native-elements 
