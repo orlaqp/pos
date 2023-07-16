@@ -5,6 +5,7 @@
 ## Specifications
 
 - NodeJS: 16.13.0
+- Release always go to main branch
 
 
 
