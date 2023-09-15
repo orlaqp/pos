@@ -1,6 +1,7 @@
 import { Printer } from '@pos/shared/models';
 
 // Printer entity
+// another comment
 export type PrinterEntity = {
     id?: string;
     deviceId: string;
