@@ -13495,10 +13495,10 @@ react-native-size-matters@^0.4.0:
   resolved "https://registry.yarnpkg.com/react-native-size-matters/-/react-native-size-matters-0.4.0.tgz#01bfd0d59454318f4e0b13fe9c1eb0523d70f2e0"
   integrity sha512-8/C0htHrFWeUm9N8JegmadovUfgTWkGBkDPZ1N3YkXtDWb+98Ya2gThiKcu445r8c7YhcrBfnHz/mYsXIusaOQ==
 
-react-native-star-io10@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/react-native-star-io10/-/react-native-star-io10-1.2.0.tgz#c44ada0547abb26f9d9672ff400f5059e9b9a7c2"
-  integrity sha512-SYlKcRtK7j0wcmoaryvuMUJjAslDNFXbwNFqsJhDaOV0HaMLErTAsmDUc/+rlP4vkAWvfdKdFf5cgTmqs+n5Ow==
+react-native-star-io10@^1.9.0:
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/react-native-star-io10/-/react-native-star-io10-1.9.0.tgz#e92ab6e7f03d2cf4b79c4bab98dac23a6b7120ed"
+  integrity sha512-bwUUHuQfie2HAXi9y1el3VCxZJISH/mm7+DCaF2HZH1ZEGOC3gVHMtMxCauoPE/QbYFmJtLGXl7T8bRbGo/zhA==
 
 react-native-svg-transformer@1.0.0:
   version "1.0.0"

@@ -16,6 +16,7 @@ import { OrderEntity } from '@pos/orders/data-access';
 
 let starManager: StarDeviceDiscoveryManager;
 
+
 export const discoverStarPrinters = async (): Promise<StarPrinter[]> => {
     return new Promise((resolve, reject) => {
         const printers: StarPrinter[] = [];
@@ -24,7 +25,6 @@ export const discoverStarPrinters = async (): Promise<StarPrinter[]> => {
             InterfaceType.Lan,
             // InterfaceType.Bluetooth,
             // InterfaceType.BluetoothLE,
-            // InterfaceType.Usb
         ])
             .then((manager) => {
                 starManager = manager;
@@ -51,7 +51,7 @@ export const discoverStarPrinters = async (): Promise<StarPrinter[]> => {
                 return printers;
             })
             .catch((error) => {
-                console.error('Error while searching for printers', error);
+                console.error('Error while searching for printers...', error);
             });
     });
 };
@@ -67,7 +67,7 @@ export const printReceipt = async (
     order?: OrderEntity,
 ) => {
     if (!store || !printerInfo) {
-        Alert.alert('Store and printer should be available in order to print');
+        Alert.alert('Store and printer should be available in order to print..');
         return;
     }
 
