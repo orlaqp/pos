@@ -122,6 +122,9 @@ export class ProductService {
         const allNumbers = !!text?.match(/^\d*$/);
         // ex: 206110115089
         if (allNumbers && text.length > 11) {
+            // Toledo code
+            // const plu = text.substring(2, 6);
+            // DLP-300
             const plu = text.substring(2, 6);
             const prod = products.find((p) => {
                 return onlyActive
@@ -130,6 +133,9 @@ export class ProductService {
             });
 
             if (prod) {
+                // Toledo code
+                // const totalPrice = +text.substring(7, 11);
+                // DLP-300
                 const totalPrice = +text.substring(7, 11);
                 const quantity = totalPrice / 100 / prod.price; 
 
