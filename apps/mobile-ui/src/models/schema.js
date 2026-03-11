@@ -1,304 +1,5 @@
 export const schema = {
     "models": {
-        "Order": {
-            "name": "Order",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "orderNo": {
-                    "name": "orderNo",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "orderDate": {
-                    "name": "orderDate",
-                    "isArray": false,
-                    "type": "AWSDateTime",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "subtotal": {
-                    "name": "subtotal",
-                    "isArray": false,
-                    "type": "Float",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "tax": {
-                    "name": "tax",
-                    "isArray": false,
-                    "type": "Float",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "total": {
-                    "name": "total",
-                    "isArray": false,
-                    "type": "Float",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "status": {
-                    "name": "status",
-                    "isArray": false,
-                    "type": {
-                        "enum": "OrderStatus"
-                    },
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "employeeId": {
-                    "name": "employeeId",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "employeeName": {
-                    "name": "employeeName",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "lines": {
-                    "name": "lines",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "OrderLine"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "isArrayNullable": false
-                },
-                "paymentInfo": {
-                    "name": "paymentInfo",
-                    "isArray": false,
-                    "type": {
-                        "nonModel": "PaymentInfo"
-                    },
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "refundInfo": {
-                    "name": "refundInfo",
-                    "isArray": false,
-                    "type": {
-                        "nonModel": "RefundInfo"
-                    },
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "createdBy": {
-                    "name": "createdBy",
-                    "isArray": false,
-                    "type": {
-                        "nonModel": "ByEmployee"
-                    },
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "updatedBy": {
-                    "name": "updatedBy",
-                    "isArray": false,
-                    "type": {
-                        "nonModel": "ByEmployee"
-                    },
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "Customer": {
-                    "name": "Customer",
-                    "isArray": false,
-                    "type": {
-                        "model": "Customer"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "association": {
-                        "connectionType": "HAS_ONE",
-                        "associatedWith": "id",
-                        "targetName": "orderCustomerId"
-                    }
-                },
-                "createdAt": {
-                    "name": "createdAt",
-                    "isArray": false,
-                    "type": "AWSDateTime",
-                    "isRequired": false,
-                    "attributes": [],
-                    "isReadOnly": true
-                },
-                "updatedAt": {
-                    "name": "updatedAt",
-                    "isArray": false,
-                    "type": "AWSDateTime",
-                    "isRequired": false,
-                    "attributes": [],
-                    "isReadOnly": true
-                },
-                "orderCustomerId": {
-                    "name": "orderCustomerId",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                }
-            },
-            "syncable": true,
-            "pluralName": "Orders",
-            "attributes": [
-                {
-                    "type": "model",
-                    "properties": {}
-                },
-                {
-                    "type": "key",
-                    "properties": {
-                        "name": "byOrderNo",
-                        "fields": [
-                            "orderNo"
-                        ]
-                    }
-                },
-                {
-                    "type": "key",
-                    "properties": {
-                        "name": "byOrderDate",
-                        "fields": [
-                            "orderDate"
-                        ]
-                    }
-                },
-                {
-                    "type": "key",
-                    "properties": {
-                        "name": "byStatusByOrderDate",
-                        "fields": [
-                            "status",
-                            "orderDate"
-                        ]
-                    }
-                },
-                {
-                    "type": "auth",
-                    "properties": {
-                        "rules": [
-                            {
-                                "allow": "public",
-                                "operations": [
-                                    "create",
-                                    "update",
-                                    "delete",
-                                    "read"
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        },
-        "Customer": {
-            "name": "Customer",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "firstName": {
-                    "name": "firstName",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "lastName": {
-                    "name": "lastName",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "middleName": {
-                    "name": "middleName",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "dob": {
-                    "name": "dob",
-                    "isArray": false,
-                    "type": "AWSDate",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "phone": {
-                    "name": "phone",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "email": {
-                    "name": "email",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "createdAt": {
-                    "name": "createdAt",
-                    "isArray": false,
-                    "type": "AWSDateTime",
-                    "isRequired": false,
-                    "attributes": [],
-                    "isReadOnly": true
-                },
-                "updatedAt": {
-                    "name": "updatedAt",
-                    "isArray": false,
-                    "type": "AWSDateTime",
-                    "isRequired": false,
-                    "attributes": [],
-                    "isReadOnly": true
-                }
-            },
-            "syncable": true,
-            "pluralName": "Customers",
-            "attributes": [
-                {
-                    "type": "model",
-                    "properties": {}
-                },
-                {
-                    "type": "auth",
-                    "properties": {
-                        "rules": [
-                            {
-                                "allow": "public",
-                                "operations": [
-                                    "create",
-                                    "update",
-                                    "delete",
-                                    "read"
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        },
         "Store": {
             "name": "Store",
             "fields": {
@@ -574,6 +275,100 @@ export const schema = {
                 }
             ]
         },
+        "Customer": {
+            "name": "Customer",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "firstName": {
+                    "name": "firstName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "lastName": {
+                    "name": "lastName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "middleName": {
+                    "name": "middleName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "dob": {
+                    "name": "dob",
+                    "isArray": false,
+                    "type": "AWSDate",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "phone": {
+                    "name": "phone",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "email": {
+                    "name": "email",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "Customers",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "allow": "public",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
         "Employee": {
             "name": "Employee",
             "fields": {
@@ -678,6 +473,211 @@ export const schema = {
                 {
                     "type": "model",
                     "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "allow": "public",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "Order": {
+            "name": "Order",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "orderNo": {
+                    "name": "orderNo",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "orderDate": {
+                    "name": "orderDate",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "subtotal": {
+                    "name": "subtotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tax": {
+                    "name": "tax",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "total": {
+                    "name": "total",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "status": {
+                    "name": "status",
+                    "isArray": false,
+                    "type": {
+                        "enum": "OrderStatus"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "employeeId": {
+                    "name": "employeeId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "employeeName": {
+                    "name": "employeeName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "lines": {
+                    "name": "lines",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "OrderLine"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": false
+                },
+                "paymentInfo": {
+                    "name": "paymentInfo",
+                    "isArray": false,
+                    "type": {
+                        "nonModel": "PaymentInfo"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "refundInfo": {
+                    "name": "refundInfo",
+                    "isArray": false,
+                    "type": {
+                        "nonModel": "RefundInfo"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "createdBy": {
+                    "name": "createdBy",
+                    "isArray": false,
+                    "type": {
+                        "nonModel": "ByEmployee"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "updatedBy": {
+                    "name": "updatedBy",
+                    "isArray": false,
+                    "type": {
+                        "nonModel": "ByEmployee"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "Customer": {
+                    "name": "Customer",
+                    "isArray": false,
+                    "type": {
+                        "model": "Customer"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "HAS_ONE",
+                        "associatedWith": "id",
+                        "targetName": "orderCustomerId"
+                    }
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "orderCustomerId": {
+                    "name": "orderCustomerId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                }
+            },
+            "syncable": true,
+            "pluralName": "Orders",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byOrderNo",
+                        "fields": [
+                            "orderNo"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byOrderDate",
+                        "fields": [
+                            "orderDate"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byStatusByOrderDate",
+                        "fields": [
+                            "status",
+                            "orderDate"
+                        ]
+                    }
                 },
                 {
                     "type": "auth",
@@ -1668,20 +1668,20 @@ export const schema = {
         }
     },
     "enums": {
-        "OrderStatus": {
-            "name": "OrderStatus",
-            "values": [
-                "OPEN",
-                "REFUNDED",
-                "PAID"
-            ]
-        },
         "PaymentType": {
             "name": "PaymentType",
             "values": [
                 "CASH",
                 "CHECK",
                 "CC"
+            ]
+        },
+        "OrderStatus": {
+            "name": "OrderStatus",
+            "values": [
+                "OPEN",
+                "REFUNDED",
+                "PAID"
             ]
         },
         "InventoryCountStatus": {
@@ -1700,6 +1700,80 @@ export const schema = {
         }
     },
     "nonModels": {
+        "PaymentInfo": {
+            "name": "PaymentInfo",
+            "fields": {
+                "employeeId": {
+                    "name": "employeeId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "employeeName": {
+                    "name": "employeeName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "payments": {
+                    "name": "payments",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "Payment"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                }
+            }
+        },
+        "RefundInfo": {
+            "name": "RefundInfo",
+            "fields": {
+                "employeeId": {
+                    "name": "employeeId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "employeeName": {
+                    "name": "employeeName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "comments": {
+                    "name": "comments",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                }
+            }
+        },
+        "ByEmployee": {
+            "name": "ByEmployee",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "name": {
+                    "name": "name",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
         "OrderLine": {
             "name": "OrderLine",
             "fields": {
@@ -1768,35 +1842,6 @@ export const schema = {
                 }
             }
         },
-        "PaymentInfo": {
-            "name": "PaymentInfo",
-            "fields": {
-                "employeeId": {
-                    "name": "employeeId",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "employeeName": {
-                    "name": "employeeName",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "payments": {
-                    "name": "payments",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "Payment"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "isArrayNullable": true
-                }
-            }
-        },
         "Payment": {
             "name": "Payment",
             "fields": {
@@ -1811,100 +1856,6 @@ export const schema = {
                 },
                 "amount": {
                     "name": "amount",
-                    "isArray": false,
-                    "type": "Float",
-                    "isRequired": true,
-                    "attributes": []
-                }
-            }
-        },
-        "RefundInfo": {
-            "name": "RefundInfo",
-            "fields": {
-                "employeeId": {
-                    "name": "employeeId",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "employeeName": {
-                    "name": "employeeName",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "comments": {
-                    "name": "comments",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                }
-            }
-        },
-        "ByEmployee": {
-            "name": "ByEmployee",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "name": {
-                    "name": "name",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                }
-            }
-        },
-        "SalesSummary": {
-            "name": "SalesSummary",
-            "fields": {
-                "products": {
-                    "name": "products",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "ProductSaleSummary"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "isArrayNullable": true
-                },
-                "employees": {
-                    "name": "employees",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "EmployeeSaleSummary"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "isArrayNullable": true
-                },
-                "dates": {
-                    "name": "dates",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "DatePartSaleSummary"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "isArrayNullable": true
-                },
-                "totalAmount": {
-                    "name": "totalAmount",
-                    "isArray": false,
-                    "type": "Float",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "totalOrders": {
-                    "name": "totalOrders",
                     "isArray": false,
                     "type": "Float",
                     "isRequired": true,
@@ -2010,7 +1961,57 @@ export const schema = {
                     "attributes": []
                 }
             }
+        },
+        "SalesSummary": {
+            "name": "SalesSummary",
+            "fields": {
+                "products": {
+                    "name": "products",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "ProductSaleSummary"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "employees": {
+                    "name": "employees",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "EmployeeSaleSummary"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "dates": {
+                    "name": "dates",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "DatePartSaleSummary"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "totalAmount": {
+                    "name": "totalAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "totalOrders": {
+                    "name": "totalOrders",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
         }
     },
+    "codegenVersion": "3.4.4",
     "version": "e73e6c313eef278f0429fe6ab171736f"
 };

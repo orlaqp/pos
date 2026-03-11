@@ -1,15 +1,17 @@
-import { ModelInit, MutableModel, PersistentModelConstructor } from "@aws-amplify/datastore";
-
-export enum OrderStatus {
-  OPEN = "OPEN",
-  REFUNDED = "REFUNDED",
-  PAID = "PAID"
-}
+import { ModelInit, MutableModel } from "@aws-amplify/datastore";
+// @ts-ignore
+import { LazyLoading, LazyLoadingDisabled, AsyncItem } from "@aws-amplify/datastore";
 
 export enum PaymentType {
   CASH = "CASH",
   CHECK = "CHECK",
   CC = "CC"
+}
+
+export enum OrderStatus {
+  OPEN = "OPEN",
+  REFUNDED = "REFUNDED",
+  PAID = "PAID"
 }
 
 export enum InventoryCountStatus {
@@ -22,7 +24,53 @@ export enum InventoryReceiveStatus {
   COMPLETED = "COMPLETED"
 }
 
-export declare class OrderLine {
+type EagerPaymentInfo = {
+  readonly employeeId: string;
+  readonly employeeName: string;
+  readonly payments?: (Payment | null)[] | null;
+}
+
+type LazyPaymentInfo = {
+  readonly employeeId: string;
+  readonly employeeName: string;
+  readonly payments?: (Payment | null)[] | null;
+}
+
+export declare type PaymentInfo = LazyLoading extends LazyLoadingDisabled ? EagerPaymentInfo : LazyPaymentInfo
+
+export declare const PaymentInfo: (new (init: ModelInit<PaymentInfo>) => PaymentInfo)
+
+type EagerRefundInfo = {
+  readonly employeeId: string;
+  readonly employeeName: string;
+  readonly comments?: string | null;
+}
+
+type LazyRefundInfo = {
+  readonly employeeId: string;
+  readonly employeeName: string;
+  readonly comments?: string | null;
+}
+
+export declare type RefundInfo = LazyLoading extends LazyLoadingDisabled ? EagerRefundInfo : LazyRefundInfo
+
+export declare const RefundInfo: (new (init: ModelInit<RefundInfo>) => RefundInfo)
+
+type EagerByEmployee = {
+  readonly id: string;
+  readonly name: string;
+}
+
+type LazyByEmployee = {
+  readonly id: string;
+  readonly name: string;
+}
+
+export declare type ByEmployee = LazyLoading extends LazyLoadingDisabled ? EagerByEmployee : LazyByEmployee
+
+export declare const ByEmployee: (new (init: ModelInit<ByEmployee>) => ByEmployee)
+
+type EagerOrderLine = {
   readonly identifier: string;
   readonly productId: string;
   readonly productName: string;
@@ -32,75 +80,111 @@ export declare class OrderLine {
   readonly quantity: number;
   readonly tax: number;
   readonly price: number;
-  constructor(init: ModelInit<OrderLine>);
 }
 
-export declare class PaymentInfo {
-  readonly employeeId: string;
-  readonly employeeName: string;
-  readonly payments?: (Payment | null)[] | null;
-  constructor(init: ModelInit<PaymentInfo>);
+type LazyOrderLine = {
+  readonly identifier: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly unitOfMeasure: string;
+  readonly barcode?: string | null;
+  readonly sku?: string | null;
+  readonly quantity: number;
+  readonly tax: number;
+  readonly price: number;
 }
 
-export declare class Payment {
+export declare type OrderLine = LazyLoading extends LazyLoadingDisabled ? EagerOrderLine : LazyOrderLine
+
+export declare const OrderLine: (new (init: ModelInit<OrderLine>) => OrderLine)
+
+type EagerPayment = {
   readonly type: PaymentType | keyof typeof PaymentType;
   readonly amount: number;
-  constructor(init: ModelInit<Payment>);
 }
 
-export declare class RefundInfo {
-  readonly employeeId: string;
-  readonly employeeName: string;
-  readonly comments?: string | null;
-  constructor(init: ModelInit<RefundInfo>);
+type LazyPayment = {
+  readonly type: PaymentType | keyof typeof PaymentType;
+  readonly amount: number;
 }
 
-export declare class ByEmployee {
-  readonly id: string;
-  readonly name: string;
-  constructor(init: ModelInit<ByEmployee>);
-}
+export declare type Payment = LazyLoading extends LazyLoadingDisabled ? EagerPayment : LazyPayment
 
-export declare class SalesSummary {
-  readonly products?: (ProductSaleSummary | null)[] | null;
-  readonly employees?: (EmployeeSaleSummary | null)[] | null;
-  readonly dates?: (DatePartSaleSummary | null)[] | null;
-  readonly totalAmount: number;
-  readonly totalOrders: number;
-  constructor(init: ModelInit<SalesSummary>);
-}
+export declare const Payment: (new (init: ModelInit<Payment>) => Payment)
 
-export declare class ProductSaleSummary {
+type EagerProductSaleSummary = {
   readonly productId: string;
   readonly productName: string;
   readonly unitOfMeasure: string;
   readonly quantity: number;
   readonly amount: number;
-  constructor(init: ModelInit<ProductSaleSummary>);
 }
 
-export declare class EmployeeSaleSummary {
+type LazyProductSaleSummary = {
+  readonly productId: string;
+  readonly productName: string;
+  readonly unitOfMeasure: string;
+  readonly quantity: number;
+  readonly amount: number;
+}
+
+export declare type ProductSaleSummary = LazyLoading extends LazyLoadingDisabled ? EagerProductSaleSummary : LazyProductSaleSummary
+
+export declare const ProductSaleSummary: (new (init: ModelInit<ProductSaleSummary>) => ProductSaleSummary)
+
+type EagerEmployeeSaleSummary = {
   readonly employeeId: string;
   readonly employeeName: string;
   readonly orders: number;
   readonly amount: number;
-  constructor(init: ModelInit<EmployeeSaleSummary>);
 }
 
-export declare class DatePartSaleSummary {
+type LazyEmployeeSaleSummary = {
+  readonly employeeId: string;
+  readonly employeeName: string;
+  readonly orders: number;
+  readonly amount: number;
+}
+
+export declare type EmployeeSaleSummary = LazyLoading extends LazyLoadingDisabled ? EagerEmployeeSaleSummary : LazyEmployeeSaleSummary
+
+export declare const EmployeeSaleSummary: (new (init: ModelInit<EmployeeSaleSummary>) => EmployeeSaleSummary)
+
+type EagerDatePartSaleSummary = {
   readonly datePart: string;
   readonly orders: number;
   readonly amount: number;
-  constructor(init: ModelInit<DatePartSaleSummary>);
 }
 
-type OrderMetaData = {
-  readOnlyFields: 'createdAt' | 'updatedAt';
+type LazyDatePartSaleSummary = {
+  readonly datePart: string;
+  readonly orders: number;
+  readonly amount: number;
 }
 
-type CustomerMetaData = {
-  readOnlyFields: 'createdAt' | 'updatedAt';
+export declare type DatePartSaleSummary = LazyLoading extends LazyLoadingDisabled ? EagerDatePartSaleSummary : LazyDatePartSaleSummary
+
+export declare const DatePartSaleSummary: (new (init: ModelInit<DatePartSaleSummary>) => DatePartSaleSummary)
+
+type EagerSalesSummary = {
+  readonly products?: (ProductSaleSummary | null)[] | null;
+  readonly employees?: (EmployeeSaleSummary | null)[] | null;
+  readonly dates?: (DatePartSaleSummary | null)[] | null;
+  readonly totalAmount: number;
+  readonly totalOrders: number;
 }
+
+type LazySalesSummary = {
+  readonly products?: (ProductSaleSummary | null)[] | null;
+  readonly employees?: (EmployeeSaleSummary | null)[] | null;
+  readonly dates?: (DatePartSaleSummary | null)[] | null;
+  readonly totalAmount: number;
+  readonly totalOrders: number;
+}
+
+export declare type SalesSummary = LazyLoading extends LazyLoadingDisabled ? EagerSalesSummary : LazySalesSummary
+
+export declare const SalesSummary: (new (init: ModelInit<SalesSummary>) => SalesSummary)
 
 type StoreMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
@@ -114,7 +198,15 @@ type CategoryMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
+type CustomerMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
 type EmployeeMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type OrderMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
@@ -158,7 +250,163 @@ type GlobalSettingsMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
-export declare class Order {
+type EagerStore = {
+  readonly id: string;
+  readonly name: string;
+  readonly address: string;
+  readonly city: string;
+  readonly state: string;
+  readonly zipCode: string;
+  readonly country: string;
+  readonly phone: string;
+  readonly fax?: string | null;
+  readonly email: string;
+  readonly disclaimer?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyStore = {
+  readonly id: string;
+  readonly name: string;
+  readonly address: string;
+  readonly city: string;
+  readonly state: string;
+  readonly zipCode: string;
+  readonly country: string;
+  readonly phone: string;
+  readonly fax?: string | null;
+  readonly email: string;
+  readonly disclaimer?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Store = LazyLoading extends LazyLoadingDisabled ? EagerStore : LazyStore
+
+export declare const Store: (new (init: ModelInit<Store, StoreMetaData>) => Store) & {
+  copyOf(source: Store, mutator: (draft: MutableModel<Store, StoreMetaData>) => MutableModel<Store, StoreMetaData> | void): Store;
+}
+
+type EagerBrand = {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyBrand = {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Brand = LazyLoading extends LazyLoadingDisabled ? EagerBrand : LazyBrand
+
+export declare const Brand: (new (init: ModelInit<Brand, BrandMetaData>) => Brand) & {
+  copyOf(source: Brand, mutator: (draft: MutableModel<Brand, BrandMetaData>) => MutableModel<Brand, BrandMetaData> | void): Brand;
+}
+
+type EagerCategory = {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string | null;
+  readonly code?: string | null;
+  readonly color?: string | null;
+  readonly picture?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyCategory = {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string | null;
+  readonly code?: string | null;
+  readonly color?: string | null;
+  readonly picture?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Category = LazyLoading extends LazyLoadingDisabled ? EagerCategory : LazyCategory
+
+export declare const Category: (new (init: ModelInit<Category, CategoryMetaData>) => Category) & {
+  copyOf(source: Category, mutator: (draft: MutableModel<Category, CategoryMetaData>) => MutableModel<Category, CategoryMetaData> | void): Category;
+}
+
+type EagerCustomer = {
+  readonly id: string;
+  readonly firstName: string;
+  readonly lastName?: string | null;
+  readonly middleName?: string | null;
+  readonly dob?: string | null;
+  readonly phone?: string | null;
+  readonly email?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyCustomer = {
+  readonly id: string;
+  readonly firstName: string;
+  readonly lastName?: string | null;
+  readonly middleName?: string | null;
+  readonly dob?: string | null;
+  readonly phone?: string | null;
+  readonly email?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Customer = LazyLoading extends LazyLoadingDisabled ? EagerCustomer : LazyCustomer
+
+export declare const Customer: (new (init: ModelInit<Customer, CustomerMetaData>) => Customer) & {
+  copyOf(source: Customer, mutator: (draft: MutableModel<Customer, CustomerMetaData>) => MutableModel<Customer, CustomerMetaData> | void): Customer;
+}
+
+type EagerEmployee = {
+  readonly id: string;
+  readonly code: string;
+  readonly firstName: string;
+  readonly lastName?: string | null;
+  readonly middleName?: string | null;
+  readonly dob?: string | null;
+  readonly phone?: string | null;
+  readonly email?: string | null;
+  readonly pin: string;
+  readonly roles: (string | null)[];
+  readonly active: boolean;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyEmployee = {
+  readonly id: string;
+  readonly code: string;
+  readonly firstName: string;
+  readonly lastName?: string | null;
+  readonly middleName?: string | null;
+  readonly dob?: string | null;
+  readonly phone?: string | null;
+  readonly email?: string | null;
+  readonly pin: string;
+  readonly roles: (string | null)[];
+  readonly active: boolean;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Employee = LazyLoading extends LazyLoadingDisabled ? EagerEmployee : LazyEmployee
+
+export declare const Employee: (new (init: ModelInit<Employee, EmployeeMetaData>) => Employee) & {
+  copyOf(source: Employee, mutator: (draft: MutableModel<Employee, EmployeeMetaData>) => MutableModel<Employee, EmployeeMetaData> | void): Employee;
+}
+
+type EagerOrder = {
   readonly id: string;
   readonly orderNo: string;
   readonly orderDate: string;
@@ -177,84 +425,36 @@ export declare class Order {
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly orderCustomerId?: string | null;
-  constructor(init: ModelInit<Order, OrderMetaData>);
-  static copyOf(source: Order, mutator: (draft: MutableModel<Order, OrderMetaData>) => MutableModel<Order, OrderMetaData> | void): Order;
 }
 
-export declare class Customer {
+type LazyOrder = {
   readonly id: string;
-  readonly firstName: string;
-  readonly lastName?: string | null;
-  readonly middleName?: string | null;
-  readonly dob?: string | null;
-  readonly phone?: string | null;
-  readonly email?: string | null;
+  readonly orderNo: string;
+  readonly orderDate: string;
+  readonly subtotal: number;
+  readonly tax: number;
+  readonly total: number;
+  readonly status: OrderStatus | keyof typeof OrderStatus;
+  readonly employeeId: string;
+  readonly employeeName: string;
+  readonly lines: (OrderLine | null)[];
+  readonly paymentInfo?: PaymentInfo | null;
+  readonly refundInfo?: RefundInfo | null;
+  readonly createdBy?: ByEmployee | null;
+  readonly updatedBy?: ByEmployee | null;
+  readonly Customer: AsyncItem<Customer | undefined>;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Customer, CustomerMetaData>);
-  static copyOf(source: Customer, mutator: (draft: MutableModel<Customer, CustomerMetaData>) => MutableModel<Customer, CustomerMetaData> | void): Customer;
+  readonly orderCustomerId?: string | null;
 }
 
-export declare class Store {
-  readonly id: string;
-  readonly name: string;
-  readonly address: string;
-  readonly city: string;
-  readonly state: string;
-  readonly zipCode: string;
-  readonly country: string;
-  readonly phone: string;
-  readonly fax?: string | null;
-  readonly email: string;
-  readonly disclaimer?: string | null;
-  readonly createdAt?: string | null;
-  readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Store, StoreMetaData>);
-  static copyOf(source: Store, mutator: (draft: MutableModel<Store, StoreMetaData>) => MutableModel<Store, StoreMetaData> | void): Store;
+export declare type Order = LazyLoading extends LazyLoadingDisabled ? EagerOrder : LazyOrder
+
+export declare const Order: (new (init: ModelInit<Order, OrderMetaData>) => Order) & {
+  copyOf(source: Order, mutator: (draft: MutableModel<Order, OrderMetaData>) => MutableModel<Order, OrderMetaData> | void): Order;
 }
 
-export declare class Brand {
-  readonly id: string;
-  readonly name: string;
-  readonly description?: string | null;
-  readonly createdAt?: string | null;
-  readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Brand, BrandMetaData>);
-  static copyOf(source: Brand, mutator: (draft: MutableModel<Brand, BrandMetaData>) => MutableModel<Brand, BrandMetaData> | void): Brand;
-}
-
-export declare class Category {
-  readonly id: string;
-  readonly name: string;
-  readonly description?: string | null;
-  readonly code?: string | null;
-  readonly color?: string | null;
-  readonly picture?: string | null;
-  readonly createdAt?: string | null;
-  readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Category, CategoryMetaData>);
-  static copyOf(source: Category, mutator: (draft: MutableModel<Category, CategoryMetaData>) => MutableModel<Category, CategoryMetaData> | void): Category;
-}
-
-export declare class Employee {
-  readonly id: string;
-  readonly code: string;
-  readonly firstName: string;
-  readonly lastName?: string | null;
-  readonly middleName?: string | null;
-  readonly dob?: string | null;
-  readonly phone?: string | null;
-  readonly email?: string | null;
-  readonly pin: string;
-  readonly roles: (string | null)[];
-  readonly active: boolean;
-  readonly createdAt?: string | null;
-  readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Employee, EmployeeMetaData>);
-  static copyOf(source: Employee, mutator: (draft: MutableModel<Employee, EmployeeMetaData>) => MutableModel<Employee, EmployeeMetaData> | void): Employee;
-}
-
-export declare class Product {
+type EagerProduct = {
   readonly id: string;
   readonly name: string;
   readonly description?: string | null;
@@ -277,21 +477,62 @@ export declare class Product {
   readonly updatedAt?: string | null;
   readonly productCategoryId?: string | null;
   readonly productBrandId?: string | null;
-  constructor(init: ModelInit<Product, ProductMetaData>);
-  static copyOf(source: Product, mutator: (draft: MutableModel<Product, ProductMetaData>) => MutableModel<Product, ProductMetaData> | void): Product;
 }
 
-export declare class UnitOfMeasure {
+type LazyProduct = {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string | null;
+  readonly price: number;
+  readonly tags?: string | null;
+  readonly cost?: number | null;
+  readonly barcode?: string | null;
+  readonly sku?: string | null;
+  readonly plu?: string | null;
+  readonly quantity: number;
+  readonly unitOfMeasure: string;
+  readonly trackStock: boolean;
+  readonly reorderPoint?: number | null;
+  readonly reorderQuantity?: number | null;
+  readonly picture?: string | null;
+  readonly Category: AsyncItem<Category | undefined>;
+  readonly Brand: AsyncItem<Brand | undefined>;
+  readonly isActive: boolean;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  readonly productCategoryId?: string | null;
+  readonly productBrandId?: string | null;
+}
+
+export declare type Product = LazyLoading extends LazyLoadingDisabled ? EagerProduct : LazyProduct
+
+export declare const Product: (new (init: ModelInit<Product, ProductMetaData>) => Product) & {
+  copyOf(source: Product, mutator: (draft: MutableModel<Product, ProductMetaData>) => MutableModel<Product, ProductMetaData> | void): Product;
+}
+
+type EagerUnitOfMeasure = {
   readonly id: string;
   readonly name: string;
   readonly description?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<UnitOfMeasure, UnitOfMeasureMetaData>);
-  static copyOf(source: UnitOfMeasure, mutator: (draft: MutableModel<UnitOfMeasure, UnitOfMeasureMetaData>) => MutableModel<UnitOfMeasure, UnitOfMeasureMetaData> | void): UnitOfMeasure;
 }
 
-export declare class InventoryChanges {
+type LazyUnitOfMeasure = {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type UnitOfMeasure = LazyLoading extends LazyLoadingDisabled ? EagerUnitOfMeasure : LazyUnitOfMeasure
+
+export declare const UnitOfMeasure: (new (init: ModelInit<UnitOfMeasure, UnitOfMeasureMetaData>) => UnitOfMeasure) & {
+  copyOf(source: UnitOfMeasure, mutator: (draft: MutableModel<UnitOfMeasure, UnitOfMeasureMetaData>) => MutableModel<UnitOfMeasure, UnitOfMeasureMetaData> | void): UnitOfMeasure;
+}
+
+type EagerInventoryChanges = {
   readonly id: string;
   readonly timestamp: string;
   readonly type: string;
@@ -302,22 +543,52 @@ export declare class InventoryChanges {
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly inventoryChangesProductId?: string | null;
-  constructor(init: ModelInit<InventoryChanges, InventoryChangesMetaData>);
-  static copyOf(source: InventoryChanges, mutator: (draft: MutableModel<InventoryChanges, InventoryChangesMetaData>) => MutableModel<InventoryChanges, InventoryChangesMetaData> | void): InventoryChanges;
 }
 
-export declare class InventoryCount {
+type LazyInventoryChanges = {
+  readonly id: string;
+  readonly timestamp: string;
+  readonly type: string;
+  readonly typeId?: string | null;
+  readonly quantityIn: number;
+  readonly quantityOut: number;
+  readonly Product: AsyncItem<Product | undefined>;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  readonly inventoryChangesProductId?: string | null;
+}
+
+export declare type InventoryChanges = LazyLoading extends LazyLoadingDisabled ? EagerInventoryChanges : LazyInventoryChanges
+
+export declare const InventoryChanges: (new (init: ModelInit<InventoryChanges, InventoryChangesMetaData>) => InventoryChanges) & {
+  copyOf(source: InventoryChanges, mutator: (draft: MutableModel<InventoryChanges, InventoryChangesMetaData>) => MutableModel<InventoryChanges, InventoryChangesMetaData> | void): InventoryChanges;
+}
+
+type EagerInventoryCount = {
   readonly id: string;
   readonly comments?: string | null;
   readonly status: InventoryCountStatus | keyof typeof InventoryCountStatus;
   readonly createdBy: ByEmployee;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<InventoryCount, InventoryCountMetaData>);
-  static copyOf(source: InventoryCount, mutator: (draft: MutableModel<InventoryCount, InventoryCountMetaData>) => MutableModel<InventoryCount, InventoryCountMetaData> | void): InventoryCount;
 }
 
-export declare class InventoryCountLine {
+type LazyInventoryCount = {
+  readonly id: string;
+  readonly comments?: string | null;
+  readonly status: InventoryCountStatus | keyof typeof InventoryCountStatus;
+  readonly createdBy: ByEmployee;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type InventoryCount = LazyLoading extends LazyLoadingDisabled ? EagerInventoryCount : LazyInventoryCount
+
+export declare const InventoryCount: (new (init: ModelInit<InventoryCount, InventoryCountMetaData>) => InventoryCount) & {
+  copyOf(source: InventoryCount, mutator: (draft: MutableModel<InventoryCount, InventoryCountMetaData>) => MutableModel<InventoryCount, InventoryCountMetaData> | void): InventoryCount;
+}
+
+type EagerInventoryCountLine = {
   readonly id: string;
   readonly productId: string;
   readonly productName: string;
@@ -329,22 +600,53 @@ export declare class InventoryCountLine {
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly inventoryCountLineInventoryCountId?: string | null;
-  constructor(init: ModelInit<InventoryCountLine, InventoryCountLineMetaData>);
-  static copyOf(source: InventoryCountLine, mutator: (draft: MutableModel<InventoryCountLine, InventoryCountLineMetaData>) => MutableModel<InventoryCountLine, InventoryCountLineMetaData> | void): InventoryCountLine;
 }
 
-export declare class InventoryReceive {
+type LazyInventoryCountLine = {
+  readonly id: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly unitOfMeasure: string;
+  readonly current: number;
+  readonly newCount: number;
+  readonly comments?: string | null;
+  readonly InventoryCount: AsyncItem<InventoryCount | undefined>;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  readonly inventoryCountLineInventoryCountId?: string | null;
+}
+
+export declare type InventoryCountLine = LazyLoading extends LazyLoadingDisabled ? EagerInventoryCountLine : LazyInventoryCountLine
+
+export declare const InventoryCountLine: (new (init: ModelInit<InventoryCountLine, InventoryCountLineMetaData>) => InventoryCountLine) & {
+  copyOf(source: InventoryCountLine, mutator: (draft: MutableModel<InventoryCountLine, InventoryCountLineMetaData>) => MutableModel<InventoryCountLine, InventoryCountLineMetaData> | void): InventoryCountLine;
+}
+
+type EagerInventoryReceive = {
   readonly id: string;
   readonly comments?: string | null;
   readonly status: InventoryReceiveStatus | keyof typeof InventoryReceiveStatus;
   readonly createdBy: ByEmployee;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<InventoryReceive, InventoryReceiveMetaData>);
-  static copyOf(source: InventoryReceive, mutator: (draft: MutableModel<InventoryReceive, InventoryReceiveMetaData>) => MutableModel<InventoryReceive, InventoryReceiveMetaData> | void): InventoryReceive;
 }
 
-export declare class InventoryReceiveLine {
+type LazyInventoryReceive = {
+  readonly id: string;
+  readonly comments?: string | null;
+  readonly status: InventoryReceiveStatus | keyof typeof InventoryReceiveStatus;
+  readonly createdBy: ByEmployee;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type InventoryReceive = LazyLoading extends LazyLoadingDisabled ? EagerInventoryReceive : LazyInventoryReceive
+
+export declare const InventoryReceive: (new (init: ModelInit<InventoryReceive, InventoryReceiveMetaData>) => InventoryReceive) & {
+  copyOf(source: InventoryReceive, mutator: (draft: MutableModel<InventoryReceive, InventoryReceiveMetaData>) => MutableModel<InventoryReceive, InventoryReceiveMetaData> | void): InventoryReceive;
+}
+
+type EagerInventoryReceiveLine = {
   readonly id: string;
   readonly productId: string;
   readonly productName: string;
@@ -355,11 +657,28 @@ export declare class InventoryReceiveLine {
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly inventoryReceiveLineInventoryReceiveId?: string | null;
-  constructor(init: ModelInit<InventoryReceiveLine, InventoryReceiveLineMetaData>);
-  static copyOf(source: InventoryReceiveLine, mutator: (draft: MutableModel<InventoryReceiveLine, InventoryReceiveLineMetaData>) => MutableModel<InventoryReceiveLine, InventoryReceiveLineMetaData> | void): InventoryReceiveLine;
 }
 
-export declare class Printer {
+type LazyInventoryReceiveLine = {
+  readonly id: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly unitOfMeasure: string;
+  readonly received: number;
+  readonly comments?: string | null;
+  readonly InventoryReceive: AsyncItem<InventoryReceive | undefined>;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  readonly inventoryReceiveLineInventoryReceiveId?: string | null;
+}
+
+export declare type InventoryReceiveLine = LazyLoading extends LazyLoadingDisabled ? EagerInventoryReceiveLine : LazyInventoryReceiveLine
+
+export declare const InventoryReceiveLine: (new (init: ModelInit<InventoryReceiveLine, InventoryReceiveLineMetaData>) => InventoryReceiveLine) & {
+  copyOf(source: InventoryReceiveLine, mutator: (draft: MutableModel<InventoryReceiveLine, InventoryReceiveLineMetaData>) => MutableModel<InventoryReceiveLine, InventoryReceiveLineMetaData> | void): InventoryReceiveLine;
+}
+
+type EagerPrinter = {
   readonly id: string;
   readonly deviceId: string;
   readonly identifier: string;
@@ -369,25 +688,64 @@ export declare class Printer {
   readonly alias?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Printer, PrinterMetaData>);
-  static copyOf(source: Printer, mutator: (draft: MutableModel<Printer, PrinterMetaData>) => MutableModel<Printer, PrinterMetaData> | void): Printer;
 }
 
-export declare class Station {
+type LazyPrinter = {
+  readonly id: string;
+  readonly deviceId: string;
+  readonly identifier: string;
+  readonly interfaceType: string;
+  readonly ip: string;
+  readonly model?: string | null;
+  readonly alias?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Printer = LazyLoading extends LazyLoadingDisabled ? EagerPrinter : LazyPrinter
+
+export declare const Printer: (new (init: ModelInit<Printer, PrinterMetaData>) => Printer) & {
+  copyOf(source: Printer, mutator: (draft: MutableModel<Printer, PrinterMetaData>) => MutableModel<Printer, PrinterMetaData> | void): Printer;
+}
+
+type EagerStation = {
   readonly id: string;
   readonly deviceId: string;
   readonly alias: string;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Station, StationMetaData>);
-  static copyOf(source: Station, mutator: (draft: MutableModel<Station, StationMetaData>) => MutableModel<Station, StationMetaData> | void): Station;
 }
 
-export declare class GlobalSettings {
+type LazyStation = {
+  readonly id: string;
+  readonly deviceId: string;
+  readonly alias: string;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Station = LazyLoading extends LazyLoadingDisabled ? EagerStation : LazyStation
+
+export declare const Station: (new (init: ModelInit<Station, StationMetaData>) => Station) & {
+  copyOf(source: Station, mutator: (draft: MutableModel<Station, StationMetaData>) => MutableModel<Station, StationMetaData> | void): Station;
+}
+
+type EagerGlobalSettings = {
   readonly id: string;
   readonly enforceSalesBasedOnInventory: boolean;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<GlobalSettings, GlobalSettingsMetaData>);
-  static copyOf(source: GlobalSettings, mutator: (draft: MutableModel<GlobalSettings, GlobalSettingsMetaData>) => MutableModel<GlobalSettings, GlobalSettingsMetaData> | void): GlobalSettings;
+}
+
+type LazyGlobalSettings = {
+  readonly id: string;
+  readonly enforceSalesBasedOnInventory: boolean;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type GlobalSettings = LazyLoading extends LazyLoadingDisabled ? EagerGlobalSettings : LazyGlobalSettings
+
+export declare const GlobalSettings: (new (init: ModelInit<GlobalSettings, GlobalSettingsMetaData>) => GlobalSettings) & {
+  copyOf(source: GlobalSettings, mutator: (draft: MutableModel<GlobalSettings, GlobalSettingsMetaData>) => MutableModel<GlobalSettings, GlobalSettingsMetaData> | void): GlobalSettings;
 }

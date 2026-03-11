@@ -12,7 +12,7 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		1F92AA4D281EC6CC0072EFF2 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = 1F92AA4C281EC6CC0072EFF2 /* fonts */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		EDFF86BB34F0D74BE0446172 /* libPods-MobileUi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BD2D4F986838457D63908AA /* libPods-MobileUi.a */; };
+		D42BE245A8A843850B153E94 /* libPods-MobileUi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 40385188F4FA0839EC2BFB56 /* libPods-MobileUi.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,11 +23,11 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = MobileUi/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = MobileUi/main.m; sourceTree = "<group>"; };
 		1F92AA4C281EC6CC0072EFF2 /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = fonts; sourceTree = "<group>"; };
-		29A87B01F483BC8B4574840A /* Pods-MobileUi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileUi.debug.xcconfig"; path = "Target Support Files/Pods-MobileUi/Pods-MobileUi.debug.xcconfig"; sourceTree = "<group>"; };
-		2BD2D4F986838457D63908AA /* libPods-MobileUi.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MobileUi.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		40385188F4FA0839EC2BFB56 /* libPods-MobileUi.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MobileUi.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		485C137B9CF9BFB494C9A30B /* Pods-MobileUi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileUi.release.xcconfig"; path = "Target Support Files/Pods-MobileUi/Pods-MobileUi.release.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = MobileUi/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		954FC00181340AF919459BB4 /* Pods-MobileUi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileUi.debug.xcconfig"; path = "Target Support Files/Pods-MobileUi/Pods-MobileUi.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		EF215046929D3E61DF7A9DAC /* Pods-MobileUi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileUi.release.xcconfig"; path = "Target Support Files/Pods-MobileUi/Pods-MobileUi.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,7 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EDFF86BB34F0D74BE0446172 /* libPods-MobileUi.a in Frameworks */,
+				D42BE245A8A843850B153E94 /* libPods-MobileUi.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,7 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				2BD2D4F986838457D63908AA /* libPods-MobileUi.a */,
+				40385188F4FA0839EC2BFB56 /* libPods-MobileUi.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -97,8 +97,8 @@
 		AD59FE128C11EAE8EBF9813F /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				29A87B01F483BC8B4574840A /* Pods-MobileUi.debug.xcconfig */,
-				EF215046929D3E61DF7A9DAC /* Pods-MobileUi.release.xcconfig */,
+				954FC00181340AF919459BB4 /* Pods-MobileUi.debug.xcconfig */,
+				485C137B9CF9BFB494C9A30B /* Pods-MobileUi.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -110,15 +110,15 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "MobileUi" */;
 			buildPhases = (
-				D74C9A91184D45852CB535C0 /* [CP] Check Pods Manifest.lock */,
+				DCA125F5F4CFC41F3F5C11C6 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				E4661260B2F8995764FA3223 /* [CP] Embed Pods Frameworks */,
-				589CD817700AC23390FB1CF7 /* [CP] Copy Pods Resources */,
 				1F59FC6B2E7E096900A5104B /* ShellScript */,
+				DCCA2768A32FABC55B3E153F /* [CP] Embed Pods Frameworks */,
+				E7A2ED0A329EAB1AD5E86B75 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -186,7 +186,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nexport NODE_BINARY=node\nexport ENTRY_FILE=${PROJECT_DIR}/../src/main.tsx\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
+			shellScript = "set -e\n\nexport NODE_BINARY=/Users/orlando/.nvm/versions/node/v16.13.0/bin/node\nexport ENTRY_FILE=${PROJECT_DIR}/../src/main.tsx\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
 		1F59FC6B2E7E096900A5104B /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -205,28 +205,7 @@
 			shellPath = /bin/sh;
 			shellScript = "if [ -d \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/StarIO10.framework\" ]; then\n        echo \"Generating dSYM for StarIO10.framework\"\n        dsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/StarIO10.framework/StarIO10\" -o \"${BUILT_PRODUCTS_DIR}/StarIO10.framework.dSYM\"\n    fi\n";
 		};
-		589CD817700AC23390FB1CF7 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MobileUi/Pods-MobileUi-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MobileUi/Pods-MobileUi-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MobileUi/Pods-MobileUi-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		D74C9A91184D45852CB535C0 /* [CP] Check Pods Manifest.lock */ = {
+		DCA125F5F4CFC41F3F5C11C6 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -248,7 +227,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E4661260B2F8995764FA3223 /* [CP] Embed Pods Frameworks */ = {
+		DCCA2768A32FABC55B3E153F /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -269,6 +248,27 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MobileUi/Pods-MobileUi-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		E7A2ED0A329EAB1AD5E86B75 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MobileUi/Pods-MobileUi-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MobileUi/Pods-MobileUi-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MobileUi/Pods-MobileUi-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -285,7 +285,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export RCT_METRO_PORT=\"${RCT_METRO_PORT:=8081}\"\necho \"export RCT_METRO_PORT=${RCT_METRO_PORT}\" > \"${SRCROOT}/../node_modules/react-native/scripts/.packager.env\"\nif [ -z \"${RCT_NO_LAUNCH_PACKAGER+xxx}\" ] ; then\n  if nc -w 5 -z localhost ${RCT_METRO_PORT} ; then\n    if ! curl -s \"http://localhost:${RCT_METRO_PORT}/status\" | grep -q \"packager-status:running\" ; then\n      echo \"Port ${RCT_METRO_PORT} already in use, packager is either not running or not running correctly\"\n      exit 2\n    fi\n  else\n    open \"$SRCROOT/../node_modules/react-native/scripts/launchPackager.command\" || echo \"Can't start packager automatically\"\n  fi\nfi\n";
+			shellScript = "exit 0\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -305,7 +305,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 29A87B01F483BC8B4574840A /* Pods-MobileUi.debug.xcconfig */;
+			baseConfigurationReference = 954FC00181340AF919459BB4 /* Pods-MobileUi.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -335,7 +335,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EF215046929D3E61DF7A9DAC /* Pods-MobileUi.release.xcconfig */;
+			baseConfigurationReference = 485C137B9CF9BFB494C9A30B /* Pods-MobileUi.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

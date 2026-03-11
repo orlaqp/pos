@@ -60,6 +60,18 @@
             ReferencedContainer = "container:MobileUi.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "NODE_BINARY"
+            value = "/Users/orlando/.nvm/versions/node/v16.13.0/bin/node"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "RCT_NO_LAUNCH_PACKAGER"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

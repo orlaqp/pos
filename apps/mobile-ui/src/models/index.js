@@ -2,16 +2,16 @@
 import { initSchema } from '@aws-amplify/datastore';
 import { schema } from './schema';
 
-const OrderStatus = {
-  "OPEN": "OPEN",
-  "REFUNDED": "REFUNDED",
-  "PAID": "PAID"
-};
-
 const PaymentType = {
   "CASH": "CASH",
   "CHECK": "CHECK",
   "CC": "CC"
+};
+
+const OrderStatus = {
+  "OPEN": "OPEN",
+  "REFUNDED": "REFUNDED",
+  "PAID": "PAID"
 };
 
 const InventoryCountStatus = {
@@ -24,15 +24,15 @@ const InventoryReceiveStatus = {
   "COMPLETED": "COMPLETED"
 };
 
-const { Order, Customer, Store, Brand, Category, Employee, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, OrderLine, PaymentInfo, Payment, RefundInfo, ByEmployee, SalesSummary, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary } = initSchema(schema);
+const { Store, Brand, Category, Customer, Employee, Order, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, PaymentInfo, RefundInfo, ByEmployee, OrderLine, Payment, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary, SalesSummary } = initSchema(schema);
 
 export {
-  Order,
-  Customer,
   Store,
   Brand,
   Category,
+  Customer,
   Employee,
+  Order,
   Product,
   UnitOfMeasure,
   InventoryChanges,
@@ -43,17 +43,17 @@ export {
   Printer,
   Station,
   GlobalSettings,
-  OrderStatus,
   PaymentType,
+  OrderStatus,
   InventoryCountStatus,
   InventoryReceiveStatus,
-  OrderLine,
   PaymentInfo,
-  Payment,
   RefundInfo,
   ByEmployee,
-  SalesSummary,
+  OrderLine,
+  Payment,
   ProductSaleSummary,
   EmployeeSaleSummary,
-  DatePartSaleSummary
+  DatePartSaleSummary,
+  SalesSummary
 };
