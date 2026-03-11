@@ -86,6 +86,11 @@ export function SalesScreen({
     };
 
     const onCategoryChange = async (c: CategoryEntity) => {
+        if (!c.id) {
+            setFilteredProducts(allProducts.filter((p) => p.isActive));
+            return;
+        }
+
         const res = await ProductService.search(allProducts, {
             categoryId: c.id,
             onlyActive: true
@@ -200,6 +205,10 @@ export function SalesScreen({
             searchRef.current?.focus();
         }, 25);
     }, [onProductSelected, filteredProducts, allProducts, products, searchRef])
+
+    useEffect(() => {
+        setFilteredProducts(allProducts.filter((p) => p.isActive));
+    }, [allProducts]);
 
     return (
         <SafeAreaView style={[styles.page, styles.row]}>

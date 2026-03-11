@@ -10,6 +10,12 @@ import { EmployeeEntity, EmployeeService } from '@pos/employees/data-access';
 import { StationService } from '@pos/settings/data-access';
 import { isOrderNumber, sortDescListBy, sortListBy } from '@pos/shared/utils';
 import uuid from 'react-native-uuid';
+import {
+    buildEbtAllocations,
+    getLineTotal,
+    validateEbtPayment,
+    EbtLineAllocation,
+} from './ebt-allocation';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -59,20 +65,7 @@ export class OrderService {
             total: request.order.footer.total,
             employeeId: request.by.id!,
             employeeName: `${request.by.firstName} ${request.by.lastName}`,
-            lines: request.order.items.map(
-                (i) =>
-                    new OrderLine({
-                        identifier: i.identifier || uuid.v4().toString(),
-                        quantity: i.quantity,
-                        tax: 0,
-                        price: i.product.price,
-                        productId: i.product.id!,
-                        barcode: i.product.barcode,
-                        sku: i.product.sku,
-                        productName: i.product.name,
-                        unitOfMeasure: i.product.unitOfMeasure,
-                    })
-            ),
+            lines: buildOrderLines(request.order),
             createdBy: {
                 id: request.by.id,
                 name: `${request.by.firstName} ${request.by.lastName}`
@@ -105,8 +98,37 @@ export class OrderService {
     }
 
     static async closeOrder(request: CloseOrderRequest) {
+        const validation = validateEbtPayment(
+            request.order.items.map((item) => ({
+                identifier: item.identifier,
+                quantity: item.quantity,
+                price: item.product.price,
+                isEBTEligible: item.product.isEBTEligible,
+            })),
+            request.payments
+        );
+
+        if (!validation.valid) {
+            Alert.alert(
+                'EBT validation failed',
+                `EBT amount ($${validation.ebtPaymentTotal.toFixed(2)}) cannot exceed EBT-eligible amount ($${validation.ebtEligibleTotal.toFixed(2)}).`
+            );
+            return null;
+        }
+
+        const allocations = buildEbtAllocations(
+            request.order.items.map((item) => ({
+                identifier: item.identifier,
+                quantity: item.quantity,
+                price: item.product.price,
+                isEBTEligible: item.product.isEBTEligible,
+            })),
+            request.payments
+        );
+
         const updatedOrder = await OrderService.getUpdatedOrder(request, (o) => {
             o.status = 'PAID';
+            o.lines = buildOrderLines(request.order, allocations);
             o.updatedBy = {
                 id: request.by.id,
                 name: `${request.by.firstName} ${request.by.lastName}`
@@ -151,7 +173,10 @@ export class OrderService {
         await DataStore.save(refundedOrder);
         await OrderService.updateInventory(refundedOrder);
 
-        const cartOrder = OrderEntityMapper.asCartState(request.order);
+        const cartOrder: CartState = {
+            ...request.order,
+            id: request.id,
+        };
 
         request.refundedLines.forEach((l) => {
             const line = cartOrder.items?.find(
@@ -199,29 +224,16 @@ export class OrderService {
             o.subtotal = req.order.footer.subtotal;
             o.tax = 0;
             o.total = req.order.footer.total;
-            o.lines = req.order.items.map(
-                (i) =>
-                    new OrderLine({
-                        identifier: i.identifier!,
-                        quantity: i.quantity,
-                        tax: 0,
-                        price: i.product.price,
-                        productId: i.product.id!,
-                        barcode: i.product.barcode,
-                        sku: i.product.sku,
-                        productName: i.product.name,
-                        unitOfMeasure: i.product.unitOfMeasure,
-                    })
-                );
+            o.lines = buildOrderLines(req.order);
 
                 o.updatedBy = {
                     id: req.by.id,
                     name: `${req.by.firstName} ${req.by.lastName}`
                 }
 
-            if (!cb) return;
-
-            cb(o);
+            if (cb) {
+                cb(o);
+            }
         });
     }
 
@@ -493,4 +505,34 @@ async function updateProductQuantity(
     });
 
     return DataStore.save(updatedProduct);
+}
+
+function buildOrderLines(
+    order: Omit<CartState, 'id'>,
+    allocations?: Record<string, EbtLineAllocation>
+) {
+    return order.items.map((i, index) => {
+        const identifier = i.identifier || getLineKey(i.identifier, index);
+        const lineTotal = getLineTotal(i.quantity, i.product.price);
+        const allocation = allocations?.[identifier];
+
+        return new OrderLine({
+            identifier,
+            quantity: i.quantity,
+            tax: 0,
+            price: i.product.price,
+            productId: i.product.id!,
+            barcode: i.product.barcode,
+            sku: i.product.sku,
+            productName: i.product.name,
+            unitOfMeasure: i.product.unitOfMeasure,
+            isEBTEligible: allocation?.isEBTEligible ?? !!i.product.isEBTEligible,
+            ebtPaidAmount: allocation?.ebtPaidAmount ?? 0,
+            nonEbtPaidAmount: allocation?.nonEbtPaidAmount ?? lineTotal,
+        });
+    });
+}
+
+function getLineKey(identifier: string | undefined, index: number) {
+    return identifier || `line-${index}`;
 }

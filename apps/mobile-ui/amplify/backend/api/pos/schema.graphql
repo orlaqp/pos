@@ -96,12 +96,16 @@ type OrderLine {
   quantity: Float!
   tax: Float!
   price: Float!
+  isEBTEligible: Boolean
+  ebtPaidAmount: Float
+  nonEbtPaidAmount: Float
 }
 
 enum PaymentType {
     CASH
     CHECK
     CC
+    EBT
 }
 
 type Payment {
@@ -134,6 +138,7 @@ type Product @model @auth(rules: [{allow: public}]) {
   Category: Category @hasOne
   Brand: Brand @hasOne
   isActive: Boolean!
+  isEBTEligible: Boolean
 }
 
 # type PurchaseOrder @model @auth(rules: [{allow: public}]) {

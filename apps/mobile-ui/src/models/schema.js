@@ -840,6 +840,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "isEBTEligible": {
+                    "name": "isEBTEligible",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -1673,7 +1680,8 @@ export const schema = {
             "values": [
                 "CASH",
                 "CHECK",
-                "CC"
+                "CC",
+                "EBT"
             ]
         },
         "OrderStatus": {
@@ -1838,6 +1846,27 @@ export const schema = {
                     "isArray": false,
                     "type": "Float",
                     "isRequired": true,
+                    "attributes": []
+                },
+                "isEBTEligible": {
+                    "name": "isEBTEligible",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "ebtPaidAmount": {
+                    "name": "ebtPaidAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "nonEbtPaidAmount": {
+                    "name": "nonEbtPaidAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
                     "attributes": []
                 }
             }
@@ -2013,5 +2042,5 @@ export const schema = {
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "e73e6c313eef278f0429fe6ab171736f"
+    "version": "753ed7608733eade21023bfa8ec81382"
 };

@@ -88,6 +88,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
             productCategoryId: product?.productCategoryId,
             productBrandId: product?.productBrandId,
             isActive: product?.isActive,
+            isEBTEligible: product?.isEBTEligible ?? false,
         },
     });
 
@@ -165,6 +166,14 @@ export function ProductForm({ navigation }: ProductFormProps) {
                             placeholder="Name"
                             rules={{ required: 'Name is required' }}
                         />
+                        <View style={[styles.row, { marginTop: 5, alignItems: 'center' }]}>
+                            <Text style={[styles.primaryText, { marginRight: 25 }]}>
+                                EBT Eligible:
+                            </Text>
+                            <View style={{ width: 80 }}>
+                                <UISwitch name='isEBTEligible' />
+                            </View>
+                        </View>
                         <UIInput
                             name="description"
                             placeholder="Description"

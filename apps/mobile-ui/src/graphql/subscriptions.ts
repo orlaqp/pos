@@ -2,117 +2,579 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const onCreateStore = /* GraphQL */ `
-  subscription OnCreateStore {
-    onCreateStore {
+import * as APITypes from "../API";
+type GeneratedSubscription<InputType, OutputType> = string & {
+  __generatedSubscriptionInput: InputType;
+  __generatedSubscriptionOutput: OutputType;
+};
+
+export const onCreateStore = /* GraphQL */ `subscription OnCreateStore($filter: ModelSubscriptionStoreFilterInput) {
+  onCreateStore(filter: $filter) {
+    id
+    name
+    address
+    city
+    state
+    zipCode
+    country
+    phone
+    fax
+    email
+    disclaimer
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateStoreSubscriptionVariables,
+  APITypes.OnCreateStoreSubscription
+>;
+export const onUpdateStore = /* GraphQL */ `subscription OnUpdateStore($filter: ModelSubscriptionStoreFilterInput) {
+  onUpdateStore(filter: $filter) {
+    id
+    name
+    address
+    city
+    state
+    zipCode
+    country
+    phone
+    fax
+    email
+    disclaimer
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateStoreSubscriptionVariables,
+  APITypes.OnUpdateStoreSubscription
+>;
+export const onDeleteStore = /* GraphQL */ `subscription OnDeleteStore($filter: ModelSubscriptionStoreFilterInput) {
+  onDeleteStore(filter: $filter) {
+    id
+    name
+    address
+    city
+    state
+    zipCode
+    country
+    phone
+    fax
+    email
+    disclaimer
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteStoreSubscriptionVariables,
+  APITypes.OnDeleteStoreSubscription
+>;
+export const onCreateBrand = /* GraphQL */ `subscription OnCreateBrand($filter: ModelSubscriptionBrandFilterInput) {
+  onCreateBrand(filter: $filter) {
+    id
+    name
+    description
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateBrandSubscriptionVariables,
+  APITypes.OnCreateBrandSubscription
+>;
+export const onUpdateBrand = /* GraphQL */ `subscription OnUpdateBrand($filter: ModelSubscriptionBrandFilterInput) {
+  onUpdateBrand(filter: $filter) {
+    id
+    name
+    description
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateBrandSubscriptionVariables,
+  APITypes.OnUpdateBrandSubscription
+>;
+export const onDeleteBrand = /* GraphQL */ `subscription OnDeleteBrand($filter: ModelSubscriptionBrandFilterInput) {
+  onDeleteBrand(filter: $filter) {
+    id
+    name
+    description
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteBrandSubscriptionVariables,
+  APITypes.OnDeleteBrandSubscription
+>;
+export const onCreateCategory = /* GraphQL */ `subscription OnCreateCategory($filter: ModelSubscriptionCategoryFilterInput) {
+  onCreateCategory(filter: $filter) {
+    id
+    name
+    description
+    code
+    color
+    picture
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateCategorySubscriptionVariables,
+  APITypes.OnCreateCategorySubscription
+>;
+export const onUpdateCategory = /* GraphQL */ `subscription OnUpdateCategory($filter: ModelSubscriptionCategoryFilterInput) {
+  onUpdateCategory(filter: $filter) {
+    id
+    name
+    description
+    code
+    color
+    picture
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateCategorySubscriptionVariables,
+  APITypes.OnUpdateCategorySubscription
+>;
+export const onDeleteCategory = /* GraphQL */ `subscription OnDeleteCategory($filter: ModelSubscriptionCategoryFilterInput) {
+  onDeleteCategory(filter: $filter) {
+    id
+    name
+    description
+    code
+    color
+    picture
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteCategorySubscriptionVariables,
+  APITypes.OnDeleteCategorySubscription
+>;
+export const onCreateCustomer = /* GraphQL */ `subscription OnCreateCustomer($filter: ModelSubscriptionCustomerFilterInput) {
+  onCreateCustomer(filter: $filter) {
+    id
+    firstName
+    lastName
+    middleName
+    dob
+    phone
+    email
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateCustomerSubscriptionVariables,
+  APITypes.OnCreateCustomerSubscription
+>;
+export const onUpdateCustomer = /* GraphQL */ `subscription OnUpdateCustomer($filter: ModelSubscriptionCustomerFilterInput) {
+  onUpdateCustomer(filter: $filter) {
+    id
+    firstName
+    lastName
+    middleName
+    dob
+    phone
+    email
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateCustomerSubscriptionVariables,
+  APITypes.OnUpdateCustomerSubscription
+>;
+export const onDeleteCustomer = /* GraphQL */ `subscription OnDeleteCustomer($filter: ModelSubscriptionCustomerFilterInput) {
+  onDeleteCustomer(filter: $filter) {
+    id
+    firstName
+    lastName
+    middleName
+    dob
+    phone
+    email
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteCustomerSubscriptionVariables,
+  APITypes.OnDeleteCustomerSubscription
+>;
+export const onCreateEmployee = /* GraphQL */ `subscription OnCreateEmployee($filter: ModelSubscriptionEmployeeFilterInput) {
+  onCreateEmployee(filter: $filter) {
+    id
+    code
+    firstName
+    lastName
+    middleName
+    dob
+    phone
+    email
+    pin
+    roles
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateEmployeeSubscriptionVariables,
+  APITypes.OnCreateEmployeeSubscription
+>;
+export const onUpdateEmployee = /* GraphQL */ `subscription OnUpdateEmployee($filter: ModelSubscriptionEmployeeFilterInput) {
+  onUpdateEmployee(filter: $filter) {
+    id
+    code
+    firstName
+    lastName
+    middleName
+    dob
+    phone
+    email
+    pin
+    roles
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateEmployeeSubscriptionVariables,
+  APITypes.OnUpdateEmployeeSubscription
+>;
+export const onDeleteEmployee = /* GraphQL */ `subscription OnDeleteEmployee($filter: ModelSubscriptionEmployeeFilterInput) {
+  onDeleteEmployee(filter: $filter) {
+    id
+    code
+    firstName
+    lastName
+    middleName
+    dob
+    phone
+    email
+    pin
+    roles
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteEmployeeSubscriptionVariables,
+  APITypes.OnDeleteEmployeeSubscription
+>;
+export const onCreateOrder = /* GraphQL */ `subscription OnCreateOrder($filter: ModelSubscriptionOrderFilterInput) {
+  onCreateOrder(filter: $filter) {
+    id
+    orderNo
+    orderDate
+    subtotal
+    tax
+    total
+    status
+    employeeId
+    employeeName
+    lines {
+      identifier
+      productId
+      productName
+      unitOfMeasure
+      barcode
+      sku
+      quantity
+      tax
+      price
+      isEBTEligible
+      ebtPaidAmount
+      nonEbtPaidAmount
+      __typename
+    }
+    paymentInfo {
+      employeeId
+      employeeName
+      __typename
+    }
+    refundInfo {
+      employeeId
+      employeeName
+      comments
+      __typename
+    }
+    createdBy {
       id
       name
-      address
-      city
-      state
-      zipCode
-      country
+      __typename
+    }
+    updatedBy {
+      id
+      name
+      __typename
+    }
+    Customer {
+      id
+      firstName
+      lastName
+      middleName
+      dob
       phone
-      fax
       email
-      disclaimer
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    orderCustomerId
+    __typename
   }
-`;
-export const onUpdateStore = /* GraphQL */ `
-  subscription OnUpdateStore {
-    onUpdateStore {
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateOrderSubscriptionVariables,
+  APITypes.OnCreateOrderSubscription
+>;
+export const onUpdateOrder = /* GraphQL */ `subscription OnUpdateOrder($filter: ModelSubscriptionOrderFilterInput) {
+  onUpdateOrder(filter: $filter) {
+    id
+    orderNo
+    orderDate
+    subtotal
+    tax
+    total
+    status
+    employeeId
+    employeeName
+    lines {
+      identifier
+      productId
+      productName
+      unitOfMeasure
+      barcode
+      sku
+      quantity
+      tax
+      price
+      isEBTEligible
+      ebtPaidAmount
+      nonEbtPaidAmount
+      __typename
+    }
+    paymentInfo {
+      employeeId
+      employeeName
+      __typename
+    }
+    refundInfo {
+      employeeId
+      employeeName
+      comments
+      __typename
+    }
+    createdBy {
       id
       name
-      address
-      city
-      state
-      zipCode
-      country
+      __typename
+    }
+    updatedBy {
+      id
+      name
+      __typename
+    }
+    Customer {
+      id
+      firstName
+      lastName
+      middleName
+      dob
       phone
-      fax
       email
-      disclaimer
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    orderCustomerId
+    __typename
   }
-`;
-export const onDeleteStore = /* GraphQL */ `
-  subscription OnDeleteStore {
-    onDeleteStore {
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateOrderSubscriptionVariables,
+  APITypes.OnUpdateOrderSubscription
+>;
+export const onDeleteOrder = /* GraphQL */ `subscription OnDeleteOrder($filter: ModelSubscriptionOrderFilterInput) {
+  onDeleteOrder(filter: $filter) {
+    id
+    orderNo
+    orderDate
+    subtotal
+    tax
+    total
+    status
+    employeeId
+    employeeName
+    lines {
+      identifier
+      productId
+      productName
+      unitOfMeasure
+      barcode
+      sku
+      quantity
+      tax
+      price
+      isEBTEligible
+      ebtPaidAmount
+      nonEbtPaidAmount
+      __typename
+    }
+    paymentInfo {
+      employeeId
+      employeeName
+      __typename
+    }
+    refundInfo {
+      employeeId
+      employeeName
+      comments
+      __typename
+    }
+    createdBy {
       id
       name
-      address
-      city
-      state
-      zipCode
-      country
+      __typename
+    }
+    updatedBy {
+      id
+      name
+      __typename
+    }
+    Customer {
+      id
+      firstName
+      lastName
+      middleName
+      dob
       phone
-      fax
       email
-      disclaimer
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    orderCustomerId
+    __typename
   }
-`;
-export const onCreateBrand = /* GraphQL */ `
-  subscription OnCreateBrand {
-    onCreateBrand {
-      id
-      name
-      description
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onUpdateBrand = /* GraphQL */ `
-  subscription OnUpdateBrand {
-    onUpdateBrand {
-      id
-      name
-      description
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onDeleteBrand = /* GraphQL */ `
-  subscription OnDeleteBrand {
-    onDeleteBrand {
-      id
-      name
-      description
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onCreateCategory = /* GraphQL */ `
-  subscription OnCreateCategory {
-    onCreateCategory {
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteOrderSubscriptionVariables,
+  APITypes.OnDeleteOrderSubscription
+>;
+export const onCreateProduct = /* GraphQL */ `subscription OnCreateProduct($filter: ModelSubscriptionProductFilterInput) {
+  onCreateProduct(filter: $filter) {
+    id
+    name
+    description
+    price
+    tags
+    cost
+    barcode
+    sku
+    plu
+    quantity
+    unitOfMeasure
+    trackStock
+    reorderPoint
+    reorderQuantity
+    picture
+    Category {
       id
       name
       description
@@ -124,12 +586,53 @@ export const onCreateCategory = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      __typename
     }
+    Brand {
+      id
+      name
+      description
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    isActive
+    isEBTEligible
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    productCategoryId
+    productBrandId
+    __typename
   }
-`;
-export const onUpdateCategory = /* GraphQL */ `
-  subscription OnUpdateCategory {
-    onUpdateCategory {
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateProductSubscriptionVariables,
+  APITypes.OnCreateProductSubscription
+>;
+export const onUpdateProduct = /* GraphQL */ `subscription OnUpdateProduct($filter: ModelSubscriptionProductFilterInput) {
+  onUpdateProduct(filter: $filter) {
+    id
+    name
+    description
+    price
+    tags
+    cost
+    barcode
+    sku
+    plu
+    quantity
+    unitOfMeasure
+    trackStock
+    reorderPoint
+    reorderQuantity
+    picture
+    Category {
       id
       name
       description
@@ -141,12 +644,53 @@ export const onUpdateCategory = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      __typename
     }
+    Brand {
+      id
+      name
+      description
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    isActive
+    isEBTEligible
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    productCategoryId
+    productBrandId
+    __typename
   }
-`;
-export const onDeleteCategory = /* GraphQL */ `
-  subscription OnDeleteCategory {
-    onDeleteCategory {
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateProductSubscriptionVariables,
+  APITypes.OnUpdateProductSubscription
+>;
+export const onDeleteProduct = /* GraphQL */ `subscription OnDeleteProduct($filter: ModelSubscriptionProductFilterInput) {
+  onDeleteProduct(filter: $filter) {
+    id
+    name
+    description
+    price
+    tags
+    cost
+    barcode
+    sku
+    plu
+    quantity
+    unitOfMeasure
+    trackStock
+    reorderPoint
+    reorderQuantity
+    picture
+    Category {
       id
       name
       description
@@ -158,321 +702,103 @@ export const onDeleteCategory = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      __typename
     }
-  }
-`;
-export const onCreateCustomer = /* GraphQL */ `
-  subscription OnCreateCustomer {
-    onCreateCustomer {
+    Brand {
       id
-      firstName
-      lastName
-      middleName
-      dob
-      phone
-      email
+      name
+      description
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      __typename
     }
+    isActive
+    isEBTEligible
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    productCategoryId
+    productBrandId
+    __typename
   }
-`;
-export const onUpdateCustomer = /* GraphQL */ `
-  subscription OnUpdateCustomer {
-    onUpdateCustomer {
-      id
-      firstName
-      lastName
-      middleName
-      dob
-      phone
-      email
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteProductSubscriptionVariables,
+  APITypes.OnDeleteProductSubscription
+>;
+export const onCreateUnitOfMeasure = /* GraphQL */ `subscription OnCreateUnitOfMeasure(
+  $filter: ModelSubscriptionUnitOfMeasureFilterInput
+) {
+  onCreateUnitOfMeasure(filter: $filter) {
+    id
+    name
+    description
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onDeleteCustomer = /* GraphQL */ `
-  subscription OnDeleteCustomer {
-    onDeleteCustomer {
-      id
-      firstName
-      lastName
-      middleName
-      dob
-      phone
-      email
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateUnitOfMeasureSubscriptionVariables,
+  APITypes.OnCreateUnitOfMeasureSubscription
+>;
+export const onUpdateUnitOfMeasure = /* GraphQL */ `subscription OnUpdateUnitOfMeasure(
+  $filter: ModelSubscriptionUnitOfMeasureFilterInput
+) {
+  onUpdateUnitOfMeasure(filter: $filter) {
+    id
+    name
+    description
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onCreateEmployee = /* GraphQL */ `
-  subscription OnCreateEmployee {
-    onCreateEmployee {
-      id
-      code
-      firstName
-      lastName
-      middleName
-      dob
-      phone
-      email
-      pin
-      roles
-      active
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateUnitOfMeasureSubscriptionVariables,
+  APITypes.OnUpdateUnitOfMeasureSubscription
+>;
+export const onDeleteUnitOfMeasure = /* GraphQL */ `subscription OnDeleteUnitOfMeasure(
+  $filter: ModelSubscriptionUnitOfMeasureFilterInput
+) {
+  onDeleteUnitOfMeasure(filter: $filter) {
+    id
+    name
+    description
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onUpdateEmployee = /* GraphQL */ `
-  subscription OnUpdateEmployee {
-    onUpdateEmployee {
-      id
-      code
-      firstName
-      lastName
-      middleName
-      dob
-      phone
-      email
-      pin
-      roles
-      active
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onDeleteEmployee = /* GraphQL */ `
-  subscription OnDeleteEmployee {
-    onDeleteEmployee {
-      id
-      code
-      firstName
-      lastName
-      middleName
-      dob
-      phone
-      email
-      pin
-      roles
-      active
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onCreateOrder = /* GraphQL */ `
-  subscription OnCreateOrder {
-    onCreateOrder {
-      id
-      orderNo
-      orderDate
-      subtotal
-      tax
-      total
-      status
-      employeeId
-      employeeName
-      lines {
-        identifier
-        productId
-        productName
-        unitOfMeasure
-        barcode
-        sku
-        quantity
-        tax
-        price
-      }
-      paymentInfo {
-        employeeId
-        employeeName
-      }
-      refundInfo {
-        employeeId
-        employeeName
-        comments
-      }
-      createdBy {
-        id
-        name
-      }
-      updatedBy {
-        id
-        name
-      }
-      Customer {
-        id
-        firstName
-        lastName
-        middleName
-        dob
-        phone
-        email
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      orderCustomerId
-    }
-  }
-`;
-export const onUpdateOrder = /* GraphQL */ `
-  subscription OnUpdateOrder {
-    onUpdateOrder {
-      id
-      orderNo
-      orderDate
-      subtotal
-      tax
-      total
-      status
-      employeeId
-      employeeName
-      lines {
-        identifier
-        productId
-        productName
-        unitOfMeasure
-        barcode
-        sku
-        quantity
-        tax
-        price
-      }
-      paymentInfo {
-        employeeId
-        employeeName
-      }
-      refundInfo {
-        employeeId
-        employeeName
-        comments
-      }
-      createdBy {
-        id
-        name
-      }
-      updatedBy {
-        id
-        name
-      }
-      Customer {
-        id
-        firstName
-        lastName
-        middleName
-        dob
-        phone
-        email
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      orderCustomerId
-    }
-  }
-`;
-export const onDeleteOrder = /* GraphQL */ `
-  subscription OnDeleteOrder {
-    onDeleteOrder {
-      id
-      orderNo
-      orderDate
-      subtotal
-      tax
-      total
-      status
-      employeeId
-      employeeName
-      lines {
-        identifier
-        productId
-        productName
-        unitOfMeasure
-        barcode
-        sku
-        quantity
-        tax
-        price
-      }
-      paymentInfo {
-        employeeId
-        employeeName
-      }
-      refundInfo {
-        employeeId
-        employeeName
-        comments
-      }
-      createdBy {
-        id
-        name
-      }
-      updatedBy {
-        id
-        name
-      }
-      Customer {
-        id
-        firstName
-        lastName
-        middleName
-        dob
-        phone
-        email
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      orderCustomerId
-    }
-  }
-`;
-export const onCreateProduct = /* GraphQL */ `
-  subscription OnCreateProduct {
-    onCreateProduct {
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteUnitOfMeasureSubscriptionVariables,
+  APITypes.OnDeleteUnitOfMeasureSubscription
+>;
+export const onCreateInventoryChanges = /* GraphQL */ `subscription OnCreateInventoryChanges(
+  $filter: ModelSubscriptionInventoryChangesFilterInput
+) {
+  onCreateInventoryChanges(filter: $filter) {
+    id
+    timestamp
+    type
+    typeId
+    quantityIn
+    quantityOut
+    Product {
       id
       name
       description
@@ -488,30 +814,8 @@ export const onCreateProduct = /* GraphQL */ `
       reorderPoint
       reorderQuantity
       picture
-      Category {
-        id
-        name
-        description
-        code
-        color
-        picture
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      Brand {
-        id
-        name
-        description
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
       isActive
+      isEBTEligible
       createdAt
       updatedAt
       _version
@@ -519,12 +823,32 @@ export const onCreateProduct = /* GraphQL */ `
       _lastChangedAt
       productCategoryId
       productBrandId
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    inventoryChangesProductId
+    __typename
   }
-`;
-export const onUpdateProduct = /* GraphQL */ `
-  subscription OnUpdateProduct {
-    onUpdateProduct {
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateInventoryChangesSubscriptionVariables,
+  APITypes.OnCreateInventoryChangesSubscription
+>;
+export const onUpdateInventoryChanges = /* GraphQL */ `subscription OnUpdateInventoryChanges(
+  $filter: ModelSubscriptionInventoryChangesFilterInput
+) {
+  onUpdateInventoryChanges(filter: $filter) {
+    id
+    timestamp
+    type
+    typeId
+    quantityIn
+    quantityOut
+    Product {
       id
       name
       description
@@ -540,30 +864,8 @@ export const onUpdateProduct = /* GraphQL */ `
       reorderPoint
       reorderQuantity
       picture
-      Category {
-        id
-        name
-        description
-        code
-        color
-        picture
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      Brand {
-        id
-        name
-        description
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
       isActive
+      isEBTEligible
       createdAt
       updatedAt
       _version
@@ -571,12 +873,32 @@ export const onUpdateProduct = /* GraphQL */ `
       _lastChangedAt
       productCategoryId
       productBrandId
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    inventoryChangesProductId
+    __typename
   }
-`;
-export const onDeleteProduct = /* GraphQL */ `
-  subscription OnDeleteProduct {
-    onDeleteProduct {
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateInventoryChangesSubscriptionVariables,
+  APITypes.OnUpdateInventoryChangesSubscription
+>;
+export const onDeleteInventoryChanges = /* GraphQL */ `subscription OnDeleteInventoryChanges(
+  $filter: ModelSubscriptionInventoryChangesFilterInput
+) {
+  onDeleteInventoryChanges(filter: $filter) {
+    id
+    timestamp
+    type
+    typeId
+    quantityIn
+    quantityOut
+    Product {
       id
       name
       description
@@ -592,30 +914,8 @@ export const onDeleteProduct = /* GraphQL */ `
       reorderPoint
       reorderQuantity
       picture
-      Category {
-        id
-        name
-        description
-        code
-        color
-        picture
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      Brand {
-        id
-        name
-        description
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
       isActive
+      isEBTEligible
       createdAt
       updatedAt
       _version
@@ -623,591 +923,537 @@ export const onDeleteProduct = /* GraphQL */ `
       _lastChangedAt
       productCategoryId
       productBrandId
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    inventoryChangesProductId
+    __typename
   }
-`;
-export const onCreateUnitOfMeasure = /* GraphQL */ `
-  subscription OnCreateUnitOfMeasure {
-    onCreateUnitOfMeasure {
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteInventoryChangesSubscriptionVariables,
+  APITypes.OnDeleteInventoryChangesSubscription
+>;
+export const onCreateInventoryCount = /* GraphQL */ `subscription OnCreateInventoryCount(
+  $filter: ModelSubscriptionInventoryCountFilterInput
+) {
+  onCreateInventoryCount(filter: $filter) {
+    id
+    comments
+    status
+    createdBy {
       id
       name
-      description
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onUpdateUnitOfMeasure = /* GraphQL */ `
-  subscription OnUpdateUnitOfMeasure {
-    onUpdateUnitOfMeasure {
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateInventoryCountSubscriptionVariables,
+  APITypes.OnCreateInventoryCountSubscription
+>;
+export const onUpdateInventoryCount = /* GraphQL */ `subscription OnUpdateInventoryCount(
+  $filter: ModelSubscriptionInventoryCountFilterInput
+) {
+  onUpdateInventoryCount(filter: $filter) {
+    id
+    comments
+    status
+    createdBy {
       id
       name
-      description
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onDeleteUnitOfMeasure = /* GraphQL */ `
-  subscription OnDeleteUnitOfMeasure {
-    onDeleteUnitOfMeasure {
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateInventoryCountSubscriptionVariables,
+  APITypes.OnUpdateInventoryCountSubscription
+>;
+export const onDeleteInventoryCount = /* GraphQL */ `subscription OnDeleteInventoryCount(
+  $filter: ModelSubscriptionInventoryCountFilterInput
+) {
+  onDeleteInventoryCount(filter: $filter) {
+    id
+    comments
+    status
+    createdBy {
       id
       name
-      description
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onCreateInventoryChanges = /* GraphQL */ `
-  subscription OnCreateInventoryChanges {
-    onCreateInventoryChanges {
-      id
-      timestamp
-      type
-      typeId
-      quantityIn
-      quantityOut
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryChangesProductId
-    }
-  }
-`;
-export const onUpdateInventoryChanges = /* GraphQL */ `
-  subscription OnUpdateInventoryChanges {
-    onUpdateInventoryChanges {
-      id
-      timestamp
-      type
-      typeId
-      quantityIn
-      quantityOut
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryChangesProductId
-    }
-  }
-`;
-export const onDeleteInventoryChanges = /* GraphQL */ `
-  subscription OnDeleteInventoryChanges {
-    onDeleteInventoryChanges {
-      id
-      timestamp
-      type
-      typeId
-      quantityIn
-      quantityOut
-      Product {
-        id
-        name
-        description
-        price
-        tags
-        cost
-        barcode
-        sku
-        plu
-        quantity
-        unitOfMeasure
-        trackStock
-        reorderPoint
-        reorderQuantity
-        picture
-        isActive
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        productCategoryId
-        productBrandId
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryChangesProductId
-    }
-  }
-`;
-export const onCreateInventoryCount = /* GraphQL */ `
-  subscription OnCreateInventoryCount {
-    onCreateInventoryCount {
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteInventoryCountSubscriptionVariables,
+  APITypes.OnDeleteInventoryCountSubscription
+>;
+export const onCreateInventoryCountLine = /* GraphQL */ `subscription OnCreateInventoryCountLine(
+  $filter: ModelSubscriptionInventoryCountLineFilterInput
+) {
+  onCreateInventoryCountLine(filter: $filter) {
+    id
+    productId
+    productName
+    unitOfMeasure
+    current
+    newCount
+    comments
+    InventoryCount {
       id
       comments
       status
-      createdBy {
-        id
-        name
-      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    inventoryCountLineInventoryCountId
+    __typename
   }
-`;
-export const onUpdateInventoryCount = /* GraphQL */ `
-  subscription OnUpdateInventoryCount {
-    onUpdateInventoryCount {
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateInventoryCountLineSubscriptionVariables,
+  APITypes.OnCreateInventoryCountLineSubscription
+>;
+export const onUpdateInventoryCountLine = /* GraphQL */ `subscription OnUpdateInventoryCountLine(
+  $filter: ModelSubscriptionInventoryCountLineFilterInput
+) {
+  onUpdateInventoryCountLine(filter: $filter) {
+    id
+    productId
+    productName
+    unitOfMeasure
+    current
+    newCount
+    comments
+    InventoryCount {
       id
       comments
       status
-      createdBy {
-        id
-        name
-      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    inventoryCountLineInventoryCountId
+    __typename
   }
-`;
-export const onDeleteInventoryCount = /* GraphQL */ `
-  subscription OnDeleteInventoryCount {
-    onDeleteInventoryCount {
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateInventoryCountLineSubscriptionVariables,
+  APITypes.OnUpdateInventoryCountLineSubscription
+>;
+export const onDeleteInventoryCountLine = /* GraphQL */ `subscription OnDeleteInventoryCountLine(
+  $filter: ModelSubscriptionInventoryCountLineFilterInput
+) {
+  onDeleteInventoryCountLine(filter: $filter) {
+    id
+    productId
+    productName
+    unitOfMeasure
+    current
+    newCount
+    comments
+    InventoryCount {
       id
       comments
       status
-      createdBy {
-        id
-        name
-      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    inventoryCountLineInventoryCountId
+    __typename
   }
-`;
-export const onCreateInventoryCountLine = /* GraphQL */ `
-  subscription OnCreateInventoryCountLine {
-    onCreateInventoryCountLine {
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteInventoryCountLineSubscriptionVariables,
+  APITypes.OnDeleteInventoryCountLineSubscription
+>;
+export const onCreateInventoryReceive = /* GraphQL */ `subscription OnCreateInventoryReceive(
+  $filter: ModelSubscriptionInventoryReceiveFilterInput
+) {
+  onCreateInventoryReceive(filter: $filter) {
+    id
+    comments
+    status
+    createdBy {
       id
-      productId
-      productName
-      unitOfMeasure
-      current
-      newCount
-      comments
-      InventoryCount {
-        id
-        comments
-        status
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryCountLineInventoryCountId
+      name
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onUpdateInventoryCountLine = /* GraphQL */ `
-  subscription OnUpdateInventoryCountLine {
-    onUpdateInventoryCountLine {
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateInventoryReceiveSubscriptionVariables,
+  APITypes.OnCreateInventoryReceiveSubscription
+>;
+export const onUpdateInventoryReceive = /* GraphQL */ `subscription OnUpdateInventoryReceive(
+  $filter: ModelSubscriptionInventoryReceiveFilterInput
+) {
+  onUpdateInventoryReceive(filter: $filter) {
+    id
+    comments
+    status
+    createdBy {
       id
-      productId
-      productName
-      unitOfMeasure
-      current
-      newCount
-      comments
-      InventoryCount {
-        id
-        comments
-        status
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryCountLineInventoryCountId
+      name
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onDeleteInventoryCountLine = /* GraphQL */ `
-  subscription OnDeleteInventoryCountLine {
-    onDeleteInventoryCountLine {
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateInventoryReceiveSubscriptionVariables,
+  APITypes.OnUpdateInventoryReceiveSubscription
+>;
+export const onDeleteInventoryReceive = /* GraphQL */ `subscription OnDeleteInventoryReceive(
+  $filter: ModelSubscriptionInventoryReceiveFilterInput
+) {
+  onDeleteInventoryReceive(filter: $filter) {
+    id
+    comments
+    status
+    createdBy {
       id
-      productId
-      productName
-      unitOfMeasure
-      current
-      newCount
-      comments
-      InventoryCount {
-        id
-        comments
-        status
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryCountLineInventoryCountId
+      name
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onCreateInventoryReceive = /* GraphQL */ `
-  subscription OnCreateInventoryReceive {
-    onCreateInventoryReceive {
-      id
-      comments
-      status
-      createdBy {
-        id
-        name
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onUpdateInventoryReceive = /* GraphQL */ `
-  subscription OnUpdateInventoryReceive {
-    onUpdateInventoryReceive {
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteInventoryReceiveSubscriptionVariables,
+  APITypes.OnDeleteInventoryReceiveSubscription
+>;
+export const onCreateInventoryReceiveLine = /* GraphQL */ `subscription OnCreateInventoryReceiveLine(
+  $filter: ModelSubscriptionInventoryReceiveLineFilterInput
+) {
+  onCreateInventoryReceiveLine(filter: $filter) {
+    id
+    productId
+    productName
+    unitOfMeasure
+    received
+    comments
+    InventoryReceive {
       id
       comments
       status
-      createdBy {
-        id
-        name
-      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    inventoryReceiveLineInventoryReceiveId
+    __typename
   }
-`;
-export const onDeleteInventoryReceive = /* GraphQL */ `
-  subscription OnDeleteInventoryReceive {
-    onDeleteInventoryReceive {
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateInventoryReceiveLineSubscriptionVariables,
+  APITypes.OnCreateInventoryReceiveLineSubscription
+>;
+export const onUpdateInventoryReceiveLine = /* GraphQL */ `subscription OnUpdateInventoryReceiveLine(
+  $filter: ModelSubscriptionInventoryReceiveLineFilterInput
+) {
+  onUpdateInventoryReceiveLine(filter: $filter) {
+    id
+    productId
+    productName
+    unitOfMeasure
+    received
+    comments
+    InventoryReceive {
       id
       comments
       status
-      createdBy {
-        id
-        name
-      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    inventoryReceiveLineInventoryReceiveId
+    __typename
   }
-`;
-export const onCreateInventoryReceiveLine = /* GraphQL */ `
-  subscription OnCreateInventoryReceiveLine {
-    onCreateInventoryReceiveLine {
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateInventoryReceiveLineSubscriptionVariables,
+  APITypes.OnUpdateInventoryReceiveLineSubscription
+>;
+export const onDeleteInventoryReceiveLine = /* GraphQL */ `subscription OnDeleteInventoryReceiveLine(
+  $filter: ModelSubscriptionInventoryReceiveLineFilterInput
+) {
+  onDeleteInventoryReceiveLine(filter: $filter) {
+    id
+    productId
+    productName
+    unitOfMeasure
+    received
+    comments
+    InventoryReceive {
       id
-      productId
-      productName
-      unitOfMeasure
-      received
       comments
-      InventoryReceive {
-        id
-        comments
-        status
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
+      status
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      inventoryReceiveLineInventoryReceiveId
+      __typename
     }
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    inventoryReceiveLineInventoryReceiveId
+    __typename
   }
-`;
-export const onUpdateInventoryReceiveLine = /* GraphQL */ `
-  subscription OnUpdateInventoryReceiveLine {
-    onUpdateInventoryReceiveLine {
-      id
-      productId
-      productName
-      unitOfMeasure
-      received
-      comments
-      InventoryReceive {
-        id
-        comments
-        status
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryReceiveLineInventoryReceiveId
-    }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteInventoryReceiveLineSubscriptionVariables,
+  APITypes.OnDeleteInventoryReceiveLineSubscription
+>;
+export const onCreatePrinter = /* GraphQL */ `subscription OnCreatePrinter($filter: ModelSubscriptionPrinterFilterInput) {
+  onCreatePrinter(filter: $filter) {
+    id
+    deviceId
+    identifier
+    interfaceType
+    ip
+    model
+    alias
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onDeleteInventoryReceiveLine = /* GraphQL */ `
-  subscription OnDeleteInventoryReceiveLine {
-    onDeleteInventoryReceiveLine {
-      id
-      productId
-      productName
-      unitOfMeasure
-      received
-      comments
-      InventoryReceive {
-        id
-        comments
-        status
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      inventoryReceiveLineInventoryReceiveId
-    }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreatePrinterSubscriptionVariables,
+  APITypes.OnCreatePrinterSubscription
+>;
+export const onUpdatePrinter = /* GraphQL */ `subscription OnUpdatePrinter($filter: ModelSubscriptionPrinterFilterInput) {
+  onUpdatePrinter(filter: $filter) {
+    id
+    deviceId
+    identifier
+    interfaceType
+    ip
+    model
+    alias
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onCreatePrinter = /* GraphQL */ `
-  subscription OnCreatePrinter {
-    onCreatePrinter {
-      id
-      deviceId
-      identifier
-      interfaceType
-      ip
-      model
-      alias
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdatePrinterSubscriptionVariables,
+  APITypes.OnUpdatePrinterSubscription
+>;
+export const onDeletePrinter = /* GraphQL */ `subscription OnDeletePrinter($filter: ModelSubscriptionPrinterFilterInput) {
+  onDeletePrinter(filter: $filter) {
+    id
+    deviceId
+    identifier
+    interfaceType
+    ip
+    model
+    alias
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onUpdatePrinter = /* GraphQL */ `
-  subscription OnUpdatePrinter {
-    onUpdatePrinter {
-      id
-      deviceId
-      identifier
-      interfaceType
-      ip
-      model
-      alias
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeletePrinterSubscriptionVariables,
+  APITypes.OnDeletePrinterSubscription
+>;
+export const onCreateStation = /* GraphQL */ `subscription OnCreateStation($filter: ModelSubscriptionStationFilterInput) {
+  onCreateStation(filter: $filter) {
+    id
+    deviceId
+    alias
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onDeletePrinter = /* GraphQL */ `
-  subscription OnDeletePrinter {
-    onDeletePrinter {
-      id
-      deviceId
-      identifier
-      interfaceType
-      ip
-      model
-      alias
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateStationSubscriptionVariables,
+  APITypes.OnCreateStationSubscription
+>;
+export const onUpdateStation = /* GraphQL */ `subscription OnUpdateStation($filter: ModelSubscriptionStationFilterInput) {
+  onUpdateStation(filter: $filter) {
+    id
+    deviceId
+    alias
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onCreateStation = /* GraphQL */ `
-  subscription OnCreateStation {
-    onCreateStation {
-      id
-      deviceId
-      alias
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateStationSubscriptionVariables,
+  APITypes.OnUpdateStationSubscription
+>;
+export const onDeleteStation = /* GraphQL */ `subscription OnDeleteStation($filter: ModelSubscriptionStationFilterInput) {
+  onDeleteStation(filter: $filter) {
+    id
+    deviceId
+    alias
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onUpdateStation = /* GraphQL */ `
-  subscription OnUpdateStation {
-    onUpdateStation {
-      id
-      deviceId
-      alias
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteStationSubscriptionVariables,
+  APITypes.OnDeleteStationSubscription
+>;
+export const onCreateGlobalSettings = /* GraphQL */ `subscription OnCreateGlobalSettings(
+  $filter: ModelSubscriptionGlobalSettingsFilterInput
+) {
+  onCreateGlobalSettings(filter: $filter) {
+    enforceSalesBasedOnInventory
+    id
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onDeleteStation = /* GraphQL */ `
-  subscription OnDeleteStation {
-    onDeleteStation {
-      id
-      deviceId
-      alias
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateGlobalSettingsSubscriptionVariables,
+  APITypes.OnCreateGlobalSettingsSubscription
+>;
+export const onUpdateGlobalSettings = /* GraphQL */ `subscription OnUpdateGlobalSettings(
+  $filter: ModelSubscriptionGlobalSettingsFilterInput
+) {
+  onUpdateGlobalSettings(filter: $filter) {
+    enforceSalesBasedOnInventory
+    id
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onCreateGlobalSettings = /* GraphQL */ `
-  subscription OnCreateGlobalSettings {
-    onCreateGlobalSettings {
-      enforceSalesBasedOnInventory
-      id
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateGlobalSettingsSubscriptionVariables,
+  APITypes.OnUpdateGlobalSettingsSubscription
+>;
+export const onDeleteGlobalSettings = /* GraphQL */ `subscription OnDeleteGlobalSettings(
+  $filter: ModelSubscriptionGlobalSettingsFilterInput
+) {
+  onDeleteGlobalSettings(filter: $filter) {
+    enforceSalesBasedOnInventory
+    id
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
   }
-`;
-export const onUpdateGlobalSettings = /* GraphQL */ `
-  subscription OnUpdateGlobalSettings {
-    onUpdateGlobalSettings {
-      enforceSalesBasedOnInventory
-      id
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
-export const onDeleteGlobalSettings = /* GraphQL */ `
-  subscription OnDeleteGlobalSettings {
-    onDeleteGlobalSettings {
-      enforceSalesBasedOnInventory
-      id
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteGlobalSettingsSubscriptionVariables,
+  APITypes.OnDeleteGlobalSettingsSubscription
+>;

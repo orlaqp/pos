@@ -58,7 +58,8 @@ export const cartSlice = createSlice({
                     id: i.productId,
                     name: i?.productName,
                     price: i?.price,
-                    unitOfMeasure: i?.unitOfMeasure
+                    unitOfMeasure: i?.unitOfMeasure,
+                    isEBTEligible: i?.isEBTEligible ?? false,
                 }
             }))
             state.payments = [];

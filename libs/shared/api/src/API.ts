@@ -31,6 +31,9 @@ export type ModelStoreConditionInput = {
   and?: Array< ModelStoreConditionInput | null > | null,
   or?: Array< ModelStoreConditionInput | null > | null,
   not?: ModelStoreConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
 };
 
 export type ModelStringInput = {
@@ -71,6 +74,13 @@ export type ModelSizeInput = {
   ge?: number | null,
   gt?: number | null,
   between?: Array< number | null > | null,
+};
+
+export type ModelBooleanInput = {
+  ne?: boolean | null,
+  eq?: boolean | null,
+  attributeExists?: boolean | null,
+  attributeType?: ModelAttributeTypes | null,
 };
 
 export type Store = {
@@ -126,6 +136,9 @@ export type ModelBrandConditionInput = {
   and?: Array< ModelBrandConditionInput | null > | null,
   or?: Array< ModelBrandConditionInput | null > | null,
   not?: ModelBrandConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
 };
 
 export type Brand = {
@@ -171,6 +184,9 @@ export type ModelCategoryConditionInput = {
   and?: Array< ModelCategoryConditionInput | null > | null,
   or?: Array< ModelCategoryConditionInput | null > | null,
   not?: ModelCategoryConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
 };
 
 export type Category = {
@@ -224,6 +240,9 @@ export type ModelCustomerConditionInput = {
   and?: Array< ModelCustomerConditionInput | null > | null,
   or?: Array< ModelCustomerConditionInput | null > | null,
   not?: ModelCustomerConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
 };
 
 export type Customer = {
@@ -287,13 +306,9 @@ export type ModelEmployeeConditionInput = {
   and?: Array< ModelEmployeeConditionInput | null > | null,
   or?: Array< ModelEmployeeConditionInput | null > | null,
   not?: ModelEmployeeConditionInput | null,
-};
-
-export type ModelBooleanInput = {
-  ne?: boolean | null,
-  eq?: boolean | null,
-  attributeExists?: boolean | null,
-  attributeType?: ModelAttributeTypes | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
 };
 
 export type Employee = {
@@ -372,6 +387,9 @@ export type OrderLineInput = {
   quantity: number,
   tax: number,
   price: number,
+  isEBTEligible?: boolean | null,
+  ebtPaidAmount?: number | null,
+  nonEbtPaidAmount?: number | null,
 };
 
 export type PaymentInfoInput = {
@@ -389,6 +407,7 @@ export enum PaymentType {
   CASH = "CASH",
   CHECK = "CHECK",
   CC = "CC",
+  EBT = "EBT",
 }
 
 
@@ -415,6 +434,9 @@ export type ModelOrderConditionInput = {
   and?: Array< ModelOrderConditionInput | null > | null,
   or?: Array< ModelOrderConditionInput | null > | null,
   not?: ModelOrderConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   orderCustomerId?: ModelIDInput | null,
 };
 
@@ -487,6 +509,9 @@ export type OrderLine = {
   quantity: number,
   tax: number,
   price: number,
+  isEBTEligible?: boolean | null,
+  ebtPaidAmount?: number | null,
+  nonEbtPaidAmount?: number | null,
 };
 
 export type PaymentInfo = {
@@ -556,6 +581,7 @@ export type CreateProductInput = {
   reorderQuantity?: number | null,
   picture?: string | null,
   isActive: boolean,
+  isEBTEligible?: boolean | null,
   _version?: number | null,
   productCategoryId?: string | null,
   productBrandId?: string | null,
@@ -577,9 +603,13 @@ export type ModelProductConditionInput = {
   reorderQuantity?: ModelFloatInput | null,
   picture?: ModelStringInput | null,
   isActive?: ModelBooleanInput | null,
+  isEBTEligible?: ModelBooleanInput | null,
   and?: Array< ModelProductConditionInput | null > | null,
   or?: Array< ModelProductConditionInput | null > | null,
   not?: ModelProductConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   productCategoryId?: ModelIDInput | null,
   productBrandId?: ModelIDInput | null,
 };
@@ -604,6 +634,7 @@ export type Product = {
   Category?: Category | null,
   Brand?: Brand | null,
   isActive: boolean,
+  isEBTEligible?: boolean | null,
   createdAt: string,
   updatedAt: string,
   _version: number,
@@ -630,6 +661,7 @@ export type UpdateProductInput = {
   reorderQuantity?: number | null,
   picture?: string | null,
   isActive?: boolean | null,
+  isEBTEligible?: boolean | null,
   _version?: number | null,
   productCategoryId?: string | null,
   productBrandId?: string | null,
@@ -653,6 +685,9 @@ export type ModelUnitOfMeasureConditionInput = {
   and?: Array< ModelUnitOfMeasureConditionInput | null > | null,
   or?: Array< ModelUnitOfMeasureConditionInput | null > | null,
   not?: ModelUnitOfMeasureConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
 };
 
 export type UnitOfMeasure = {
@@ -699,6 +734,9 @@ export type ModelInventoryChangesConditionInput = {
   and?: Array< ModelInventoryChangesConditionInput | null > | null,
   or?: Array< ModelInventoryChangesConditionInput | null > | null,
   not?: ModelInventoryChangesConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   inventoryChangesProductId?: ModelIDInput | null,
 };
 
@@ -767,6 +805,9 @@ export type ModelInventoryCountConditionInput = {
   and?: Array< ModelInventoryCountConditionInput | null > | null,
   or?: Array< ModelInventoryCountConditionInput | null > | null,
   not?: ModelInventoryCountConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
 };
 
 export type ModelInventoryCountStatusInput = {
@@ -822,6 +863,9 @@ export type ModelInventoryCountLineConditionInput = {
   and?: Array< ModelInventoryCountLineConditionInput | null > | null,
   or?: Array< ModelInventoryCountLineConditionInput | null > | null,
   not?: ModelInventoryCountLineConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   inventoryCountLineInventoryCountId?: ModelIDInput | null,
 };
 
@@ -880,6 +924,9 @@ export type ModelInventoryReceiveConditionInput = {
   and?: Array< ModelInventoryReceiveConditionInput | null > | null,
   or?: Array< ModelInventoryReceiveConditionInput | null > | null,
   not?: ModelInventoryReceiveConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
 };
 
 export type ModelInventoryReceiveStatusInput = {
@@ -933,6 +980,9 @@ export type ModelInventoryReceiveLineConditionInput = {
   and?: Array< ModelInventoryReceiveLineConditionInput | null > | null,
   or?: Array< ModelInventoryReceiveLineConditionInput | null > | null,
   not?: ModelInventoryReceiveLineConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   inventoryReceiveLineInventoryReceiveId?: ModelIDInput | null,
 };
 
@@ -990,6 +1040,9 @@ export type ModelPrinterConditionInput = {
   and?: Array< ModelPrinterConditionInput | null > | null,
   or?: Array< ModelPrinterConditionInput | null > | null,
   not?: ModelPrinterConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
 };
 
 export type Printer = {
@@ -1037,6 +1090,9 @@ export type ModelStationConditionInput = {
   and?: Array< ModelStationConditionInput | null > | null,
   or?: Array< ModelStationConditionInput | null > | null,
   not?: ModelStationConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
 };
 
 export type Station = {
@@ -1074,6 +1130,9 @@ export type ModelGlobalSettingsConditionInput = {
   and?: Array< ModelGlobalSettingsConditionInput | null > | null,
   or?: Array< ModelGlobalSettingsConditionInput | null > | null,
   not?: ModelGlobalSettingsConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
 };
 
 export type GlobalSettings = {
@@ -1143,9 +1202,12 @@ export type ModelStoreFilterInput = {
   fax?: ModelStringInput | null,
   email?: ModelStringInput | null,
   disclaimer?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelStoreFilterInput | null > | null,
   or?: Array< ModelStoreFilterInput | null > | null,
   not?: ModelStoreFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
 };
 
 export type ModelStoreConnection = {
@@ -1159,9 +1221,12 @@ export type ModelBrandFilterInput = {
   id?: ModelIDInput | null,
   name?: ModelStringInput | null,
   description?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelBrandFilterInput | null > | null,
   or?: Array< ModelBrandFilterInput | null > | null,
   not?: ModelBrandFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
 };
 
 export type ModelBrandConnection = {
@@ -1178,9 +1243,12 @@ export type ModelCategoryFilterInput = {
   code?: ModelStringInput | null,
   color?: ModelStringInput | null,
   picture?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelCategoryFilterInput | null > | null,
   or?: Array< ModelCategoryFilterInput | null > | null,
   not?: ModelCategoryFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
 };
 
 export type ModelCategoryConnection = {
@@ -1198,9 +1266,12 @@ export type ModelCustomerFilterInput = {
   dob?: ModelStringInput | null,
   phone?: ModelStringInput | null,
   email?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelCustomerFilterInput | null > | null,
   or?: Array< ModelCustomerFilterInput | null > | null,
   not?: ModelCustomerFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
 };
 
 export type ModelCustomerConnection = {
@@ -1222,9 +1293,12 @@ export type ModelEmployeeFilterInput = {
   pin?: ModelStringInput | null,
   roles?: ModelStringInput | null,
   active?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelEmployeeFilterInput | null > | null,
   or?: Array< ModelEmployeeFilterInput | null > | null,
   not?: ModelEmployeeFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
 };
 
 export type ModelEmployeeConnection = {
@@ -1244,9 +1318,12 @@ export type ModelOrderFilterInput = {
   status?: ModelOrderStatusInput | null,
   employeeId?: ModelStringInput | null,
   employeeName?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelOrderFilterInput | null > | null,
   or?: Array< ModelOrderFilterInput | null > | null,
   not?: ModelOrderFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
   orderCustomerId?: ModelIDInput | null,
 };
 
@@ -1274,9 +1351,13 @@ export type ModelProductFilterInput = {
   reorderQuantity?: ModelFloatInput | null,
   picture?: ModelStringInput | null,
   isActive?: ModelBooleanInput | null,
+  isEBTEligible?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelProductFilterInput | null > | null,
   or?: Array< ModelProductFilterInput | null > | null,
   not?: ModelProductFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
   productCategoryId?: ModelIDInput | null,
   productBrandId?: ModelIDInput | null,
 };
@@ -1292,9 +1373,12 @@ export type ModelUnitOfMeasureFilterInput = {
   id?: ModelIDInput | null,
   name?: ModelStringInput | null,
   description?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelUnitOfMeasureFilterInput | null > | null,
   or?: Array< ModelUnitOfMeasureFilterInput | null > | null,
   not?: ModelUnitOfMeasureFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
 };
 
 export type ModelUnitOfMeasureConnection = {
@@ -1311,9 +1395,12 @@ export type ModelInventoryChangesFilterInput = {
   typeId?: ModelStringInput | null,
   quantityIn?: ModelIntInput | null,
   quantityOut?: ModelIntInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelInventoryChangesFilterInput | null > | null,
   or?: Array< ModelInventoryChangesFilterInput | null > | null,
   not?: ModelInventoryChangesFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
   inventoryChangesProductId?: ModelIDInput | null,
 };
 
@@ -1328,9 +1415,12 @@ export type ModelInventoryCountFilterInput = {
   id?: ModelIDInput | null,
   comments?: ModelStringInput | null,
   status?: ModelInventoryCountStatusInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelInventoryCountFilterInput | null > | null,
   or?: Array< ModelInventoryCountFilterInput | null > | null,
   not?: ModelInventoryCountFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
 };
 
 export type ModelInventoryCountConnection = {
@@ -1348,9 +1438,12 @@ export type ModelInventoryCountLineFilterInput = {
   current?: ModelFloatInput | null,
   newCount?: ModelFloatInput | null,
   comments?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelInventoryCountLineFilterInput | null > | null,
   or?: Array< ModelInventoryCountLineFilterInput | null > | null,
   not?: ModelInventoryCountLineFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
   inventoryCountLineInventoryCountId?: ModelIDInput | null,
 };
 
@@ -1365,9 +1458,12 @@ export type ModelInventoryReceiveFilterInput = {
   id?: ModelIDInput | null,
   comments?: ModelStringInput | null,
   status?: ModelInventoryReceiveStatusInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelInventoryReceiveFilterInput | null > | null,
   or?: Array< ModelInventoryReceiveFilterInput | null > | null,
   not?: ModelInventoryReceiveFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
 };
 
 export type ModelInventoryReceiveConnection = {
@@ -1384,9 +1480,12 @@ export type ModelInventoryReceiveLineFilterInput = {
   unitOfMeasure?: ModelStringInput | null,
   received?: ModelFloatInput | null,
   comments?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelInventoryReceiveLineFilterInput | null > | null,
   or?: Array< ModelInventoryReceiveLineFilterInput | null > | null,
   not?: ModelInventoryReceiveLineFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
   inventoryReceiveLineInventoryReceiveId?: ModelIDInput | null,
 };
 
@@ -1405,9 +1504,12 @@ export type ModelPrinterFilterInput = {
   ip?: ModelStringInput | null,
   model?: ModelStringInput | null,
   alias?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelPrinterFilterInput | null > | null,
   or?: Array< ModelPrinterFilterInput | null > | null,
   not?: ModelPrinterFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
 };
 
 export type ModelPrinterConnection = {
@@ -1421,9 +1523,12 @@ export type ModelStationFilterInput = {
   id?: ModelIDInput | null,
   deviceId?: ModelStringInput | null,
   alias?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelStationFilterInput | null > | null,
   or?: Array< ModelStationFilterInput | null > | null,
   not?: ModelStationFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
 };
 
 export type ModelStationConnection = {
@@ -1435,9 +1540,13 @@ export type ModelStationConnection = {
 
 export type ModelGlobalSettingsFilterInput = {
   enforceSalesBasedOnInventory?: ModelBooleanInput | null,
+  id?: ModelIDInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelGlobalSettingsFilterInput | null > | null,
   or?: Array< ModelGlobalSettingsFilterInput | null > | null,
   not?: ModelGlobalSettingsFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
 };
 
 export type ModelGlobalSettingsConnection = {
@@ -1445,6 +1554,303 @@ export type ModelGlobalSettingsConnection = {
   items:  Array<GlobalSettings | null >,
   nextToken?: string | null,
   startedAt?: number | null,
+};
+
+export type ModelSubscriptionStoreFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  name?: ModelSubscriptionStringInput | null,
+  address?: ModelSubscriptionStringInput | null,
+  city?: ModelSubscriptionStringInput | null,
+  state?: ModelSubscriptionStringInput | null,
+  zipCode?: ModelSubscriptionStringInput | null,
+  country?: ModelSubscriptionStringInput | null,
+  phone?: ModelSubscriptionStringInput | null,
+  fax?: ModelSubscriptionStringInput | null,
+  email?: ModelSubscriptionStringInput | null,
+  disclaimer?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionStoreFilterInput | null > | null,
+  or?: Array< ModelSubscriptionStoreFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+};
+
+export type ModelSubscriptionIDInput = {
+  ne?: string | null,
+  eq?: string | null,
+  le?: string | null,
+  lt?: string | null,
+  ge?: string | null,
+  gt?: string | null,
+  contains?: string | null,
+  notContains?: string | null,
+  between?: Array< string | null > | null,
+  beginsWith?: string | null,
+  in?: Array< string | null > | null,
+  notIn?: Array< string | null > | null,
+};
+
+export type ModelSubscriptionStringInput = {
+  ne?: string | null,
+  eq?: string | null,
+  le?: string | null,
+  lt?: string | null,
+  ge?: string | null,
+  gt?: string | null,
+  contains?: string | null,
+  notContains?: string | null,
+  between?: Array< string | null > | null,
+  beginsWith?: string | null,
+  in?: Array< string | null > | null,
+  notIn?: Array< string | null > | null,
+};
+
+export type ModelSubscriptionBrandFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  name?: ModelSubscriptionStringInput | null,
+  description?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionBrandFilterInput | null > | null,
+  or?: Array< ModelSubscriptionBrandFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+};
+
+export type ModelSubscriptionCategoryFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  name?: ModelSubscriptionStringInput | null,
+  description?: ModelSubscriptionStringInput | null,
+  code?: ModelSubscriptionStringInput | null,
+  color?: ModelSubscriptionStringInput | null,
+  picture?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionCategoryFilterInput | null > | null,
+  or?: Array< ModelSubscriptionCategoryFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+};
+
+export type ModelSubscriptionCustomerFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  firstName?: ModelSubscriptionStringInput | null,
+  lastName?: ModelSubscriptionStringInput | null,
+  middleName?: ModelSubscriptionStringInput | null,
+  dob?: ModelSubscriptionStringInput | null,
+  phone?: ModelSubscriptionStringInput | null,
+  email?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionCustomerFilterInput | null > | null,
+  or?: Array< ModelSubscriptionCustomerFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+};
+
+export type ModelSubscriptionEmployeeFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  code?: ModelSubscriptionStringInput | null,
+  firstName?: ModelSubscriptionStringInput | null,
+  lastName?: ModelSubscriptionStringInput | null,
+  middleName?: ModelSubscriptionStringInput | null,
+  dob?: ModelSubscriptionStringInput | null,
+  phone?: ModelSubscriptionStringInput | null,
+  email?: ModelSubscriptionStringInput | null,
+  pin?: ModelSubscriptionStringInput | null,
+  roles?: ModelSubscriptionStringInput | null,
+  active?: ModelSubscriptionBooleanInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionEmployeeFilterInput | null > | null,
+  or?: Array< ModelSubscriptionEmployeeFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+};
+
+export type ModelSubscriptionBooleanInput = {
+  ne?: boolean | null,
+  eq?: boolean | null,
+};
+
+export type ModelSubscriptionOrderFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  orderNo?: ModelSubscriptionStringInput | null,
+  orderDate?: ModelSubscriptionStringInput | null,
+  subtotal?: ModelSubscriptionFloatInput | null,
+  tax?: ModelSubscriptionFloatInput | null,
+  total?: ModelSubscriptionFloatInput | null,
+  status?: ModelSubscriptionStringInput | null,
+  employeeId?: ModelSubscriptionStringInput | null,
+  employeeName?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionOrderFilterInput | null > | null,
+  or?: Array< ModelSubscriptionOrderFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+  orderCustomerId?: ModelSubscriptionIDInput | null,
+};
+
+export type ModelSubscriptionFloatInput = {
+  ne?: number | null,
+  eq?: number | null,
+  le?: number | null,
+  lt?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  between?: Array< number | null > | null,
+  in?: Array< number | null > | null,
+  notIn?: Array< number | null > | null,
+};
+
+export type ModelSubscriptionProductFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  name?: ModelSubscriptionStringInput | null,
+  description?: ModelSubscriptionStringInput | null,
+  price?: ModelSubscriptionFloatInput | null,
+  tags?: ModelSubscriptionStringInput | null,
+  cost?: ModelSubscriptionFloatInput | null,
+  barcode?: ModelSubscriptionStringInput | null,
+  sku?: ModelSubscriptionStringInput | null,
+  plu?: ModelSubscriptionStringInput | null,
+  quantity?: ModelSubscriptionFloatInput | null,
+  unitOfMeasure?: ModelSubscriptionStringInput | null,
+  trackStock?: ModelSubscriptionBooleanInput | null,
+  reorderPoint?: ModelSubscriptionFloatInput | null,
+  reorderQuantity?: ModelSubscriptionFloatInput | null,
+  picture?: ModelSubscriptionStringInput | null,
+  isActive?: ModelSubscriptionBooleanInput | null,
+  isEBTEligible?: ModelSubscriptionBooleanInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionProductFilterInput | null > | null,
+  or?: Array< ModelSubscriptionProductFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+  productCategoryId?: ModelSubscriptionIDInput | null,
+  productBrandId?: ModelSubscriptionIDInput | null,
+};
+
+export type ModelSubscriptionUnitOfMeasureFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  name?: ModelSubscriptionStringInput | null,
+  description?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionUnitOfMeasureFilterInput | null > | null,
+  or?: Array< ModelSubscriptionUnitOfMeasureFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+};
+
+export type ModelSubscriptionInventoryChangesFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  timestamp?: ModelSubscriptionStringInput | null,
+  type?: ModelSubscriptionStringInput | null,
+  typeId?: ModelSubscriptionStringInput | null,
+  quantityIn?: ModelSubscriptionIntInput | null,
+  quantityOut?: ModelSubscriptionIntInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionInventoryChangesFilterInput | null > | null,
+  or?: Array< ModelSubscriptionInventoryChangesFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+  inventoryChangesProductId?: ModelSubscriptionIDInput | null,
+};
+
+export type ModelSubscriptionIntInput = {
+  ne?: number | null,
+  eq?: number | null,
+  le?: number | null,
+  lt?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  between?: Array< number | null > | null,
+  in?: Array< number | null > | null,
+  notIn?: Array< number | null > | null,
+};
+
+export type ModelSubscriptionInventoryCountFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  comments?: ModelSubscriptionStringInput | null,
+  status?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionInventoryCountFilterInput | null > | null,
+  or?: Array< ModelSubscriptionInventoryCountFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+};
+
+export type ModelSubscriptionInventoryCountLineFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  productId?: ModelSubscriptionStringInput | null,
+  productName?: ModelSubscriptionStringInput | null,
+  unitOfMeasure?: ModelSubscriptionStringInput | null,
+  current?: ModelSubscriptionFloatInput | null,
+  newCount?: ModelSubscriptionFloatInput | null,
+  comments?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionInventoryCountLineFilterInput | null > | null,
+  or?: Array< ModelSubscriptionInventoryCountLineFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+  inventoryCountLineInventoryCountId?: ModelSubscriptionIDInput | null,
+};
+
+export type ModelSubscriptionInventoryReceiveFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  comments?: ModelSubscriptionStringInput | null,
+  status?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionInventoryReceiveFilterInput | null > | null,
+  or?: Array< ModelSubscriptionInventoryReceiveFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+};
+
+export type ModelSubscriptionInventoryReceiveLineFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  productId?: ModelSubscriptionStringInput | null,
+  productName?: ModelSubscriptionStringInput | null,
+  unitOfMeasure?: ModelSubscriptionStringInput | null,
+  received?: ModelSubscriptionFloatInput | null,
+  comments?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionInventoryReceiveLineFilterInput | null > | null,
+  or?: Array< ModelSubscriptionInventoryReceiveLineFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+  inventoryReceiveLineInventoryReceiveId?: ModelSubscriptionIDInput | null,
+};
+
+export type ModelSubscriptionPrinterFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  deviceId?: ModelSubscriptionStringInput | null,
+  identifier?: ModelSubscriptionStringInput | null,
+  interfaceType?: ModelSubscriptionStringInput | null,
+  ip?: ModelSubscriptionStringInput | null,
+  model?: ModelSubscriptionStringInput | null,
+  alias?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionPrinterFilterInput | null > | null,
+  or?: Array< ModelSubscriptionPrinterFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+};
+
+export type ModelSubscriptionStationFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  deviceId?: ModelSubscriptionStringInput | null,
+  alias?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionStationFilterInput | null > | null,
+  or?: Array< ModelSubscriptionStationFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+};
+
+export type ModelSubscriptionGlobalSettingsFilterInput = {
+  enforceSalesBasedOnInventory?: ModelSubscriptionBooleanInput | null,
+  id?: ModelSubscriptionIDInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionGlobalSettingsFilterInput | null > | null,
+  or?: Array< ModelSubscriptionGlobalSettingsFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
 };
 
 export type CreateStoreMutationVariables = {
@@ -1829,6 +2235,9 @@ export type CreateOrderMutation = {
       quantity: number,
       tax: number,
       price: number,
+      isEBTEligible?: boolean | null,
+      ebtPaidAmount?: number | null,
+      nonEbtPaidAmount?: number | null,
     } | null >,
     paymentInfo?:  {
       __typename: "PaymentInfo",
@@ -1903,6 +2312,9 @@ export type UpdateOrderMutation = {
       quantity: number,
       tax: number,
       price: number,
+      isEBTEligible?: boolean | null,
+      ebtPaidAmount?: number | null,
+      nonEbtPaidAmount?: number | null,
     } | null >,
     paymentInfo?:  {
       __typename: "PaymentInfo",
@@ -1977,6 +2389,9 @@ export type DeleteOrderMutation = {
       quantity: number,
       tax: number,
       price: number,
+      isEBTEligible?: boolean | null,
+      ebtPaidAmount?: number | null,
+      nonEbtPaidAmount?: number | null,
     } | null >,
     paymentInfo?:  {
       __typename: "PaymentInfo",
@@ -2072,6 +2487,7 @@ export type CreateProductMutation = {
       _lastChangedAt: number,
     } | null,
     isActive: boolean,
+    isEBTEligible?: boolean | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -2131,6 +2547,7 @@ export type UpdateProductMutation = {
       _lastChangedAt: number,
     } | null,
     isActive: boolean,
+    isEBTEligible?: boolean | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -2190,6 +2607,7 @@ export type DeleteProductMutation = {
       _lastChangedAt: number,
     } | null,
     isActive: boolean,
+    isEBTEligible?: boolean | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -2289,6 +2707,7 @@ export type CreateInventoryChangesMutation = {
       reorderQuantity?: number | null,
       picture?: string | null,
       isActive: boolean,
+      isEBTEligible?: boolean | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -2338,6 +2757,7 @@ export type UpdateInventoryChangesMutation = {
       reorderQuantity?: number | null,
       picture?: string | null,
       isActive: boolean,
+      isEBTEligible?: boolean | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -2387,6 +2807,7 @@ export type DeleteInventoryChangesMutation = {
       reorderQuantity?: number | null,
       picture?: string | null,
       isActive: boolean,
+      isEBTEligible?: boolean | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -2964,6 +3385,9 @@ export type GetSalesQuery = {
       quantity: number,
       tax: number,
       price: number,
+      isEBTEligible?: boolean | null,
+      ebtPaidAmount?: number | null,
+      nonEbtPaidAmount?: number | null,
     } | null >,
     paymentInfo?:  {
       __typename: "PaymentInfo",
@@ -3486,6 +3910,9 @@ export type GetOrderQuery = {
       quantity: number,
       tax: number,
       price: number,
+      isEBTEligible?: boolean | null,
+      ebtPaidAmount?: number | null,
+      nonEbtPaidAmount?: number | null,
     } | null >,
     paymentInfo?:  {
       __typename: "PaymentInfo",
@@ -3645,6 +4072,7 @@ export type GetProductQuery = {
       _lastChangedAt: number,
     } | null,
     isActive: boolean,
+    isEBTEligible?: boolean | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -3682,6 +4110,7 @@ export type ListProductsQuery = {
       reorderQuantity?: number | null,
       picture?: string | null,
       isActive: boolean,
+      isEBTEligible?: boolean | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -3723,6 +4152,7 @@ export type SyncProductsQuery = {
       reorderQuantity?: number | null,
       picture?: string | null,
       isActive: boolean,
+      isEBTEligible?: boolean | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -3836,6 +4266,7 @@ export type GetInventoryChangesQuery = {
       reorderQuantity?: number | null,
       picture?: string | null,
       isActive: boolean,
+      isEBTEligible?: boolean | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -4463,6 +4894,10 @@ export type SyncGlobalSettingsQuery = {
   } | null,
 };
 
+export type OnCreateStoreSubscriptionVariables = {
+  filter?: ModelSubscriptionStoreFilterInput | null,
+};
+
 export type OnCreateStoreSubscription = {
   onCreateStore?:  {
     __typename: "Store",
@@ -4483,6 +4918,10 @@ export type OnCreateStoreSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnUpdateStoreSubscriptionVariables = {
+  filter?: ModelSubscriptionStoreFilterInput | null,
 };
 
 export type OnUpdateStoreSubscription = {
@@ -4507,6 +4946,10 @@ export type OnUpdateStoreSubscription = {
   } | null,
 };
 
+export type OnDeleteStoreSubscriptionVariables = {
+  filter?: ModelSubscriptionStoreFilterInput | null,
+};
+
 export type OnDeleteStoreSubscription = {
   onDeleteStore?:  {
     __typename: "Store",
@@ -4529,6 +4972,10 @@ export type OnDeleteStoreSubscription = {
   } | null,
 };
 
+export type OnCreateBrandSubscriptionVariables = {
+  filter?: ModelSubscriptionBrandFilterInput | null,
+};
+
 export type OnCreateBrandSubscription = {
   onCreateBrand?:  {
     __typename: "Brand",
@@ -4541,6 +4988,10 @@ export type OnCreateBrandSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnUpdateBrandSubscriptionVariables = {
+  filter?: ModelSubscriptionBrandFilterInput | null,
 };
 
 export type OnUpdateBrandSubscription = {
@@ -4557,6 +5008,10 @@ export type OnUpdateBrandSubscription = {
   } | null,
 };
 
+export type OnDeleteBrandSubscriptionVariables = {
+  filter?: ModelSubscriptionBrandFilterInput | null,
+};
+
 export type OnDeleteBrandSubscription = {
   onDeleteBrand?:  {
     __typename: "Brand",
@@ -4569,6 +5024,10 @@ export type OnDeleteBrandSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnCreateCategorySubscriptionVariables = {
+  filter?: ModelSubscriptionCategoryFilterInput | null,
 };
 
 export type OnCreateCategorySubscription = {
@@ -4588,6 +5047,10 @@ export type OnCreateCategorySubscription = {
   } | null,
 };
 
+export type OnUpdateCategorySubscriptionVariables = {
+  filter?: ModelSubscriptionCategoryFilterInput | null,
+};
+
 export type OnUpdateCategorySubscription = {
   onUpdateCategory?:  {
     __typename: "Category",
@@ -4605,6 +5068,10 @@ export type OnUpdateCategorySubscription = {
   } | null,
 };
 
+export type OnDeleteCategorySubscriptionVariables = {
+  filter?: ModelSubscriptionCategoryFilterInput | null,
+};
+
 export type OnDeleteCategorySubscription = {
   onDeleteCategory?:  {
     __typename: "Category",
@@ -4620,6 +5087,10 @@ export type OnDeleteCategorySubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnCreateCustomerSubscriptionVariables = {
+  filter?: ModelSubscriptionCustomerFilterInput | null,
 };
 
 export type OnCreateCustomerSubscription = {
@@ -4640,6 +5111,10 @@ export type OnCreateCustomerSubscription = {
   } | null,
 };
 
+export type OnUpdateCustomerSubscriptionVariables = {
+  filter?: ModelSubscriptionCustomerFilterInput | null,
+};
+
 export type OnUpdateCustomerSubscription = {
   onUpdateCustomer?:  {
     __typename: "Customer",
@@ -4658,6 +5133,10 @@ export type OnUpdateCustomerSubscription = {
   } | null,
 };
 
+export type OnDeleteCustomerSubscriptionVariables = {
+  filter?: ModelSubscriptionCustomerFilterInput | null,
+};
+
 export type OnDeleteCustomerSubscription = {
   onDeleteCustomer?:  {
     __typename: "Customer",
@@ -4674,6 +5153,10 @@ export type OnDeleteCustomerSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnCreateEmployeeSubscriptionVariables = {
+  filter?: ModelSubscriptionEmployeeFilterInput | null,
 };
 
 export type OnCreateEmployeeSubscription = {
@@ -4698,6 +5181,10 @@ export type OnCreateEmployeeSubscription = {
   } | null,
 };
 
+export type OnUpdateEmployeeSubscriptionVariables = {
+  filter?: ModelSubscriptionEmployeeFilterInput | null,
+};
+
 export type OnUpdateEmployeeSubscription = {
   onUpdateEmployee?:  {
     __typename: "Employee",
@@ -4720,6 +5207,10 @@ export type OnUpdateEmployeeSubscription = {
   } | null,
 };
 
+export type OnDeleteEmployeeSubscriptionVariables = {
+  filter?: ModelSubscriptionEmployeeFilterInput | null,
+};
+
 export type OnDeleteEmployeeSubscription = {
   onDeleteEmployee?:  {
     __typename: "Employee",
@@ -4740,6 +5231,10 @@ export type OnDeleteEmployeeSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnCreateOrderSubscriptionVariables = {
+  filter?: ModelSubscriptionOrderFilterInput | null,
 };
 
 export type OnCreateOrderSubscription = {
@@ -4765,6 +5260,9 @@ export type OnCreateOrderSubscription = {
       quantity: number,
       tax: number,
       price: number,
+      isEBTEligible?: boolean | null,
+      ebtPaidAmount?: number | null,
+      nonEbtPaidAmount?: number | null,
     } | null >,
     paymentInfo?:  {
       __typename: "PaymentInfo",
@@ -4809,6 +5307,10 @@ export type OnCreateOrderSubscription = {
     _lastChangedAt: number,
     orderCustomerId?: string | null,
   } | null,
+};
+
+export type OnUpdateOrderSubscriptionVariables = {
+  filter?: ModelSubscriptionOrderFilterInput | null,
 };
 
 export type OnUpdateOrderSubscription = {
@@ -4834,6 +5336,9 @@ export type OnUpdateOrderSubscription = {
       quantity: number,
       tax: number,
       price: number,
+      isEBTEligible?: boolean | null,
+      ebtPaidAmount?: number | null,
+      nonEbtPaidAmount?: number | null,
     } | null >,
     paymentInfo?:  {
       __typename: "PaymentInfo",
@@ -4880,6 +5385,10 @@ export type OnUpdateOrderSubscription = {
   } | null,
 };
 
+export type OnDeleteOrderSubscriptionVariables = {
+  filter?: ModelSubscriptionOrderFilterInput | null,
+};
+
 export type OnDeleteOrderSubscription = {
   onDeleteOrder?:  {
     __typename: "Order",
@@ -4903,6 +5412,9 @@ export type OnDeleteOrderSubscription = {
       quantity: number,
       tax: number,
       price: number,
+      isEBTEligible?: boolean | null,
+      ebtPaidAmount?: number | null,
+      nonEbtPaidAmount?: number | null,
     } | null >,
     paymentInfo?:  {
       __typename: "PaymentInfo",
@@ -4947,6 +5459,10 @@ export type OnDeleteOrderSubscription = {
     _lastChangedAt: number,
     orderCustomerId?: string | null,
   } | null,
+};
+
+export type OnCreateProductSubscriptionVariables = {
+  filter?: ModelSubscriptionProductFilterInput | null,
 };
 
 export type OnCreateProductSubscription = {
@@ -4993,6 +5509,7 @@ export type OnCreateProductSubscription = {
       _lastChangedAt: number,
     } | null,
     isActive: boolean,
+    isEBTEligible?: boolean | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -5001,6 +5518,10 @@ export type OnCreateProductSubscription = {
     productCategoryId?: string | null,
     productBrandId?: string | null,
   } | null,
+};
+
+export type OnUpdateProductSubscriptionVariables = {
+  filter?: ModelSubscriptionProductFilterInput | null,
 };
 
 export type OnUpdateProductSubscription = {
@@ -5047,6 +5568,7 @@ export type OnUpdateProductSubscription = {
       _lastChangedAt: number,
     } | null,
     isActive: boolean,
+    isEBTEligible?: boolean | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -5055,6 +5577,10 @@ export type OnUpdateProductSubscription = {
     productCategoryId?: string | null,
     productBrandId?: string | null,
   } | null,
+};
+
+export type OnDeleteProductSubscriptionVariables = {
+  filter?: ModelSubscriptionProductFilterInput | null,
 };
 
 export type OnDeleteProductSubscription = {
@@ -5101,6 +5627,7 @@ export type OnDeleteProductSubscription = {
       _lastChangedAt: number,
     } | null,
     isActive: boolean,
+    isEBTEligible?: boolean | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -5109,6 +5636,10 @@ export type OnDeleteProductSubscription = {
     productCategoryId?: string | null,
     productBrandId?: string | null,
   } | null,
+};
+
+export type OnCreateUnitOfMeasureSubscriptionVariables = {
+  filter?: ModelSubscriptionUnitOfMeasureFilterInput | null,
 };
 
 export type OnCreateUnitOfMeasureSubscription = {
@@ -5125,6 +5656,10 @@ export type OnCreateUnitOfMeasureSubscription = {
   } | null,
 };
 
+export type OnUpdateUnitOfMeasureSubscriptionVariables = {
+  filter?: ModelSubscriptionUnitOfMeasureFilterInput | null,
+};
+
 export type OnUpdateUnitOfMeasureSubscription = {
   onUpdateUnitOfMeasure?:  {
     __typename: "UnitOfMeasure",
@@ -5139,6 +5674,10 @@ export type OnUpdateUnitOfMeasureSubscription = {
   } | null,
 };
 
+export type OnDeleteUnitOfMeasureSubscriptionVariables = {
+  filter?: ModelSubscriptionUnitOfMeasureFilterInput | null,
+};
+
 export type OnDeleteUnitOfMeasureSubscription = {
   onDeleteUnitOfMeasure?:  {
     __typename: "UnitOfMeasure",
@@ -5151,6 +5690,10 @@ export type OnDeleteUnitOfMeasureSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnCreateInventoryChangesSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryChangesFilterInput | null,
 };
 
 export type OnCreateInventoryChangesSubscription = {
@@ -5180,6 +5723,7 @@ export type OnCreateInventoryChangesSubscription = {
       reorderQuantity?: number | null,
       picture?: string | null,
       isActive: boolean,
+      isEBTEligible?: boolean | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -5195,6 +5739,10 @@ export type OnCreateInventoryChangesSubscription = {
     _lastChangedAt: number,
     inventoryChangesProductId?: string | null,
   } | null,
+};
+
+export type OnUpdateInventoryChangesSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryChangesFilterInput | null,
 };
 
 export type OnUpdateInventoryChangesSubscription = {
@@ -5224,6 +5772,7 @@ export type OnUpdateInventoryChangesSubscription = {
       reorderQuantity?: number | null,
       picture?: string | null,
       isActive: boolean,
+      isEBTEligible?: boolean | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -5239,6 +5788,10 @@ export type OnUpdateInventoryChangesSubscription = {
     _lastChangedAt: number,
     inventoryChangesProductId?: string | null,
   } | null,
+};
+
+export type OnDeleteInventoryChangesSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryChangesFilterInput | null,
 };
 
 export type OnDeleteInventoryChangesSubscription = {
@@ -5268,6 +5821,7 @@ export type OnDeleteInventoryChangesSubscription = {
       reorderQuantity?: number | null,
       picture?: string | null,
       isActive: boolean,
+      isEBTEligible?: boolean | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -5283,6 +5837,10 @@ export type OnDeleteInventoryChangesSubscription = {
     _lastChangedAt: number,
     inventoryChangesProductId?: string | null,
   } | null,
+};
+
+export type OnCreateInventoryCountSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryCountFilterInput | null,
 };
 
 export type OnCreateInventoryCountSubscription = {
@@ -5304,6 +5862,10 @@ export type OnCreateInventoryCountSubscription = {
   } | null,
 };
 
+export type OnUpdateInventoryCountSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryCountFilterInput | null,
+};
+
 export type OnUpdateInventoryCountSubscription = {
   onUpdateInventoryCount?:  {
     __typename: "InventoryCount",
@@ -5323,6 +5885,10 @@ export type OnUpdateInventoryCountSubscription = {
   } | null,
 };
 
+export type OnDeleteInventoryCountSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryCountFilterInput | null,
+};
+
 export type OnDeleteInventoryCountSubscription = {
   onDeleteInventoryCount?:  {
     __typename: "InventoryCount",
@@ -5340,6 +5906,10 @@ export type OnDeleteInventoryCountSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnCreateInventoryCountLineSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryCountLineFilterInput | null,
 };
 
 export type OnCreateInventoryCountLineSubscription = {
@@ -5372,6 +5942,10 @@ export type OnCreateInventoryCountLineSubscription = {
   } | null,
 };
 
+export type OnUpdateInventoryCountLineSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryCountLineFilterInput | null,
+};
+
 export type OnUpdateInventoryCountLineSubscription = {
   onUpdateInventoryCountLine?:  {
     __typename: "InventoryCountLine",
@@ -5400,6 +5974,10 @@ export type OnUpdateInventoryCountLineSubscription = {
     _lastChangedAt: number,
     inventoryCountLineInventoryCountId?: string | null,
   } | null,
+};
+
+export type OnDeleteInventoryCountLineSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryCountLineFilterInput | null,
 };
 
 export type OnDeleteInventoryCountLineSubscription = {
@@ -5432,6 +6010,10 @@ export type OnDeleteInventoryCountLineSubscription = {
   } | null,
 };
 
+export type OnCreateInventoryReceiveSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryReceiveFilterInput | null,
+};
+
 export type OnCreateInventoryReceiveSubscription = {
   onCreateInventoryReceive?:  {
     __typename: "InventoryReceive",
@@ -5449,6 +6031,10 @@ export type OnCreateInventoryReceiveSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnUpdateInventoryReceiveSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryReceiveFilterInput | null,
 };
 
 export type OnUpdateInventoryReceiveSubscription = {
@@ -5470,6 +6056,10 @@ export type OnUpdateInventoryReceiveSubscription = {
   } | null,
 };
 
+export type OnDeleteInventoryReceiveSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryReceiveFilterInput | null,
+};
+
 export type OnDeleteInventoryReceiveSubscription = {
   onDeleteInventoryReceive?:  {
     __typename: "InventoryReceive",
@@ -5487,6 +6077,10 @@ export type OnDeleteInventoryReceiveSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnCreateInventoryReceiveLineSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryReceiveLineFilterInput | null,
 };
 
 export type OnCreateInventoryReceiveLineSubscription = {
@@ -5518,6 +6112,10 @@ export type OnCreateInventoryReceiveLineSubscription = {
   } | null,
 };
 
+export type OnUpdateInventoryReceiveLineSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryReceiveLineFilterInput | null,
+};
+
 export type OnUpdateInventoryReceiveLineSubscription = {
   onUpdateInventoryReceiveLine?:  {
     __typename: "InventoryReceiveLine",
@@ -5545,6 +6143,10 @@ export type OnUpdateInventoryReceiveLineSubscription = {
     _lastChangedAt: number,
     inventoryReceiveLineInventoryReceiveId?: string | null,
   } | null,
+};
+
+export type OnDeleteInventoryReceiveLineSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryReceiveLineFilterInput | null,
 };
 
 export type OnDeleteInventoryReceiveLineSubscription = {
@@ -5576,6 +6178,10 @@ export type OnDeleteInventoryReceiveLineSubscription = {
   } | null,
 };
 
+export type OnCreatePrinterSubscriptionVariables = {
+  filter?: ModelSubscriptionPrinterFilterInput | null,
+};
+
 export type OnCreatePrinterSubscription = {
   onCreatePrinter?:  {
     __typename: "Printer",
@@ -5592,6 +6198,10 @@ export type OnCreatePrinterSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnUpdatePrinterSubscriptionVariables = {
+  filter?: ModelSubscriptionPrinterFilterInput | null,
 };
 
 export type OnUpdatePrinterSubscription = {
@@ -5612,6 +6222,10 @@ export type OnUpdatePrinterSubscription = {
   } | null,
 };
 
+export type OnDeletePrinterSubscriptionVariables = {
+  filter?: ModelSubscriptionPrinterFilterInput | null,
+};
+
 export type OnDeletePrinterSubscription = {
   onDeletePrinter?:  {
     __typename: "Printer",
@@ -5630,6 +6244,10 @@ export type OnDeletePrinterSubscription = {
   } | null,
 };
 
+export type OnCreateStationSubscriptionVariables = {
+  filter?: ModelSubscriptionStationFilterInput | null,
+};
+
 export type OnCreateStationSubscription = {
   onCreateStation?:  {
     __typename: "Station",
@@ -5642,6 +6260,10 @@ export type OnCreateStationSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnUpdateStationSubscriptionVariables = {
+  filter?: ModelSubscriptionStationFilterInput | null,
 };
 
 export type OnUpdateStationSubscription = {
@@ -5658,6 +6280,10 @@ export type OnUpdateStationSubscription = {
   } | null,
 };
 
+export type OnDeleteStationSubscriptionVariables = {
+  filter?: ModelSubscriptionStationFilterInput | null,
+};
+
 export type OnDeleteStationSubscription = {
   onDeleteStation?:  {
     __typename: "Station",
@@ -5670,6 +6296,10 @@ export type OnDeleteStationSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnCreateGlobalSettingsSubscriptionVariables = {
+  filter?: ModelSubscriptionGlobalSettingsFilterInput | null,
 };
 
 export type OnCreateGlobalSettingsSubscription = {
@@ -5685,6 +6315,10 @@ export type OnCreateGlobalSettingsSubscription = {
   } | null,
 };
 
+export type OnUpdateGlobalSettingsSubscriptionVariables = {
+  filter?: ModelSubscriptionGlobalSettingsFilterInput | null,
+};
+
 export type OnUpdateGlobalSettingsSubscription = {
   onUpdateGlobalSettings?:  {
     __typename: "GlobalSettings",
@@ -5696,6 +6330,10 @@ export type OnUpdateGlobalSettingsSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
   } | null,
+};
+
+export type OnDeleteGlobalSettingsSubscriptionVariables = {
+  filter?: ModelSubscriptionGlobalSettingsFilterInput | null,
 };
 
 export type OnDeleteGlobalSettingsSubscription = {

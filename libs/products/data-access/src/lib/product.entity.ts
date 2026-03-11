@@ -21,6 +21,7 @@ export type ProductEntity = {
     createdAt?: string | null | undefined;
     updatedAt?: string | null | undefined;
     isActive: boolean;
+    isEBTEligible?: boolean | null | undefined;
 };
 
 export class ProductEntityMapper {
@@ -45,7 +46,8 @@ export class ProductEntityMapper {
             productBrandId: p.productBrandId,
             createdAt: p.createdAt,
             updatedAt: p.updatedAt,
-            isActive: p.isActive
+            isActive: p.isActive,
+            isEBTEligible: p.isEBTEligible ?? false,
         }
     }
 }

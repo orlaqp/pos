@@ -5,7 +5,8 @@ import { schema } from './schema';
 const PaymentType = {
   "CASH": "CASH",
   "CHECK": "CHECK",
-  "CC": "CC"
+  "CC": "CC",
+  "EBT": "EBT"
 };
 
 const OrderStatus = {

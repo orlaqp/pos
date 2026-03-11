@@ -29,6 +29,7 @@ export class ProductService {
 
         if (!product.id) {
             if (!validationRes) return false;
+            product.isEBTEligible = product.isEBTEligible ?? false;
 
             const entity = new Product(product);
             const res = await DataStore.save(entity);
@@ -68,6 +69,7 @@ export class ProductService {
                 updated.productCategoryId = product?.productCategoryId;
                 updated.productBrandId = product?.productBrandId;
                 updated.isActive = product.isActive;
+                updated.isEBTEligible = product.isEBTEligible ?? false;
             })
         );
 

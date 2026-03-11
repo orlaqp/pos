@@ -16,6 +16,7 @@ export interface CartProduct {
     name: string;
     price: number;
     unitOfMeasure: string;
+    isEBTEligible?: boolean | null | undefined;
 }
 
 export interface CartItem {
@@ -59,6 +60,7 @@ export class CartItemMapper {
                 unitOfMeasure: p.unitOfMeasure,
                 barcode: p.barcode,
                 sku: p.sku,
+                isEBTEligible: p.isEBTEligible ?? false,
             },
             quantity,
         }

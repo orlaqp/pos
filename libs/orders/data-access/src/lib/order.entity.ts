@@ -52,6 +52,9 @@ export interface OrderLineEntity {
     price: number;
     discountType?: string | null;
     discountValue?: number | null;
+    isEBTEligible?: boolean | null;
+    ebtPaidAmount?: number | null;
+    nonEbtPaidAmount?: number | null;
 }
 
 export class OrderEntityMapper {
@@ -72,12 +75,14 @@ export class OrderEntityMapper {
             paymentInfo: {
                 employeeId: p.paymentInfo?.employeeId,
                 employeeName: p.paymentInfo?.employeeName,
-                payments: p.paymentInfo?.payments?.filter(p => !!p).map(p => OrderEntityMapper.fromPayment(p)),
+                payments: p.paymentInfo?.payments
+                    ?.filter((payment): payment is Payment => !!payment)
+                    .map((payment) => OrderEntityMapper.fromPayment(payment)),
             },
             refundInfo: {
                 employeeId: p.refundInfo?.employeeId,
                 employeeName: p.refundInfo?.employeeName,
-                comments: p.refundInfo?.comments
+                comments: p.refundInfo?.comments || undefined,
             },
             orderDate: p.orderDate,
             createdAt: p.createdAt,
@@ -113,8 +118,9 @@ export class OrderEntityMapper {
                 unitOfMeasure: i?.unitOfMeasure,
                 barcode: i.barcode,
                 sku: i.sku,
+                isEBTEligible: i.isEBTEligible ?? false,
             },
-        }));
+        })) || [];
         state.payments = o.payments?.map(p => ({
             type: p.type,
             amount: p.amount
@@ -135,6 +141,9 @@ export class OrderEntityMapper {
             tax: 0,
             price: l.price,
             unitOfMeasure: l.unitOfMeasure,
+            isEBTEligible: l.isEBTEligible ?? false,
+            ebtPaidAmount: l.ebtPaidAmount ?? 0,
+            nonEbtPaidAmount: l.nonEbtPaidAmount ?? l.price * l.quantity,
         };
     }
 
@@ -167,6 +176,7 @@ export class OrderEntityMapper {
                     unitOfMeasure: i?.product.unitOfMeasure,
                     barcode: i.product.barcode,
                     sku: i.product.sku,
+                    isEBTEligible: i.product.isEBTEligible ?? false,
                 },
             }));
 

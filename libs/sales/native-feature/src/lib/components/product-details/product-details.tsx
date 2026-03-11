@@ -1,7 +1,7 @@
 import { selectBrand } from '@pos/brands/data-access';
 import { selectProduct } from '@pos/products/data-access';
 import { CartItem } from '@pos/sales/data-access';
-import { UIS3Image } from '@pos/shared/ui-native';
+import { UIEbtRibbon, UIS3Image } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { EACH } from '@pos/unit-of-measures/data-access';
 import { Button, Input, useTheme } from '@rneui/themed';
@@ -54,6 +54,7 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
 
     return (
         <View style={styles.productDetailsContainer}>
+            {item.product.isEBTEligible && <UIEbtRibbon top={2} right={2} />}
             <View style={{ height: 100 }}>
                 <UIS3Image
                     s3Key={product?.picture}
@@ -143,6 +144,8 @@ const useStyles = () => {
             productDetailsContainer: {
                 flexDirection: 'column',
                 alignItems: 'center',
+                position: 'relative',
+                overflow: 'hidden',
             },
             pictureColumn: {
                 flex: 1,

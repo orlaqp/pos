@@ -1,6 +1,11 @@
 import { ProductEntity } from '@pos/products/data-access';
 import { MINIMUM_INVENTORY_FOR_SALE } from '@pos/sales/data-access';
-import { ButtonItemType, UIButton, UIEmptyState } from '@pos/shared/ui-native';
+import {
+    ButtonItemType,
+    UIButton,
+    UIEbtRibbon,
+    UIEmptyState,
+} from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { EACH } from '@pos/unit-of-measures/data-access';
 import React, { useEffect, useState } from 'react';
@@ -77,9 +82,11 @@ export function ProductSelection({
                                         borderRadius: 5,
                                         marginRight: 10,
                                         marginBottom: 10,
-                                        width: 180
+                                        width: 180,
+                                        position: 'relative',
                                     }}
                                 >
+                                    {p.isEBTEligible && <UIEbtRibbon />}
                                     <UIButton
                                         item={p}
                                         onSelected={onSelected}

@@ -5,7 +5,8 @@ import { LazyLoading, LazyLoadingDisabled, AsyncItem } from "@aws-amplify/datast
 export enum PaymentType {
   CASH = "CASH",
   CHECK = "CHECK",
-  CC = "CC"
+  CC = "CC",
+  EBT = "EBT"
 }
 
 export enum OrderStatus {
@@ -80,6 +81,9 @@ type EagerOrderLine = {
   readonly quantity: number;
   readonly tax: number;
   readonly price: number;
+  readonly isEBTEligible?: boolean | null;
+  readonly ebtPaidAmount?: number | null;
+  readonly nonEbtPaidAmount?: number | null;
 }
 
 type LazyOrderLine = {
@@ -92,6 +96,9 @@ type LazyOrderLine = {
   readonly quantity: number;
   readonly tax: number;
   readonly price: number;
+  readonly isEBTEligible?: boolean | null;
+  readonly ebtPaidAmount?: number | null;
+  readonly nonEbtPaidAmount?: number | null;
 }
 
 export declare type OrderLine = LazyLoading extends LazyLoadingDisabled ? EagerOrderLine : LazyOrderLine
@@ -473,6 +480,7 @@ type EagerProduct = {
   readonly Category?: Category | null;
   readonly Brand?: Brand | null;
   readonly isActive: boolean;
+  readonly isEBTEligible?: boolean | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly productCategoryId?: string | null;
@@ -498,6 +506,7 @@ type LazyProduct = {
   readonly Category: AsyncItem<Category | undefined>;
   readonly Brand: AsyncItem<Brand | undefined>;
   readonly isActive: boolean;
+  readonly isEBTEligible?: boolean | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly productCategoryId?: string | null;

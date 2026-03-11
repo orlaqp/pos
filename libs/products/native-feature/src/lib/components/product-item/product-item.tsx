@@ -10,7 +10,7 @@ import {
 } from '@pos/products/data-access';
 import { useDispatch, useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { UIS3Image } from '@pos/shared/ui-native';
+import { UIEbtRibbon, UIS3Image } from '@pos/shared/ui-native';
 import { selectCategory } from '@pos/categories/data-access';
 import { Icon } from '@rneui/base';
 
@@ -53,7 +53,12 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
         <TouchableOpacity
             style={[
                 styles.dataRow,
-                { justifyContent: 'center', alignItems: 'center' },
+                {
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                },
             ]}
             onPress={editItem}
         >
@@ -138,6 +143,7 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
                     onPress={confirmDeletion}
                 />
             </View>
+            {item.isEBTEligible && <UIEbtRibbon />}
         </TouchableOpacity>
     );
 }

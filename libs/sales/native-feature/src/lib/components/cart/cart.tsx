@@ -41,6 +41,10 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
     const employee = useSelector(selectLoginEmployee);
     const [ready, setReady] = useState(false);
     const [receivePayment, setReceivePayment] = useState<boolean>(false);
+    const ebtEligibleTotal = cart.items.reduce((acc, item) => {
+        if (!item.product.isEBTEligible) return acc;
+        return acc + item.product.price * item.quantity;
+    }, 0);
     
     const onSelect = (item: CartItem) => {
         dispatch(cartActions.select(item));
@@ -152,6 +156,7 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                 >
                     <CartPayment
                         total={cart.footer.total}
+                        ebtEligibleTotal={ebtEligibleTotal}
                         canReceiveChecks={employee?.roles.includes(Role.Checks) || false}
                         onPaymentEntered={paymentEntered}
                     />

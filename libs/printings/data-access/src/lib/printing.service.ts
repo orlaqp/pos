@@ -78,6 +78,10 @@ export const printReceipt = async (
 
     print(printerInfo, (builder) => {
         const date = new Date();
+        const receiptLines = buildReceiptLines(cart, order);
+        const totalPaymentsText = order?.paymentInfo?.payments
+            ?.map((p) => `${p.type}: $ ${p.amount.toFixed(2)}`)
+            .join('\\n') || '';
 
         const printerBuilder = new StarXpandCommand.PrinterBuilder()
             .styleInternationalCharacter(
@@ -99,20 +103,7 @@ export const printReceipt = async (
             )
             .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
             .actionPrintText(
-                // 'SKU   Description        Total\n' +
-                // 'Description        Qty    Total\n' +
-                'Qty    Description        Total\n' +
-                '-------------------------------\n' +
-                    // cart.items.map(i => `${i.product.sku?.padEnd(5, ' ')} ${i.quantity.toString().padStart(2, ' ')}x${i.product.name.substring(0, 13).padEnd(13, ' ')} ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`).join('\n') +
-                    cart.items
-                        .map((i) =>
-                                `${(i.quantity % 1 === 0 ? i.quantity.toString() : i.quantity.toFixed(2)).padEnd(5, ' ')}  ${i.product.name.substring(0, 15).padEnd(15, ' ')}  ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`
-                        )
-                        .join('\n') +
-                    '\n\n' +
-                    // `Subtotal                 ${cart.footer.subtotal.toFixed(2).padStart(7, ' ')}\n` +
-                    // 'Tax                         0.00\n' +
-                    '--------------------------------\n'
+                receiptLines
             )
             .actionPrintText('Total     ')
             .add(
@@ -129,9 +120,7 @@ export const printReceipt = async (
         if (order?.id) {
             printerBuilder
                 .styleAlignment(StarXpandCommand.Printer.Alignment.Right)
-                .actionPrintText(
-                    order.paymentInfo?.payments?.map(p => `${p.type}: $ ${p.amount.toFixed(2)}`).join('\n') || ''
-                )
+                .actionPrintText(totalPaymentsText)
                 .actionFeedLine(2)
                 .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
                 .add(
@@ -198,6 +187,90 @@ export const print = async (
         await printer.close();
         await printer.dispose();
     }
+};
+
+const formatQty = (quantity: number) =>
+    quantity % 1 === 0 ? quantity.toString() : quantity.toFixed(2);
+
+const formatLine = (qty: number, name: string, amount: number) =>
+    `${formatQty(qty).padEnd(5, ' ')}  ${name.substring(0, 15).padEnd(15, ' ')}  ${amount.toFixed(2).padStart(7, ' ')}`;
+
+const buildClassicLines = (cart: CartState) => {
+    return (
+        'Qty    Description        Total\\n' +
+        '-------------------------------\\n' +
+        cart.items
+            .map((i) => formatLine(i.quantity, i.product.name, i.product.price * i.quantity))
+            .join('\\n') +
+        '\\n\\n' +
+        '--------------------------------\\n'
+    );
+};
+
+const buildEbtLines = (order: OrderEntity) => {
+    const lines = order.lines || [];
+    const ebtLines = lines.filter((line) => (line?.ebtPaidAmount || 0) > 0);
+    const nonEbtLines = lines.filter((line) => (line?.nonEbtPaidAmount || 0) > 0);
+
+    const ebtTotal = ebtLines.reduce((acc, line) => acc + (line?.ebtPaidAmount || 0), 0);
+    const nonEbtTotal = nonEbtLines.reduce(
+        (acc, line) => acc + (line?.nonEbtPaidAmount || 0),
+        0
+    );
+
+    return (
+        'EBT Items\\n' +
+        'Qty    Description        Total\\n' +
+        '-------------------------------\\n' +
+        (ebtLines.length
+            ? ebtLines
+                  .map((line) => {
+                      const isPartial =
+                          (line?.ebtPaidAmount || 0) > 0 &&
+                          (line?.nonEbtPaidAmount || 0) > 0;
+                      const suffix = isPartial ? ' (partial)' : '';
+                      return formatLine(
+                          line?.quantity || 0,
+                          `${line?.productName || ''}${suffix}`,
+                          line?.ebtPaidAmount || 0
+                      );
+                  })
+                  .join('\\n')
+            : 'No EBT-paid items') +
+        `\\nEBT Paid Total: $ ${ebtTotal.toFixed(2)}\\n\\n` +
+        'Non-EBT Items\\n' +
+        'Qty    Description        Total\\n' +
+        '-------------------------------\\n' +
+        (nonEbtLines.length
+            ? nonEbtLines
+                  .map((line) => {
+                      const isPartial =
+                          (line?.ebtPaidAmount || 0) > 0 &&
+                          (line?.nonEbtPaidAmount || 0) > 0;
+                      const suffix = isPartial ? ' (partial)' : '';
+                      return formatLine(
+                          line?.quantity || 0,
+                          `${line?.productName || ''}${suffix}`,
+                          line?.nonEbtPaidAmount || 0
+                      );
+                  })
+                  .join('\\n')
+            : 'No non-EBT-paid items') +
+        `\\nNon-EBT Paid Total: $ ${nonEbtTotal.toFixed(2)}\\n\\n` +
+        '--------------------------------\\n'
+    );
+};
+
+const buildReceiptLines = (cart: CartState, order?: OrderEntity) => {
+    const hasEbtPayment = !!order?.paymentInfo?.payments?.some(
+        (payment) => payment.type?.toUpperCase() === 'EBT'
+    );
+
+    if (!hasEbtPayment || !order?.lines?.length) {
+        return buildClassicLines(cart);
+    }
+
+    return buildEbtLines(order);
 };
 
 export const buildData = (

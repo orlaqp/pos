@@ -14,6 +14,7 @@ export * from './lib/components/ui-overlay-select/ui-overlay-select';
 export * from './lib/components/ui-switch/ui-switch';
 export * from './lib/components/ui-numeric-input/ui-numeric-input';
 export * from './lib/components/ui-button/ui-button';
+export * from './lib/components/ui-ebt-ribbon/ui-ebt-ribbon';
 export * from './lib/components/ui-label/ui-label';
 export * from './lib/components/ui-date-range/ui-date-range';
 export * from './lib/components/ui-key-pad/ui-key-pad';

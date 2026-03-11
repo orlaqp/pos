@@ -61,6 +61,12 @@ Copy scripts used by codegen:
 - `yarn update-graphql`
 - `yarn update-api`
 
+## Amplify safety (critical)
+- This repository treats `develop` as production.
+- Do not run mutating Amplify commands on `develop`.
+- Use `ebtdev` for EBT feature schema/codegen work (`ebt-dev` label, CLI-safe name).
+- See `.codex/amplify-safety-runbook.md` for command-level guardrails.
+
 ## Change strategy
 1. Identify affected domain (`sales`, `orders`, `inventory`, etc.).
 2. Update `data-access` first (types/entities/slices/services).

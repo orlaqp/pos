@@ -1,4 +1,5 @@
 import { CartItem } from '@pos/sales/data-access';
+import { UIEbtRibbon } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import React from 'react';
@@ -40,6 +41,8 @@ export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
                 flexDirection: 'row',
                 justifyContent: 'center',
                 alignItems: 'center',
+                position: 'relative',
+                overflow: 'hidden',
             }}
             onPress={() => onSelect(item)}
         >
@@ -76,6 +79,7 @@ export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
                 }}
                 onPress={confirmDeletion}
             />
+            {item.product.isEBTEligible && <UIEbtRibbon />}
         </TouchableOpacity>
     );
 }
