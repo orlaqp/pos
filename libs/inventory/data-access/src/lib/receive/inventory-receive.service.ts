@@ -115,22 +115,43 @@ async function updateReceive(receive: InventoryReceiveDTO, dispatch: Dispatch<an
 
 const updateInventory = async (count: InventoryReceiveDTO) => {
     try {
-        for (let i = 0; i < count.lines.length; i++) {
-            const l = count.lines[i];
-            const product = await DataStore.query(Product, l.productId);
+        const receivedByProductId = new Map<string, number>();
+        count.lines.forEach((line) => {
+            if (
+                line.received === undefined ||
+                line.received === null ||
+                Number.isNaN(line.received)
+            ) {
+                return;
+            }
+
+            receivedByProductId.set(
+                line.productId,
+                (receivedByProductId.get(line.productId) || 0) + line.received
+            );
+        });
+
+        for (const [productId, received] of receivedByProductId.entries()) {
+            const productLine = count.lines.find((line) => line.productId === productId);
+            const product = await DataStore.query(Product, productId);
 
             if (!product) {
                 Alert.alert(
                     'Error',
-                    `Product ${l.productName} was not found while updating the inventory`
+                    `Product ${productLine?.productName || productId} was not found while updating the inventory`
                 );
                 continue;
             }
-            
-            if (product.quantity !== l.received) {
+
+            if (received === undefined || received === null || Number.isNaN(received)) {
+                continue;
+            }
+
+            if (received !== 0) {
                 await DataStore.save(
                     Product.copyOf(product, (updated) => {
-                        updated.quantity = l.received;
+                        // Product quantity is handled as delta by AppSync resolver.
+                        updated.quantity = received;
                     })
                 );
             }

@@ -17,6 +17,7 @@ import { RootState } from '@pos/store';
 import { InventoryReceive } from '@pos/shared/models';
 import {
     ProductEntity,
+    fetchProducts,
     ProductService,
     selectAllProducts,
     subscribeToProductChanges,
@@ -63,6 +64,7 @@ export function InventoryReceiveForm({
     }, [inventoryReceive]);
 
     const save = async (updateInv: boolean) => {
+        if (busy) return;
         setBusy(true);
         let inv: InventoryReceiveDTO;
 
@@ -94,12 +96,16 @@ export function InventoryReceiveForm({
         }
 
         await InventoryReceiveService.save(dispatch, inv, updateInv);
+        if (updateInv) {
+            await dispatch(fetchProducts() as any);
+        }
         dispatch(inventoryReceiveActions.clearSelection());
         navigation.goBack();
         setBusy(false);
     };
 
     const updateInventory = () => {
+        if (busy) return;
         confirm(
             '',
             'This action will adjust your inventory based on this receive. You will no be able to undo this operation',
@@ -156,10 +162,13 @@ export function InventoryReceiveForm({
     };
 
     useEffect(() => {
-        if (!filter) setFilteredProducts((prev) => []);
+        if (!filter?.trim()) {
+            setFilteredProducts((prev) => (prev.length === 0 ? prev : []));
+            return;
+        }
 
-        const searchResult = ProductService.search(products, { text: filter });
-        setFilteredProducts((prev) => [...dedupeProducts(searchResult.items)]);
+        const searchResult = ProductService.search(products, { text: filter.trim() });
+        setFilteredProducts(dedupeProducts(searchResult.items));
     }, [filter, products]);
 
     useEffect(() => {
@@ -255,6 +264,7 @@ export function InventoryReceiveForm({
                             <Button
                                 color="success"
                                 title="Update Inventory"
+                                testID="inventory-receive-update-inventory-button"
                                 onPress={updateInventory}
                                 icon={{
                                     name: 'scale-balance',

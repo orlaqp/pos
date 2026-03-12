@@ -134,9 +134,14 @@ const updateInventory = async (count: InventoryCountDTO) => {
                 continue;
             }
 
+            const delta = l.newCount! - (product.quantity || 0);
+            if (delta === 0) {
+                continue;
+            }
+
             const updatedProduct = Product.copyOf(product, updated => {
-                // Count is an absolute quantity, not a delta.
-                updated.quantity = l.newCount!;
+                // Product quantity is handled as delta by AppSync resolver.
+                updated.quantity = delta;
             });
             await DataStore.save(updatedProduct);
         }

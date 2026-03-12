@@ -61,13 +61,23 @@ export function InventoryReceiveLine({
             <View style={{ flex: 1 }}>
                 <TextInput
                     value={received}
-                    onChangeText={setReceived}
+                    onChangeText={(value) => {
+                        setReceived(value);
+                        if (!value) return;
+
+                        const parsed = +value;
+                        if (Number.isNaN(parsed)) return;
+                        onUpdate({ ...item, received: parsed });
+                    }}
                     style={[
                         styles.input, styles.primaryText,
                         { marginRight: 25 },
                     ]}
-                    onFocus={() => setReceived('')}
-                    onBlur={(e) => updateReceived(e.nativeEvent.text)}
+                    onFocus={() => {
+                        setReceived('');
+                        onUpdate({ ...item, received: 0 });
+                    }}
+                    onBlur={() => updateReceived(received)}
                     editable={!readOnly}
                 />
             </View>

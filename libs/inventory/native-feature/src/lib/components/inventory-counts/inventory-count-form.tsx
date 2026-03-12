@@ -22,13 +22,52 @@ import { confirm } from '@pos/shared/utils';
 import { NavigationParamList } from '@pos/sales/native-feature';
 import CompactProductList from '../shared/compact-product-list/compact-product-list';
 import { selectLoginEmployee } from '@pos/employees/data-access';
-import { useForm } from 'react-hook-form';
 import { dedupeProducts } from '../shared/dedupe-products';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
     inventory: InventoryCount;
 }
+
+type CountMode = 'quick' | 'full';
+
+const asFullCountLines = (
+    existingLines: InventoryCountLineDTO[],
+    products: ProductEntity[]
+) => {
+    const existingByProduct = new Map(
+        existingLines.map((line) => [line.productId, line])
+    );
+
+    const eligibleProducts = dedupeProducts(products)
+        .filter((product) => product.isActive && product.trackStock)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    const merged = eligibleProducts.map((product) => {
+        const existing = existingByProduct.get(product.id);
+        return existing || InventoryCountLineMapper.fromProduct(product);
+    });
+
+    const manualOnly = existingLines.filter(
+        (line) => !eligibleProducts.some((product) => product.id === line.productId)
+    );
+
+    return [...merged, ...manualOnly];
+};
+
+const normalizeCode = (value?: string | null) =>
+    (value || '').trim().toLowerCase();
+
+const isExactCodeMatch = (product: ProductEntity, query: string) => {
+    const normalizedQuery = normalizeCode(query);
+    if (!normalizedQuery) return false;
+
+    return (
+        normalizeCode(product.barcode) === normalizedQuery ||
+        normalizeCode(product.sku) === normalizedQuery ||
+        normalizeCode(product.plu) === normalizedQuery
+    );
+};
 
 export function InventoryCountForm({
     navigation,
@@ -48,6 +87,11 @@ export function InventoryCountForm({
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
         []
     );
+    const [countMode, setCountMode] = useState<CountMode>('quick');
+    const [fullCountInitialized, setFullCountInitialized] = useState(false);
+    const [quickModeLines, setQuickModeLines] = useState<InventoryCountLineDTO[]>(
+        inventoryCount ? inventoryCount.lines.map((l) => ({ ...l })) : []
+    );
     const employee = useSelector(selectLoginEmployee);
 
     const searchSubmit = (text: string) => {
@@ -58,10 +102,13 @@ export function InventoryCountForm({
     const addItem = (product: ProductEntity) => {
         if (lines.find((i) => i.productId === product.id)) return;
 
-        setLines((res) => [
-            ...res,
-            InventoryCountLineMapper.fromProduct(product),
-        ]);
+        setLines((res) => {
+            const next = [...res, InventoryCountLineMapper.fromProduct(product)];
+            if (!inventoryCount && countMode === 'quick') {
+                setQuickModeLines(next);
+            }
+            return next;
+        });
 
         setFilter('');
     };
@@ -78,7 +125,13 @@ export function InventoryCountForm({
     };
 
     const deleteItem = (item: InventoryCountLineDTO) => {
-        setLines((res) => res.filter((i) => i.productId !== item.productId));
+        setLines((res) => {
+            const next = res.filter((i) => i.productId !== item.productId);
+            if (!inventoryCount && countMode === 'quick') {
+                setQuickModeLines(next);
+            }
+            return next;
+        });
     };
 
     const save = async (updateInv: boolean) => {
@@ -156,29 +209,6 @@ export function InventoryCountForm({
         );
     };
 
-    const form = useForm<InventoryCountDTO>({
-        mode: 'onChange',
-        defaultValues: {
-            id: inventoryCount?.id,
-            comments: inventoryCount?.comments,
-            createdAt: inventoryCount?.createdAt,
-            createdBy: inventoryCount?.createdBy,
-            lines: inventoryCount?.lines.map(l => ({
-                id: l.id,
-                comments: l.comments,
-                createdAt: l.createdAt,
-                current: l.current,
-                newCount: l.newCount,
-                productId: l.productId,
-                productName: l.productName,
-                unitOfMeasure: l.unitOfMeasure,
-                updatedAt: l.updatedAt
-            })),
-            status: inventoryCount?.status,
-            updatedAt: inventoryCount?.updatedAt
-        },
-    });
-
     useEffect(() => {
         const productsSub = subscribeToProductChanges(dispatch);
         return () => {
@@ -187,21 +217,87 @@ export function InventoryCountForm({
         };
     }, [dispatch]);
 
-
     useEffect(() => {
-        if (!filter) setFilteredProducts((prev) => []);
-
-        const searchResult = ProductService.search(products, { text: filter });
-        const deduped = dedupeProducts(searchResult.items);
-
-        if (deduped.length === 1) {
-            addItem(deduped[0]);
-            setFilteredProducts((prev) => []);
+        if (inventoryCount) {
+            setCountMode('quick');
+            setFullCountInitialized(true);
             return;
         }
 
-        setFilteredProducts((prev) => [...deduped]);
-    }, [filter, products]);
+        if (countMode !== 'full' || fullCountInitialized) return;
+
+        setLines((prev) => asFullCountLines(prev, products));
+        setFullCountInitialized(true);
+    }, [countMode, fullCountInitialized, inventoryCount, products]);
+
+    useEffect(() => {
+        if (!filter?.trim()) {
+            setFilteredProducts([]);
+            return;
+        }
+
+        const normalizedFilter = filter.trim();
+        const searchResult = ProductService.search(products, {
+            text: normalizedFilter,
+        });
+        const deduped = dedupeProducts(searchResult.items);
+
+        if (deduped.length === 1) {
+            const onlyItem = deduped[0];
+            const scannerLikeInput =
+                searchResult.allNumbers ||
+                isExactCodeMatch(onlyItem, normalizedFilter);
+
+            if (scannerLikeInput) {
+                setLines((prev) => {
+                    if (prev.find((line) => line.productId === onlyItem.id)) {
+                        return prev;
+                    }
+
+                    const next = [
+                        ...prev,
+                        InventoryCountLineMapper.fromProduct(onlyItem),
+                    ];
+                    if (!inventoryCount && countMode === 'quick') {
+                        setQuickModeLines(next);
+                    }
+                    return next;
+                });
+                setFilter('');
+                setFilteredProducts([]);
+                return;
+            }
+        }
+
+        setFilteredProducts(deduped);
+    }, [filter, products, countMode, inventoryCount]);
+
+    const lineItems = lines;
+    const totalItems = lineItems.length;
+    const countedItems = lineItems.filter(
+        (line) => line.newCount !== undefined && line.newCount !== null
+    ).length;
+    const progress = totalItems > 0 ? countedItems / totalItems : 0;
+
+    const enableFullCountMode = () => {
+        if (!inventoryCount) {
+            setQuickModeLines(lines.map((line) => ({ ...line })));
+        }
+        setCountMode('full');
+        setFullCountInitialized(false);
+    };
+
+    const enableQuickCountMode = () => {
+        setCountMode('quick');
+        if (!inventoryCount) {
+            setLines(quickModeLines.map((line) => ({ ...line })));
+        }
+    };
+
+    const regenerateFullCount = () => {
+        setLines((prev) => asFullCountLines(prev, products));
+        setFilter('');
+    };
 
     // useEffect(() => {
     //     setLines(InventoryCountLineMapper.toSelectable(products, inventoryCount));
@@ -333,21 +429,92 @@ export function InventoryCountForm({
               
                 {!route.params?.readOnly && (
                     <View style={{ flex: 3, padding: 10 }}>
-                        <UISearchInput
-                            ref={ref}
-                            value={filter}
-                            placeholder="Search for products ..."
-                            debounceTime={700}
-                            onSubmit={searchSubmit}
-                            onClear={() => ref.current?.focus()}
-                        />
-                        {/* <TextInput onSubmitEditing={(e) => setFilter(e.nativeEvent.text)} style={{ borderColor: 'blue', borderWidth: 1 }} /> */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={{ flex: 1, maxWidth: 900 }}>
+                                <UISearchInput
+                                    ref={ref}
+                                    value={filter}
+                                    placeholder="Search for products ..."
+                                    debounceTime={700}
+                                    onSubmit={searchSubmit}
+                                    onClear={() => ref.current?.focus()}
+                                />
+                            </View>
+                            {!inventoryCount && (
+                                <View
+                                    style={{
+                                        flexDirection: 'row',
+                                        marginLeft: 8,
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Button
+                                        type={countMode === 'quick' ? 'solid' : 'outline'}
+                                        title="Quick"
+                                        testID="inventory-count-mode-quick"
+                                        onPress={enableQuickCountMode}
+                                        buttonStyle={{ paddingHorizontal: 12, borderRadius: 18 }}
+                                    />
+                                    <View style={{ marginLeft: 8 }}>
+                                        <Button
+                                            type={countMode === 'full' ? 'solid' : 'outline'}
+                                            title="Full"
+                                            testID="inventory-count-mode-full"
+                                            onPress={enableFullCountMode}
+                                            buttonStyle={{ paddingHorizontal: 12, borderRadius: 18 }}
+                                        />
+                                    </View>
+                                    {countMode === 'full' && (
+                                        <View style={{ marginLeft: 8 }}>
+                                            <Button
+                                                type="outline"
+                                                title="Reload"
+                                                testID="inventory-count-mode-reload"
+                                                onPress={regenerateFullCount}
+                                                buttonStyle={{ paddingHorizontal: 12, borderRadius: 18 }}
+                                            />
+                                        </View>
+                                    )}
+                                </View>
+                            )}
+                        </View>
+
+                        <View style={{ marginTop: 6 }}>
+                            {!inventoryCount && (
+                                <Text style={[styles.secondaryText, { fontSize: 12 }]}>
+                                    {countMode === 'quick'
+                                        ? 'Quick: search/scan and add only what you count.'
+                                        : 'Full: preload all active stock-tracked products.'}
+                                </Text>
+                            )}
+                            <Text style={styles.secondaryText}>
+                                Count Progress: {countedItems} / {totalItems}
+                            </Text>
+                            <View
+                                style={{
+                                    marginTop: 6,
+                                    height: 8,
+                                    width: '100%',
+                                    borderRadius: 8,
+                                    backgroundColor: theme.theme.colors.grey5,
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                <View
+                                    style={{
+                                        height: 8,
+                                        width: `${Math.round(progress * 100)}%`,
+                                        backgroundColor: theme.theme.colors.primary,
+                                    }}
+                                />
+                            </View>
+                        </View>
                     </View>
                 )}
             </View>
             {!route.params?.readOnly && (
                 <CompactProductList
-                    visible={!!filter}
+                    visible={!!filter?.trim()}
                     products={filteredProducts}
                     onAdd={addItem}
                     onClose={() => setFilter('')}
@@ -356,7 +523,7 @@ export function InventoryCountForm({
 
             <FlatList
                 horizontal={false}
-                data={lines}
+                data={lineItems}
                 renderItem={(data) => (
                     <InventoryCountLine
                         readOnly={route.params?.readOnly}
@@ -449,6 +616,7 @@ export function InventoryCountForm({
                             <Button
                                 color="success"
                                 title="Update Inventory"
+                                testID="inventory-count-update-inventory-button"
                                 onPress={updateInventory}
                                 icon={{
                                     name: 'scale-balance',
