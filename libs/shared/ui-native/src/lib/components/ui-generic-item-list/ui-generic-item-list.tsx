@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { UIEmptyState, UISearchInput, UISpinner } from '@pos/shared/ui-native';
+import UIEmptyState from '../ui-empty-state/ui-empty-state';
+import UISearchInput from '../ui-search-input/ui-search-input';
+import UISpinner from '../ui-spinner/ui-spinner';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, FAB, useTheme } from '@rneui/themed';
 
