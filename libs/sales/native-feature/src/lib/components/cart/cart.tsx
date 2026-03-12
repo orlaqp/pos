@@ -139,8 +139,9 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
             </View>
             <View style={{ flex: 1 }}>
                 <Button
+                    testID="cart-pay-order-button"
                     title={`$ ${cart.footer.total.toFixed(2)}\n${
-                        mode === 'order' ? 'Print Order' : 'Paid'
+                        mode === 'order' ? 'Print Order' : 'Pay Order'
                     }`}
                     type="solid"
                     disabled={!ready}

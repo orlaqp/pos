@@ -113,10 +113,11 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
             >
                 {item.status === 'OPEN' && (
                     <Button
+                        testID="order-item-pay-button"
                         type="clear"
-                        title="Charge"
+                        title="Pay"
                         icon={{
-                            name: 'folder-open-outline',
+                            name: 'credit-card-outline',
                             type: 'material-community',
                             color: theme.theme.colors.primary,
                         }}

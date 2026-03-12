@@ -92,3 +92,6 @@ Copy scripts used by codegen:
 - `yarn nx test <touched-projects>` passes
 - If model/API touched, run codegen sync scripts
 - No accidental edits under generated Amplify/model files unless intentional
+
+## Step 1 Baseline
+- Stability baseline checklist: `.codex/stability-baseline-checklist.md`

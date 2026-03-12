@@ -60,16 +60,16 @@ export const UINumericInput = React.forwardRef<typeof Input, Props>(
             <Controller
                 control={control}
                 name={name}
-                render={({
-                    field: { onChange, value, onBlur, ref },
-                    fieldState: { isTouched, isDirty, error },
-                }) => (
+                render={({ field: { onChange, value, onBlur, ref }, fieldState: { error } }) => (
                     <Input
                         ref={ref}
                         {...restOfProps}
                         placeholder={props.placeholder}
                         value={value?.toString()}
-                        onBlur={onBlur}
+                        onBlur={(event) => {
+                            onBlur();
+                            props.onBlur?.(event);
+                        }}
                         onChange={onChange}
                         onChangeText={(text) => {
                             onChange(text);

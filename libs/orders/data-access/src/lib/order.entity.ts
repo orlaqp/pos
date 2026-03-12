@@ -1,6 +1,6 @@
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { EmployeeEntity } from '@pos/employees/data-access';
-import { CartState, initialCartState } from '@pos/sales/data-access';
+import type { CartState } from '@pos/sales/data-access';
 import { StationService } from '@pos/settings/data-access';
 import { Order, OrderLine, OrderStatus, Payment, PaymentType } from '@pos/shared/models';
 import { Alert } from 'react-native';
@@ -58,6 +58,26 @@ export interface OrderLineEntity {
 }
 
 export class OrderEntityMapper {
+    private static getInitialCartState(): CartState {
+        return {
+            id: undefined,
+            header: undefined,
+            items: [],
+            footer: {
+                discount: 0,
+                subtotal: 0,
+                tax: 0,
+                total: 0,
+            },
+            selected: undefined,
+        };
+    }
+
+    private static cleanCartProductName(name?: string) {
+        if (!name) return name;
+        return name.replace(/^(?:NON-EBT|EBT)\s+/i, '');
+    }
+
     static fromModel(p: Order): OrderEntity {
         return {
             id: p.id,
@@ -91,7 +111,7 @@ export class OrderEntityMapper {
     }
     
     static asCartState(o: OrderEntity): CartState {
-        const state: CartState = { ...initialCartState };
+        const state: CartState = OrderEntityMapper.getInitialCartState();
 
         state.id = o.id;
         state.orderNo = o.orderNo;
@@ -113,7 +133,7 @@ export class OrderEntityMapper {
             identifier: i?.identifier,
             product: {
                 id: i.productId,
-                name: i?.productName,
+                name: OrderEntityMapper.cleanCartProductName(i?.productName),
                 price: i?.price,
                 unitOfMeasure: i?.unitOfMeasure,
                 barcode: i.barcode,
@@ -125,7 +145,7 @@ export class OrderEntityMapper {
             type: p.type,
             amount: p.amount
         }));
-        state.selected = initialCartState.selected;
+        state.selected = undefined;
         
         return state;
     }
@@ -136,7 +156,7 @@ export class OrderEntityMapper {
             productId: l.productId,
             barcode: l.barcode,
             sku: l.sku,
-            productName: l.productName,
+            productName: OrderEntityMapper.cleanCartProductName(l.productName),
             quantity: l.quantity,
             tax: 0,
             price: l.price,
@@ -148,7 +168,7 @@ export class OrderEntityMapper {
     }
 
     static async fromRefundedCart(employee: EmployeeEntity, cart: CartState) {
-        const state: CartState = { ...initialCartState };
+        const state: CartState = OrderEntityMapper.getInitialCartState();
 
         if (!cart.header) {
             Alert.alert('Cart header is missing, cannot recreate the order');

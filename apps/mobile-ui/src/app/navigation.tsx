@@ -106,6 +106,7 @@ export function Navigation() {
                                 headerRight: () => (
                                     <>
                                         <Button
+                                            testID="nav-open-orders-button"
                                             type="clear"
                                             title="Open Orders"
                                             style={{ marginRight: 20 }}

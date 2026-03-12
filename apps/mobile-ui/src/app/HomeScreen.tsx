@@ -118,7 +118,11 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     if (!employee.roles?.includes(p.role)) return null;
 
                     return (
-                        <TouchableOpacity onPress={() => goto(p)} key={p.title}>
+                        <TouchableOpacity
+                            onPress={() => goto(p)}
+                            key={p.title}
+                            testID={`home-nav-${p.path.toLowerCase()}`}
+                        >
                             <View
                                 style={[
                                     styles.bigButton,

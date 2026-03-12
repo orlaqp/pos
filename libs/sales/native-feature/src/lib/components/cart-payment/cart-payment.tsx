@@ -1,17 +1,25 @@
-import { CartPayment as ICartPayment } from '@pos/sales/data-access';
-import { PaymentType } from '@pos/shared/models';
+import type { CartPayment as ICartPayment } from '@pos/sales/data-access';
+import { PaymentType } from '@pos/shared/api';
 import {
     UINumericInput,
     UISwitch,
     UIVerticalSpacer,
 } from '@pos/shared/ui-native';
-import { round2Dec } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button } from '@rneui/themed';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import {
+    getAutoFillAmount,
+    getRestoredValue,
+    PaymentKey,
+    shouldRestoreValue,
+    toNumber,
+} from './cart-payment.logic';
 
 import { View, Text, Alert } from 'react-native';
+
+const round2Dec = (value: number) => +value.toFixed(2);
 
 const PaymentMethod = {
     cc: { label: 'Credit Card', type: PaymentType.CC },
@@ -19,8 +27,6 @@ const PaymentMethod = {
     check: { label: 'Check', type: PaymentType.CHECK },
     ebt: { label: 'EBT', type: PaymentType.EBT },
 } as const;
-
-type PaymentKey = keyof typeof PaymentMethod;
 
 interface PaymentInfo {
     withcash: boolean;
@@ -44,6 +50,7 @@ export interface CartPaymentProps {
 export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPaymentEntered }: CartPaymentProps) {
     const styles = useSharedStyles();
     const [formValue, setFormValue] = useState<PaymentInfo>();
+    const previousValues = useRef<Partial<Record<PaymentKey, number>>>({});
     const form = useForm<PaymentInfo>({
         mode: 'onChange',
         defaultValues: {
@@ -63,6 +70,12 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
             (x) => x !== 'check' || canReceiveChecks
         );
     }, [canReceiveChecks]);
+
+    const restoreIfEmpty = (method: PaymentKey) => {
+        const currentValue = form.getValues(method);
+        if (!shouldRestoreValue(currentValue)) return;
+        form.setValue(method, getRestoredValue(previousValues.current[method]));
+    };
 
     const completeOrder = (info: PaymentInfo) => {
         const result: ICartPayment[] = [];
@@ -115,14 +128,37 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
 
             if (currentAmount > 0) return;
 
-            const hasExistingAmount = paymentMethods.some((m) => +(values[m] || 0) > 0);
-            if (!hasExistingAmount) {
-                form.setValue(paymentType, +total.toFixed(2));
-            }
+            form.setValue(
+                paymentType,
+                getAutoFillAmount(
+                    paymentType,
+                    values,
+                    paymentMethods,
+                    total,
+                    ebtEligibleTotal
+                )
+            );
         });
 
         return () => subscription.unsubscribe();
-    }, [form, paymentMethods, total]);
+    }, [ebtEligibleTotal, form, paymentMethods, total]);
+
+    useEffect(() => {
+        const subscription = form.watch((value, { name }) => {
+            if (!name) return;
+
+            const paymentKey = name as PaymentKey;
+            if (!paymentMethods.includes(paymentKey)) return;
+
+            const raw = value[paymentKey];
+            const rawText = `${raw ?? ''}`.trim();
+            if (rawText === '') return;
+
+            previousValues.current[paymentKey] = toNumber(raw);
+        });
+
+        return () => subscription.unsubscribe();
+    }, [form, paymentMethods]);
 
     return (
         <View>
@@ -150,7 +186,10 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
                 {paymentMethods.map((m) => (
                     <View key={m} style={[styles.miniDataRow]}>
                         <View style={{ flex: 1, paddingLeft: 15 }}>
-                            <UISwitch name={`with${m}`} />
+                            <UISwitch
+                                name={`with${m}`}
+                                testID={`payment-switch-${m}`}
+                            />
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text
@@ -166,12 +205,20 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
                         </View>
                         <View style={{ flex: 2 }}>
                             <UINumericInput
+                                testID={`payment-input-${m}`}
                                 keyboardType="decimal-pad"
                                 name={m}
                                 allowDecimals={true}
                                 textAlign="right"
                                 lIcon="currency-usd"
-                                clearTextOnFocus={true}
+                                clearTextOnFocus={false}
+                                selectTextOnFocus={true}
+                                onFocus={() => {
+                                    previousValues.current[m] = toNumber(form.getValues(m));
+                                    form.setValue(m, '');
+                                }}
+                                onBlur={() => setTimeout(() => restoreIfEmpty(m), 0)}
+                                onEndEditing={() => setTimeout(() => restoreIfEmpty(m), 0)}
                                 disabled={!formValue || !formValue[`with${m}` as keyof PaymentInfo]}
                             />
                         </View>
@@ -180,7 +227,8 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
                 <UIVerticalSpacer size="medium" />
                 <View>
                     <Button
-                        title="Complete Order"
+                        testID="payment-submit-button"
+                        title={`Pay Now ($${total.toFixed(2)})`}
                         icon={{
                             name: 'check',
                             type: 'material-community',
