@@ -1,9 +1,13 @@
 import { dedupeProducts } from './dedupe-products';
+import { ProductEntity } from '@pos/products/data-access';
+
+const asProductEntity = (product: Partial<ProductEntity>): ProductEntity =>
+    product as ProductEntity;
 
 describe('dedupeProducts', () => {
     it('dedupes by barcode and keeps the most recently updated item', () => {
-        const products = [
-            {
+        const products: ProductEntity[] = [
+            asProductEntity({
                 id: '1',
                 barcode: '123',
                 sku: null,
@@ -12,8 +16,8 @@ describe('dedupeProducts', () => {
                 unitOfMeasure: 'EA',
                 description: 'Fresh',
                 updatedAt: '2026-03-01T10:00:00.000Z',
-            },
-            {
+            }),
+            asProductEntity({
                 id: '2',
                 barcode: '123',
                 sku: null,
@@ -22,8 +26,8 @@ describe('dedupeProducts', () => {
                 unitOfMeasure: 'EA',
                 description: 'Fresh',
                 updatedAt: '2026-03-01T11:00:00.000Z',
-            },
-        ] as any;
+            }),
+        ];
 
         const result = dedupeProducts(products);
 
@@ -32,8 +36,8 @@ describe('dedupeProducts', () => {
     });
 
     it('falls back to name+uom+description when no code exists', () => {
-        const products = [
-            {
+        const products: ProductEntity[] = [
+            asProductEntity({
                 id: '1',
                 barcode: '',
                 sku: '',
@@ -42,8 +46,8 @@ describe('dedupeProducts', () => {
                 unitOfMeasure: 'EA',
                 description: 'Fresh',
                 updatedAt: '2026-03-01T10:00:00.000Z',
-            },
-            {
+            }),
+            asProductEntity({
                 id: '2',
                 barcode: '',
                 sku: '',
@@ -52,8 +56,8 @@ describe('dedupeProducts', () => {
                 unitOfMeasure: 'ea',
                 description: ' fresh ',
                 updatedAt: '2026-03-01T11:00:00.000Z',
-            },
-        ] as any;
+            }),
+        ];
 
         const result = dedupeProducts(products);
 
@@ -62,8 +66,8 @@ describe('dedupeProducts', () => {
     });
 
     it('keeps distinct products when dedupe keys are different', () => {
-        const products = [
-            {
+        const products: ProductEntity[] = [
+            asProductEntity({
                 id: '1',
                 barcode: '123',
                 sku: '',
@@ -72,8 +76,8 @@ describe('dedupeProducts', () => {
                 unitOfMeasure: 'EA',
                 description: 'Fresh',
                 updatedAt: '2026-03-01T10:00:00.000Z',
-            },
-            {
+            }),
+            asProductEntity({
                 id: '2',
                 barcode: '456',
                 sku: '',
@@ -82,8 +86,8 @@ describe('dedupeProducts', () => {
                 unitOfMeasure: 'EA',
                 description: 'Fresh',
                 updatedAt: '2026-03-01T11:00:00.000Z',
-            },
-        ] as any;
+            }),
+        ];
 
         const result = dedupeProducts(products);
 

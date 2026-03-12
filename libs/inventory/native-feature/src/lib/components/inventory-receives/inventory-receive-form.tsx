@@ -97,7 +97,7 @@ export function InventoryReceiveForm({
 
         await InventoryReceiveService.save(dispatch, inv, updateInv);
         if (updateInv) {
-            await dispatch(fetchProducts() as any);
+            await dispatch(fetchProducts());
         }
         dispatch(inventoryReceiveActions.clearSelection());
         navigation.goBack();
@@ -208,6 +208,7 @@ export function InventoryReceiveForm({
                     <View style={{ flex: 3, padding: 10 }}>
                         <UISearchInput
                             ref={ref}
+                            testID="inventory-receive-search-input"
                             value={filter}
                             placeholder="Search for products ..."
                             debounceTime={700}
@@ -235,7 +236,6 @@ export function InventoryReceiveForm({
                         readOnly={route.params?.readOnly}
                         item={data.item}
                         key={data.index}
-                        navigation={navigation}
                         onUpdate={updateItem}
                         onDelete={deleteItem}
                     />

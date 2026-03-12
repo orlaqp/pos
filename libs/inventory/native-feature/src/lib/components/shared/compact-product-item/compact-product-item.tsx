@@ -2,7 +2,7 @@ import React from 'react';
 
 import { ProductEntity } from '@pos/products/data-access';
 import { useSharedStyles } from '@pos/theme/native';
-import { Button, useTheme } from '@rneui/themed';
+import { Button } from '@rneui/themed';
 import { View, Text } from 'react-native';
 
 export interface SearchItemProps {
@@ -10,8 +10,16 @@ export interface SearchItemProps {
     onAdd: (product: ProductEntity) => void;
 }
 
+const toTestKey = (value: string) =>
+    value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
 export function CompactProductItem({ product, onAdd }: SearchItemProps) {
     const styles = useSharedStyles();
+    const productKey = toTestKey(product.name);
 
     return (
         <View style={[styles.miniDataRow]}>
@@ -38,6 +46,7 @@ export function CompactProductItem({ product, onAdd }: SearchItemProps) {
                 <Button
                     type="clear"
                     title="Add to list"
+                    testID={`compact-product-add-${productKey}`}
                     onPress={() => onAdd(product)}
                 />
             </View>

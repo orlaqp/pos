@@ -14,10 +14,10 @@ import InventoryLine from './inventory-line';
 import { dedupeProducts } from '../shared/dedupe-products';
 
 export interface InventoryListProps {
-    navigation: NativeStackNavigationProp<any>;
+    navigation: NativeStackNavigationProp<Record<string, object | undefined>>;
 }
 
-export function InventoryList({ navigation }: InventoryListProps) {
+export function InventoryList({ navigation: _navigation }: InventoryListProps) {
     const styles = useStyles();
     const dispatch = useDispatch();
     const products = useSelector(selectAllProducts);
@@ -46,6 +46,7 @@ export function InventoryList({ navigation }: InventoryListProps) {
                 <View style={[styles.header, { alignItems: 'center' }]}>
                     <View style={{ flex: 5 }}>
                         <UISearchInput
+                            testID="inventory-stock-search-input"
                             debounceTime={300}
                             onSubmit={(text) => setFilterText(text)}
                         />

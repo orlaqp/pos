@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import moment from 'moment';
 
 import { View, Text, Alert } from 'react-native';
@@ -11,16 +11,18 @@ import {
 } from '@pos/inventory/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+type InventoryNavigationParams = Record<string, object | undefined>;
+
 export interface InventoryItemProps {
     item: InventoryCountDTO;
-    navigation: NativeStackNavigationProp<any>;
+    navigation: NativeStackNavigationProp<InventoryNavigationParams>;
 }
 
 export function InventoryCountItem({ item, navigation }: InventoryItemProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
     const dispatch = useDispatch();
-    const [busy, setBusy] = useState<boolean>(false);
 
     const editItem = () => {
         dispatch(inventoryCountActions.select(item));
@@ -35,9 +37,7 @@ export function InventoryCountItem({ item, navigation }: InventoryItemProps) {
     const deleteItem = async () => {
         if (!item.id) return;
 
-        setBusy(true);
         await InventoryCountService.delete(item.id);
-        setBusy(false);
         dispatch(inventoryCountActions.remove(item.id));
     };
 

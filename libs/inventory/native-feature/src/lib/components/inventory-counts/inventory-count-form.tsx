@@ -529,7 +529,6 @@ export function InventoryCountForm({
                         readOnly={route.params?.readOnly}
                         item={data.item}
                         key={data.index}
-                        navigation={navigation}
                         onUpdate={updateItem}
                         onDelete={deleteItem}
                     />

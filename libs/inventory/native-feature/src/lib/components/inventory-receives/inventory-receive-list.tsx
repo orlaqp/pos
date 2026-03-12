@@ -13,8 +13,10 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import InventoryReceiveItem from './inventory-receive-item';
 import { useDispatch } from 'react-redux';
 
+type InventoryNavigationParams = Record<string, object | undefined>;
+
 export interface InventoryListProps {
-    navigation: NativeStackNavigationProp<any>;
+    navigation: NativeStackNavigationProp<InventoryNavigationParams>;
 }
 
 export function InventoryReceiveList({ navigation }: InventoryListProps) {
@@ -31,7 +33,7 @@ export function InventoryReceiveList({ navigation }: InventoryListProps) {
         };
     }, [dispatch]);
 
-    const props: ItemListProps<any, any> = {
+    const props: ItemListProps<unknown, unknown> = {
         ItemComponent: InventoryReceiveItem,
         formNavName: 'Inventory Receive Form',
         navigation: navigation,

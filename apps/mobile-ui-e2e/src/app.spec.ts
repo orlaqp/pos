@@ -1,5 +1,15 @@
 import { by, element, expect, waitFor } from 'detox';
 
+type TextAttributes = {
+  text?: string;
+  label?: string;
+  value?: string;
+};
+
+type DetoxElementWithAttributes = {
+  getAttributes: () => Promise<TextAttributes>;
+};
+
 describe('MobileUi', () => {
   const isVisible = async (id: string, timeout = 3000) => {
     try {
@@ -25,6 +35,27 @@ describe('MobileUi', () => {
 
     await element(by.id('home-nav-backoffice')).tap();
     return true;
+  };
+
+  const searchByInput = async (id: string, value: string) => {
+    const input = element(by.id(id));
+    await input.tap();
+    await input.replaceText(value);
+    try {
+      await input.tapReturnKey();
+    } catch {
+      await input.typeText('\n');
+    }
+  };
+
+  const readNumericText = async (id: string) => {
+    const attrs = await (element(by.id(id)) as unknown as DetoxElementWithAttributes).getAttributes();
+    const textValue = attrs.text || attrs.label || attrs.value || '';
+    const parsed = Number.parseFloat(`${textValue}`.replace(/[^0-9.-]/g, ''));
+    if (Number.isNaN(parsed)) {
+      throw new Error(`Unable to parse numeric value from element ${id}: ${textValue}`);
+    }
+    return parsed;
   };
 
   it('logs in and opens payment flow when employee context is available', async () => {
@@ -83,11 +114,27 @@ describe('MobileUi', () => {
     if (!(await openBackOfficeFromHome())) return;
 
     await element(by.text('Inventory')).tap();
+    await element(by.text('In Stock')).tap();
+
+    await searchByInput('inventory-stock-search-input', 'bread fixture');
+    const breadQtyId = 'inventory-stock-qty-ebt-bread-fixture';
+    if (!(await isVisible(breadQtyId, 5000))) return;
+    const beforeQty = await readNumericText(breadQtyId);
+
+    await element(by.text('Inventory')).tap();
     await element(by.text('Receives')).tap();
 
     if (!(await tapIfVisible('ui-generic-item-list-add-button', 6000))) {
       return;
     }
+
+    await searchByInput('inventory-receive-search-input', 'bread fixture');
+    if (!(await tapIfVisible('compact-product-add-ebt-bread-fixture', 6000))) {
+      return;
+    }
+    if (!(await isVisible('inventory-receive-qty-ebt-bread-fixture', 6000))) return;
+    await element(by.id('inventory-receive-qty-ebt-bread-fixture')).tap();
+    await element(by.id('inventory-receive-qty-ebt-bread-fixture')).replaceText('3');
 
     if (!(await tapIfVisible('inventory-receive-update-inventory-button', 6000))) {
       return;
@@ -96,5 +143,13 @@ describe('MobileUi', () => {
     if (await waitFor(element(by.text('Yes'))).toBeVisible().withTimeout(2500).then(() => true).catch(() => false)) {
       await element(by.text('Yes')).tap();
     }
+
+    await element(by.text('Inventory')).tap();
+    await element(by.text('In Stock')).tap();
+    await searchByInput('inventory-stock-search-input', 'bread fixture');
+    if (!(await isVisible(breadQtyId, 7000))) return;
+    const afterQty = await readNumericText(breadQtyId);
+
+    expect(afterQty).toBe(beforeQty + 3);
   });
 });

@@ -13,8 +13,10 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import InventoryCountItem from './inventory-count-item';
 import { useDispatch } from 'react-redux';
 
+type InventoryNavigationParams = Record<string, object | undefined>;
+
 export interface InventoryListProps {
-    navigation: NativeStackNavigationProp<any>;
+    navigation: NativeStackNavigationProp<InventoryNavigationParams>;
 }
 
 export function InventoryCountList({ navigation }: InventoryListProps) {
@@ -31,7 +33,7 @@ export function InventoryCountList({ navigation }: InventoryListProps) {
         };
     }, [dispatch]);
 
-    const props: ItemListProps<any, any> = {
+    const props: ItemListProps<unknown, unknown> = {
         ItemComponent: InventoryCountItem,
         formNavName: 'Inventory Count Form',
         navigation: navigation,

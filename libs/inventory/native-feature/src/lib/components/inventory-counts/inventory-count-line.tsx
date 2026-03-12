@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { View, Text, Alert } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { InventoryCountLineDTO } from '@pos/inventory/data-access';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { TextInput } from 'react-native-gesture-handler';
 
 export interface InventoryCountLineProps {
     readOnly: boolean;
     item: InventoryCountLineDTO;
-    navigation: NativeStackNavigationProp<any>;
     onUpdate: (item: InventoryCountLineDTO) => void;
     onDelete: (item: InventoryCountLineDTO) => void;
 }
@@ -18,7 +16,6 @@ export interface InventoryCountLineProps {
 export function InventoryCountLine({
     readOnly,
     item,
-    navigation,
     onUpdate,
     onDelete,
 }: InventoryCountLineProps) {

@@ -9,6 +9,14 @@ import { inventoryReceiveActions } from './inventory-receive.slice';
 import { InventoryReceiveDTO } from './inventory-receive.entity';
 import { Alert } from 'react-native';
 
+const isInventoryDebugEnabled = () =>
+    typeof __DEV__ !== 'undefined' && __DEV__;
+
+const debugInventoryApply = (context: string, payload: Record<string, unknown>) => {
+    if (!isInventoryDebugEnabled()) return;
+    console.log(`[inventory-debug][${context}]`, payload);
+};
+
 export class InventoryReceiveService {
     static async save(
         dispatch: Dispatch<any>,
@@ -148,6 +156,15 @@ const updateInventory = async (count: InventoryReceiveDTO) => {
             }
 
             if (received !== 0) {
+                debugInventoryApply('receive', {
+                    productId,
+                    productName: productLine?.productName,
+                    quantityBefore: product.quantity || 0,
+                    delta: received,
+                    quantityExpectedAfter: (product.quantity || 0) + received,
+                    receiveId: count.id || 'new-receive',
+                });
+
                 await DataStore.save(
                     Product.copyOf(product, (updated) => {
                         // Product quantity is handled as delta by AppSync resolver.

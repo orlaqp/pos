@@ -9,6 +9,14 @@ import { inventoryCountActions } from './inventory-count.slice';
 import { InventoryCountDTO } from './inventory-count.entity';
 import { Alert } from 'react-native';
 
+const isInventoryDebugEnabled = () =>
+    typeof __DEV__ !== 'undefined' && __DEV__;
+
+const debugInventoryApply = (context: string, payload: Record<string, unknown>) => {
+    if (!isInventoryDebugEnabled()) return;
+    console.log(`[inventory-debug][${context}]`, payload);
+};
+
 export class InventoryCountService {
     static async save(
         dispatch: Dispatch<any>,
@@ -138,6 +146,16 @@ const updateInventory = async (count: InventoryCountDTO) => {
             if (delta === 0) {
                 continue;
             }
+
+            debugInventoryApply('count', {
+                productId: l.productId,
+                productName: l.productName,
+                quantityBefore: product.quantity || 0,
+                countedQuantity: l.newCount,
+                delta,
+                quantityExpectedAfter: (product.quantity || 0) + delta,
+                countId: count.id || 'new-count',
+            });
 
             const updatedProduct = Product.copyOf(product, updated => {
                 // Product quantity is handled as delta by AppSync resolver.

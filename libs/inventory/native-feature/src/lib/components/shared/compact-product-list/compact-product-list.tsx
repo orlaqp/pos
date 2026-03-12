@@ -1,7 +1,7 @@
 import { ProductEntity } from '@pos/products/data-access';
 import { useSharedStyles } from '@pos/theme/native';
 import { Dialog } from '@rneui/themed';
-import React, { useState } from 'react';
+import React from 'react';
 
 import { View, Text, FlatList } from 'react-native';
 import CompactProductItem from '../compact-product-item/compact-product-item';
