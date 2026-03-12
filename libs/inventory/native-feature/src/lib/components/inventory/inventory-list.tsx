@@ -11,6 +11,7 @@ import { useSharedStyles } from '@pos/theme/native';
 import { FlatList, SafeAreaView, StyleSheet, View, Text } from 'react-native';
 import { UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
 import InventoryLine from './inventory-line';
+import { dedupeProducts } from '../shared/dedupe-products';
 
 export interface InventoryListProps {
     navigation: NativeStackNavigationProp<any>;
@@ -36,7 +37,7 @@ export function InventoryList({ navigation }: InventoryListProps) {
         const res = ProductService.search(products, {
             text: filterText,
         });
-        setFilteredList(res.items);
+        setFilteredList(dedupeProducts(res.items));
     }, [filterText, products]);
 
     return (

@@ -5,21 +5,23 @@ import {
     selectAllOrders,
     subscribeToOrderChanges,
 } from '@pos/orders/data-access';
-import { UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
+import {
+    UICard,
+    UIEmptyState,
+    UIScreen,
+    UISearchInput,
+    UIStack,
+} from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import OrderItem from '../order-item/order-item';
-import { useSharedStyles } from '@pos/theme/native';
 import { View, StyleSheet, FlatList, TextInput } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { ButtonGroup, Dialog, useTheme } from '@rneui/themed';
-import { listOrders, OrderStatus } from '@pos/shared/api';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ButtonGroup, Dialog } from '@rneui/themed';
+import { OrderStatus } from '@pos/shared/api';
 import OrderVoidForm from '../order-void-form/order-void-form';
 import { eventsActions } from '@pos/shared/data-store';
 import uuid from 'react-native-uuid';
-import { API } from 'aws-amplify';
-import { isOrderNumber } from '@pos/shared/utils';
-
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface OrderListProps {
     navigation?: NativeStackNavigationProp<any>;
@@ -32,12 +34,12 @@ const orderStatusList: OrderStatus[] = [
 ];
 
 export function OrderList({ navigation }: OrderListProps) {
-    const theme = useTheme();
-    const styles = useStyles();
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const dispatch = useDispatch();
     const searchRef = React.createRef<TextInput>();
     const [filterText, setFilterText] = useState<string>();
-    const [orderToVoid, setOrderToVoid] = useState<OrderEntity | undefined>(0);
+    const [orderToVoid, setOrderToVoid] = useState<OrderEntity | undefined>();
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
     const allOrders = useSelector(selectAllOrders);
     const [filteredOrders, setFilteredOrders] = useState<OrderEntity[]>();
@@ -45,7 +47,6 @@ export function OrderList({ navigation }: OrderListProps) {
     useEffect(() => {
         const ordersSub = subscribeToOrderChanges(dispatch);
         return () => {
-            console.log('Closing orders subscription');
             ordersSub?.unsubscribe();
         };
     }, [dispatch]);
@@ -55,14 +56,6 @@ export function OrderList({ navigation }: OrderListProps) {
             status: orderStatusList[selectedIndex],
             filter: filterText,
         });
-
-        // if (filterText && !searchResult?.length && isOrderNumber(filterText)) {
-        //     API.graphql({
-        //         query: listOrders,
-        //         variables: { orderNo:  }
-        //     })
-        // }
-
 
         dispatch(
             eventsActions.add({
@@ -95,39 +88,41 @@ export function OrderList({ navigation }: OrderListProps) {
     };
 
     return (
-        <SafeAreaView style={styles.page}>
-            <View style={{ flexDirection: 'column' }}>
-                <View style={[styles.header, { alignItems: 'center' }]}>
-                    <View style={{ flex: 4 }}>
-                        <ButtonGroup
-                            buttons={orderStatusList}
-                            selectedIndex={selectedIndex}
-                            onPress={(value) => filter(value, '')}
-                            containerStyle={[
-                                styles.page,
-                                {
-                                    borderWidth: 1,
-                                    borderColor: theme.theme.colors.grey4,
-                                },
-                            ]}
-                        />
-                    </View>
-                    <View style={{ flex: 4 }}>
-                        <UISearchInput
-                            ref={searchRef}
-                            debounceTime={300}
-                            onSubmit={(text) => filter(selectedIndex, text)}
-                            autoFocus={true}
-                            returnKeyType="search"
-                        />
-                    </View>
-                </View>
-                <View style={{ paddingHorizontal: 20, height: '90%' }}>
+        <UIScreen padded testID="order-list-screen">
+            <UIStack spacing="md" style={styles.container}>
+                <UICard tone="muted" padding="sm" testID="order-list-filters-card">
+                    <UIStack direction="horizontal" align="center" spacing="md">
+                        <View style={styles.filterColumn}>
+                            <ButtonGroup
+                                buttons={orderStatusList}
+                                selectedIndex={selectedIndex}
+                                onPress={(value) => filter(value, '')}
+                                containerStyle={styles.filterGroup}
+                            />
+                        </View>
+                        <View style={styles.filterColumn}>
+                            <UISearchInput
+                                ref={searchRef}
+                                debounceTime={300}
+                                onSubmit={(text) => filter(selectedIndex, text)}
+                                autoFocus={true}
+                                returnKeyType="search"
+                            />
+                        </View>
+                    </UIStack>
+                </UICard>
+
+                <UICard
+                    style={styles.resultsCard}
+                    testID="order-list-results-card"
+                    padding="lg"
+                >
                     {filteredOrders?.length === 0 && (
                         <UIEmptyState text="No orders found" />
                     )}
                     {filteredOrders && filteredOrders?.length > 0 && (
                         <FlatList
+                            testID="order-list-flat-list"
                             data={filteredOrders}
                             renderItem={({ item }) => (
                                 <OrderItem
@@ -138,8 +133,8 @@ export function OrderList({ navigation }: OrderListProps) {
                             )}
                         />
                     )}
-                </View>
-            </View>
+                </UICard>
+            </UIStack>
 
             <Dialog
                 isVisible={!!orderToVoid}
@@ -151,23 +146,32 @@ export function OrderList({ navigation }: OrderListProps) {
                     onRefundComplete={() => setOrderToVoid(undefined)}
                 />
             </Dialog>
-        </SafeAreaView>
+        </UIScreen>
     );
 }
 
-const useStyles = () => {
-    const sharedStyles = useSharedStyles();
-
-    return {
-        ...sharedStyles,
-        ...StyleSheet.create({
-            header: {
-                margin: 10,
-                flexDirection: 'row',
-                justifyContent: 'center',
-            },
-        }),
-    };
-};
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+        },
+        filterColumn: {
+            flex: 1,
+        },
+        filterGroup: {
+            margin: 0,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+        },
+        resultsCard: {
+            flex: 1,
+        },
+        overlay: {
+            backgroundColor: tokens.colors.canvas,
+            borderColor: tokens.colors.border,
+            borderWidth: 1,
+            borderRadius: 5,
+        },
+    });
 
 export default OrderList;

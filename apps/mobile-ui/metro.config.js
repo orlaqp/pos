@@ -20,7 +20,8 @@ module.exports = (async () => {
       resolver: {
         assetExts: assetExts.filter((ext) => ext !== 'svg'),
         sourceExts: [...sourceExts, 'svg'],
-        resolverMainFields: ['sbmodern', 'browser', 'main'],
+        resolverMainFields: ['react-native', 'browser', 'main'],
+        platforms: ['ios', 'android', 'native'],
         blacklistRE: exclusionList([/\.\/dist\/.*/, /#current-cloud-backend\/.*/]),
       },
     },

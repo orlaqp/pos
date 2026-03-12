@@ -198,11 +198,14 @@ export class ProductService {
 async function validateNameBarcodeAndSku(
     product: ProductEntity
 ): Promise<boolean> {
-    const withSameName = await DataStore.query(Product, (p) =>
-        p.name('eq', product.name)
-    );
+    const normalizedName = (product.name || '').trim().toLowerCase();
+    const allProducts = await DataStore.query(Product);
+    const withSameName = allProducts.find((p) => {
+        if (p.id === product.id) return false;
+        return (p.name || '').trim().toLowerCase() === normalizedName;
+    });
 
-    if (withSameName.length && product.id !== withSameName[0].id) {
+    if (withSameName) {
         Alert.alert('A product with same name already exist');
         return false;
     }

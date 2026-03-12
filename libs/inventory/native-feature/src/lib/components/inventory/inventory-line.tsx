@@ -18,7 +18,7 @@ export function InventoryLine({ item }: InventoryLineProps) {
     const [reorderPoint, setReorderPoint] = useState<string | null | undefined>(item.reorderPoint?.toString());
     const prevReorderPoint = item.reorderPoint;
     const [reorderQuantity, setReorderQuantity] = useState<string | null | undefined>(item.reorderQuantity?.toString());
-    const prevReorderQuantity = item.reorderPoint;
+    const prevReorderQuantity = item.reorderQuantity;
 
     const updateReorderPoint = (text: string) => {
         const value = +text;

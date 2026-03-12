@@ -10,23 +10,26 @@ import { store } from '@pos/store';
 import Navigation from './navigation';
 import { Appearance } from 'react-native';
 import { setI18nConfig } from '@pos/settings/data-access';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export const App = () => {
     const colorScheme = Appearance.getColorScheme();
 
     return (
-        <Provider store={store}>
-            <NavigationContainer>
-                <ThemeProvider
-                    // theme={theme(colorScheme === 'light' ? 'light' : 'dark')}
-                    theme={theme('dark')}
-                >
-                    <SafeAreaProvider>
-                        <Navigation />
-                    </SafeAreaProvider>
-                </ThemeProvider>
-            </NavigationContainer>
-        </Provider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <Provider store={store}>
+                <NavigationContainer>
+                    <ThemeProvider
+                        // theme={theme(colorScheme === 'light' ? 'light' : 'dark')}
+                        theme={theme('dark')}
+                    >
+                        <SafeAreaProvider>
+                            <Navigation />
+                        </SafeAreaProvider>
+                    </ThemeProvider>
+                </NavigationContainer>
+            </Provider>
+        </GestureHandlerRootView>
     );
 };
 

@@ -21,13 +21,13 @@ import {
     selectAllProducts,
     subscribeToProductChanges,
 } from '@pos/products/data-access';
-import { Button, Dialog, useTheme } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
 import InventoryReceiveLine from '../inventory-receives/inventory-receive-line';
 import { confirm } from '@pos/shared/utils';
 import { NavigationParamList } from '@pos/sales/native-feature';
-import { CompactProductItem } from '../shared/compact-product-item/compact-product-item';
 import CompactProductList from '../shared/compact-product-list/compact-product-list';
 import { selectLoginEmployee } from '@pos/employees/data-access';
+import { dedupeProducts } from '../shared/dedupe-products';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -81,6 +81,7 @@ export function InventoryReceiveForm({
         } else {
             if (!employee) {
                 Alert.alert('The system could not find the details of the logged in employee');
+                setBusy(false);
                 return;
             }
 
@@ -158,7 +159,7 @@ export function InventoryReceiveForm({
         if (!filter) setFilteredProducts((prev) => []);
 
         const searchResult = ProductService.search(products, { text: filter });
-        setFilteredProducts((prev) => [...searchResult.items]);
+        setFilteredProducts((prev) => [...dedupeProducts(searchResult.items)]);
     }, [filter, products]);
 
     useEffect(() => {

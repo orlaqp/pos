@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import UIEmptyState from '../ui-empty-state/ui-empty-state';
-import UISearchInput from '../ui-search-input/ui-search-input';
 import UISpinner from '../ui-spinner/ui-spinner';
 import { useSharedStyles } from '@pos/theme/native';
-import { Button, FAB, useTheme } from '@rneui/themed';
+import { useTheme } from '@rneui/themed';
 
-import { View, StyleSheet, FlatList, Alert } from 'react-native';
+import {
+    View,
+    StyleSheet,
+    FlatList,
+    TextInput,
+    TouchableOpacity,
+    Text,
+} from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Dictionary } from '@reduxjs/toolkit';
 
 const PAGE_SIZE = 10;
 
@@ -65,6 +70,7 @@ export function UIGenericItemList({
     const items = useSelector(filteredListSelector);
     const [visibleItems, setVisibleItems] = useState<unknown[]>();
     const [lastIndex, setLastIndex] = useState<number>(10);
+    const [query, setQuery] = useState<string>('');
 
     const createNew = () => {
         dispatch(clearSelectionAction());
@@ -112,13 +118,6 @@ export function UIGenericItemList({
             </View>
         );
 
-    const confirmGoBack = () => {
-        Alert.alert('Are you sure?', 'Press yes to confirm', [
-            { text: 'No' },
-            { text: 'Yes', onPress: () => navigation.goBack() },
-        ]);
-    };
-
     const showMoreItems = () => {
         if (!items) return;
 
@@ -137,37 +136,42 @@ export function UIGenericItemList({
             {renderHeader && renderHeader()}
             {!renderHeader && (
                 <View style={[styles.header, { alignItems: 'center' }]}>
-                    <View style={{ flex: 5 }}>
-                        <UISearchInput
-                            debounceTime={300}
-                            onSubmit={filterList}
-                            returnKeyType='search'
+                    <View style={styles.searchContainer}>
+                        <TextInput
+                            testID="ui-generic-item-list-search-input"
+                            value={query}
+                            placeholder="type to search..."
+                            placeholderTextColor={theme.theme.colors.grey2}
+                            style={styles.searchInput}
+                            autoCorrect={false}
+                            autoCapitalize="none"
+                            returnKeyType="search"
+                            onChangeText={(value) => setQuery(value)}
+                            onSubmitEditing={(e) => {
+                                const value = e.nativeEvent.text ?? query;
+                                setQuery(value);
+                                filterList(value);
+                            }}
                         />
                     </View>
-                    <Button
-                        type="clear"
-                        icon={{
-                            name: 'refresh',
-                            type: 'material-community',
-                            color: theme.theme.colors.grey2,
-                        }}
-                        style={{ top: 4, left: 15 }}
-                        onPress={() =>
-                            fetchItemsAction && dispatch(fetchItemsAction())
-                        }
-                    />
-                    <View
-                        style={{
-                            flex: 1,
-                            alignItems: 'flex-end',
-                            marginRight: 20,
-                        }}
+                    <TouchableOpacity
+                        testID="ui-generic-item-list-refresh-button"
+                        style={styles.refreshButton}
+                        onPress={() => fetchItemsAction && dispatch(fetchItemsAction())}
                     >
-                        <FAB
-                            icon={{ name: 'add', color: 'white' }}
-                            color={theme.theme.colors.primary}
+                        <Text style={styles.refreshIcon}>↻</Text>
+                    </TouchableOpacity>
+                    <View style={styles.addButtonContainer}>
+                        <TouchableOpacity
+                            testID="ui-generic-item-list-add-button"
                             onPress={createNew}
-                        />
+                            style={[
+                                styles.addButton,
+                                { backgroundColor: theme.theme.colors.primary },
+                            ]}
+                        >
+                            <Text style={styles.addButtonLabel}>+</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             )}
@@ -211,6 +215,45 @@ const useStyles = () => {
             },
             columnHeader: {
                 color: theme.theme.colors.grey3,
+            },
+            addButtonContainer: {
+                flex: 1,
+                alignItems: 'flex-end',
+                marginRight: 20,
+            },
+            addButton: {
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                alignItems: 'center',
+                justifyContent: 'center',
+            },
+            addButtonLabel: {
+                color: '#fff',
+                fontSize: 28,
+                lineHeight: 28,
+                fontWeight: '600',
+                marginTop: -2,
+            },
+            searchContainer: {
+                flex: 5,
+            },
+            searchInput: {
+                backgroundColor: theme.theme.colors.grey5,
+                borderRadius: 20,
+                color: theme.theme.colors.grey1,
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+            },
+            refreshButton: {
+                top: 4,
+                left: 15,
+                paddingHorizontal: 8,
+                paddingVertical: 6,
+            },
+            refreshIcon: {
+                color: theme.theme.colors.grey2,
+                fontSize: 20,
             },
         }),
     };

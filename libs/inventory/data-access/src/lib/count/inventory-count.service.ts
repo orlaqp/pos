@@ -22,9 +22,9 @@ export class InventoryCountService {
             updatedCount = await updateCount(count, dispatch);
         }
 
-        if (!updateInv || !updateCount) return;
+        if (!updateInv || !updatedCount) return;
 
-        await updateInventory(updatedCount!);
+        await updateInventory(updatedCount);
     }
 
     static getAll() {
@@ -82,32 +82,35 @@ async function updateCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
         })
     );
 
-    count.lines?.forEach(async (l) => {
+    const lineUpdates = count.lines?.map(async (l) => {
         if (!l.id) {
-            DataStore.save(
+            await DataStore.save(
                 new InventoryCountLine({
                     ...l,
                     inventoryCountLineInventoryCountId: existing.id,
                 })
             );
-        } else {
-            const line = await DataStore.query(InventoryCountLine, (c) =>
-                c.id('eq', l.id!)
-            );
-
-            if (line.length === 0) {
-                console.error('Inventory Count Line not found for: ' + l.id);
-                return;
-            }
-
-            DataStore.save(
-                InventoryCountLine.copyOf(line[0], (updated) => {
-                    updated.newCount = l.newCount;
-                    updated.comments = l.comments;
-                })
-            );
+            return;
         }
-    });
+
+        const line = await DataStore.query(InventoryCountLine, (c) =>
+            c.id('eq', l.id!)
+        );
+
+        if (line.length === 0) {
+            console.error('Inventory Count Line not found for: ' + l.id);
+            return;
+        }
+
+        await DataStore.save(
+            InventoryCountLine.copyOf(line[0], (updated) => {
+                updated.newCount = l.newCount;
+                updated.comments = l.comments;
+            })
+        );
+    }) || [];
+
+    await Promise.all(lineUpdates);
 
     dispatch(
         inventoryCountActions.update({ id: count.id, changes: count })
@@ -120,18 +123,20 @@ const updateInventory = async (count: InventoryCountDTO) => {
     try {
         for (let i = 0; i < count.lines.length; i++) {
             const l = count.lines[i];
-            const p = await DataStore.query(Product, p => p.id('eq', l.productId));
+            const product = await DataStore.query(Product, l.productId);
 
-            if (!p.length) {
+            if (!product) {
                 Alert.alert('Error', `Product ${l.productName} was not found while updating the inventory`);
+                continue;
             }
 
-            // current    new     operation
-            //   9         4          -5
-            //   12        20         +8
+            if (l.newCount === undefined || l.newCount === null) {
+                continue;
+            }
 
-            const updatedProduct = Product.copyOf(p[0], updated => {
-                updated.quantity = l.newCount! - l.current;
+            const updatedProduct = Product.copyOf(product, updated => {
+                // Count is an absolute quantity, not a delta.
+                updated.quantity = l.newCount!;
             });
             await DataStore.save(updatedProduct);
         }

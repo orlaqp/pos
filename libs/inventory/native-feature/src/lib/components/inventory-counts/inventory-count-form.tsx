@@ -23,6 +23,7 @@ import { NavigationParamList } from '@pos/sales/native-feature';
 import CompactProductList from '../shared/compact-product-list/compact-product-list';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { useForm } from 'react-hook-form';
+import { dedupeProducts } from '../shared/dedupe-products';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -107,6 +108,7 @@ export function InventoryCountForm({
         } else {
             if (!employee) {
                 Alert.alert('No employee found');
+                setBusy(false);
                 return;
             }
 
@@ -190,14 +192,15 @@ export function InventoryCountForm({
         if (!filter) setFilteredProducts((prev) => []);
 
         const searchResult = ProductService.search(products, { text: filter });
+        const deduped = dedupeProducts(searchResult.items);
 
-        if (searchResult.items.length === 1) {
-            addItem(searchResult.items[0]);
+        if (deduped.length === 1) {
+            addItem(deduped[0]);
             setFilteredProducts((prev) => []);
             return;
         }
 
-        setFilteredProducts((prev) => [...searchResult.items]);
+        setFilteredProducts((prev) => [...deduped]);
     }, [filter, products]);
 
     // useEffect(() => {

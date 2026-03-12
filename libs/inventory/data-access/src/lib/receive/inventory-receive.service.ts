@@ -78,32 +78,35 @@ async function updateReceive(receive: InventoryReceiveDTO, dispatch: Dispatch<an
         })
     );
 
-    receive.lines?.forEach(async (l) => {
+    const lineUpdates = receive.lines?.map(async (l) => {
         if (!l.id) {
-            DataStore.save(
+            await DataStore.save(
                 new InventoryReceiveLine({
                     ...l,
                     inventoryReceiveLineInventoryReceiveId: existing.id,
                 })
             );
-        } else {
-            const line = await DataStore.query(InventoryReceiveLine, (c) =>
-                c.id('eq', l.id!)
-            );
-
-            if (line.length === 0) {
-                console.error('Inventory received Line not found for: ' + l.id);
-                return;
-            }
-
-            DataStore.save(
-                InventoryReceiveLine.copyOf(line[0], (updated) => {
-                    updated.received = l.received;
-                    updated.comments = l.comments;
-                })
-            );
+            return;
         }
-    });
+
+        const line = await DataStore.query(InventoryReceiveLine, (c) =>
+            c.id('eq', l.id!)
+        );
+
+        if (line.length === 0) {
+            console.error('Inventory received Line not found for: ' + l.id);
+            return;
+        }
+
+        await DataStore.save(
+            InventoryReceiveLine.copyOf(line[0], (updated) => {
+                updated.received = l.received;
+                updated.comments = l.comments;
+            })
+        );
+    }) || [];
+
+    await Promise.all(lineUpdates);
 
     return dispatch(
         inventoryReceiveActions.update({ id: receive.id, changes: receive })
@@ -114,57 +117,23 @@ const updateInventory = async (count: InventoryReceiveDTO) => {
     try {
         for (let i = 0; i < count.lines.length; i++) {
             const l = count.lines[i];
-            const p = await DataStore.query(Product, (p) =>
-                p.id('eq', l.productId)
-            );
+            const product = await DataStore.query(Product, l.productId);
 
-            if (!p.length) {
+            if (!product) {
                 Alert.alert(
                     'Error',
                     `Product ${l.productName} was not found while updating the inventory`
                 );
+                continue;
             }
             
-            if (p[0].quantity !== l.received) {
+            if (product.quantity !== l.received) {
                 await DataStore.save(
-                    Product.copyOf(p[0], (updated) => {
+                    Product.copyOf(product, (updated) => {
                         updated.quantity = l.received;
                     })
                 );
-            } else {
-                const halfQuantity = +((l.received / 2).toFixed(2));
-                await DataStore.save(Product.copyOf(p[0], (updated) => { updated.quantity = halfQuantity }));
-    
-                await new Promise((resolve, reject) => {
-                    const subs = DataStore.observeQuery(Product, (prod) => prod.id('eq', p[0].id))
-                    .subscribe(async res => {
-                        const newProd = res.items[0];
-                       
-                        if (
-                            (newProd as any)._version === (p[0] as any)._version
-                         || newProd.quantity === halfQuantity
-                        ) return;
-    
-                        console.log('Saving the other half');
-                        
-                        const updatedProd = await DataStore.save(Product.copyOf(newProd, (updated) => { updated.quantity = halfQuantity }));
-                        subs.unsubscribe();
-                        resolve(updatedProd);
-                    });
-                });
             }
-
-
-            
-
-            // console.log('====================================');
-            // console.log(`Half quantity: ${halfQuantity}`);
-            // console.log('====================================');
-            // setTimeout(() => {
-            //     DataStore.save(Product.copyOf(res, (updated) => { updated.quantity = halfQuantity }));
-            // }, 2000);    
-                
-            
         }
     } catch (error) {
         Alert.alert('Error while updating inventory received', (error as any).message);
