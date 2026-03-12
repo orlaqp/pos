@@ -95,3 +95,6 @@ Copy scripts used by codegen:
 
 ## Step 1 Baseline
 - Stability baseline checklist: `.codex/stability-baseline-checklist.md`
+
+## Step 2 Dependency Audit
+- Upgrade matrix and phased plan: `.codex/dependency-upgrade-matrix.md`

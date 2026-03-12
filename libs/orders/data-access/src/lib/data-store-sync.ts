@@ -1,12 +1,9 @@
-import { EmployeeEntity } from '@pos/employees/data-access';
 import { sortByCreatedAt } from '@pos/shared/utils';
 import { Order } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from 'aws-amplify';
 import { OrderEntityMapper } from './order.entity';
 import { ordersActions } from './slices/orders.slice';
-import { Role } from '@pos/auth/data-access';
-import { Alert } from 'react-native';
 
 import moment from 'moment';
 
@@ -19,7 +16,7 @@ export const syncOrders = (dispatch: Dispatch) => {
         .then((orders) => updateStoreOrders(dispatch, orders));
 };
 
-export const subscribeToOrderChanges = (dispatch: Dispatch, employee?: EmployeeEntity) => {
+export const subscribeToOrderChanges = (dispatch: Dispatch) => {
     // DataStore.observe(Order).subscribe(msg => {
     //     console.log(msg.model, msg.opType, msg.element);
     // });

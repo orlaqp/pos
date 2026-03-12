@@ -33,6 +33,13 @@ target 'MobileUi' do
         config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++14'
         defs = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
         defs << '_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION'
+
+        # RN 0.67 Yoga emits bitwise-on-bool warnings with newer Xcode/clang.
+        # Treat this warning as non-error so legacy toolchain can still build.
+        if target.name == 'Yoga'
+          cpp_flags = config.build_settings['OTHER_CPLUSPLUSFLAGS'] ||= ['$(inherited)']
+          cpp_flags << '-Wno-error=bitwise-instead-of-logical'
+        end
       end
     end
   end

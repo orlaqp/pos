@@ -12,7 +12,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { OrderStatus } from '@pos/shared/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CompactOrderItem from '../compact-order-item/compact-order-item';
-import { selectLoginEmployee } from '@pos/employees/data-access';
 
 export interface CompactOrderListProps {
     onSelect: () => void;
@@ -24,15 +23,14 @@ export function CompactOrderList({ onSelect }: CompactOrderListProps) {
     const [filterText, setFilterText] = useState<string>();
     const openOrders = useSelector(selectOpenOrders);
     const [filteredList, setFilteredList] = useState<OrderEntity[]>(openOrders);
-    const employee = useSelector(selectLoginEmployee);
 
     useEffect(() => {
-        const ordersSub = subscribeToOrderChanges(dispatch, employee);
+        const ordersSub = subscribeToOrderChanges(dispatch);
         return () => {
             console.log('Closing orders subscription');
             ordersSub?.unsubscribe();
         };
-    }, [dispatch, employee]);
+    }, [dispatch]);
 
     useEffect(() => {
         setFilteredList(

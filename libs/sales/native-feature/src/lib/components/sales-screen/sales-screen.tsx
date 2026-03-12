@@ -132,7 +132,6 @@ export function SalesScreen({
         (p: ButtonItemType) => {
             const product = p as ProductEntity;
 
-            debugger;
             if (globalSettings?.enforceSalesBasedOnInventory && product.quantity < MINIMUM_INVENTORY_FOR_SALE) {
                 Alert.alert('Not Available', 'We do not have this product in inventory at the moment');
                 return;

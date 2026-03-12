@@ -16,8 +16,16 @@ jest.mock('@pos/theme/native', () => ({
 }));
 
 jest.mock('@rneui/themed', () => ({
-    Button: ({ title, onPress }: { title: string; onPress: () => void }) => (
-        <Pressable onPress={onPress} testID="submit-payment">
+    Button: ({
+        title,
+        onPress,
+        testID,
+    }: {
+        title: string;
+        onPress: () => void;
+        testID?: string;
+    }) => (
+        <Pressable onPress={onPress} testID={testID || 'submit-payment'}>
             <Text>{title}</Text>
         </Pressable>
     ),
