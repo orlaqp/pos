@@ -66,11 +66,15 @@ export const upsertOrder = createAsyncThunk(
                 order: request.cart,
             });
         } else {
-            o = await OrderService.update({
+            const updatedOrder = await OrderService.update({
                 id: request.cart.id,
                 by: employee as any,
                 order: request.cart,
             });
+            if (!updatedOrder) {
+                throw new Error('Order update returned empty result');
+            }
+            o = updatedOrder;
         }
 
         return {
@@ -149,10 +153,10 @@ export const ordersSlice = createSlice({
                     ordersAdapter.addOne(state, action.payload.order);
                     state.submitStatus = 'saved';
                     printReceipt(
-                        action.payload.storeInfo!,
+                        normalizeReceiptStoreInfo(action.payload.storeInfo),
                         action.payload.defaultPrinter!,
                         action.payload.cart,
-                        action.payload.order
+                        normalizeReceiptOrder(action.payload.order)
                     );
                 }
             )
@@ -174,10 +178,10 @@ export const ordersSlice = createSlice({
                     });
                     state.submitStatus = 'saved';
                     printReceipt(
-                        action.payload.storeInfo!,
+                        normalizeReceiptStoreInfo(action.payload.storeInfo),
                         action.payload.defaultPrinter!,
                         action.payload.cart,
-                        action.payload.order
+                        normalizeReceiptOrder(action.payload.order)
                     );
                 }
             );
@@ -232,4 +236,42 @@ function filterList(state: OrdersState, options: FilterRequest) {
         options
     );
     state.loadingStatus = 'loaded';
+}
+
+function normalizeReceiptStoreInfo(storeInfo?: StoreInfoEntity) {
+    return {
+        name: storeInfo?.name ?? undefined,
+        address: storeInfo?.address ?? undefined,
+        city: storeInfo?.city ?? undefined,
+        state: storeInfo?.state ?? undefined,
+        zipCode: storeInfo?.zipCode ?? undefined,
+        phone: storeInfo?.phone ?? undefined,
+        fax: storeInfo?.fax ?? undefined,
+        email: storeInfo?.email ?? undefined,
+        disclaimer: storeInfo?.disclaimer ?? undefined,
+    };
+}
+
+function normalizeReceiptOrder(order?: OrderEntity) {
+    if (!order) return undefined;
+    return {
+        id: order.id,
+        status: order.status,
+        orderNo: order.orderNo,
+        paymentInfo: order.paymentInfo
+            ? {
+                  payments: order.paymentInfo.payments?.map((payment) => ({
+                      type: String(payment.type),
+                      amount: payment.amount,
+                  })),
+              }
+            : undefined,
+        lines:
+            order.lines?.map((line) => ({
+                quantity: line.quantity,
+                productName: line.productName,
+                ebtPaidAmount: line.ebtPaidAmount ?? undefined,
+                nonEbtPaidAmount: line.nonEbtPaidAmount ?? undefined,
+            })) ?? undefined,
+    };
 }

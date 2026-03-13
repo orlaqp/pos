@@ -1,4 +1,5 @@
 {
+    "name": "printings-data-access",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/printings/data-access/src",
     "projectType": "library",
@@ -15,7 +16,7 @@
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/printings/data-access"],
+            "outputs": ["{workspaceRoot}/coverage/libs/printings/data-access"],
             "options": {
                 "jestConfig": "libs/printings/data-access/jest.config.ts",
                 "passWithNoTests": true

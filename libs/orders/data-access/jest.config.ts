@@ -5,7 +5,14 @@ export default {
     displayName: 'orders-data-access',
     preset: '../../../jest.preset.js',
     transform: {
-        '^.+\\.[tj]sx?$': ['babel-jest', { presets: ['@nrwl/react/babel'] }],
+        '^.+\\.[tj]sx?$': [
+            'ts-jest',
+            {
+                tsconfig: '<rootDir>/tsconfig.spec.json',
+                isolatedModules: true,
+                diagnostics: false,
+            },
+        ],
     },
     moduleNameMapper: {
         ...(basePreset.moduleNameMapper || {}),

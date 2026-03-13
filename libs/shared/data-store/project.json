@@ -1,4 +1,5 @@
 {
+    "name": "shared-data-store",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/shared/data-store/src",
     "projectType": "library",
@@ -15,7 +16,7 @@
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/shared/data-store"],
+            "outputs": ["{workspaceRoot}/coverage/libs/shared/data-store"],
             "options": {
                 "jestConfig": "libs/shared/data-store/jest.config.ts",
                 "passWithNoTests": true

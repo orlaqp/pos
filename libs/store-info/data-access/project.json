@@ -1,4 +1,5 @@
 {
+    "name": "store-info-data-access",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/store-info/data-access/src",
     "projectType": "library",
@@ -15,7 +16,7 @@
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/store-info/data-access"],
+            "outputs": ["{workspaceRoot}/coverage/libs/store-info/data-access"],
             "options": {
                 "jestConfig": "libs/store-info/data-access/jest.config.ts",
                 "passWithNoTests": true

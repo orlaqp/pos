@@ -1,4 +1,5 @@
 {
+    "name": "unit-of-measures-native-feature",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/unit-of-measures/native-feature/src",
     "projectType": "library",
@@ -15,7 +16,9 @@
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/unit-of-measures/native-feature"],
+            "outputs": [
+                "{workspaceRoot}/coverage/libs/unit-of-measures/native-feature"
+            ],
             "options": {
                 "jestConfig": "libs/unit-of-measures/native-feature/jest.config.ts",
                 "passWithNoTests": true

@@ -1,7 +1,9 @@
 {
+    "name": "mobile-ui",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "apps/mobile-ui/src",
     "projectType": "application",
+    "tags": [],
     "targets": {
         "start": {
             "executor": "@nrwl/react-native:start",
@@ -21,7 +23,7 @@
         },
         "bundle-ios": {
             "executor": "@nrwl/react-native:bundle",
-            "outputs": ["apps/mobile-ui/build"],
+            "outputs": ["{projectRoot}/build"],
             "options": {
                 "entryFile": "src/main.tsx",
                 "platform": "ios",
@@ -35,8 +37,8 @@
         "build-android": {
             "executor": "@nrwl/react-native:build-android",
             "outputs": [
-                "apps/mobile-ui/android/app/build/outputs/bundle",
-                "apps/mobile-ui/android/app/build/outputs/apk"
+                "{projectRoot}/android/app/build/outputs/bundle",
+                "{projectRoot}/android/app/build/outputs/apk"
             ],
             "options": {}
         },
@@ -65,12 +67,11 @@
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/apps/mobile-ui"],
+            "outputs": ["{workspaceRoot}/coverage/apps/mobile-ui"],
             "options": {
                 "jestConfig": "apps/mobile-ui/jest.config.ts",
                 "passWithNoTests": true
             }
         }
-    },
-    "tags": []
+    }
 }

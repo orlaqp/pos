@@ -1,7 +1,10 @@
 {
+    "name": "mobile-ui-e2e",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "apps/mobile-ui-e2e/src",
     "projectType": "application",
+    "tags": [],
+    "implicitDependencies": ["mobile-ui"],
     "targets": {
         "build-ios": {
             "executor": "@nrwl/detox:build",
@@ -58,7 +61,5 @@
                 "lintFilePatterns": ["apps/mobile-ui-e2e/**/*.{ts,tsx,js,jsx}"]
             }
         }
-    },
-    "tags": [],
-    "implicitDependencies": ["mobile-ui"]
+    }
 }

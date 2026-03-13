@@ -1,4 +1,5 @@
 {
+    "name": "store-info-native-feature",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/store-info/native-feature/src",
     "projectType": "library",
@@ -15,7 +16,9 @@
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/store-info/native-feature"],
+            "outputs": [
+                "{workspaceRoot}/coverage/libs/store-info/native-feature"
+            ],
             "options": {
                 "jestConfig": "libs/store-info/native-feature/jest.config.ts",
                 "passWithNoTests": true

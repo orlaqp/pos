@@ -1,4 +1,5 @@
 {
+    "name": "back-office-native-feature",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/back-office/native-feature/src",
     "projectType": "library",
@@ -15,7 +16,9 @@
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/back-office/native-feature"],
+            "outputs": [
+                "{workspaceRoot}/coverage/libs/back-office/native-feature"
+            ],
             "options": {
                 "jestConfig": "libs/back-office/native-feature/jest.config.ts",
                 "passWithNoTests": true

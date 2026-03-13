@@ -73,7 +73,7 @@ export class OrderEntityMapper {
     }
 
     private static cleanCartProductName(name?: string) {
-        if (!name) return name;
+        if (!name) return '';
         return name.replace(/^(?:NON-EBT|EBT)\s+/i, '');
     }
 

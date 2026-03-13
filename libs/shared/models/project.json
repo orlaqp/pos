@@ -1,4 +1,6 @@
 {
+    "name": "models",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/shared/models/src",
     "projectType": "library",
     "tags": [],
@@ -12,7 +14,7 @@
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/shared/models"],
+            "outputs": ["{workspaceRoot}/coverage/libs/shared/models"],
             "options": {
                 "jestConfig": "libs/shared/models/jest.config.js",
                 "passWithNoTests": true

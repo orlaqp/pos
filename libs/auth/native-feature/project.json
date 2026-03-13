@@ -1,4 +1,5 @@
 {
+    "name": "auth-native-feature",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/auth/native-feature/src",
     "projectType": "library",
@@ -15,7 +16,7 @@
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/auth/native-feature"],
+            "outputs": ["{workspaceRoot}/coverage/libs/auth/native-feature"],
             "options": {
                 "jestConfig": "libs/auth/native-feature/jest.config.ts",
                 "passWithNoTests": true

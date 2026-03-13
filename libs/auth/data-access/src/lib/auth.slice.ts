@@ -90,7 +90,7 @@ export const selectUser = createSelector(
 
 export const selectEmployee = createSelector(
     getAuthState,
-    (state: AuthState) => state.employee
+    (state: AuthState) => state.user
 );   
 
 // export const selectAuthEntities = createSelector(getAuthState, selectEntities);

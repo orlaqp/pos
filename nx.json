@@ -1,22 +1,10 @@
 {
-    "npmScope": "pos",
-    "affected": {
-        "defaultBase": "main"
-    },
     "implicitDependencies": {
         "package.json": {
             "dependencies": "*",
             "devDependencies": "*"
         },
         ".eslintrc.json": "*"
-    },
-    "tasksRunnerOptions": {
-        "default": {
-            "runner": "nx/tasks-runners/default",
-            "options": {
-                "cacheableOperations": ["build", "lint", "test", "e2e"]
-            }
-        }
     },
     "defaultProject": "mobile-ui",
     "generators": {
@@ -29,7 +17,19 @@
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
     "targetDefaults": {
         "build": {
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build"],
+            "cache": true
+        },
+        "lint": {
+            "cache": true
+        },
+        "test": {
+            "cache": true
+        },
+        "e2e": {
+            "cache": true
         }
-    }
+    },
+    "useInferencePlugins": false,
+    "defaultBase": "main"
 }

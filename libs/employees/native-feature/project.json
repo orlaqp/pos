@@ -1,4 +1,5 @@
 {
+    "name": "employees-native-feature",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/employees/native-feature/src",
     "projectType": "library",
@@ -15,7 +16,9 @@
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/employees/native-feature"],
+            "outputs": [
+                "{workspaceRoot}/coverage/libs/employees/native-feature"
+            ],
             "options": {
                 "jestConfig": "libs/employees/native-feature/jest.config.ts",
                 "passWithNoTests": true

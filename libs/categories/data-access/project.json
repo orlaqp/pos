@@ -1,4 +1,5 @@
 {
+    "name": "categories-data-access",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/categories/data-access/src",
     "projectType": "library",
@@ -15,7 +16,7 @@
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/categories/data-access"],
+            "outputs": ["{workspaceRoot}/coverage/libs/categories/data-access"],
             "options": {
                 "jestConfig": "libs/categories/data-access/jest.config.ts",
                 "passWithNoTests": true

@@ -1,4 +1,5 @@
 {
+    "name": "theme-native",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/theme/native/src",
     "projectType": "library",
@@ -13,7 +14,7 @@
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/theme/native"],
+            "outputs": ["{workspaceRoot}/coverage/libs/theme/native"],
             "options": {
                 "jestConfig": "libs/theme/native/jest.config.ts",
                 "passWithNoTests": true

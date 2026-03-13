@@ -82,3 +82,17 @@ jest.mock(
         Alignment: { Center: 'Center' },
     })
 );
+jest.mock('react-native-chart-kit', () => {
+    const React = jest.requireActual('react');
+    const { View } = jest.requireActual('react-native');
+    const MockChart = (props: any) =>
+        React.createElement(View, props, props.children);
+    return {
+        LineChart: MockChart,
+        PieChart: MockChart,
+        BarChart: MockChart,
+        ContributionGraph: MockChart,
+        ProgressChart: MockChart,
+        StackedBarChart: MockChart,
+    };
+});
