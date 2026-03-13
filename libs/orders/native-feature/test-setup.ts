@@ -1,6 +1,6 @@
 import '@testing-library/jest-native/extend-expect';
 import mockRNCNetInfo from '@react-native-community/netinfo/jest/netinfo-mock.js';
-import { View } from 'react-native';
+import { View as mockView } from 'react-native';
 
 jest.mock('@react-native-community/netinfo', () => mockRNCNetInfo);
 jest.mock('@react-native-async-storage/async-storage', () =>
@@ -114,10 +114,10 @@ jest.mock('@rneui/themed', () => ({
 jest.mock('react-native-daterange-picker', () => 'DateRangePicker');
 jest.mock('react-native-gesture-handler', () => {
     return {
-        GestureHandlerRootView: View,
-        NativeViewGestureHandler: View,
-        TapGestureHandler: View,
-        PanGestureHandler: View,
+        GestureHandlerRootView: mockView,
+        NativeViewGestureHandler: mockView,
+        TapGestureHandler: mockView,
+        PanGestureHandler: mockView,
         State: {},
     };
 });

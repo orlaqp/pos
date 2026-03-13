@@ -7,6 +7,6 @@ module.exports = {
     ...(rnPreset.setupFiles || []),
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!(@react-native|react-native|@react-navigation|@rneui|react-native-.*)/)',
+    'node_modules/(?!(@react-native|react-native|@react-navigation|@rneui|react-native-.*|aws-amplify|@aws-amplify|@aws-sdk|uuid)/)',
   ],
 };

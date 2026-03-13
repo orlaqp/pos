@@ -4,6 +4,9 @@ module.exports = {
   ...nxPreset,
   moduleNameMapper: {
     ...(nxPreset.moduleNameMapper || {}),
+    '^aws-amplify$': require.resolve('./jest/aws-amplify.mock.js'),
+    '^@aws-amplify/datastore$': require.resolve('./jest/aws-amplify-datastore.mock.js'),
+    '^@aws-amplify/api-graphql$': require.resolve('./jest/aws-amplify-api-graphql.mock.js'),
     '^react-native-fs$': require.resolve('./jest/react-native-fs.mock.js'),
     '^react-native-device-info$': require.resolve('./jest/react-native-device-info.mock.js'),
     '^@react-native-async-storage/async-storage$': require.resolve(
