@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { theme, useSharedStyles } from '@pos/theme/native';
-import { Button, Icon, Overlay, useTheme } from '@rneui/themed';
+import { useSharedStyles } from '@pos/theme/native';
+import { Button, Overlay, useTheme } from '@rneui/themed';
 
 import {
     View,
@@ -33,9 +33,11 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
         const [visible, setVisible] = useState(false);
         const [selected, setSelected] = useState<IdName>();
         const { control } = useFormContext();
+        const options = list || [];
 
         const toggleOverlay = () => setVisible(!visible);
-        const getSelected = (value: string) => list.find(i => i.id === value);
+        const getSelected = (value: string) =>
+            options.find((i) => i.id === value);
         const select = (item: IdName) => {
             setSelected(item);
             toggleOverlay();
@@ -68,9 +70,17 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                                 onBackdropPress={toggleOverlay}
                                 overlayStyle={styles.overlay}
                             >
-                                <View>
+                                <View style={styles.overlayContent}>
                                     <FlatList
-                                        data={list}
+                                        data={options}
+                                        keyExtractor={(item, index) =>
+                                            `${item.id || item.name}-${index}`
+                                        }
+                                        ListEmptyComponent={
+                                            <Text style={styles.emptyText}>
+                                                No options available
+                                            </Text>
+                                        }
                                         renderItem={({ item }) => (
                                             <TouchableOpacity
                                                 style={styles.dataRow}
@@ -112,9 +122,17 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                     onBackdropPress={toggleOverlay}
                     overlayStyle={styles.overlay}
                 >
-                    <View>
+                    <View style={styles.overlayContent}>
                         <FlatList
-                            data={list}
+                            data={options}
+                            keyExtractor={(item, index) =>
+                                `${item.id || item.name}-${index}`
+                            }
+                            ListEmptyComponent={
+                                <Text style={styles.emptyText}>
+                                    No options available
+                                </Text>
+                            }
                             renderItem={({ item }) => (
                                 <TouchableOpacity
                                     style={styles.dataRow}
@@ -141,9 +159,21 @@ const useStyles = () => {
         ...StyleSheet.create({
             overlay: {
                 backgroundColor: theme.theme.colors.background,
+                width: 420,
+                maxHeight: 520,
+                borderRadius: 8,
+            },
+            overlayContent: {
+                minHeight: 120,
+            },
+            emptyText: {
+                color: theme.theme.colors.grey2,
+                textAlign: 'center',
+                paddingVertical: 20,
             },
             button: {
                 margin: 10,
+                borderRadius: 6,
             },
             name: {
                 color: theme.theme.colors.grey1,

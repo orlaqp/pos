@@ -198,19 +198,27 @@ export class ProductService {
 async function validateNameBarcodeAndSku(
     product: ProductEntity
 ): Promise<boolean> {
+    const normalize = (value: string | null | undefined) =>
+        (value || '').trim().toLowerCase();
+
+    const existing = product.id ? await DataStore.query(Product, product.id) : undefined;
+    const isEdit = !!existing;
+
     const normalizedName = (product.name || '').trim().toLowerCase();
+    const nameChanged = !isEdit || normalize(existing?.name) !== normalizedName;
     const allProducts = await DataStore.query(Product);
     const withSameName = allProducts.find((p) => {
         if (p.id === product.id) return false;
         return (p.name || '').trim().toLowerCase() === normalizedName;
     });
 
-    if (withSameName) {
+    if (nameChanged && withSameName) {
         Alert.alert('A product with same name already exist');
         return false;
     }
 
-    if (product.barcode) {
+    const barcodeChanged = !isEdit || normalize(existing?.barcode) !== normalize(product.barcode);
+    if (product.barcode && barcodeChanged) {
         const withSameBarcode = await DataStore.query(Product, (p) =>
             p.barcode('eq', product.barcode!).id('ne', product.id)
         );
@@ -221,7 +229,8 @@ async function validateNameBarcodeAndSku(
         }
     }
 
-    if (product.sku) {
+    const skuChanged = !isEdit || normalize(existing?.sku) !== normalize(product.sku);
+    if (product.sku && skuChanged) {
         const withSameSku = await DataStore.query(Product, (p) =>
             p.sku('eq', product.sku!).id('ne', product.id)
         );
@@ -232,7 +241,8 @@ async function validateNameBarcodeAndSku(
         }
     }
 
-    if (product.plu) {
+    const pluChanged = !isEdit || normalize(existing?.plu) !== normalize(product.plu);
+    if (product.plu && pluChanged) {
         const withSamePlu = await DataStore.query(Product, (p) =>
             p.plu('eq', product.plu!).id('ne', product.id)
         );

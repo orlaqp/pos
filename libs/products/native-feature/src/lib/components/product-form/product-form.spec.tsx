@@ -142,6 +142,7 @@ describe('ProductForm integration', () => {
     });
 
     it('removes id for new product before save', async () => {
+        mockProduct = undefined;
         mockGetValues.mockReturnValue({
             name: 'New Product',
             price: '9.99',
@@ -211,5 +212,30 @@ describe('ProductForm integration', () => {
         expect(mockSetValue).toHaveBeenCalledWith('barcode', '111111');
         expect(mockSetValue).toHaveBeenCalledWith('sku', 'SKU-22');
         expect(mockSetValue).toHaveBeenCalledWith('plu', '42');
+    });
+
+    it('preserves selected product id on edit even if form values miss id', async () => {
+        mockGetValues.mockReturnValue({
+            name: 'Apple',
+            price: '2.49',
+            cost: '1.20',
+            picture: 'products/new-pic-key',
+        });
+
+        const { getByTestId } = render(
+            <ProductForm navigation={{ goBack: mockGoBack } as any} />
+        );
+
+        fireEvent.press(getByTestId('product-save'));
+
+        await waitFor(() => {
+            expect(mockProductSave).toHaveBeenCalledWith(
+                mockDispatch,
+                expect.objectContaining({
+                    id: 'prod-1',
+                    picture: 'products/new-pic-key',
+                })
+            );
+        });
     });
 });

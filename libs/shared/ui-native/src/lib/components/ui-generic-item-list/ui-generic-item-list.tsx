@@ -205,9 +205,11 @@ const useStyles = () => {
         ...sharedStyles,
         ...StyleSheet.create({
             header: {
-                margin: 10,
+                marginHorizontal: 10,
+                marginTop: 10,
+                marginBottom: 6,
                 flexDirection: 'row',
-                justifyContent: 'center',
+                alignItems: 'center',
             },
             content: {
                 padding: 20,
@@ -217,9 +219,10 @@ const useStyles = () => {
                 color: theme.theme.colors.grey3,
             },
             addButtonContainer: {
-                flex: 1,
+                width: 64,
                 alignItems: 'flex-end',
-                marginRight: 20,
+                marginLeft: 12,
+                marginRight: 8,
             },
             addButton: {
                 width: 48,
@@ -236,7 +239,7 @@ const useStyles = () => {
                 marginTop: -2,
             },
             searchContainer: {
-                flex: 5,
+                flex: 1,
             },
             searchInput: {
                 backgroundColor: theme.theme.colors.grey5,
@@ -246,10 +249,11 @@ const useStyles = () => {
                 paddingVertical: 10,
             },
             refreshButton: {
-                top: 4,
-                left: 15,
+                marginLeft: 12,
                 paddingHorizontal: 8,
                 paddingVertical: 6,
+                alignItems: 'center',
+                justifyContent: 'center',
             },
             refreshIcon: {
                 color: theme.theme.colors.grey2,

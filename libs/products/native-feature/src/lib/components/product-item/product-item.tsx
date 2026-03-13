@@ -8,10 +8,9 @@ import {
     ProductEntity,
     ProductService,
 } from '@pos/products/data-access';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UIEbtRibbon, UIS3Image } from '@pos/shared/ui-native';
-import { selectCategory } from '@pos/categories/data-access';
 import { Icon } from '@rneui/base';
 
 export interface ProductItemProps {
@@ -54,8 +53,6 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
     const styles = useStyles();
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
-
-    const category = useSelector(selectCategory(item.productCategoryId!));
     const codeLines = getProductCodeLines(item);
 
     const deleteItem = async () => {
@@ -95,37 +92,29 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
             onPress={editItem}
         >
             {busy && <ActivityIndicator size="small" />}
-            {!item.picture && <View style={{ width: 50, height: 50 }} />}
-            <View style={[styles.column, { flex: 1, alignItems: 'center' }]}>
+            <View style={styles.thumbnailSlot}>
                 {item.picture && (
                     <UIS3Image s3Key={item.picture} width={50} height={50} />
                 )}
-                <View
-                    style={{
-                        marginTop: 10,
-                        width: '100%',
-                    }}
+            </View>
+            <View style={{ flex: 2.6, paddingRight: 8 }}>
+                <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+                    {formatProductTitle(item)}
+                </Text>
+                <Text
+                    style={[styles.description, styles.secondaryReadable]}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
                 >
-                    <Text
-                        style={{
-                            ...styles.description,
-                            textAlign: 'center',
-                        }}
-                    >
-                        {category?.name}
-                    </Text>
-                </View>
+                    {item.description}
+                </Text>
             </View>
-            <View style={{ flex: 2 }}>
-                <Text style={styles.name}>{formatProductTitle(item)}</Text>
-                <Text style={styles.description}>{item.description}</Text>
-            </View>
-            <View style={[styles.column, { flex: 0.7 }]}>
+            <View style={[styles.column, { flex: 0.8 }]}>
                 <Text style={[styles.name, { textAlign: 'right' }]}>
                     $ {item.price.toFixed(2)}
                 </Text>
             </View>
-            <View style={{ flex: 2, flexDirection: 'row', justifyContent: 'center' }}>
+            <View style={{ flex: 2.2, flexDirection: 'row', justifyContent: 'center' }}>
                 {hasProductCodes(item) &&
                 <View>
                     <Icon
@@ -137,7 +126,12 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
                 }
                 <View style={{ marginLeft: 10, alignSelf: 'center' }}>
                     {codeLines.map((line) => (
-                        <Text key={line.label} style={styles.barcode}>
+                        <Text
+                            key={line.label}
+                            style={[styles.barcode, styles.secondaryReadable]}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                        >
                             {line.label}: {line.value}
                         </Text>
                     ))}
@@ -164,8 +158,9 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
                     icon={{
                         name: 'trash-can',
                         type: 'material-community',
-                        color: theme.theme.colors.error,
+                        color: theme.theme.colors.grey2,
                     }}
+                    buttonStyle={styles.deleteButton}
                     onPress={confirmDeletion}
                 />
             </View>
@@ -184,9 +179,21 @@ const useStyles = () => {
             column: {
                 marginRight: 15,
             },
+            thumbnailSlot: {
+                width: 70,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 12,
+            },
             barcode: {
                 fontSize: 12,
                 color: theme.theme.colors.grey2,
+            },
+            secondaryReadable: {
+                color: theme.theme.colors.grey1,
+            },
+            deleteButton: {
+                opacity: 0.75,
             },
         }),
     };

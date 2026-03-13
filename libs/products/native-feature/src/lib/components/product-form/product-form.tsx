@@ -17,7 +17,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ProductEntity, ProductService } from '@pos/products/data-access';
 import { RootState } from '@pos/store';
 import { Product } from '@pos/shared/models';
-import { selectAllCategories } from '@pos/categories/data-access';
 import { selectAllBrands } from '@pos/brands/data-access';
 import { selectAllUnitOfMeasures } from '@pos/unit-of-measures/data-access';
 import { useTheme, Input } from '@rneui/themed';
@@ -33,7 +32,6 @@ export interface ProductFormProps {
 
 export function ProductForm({ navigation }: ProductFormProps) {
     const product = useSelector((state: RootState) => state.products.selected);
-    const categories = useSelector(selectAllCategories);
     const brands = useSelector(selectAllBrands);
     const ums = useSelector(selectAllUnitOfMeasures);
     const dispatch = useDispatch();
@@ -52,6 +50,10 @@ export function ProductForm({ navigation }: ProductFormProps) {
     const save = async () => {
         setBusy(true);
         const formValues: ProductEntity = form.getValues();
+        // Keep identity stable in edit mode; some form interactions can omit hidden id.
+        if (!formValues.id && product?.id) {
+            formValues.id = product.id;
+        }
         formValues.cost = formValues.cost ? +formValues.cost : null;
         formValues.price = +formValues.price;
         
@@ -125,20 +127,16 @@ export function ProductForm({ navigation }: ProductFormProps) {
                         </View>
                     </View>
                     <View style={{ flex: 4 }}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <UIOverlaySelect
-                                name="productCategoryId"
-                                title={'Select Category'}
-                                list={categories}
-                                selectedId={product?.productCategoryId}
-                                rules={{ required: true }}
-                            />
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={{ minWidth: 220 }}>
                             <UIOverlaySelect
                                 name="productBrandId"
                                 title={'Select Brand'}
                                 list={brands}
                                 selectedId={product?.productBrandId}
                             />
+                            </View>
+                            <View style={{ minWidth: 220 }}>
                             <UIOverlaySelect
                                 name="unitOfMeasure"
                                 title={'Select U/of Measure'}
@@ -149,18 +147,18 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 selectedId={product?.unitOfMeasure}
                                 rules={{ required: true }}
                             />
+                            </View>
                             <View
                                 style={[
-                                    styles.row,
                                     {
-                                        marginTop: 12,
-                                        marginLeft: 20,
+                                        marginLeft: 16,
                                         alignItems: 'center',
+                                        flexDirection: 'row',
                                         justifyContent: 'flex-end',
                                     },
                                 ]}
                             >
-                                <Text style={[styles.primaryText, { marginRight: 30 }]}>
+                                <Text style={[styles.primaryText, { marginRight: 12 }]}>
                                     Available for sale: 
                                 </Text>
                                 <View style={{ paddingLeft: 6 }}>

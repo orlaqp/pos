@@ -137,4 +137,5 @@ describe('ProductItem', () => {
         expect(deleteProduct).toHaveBeenCalledWith('prod-1');
         expect(removeProduct).toHaveBeenCalledWith('prod-1');
     });
+
 });
