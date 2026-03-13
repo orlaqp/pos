@@ -13,6 +13,17 @@ export interface CategoryItemProps {
     navigation: NativeStackNavigationProp<any>;
 }
 
+export const deleteCategoryById = async (
+    id: string | undefined,
+    deleteCategory: (id: string) => Promise<any>,
+    removeCategory: (id: string) => any
+) => {
+    if (!id) return false;
+    await deleteCategory(id);
+    removeCategory(id);
+    return true;
+};
+
 export function CategoryItem({ item, navigation }: CategoryItemProps) {
     const theme = useTheme();
     const styles = useStyles();
@@ -20,14 +31,14 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
     const [busy, setBusy] = useState<boolean>(false);
 
     const deleteItem = async () => {
-        if (!item.id) return;
-
         setBusy(true);
-        await CategoryService.delete(item.id);
+        await deleteCategoryById(
+            item.id,
+            (id) => CategoryService.delete(id),
+            (id) => dispatch(categoriesActions.remove(id))
+        );
         setBusy(false);
-        dispatch(categoriesActions.remove(item.id));
-
-    }
+    };
 
     const editItem = () => {
         dispatch(categoriesActions.select(item));

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, useTheme } from '@rneui/themed';
 
-import { View } from 'react-native';
+import { StyleProp, View, ViewStyle } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 
 /* eslint-disable-next-line */
@@ -11,6 +11,8 @@ export interface UiActionBarProps {
     cancelTitle?: string;
     submitAction: () => unknown;
     cancelAction: () => unknown;
+    submitButtonStyle?: StyleProp<ViewStyle>;
+    cancelButtonStyle?: StyleProp<ViewStyle>;
 }
 
 export function UIActions(props: UiActionBarProps) {
@@ -29,6 +31,7 @@ export function UIActions(props: UiActionBarProps) {
                     color: props.busy ? theme.theme.colors.grey5 : theme.theme.colors.grey0,
                 }}
                 style={{ marginRight: 20 }}
+                buttonStyle={[{ borderRadius: 10 }, props.cancelButtonStyle]}
                 titleStyle={{
                     paddingRight: 20,
                     color: theme.theme.colors.grey1
@@ -45,6 +48,7 @@ export function UIActions(props: UiActionBarProps) {
                     type: 'material-community',
                     color: props.busy ? theme.theme.colors.grey5 : theme.theme.colors.grey0,
                 }}
+                buttonStyle={[{ borderRadius: 10 }, props.submitButtonStyle]}
                 titleStyle={{
                     paddingRight: 20
                 }}

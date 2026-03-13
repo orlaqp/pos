@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1773365906580" clover="3.2.0">
+  <project timestamp="1773365906580" name="All files">
+    <metrics statements="83" coveredstatements="83" conditionals="124" coveredconditionals="90" methods="36" coveredmethods="36" elements="243" coveredelements="209" complexity="0" loc="83" ncloc="83" packages="4" files="4" classes="4"/>
+    <package name="brand-form">
+      <metrics statements="26" coveredstatements="26" conditionals="45" coveredconditionals="32" methods="11" coveredmethods="11"/>
+      <file name="brand-form.tsx" path="/Users/orlando/dev/pos/libs/brands/native-feature/src/lib/components/brand-form/brand-form.tsx">
+        <metrics statements="26" coveredstatements="26" conditionals="45" coveredconditionals="32" methods="11" coveredmethods="11"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="3" count="2" type="stmt"/>
+        <line num="4" count="2" type="stmt"/>
+        <line num="5" count="2" type="stmt"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="8" count="2" type="stmt"/>
+        <line num="9" count="56" type="cond" truecount="23" falsecount="10"/>
+        <line num="22" count="12" type="stmt"/>
+        <line num="23" count="12" type="stmt"/>
+        <line num="24" count="12" type="stmt"/>
+        <line num="25" count="12" type="stmt"/>
+        <line num="26" count="12" type="stmt"/>
+        <line num="28" count="12" type="cond" truecount="4" falsecount="0"/>
+        <line num="29" count="2" type="stmt"/>
+        <line num="30" count="2" type="stmt"/>
+        <line num="32" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="33" count="1" type="stmt"/>
+        <line num="34" count="2" type="stmt"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="38" count="12" type="stmt"/>
+        <line num="41" count="12" type="stmt"/>
+        <line num="50" count="12" type="stmt"/>
+        <line num="51" count="2" type="stmt"/>
+        <line num="56" count="1" type="stmt"/>
+        <line num="61" count="12" type="stmt"/>
+        <line num="96" count="2" type="stmt"/>
+      </file>
+    </package>
+    <package name="brand-item">
+      <metrics statements="30" coveredstatements="30" conditionals="46" coveredconditionals="35" methods="17" coveredmethods="17"/>
+      <file name="brand-item.tsx" path="/Users/orlando/dev/pos/libs/brands/native-feature/src/lib/components/brand-item/brand-item.tsx">
+        <metrics statements="30" coveredstatements="30" conditionals="46" coveredconditionals="35" methods="17" coveredmethods="17"/>
+        <line num="1" count="3" type="stmt"/>
+        <line num="2" count="3" type="stmt"/>
+        <line num="4" count="3" type="stmt"/>
+        <line num="5" count="3" type="stmt"/>
+        <line num="6" count="3" type="stmt"/>
+        <line num="7" count="3" type="stmt"/>
+        <line num="8" count="84" type="cond" truecount="23" falsecount="10"/>
+        <line num="16" count="3" type="stmt"/>
+        <line num="19" count="10" type="cond" truecount="6" falsecount="1"/>
+        <line num="21" count="2" type="stmt"/>
+        <line num="23" count="2" type="stmt"/>
+        <line num="24" count="3" type="stmt"/>
+        <line num="27" count="7" type="stmt"/>
+        <line num="28" count="6" type="stmt"/>
+        <line num="29" count="6" type="stmt"/>
+        <line num="30" count="6" type="stmt"/>
+        <line num="31" count="6" type="stmt"/>
+        <line num="33" count="6" type="cond" truecount="4" falsecount="0"/>
+        <line num="34" count="1" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="40" count="6" type="stmt"/>
+        <line num="43" count="6" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="48" count="6" type="stmt"/>
+        <line num="49" count="2" type="stmt"/>
+        <line num="54" count="1" type="stmt"/>
+        <line num="59" count="6" type="stmt"/>
+        <line num="98" count="3" type="stmt"/>
+      </file>
+    </package>
+    <package name="brand-list">
+      <metrics statements="18" coveredstatements="18" conditionals="33" coveredconditionals="23" methods="7" coveredmethods="7"/>
+      <file name="brand-list.tsx" path="/Users/orlando/dev/pos/libs/brands/native-feature/src/lib/components/brand-list/brand-list.tsx">
+        <metrics statements="18" coveredstatements="18" conditionals="33" coveredconditionals="23" methods="7" coveredmethods="7"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="3" count="2" type="stmt"/>
+        <line num="4" count="2" type="stmt"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="7" count="56" type="cond" truecount="23" falsecount="10"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="23" count="2" type="stmt"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="29" count="1" type="stmt"/>
+        <line num="30" count="1" type="stmt"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="33" count="1" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="39" count="1" type="stmt"/>
+        <line num="42" count="2" type="stmt"/>
+      </file>
+    </package>
+    <package name="brands">
+      <metrics statements="9" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <file name="brands.tsx" path="/Users/orlando/dev/pos/libs/brands/native-feature/src/lib/components/brands/brands.tsx">
+        <metrics statements="9" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

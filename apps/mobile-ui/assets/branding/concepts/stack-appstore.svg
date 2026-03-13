@@ -1,0 +1,31 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="82" y1="76" x2="944" y2="950" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#171132"/>
+      <stop offset="0.52" stop-color="#28205A"/>
+      <stop offset="1" stop-color="#146D6D"/>
+    </linearGradient>
+    <linearGradient id="cube1" x1="302" y1="274" x2="508" y2="506" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#37F3C9"/>
+      <stop offset="1" stop-color="#14B2D6"/>
+    </linearGradient>
+    <linearGradient id="cube2" x1="487" y1="353" x2="725" y2="624" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3A9BFF"/>
+      <stop offset="1" stop-color="#2962FF"/>
+    </linearGradient>
+    <linearGradient id="cube3" x1="354" y1="501" x2="591" y2="769" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE07A"/>
+      <stop offset="1" stop-color="#FF8354"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect x="234" y="250" width="316" height="316" rx="76" fill="url(#cube1)"/>
+  <rect x="468" y="328" width="320" height="320" rx="86" fill="url(#cube2)"/>
+  <rect x="300" y="484" width="320" height="320" rx="86" fill="url(#cube3)"/>
+  <rect x="322" y="340" width="140" height="26" rx="13" fill="#EBFFF9" fill-opacity="0.92"/>
+  <rect x="322" y="390" width="108" height="26" rx="13" fill="#EBFFF9" fill-opacity="0.72"/>
+  <path d="M558 438C558 397 591 364 632 364H654C724 364 780 421 780 491C780 561 724 618 654 618H632C591 618 558 585 558 544V438Z" fill="#F4FAFF"/>
+  <path d="M654 438H630V544H654C683 544 707 520 707 491C707 462 683 438 654 438Z" fill="#2B79FF"/>
+  <path d="M392 594C392 553 425 520 466 520H487C557 520 614 577 614 647C614 717 557 774 487 774H466C425 774 392 741 392 700V594Z" fill="#FFF7EE"/>
+  <path d="M487 594H464V700H487C516 700 540 676 540 647C540 618 516 594 487 594Z" fill="#FF885A"/>
+</svg>

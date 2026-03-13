@@ -13,6 +13,17 @@ export interface BrandItemProps {
     navigation: NativeStackNavigationProp<any>;
 }
 
+export const deleteBrandById = async (
+    id: string | undefined,
+    deleteBrand: (id: string) => Promise<any>,
+    removeBrand: (id: string) => any
+) => {
+    if (!id) return false;
+    await deleteBrand(id);
+    removeBrand(id);
+    return true;
+};
+
 export function BrandItem({ item, navigation }: BrandItemProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
@@ -20,14 +31,14 @@ export function BrandItem({ item, navigation }: BrandItemProps) {
     const [busy, setBusy] = useState<boolean>(false);
 
     const deleteItem = async () => {
-        if (!item.id) return;
-
         setBusy(true);
-        await BrandService.delete(item.id);
+        await deleteBrandById(
+            item.id,
+            (id) => BrandService.delete(id),
+            (id) => dispatch(brandsActions.remove(id))
+        );
         setBusy(false);
-        dispatch(brandsActions.remove(item.id));
-
-    }
+    };
 
     const editItem = () => {
         dispatch(brandsActions.select(item));

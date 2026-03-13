@@ -16,6 +16,19 @@ export interface ProductListProps {
     navigation: NativeStackNavigationProp<any>;
 }
 
+export const buildProductListProps = (navigation: NativeStackNavigationProp<any>) =>
+    ({
+        ItemComponent: ProductItem,
+        formNavName: 'Product Form',
+        navigation: navigation,
+        isEmptySelector: selectIsEmpty,
+        loadingStatusSelector: selectLoadingStatus,
+        filteredListSelector: selectFilteredList,
+        clearSelectionAction: productsActions.clearSelection,
+        filterAction: productsActions.filter as any,
+        fetchItemsAction: fetchProducts,
+    } as ItemListProps<any, any>);
+
 export function ProductList({ navigation }: ProductListProps) {
     const dispatch = useDispatch();
 
@@ -27,17 +40,7 @@ export function ProductList({ navigation }: ProductListProps) {
         };
     }, [dispatch]);
 
-    const props: ItemListProps<any, any> = {
-        ItemComponent: ProductItem,
-        formNavName: 'Product Form',
-        navigation: navigation,
-        isEmptySelector: selectIsEmpty,
-        loadingStatusSelector: selectLoadingStatus,
-        filteredListSelector: selectFilteredList,
-        clearSelectionAction: productsActions.clearSelection,
-        filterAction: productsActions.filter as any,
-        fetchItemsAction: fetchProducts,
-    };
+    const props = buildProductListProps(navigation);
 
     return <UIGenericItemList {...props} />;
 }

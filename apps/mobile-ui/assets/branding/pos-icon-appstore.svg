@@ -1,0 +1,34 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="92" y1="94" x2="930" y2="946" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#07243A"/>
+      <stop offset="0.52" stop-color="#08385C"/>
+      <stop offset="1" stop-color="#0D6C6B"/>
+    </linearGradient>
+    <radialGradient id="ambient" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(340 256) rotate(47.811) scale(640.09)">
+      <stop offset="0" stop-color="#1EE2AE" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#1EE2AE" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="terminalBody" x1="355" y1="262" x2="690" y2="753" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1EE2AE"/>
+      <stop offset="0.56" stop-color="#11B8CE"/>
+      <stop offset="1" stop-color="#1972FF"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="628" y1="250" x2="800" y2="438" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD16C"/>
+      <stop offset="1" stop-color="#FF764D"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#ambient)"/>
+  <path d="M354 329C354 292 384 262 421 262H604C642 262 672 292 672 329V710C672 747 642 777 604 777H421C384 777 354 747 354 710V329Z" fill="url(#terminalBody)"/>
+  <path d="M402 396C402 376 418 360 438 360H587C607 360 623 376 623 396V540C623 560 607 576 587 576H438C418 576 402 560 402 540V396Z" fill="#E7FFF8"/>
+  <path d="M430 625C430 613 440 603 452 603H573C585 603 595 613 595 625C595 637 585 647 573 647H452C440 647 430 637 430 625Z" fill="#CCFFF0"/>
+  <path d="M430 691C430 679 440 669 452 669H529C541 669 551 679 551 691C551 704 541 714 529 714H452C440 714 430 704 430 691Z" fill="#A8F7EA" fill-opacity="0.84"/>
+  <circle cx="512" cy="468" r="62" fill="#1099C7"/>
+  <path d="M496 433C496 417 509 404 525 404H547C583 404 612 433 612 469C612 504 583 533 547 533H525C509 533 496 520 496 504V433Z" fill="white"/>
+  <path d="M547 444H535V495H547C561 495 573 483 573 469C573 454 561 444 547 444Z" fill="#11B8CE"/>
+  <path d="M664 297C708 320 738 366 746 420" stroke="url(#accent)" stroke-width="34" stroke-linecap="round"/>
+  <path d="M714 255C776 289 820 348 832 421" stroke="url(#accent)" stroke-width="34" stroke-linecap="round" opacity="0.82"/>
+  <path d="M704 479L718 510L749 524L718 538L704 569L690 538L659 524L690 510L704 479Z" fill="url(#accent)"/>
+</svg>

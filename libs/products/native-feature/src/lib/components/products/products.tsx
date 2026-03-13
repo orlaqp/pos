@@ -19,6 +19,16 @@ import {
 } from '@pos/unit-of-measures/data-access';
 
 const Stack = createNativeStackNavigator();
+export const shouldFetchLookup = (status: string) => status === 'new';
+export const bootstrapProductsLookups = (
+    dispatch: (action: any) => void,
+    status: string,
+    fetchAction: () => any
+) => {
+    if (shouldFetchLookup(status)) {
+        dispatch(fetchAction());
+    }
+};
 
 export function Products() {
     const dispatch = useDispatch();
@@ -27,15 +37,15 @@ export function Products() {
     const umLoadingStatus = useSelector(umSelectLadingStatus);
 
     useEffect(() => {
-        if (catLoadingStatus === 'new') dispatch(fetchCategories());
+        bootstrapProductsLookups(dispatch, catLoadingStatus, fetchCategories);
     }, [catLoadingStatus, dispatch]);
 
     useEffect(() => {
-        if (brLoadingStatus === 'new') dispatch(fetchBrands());
+        bootstrapProductsLookups(dispatch, brLoadingStatus, fetchBrands);
     }, [brLoadingStatus, dispatch]);
 
     useEffect(() => {
-        if (umLoadingStatus === 'new') dispatch(fetchUnitOfMeasures());
+        bootstrapProductsLookups(dispatch, umLoadingStatus, fetchUnitOfMeasures);
     }, [umLoadingStatus, dispatch]);
 
     return (

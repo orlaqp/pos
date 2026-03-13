@@ -1,0 +1,30 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="92" y1="78" x2="934" y2="950" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#161336"/>
+      <stop offset="0.48" stop-color="#1D2D64"/>
+      <stop offset="1" stop-color="#11706A"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="224" y1="214" x2="798" y2="804" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F7FFF8"/>
+      <stop offset="1" stop-color="#D8F7EF"/>
+    </linearGradient>
+    <linearGradient id="tick" x1="330" y1="468" x2="700" y2="650" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#31E4BE"/>
+      <stop offset="1" stop-color="#2F79FF"/>
+    </linearGradient>
+    <linearGradient id="chip" x1="586" y1="274" x2="770" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD973"/>
+      <stop offset="1" stop-color="#FF8855"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect x="210" y="192" width="604" height="640" rx="128" fill="url(#badge)"/>
+  <rect x="302" y="312" width="420" height="56" rx="28" fill="#9BDFCF"/>
+  <rect x="302" y="402" width="260" height="42" rx="21" fill="#CAEDE5"/>
+  <rect x="302" y="718" width="168" height="40" rx="20" fill="#AEECE1"/>
+  <path d="M330 566L432 666L690 416" stroke="url(#tick)" stroke-width="76" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="706" cy="318" r="76" fill="url(#chip)"/>
+  <path d="M683 274C683 260 694 249 708 249H727C766 249 798 281 798 320C798 359 766 391 727 391H708C694 391 683 380 683 366V274Z" fill="#FFF9F0"/>
+  <path d="M727 293H716V347H727C742 347 754 335 754 320C754 305 742 293 727 293Z" fill="#FF8A55"/>
+</svg>

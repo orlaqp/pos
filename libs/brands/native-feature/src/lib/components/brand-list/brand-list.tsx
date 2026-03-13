@@ -10,6 +10,19 @@ export interface BrandListProps {
     navigation: NativeStackNavigationProp<any>;
 }
 
+export const buildBrandListProps = (navigation: NativeStackNavigationProp<any>) =>
+    ({
+        ItemComponent: BrandItem,
+        formNavName: 'Brand Form',
+        navigation: navigation,
+        isEmptySelector: selectIsEmpty,
+        loadingStatusSelector: selectLoadingStatus,
+        filteredListSelector: selectFilteredList,
+        clearSelectionAction: brandsActions.clearSelection,
+        filterAction: brandsActions.filter,
+        fetchItemsAction: undefined,
+    } as ItemListProps<any, any>);
+
 export function BrandList({ navigation }: BrandListProps) {
     const dispatch = useDispatch();
 
@@ -21,17 +34,7 @@ export function BrandList({ navigation }: BrandListProps) {
         }
     }, [dispatch]);
     
-    const props: ItemListProps<any, any> = {
-        ItemComponent: BrandItem,
-        formNavName: 'Brand Form',
-        navigation: navigation,
-        isEmptySelector: selectIsEmpty,
-        loadingStatusSelector: selectLoadingStatus,
-        filteredListSelector: selectFilteredList,
-        clearSelectionAction: brandsActions.clearSelection,
-        filterAction: brandsActions.filter,
-        fetchItemsAction: undefined,
-    }
+    const props = buildBrandListProps(navigation);
 
     return <UIGenericItemList {...props} />
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { View, Text, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Alert, ActivityIndicator, StyleSheet } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import {
@@ -16,6 +16,7 @@ import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import { selectStore } from '@pos/store-info/data-access';
 import { Role } from '@pos/auth/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface OrderItemProps {
     item: OrderEntity;
@@ -23,9 +24,55 @@ export interface OrderItemProps {
     onVoid: (order: OrderEntity) => void;
 }
 
+export interface ParsedOrderNoSegments {
+    store: string;
+    station: string;
+    date: string;
+    sequence: string;
+}
+
+export const parseOrderNoSegments = (
+    orderNo?: string | null
+): ParsedOrderNoSegments | null => {
+    if (!orderNo) return null;
+    const parts = orderNo.split('-');
+    if (parts.length !== 4) return null;
+
+    const [store, station, yymmdd, sequence] = parts;
+    if (!/^\d{6}$/.test(yymmdd)) return null;
+
+    const yy = Number(yymmdd.slice(0, 2));
+    const month = Number(yymmdd.slice(2, 4));
+    const day = Number(yymmdd.slice(4, 6));
+    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+
+    const fullYear = 2000 + yy;
+    const date = `${fullYear}-${String(month).padStart(2, '0')}-${String(
+        day
+    ).padStart(2, '0')}`;
+
+    return {
+        store,
+        station,
+        date,
+        sequence,
+    };
+};
+
+export const getStatusAccentColor = (
+    status: OrderEntity['status'],
+    colors: { accent: string; success: string; warning: string }
+) => {
+    if (status === 'PAID') return colors.success;
+    if (status === 'REFUNDED') return colors.warning;
+    return colors.accent;
+};
+
 export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
     const theme = useTheme();
+    const tokens = useDesignTokens();
     const styles = useSharedStyles();
+    const local = useStyles(tokens);
     const dispatch = useDispatch();
     const defaultPrinter = useSelector(getDefaultPrinter);
     const employee = useSelector(selectLoginEmployee);
@@ -72,56 +119,96 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
 
     const orderDate = new Date(item.orderDate!);
     const orderDateString = `${orderDate.toLocaleDateString()} ${orderDate.toLocaleTimeString()}`;
+    const parsedOrderNo = parseOrderNoSegments(item.orderNo);
+    const statusColor = getStatusAccentColor(item.status, {
+        accent: tokens.colors.accent,
+        success: tokens.colors.success,
+        warning: tokens.colors.warning,
+    });
+    const statusOwner =
+        item.status === 'PAID'
+            ? item?.paymentInfo?.employeeName
+            : item.status === 'REFUNDED'
+            ? item?.refundInfo?.employeeName
+            : undefined;
 
     return (
-        <View style={styles.dataRow}>
+        <View style={[styles.dataRow, local.row]}>
             {busy && <ActivityIndicator size="small" />}
-            <View style={{ flex: 2 }}>
-                <Text style={[styles.name, { textAlign: 'center' }]}>
-                    {item.orderNo}
-                </Text>
-                {item.status === 'PAID' &&
-                <Text style={[styles.name, { textAlign: 'center' }]}>
-                        <Text style={styles.secondaryText}>By: {item?.paymentInfo?.employeeName || 'N/A'}</Text>
-                </Text>
-                }
-                {item.status === 'REFUNDED' &&
-                <Text style={[styles.name, { textAlign: 'center' }]}>
-                        <Text style={styles.secondaryText}>By: {item?.refundInfo?.employeeName || 'N/A'}</Text>
-                </Text>
-                }
+            <View style={[local.statusRail, { backgroundColor: statusColor }]} />
+            <View style={local.infoBlock}>
+                <View style={local.orderNoColumn}>
+                    <View style={local.chipsRow}>
+                        {parsedOrderNo ? (
+                            <>
+                                <View style={local.chip}>
+                                    <Text style={local.chipLabel}>Store</Text>
+                                    <Text style={[styles.primaryText, local.chipValue]}>
+                                        {parsedOrderNo.store}
+                                    </Text>
+                                </View>
+                                <View style={local.chip}>
+                                    <Text style={local.chipLabel}>Station</Text>
+                                    <Text style={[styles.primaryText, local.chipValue]}>
+                                        {parsedOrderNo.station}
+                                    </Text>
+                                </View>
+                                <View style={local.chip}>
+                                    <Text style={local.chipLabel}>Date</Text>
+                                    <Text style={[styles.primaryText, local.chipValue]}>
+                                        {parsedOrderNo.date}
+                                    </Text>
+                                </View>
+                                <View style={local.chip}>
+                                    <Text style={local.chipLabel}>#</Text>
+                                    <Text style={[styles.primaryText, local.chipValue]}>
+                                        {parsedOrderNo.sequence}
+                                    </Text>
+                                </View>
+                            </>
+                        ) : (
+                            <Text style={[styles.name, { marginBottom: 0 }]}>
+                                {item.orderNo}
+                            </Text>
+                        )}
+                    </View>
+                </View>
+                <View style={local.metaColumn}>
+                    <Text style={styles.primaryText}>{item.employeeName}</Text>
+                    <Text style={[styles.secondaryText, local.metaTop]}>
+                        {orderDateString}
+                    </Text>
+                    {!!statusOwner && (
+                        <Text style={[styles.secondaryText, local.metaTop]}>
+                            By: {statusOwner}
+                        </Text>
+                    )}
+                </View>
             </View>
-            <View style={{ flex: 3 }}>
-                <Text style={styles.primaryText}>{item.employeeName}</Text>
-                <Text style={styles.secondaryText}>{orderDateString}</Text>
-            </View>
-            {/* <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.items?.length} item(s)</Text>
-            </View> */}
-            <View style={{ flex: 1 }}>
-                <Text style={[styles.name, { textAlign: 'right' }]}>
+            <View style={local.amountBlock}>
+                <View style={[local.statusBadge, { borderColor: statusColor }]}>
+                    <Text style={[styles.secondaryText, { color: statusColor }]}>
+                        {item.status}
+                    </Text>
+                </View>
+                <Text style={[styles.name, local.amountText]}>
                     {`$ ${item.total.toFixed(2)}`}
                 </Text>
             </View>
-            <View style={{ flex: 1 }}></View>
-            <View
-                style={{
-                    flex: 2,
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                }}
-            >
+            <View style={local.actionsBlock}>
                 {item.status === 'OPEN' && (
                     <Button
                         testID="order-item-pay-button"
-                        type="clear"
-                        title="Pay"
+                        type="solid"
+                        title="Receive Payment"
+                        color={theme.theme.colors.primary}
                         icon={{
                             name: 'credit-card-outline',
                             type: 'material-community',
-                            color: theme.theme.colors.primary,
+                            color: theme.theme.colors.grey0,
                         }}
-                        titleStyle={{ paddingRight: 10 }}
+                        buttonStyle={{ borderRadius: tokens.radii.md }}
+                        titleStyle={{ paddingRight: 10, color: theme.theme.colors.grey0 }}
                         onPress={openItem}
                     />
                 )}
@@ -168,5 +255,87 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
         </View>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        row: {
+            alignItems: 'center',
+            paddingLeft: tokens.spacing.md,
+        },
+        statusRail: {
+            width: 4,
+            alignSelf: 'stretch',
+            borderRadius: tokens.radii.sm,
+            marginRight: tokens.spacing.md,
+        },
+        infoBlock: {
+            flex: 4,
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        orderNoColumn: {
+            flex: 3,
+            justifyContent: 'center',
+            paddingRight: tokens.spacing.md,
+        },
+        metaColumn: {
+            flex: 2,
+            justifyContent: 'center',
+            paddingLeft: tokens.spacing.md,
+            borderLeftWidth: 1,
+            borderLeftColor: tokens.colors.border,
+        },
+        chipsRow: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+        },
+        chip: {
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            borderRadius: tokens.radii.sm,
+            paddingVertical: tokens.spacing.sm,
+            paddingHorizontal: tokens.spacing.sm,
+            marginRight: tokens.spacing.xs,
+            marginBottom: tokens.spacing.xs,
+            backgroundColor: tokens.colors.surfaceMuted,
+        },
+        chipLabel: {
+            color: tokens.colors.textMuted,
+            fontSize: 11,
+            textTransform: 'uppercase',
+        },
+        chipValue: {
+            fontSize: 14,
+            marginTop: 1,
+        },
+        metaTop: {
+            marginTop: tokens.spacing.xs,
+        },
+        amountBlock: {
+            flex: 1.2,
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            marginLeft: tokens.spacing.md,
+        },
+        statusBadge: {
+            borderWidth: 1,
+            borderRadius: tokens.radii.sm,
+            paddingVertical: tokens.spacing.xs,
+            paddingHorizontal: tokens.spacing.sm,
+            marginBottom: tokens.spacing.xs,
+            backgroundColor: tokens.colors.surfaceMuted,
+        },
+        amountText: {
+            textAlign: 'right',
+            marginBottom: 0,
+        },
+        actionsBlock: {
+            flex: 2,
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            marginLeft: tokens.spacing.md,
+        },
+    });
 
 export default OrderItem;

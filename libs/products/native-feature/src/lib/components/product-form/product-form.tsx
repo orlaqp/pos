@@ -149,29 +149,48 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 selectedId={product?.unitOfMeasure}
                                 rules={{ required: true }}
                             />
-                            <View style={[styles.row, { marginTop: 12, marginLeft: 90, alignItems: 'center' }]}>
+                            <View
+                                style={[
+                                    styles.row,
+                                    {
+                                        marginTop: 12,
+                                        marginLeft: 20,
+                                        alignItems: 'center',
+                                        justifyContent: 'flex-end',
+                                    },
+                                ]}
+                            >
                                 <Text style={[styles.primaryText, { marginRight: 30 }]}>
                                     Available for sale: 
                                 </Text>
-                                <View style={{ flex: 1, paddingLeft: 15 }}>
+                                <View style={{ paddingLeft: 6 }}>
                                     <UISwitch name='isActive' />
                                 </View>
                             </View>
                         </View>
                         <UIVerticalSpacer size="large" />
                         <UIVerticalSpacer size="medium" />
-                        <UIInput
-                            name="name"
-                            label='Name'
-                            placeholder="Name"
-                            rules={{ required: 'Name is required' }}
-                        />
-                        <View style={[styles.row, { marginTop: 5, alignItems: 'center' }]}>
-                            <Text style={[styles.primaryText, { marginRight: 25 }]}>
-                                EBT Eligible:
-                            </Text>
-                            <View style={{ width: 80 }}>
-                                <UISwitch name='isEBTEligible' />
+                        <View style={[styles.row, { alignItems: 'center' }]}>
+                            <View style={{ flex: 1 }}>
+                                <UIInput
+                                    name="name"
+                                    label='Name'
+                                    placeholder="Name"
+                                    rules={{ required: 'Name is required' }}
+                                />
+                            </View>
+                            <View
+                                style={[
+                                    styles.row,
+                                    { marginLeft: 25, alignItems: 'center' },
+                                ]}
+                            >
+                                <Text style={[styles.primaryText, { marginRight: 12 }]}>
+                                    EBT Eligible:
+                                </Text>
+                                <View style={{ width: 80 }}>
+                                    <UISwitch name='isEBTEligible' />
+                                </View>
                             </View>
                         </View>
                         <UIInput

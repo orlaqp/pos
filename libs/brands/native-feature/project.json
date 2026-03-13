@@ -1,7 +1,7 @@
 
 {
-  "root": "libs/brands/native",
-  "sourceRoot": "libs/brands/native/src",
+  "root": "libs/brands/native-feature",
+  "sourceRoot": "libs/brands/native-feature/src",
   "projectType": "library",
   "tags": [],
   "targets": {
@@ -10,15 +10,15 @@
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": [
-          "libs/brands/native/**/*.{ts,tsx,js,jsx}"
+          "libs/brands/native-feature/**/*.{ts,tsx,js,jsx}"
         ]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/brands/native"],
+      "outputs": ["coverage/libs/brands/native-feature"],
       "options": {
-        "jestConfig": "libs/brands/native/jest.config.js",
+        "jestConfig": "libs/brands/native-feature/jest.config.js",
         "passWithNoTests": true
       }
     }

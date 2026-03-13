@@ -27,6 +27,43 @@ export interface EmployeeFormProps {
     navigation: NativeStackNavigationProp<EmployeeFormParams>;
 }
 
+export const getEmployeeDefaults = (employee?: EmployeeEntity) => ({
+    id: employee?.id,
+    code: employee?.code,
+    firstName: employee?.firstName,
+    lastName: employee?.lastName,
+    middleName: employee?.middleName,
+    dob: employee?.dob,
+    phone: employee?.phone,
+    email: employee?.email,
+    pin: employee?.pin,
+    roles: employee?.roles,
+    active:
+        employee?.active === null || employee?.active === undefined
+            ? true
+            : employee?.active,
+});
+
+export const buildEmployeeRoleMap = (employeeRoles?: string[]) => {
+    const roleMap: Record<string, boolean> = {};
+    Object.values(Role).forEach((role) => {
+        roleMap[role] = !!employeeRoles?.includes(role);
+    });
+    return roleMap;
+};
+
+export const toggleEmployeeRoleSet = (
+    currentRoles: Record<string, boolean>,
+    roleName: string
+) => {
+    const nextRoles = { ...currentRoles, [roleName]: !currentRoles[roleName] };
+    const roleSet = Object.entries(nextRoles).reduce((set, [role, selected]) => {
+        if (selected) set.push(role);
+        return set;
+    }, [] as string[]);
+    return { nextRoles, roleSet };
+};
+
 export function EmployeeForm({ navigation }: EmployeeFormProps) {
     const employee = useSelector(
         (state: RootState) => state.employees.selected
@@ -51,40 +88,18 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
 
     const form = useForm<EmployeeEntity>({
         mode: 'onChange',
-        defaultValues: {
-            id: employee?.id,
-            code: employee?.code,
-            firstName: employee?.firstName,
-            lastName: employee?.lastName,
-            middleName: employee?.middleName,
-            dob: employee?.dob,
-            phone: employee?.phone,
-            email: employee?.email,
-            pin: employee?.pin,
-            roles: employee?.roles,
-            active:
-                employee?.active === null || employee?.active === undefined
-                    ? true
-                    : employee?.active,
-        },
+        defaultValues: getEmployeeDefaults(employee),
     });
 
     const roleList = Object.values(Role);
 
     const toggleRole = (name: string) => {
-        const newRoles = { ...roles };
-        newRoles[name] = !newRoles[name];
-
-        const roleSet: string[] = [];
-        Object.entries(newRoles).reduce((set, [role, selected]) => {
-            if (selected) set.push(role);
-            return set;
-        }, roleSet);
+        const { nextRoles, roleSet } = toggleEmployeeRoleSet(roles, name);
 
         console.log('Role set', roleSet);
 
         form.setValue('roles', roleSet);
-        setRoles(newRoles);
+        setRoles(nextRoles);
     };
 
     const confirmCancel = () => {
@@ -100,14 +115,7 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
 
     useEffect(() => {
         if (!employee?.roles) return;
-
-        const employeeRoles: Record<string, boolean> = {};
-        Object.values(Role).reduce((eRoles, role) => {
-            eRoles[role] = employee.roles.includes(role);
-            return eRoles;
-        }, employeeRoles);
-
-        setRoles(employeeRoles);
+        setRoles(buildEmployeeRoleMap(employee.roles));
     }, [employee]);
 
     return (

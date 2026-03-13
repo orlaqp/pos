@@ -10,7 +10,6 @@ import {
     UIEmptyState,
     UIScreen,
     UISearchInput,
-    UIStack,
 } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import OrderItem from '../order-item/order-item';
@@ -89,18 +88,24 @@ export function OrderList({ navigation }: OrderListProps) {
 
     return (
         <UIScreen padded testID="order-list-screen">
-            <UIStack spacing="md" style={styles.container}>
+            <View style={styles.container}>
                 <UICard tone="muted" padding="sm" testID="order-list-filters-card">
-                    <UIStack direction="horizontal" align="center" spacing="md">
-                        <View style={styles.filterColumn}>
+                    <View style={styles.filtersRow}>
+                        <View style={styles.tabsColumn}>
                             <ButtonGroup
                                 buttons={orderStatusList}
                                 selectedIndex={selectedIndex}
                                 onPress={(value) => filter(value, '')}
                                 containerStyle={styles.filterGroup}
+                                buttonStyle={styles.filterButton}
+                                buttonContainerStyle={styles.filterButtonContainer}
+                                selectedButtonStyle={styles.filterButtonSelected}
+                                textStyle={styles.filterButtonText}
+                                selectedTextStyle={styles.filterButtonTextSelected}
+                                innerBorderStyle={{ color: tokens.colors.border }}
                             />
                         </View>
-                        <View style={styles.filterColumn}>
+                        <View style={styles.searchColumn}>
                             <UISearchInput
                                 ref={searchRef}
                                 debounceTime={300}
@@ -109,7 +114,7 @@ export function OrderList({ navigation }: OrderListProps) {
                                 returnKeyType="search"
                             />
                         </View>
-                    </UIStack>
+                    </View>
                 </UICard>
 
                 <UICard
@@ -134,7 +139,7 @@ export function OrderList({ navigation }: OrderListProps) {
                         />
                     )}
                 </UICard>
-            </UIStack>
+            </View>
 
             <Dialog
                 isVisible={!!orderToVoid}
@@ -158,10 +163,50 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         filterColumn: {
             flex: 1,
         },
+        filtersRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        tabsColumn: {
+            flex: 2,
+            justifyContent: 'center',
+            marginRight: tokens.spacing.md,
+        },
+        searchColumn: {
+            flex: 3,
+            justifyContent: 'center',
+        },
         filterGroup: {
             margin: 0,
             borderWidth: 1,
             borderColor: tokens.colors.border,
+            backgroundColor: 'transparent',
+            borderRadius: tokens.radii.md,
+            overflow: 'hidden',
+            minHeight: 52,
+        },
+        filterButton: {
+            backgroundColor: tokens.colors.surfaceMuted,
+            minHeight: 50,
+            paddingVertical: 0,
+            justifyContent: 'center',
+        },
+        filterButtonContainer: {
+            minHeight: 50,
+        },
+        filterButtonSelected: {
+            backgroundColor: tokens.colors.accent,
+            minHeight: 50,
+        },
+        filterButtonText: {
+            color: tokens.colors.textMuted,
+            fontWeight: '500',
+            fontSize: 18,
+        },
+        filterButtonTextSelected: {
+            color: tokens.colors.textPrimary,
+            fontWeight: '700',
+            fontSize: 18,
         },
         resultsCard: {
             flex: 1,

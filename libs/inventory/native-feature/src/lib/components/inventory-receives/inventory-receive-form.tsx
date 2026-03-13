@@ -35,6 +35,36 @@ export interface InventoryFormParams {
     inventory: InventoryReceive;
 }
 
+export const appendReceiveLineIfMissing = (
+    lines: InventoryReceiveLineDTO[],
+    product: ProductEntity
+) => {
+    if (lines.find((line) => line.productId === product.id)) {
+        return { added: false, nextLines: lines };
+    }
+
+    return {
+        added: true,
+        nextLines: [...lines, InventoryReceiveLineMapper.fromProduct(product)],
+    };
+};
+
+export const applyReceiveLineUpdate = (
+    lines: InventoryReceiveLineDTO[],
+    item: InventoryReceiveLineDTO
+) => {
+    const idx = lines.findIndex((line) => line.productId === item.productId);
+    if (idx === -1) return lines;
+
+    const next = [...lines];
+    next[idx] = {
+        ...next[idx],
+        received: item.received,
+        comments: item.comments,
+    };
+    return next;
+};
+
 export function InventoryReceiveForm({
     navigation,
     route,
@@ -136,14 +166,7 @@ export function InventoryReceiveForm({
     };
 
     const updateItem = (item: InventoryReceiveLineDTO) => {
-        const idx = lines.findIndex((i) => i.productId === item.productId);
-
-        if (idx === -1) return;
-
-        lines[idx].received = item.received;
-        lines[idx].comments = item.comments;
-
-        setLines((res) => [...lines]);
+        setLines(applyReceiveLineUpdate(lines, item));
     };
 
     const deleteItem = (item: InventoryReceiveLineDTO) => {
@@ -151,12 +174,10 @@ export function InventoryReceiveForm({
     };
 
     const addItem = (product: ProductEntity) => {
-        if (lines.find((i) => i.productId === product.id)) return;
+        const result = appendReceiveLineIfMissing(lines, product);
+        if (!result.added) return;
 
-        setLines((res) => [
-            ...res,
-            InventoryReceiveLineMapper.fromProduct(product),
-        ]);
+        setLines(result.nextLines);
 
         setFilter('');
     };

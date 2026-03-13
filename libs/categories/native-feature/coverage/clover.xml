@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1773365908142" clover="3.2.0">
+  <project timestamp="1773365908142" name="All files">
+    <metrics statements="88" coveredstatements="88" conditionals="138" coveredconditionals="97" methods="43" coveredmethods="41" elements="269" coveredelements="226" complexity="0" loc="88" ncloc="88" packages="4" files="4" classes="4"/>
+    <package name="categories">
+      <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <file name="categories.tsx" path="/Users/orlando/dev/pos/libs/categories/native-feature/src/lib/components/categories/categories.tsx">
+        <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="category-form">
+      <metrics statements="29" coveredstatements="29" conditionals="49" coveredconditionals="34" methods="12" coveredmethods="12"/>
+      <file name="category-form.tsx" path="/Users/orlando/dev/pos/libs/categories/native-feature/src/lib/components/category-form/category-form.tsx">
+        <metrics statements="29" coveredstatements="29" conditionals="49" coveredconditionals="34" methods="12" coveredmethods="12"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="3" count="2" type="stmt"/>
+        <line num="4" count="2" type="stmt"/>
+        <line num="5" count="2" type="stmt"/>
+        <line num="11" count="2" type="stmt"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="14" count="56" type="cond" truecount="23" falsecount="10"/>
+        <line num="31" count="16" type="stmt"/>
+        <line num="32" count="16" type="stmt"/>
+        <line num="33" count="16" type="stmt"/>
+        <line num="34" count="16" type="stmt"/>
+        <line num="35" count="16" type="stmt"/>
+        <line num="37" count="16" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="41" count="16" type="cond" truecount="4" falsecount="0"/>
+        <line num="42" count="3" type="stmt"/>
+        <line num="43" count="3" type="stmt"/>
+        <line num="45" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="47" count="3" type="stmt"/>
+        <line num="50" count="3" type="stmt"/>
+        <line num="51" count="16" type="stmt"/>
+        <line num="54" count="16" type="stmt"/>
+        <line num="65" count="16" type="stmt"/>
+        <line num="66" count="2" type="stmt"/>
+        <line num="71" count="1" type="stmt"/>
+        <line num="78" count="16" type="stmt"/>
+        <line num="80" count="16" type="stmt"/>
+        <line num="123" count="2" type="stmt"/>
+      </file>
+    </package>
+    <package name="category-item">
+      <metrics statements="34" coveredstatements="34" conditionals="56" coveredconditionals="40" methods="23" coveredmethods="21"/>
+      <file name="category-item.tsx" path="/Users/orlando/dev/pos/libs/categories/native-feature/src/lib/components/category-item/category-item.tsx">
+        <metrics statements="34" coveredstatements="34" conditionals="56" coveredconditionals="40" methods="23" coveredmethods="21"/>
+        <line num="1" count="3" type="stmt"/>
+        <line num="3" count="3" type="stmt"/>
+        <line num="4" count="3" type="stmt"/>
+        <line num="5" count="3" type="stmt"/>
+        <line num="6" count="3" type="stmt"/>
+        <line num="7" count="3" type="stmt"/>
+        <line num="9" count="132" type="cond" truecount="28" falsecount="15"/>
+        <line num="16" count="3" type="stmt"/>
+        <line num="19" count="10" type="cond" truecount="6" falsecount="1"/>
+        <line num="21" count="2" type="stmt"/>
+        <line num="23" count="2" type="stmt"/>
+        <line num="24" count="3" type="stmt"/>
+        <line num="27" count="7" type="stmt"/>
+        <line num="28" count="6" type="stmt"/>
+        <line num="29" count="6" type="stmt"/>
+        <line num="30" count="6" type="stmt"/>
+        <line num="31" count="6" type="stmt"/>
+        <line num="33" count="6" type="cond" truecount="4" falsecount="0"/>
+        <line num="34" count="1" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="40" count="6" type="stmt"/>
+        <line num="43" count="6" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="48" count="6" type="stmt"/>
+        <line num="49" count="2" type="stmt"/>
+        <line num="54" count="1" type="stmt"/>
+        <line num="59" count="6" type="stmt"/>
+        <line num="99" count="3" type="stmt"/>
+        <line num="100" count="6" type="stmt"/>
+        <line num="101" count="6" type="stmt"/>
+        <line num="103" count="6" type="stmt"/>
+        <line num="119" count="3" type="stmt"/>
+      </file>
+    </package>
+    <package name="category-list">
+      <metrics statements="17" coveredstatements="17" conditionals="33" coveredconditionals="23" methods="7" coveredmethods="7"/>
+      <file name="category-list.tsx" path="/Users/orlando/dev/pos/libs/categories/native-feature/src/lib/components/category-list/category-list.tsx">
+        <metrics statements="17" coveredstatements="17" conditionals="33" coveredconditionals="23" methods="7" coveredmethods="7"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="10" count="2" type="stmt"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="13" count="56" type="cond" truecount="23" falsecount="10"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="29" count="2" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="33" count="1" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="39" count="1" type="stmt"/>
+        <line num="43" count="1" type="stmt"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="48" count="2" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

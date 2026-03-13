@@ -1,0 +1,34 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="60" y1="64" x2="950" y2="960" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#081B33"/>
+      <stop offset="0.55" stop-color="#0B3C61"/>
+      <stop offset="1" stop-color="#117A73"/>
+    </linearGradient>
+    <radialGradient id="wash" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(298 234) rotate(42.1) scale(646)">
+      <stop offset="0" stop-color="#27F0B4" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#27F0B4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="device" x1="354" y1="242" x2="666" y2="788" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#29E0B0"/>
+      <stop offset="0.58" stop-color="#1CAFD1"/>
+      <stop offset="1" stop-color="#2D74FF"/>
+    </linearGradient>
+    <linearGradient id="signal" x1="665" y1="265" x2="826" y2="458" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD56E"/>
+      <stop offset="1" stop-color="#FF704E"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#wash)"/>
+  <rect x="276" y="198" width="396" height="582" rx="96" fill="url(#device)"/>
+  <rect x="326" y="298" width="296" height="216" rx="36" fill="#E9FFF9"/>
+  <rect x="350" y="578" width="244" height="44" rx="22" fill="#C8FFF1"/>
+  <rect x="350" y="646" width="126" height="44" rx="22" fill="#9DEFE0"/>
+  <circle cx="512" cy="406" r="64" fill="#179BC6"/>
+  <path d="M495 369C495 353 508 340 524 340H547C584 340 613 369 613 406C613 443 584 472 547 472H524C508 472 495 459 495 443V369Z" fill="#F7FFFD"/>
+  <path d="M547 380H535V432H547C561 432 572 420 572 406C572 392 561 380 547 380Z" fill="#18B3CF"/>
+  <path d="M661 274C706 298 737 343 747 396" stroke="url(#signal)" stroke-width="34" stroke-linecap="round"/>
+  <path d="M711 236C775 271 819 332 833 409" stroke="url(#signal)" stroke-width="34" stroke-linecap="round" opacity="0.82"/>
+  <path d="M696 477L713 513L749 530L713 547L696 583L679 547L643 530L679 513L696 477Z" fill="#FF7D52"/>
+</svg>

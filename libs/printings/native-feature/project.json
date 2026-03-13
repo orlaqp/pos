@@ -1,7 +1,7 @@
 
 {
-  "root": "libs/printings/native",
-  "sourceRoot": "libs/printings/native/src",
+  "root": "libs/printings/native-feature",
+  "sourceRoot": "libs/printings/native-feature/src",
   "projectType": "library",
   "tags": [],
   "targets": {
@@ -10,15 +10,15 @@
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": [
-          "libs/printings/native/**/*.{ts,tsx,js,jsx}"
+          "libs/printings/native-feature/**/*.{ts,tsx,js,jsx}"
         ]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/printings/native"],
+      "outputs": ["coverage/libs/printings/native-feature"],
       "options": {
-        "jestConfig": "libs/printings/native/jest.config.js",
+        "jestConfig": "libs/printings/native-feature/jest.config.js",
         "passWithNoTests": true
       }
     }

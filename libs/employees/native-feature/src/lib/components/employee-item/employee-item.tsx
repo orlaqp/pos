@@ -6,6 +6,7 @@ import {
     Alert,
     ActivityIndicator,
     TouchableOpacity,
+    StyleSheet,
 } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
@@ -16,6 +17,7 @@ import {
 } from '@pos/employees/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface EmployeeItemProps {
     item: EmployeeEntity;
@@ -24,7 +26,9 @@ export interface EmployeeItemProps {
 
 export function EmployeeItem({ item, navigation }: EmployeeItemProps) {
     const theme = useTheme();
+    const tokens = useDesignTokens();
     const styles = useSharedStyles();
+    const local = useStyles(tokens);
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
 
@@ -51,9 +55,9 @@ export function EmployeeItem({ item, navigation }: EmployeeItemProps) {
     };
 
     return (
-        <TouchableOpacity style={styles.dataRow} onPress={editItem}>
+        <TouchableOpacity style={[styles.dataRow, local.row]} onPress={editItem}>
             {busy && <ActivityIndicator size="small" />}
-            <View style={{ flex: 1 }}>
+            <View style={local.statusColumn}>
                 <Text
                     style={[
                         styles.primaryText,
@@ -62,38 +66,55 @@ export function EmployeeItem({ item, navigation }: EmployeeItemProps) {
                             color: item.active
                                 ? theme.theme.colors.success
                                 : theme.theme.colors.error,
-                        },
+                        }
                     ]}
                 >
                     {item.active ? 'Active' : 'Inactive' }
                 </Text>
             </View>
-            <View style={{ flex: 1 }}>
-                <Text style={styles.name}>
-                    {item.code}
+
+            <View style={local.identityColumn}>
+                <Text
+                    style={[styles.secondaryText, local.codeText]}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                >
+                    ID: {item.code}
                 </Text>
-            </View>
-            <View style={{ flex: 3 }}>
-                <Text style={styles.name}>
+                <Text
+                    style={[styles.name, local.nameText]}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                >
                     {item.firstName} {item.lastName}
                 </Text>
-                <Text style={styles.secondaryText}>
+                <Text
+                    style={styles.secondaryText}
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                >
                     {item?.roles?.join(', ')}
                 </Text>
             </View>
-            <View style={{ flex: 2 }}>
-                <Text style={styles.primaryText}>{item.phone}</Text>
+
+            <View style={local.contactColumn}>
+                <Text
+                    style={styles.primaryText}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                >
+                    {item.phone}
+                </Text>
+                <Text
+                    style={styles.secondaryText}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                >
+                    {item.email}
+                </Text>
             </View>
-            <View style={{ flex: 2 }}>
-                <Text style={styles.primaryText}>{item.email}</Text>
-            </View>
-            <View
-                style={{
-                    flex: 2,
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                }}
-            >
+
+            <View style={local.actionsColumn}>
                 <Button
                     type="clear"
                     icon={{
@@ -107,5 +128,39 @@ export function EmployeeItem({ item, navigation }: EmployeeItemProps) {
         </TouchableOpacity>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        row: {
+            alignItems: 'center',
+            paddingVertical: tokens.spacing.md,
+        },
+        statusColumn: {
+            width: 100,
+            justifyContent: 'center',
+            paddingRight: tokens.spacing.md,
+        },
+        identityColumn: {
+            flex: 3,
+            justifyContent: 'center',
+            paddingRight: tokens.spacing.md,
+        },
+        codeText: {
+            marginBottom: 2,
+        },
+        nameText: {
+            marginBottom: 2,
+        },
+        contactColumn: {
+            flex: 2.5,
+            justifyContent: 'center',
+            paddingRight: tokens.spacing.md,
+        },
+        actionsColumn: {
+            width: 70,
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+        },
+    });
 
 export default EmployeeItem;

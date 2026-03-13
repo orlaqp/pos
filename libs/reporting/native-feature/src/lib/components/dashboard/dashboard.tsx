@@ -22,6 +22,61 @@ import { EACH } from '@pos/unit-of-measures/data-access';
 /* eslint-disable-next-line */
 export interface DashboardProps {}
 
+export const hasSalesData = (summary?: SalesSummary) =>
+    !!summary && summary.totalAmount > 0;
+
+export const buildTopProductItems = (summary?: SalesSummary) =>
+    !summary?.products
+        ? []
+        : summary.products
+              .slice(0, 5)
+              .filter((p) => p && p?.amount > 0)
+              .map((p) => ({
+                  name: `${p.unitOfMeasure} - ${p?.productName}`,
+                  value:
+                      p.unitOfMeasure === EACH
+                          ? p.quantity
+                          : +p.quantity.toFixed(2),
+              }));
+
+export const buildTopEmployeeItems = (summary?: SalesSummary) =>
+    !summary?.employees
+        ? []
+        : summary.employees.slice(0, 5).map((e) => ({
+              name: e?.employeeName,
+              value: `$${e?.amount.toFixed(2)}`,
+          }));
+
+export const buildRevenueOverTime = (summary?: SalesSummary) =>
+    summary?.dates?.map((i) => ({
+        label: i?.datePart.substring(5),
+        values: [i?.amount],
+    }));
+
+export const normalizeDashboardRange = (range?: DateRange): DateRange => {
+    const resolved = range || {
+        startDate: moment().startOf('day'),
+        endDate: moment().endOf('day'),
+    };
+
+    return {
+        startDate: resolved.startDate.clone().startOf('day'),
+        endDate: resolved.endDate.clone().endOf('day'),
+    };
+};
+
+export const sortDashboardSummary = (summary?: SalesSummary) => {
+    sortDescListBy(summary?.employees as any, 'amount');
+    sortDescListBy(summary?.products as any, 'quantity');
+    return summary;
+};
+
+export const loadDashboardSummary = async (range?: DateRange) => {
+    const normalizedRange = normalizeDashboardRange(range);
+    const summary = await getSalesSummaryForRange('PAID', normalizedRange);
+    return sortDashboardSummary(summary);
+};
+
 export function Dashboard(props: DashboardProps) {
     const styles = useSharedStyles();
     const [loading, setLoading] = useState<boolean>(true);
@@ -40,19 +95,8 @@ export function Dashboard(props: DashboardProps) {
         console.log('date range:', dateRange);
         setLoading(true);
 
-        const range = dateRange || {
-            startDate: moment().startOf('day'),
-            endDate: moment().endOf('day'),
-        };
-
-        range.startDate = range.startDate.startOf('day');
-        range.endDate = range.endDate.endOf('day');
-
-        getSalesSummaryForRange('PAID', range).then((summary) => {
+        loadDashboardSummary(dateRange).then((summary) => {
             console.log('Result', summary);
-
-            sortDescListBy(summary?.employees as any, 'amount');
-            sortDescListBy(summary?.products as any, 'quantity');
 
             setSalesSummary(summary);
             setLoading(false);
@@ -80,7 +124,7 @@ export function Dashboard(props: DashboardProps) {
                     </View>
                 ))}
 
-            {salesSummary && salesSummary?.totalAmount > 0 && (
+            {hasSalesData(salesSummary) && (
                 <>
                     <View style={styles.row}>
                         <View style={{ flex: 1 }}>
@@ -114,42 +158,20 @@ export function Dashboard(props: DashboardProps) {
                         <View style={{ flex: 2 }}>
                             <PieChart
                                 header="Top 5 Products"
-                                items={
-                                    !salesSummary.products
-                                        ? []
-                                        : salesSummary.products
-                                              ?.slice(0, 5)
-                                              .filter(p => p && p?.amount > 0)
-                                              .map((p) => ({
-                                                  name: `${p.unitOfMeasure} - ${p?.productName}`,
-                                                  value: p.unitOfMeasure === EACH ? p.quantity : +((p.quantity).toFixed(2)),
-                                              }))
-                                }
+                                items={buildTopProductItems(salesSummary)}
                             />
                         </View>
                         <View style={{ flex: 1, marginLeft: 40 }}>
                             <ListWidget
                                 header="Top 5 Employees"
-                                items={
-                                    !salesSummary?.employees
-                                        ? []
-                                        : salesSummary?.employees
-                                              ?.slice(0, 5)
-                                              .map((e) => ({
-                                                  name: e?.employeeName,
-                                                  value: `$${e?.amount.toFixed(2)}`,
-                                              }))
-                                }
+                                items={buildTopEmployeeItems(salesSummary)}
                             />
                         </View>
                     </View>
                     <View style={[styles.row, styles.smallMargin]}>
                         <LineChartComponent
                             header="Revenue over time"
-                            data={salesSummary?.dates?.map((i) => ({
-                                label: i?.datePart.substring(5),
-                                values: [i?.amount],
-                            }))}
+                            data={buildRevenueOverTime(salesSummary)}
                         />
                     </View>
                 </>

@@ -44,9 +44,14 @@ jest.mock('react-redux', () => ({
 jest.mock('@pos/theme/native/design-tokens', () => ({
     useDesignTokens: () => ({
         spacing: { sm: 8, md: 12, lg: 16 },
+        radii: { md: 10 },
         colors: {
             border: '#2f374288',
             canvas: '#000000',
+            surfaceMuted: '#2f37422a',
+            accent: '#4aa3eb',
+            textMuted: '#8491a2',
+            textPrimary: '#f7f9fc',
         },
     }),
 }));

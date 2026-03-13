@@ -1,18 +1,17 @@
 import React from 'react';
 import { useSharedStyles } from '@pos/theme/native';
 
-import { View, Text, StyleSheet, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Sidebar from '../sidebar/sidebar';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Button, useTheme } from '@rneui/themed';
+import { useTheme } from '@rneui/themed';
 
 import {
     createNativeStackNavigator,
     NativeStackNavigationProp,
 } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';
-import { selectUser } from '@pos/auth/data-access';
 
 import { Brands } from '@pos/brands/native-feature';
 import { Categories } from '@pos/categories/native-feature';
@@ -36,20 +35,8 @@ export interface BackOfficeProps {
 }
 
 export function BackOffice({ navigation }: BackOfficeProps) {
-    const theme = useTheme();
     const styles = useStyles();
     const employee = useSelector(selectLoginEmployee);
-
-    const confirmGoBack = () => {
-        Alert.alert(
-            'Are you sure?',
-            'Press yes to confirm',
-            [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
-            ]
-        );
-    }
 
     return (
         <SafeAreaView style={styles.page}>

@@ -18,6 +18,53 @@ import { UIEmptyState, UISpinner } from '@pos/shared/ui-native';
 
 const deviceId = DeviceInfo.getUniqueId();
 
+export const mapDiscoveredPrinters = (list: any[] | undefined, currentDeviceId: string) =>
+    list?.map((sp) => ({
+        deviceId: currentDeviceId,
+        identifier: sp.connectionSettings?.identifier,
+        interfaceType: sp.connectionSettings?.interfaceType,
+        ip: sp.information?.reserved.get('ipAddress'),
+        model: sp.information?.model,
+    })) || [];
+
+export const discoverAndMapPrinters = async (
+    discover: () => Promise<any[] | undefined>,
+    currentDeviceId: string
+) => mapDiscoveredPrinters(await discover(), currentDeviceId);
+
+export const createSetDefaultPrinterHandler = (
+    dispatch: (action: any) => void,
+    printer: PrinterEntity,
+    setDefaultPrinter: (
+        dispatch: (action: any) => void,
+        printer: PrinterEntity
+    ) => Promise<any> = PrinterService.setDefaultPrinter
+) => async () => await setDefaultPrinter(dispatch, printer);
+
+export const discoverPrintersSafely = async (
+    discover: () => Promise<any[] | undefined>,
+    currentDeviceId: string
+) => {
+    try {
+        return await discoverAndMapPrinters(discover, currentDeviceId);
+    } catch {
+        Alert.alert('There was an error looking for available printers');
+        return [];
+    }
+};
+
+export const shouldShowEmptyPrinterState = (
+    busy: boolean | undefined,
+    printers: PrinterEntity[] | undefined
+) => !busy && !printers?.length;
+
+export const shouldShowBusyPrinterState = (busy: boolean | undefined) => !!busy;
+
+export const shouldShowPrinterItems = (
+    busy: boolean | undefined,
+    printers: PrinterEntity[] | undefined
+) => !busy && !!printers?.length;
+
 export interface PrintingListProps {
     navigation: NativeStackNavigationProp<any>;
 }
@@ -36,22 +83,8 @@ export function PrinterList({ navigation }: PrintingListProps) {
     useEffect(() => {
         const discover = async () => {
             setBusy(true);
-            try {
-                const list = await discoverStarPrinters();
-                setPrinters(
-                    list?.map((sp) => ({
-                        deviceId,
-                        identifier: sp.connectionSettings?.identifier,
-                        interfaceType: sp.connectionSettings?.interfaceType,
-                        ip: sp.information?.reserved.get('ipAddress'),
-                        model: sp.information?.model,
-                    }))
-                );
-            } catch (error) {
-                Alert.alert('There was an error looking for available printers');
-            } finally {
-                setBusy(false);
-            }
+            setPrinters(await discoverPrintersSafely(discoverStarPrinters, deviceId));
+            setBusy(false);
         };
 
         discover();
@@ -61,7 +94,7 @@ export function PrinterList({ navigation }: PrintingListProps) {
         };
     }, [setPrinters]);
 
-    if (!busy && !printers?.length)
+    if (shouldShowEmptyPrinterState(busy, printers))
         return (
             <View style={[styles.page, { paddingTop: 50 }]}>
                 <UIEmptyState text= 'No printers were found' />
@@ -78,20 +111,18 @@ export function PrinterList({ navigation }: PrintingListProps) {
                     defaultPrinter={defaultPrinter}
                 />
             )} */}
-            {busy && (
+            {shouldShowBusyPrinterState(busy) && (
                 <View style={[styles.page, { paddingTop: 150 }]}>
                     <UISpinner size="small" message="Looking for printers..." />
                 </View>
             )}
-            {!busy && printers?.map((p) => (
+            {shouldShowPrinterItems(busy, printers) && printers?.map((p) => (
                     <PrinterItem
                         key={p.identifier}
                         item={p}
                         navigation={navigation}
                         defaultPrinter={defaultPrinter}
-                        setAsDefault={async () =>
-                            await PrinterService.setDefaultPrinter(dispatch, p)
-                        }
+                        setAsDefault={createSetDefaultPrinterHandler(dispatch, p)}
                     />
                 ))}
         </View>

@@ -20,6 +20,151 @@ import Widget from '../widget/widget';
 /* eslint-disable-next-line */
 export interface EndOfDayProps {}
 
+export interface EndOfDayWidget {
+    text: string;
+    value: string;
+    backgroundColor: string;
+    flex?: number;
+}
+
+export interface EndOfDayFilterConfig {
+    label: string;
+    open: boolean;
+    value: any;
+    items: ItemType<string>[];
+    setOpen: (value: boolean) => void;
+    setValue: (value: any) => void;
+    setItems: (items: ItemType<string>[]) => void;
+    searchable?: boolean;
+    leftPadding?: boolean;
+}
+
+export const buildDayRange = (date: Date) => ({
+    startDate: moment(date).startOf('day'),
+    endDate: moment(date).endOf('day'),
+});
+
+export const getPaymentMethodsTotal = (summary: PaymentMethodsSummary) =>
+    summary.CASH + summary.CC + summary.CHECK;
+
+export const formatPaymentAmount = (amount: number) =>
+    `$${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+
+export const loadPaidSalesForRange = async (
+    dateRange: { startDate: any; endDate: any },
+    fetchSales: typeof getSalesForRange = getSalesForRange
+) => {
+    const items = await fetchSales('PAID', dateRange as any);
+    return items || [];
+};
+
+export const buildEndOfDayWidgets = (
+    ordersCount: number,
+    summary: PaymentMethodsSummary,
+    defaultBackgroundColor: string
+): EndOfDayWidget[] => [
+    {
+        text: 'Sales',
+        value: `${ordersCount}`,
+        backgroundColor: defaultBackgroundColor,
+        flex: 0.7,
+    },
+    {
+        text: 'Total',
+        value: formatPaymentAmount(getPaymentMethodsTotal(summary)),
+        backgroundColor: defaultBackgroundColor,
+        flex: 1,
+    },
+    {
+        text: 'Credit Card',
+        value: formatPaymentAmount(summary.CC),
+        backgroundColor: '#1976d2',
+        flex: 1,
+    },
+    {
+        text: 'Cash',
+        value: formatPaymentAmount(summary.CASH),
+        backgroundColor: '#e91e63',
+        flex: 1,
+    },
+    {
+        text: 'Checks',
+        value: formatPaymentAmount(summary.CHECK),
+        backgroundColor: '#43a047',
+        flex: 1,
+    },
+];
+
+export const buildEndOfDayFilterConfigs = (params: {
+    employeesOpen: boolean;
+    employeeValue: any;
+    employeeItems: ItemType<string>[];
+    setEmployeesOpen: (value: boolean) => void;
+    setEmployeeValue: (value: any) => void;
+    setEmployeeItems: (items: ItemType<string>[]) => void;
+    closedByOpen: boolean;
+    closedByValue: any;
+    setClosedByOpen: (value: boolean) => void;
+    setClosedByValue: (value: any) => void;
+    productsOpen: boolean;
+    productValue: string | null;
+    productItems: ItemType<string>[];
+    setProductsOpen: (value: boolean) => void;
+    setProductValue: (value: string | null) => void;
+    setProductItems: (items: ItemType<string>[]) => void;
+}): EndOfDayFilterConfig[] => [
+    {
+        label: 'Opened by',
+        open: params.employeesOpen,
+        value: params.employeeValue,
+        items: params.employeeItems,
+        setOpen: params.setEmployeesOpen,
+        setValue: params.setEmployeeValue,
+        setItems: params.setEmployeeItems,
+    },
+    {
+        label: 'Closed by',
+        open: params.closedByOpen,
+        value: params.closedByValue,
+        items: params.employeeItems,
+        setOpen: params.setClosedByOpen,
+        setValue: params.setClosedByValue,
+        setItems: params.setEmployeeItems,
+        leftPadding: true,
+    },
+    {
+        label: 'Product(s)',
+        open: params.productsOpen,
+        value: params.productValue,
+        items: params.productItems,
+        setOpen: params.setProductsOpen,
+        setValue: params.setProductValue,
+        setItems: params.setProductItems,
+        searchable: true,
+        leftPadding: true,
+    },
+];
+
+export const createDateUpdater = (
+    setDate: (date: Date) => void,
+    setLoading: (value: boolean) => void,
+    setOrders: (orders: Order[]) => void,
+    setFilteredOrders: (orders: Order[]) => void,
+    loadForRange: (
+        dateRange: { startDate: any; endDate: any },
+        fetchSales?: typeof getSalesForRange
+    ) => Promise<Order[]> = loadPaidSalesForRange
+) => (date: Date) => {
+    setDate(date);
+    const dateRange = buildDayRange(date);
+    setLoading(true);
+    loadForRange(dateRange).then((items) => {
+        setOrders(items);
+        setFilteredOrders(items);
+        setLoading(false);
+    });
+};
+
 export function EndOfDay(props: EndOfDayProps) {
     const styles = useSharedStyles();
 
@@ -48,25 +193,35 @@ export function EndOfDay(props: EndOfDayProps) {
 
     const [closedByOpen, setClosedByOpen] = useState(false);
     const [closedByValue, setClosedByValue] = useState(null);
-    
-    const updateDate = (date) => {
-        setDate(date);
-        const dateRange = {
-            startDate: moment(date).startOf('day'),
-            endDate: moment(date).endOf('day'),
-        };
-
-        setLoading(true);
-        const getSales = async () => {
-            const items = await getSalesForRange('PAID', dateRange);
-            if (!items) return setOrders([]);
-            setOrders(items);
-            setFilteredOrders(items);
-            setLoading(false);
-        };
-
-        getSales();
-    }
+    const filterConfigs = buildEndOfDayFilterConfigs({
+        employeesOpen,
+        employeeValue,
+        employeeItems,
+        setEmployeesOpen,
+        setEmployeeValue,
+        setEmployeeItems,
+        closedByOpen,
+        closedByValue,
+        setClosedByOpen,
+        setClosedByValue,
+        productsOpen,
+        productValue,
+        productItems,
+        setProductsOpen,
+        setProductValue,
+        setProductItems,
+    });
+    const widgets = buildEndOfDayWidgets(
+        filteredOrders.length,
+        paymentMethodsSummary,
+        styles.dataRow.backgroundColor
+    );
+    const updateDate = createDateUpdater(
+        setDate,
+        setLoading,
+        setOrders,
+        setFilteredOrders
+    );
 
     useEffect(() => {
         const filterResponse = filterOrders(orders, {
@@ -100,49 +255,33 @@ export function EndOfDay(props: EndOfDayProps) {
                             }}
                         />
                     </View>
-                    <View style={{ flex: 1, paddingRight: 10, flexDirection: 'column' }}>
-                        <Text style={[styles.secondaryText, { marginBottom: 5 }]}>Opened by</Text>
-                        <DropDownPicker
-                            style={[styles.backgroundColor]}
-                            dropDownContainerStyle={[styles.backgroundColor]}
-                            open={employeesOpen}
-                            value={employeeValue}
-                            items={employeeItems}
-                            setOpen={setEmployeesOpen}
-                            setValue={setEmployeeValue}
-                            setItems={setEmployeeItems}
-                            theme='DARK'
-                        />
-                    </View>
-                    <View style={{ flex: 1, paddingLeft: 10, flexDirection: 'column' }}>
-                        <Text style={[styles.secondaryText, { marginBottom: 5 }]}>Closed by</Text>
-                        <DropDownPicker
-                            style={styles.backgroundColor}
-                            dropDownContainerStyle={styles.backgroundColor}
-                            open={closedByOpen}
-                            value={closedByValue}
-                            items={employeeItems}
-                            setOpen={setClosedByOpen}
-                            setValue={setClosedByValue}
-                            setItems={setEmployeeItems}
-                            theme='DARK'
-                        />
-                    </View>
-                    <View style={{ flex: 1, paddingLeft: 10, flexDirection: 'column' }}>
-                        <Text style={[styles.secondaryText, { marginBottom: 5 }]}>Product(s)</Text>
-                        <DropDownPicker
-                            style={styles.backgroundColor}
-                            dropDownContainerStyle={styles.backgroundColor}
-                            searchable={true}
-                            open={productsOpen}
-                            value={productValue}
-                            items={productItems}
-                            setOpen={setProductsOpen}
-                            setValue={setProductValue}
-                            setItems={setProductItems}
-                            theme='DARK'
-                        />
-                    </View>
+                    {filterConfigs.map((config) => (
+                        <View
+                            key={config.label}
+                            style={{
+                                flex: 1,
+                                paddingLeft: config.leftPadding ? 10 : 0,
+                                paddingRight: config.leftPadding ? 0 : 10,
+                                flexDirection: 'column',
+                            }}
+                        >
+                            <Text style={[styles.secondaryText, { marginBottom: 5 }]}>
+                                {config.label}
+                            </Text>
+                            <DropDownPicker
+                                style={styles.backgroundColor}
+                                dropDownContainerStyle={styles.backgroundColor}
+                                searchable={config.searchable}
+                                open={config.open}
+                                value={config.value}
+                                items={config.items}
+                                setOpen={config.setOpen}
+                                setValue={config.setValue}
+                                setItems={config.setItems}
+                                theme="DARK"
+                            />
+                        </View>
+                    ))}
                 </View>
 
                 {loading && 
@@ -154,54 +293,18 @@ export function EndOfDay(props: EndOfDayProps) {
                 {!loading &&
                 <>
                     <View style={{ flexDirection: 'row' }}>
-                        <View style={{ flex: .7 }}>
-                            <Widget
-                                height={80}
-                                backgroundColor={styles.dataRow.backgroundColor}
-                                text="Sales"
-                                value={`${filteredOrders.length}`}
-                            />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Widget
-                                height={80}
-                                backgroundColor={styles.dataRow.backgroundColor}
-                                text="Total"
-                                value={`$ ${(paymentMethodsSummary.CASH + paymentMethodsSummary.CC + paymentMethodsSummary.CHECK).toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
-                                primaryTextSize={16}
-                                secondaryTextSize={12}
-                            />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Widget
-                                height={80}
-                                backgroundColor="#1976d2"
-                                text="Credit Card"
-                                value={`$${paymentMethodsSummary.CC.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
-                                primaryTextSize={16}
-                                secondaryTextSize={12}
-                            />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Widget
-                                height={80}
-                                backgroundColor="#e91e63"
-                                text="Cash"
-                                value={`$${paymentMethodsSummary.CASH.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
-                                primaryTextSize={16}
-                                secondaryTextSize={12}
-                            />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Widget
-                                height={80}
-                                backgroundColor="#43a047"
-                                text="Checks"
-                                value={`$${paymentMethodsSummary.CHECK.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
-                                primaryTextSize={16}
-                                secondaryTextSize={12}
-                            />
-                        </View>
+                        {widgets.map((widget) => (
+                            <View key={widget.text} style={{ flex: widget.flex || 1 }}>
+                                <Widget
+                                    height={80}
+                                    backgroundColor={widget.backgroundColor}
+                                    text={widget.text}
+                                    value={widget.value}
+                                    primaryTextSize={16}
+                                    secondaryTextSize={12}
+                                />
+                            </View>
+                        ))}
                     </View>  
 
                     <FlatList

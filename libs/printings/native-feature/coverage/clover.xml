@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1773366078266" clover="3.2.0">
+  <project timestamp="1773366078266" name="All files">
+    <metrics statements="67" coveredstatements="66" conditionals="101" coveredconditionals="72" methods="37" coveredmethods="34" elements="205" coveredelements="172" complexity="0" loc="67" ncloc="67" packages="2" files="2" classes="2"/>
+    <package name="printer-item">
+      <metrics statements="11" coveredstatements="11" conditionals="9" coveredconditionals="7" methods="3" coveredmethods="3"/>
+      <file name="printer-item.tsx" path="/Users/orlando/dev/pos/libs/printings/native-feature/src/lib/components/printer-item/printer-item.tsx">
+        <metrics statements="11" coveredstatements="11" conditionals="9" coveredconditionals="7" methods="3" coveredmethods="3"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="3" count="2" type="stmt"/>
+        <line num="4" count="2" type="stmt"/>
+        <line num="5" count="2" type="stmt"/>
+        <line num="17" count="12" type="stmt"/>
+        <line num="19" count="12" type="stmt"/>
+        <line num="34" count="3" type="stmt"/>
+        <line num="35" count="3" type="stmt"/>
+        <line num="36" count="3" type="stmt"/>
+        <line num="38" count="3" type="stmt"/>
+        <line num="74" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="printer-list">
+      <metrics statements="56" coveredstatements="55" conditionals="92" coveredconditionals="65" methods="34" coveredmethods="31"/>
+      <file name="printer-list.tsx" path="/Users/orlando/dev/pos/libs/printings/native-feature/src/lib/components/printer-list/printer-list.tsx">
+        <metrics statements="56" coveredstatements="55" conditionals="92" coveredconditionals="65" methods="34" coveredmethods="31"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="17" count="80" type="cond" truecount="28" falsecount="15"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="21" count="3" type="stmt"/>
+        <line num="22" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="28" count="1" type="stmt"/>
+        <line num="30" count="1" type="stmt"/>
+        <line num="32" count="7" type="cond" truecount="3" falsecount="1"/>
+        <line num="33" count="3" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="38" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="41" count="1" type="stmt"/>
+        <line num="42" count="3" type="cond" truecount="3" falsecount="1"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="46" count="6" type="cond" truecount="3" falsecount="2"/>
+        <line num="49" count="2" type="stmt"/>
+        <line num="51" count="2" type="stmt"/>
+        <line num="52" count="2" type="stmt"/>
+        <line num="56" count="1" type="stmt"/>
+        <line num="58" count="6" type="stmt"/>
+        <line num="59" count="1" type="cond" truecount="4" falsecount="0"/>
+        <line num="61" count="4" type="stmt"/>
+        <line num="63" count="1" type="stmt"/>
+        <line num="65" count="4" type="stmt"/>
+        <line num="66" count="1" type="cond" truecount="4" falsecount="0"/>
+        <line num="72" count="5" type="stmt"/>
+        <line num="73" count="4" type="stmt"/>
+        <line num="74" count="4" type="stmt"/>
+        <line num="75" count="4" type="stmt"/>
+        <line num="76" count="4" type="stmt"/>
+        <line num="77" count="4" type="stmt"/>
+        <line num="79" count="4" type="stmt"/>
+        <line num="80" count="4" type="stmt"/>
+        <line num="83" count="4" type="stmt"/>
+        <line num="84" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="85" count="1" type="stmt"/>
+        <line num="86" count="1" type="stmt"/>
+        <line num="87" count="1" type="stmt"/>
+        <line num="90" count="1" type="stmt"/>
+        <line num="92" count="1" type="stmt"/>
+        <line num="93" count="1" type="stmt"/>
+        <line num="97" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="98" count="2" type="stmt"/>
+        <line num="104" count="2" type="stmt"/>
+        <line num="119" count="0" type="cond" truecount="1" falsecount="3"/>
+        <line num="132" count="1" type="stmt"/>
+        <line num="133" count="4" type="stmt"/>
+        <line num="134" count="4" type="stmt"/>
+        <line num="136" count="4" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

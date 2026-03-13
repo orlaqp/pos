@@ -31,7 +31,7 @@ export interface InventoryFormParams {
 
 type CountMode = 'quick' | 'full';
 
-const asFullCountLines = (
+export const asFullCountLines = (
     existingLines: InventoryCountLineDTO[],
     products: ProductEntity[]
 ) => {
@@ -55,10 +55,10 @@ const asFullCountLines = (
     return [...merged, ...manualOnly];
 };
 
-const normalizeCode = (value?: string | null) =>
+export const normalizeCode = (value?: string | null) =>
     (value || '').trim().toLowerCase();
 
-const isExactCodeMatch = (product: ProductEntity, query: string) => {
+export const isExactCodeMatch = (product: ProductEntity, query: string) => {
     const normalizedQuery = normalizeCode(query);
     if (!normalizedQuery) return false;
 
@@ -67,6 +67,32 @@ const isExactCodeMatch = (product: ProductEntity, query: string) => {
         normalizeCode(product.sku) === normalizedQuery ||
         normalizeCode(product.plu) === normalizedQuery
     );
+};
+
+export const appendCountLineIfMissing = (
+    lines: InventoryCountLineDTO[],
+    product: ProductEntity
+) => {
+    if (lines.find((line) => line.productId === product.id)) {
+        return { added: false, nextLines: lines };
+    }
+
+    return {
+        added: true,
+        nextLines: [...lines, InventoryCountLineMapper.fromProduct(product)],
+    };
+};
+
+export const applyCountLineUpdate = (
+    lines: InventoryCountLineDTO[],
+    item: InventoryCountLineDTO
+) => {
+    const line = lines.find((l) => l.productId === item.productId);
+    if (!line) return lines;
+
+    line.newCount = item.newCount;
+    line.comments = item.comments;
+    return [...lines];
 };
 
 export function InventoryCountForm({
@@ -100,10 +126,11 @@ export function InventoryCountForm({
     };
 
     const addItem = (product: ProductEntity) => {
-        if (lines.find((i) => i.productId === product.id)) return;
+        const result = appendCountLineIfMissing(lines, product);
+        if (!result.added) return;
 
-        setLines((res) => {
-            const next = [...res, InventoryCountLineMapper.fromProduct(product)];
+        setLines((_) => {
+            const next = result.nextLines;
             if (!inventoryCount && countMode === 'quick') {
                 setQuickModeLines(next);
             }
@@ -114,14 +141,7 @@ export function InventoryCountForm({
     };
 
     const updateItem = (item: InventoryCountLineDTO) => {
-        const line = lines.find(l => l.productId === item.productId);
-
-        if (!line) return;
-
-        line.newCount = item.newCount;
-        line.comments = item.comments;
-
-        setLines([...lines]);
+        setLines(applyCountLineUpdate(lines, item));
     };
 
     const deleteItem = (item: InventoryCountLineDTO) => {

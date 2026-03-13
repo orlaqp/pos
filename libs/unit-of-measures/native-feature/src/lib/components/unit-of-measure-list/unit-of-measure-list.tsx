@@ -16,6 +16,21 @@ export interface UnitOfMeasureListProps {
     navigation: NativeStackNavigationProp<any>;
 }
 
+export const buildUnitOfMeasureListProps = (
+    navigation: NativeStackNavigationProp<any>
+) =>
+    ({
+        ItemComponent: UnitOfMeasureItem,
+        formNavName: 'UnitOfMeasure Form',
+        navigation: navigation,
+        isEmptySelector: selectIsEmpty,
+        loadingStatusSelector: selectLoadingStatus,
+        filteredListSelector: selectFilteredList,
+        clearSelectionAction: unitOfMeasuresActions.clearSelection,
+        filterAction: unitOfMeasuresActions.filter,
+        fetchItemsAction: fetchUnitOfMeasures,
+    } as ItemListProps<any, any>);
+
 export function UnitOfMeasureList({ navigation }: UnitOfMeasureListProps) {
     const dispatch = useDispatch();
 
@@ -27,17 +42,7 @@ export function UnitOfMeasureList({ navigation }: UnitOfMeasureListProps) {
         };
     }, [dispatch]);
 
-    const props: ItemListProps<any, any> = {
-        ItemComponent: UnitOfMeasureItem,
-        formNavName: 'UnitOfMeasure Form',
-        navigation: navigation,
-        isEmptySelector: selectIsEmpty,
-        loadingStatusSelector: selectLoadingStatus,
-        filteredListSelector: selectFilteredList,
-        clearSelectionAction: unitOfMeasuresActions.clearSelection,
-        filterAction: unitOfMeasuresActions.filter,
-        fetchItemsAction: fetchUnitOfMeasures,
-    };
+    const props = buildUnitOfMeasureListProps(navigation);
 
     return <UIGenericItemList {...props} />;
 }

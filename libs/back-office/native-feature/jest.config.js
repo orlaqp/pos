@@ -14,4 +14,9 @@ module.exports = {
       'react-native/jest/assetFileTransformer.js'
     ),
   },
+  collectCoverageFrom: [
+    '<rootDir>/src/lib/components/**/*.{ts,tsx}',
+    '!**/*.spec.{ts,tsx}',
+    '!**/definitions.ts',
+  ],
 };

@@ -16,6 +16,19 @@ export interface CategoryListProps {
     navigation: NativeStackNavigationProp<any>;
 }
 
+export const buildCategoryListProps = (navigation: NativeStackNavigationProp<any>) =>
+    ({
+        ItemComponent: CategoryItem,
+        formNavName: 'Category Form',
+        navigation: navigation,
+        isEmptySelector: selectIsEmpty,
+        loadingStatusSelector: selectLoadingStatus,
+        filteredListSelector: selectFilteredList,
+        clearSelectionAction: categoriesActions.clearSelection,
+        filterAction: categoriesActions.filter,
+        fetchItemsAction: fetchCategories,
+    } as ItemListProps<any, any>);
+
 export function CategoryList({ navigation }: CategoryListProps) {
     const dispatch = useDispatch();
 
@@ -27,17 +40,7 @@ export function CategoryList({ navigation }: CategoryListProps) {
         }
     }, [dispatch]);
 
-    const props: ItemListProps<any, any> = {
-        ItemComponent: CategoryItem,
-        formNavName: 'Category Form',
-        navigation: navigation,
-        isEmptySelector: selectIsEmpty,
-        loadingStatusSelector: selectLoadingStatus,
-        filteredListSelector: selectFilteredList,
-        clearSelectionAction: categoriesActions.clearSelection,
-        filterAction: categoriesActions.filter,
-        fetchItemsAction: fetchCategories,
-    };
+    const props = buildCategoryListProps(navigation);
 
     return <UIGenericItemList {...props} />;
 }

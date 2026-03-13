@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1773364453685" clover="3.2.0">
+  <project timestamp="1773364453685" name="All files">
+    <metrics statements="66" coveredstatements="66" conditionals="85" coveredconditionals="61" methods="18" coveredmethods="16" elements="169" coveredelements="143" complexity="0" loc="66" ncloc="66" packages="2" files="5" classes="5"/>
+    <package name="back-office">
+      <metrics statements="31" coveredstatements="31" conditionals="14" coveredconditionals="9" methods="7" coveredmethods="5"/>
+      <file name="back-office.tsx" path="/Users/orlando/dev/pos/libs/back-office/native-feature/src/lib/components/back-office/back-office.tsx">
+        <metrics statements="31" coveredstatements="31" conditionals="14" coveredconditionals="9" methods="7" coveredmethods="5"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="28" count="9" type="cond" truecount="7" falsecount="3"/>
+        <line num="30" count="1" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="39" count="1" type="stmt"/>
+        <line num="41" count="1" type="stmt"/>
+        <line num="92" count="1" type="stmt"/>
+        <line num="93" count="1" type="stmt"/>
+        <line num="94" count="1" type="stmt"/>
+        <line num="96" count="1" type="stmt"/>
+        <line num="126" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="sidebar">
+      <metrics statements="35" coveredstatements="35" conditionals="71" coveredconditionals="52" methods="11" coveredmethods="11"/>
+      <file name="menu-items.ts" path="/Users/orlando/dev/pos/libs/back-office/native-feature/src/lib/components/sidebar/menu-items.ts">
+        <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="78" count="1" type="stmt"/>
+      </file>
+      <file name="sidebar.tsx" path="/Users/orlando/dev/pos/libs/back-office/native-feature/src/lib/components/sidebar/sidebar.tsx">
+        <metrics statements="17" coveredstatements="17" conditionals="37" coveredconditionals="27" methods="6" coveredmethods="6"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="9" count="28" type="cond" truecount="23" falsecount="10"/>
+        <line num="15" count="3" type="stmt"/>
+        <line num="16" count="3" type="stmt"/>
+        <line num="17" count="3" type="stmt"/>
+        <line num="19" count="3" type="stmt"/>
+        <line num="20" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="26" count="3" type="stmt"/>
+        <line num="29" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="30" count="3" type="stmt"/>
+        <line num="40" count="3" type="stmt"/>
+        <line num="57" count="1" type="stmt"/>
+      </file>
+      <file name="single-item.tsx" path="/Users/orlando/dev/pos/libs/back-office/native-feature/src/lib/components/sidebar/single-item.tsx">
+        <metrics statements="6" coveredstatements="6" conditionals="16" coveredconditionals="15" methods="2" coveredmethods="2"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="18" count="3" type="stmt"/>
+        <line num="19" count="3" type="stmt"/>
+        <line num="20" count="3" type="stmt"/>
+        <line num="23" count="2" type="cond" truecount="2" falsecount="0"/>
+      </file>
+      <file name="submenu.tsx" path="/Users/orlando/dev/pos/libs/back-office/native-feature/src/lib/components/sidebar/submenu.tsx">
+        <metrics statements="9" coveredstatements="9" conditionals="18" coveredconditionals="10" methods="3" coveredmethods="3"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="23" count="2" type="stmt"/>
+        <line num="51" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="54" count="4" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

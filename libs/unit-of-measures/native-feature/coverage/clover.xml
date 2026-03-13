@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1773365910875" clover="3.2.0">
+  <project timestamp="1773365910875" name="All files">
+    <metrics statements="71" coveredstatements="71" conditionals="80" coveredconditionals="57" methods="21" coveredmethods="21" elements="172" coveredelements="149" complexity="0" loc="71" ncloc="71" packages="4" files="4" classes="4"/>
+    <package name="unit-of-measure-form">
+      <metrics statements="27" coveredstatements="27" conditionals="45" coveredconditionals="32" methods="11" coveredmethods="11"/>
+      <file name="unit-of-measure-form.tsx" path="/Users/orlando/dev/pos/libs/unit-of-measures/native-feature/src/lib/components/unit-of-measure-form/unit-of-measure-form.tsx">
+        <metrics statements="27" coveredstatements="27" conditionals="45" coveredconditionals="32" methods="11" coveredmethods="11"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="4" count="2" type="stmt"/>
+        <line num="5" count="2" type="stmt"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="7" count="2" type="stmt"/>
+        <line num="9" count="2" type="stmt"/>
+        <line num="10" count="56" type="cond" truecount="23" falsecount="10"/>
+        <line num="26" count="12" type="stmt"/>
+        <line num="27" count="12" type="stmt"/>
+        <line num="28" count="12" type="stmt"/>
+        <line num="29" count="12" type="stmt"/>
+        <line num="30" count="12" type="stmt"/>
+        <line num="32" count="12" type="cond" truecount="4" falsecount="0"/>
+        <line num="33" count="2" type="stmt"/>
+        <line num="34" count="2" type="stmt"/>
+        <line num="36" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="38" count="2" type="stmt"/>
+        <line num="41" count="2" type="stmt"/>
+        <line num="42" count="12" type="stmt"/>
+        <line num="45" count="12" type="stmt"/>
+        <line num="54" count="12" type="stmt"/>
+        <line num="55" count="2" type="stmt"/>
+        <line num="60" count="1" type="stmt"/>
+        <line num="65" count="12" type="stmt"/>
+        <line num="94" count="2" type="stmt"/>
+      </file>
+    </package>
+    <package name="unit-of-measure-item">
+      <metrics statements="17" coveredstatements="17" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
+      <file name="unit-of-measure-item.tsx" path="/Users/orlando/dev/pos/libs/unit-of-measures/native-feature/src/lib/components/unit-of-measure-item/unit-of-measure-item.tsx">
+        <metrics statements="17" coveredstatements="17" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
+        <line num="1" count="3" type="stmt"/>
+        <line num="2" count="3" type="stmt"/>
+        <line num="4" count="3" type="stmt"/>
+        <line num="5" count="3" type="stmt"/>
+        <line num="6" count="3" type="stmt"/>
+        <line num="7" count="3" type="stmt"/>
+        <line num="15" count="3" type="stmt"/>
+        <line num="16" count="3" type="stmt"/>
+        <line num="17" count="3" type="stmt"/>
+        <line num="19" count="3" type="stmt"/>
+        <line num="20" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="29" count="3" type="stmt"/>
+        <line num="39" count="3" type="stmt"/>
+      </file>
+    </package>
+    <package name="unit-of-measure-list">
+      <metrics statements="18" coveredstatements="18" conditionals="33" coveredconditionals="23" methods="7" coveredmethods="7"/>
+      <file name="unit-of-measure-list.tsx" path="/Users/orlando/dev/pos/libs/unit-of-measures/native-feature/src/lib/components/unit-of-measure-list/unit-of-measure-list.tsx">
+        <metrics statements="18" coveredstatements="18" conditionals="33" coveredconditionals="23" methods="7" coveredmethods="7"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="10" count="2" type="stmt"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="13" count="56" type="cond" truecount="23" falsecount="10"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="31" count="2" type="stmt"/>
+        <line num="34" count="1" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="39" count="1" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="41" count="1" type="stmt"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="47" count="1" type="stmt"/>
+        <line num="50" count="2" type="stmt"/>
+      </file>
+    </package>
+    <package name="unit-of-measures">
+      <metrics statements="9" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <file name="unit-of-measures.tsx" path="/Users/orlando/dev/pos/libs/unit-of-measures/native-feature/src/lib/components/unit-of-measures/unit-of-measures.tsx">
+        <metrics statements="9" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>
