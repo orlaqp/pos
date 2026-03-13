@@ -1,7 +1,7 @@
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
-import { Alert, Pressable, Text, TextInput, View } from 'react-native';
+import { Alert, TextInput } from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockDispatch = jest.fn();
@@ -62,29 +62,59 @@ jest.mock('@pos/shared/ui-native', () => ({
     }: {
         submitAction: () => void;
         cancelAction: () => void;
-    }) => (
-        <View>
-            <Pressable testID="product-save" onPress={submitAction}>
-                <Text>Save</Text>
-            </Pressable>
-            <Pressable testID="product-cancel" onPress={cancelAction}>
-                <Text>Cancel</Text>
-            </Pressable>
-        </View>
-    ),
-    UiFileUpload: ({ onAssetUploaded }: { onAssetUploaded: (s: string) => void }) => (
-        <Pressable testID="upload" onPress={() => onAssetUploaded('pic-key')}>
-            <Text>Upload</Text>
-        </Pressable>
-    ),
-    UIInput: () => <View />,
-    UINumericInput: () => <View />,
-    UIOverlaySelect: () => <View />,
-    UISwitch: () => <View />,
-    UIVerticalSpacer: () => <View />,
-    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UIStack: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    }) => {
+        const { Pressable: RNPressable, Text: RNText, View: RNView } = require('react-native');
+        return (
+            <RNView>
+                <RNPressable testID="product-save" onPress={submitAction}>
+                    <RNText>Save</RNText>
+                </RNPressable>
+                <RNPressable testID="product-cancel" onPress={cancelAction}>
+                    <RNText>Cancel</RNText>
+                </RNPressable>
+            </RNView>
+        );
+    },
+    UiFileUpload: ({ onAssetUploaded }: { onAssetUploaded: (s: string) => void }) => {
+        const { Pressable: RNPressable, Text: RNText } = require('react-native');
+        return (
+            <RNPressable testID="upload" onPress={() => onAssetUploaded('pic-key')}>
+                <RNText>Upload</RNText>
+            </RNPressable>
+        );
+    },
+    UIInput: () => {
+        const { View: RNView } = require('react-native');
+        return <RNView />;
+    },
+    UINumericInput: () => {
+        const { View: RNView } = require('react-native');
+        return <RNView />;
+    },
+    UIOverlaySelect: () => {
+        const { View: RNView } = require('react-native');
+        return <RNView />;
+    },
+    UISwitch: () => {
+        const { View: RNView } = require('react-native');
+        return <RNView />;
+    },
+    UIVerticalSpacer: () => {
+        const { View: RNView } = require('react-native');
+        return <RNView />;
+    },
+    UIScreen: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
+    UICard: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
+    UIStack: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
 }));
 
 jest.mock('@rneui/themed', () => {

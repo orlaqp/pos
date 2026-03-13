@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
-import { Pressable, Switch, Text, View } from 'react-native';
 
 const mockDispatch = jest.fn();
 const mockUpdateTheme = jest.fn();
@@ -49,11 +48,18 @@ jest.mock('@pos/theme/native/design-tokens', () => ({
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
-    UIScreen: ({ children, testID }: { children: React.ReactNode; testID?: string }) => (
-        <View testID={testID || 'ui-screen'}>{children}</View>
-    ),
-    UIStack: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UIScreen: ({ children, testID }: { children: React.ReactNode; testID?: string }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView testID={testID || 'ui-screen'}>{children}</RNView>;
+    },
+    UIStack: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
+    UICard: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
 }));
 
 jest.mock('@rneui/themed', () => ({
@@ -68,13 +74,16 @@ jest.mock('@rneui/themed', () => ({
         testID?: string;
         value?: boolean;
         onValueChange: (value: boolean) => void;
-    }) => (
-        <Switch
-            testID={testID}
-            value={!!value}
-            onValueChange={onValueChange}
-        />
-    ),
+    }) => {
+        const { Switch: RNSwitch } = require('react-native');
+        return (
+            <RNSwitch
+                testID={testID}
+                value={!!value}
+                onValueChange={onValueChange}
+            />
+        );
+    },
     Button: ({
         title,
         onPress,
@@ -83,11 +92,14 @@ jest.mock('@rneui/themed', () => ({
         title?: string;
         onPress: () => void;
         testID?: string;
-    }) => (
-        <Pressable onPress={onPress} testID={testID || title}>
-            <Text>{title || 'button'}</Text>
-        </Pressable>
-    ),
+    }) => {
+        const { Pressable: RNPressable, Text: RNText } = require('react-native');
+        return (
+            <RNPressable onPress={onPress} testID={testID || title}>
+                <RNText>{title || 'button'}</RNText>
+            </RNPressable>
+        );
+    },
 }));
 
 jest.mock('@pos/settings/data-access', () => ({

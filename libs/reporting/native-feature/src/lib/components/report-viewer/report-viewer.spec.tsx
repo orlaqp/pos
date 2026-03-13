@@ -1,6 +1,7 @@
+/* eslint-disable import/first */
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
-import { Pressable, Text } from 'react-native';
+import * as mockReactNative from 'react-native';
 
 jest.mock('@pos/shared/ui-native', () => ({
     UIScreen: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -11,7 +12,7 @@ jest.mock('@pos/shared/ui-native', () => ({
     }: {
         onRangeChange: (r: { startDate: Date; endDate: Date }) => void;
     }) => (
-        <Pressable
+        <mockReactNative.Pressable
             testID="date-range"
             onPress={() =>
                 onRangeChange({
@@ -20,8 +21,8 @@ jest.mock('@pos/shared/ui-native', () => ({
                 })
             }
         >
-            <Text>Date Range</Text>
-        </Pressable>
+            <mockReactNative.Text>Date Range</mockReactNative.Text>
+        </mockReactNative.Pressable>
     ),
     UIEmptyState: ({ text }: { text: string }) => <>{text}</>,
     UISpinner: ({ message }: { message: string }) => <>{message}</>,

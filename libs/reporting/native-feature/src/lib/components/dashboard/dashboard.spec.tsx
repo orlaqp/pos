@@ -1,6 +1,8 @@
+/* eslint-disable import/first */
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import moment from 'moment';
+import * as mockReactNative from 'react-native';
 
 const mockGetSalesSummaryForRange = jest.fn();
 
@@ -13,9 +15,13 @@ jest.mock('@pos/shared/ui-native', () => ({
     UIScreen: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     UICard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     UIStack: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    UIDateRange: () => <>DateRange</>,
-    UIEmptyState: ({ text }: { text: string }) => <>{text}</>,
-    UISpinner: ({ message }: { message: string }) => <>{message}</>,
+    UIDateRange: () => <mockReactNative.Text>DateRange</mockReactNative.Text>,
+    UIEmptyState: ({ text }: { text: string }) => (
+        <mockReactNative.Text>{text}</mockReactNative.Text>
+    ),
+    UISpinner: ({ message }: { message: string }) => (
+        <mockReactNative.Text>{message}</mockReactNative.Text>
+    ),
 }));
 
 jest.mock('../pie-chart/pie-chart', () => ({

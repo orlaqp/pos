@@ -1,7 +1,8 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { FormProvider, useForm } from 'react-hook-form';
-import { TextInput, View } from 'react-native';
+import * as mockReactNative from 'react-native';
+import { UIInput } from './ui-input';
 
 jest.mock('@pos/theme/native', () => ({
     useSharedStyles: () => ({
@@ -37,20 +38,17 @@ jest.mock('@rneui/themed', () => ({
         onChangeText?: (text: string) => void;
         inputContainerStyle?: unknown;
     }) => (
-        <View testID="ui-input-container" style={inputContainerStyle}>
-            <TextInput
+        <mockReactNative.View testID="ui-input-container" style={inputContainerStyle}>
+            <mockReactNative.TextInput
                 testID="ui-input-control"
                 value={value}
                 onFocus={onFocus}
                 onBlur={onBlur}
                 onChangeText={onChangeText}
             />
-        </View>
+        </mockReactNative.View>
     ),
 }));
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { UIInput } = require('./ui-input');
 
 function Wrapper({ children }: { children: React.ReactNode }) {
     const form = useForm<{ firstName: string }>({

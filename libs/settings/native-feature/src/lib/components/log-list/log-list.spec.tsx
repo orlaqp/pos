@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { View } from 'react-native';
 
 jest.mock('react-redux', () => ({
     useSelector: jest.fn(() => [
@@ -30,9 +29,18 @@ jest.mock('@pos/theme/native/design-tokens', () => ({
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
-    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UIStack: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UIScreen: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
+    UICard: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
+    UIStack: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
 }));
 
 const { LogList } = require('./log-list');

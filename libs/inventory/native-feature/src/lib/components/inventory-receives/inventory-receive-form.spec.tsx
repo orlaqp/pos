@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert } from 'react-native';
 
 const mockDispatch = jest.fn();
 const mockGoBack = jest.fn();
@@ -41,39 +41,54 @@ jest.mock('@pos/theme/native', () => ({
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
-    UIActions: ({ submitAction, cancelAction }: { submitAction: () => void; cancelAction: () => void }) => (
-        <View>
-            <Pressable testID="inventory-receive-save-button" onPress={submitAction}>
-                <Text>Save</Text>
-            </Pressable>
-            <Pressable testID="inventory-receive-cancel-button" onPress={cancelAction}>
-                <Text>Cancel</Text>
-            </Pressable>
-        </View>
-    ),
-    UISearchInput: React.forwardRef(
-        (
-            {
-                onSubmit,
-                onClear,
-            }: { onSubmit: (text: string) => void; onClear: () => void },
-            _
-        ) => (
-            <View testID="inventory-receive-search">
-                <Pressable
-                    testID="inventory-receive-search-submit"
-                    onPress={() => onSubmit('111')}
-                >
-                    <Text>Submit Search</Text>
-                </Pressable>
-                <Pressable testID="inventory-receive-search-clear" onPress={onClear}>
-                    <Text>Clear Search</Text>
-                </Pressable>
-            </View>
-        )
-    ),
-    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UIActions: ({ submitAction, cancelAction }: { submitAction: () => void; cancelAction: () => void }) => {
+        const { Pressable: RNPressable, Text: RNText, View: RNView } = require('react-native');
+        return (
+            <RNView>
+                <RNPressable testID="inventory-receive-save-button" onPress={submitAction}>
+                    <RNText>Save</RNText>
+                </RNPressable>
+                <RNPressable testID="inventory-receive-cancel-button" onPress={cancelAction}>
+                    <RNText>Cancel</RNText>
+                </RNPressable>
+            </RNView>
+        );
+    },
+    UISearchInput: (() => {
+        const React = require('react');
+        return React.forwardRef(
+            (
+                {
+                    onSubmit,
+                    onClear,
+                }: { onSubmit: (text: string) => void; onClear: () => void },
+                _
+            ) => {
+                const { Pressable: RNPressable, Text: RNText, View: RNView } = require('react-native');
+                return (
+                    <RNView testID="inventory-receive-search">
+                        <RNPressable
+                            testID="inventory-receive-search-submit"
+                            onPress={() => onSubmit('111')}
+                        >
+                            <RNText>Submit Search</RNText>
+                        </RNPressable>
+                        <RNPressable testID="inventory-receive-search-clear" onPress={onClear}>
+                            <RNText>Clear Search</RNText>
+                        </RNPressable>
+                    </RNView>
+                );
+            }
+        );
+    })(),
+    UIScreen: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
+    UICard: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
 }));
 
 jest.mock('@rneui/themed', () => ({
@@ -87,11 +102,14 @@ jest.mock('@rneui/themed', () => ({
             },
         },
     }),
-    Button: ({ title, onPress, testID }: { title?: string; onPress: () => void; testID?: string }) => (
-        <Pressable testID={testID || title} onPress={onPress}>
-            <Text>{title || 'button'}</Text>
-        </Pressable>
-    ),
+    Button: ({ title, onPress, testID }: { title?: string; onPress: () => void; testID?: string }) => {
+        const { Pressable: RNPressable, Text: RNText } = require('react-native');
+        return (
+            <RNPressable testID={testID || title} onPress={onPress}>
+                <RNText>{title || 'button'}</RNText>
+            </RNPressable>
+        );
+    },
 }));
 
 jest.mock('@pos/shared/utils', () => ({
@@ -122,28 +140,31 @@ jest.mock('../inventory-receives/inventory-receive-line', () => ({
         item: any;
         onUpdate: (item: any) => void;
         onDelete: (item: any) => void;
-    }) => (
-        <View testID="inventory-receive-line">
-            <Pressable
-                testID={`inventory-receive-line-update-${item.productId}`}
-                onPress={() =>
-                    onUpdate({
-                        ...item,
-                        received: 8,
-                        comments: 'updated',
-                    })
-                }
-            >
-                <Text>Update Line</Text>
-            </Pressable>
-            <Pressable
-                testID={`inventory-receive-line-delete-${item.productId}`}
-                onPress={() => onDelete(item)}
-            >
-                <Text>Delete Line</Text>
-            </Pressable>
-        </View>
-    ),
+    }) => {
+        const { Pressable: RNPressable, Text: RNText, View: RNView } = require('react-native');
+        return (
+            <RNView testID="inventory-receive-line">
+                <RNPressable
+                    testID={`inventory-receive-line-update-${item.productId}`}
+                    onPress={() =>
+                        onUpdate({
+                            ...item,
+                            received: 8,
+                            comments: 'updated',
+                        })
+                    }
+                >
+                    <RNText>Update Line</RNText>
+                </RNPressable>
+                <RNPressable
+                    testID={`inventory-receive-line-delete-${item.productId}`}
+                    onPress={() => onDelete(item)}
+                >
+                    <RNText>Delete Line</RNText>
+                </RNPressable>
+            </RNView>
+        );
+    },
 }));
 
 jest.mock('../shared/compact-product-list/compact-product-list', () => ({
@@ -156,27 +177,30 @@ jest.mock('../shared/compact-product-list/compact-product-list', () => ({
         visible: boolean;
         onAdd: (product: any) => void;
         onClose: () => void;
-    }) => (
-        <View testID="compact-product-list">
-            <Text>{visible ? 'visible' : 'hidden'}</Text>
-            <Pressable
-                testID="inventory-receive-add-product"
-                onPress={() =>
-                    onAdd({
-                        id: 'p-1',
-                        name: 'Apple',
-                        unitOfMeasure: 'EA',
-                        quantity: 10,
-                    })
-                }
-            >
-                <Text>Add Product</Text>
-            </Pressable>
-            <Pressable testID="inventory-receive-close-product-list" onPress={onClose}>
-                <Text>Close Product List</Text>
-            </Pressable>
-        </View>
-    ),
+    }) => {
+        const { Pressable: RNPressable, Text: RNText, View: RNView } = require('react-native');
+        return (
+            <RNView testID="compact-product-list">
+                <RNText>{visible ? 'visible' : 'hidden'}</RNText>
+                <RNPressable
+                    testID="inventory-receive-add-product"
+                    onPress={() =>
+                        onAdd({
+                            id: 'p-1',
+                            name: 'Apple',
+                            unitOfMeasure: 'EA',
+                            quantity: 10,
+                        })
+                    }
+                >
+                    <RNText>Add Product</RNText>
+                </RNPressable>
+                <RNPressable testID="inventory-receive-close-product-list" onPress={onClose}>
+                    <RNText>Close Product List</RNText>
+                </RNPressable>
+            </RNView>
+        );
+    },
 }));
 
 jest.mock('@pos/inventory/data-access', () => ({
