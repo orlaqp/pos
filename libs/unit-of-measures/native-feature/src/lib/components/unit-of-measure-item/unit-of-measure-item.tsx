@@ -1,11 +1,13 @@
 
 import React from 'react';
 
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, Alert, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { unitOfMeasuresActions, UnitOfMeasureEntity } from '@pos/unit-of-measures/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTheme } from '@rneui/themed';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface UnitOfMeasureItemProps {
     item: UnitOfMeasureEntity;
@@ -13,7 +15,8 @@ export interface UnitOfMeasureItemProps {
 }
 
 export function UnitOfMeasureItem({ item, navigation }: UnitOfMeasureItemProps) {
-    const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const dispatch = useDispatch();
 
     const editItem = () => {
@@ -27,13 +30,64 @@ export function UnitOfMeasureItem({ item, navigation }: UnitOfMeasureItemProps) 
     }
 
     return (
-        <TouchableOpacity style={styles.dataRow} onPress={editItem}>
-            <View style={{ flex: 5 }}>
+        <TouchableOpacity style={[styles.dataRow, styles.row]} onPress={editItem}>
+            <View style={styles.badgeSlot}>
+                <View style={styles.unitBadge}>
+                    <Text style={styles.unitText}>{item.name?.toUpperCase()}</Text>
+                </View>
+            </View>
+            <View style={styles.contentColumn}>
                 <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.description}>{item.description}</Text>
+                <Text style={[styles.description, styles.secondaryReadable]}>
+                    {item.description}
+                </Text>
             </View>
         </TouchableOpacity>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) => {
+    const theme = useTheme();
+    const sharedStyles = useSharedStyles();
+
+    return {
+        ...sharedStyles,
+        ...StyleSheet.create({
+            row: {
+                alignItems: 'center',
+                paddingVertical: tokens.spacing.md,
+            },
+            badgeSlot: {
+                width: 70,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: tokens.spacing.md,
+            },
+            unitBadge: {
+                minWidth: 44,
+                height: 32,
+                paddingHorizontal: tokens.spacing.sm,
+                borderRadius: tokens.radii.md,
+                borderWidth: 1,
+                borderColor: `${theme.theme.colors.grey3}66`,
+                backgroundColor: `${theme.theme.colors.grey5}55`,
+                alignItems: 'center',
+                justifyContent: 'center',
+            },
+            unitText: {
+                color: theme.theme.colors.grey1,
+                fontWeight: '700',
+                fontSize: 12,
+            },
+            contentColumn: {
+                flex: 1,
+                paddingRight: tokens.spacing.md,
+            },
+            secondaryReadable: {
+                color: theme.theme.colors.grey1,
+            },
+        }),
+    };
+};
 
 export default UnitOfMeasureItem;

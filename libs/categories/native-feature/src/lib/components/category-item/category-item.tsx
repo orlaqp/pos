@@ -7,6 +7,7 @@ import { categoriesActions, CategoryEntity, CategoryService } from '@pos/categor
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UIS3Image } from '@pos/shared/ui-native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface CategoryItemProps {
     item: CategoryEntity;
@@ -26,7 +27,8 @@ export const deleteCategoryById = async (
 
 export function CategoryItem({ item, navigation }: CategoryItemProps) {
     const theme = useTheme();
-    const styles = useStyles();
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
 
@@ -57,22 +59,22 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
     }
 
     return (
-        <TouchableOpacity style={styles.dataRow} onPress={editItem}>
+        <TouchableOpacity style={[styles.dataRow, styles.row]} onPress={editItem}>
             { busy &&
             <ActivityIndicator size='small' />
             }
-            <UIS3Image s3Key={item.picture} width={50} height={50} />
-            <View style={{ flex: 5 }}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.description}>{item.description}</Text>
+            <View style={styles.thumbnailSlot}>
+                <UIS3Image s3Key={item.picture} width={50} height={50} />
             </View>
-            <View
-                style={{
-                    flex: 2,
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                }}
-            >
+            <View style={styles.contentColumn}>
+                <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+                    {item.name}
+                </Text>
+                <Text style={[styles.description, styles.secondaryReadable]} numberOfLines={1} ellipsizeMode="tail">
+                    {item.description}
+                </Text>
+            </View>
+            <View style={styles.actionsColumn}>
                 {/* <Button
                     type="clear"
                     title="Edit"
@@ -89,6 +91,7 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
                         type: 'material-community',
                         color: theme.theme.colors.error,
                     }}
+                    buttonStyle={styles.deleteButton}
                     onPress={confirmDeletion}
                 />
             </View>
@@ -96,13 +99,32 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
     );
 }
 
-const useStyles = () => {
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) => {
     const theme = useTheme();
     const sharedStyles = useSharedStyles();
 
     return {
         ...sharedStyles,
         ...StyleSheet.create({
+            row: {
+                alignItems: 'center',
+                paddingVertical: tokens.spacing.md,
+            },
+            thumbnailSlot: {
+                width: 70,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: tokens.spacing.md,
+            },
+            contentColumn: {
+                flex: 1,
+                paddingRight: tokens.spacing.md,
+            },
+            actionsColumn: {
+                width: 70,
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+            },
             name: {
                 fontSize: 18,
                 color: theme.theme.colors.grey0,
@@ -111,6 +133,12 @@ const useStyles = () => {
             description: {
                 fontSize: 14,
                 color: theme.theme.colors.grey3,
+            },
+            secondaryReadable: {
+                color: theme.theme.colors.grey1,
+            },
+            deleteButton: {
+                opacity: 0.75,
             },
         }),
     };

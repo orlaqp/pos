@@ -3,6 +3,7 @@ import UIEmptyState from '../ui-empty-state/ui-empty-state';
 import UISpinner from '../ui-spinner/ui-spinner';
 import { useSharedStyles } from '@pos/theme/native';
 import { useTheme } from '@rneui/themed';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 import {
     View,
@@ -135,12 +136,13 @@ export function UIGenericItemList({
         <View style={styles.detailsPage}>
             {renderHeader && renderHeader()}
             {!renderHeader && (
+                <View style={styles.headerCard}>
                 <View style={[styles.header, { alignItems: 'center' }]}>
                     <View style={styles.searchContainer}>
                         <TextInput
                             testID="ui-generic-item-list-search-input"
                             value={query}
-                            placeholder="type to search..."
+                            placeholder="Search..."
                             placeholderTextColor={theme.theme.colors.grey2}
                             style={styles.searchInput}
                             autoCorrect={false}
@@ -174,6 +176,7 @@ export function UIGenericItemList({
                         </TouchableOpacity>
                     </View>
                 </View>
+                </View>
             )}
             <View style={styles.content}>
                 {items && (
@@ -200,20 +203,32 @@ export function UIGenericItemList({
 const useStyles = () => {
     const theme = useTheme();
     const sharedStyles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const borderTone = theme.theme.colors.grey4 || theme.theme.colors.grey3;
 
     return {
         ...sharedStyles,
         ...StyleSheet.create({
+            headerCard: {
+                marginHorizontal: tokens.spacing.md,
+                marginTop: tokens.spacing.md,
+                marginBottom: tokens.spacing.sm,
+                borderRadius: tokens.radii.lg,
+                borderWidth: 1,
+                borderColor: `${borderTone}55`,
+                backgroundColor: `${theme.theme.colors.grey5}20`,
+                paddingVertical: tokens.spacing.xs,
+            },
             header: {
-                marginHorizontal: 10,
-                marginTop: 10,
-                marginBottom: 6,
+                marginHorizontal: tokens.spacing.sm,
                 flexDirection: 'row',
                 alignItems: 'center',
             },
             content: {
-                padding: 20,
-                height: '94%'
+                paddingHorizontal: tokens.spacing.lg,
+                paddingTop: tokens.spacing.sm,
+                paddingBottom: tokens.spacing.lg,
+                flex: 1,
             },
             columnHeader: {
                 color: theme.theme.colors.grey3,
@@ -221,15 +236,20 @@ const useStyles = () => {
             addButtonContainer: {
                 width: 64,
                 alignItems: 'flex-end',
-                marginLeft: 12,
-                marginRight: 8,
+                marginLeft: tokens.spacing.sm,
+                marginRight: tokens.spacing.xs,
             },
             addButton: {
-                width: 48,
-                height: 48,
-                borderRadius: 24,
+                width: 50,
+                height: 50,
+                borderRadius: 25,
                 alignItems: 'center',
                 justifyContent: 'center',
+                shadowColor: '#000',
+                shadowOpacity: 0.2,
+                shadowRadius: 6,
+                shadowOffset: { width: 0, height: 3 },
+                elevation: 3,
             },
             addButtonLabel: {
                 color: '#fff',
@@ -243,21 +263,25 @@ const useStyles = () => {
             },
             searchInput: {
                 backgroundColor: theme.theme.colors.grey5,
-                borderRadius: 20,
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: `${borderTone}66`,
                 color: theme.theme.colors.grey1,
-                paddingHorizontal: 14,
-                paddingVertical: 10,
+                paddingHorizontal: 16,
+                paddingVertical: 11,
+                fontSize: 16,
             },
             refreshButton: {
-                marginLeft: 12,
-                paddingHorizontal: 8,
-                paddingVertical: 6,
+                marginLeft: tokens.spacing.sm,
+                paddingHorizontal: tokens.spacing.xs,
+                paddingVertical: tokens.spacing.xs,
                 alignItems: 'center',
                 justifyContent: 'center',
             },
             refreshIcon: {
                 color: theme.theme.colors.grey2,
-                fontSize: 20,
+                fontSize: 24,
+                fontWeight: '600',
             },
         }),
     };

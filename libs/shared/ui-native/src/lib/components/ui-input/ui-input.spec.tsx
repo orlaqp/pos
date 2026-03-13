@@ -49,7 +49,8 @@ jest.mock('@rneui/themed', () => ({
     ),
 }));
 
-const UIInput = require('./ui-input').UIInput;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { UIInput } = require('./ui-input');
 
 function Wrapper({ children }: { children: React.ReactNode }) {
     const form = useForm<{ firstName: string }>({

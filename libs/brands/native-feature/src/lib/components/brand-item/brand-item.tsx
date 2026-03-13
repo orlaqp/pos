@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
 
-import { View, Text, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { brandsActions, BrandEntity, BrandService } from '@pos/brands/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface BrandItemProps {
     item: BrandEntity;
@@ -26,7 +27,8 @@ export const deleteBrandById = async (
 
 export function BrandItem({ item, navigation }: BrandItemProps) {
     const theme = useTheme();
-    const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
 
@@ -57,21 +59,26 @@ export function BrandItem({ item, navigation }: BrandItemProps) {
     }
 
     return (
-        <TouchableOpacity style={styles.dataRow} onPress={editItem}>
+        <TouchableOpacity style={[styles.dataRow, styles.row]} onPress={editItem}>
             { busy &&
             <ActivityIndicator size='small' />
             }
-            <View style={{ flex: 5 }}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.description}>{item.description}</Text>
+            <View style={styles.badgeSlot}>
+                <View style={styles.initialBadge}>
+                    <Text style={styles.initialText}>
+                        {item.name?.slice(0, 2).toUpperCase()}
+                    </Text>
+                </View>
             </View>
-            <View
-                style={{
-                    flex: 2,
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                }}
-            >
+            <View style={styles.contentColumn}>
+                <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+                    {item.name}
+                </Text>
+                <Text style={[styles.description, styles.secondaryReadable]} numberOfLines={1} ellipsizeMode="tail">
+                    {item.description}
+                </Text>
+            </View>
+            <View style={styles.actionsColumn}>
                 {/* <Button
                     type="clear"
                     title="Edit"
@@ -88,11 +95,63 @@ export function BrandItem({ item, navigation }: BrandItemProps) {
                         type: 'material-community',
                         color: theme.theme.colors.error,
                     }}
+                    buttonStyle={styles.deleteButton}
                     onPress={confirmDeletion}
                 />
             </View>
         </TouchableOpacity>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) => {
+    const theme = useTheme();
+    const sharedStyles = useSharedStyles();
+
+    return {
+        ...sharedStyles,
+        ...StyleSheet.create({
+            row: {
+                alignItems: 'center',
+                paddingVertical: tokens.spacing.md,
+            },
+            badgeSlot: {
+                width: 70,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: tokens.spacing.md,
+            },
+            initialBadge: {
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: `${theme.theme.colors.primary}55`,
+                backgroundColor: `${theme.theme.colors.primary}22`,
+                alignItems: 'center',
+                justifyContent: 'center',
+            },
+            initialText: {
+                color: theme.theme.colors.primary,
+                fontWeight: '700',
+                letterSpacing: 0.5,
+            },
+            contentColumn: {
+                flex: 1,
+                paddingRight: tokens.spacing.md,
+            },
+            actionsColumn: {
+                width: 70,
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+            },
+            secondaryReadable: {
+                color: theme.theme.colors.grey1,
+            },
+            deleteButton: {
+                opacity: 0.75,
+            },
+        }),
+    };
+};
 
 export default BrandItem;
