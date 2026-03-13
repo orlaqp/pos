@@ -1,10 +1,10 @@
-import { UIActions, UIInput } from '@pos/shared/ui-native';
-import { useSharedStyles } from '@pos/theme/native';
+import { UIActions, UICard, UIInput, UIScreen, UIStack } from '@pos/shared/ui-native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { fetchStoreInfo, selectStore, StoreInfoEntity, StoreInfoService } from '@pos/store-info/data-access';
 import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
-import { View, Text, Alert, ScrollView } from 'react-native';
+import { View, Text, Alert, ScrollView, StyleSheet } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -14,7 +14,8 @@ export interface StoreInfoFormProps {
 }
 
 export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
-    const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const storeInfo = useSelector(selectStore);
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
@@ -66,40 +67,121 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
     }, [dispatch]);
     
     return (
-        <View style={[styles.page, styles.centeredHorizontally]}>
+        <UIScreen padded>
             <FormProvider {...form}>
                 <ScrollView
-                    style={{
-                        width: '60%',
-                        flexDirection: 'column',
-                        marginTop: 50,
-                    }}
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
                 >
-                    <UIInput name="name" label="Name" placeholder="Name" rules={{ required: true }} />
-                    <UIInput name="address" label="Address" placeholder="Address" rules={{ required: true }} />
-                    <UIInput name="city" label="City" placeholder="City" rules={{ required: true }} />
-                    <UIInput name="state" label="State" placeholder="State" rules={{ required: true }} />
-                    <UIInput name="zipCode" label="Zip Code" placeholder="Zip Code" rules={{ required: true }} />
-                    <UIInput name="email" label="Email" placeholder="Email" rules={{ required: true }} />
-                    <UIInput name="phone" label="Phone" placeholder="Phone" rules={{ required: true }} />
-                    <UIInput name="fax" label="Fax" placeholder="Fax" rules={{ required: true }} />
-                    <UIInput
-                        name="disclaimer"
-                        placeholder="Disclaimer"
-                        multiline={true}
-                        numberOfLines={2}
-                        style={{ height: 80, textAlignVertical: 'top' }}
-                    />
-                    
-                    <UIActions
-                        busy={busy}
-                        submitAction={form.handleSubmit(save)}
-                        cancelAction={confirmCancel}
-                    />
+                    <UIStack spacing="lg">
+                        <UICard tone="muted" radius="lg">
+                            <Text style={styles.title}>Store Profile</Text>
+                            <Text style={styles.subtitle}>
+                                Manage store identity and contact details used across receipts and reports.
+                            </Text>
+                        </UICard>
+
+                        <UICard>
+                            <UIStack spacing="lg">
+                                <Text style={styles.sectionTitle}>Business Details</Text>
+                                <View style={styles.twoColumnRow}>
+                                    <View style={styles.column}>
+                                        <UIInput name="name" label="Name" placeholder="Name" rules={{ required: true }} />
+                                    </View>
+                                    <View style={styles.columnSpaced}>
+                                        <UIInput name="email" label="Email" placeholder="Email" rules={{ required: true }} />
+                                    </View>
+                                </View>
+                                <UIInput name="address" label="Address" placeholder="Address" rules={{ required: true }} />
+                                <View style={styles.twoColumnRow}>
+                                    <View style={styles.column}>
+                                        <UIInput name="city" label="City" placeholder="City" rules={{ required: true }} />
+                                    </View>
+                                    <View style={styles.columnSpaced}>
+                                        <UIInput name="state" label="State" placeholder="State" rules={{ required: true }} />
+                                    </View>
+                                </View>
+                                <View style={styles.threeColumnRow}>
+                                    <View style={styles.column}>
+                                        <UIInput name="zipCode" label="Zip Code" placeholder="Zip Code" rules={{ required: true }} />
+                                    </View>
+                                    <View style={styles.columnSpaced}>
+                                        <UIInput name="phone" label="Phone" placeholder="Phone" rules={{ required: true }} />
+                                    </View>
+                                    <View style={styles.columnSpaced}>
+                                        <UIInput name="fax" label="Fax" placeholder="Fax" rules={{ required: true }} />
+                                    </View>
+                                </View>
+                            </UIStack>
+                        </UICard>
+
+                        <UICard tone="muted">
+                            <UIStack spacing="md">
+                                <Text style={styles.sectionTitle}>Receipt Footer</Text>
+                                <UIInput
+                                    name="disclaimer"
+                                    label="Disclaimer"
+                                    placeholder="Disclaimer"
+                                    multiline={true}
+                                    numberOfLines={3}
+                                    style={styles.disclaimerInput}
+                                />
+                            </UIStack>
+                        </UICard>
+
+                        <UIActions
+                            busy={busy}
+                            submitAction={form.handleSubmit(save)}
+                            cancelAction={confirmCancel}
+                        />
+                    </UIStack>
                 </ScrollView>
             </FormProvider>
-        </View>
+        </UIScreen>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        scrollContent: {
+            width: '64%',
+            alignSelf: 'center',
+            paddingVertical: tokens.spacing.lg,
+            paddingBottom: tokens.spacing.xl,
+        },
+        title: {
+            color: tokens.colors.textPrimary,
+            fontSize: 28,
+            fontWeight: '700',
+        },
+        subtitle: {
+            color: tokens.colors.textSecondary,
+            marginTop: tokens.spacing.xs,
+            fontSize: 15,
+            lineHeight: 21,
+        },
+        sectionTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 19,
+            fontWeight: '700',
+        },
+        twoColumnRow: {
+            flexDirection: 'row',
+        },
+        threeColumnRow: {
+            flexDirection: 'row',
+        },
+        column: {
+            flex: 1,
+        },
+        columnSpaced: {
+            flex: 1,
+            marginLeft: tokens.spacing.md,
+        },
+        disclaimerInput: {
+            minHeight: 96,
+            textAlignVertical: 'top',
+        },
+    });
 
 export default StoreInfoForm;

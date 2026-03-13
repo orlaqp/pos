@@ -72,6 +72,8 @@ jest.mock('@pos/shared/ui-native', () => ({
             </View>
         )
     ),
+    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
 }));
 
 jest.mock('@rneui/themed', () => ({

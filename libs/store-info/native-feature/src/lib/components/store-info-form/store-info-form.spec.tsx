@@ -25,14 +25,17 @@ jest.mock('react-redux', () => ({
     useSelector: (selector: () => unknown) => selector(),
 }));
 
-jest.mock('@pos/theme/native', () => ({
-    useSharedStyles: () => ({
-        page: {},
-        centeredHorizontally: {},
+jest.mock('@pos/theme/native/design-tokens', () => ({
+    useDesignTokens: () => ({
+        spacing: { xs: 4, md: 12, lg: 16, xl: 24 },
+        colors: { textPrimary: '#fff', textSecondary: '#9aa6b5' },
     }),
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
+    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UIStack: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
     UIActions: ({
         submitAction,
         cancelAction,

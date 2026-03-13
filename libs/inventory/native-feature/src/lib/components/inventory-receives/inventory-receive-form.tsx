@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
-import { Alert, FlatList, TextInput, View, Text } from 'react-native';
+import { Alert, FlatList, StyleSheet, TextInput, View, Text } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
-import { UIActions, UISearchInput } from '@pos/shared/ui-native';
+import { UIActions, UICard, UIScreen, UISearchInput } from '@pos/shared/ui-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -29,6 +29,7 @@ import { NavigationParamList } from '@pos/sales/native-feature';
 import CompactProductList from '../shared/compact-product-list/compact-product-list';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { dedupeProducts } from '../shared/dedupe-products';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -75,6 +76,8 @@ export function InventoryReceiveForm({
     const dispatch = useDispatch();
     const theme = useTheme();
     const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const local = useStyles(tokens, theme.theme.colors);
     const products = useSelector(selectAllProducts);
     const employee = useSelector(selectLoginEmployee);
     const [busy, setBusy] = useState<boolean>(false);
@@ -201,17 +204,13 @@ export function InventoryReceiveForm({
     }, [dispatch]);
 
     return (
+        <UIScreen>
         <View style={[styles.page]}>
+            <UICard tone="muted" style={local.headerCard}>
             <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                 {route.params?.readOnly && (
                     <View
-                        style={{
-                            width: '65%',
-                            padding: 5,
-                            marginVertical: 10,
-                            borderRadius: 10,
-                            backgroundColor: theme.theme.colors.warning,
-                        }}
+                        style={local.readOnlyBanner}
                     >
                         <Text
                             style={[
@@ -226,7 +225,7 @@ export function InventoryReceiveForm({
                     </View>
                 )}
                 {!route.params?.readOnly && (
-                    <View style={{ flex: 3, padding: 10 }}>
+                    <View style={local.searchWrap}>
                         <UISearchInput
                             ref={ref}
                             testID="inventory-receive-search-input"
@@ -240,6 +239,7 @@ export function InventoryReceiveForm({
                     </View>
                 )}
             </View>
+            </UICard>
             {!route.params?.readOnly && (
                 <CompactProductList
                     visible={!!filter}
@@ -249,33 +249,30 @@ export function InventoryReceiveForm({
                 />
             )}
 
-            <FlatList
-                horizontal={false}
-                data={lines}
-                renderItem={(data) => (
-                    <InventoryReceiveLine
-                        readOnly={route.params?.readOnly}
-                        item={data.item}
-                        key={data.index}
-                        onUpdate={updateItem}
-                        onDelete={deleteItem}
-                    />
-                )}
-                style={{
-                    flex: 1,
-                    flexDirection: 'column',
-                }}
-            />
+            <View style={local.listWrap}>
+                <FlatList
+                    horizontal={false}
+                    data={lines}
+                    renderItem={(data) => (
+                        <InventoryReceiveLine
+                            readOnly={route.params?.readOnly}
+                            item={data.item}
+                            key={data.index}
+                            onUpdate={updateItem}
+                            onDelete={deleteItem}
+                        />
+                    )}
+                    style={local.list}
+                    contentContainerStyle={local.listContent}
+                />
+            </View>
 
             <View
-                style={{
-                    margin: 10,
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                }}
+                style={local.footerRow}
             >
                 {!route.params?.readOnly && (
-                    <>
+                    <UICard tone="muted" style={local.footerCard}>
+                    <View style={local.footerButtons}>
                         <UIActions
                             busy={busy}
                             submitAction={() => save(false)}
@@ -301,11 +298,60 @@ export function InventoryReceiveForm({
                                 }}
                             />
                         </View>
-                    </>
+                    </View>
+                    </UICard>
                 )}
             </View>
         </View>
+        </UIScreen>
     );
 }
+
+const useStyles = (
+    tokens: ReturnType<typeof useDesignTokens>,
+    colors: Record<string, string>
+) =>
+    StyleSheet.create({
+        headerCard: {
+            marginHorizontal: tokens.spacing.md,
+            marginTop: tokens.spacing.md,
+            marginBottom: tokens.spacing.sm,
+        },
+        readOnlyBanner: {
+            width: '65%',
+            padding: 8,
+            marginVertical: 10,
+            borderRadius: 10,
+            backgroundColor: colors.warning,
+        },
+        searchWrap: {
+            flex: 3,
+            padding: 10,
+        },
+        footerRow: {
+            marginHorizontal: tokens.spacing.md,
+            marginBottom: tokens.spacing.md,
+        },
+        listWrap: {
+            flex: 1,
+            marginHorizontal: tokens.spacing.md,
+        },
+        list: {
+            flex: 1,
+            flexDirection: 'column',
+        },
+        listContent: {
+            paddingTop: tokens.spacing.xs,
+            paddingBottom: tokens.spacing.sm,
+        },
+        footerCard: {
+            paddingVertical: tokens.spacing.sm,
+            paddingHorizontal: tokens.spacing.md,
+        },
+        footerButtons: {
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+        },
+    });
 
 export default InventoryReceiveForm;

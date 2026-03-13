@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
-import { Alert, FlatList, TextInput, View, Text } from 'react-native';
+import { Alert, FlatList, StyleSheet, TextInput, View, Text } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
-import { UIActions, UISearchInput } from '@pos/shared/ui-native';
+import { UIActions, UICard, UIScreen, UISearchInput } from '@pos/shared/ui-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -23,6 +23,7 @@ import { NavigationParamList } from '@pos/sales/native-feature';
 import CompactProductList from '../shared/compact-product-list/compact-product-list';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { dedupeProducts } from '../shared/dedupe-products';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -102,6 +103,8 @@ export function InventoryCountForm({
     const dispatch = useDispatch();
     const theme = useTheme();
     const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const local = useStyles(tokens, theme.theme.colors);
     const [busy, setBusy] = useState<boolean>(false);
     const [filter, setFilter] = useState<string>();
     const inventoryCount = useSelector(selectInventoryCountSelected);
@@ -421,18 +424,13 @@ export function InventoryCountForm({
     // }, [filter, lines, productList]);
 
     return (
-        // <FormProvider {...form}>
+        <UIScreen>
         <View style={[styles.page]}>
+            <UICard tone="muted" style={local.headerCard}>
             <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                 {route.params?.readOnly && (
                     <View
-                        style={{
-                            width: '65%',
-                            padding: 5,
-                            marginVertical: 10,
-                            borderRadius: 10,
-                            backgroundColor: theme.theme.colors.warning,
-                        }}
+                        style={local.readOnlyBanner}
                     >
                         <Text
                             style={[
@@ -448,9 +446,9 @@ export function InventoryCountForm({
                 )}
               
                 {!route.params?.readOnly && (
-                    <View style={{ flex: 3, padding: 10 }}>
+                    <View style={local.searchWrap}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <View style={{ flex: 1, maxWidth: 900 }}>
+                            <View style={local.searchInputWrap}>
                                 <UISearchInput
                                     ref={ref}
                                     value={filter}
@@ -461,19 +459,13 @@ export function InventoryCountForm({
                                 />
                             </View>
                             {!inventoryCount && (
-                                <View
-                                    style={{
-                                        flexDirection: 'row',
-                                        marginLeft: 8,
-                                        alignItems: 'center',
-                                    }}
-                                >
+                                <View style={local.modeButtonsRow}>
                                     <Button
                                         type={countMode === 'quick' ? 'solid' : 'outline'}
                                         title="Quick"
                                         testID="inventory-count-mode-quick"
                                         onPress={enableQuickCountMode}
-                                        buttonStyle={{ paddingHorizontal: 12, borderRadius: 18 }}
+                                        buttonStyle={local.modeButton}
                                     />
                                     <View style={{ marginLeft: 8 }}>
                                         <Button
@@ -481,7 +473,7 @@ export function InventoryCountForm({
                                             title="Full"
                                             testID="inventory-count-mode-full"
                                             onPress={enableFullCountMode}
-                                            buttonStyle={{ paddingHorizontal: 12, borderRadius: 18 }}
+                                            buttonStyle={local.modeButton}
                                         />
                                     </View>
                                     {countMode === 'full' && (
@@ -491,7 +483,7 @@ export function InventoryCountForm({
                                                 title="Reload"
                                                 testID="inventory-count-mode-reload"
                                                 onPress={regenerateFullCount}
-                                                buttonStyle={{ paddingHorizontal: 12, borderRadius: 18 }}
+                                                buttonStyle={local.modeButton}
                                             />
                                         </View>
                                     )}
@@ -499,7 +491,7 @@ export function InventoryCountForm({
                             )}
                         </View>
 
-                        <View style={{ marginTop: 6 }}>
+                        <View style={local.progressBlock}>
                             {!inventoryCount && (
                                 <Text style={[styles.secondaryText, { fontSize: 12 }]}>
                                     {countMode === 'quick'
@@ -510,16 +502,7 @@ export function InventoryCountForm({
                             <Text style={styles.secondaryText}>
                                 Count Progress: {countedItems} / {totalItems}
                             </Text>
-                            <View
-                                style={{
-                                    marginTop: 6,
-                                    height: 8,
-                                    width: '100%',
-                                    borderRadius: 8,
-                                    backgroundColor: theme.theme.colors.grey5,
-                                    overflow: 'hidden',
-                                }}
-                            >
+                            <View style={local.progressTrack}>
                                 <View
                                     style={{
                                         height: 8,
@@ -532,6 +515,7 @@ export function InventoryCountForm({
                     </View>
                 )}
             </View>
+            </UICard>
             {!route.params?.readOnly && (
                 <CompactProductList
                     visible={!!filter?.trim()}
@@ -541,29 +525,23 @@ export function InventoryCountForm({
                 />
             )}
 
-            <FlatList
-                horizontal={false}
-                data={lineItems}
-                renderItem={(data) => (
-                    <InventoryCountLine
-                        readOnly={route.params?.readOnly}
-                        item={data.item}
-                        key={data.index}
-                        onUpdate={updateItem}
-                        onDelete={deleteItem}
-                    />
-                )}
-                style={{
-                    flex: 1,
-                    flexDirection: 'column',
-                }}
-            />
-
-
-
-
-
-
+            <View style={local.listWrap}>
+                <FlatList
+                    horizontal={false}
+                    data={lineItems}
+                    renderItem={(data) => (
+                        <InventoryCountLine
+                            readOnly={route.params?.readOnly}
+                            item={data.item}
+                            key={data.index}
+                            onUpdate={updateItem}
+                            onDelete={deleteItem}
+                        />
+                    )}
+                    style={local.list}
+                    contentContainerStyle={local.listContent}
+                />
+            </View>
             {/* <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                 {route.params?.readOnly && (
                     <View
@@ -618,14 +596,11 @@ export function InventoryCountForm({
             /> */}
 
             <View
-                style={{
-                    margin: 10,
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                }}
+                style={local.footerRow}
             >
                 {!route.params?.readOnly && (
-                    <>
+                    <UICard tone="muted" style={local.footerCard}>
+                    <View style={local.footerButtons}>
                         <UIActions
                             busy={busy}
                             submitAction={() => save(false)}
@@ -651,12 +626,84 @@ export function InventoryCountForm({
                                 }}
                             />
                         </View>
-                    </>
+                    </View>
+                    </UICard>
                 )}
             </View>
         </View>
-        // </FormProvider>
+        </UIScreen>
     );
 }
+
+const useStyles = (
+    tokens: ReturnType<typeof useDesignTokens>,
+    colors: Record<string, string>
+) =>
+    StyleSheet.create({
+        headerCard: {
+            marginHorizontal: tokens.spacing.md,
+            marginTop: tokens.spacing.md,
+            marginBottom: tokens.spacing.sm,
+        },
+        readOnlyBanner: {
+            width: '65%',
+            padding: 8,
+            marginVertical: 10,
+            borderRadius: 10,
+            backgroundColor: colors.warning,
+        },
+        searchWrap: {
+            flex: 3,
+            padding: 10,
+        },
+        searchInputWrap: {
+            flex: 1,
+            maxWidth: 900,
+        },
+        modeButtonsRow: {
+            flexDirection: 'row',
+            marginLeft: 8,
+            alignItems: 'center',
+        },
+        modeButton: {
+            paddingHorizontal: 12,
+            borderRadius: 18,
+        },
+        progressBlock: {
+            marginTop: 6,
+        },
+        progressTrack: {
+            marginTop: 6,
+            height: 8,
+            width: '100%',
+            borderRadius: 8,
+            backgroundColor: colors.grey5,
+            overflow: 'hidden',
+        },
+        footerRow: {
+            marginHorizontal: tokens.spacing.md,
+            marginBottom: tokens.spacing.md,
+        },
+        listWrap: {
+            flex: 1,
+            marginHorizontal: tokens.spacing.md,
+        },
+        list: {
+            flex: 1,
+            flexDirection: 'column',
+        },
+        listContent: {
+            paddingTop: tokens.spacing.xs,
+            paddingBottom: tokens.spacing.sm,
+        },
+        footerCard: {
+            paddingVertical: tokens.spacing.sm,
+            paddingHorizontal: tokens.spacing.md,
+        },
+        footerButtons: {
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+        },
+    });
 
 export default InventoryCountForm;
