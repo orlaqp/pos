@@ -2,21 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { SalesSummary } from '@pos/shared/models';
 import {
     DateRange,
+    UICard,
     UIDateRange,
     UIEmptyState,
+    UIScreen,
     UISpinner,
+    UIStack,
 } from '@pos/shared/ui-native';
-import { useSharedStyles } from '@pos/theme/native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import moment from 'moment';
 
-import { View, ScrollView } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LineChartComponent } from '../line-chart/line-chart';
 import ListWidget from '../list-widget/list-widget';
 import PieChart from '../pie-chart/pie-chart';
 import Widget from '../widget/widget';
 
 import { getSalesSummaryForRange } from '@pos/reporting/data-access';
-import { sortDescListBy, sortListBy } from '@pos/shared/utils';
+import { sortDescListBy } from '@pos/shared/utils';
 import { EACH } from '@pos/unit-of-measures/data-access';
 
 /* eslint-disable-next-line */
@@ -77,8 +80,11 @@ export const loadDashboardSummary = async (range?: DateRange) => {
     return sortDashboardSummary(summary);
 };
 
-export function Dashboard(props: DashboardProps) {
-    const styles = useSharedStyles();
+const DASHBOARD_LOAD_TIMEOUT_MS = 5000;
+
+export function Dashboard(_props: DashboardProps) {
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const [loading, setLoading] = useState<boolean>(true);
     const [dateRange, setDateRange] = useState<DateRange>({
         startDate: moment().startOf('day'),
@@ -87,97 +93,181 @@ export function Dashboard(props: DashboardProps) {
     const [salesSummary, setSalesSummary] = useState<SalesSummary>();
 
     const updateDateRange = (range: DateRange) => {
-        console.log('Range changed to: ', range);
         setDateRange(range);
     };
 
     useEffect(() => {
-        console.log('date range:', dateRange);
+        let cancelled = false;
         setLoading(true);
 
-        loadDashboardSummary(dateRange).then((summary) => {
-            console.log('Result', summary);
+        (async () => {
+            try {
+                const timeoutSummary = new Promise<undefined>((resolve) => {
+                    setTimeout(() => resolve(undefined), DASHBOARD_LOAD_TIMEOUT_MS);
+                });
+                const summary = await Promise.race([
+                    loadDashboardSummary(dateRange),
+                    timeoutSummary,
+                ]);
+                if (!cancelled) {
+                    setSalesSummary(summary);
+                }
+            } catch {
+                if (!cancelled) {
+                    setSalesSummary(undefined);
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        })();
 
-            setSalesSummary(summary);
-            setLoading(false);
-        });
+        return () => {
+            cancelled = true;
+        };
     }, [dateRange]);
 
-    if (loading)
-        return (
-            <View style={[styles.page, { paddingTop: 50 }]}>
-                <UISpinner size="small" message="Loading..." />
-            </View>
-        );
-
     return (
-        <ScrollView style={[styles.page, { padding: 20 }]}>
-            <UIDateRange
-                initialRange={dateRange}
-                onRangeChange={updateDateRange}
-            />
+        <UIScreen padded>
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={styles.container}>
+                    <UIStack spacing="lg">
+                        <UICard tone="muted" radius="lg">
+                            <Text style={styles.title}>Dashboard</Text>
+                            <Text style={styles.subtitle}>
+                                Sales performance and trends across the selected period.
+                            </Text>
+                            <UIDateRange
+                                initialRange={dateRange}
+                                onRangeChange={updateDateRange}
+                            />
+                        </UICard>
 
-            {!salesSummary ||
-                (salesSummary.totalAmount === 0 && (
-                    <View style={[styles.page, { paddingTop: 50 }]}>
-                        <UIEmptyState text="No data found for this date range" />
-                    </View>
-                ))}
+                        {loading && (
+                            <UICard style={styles.centerBlock}>
+                                <UISpinner size="small" message="Loading..." />
+                            </UICard>
+                        )}
 
-            {hasSalesData(salesSummary) && (
-                <>
-                    <View style={styles.row}>
-                        <View style={{ flex: 1 }}>
-                            <Widget
-                                backgroundColor="#1976d2"
-                                icon="trending-up"
-                                text="Gross Income"
-                                value={`$ ${salesSummary.totalAmount.toFixed(
-                                    2
-                                )}`}
-                            />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Widget
-                                backgroundColor="#e91e63"
-                                icon="sigma"
-                                text="Total Sales"
-                                value={salesSummary.totalOrders.toString()}
-                            />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Widget
-                                backgroundColor="#43a047"
-                                icon="account-multiple-plus-outline"
-                                text="New Customers"
-                                value="N/A"
-                            />
-                        </View>
-                    </View>
-                    <View style={[styles.row, styles.smallMargin]}>
-                        <View style={{ flex: 2 }}>
-                            <PieChart
-                                header="Top 5 Products"
-                                items={buildTopProductItems(salesSummary)}
-                            />
-                        </View>
-                        <View style={{ flex: 1, marginLeft: 40 }}>
-                            <ListWidget
-                                header="Top 5 Employees"
-                                items={buildTopEmployeeItems(salesSummary)}
-                            />
-                        </View>
-                    </View>
-                    <View style={[styles.row, styles.smallMargin]}>
-                        <LineChartComponent
-                            header="Revenue over time"
-                            data={buildRevenueOverTime(salesSummary)}
-                        />
-                    </View>
-                </>
-            )}
-        </ScrollView>
+                        {!loading && !hasSalesData(salesSummary) && (
+                            <UICard tone="muted" style={styles.centerBlock}>
+                                <UIEmptyState text="No data found for this date range" />
+                            </UICard>
+                        )}
+
+                        {!loading && hasSalesData(salesSummary) && (
+                            <>
+                                <View style={styles.metricsRow}>
+                                    <View style={styles.metricColumn}>
+                                        <Widget
+                                            backgroundColor={tokens.colors.accent}
+                                            icon="trending-up"
+                                            text="Gross Income"
+                                            value={`$ ${salesSummary.totalAmount.toFixed(
+                                                2
+                                            )}`}
+                                        />
+                                    </View>
+                                    <View style={styles.metricColumnSpaced}>
+                                        <Widget
+                                            backgroundColor={tokens.colors.warning}
+                                            icon="sigma"
+                                            text="Total Sales"
+                                            value={salesSummary.totalOrders.toString()}
+                                        />
+                                    </View>
+                                    <View style={styles.metricColumnSpaced}>
+                                        <Widget
+                                            backgroundColor={tokens.colors.success}
+                                            icon="account-multiple-plus-outline"
+                                            text="New Customers"
+                                            value="N/A"
+                                        />
+                                    </View>
+                                </View>
+
+                                <UICard>
+                                    <View style={styles.insightsRow}>
+                                        <View style={styles.insightsPrimary}>
+                                            <PieChart
+                                                header="Top 5 Products"
+                                                items={buildTopProductItems(salesSummary)}
+                                            />
+                                        </View>
+                                        <View style={styles.insightsSecondary}>
+                                            <ListWidget
+                                                header="Top 5 Employees"
+                                                items={buildTopEmployeeItems(salesSummary)}
+                                            />
+                                        </View>
+                                    </View>
+                                </UICard>
+
+                                <UICard>
+                                    <LineChartComponent
+                                        header="Revenue over time"
+                                        data={buildRevenueOverTime(salesSummary)}
+                                    />
+                                </UICard>
+                            </>
+                        )}
+                    </UIStack>
+                </View>
+            </ScrollView>
+        </UIScreen>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        scrollContent: {
+            paddingBottom: tokens.spacing.xl,
+            alignItems: 'center',
+        },
+        container: {
+            width: '100%',
+            maxWidth: 1240,
+        },
+        title: {
+            color: tokens.colors.textPrimary,
+            fontSize: 28,
+            fontWeight: '700',
+        },
+        subtitle: {
+            color: tokens.colors.textSecondary,
+            marginTop: tokens.spacing.xs,
+            marginBottom: tokens.spacing.sm,
+            fontSize: 15,
+        },
+        centerBlock: {
+            minHeight: 130,
+            justifyContent: 'center',
+        },
+        metricsRow: {
+            flexDirection: 'row',
+            marginTop: tokens.spacing.xs,
+        },
+        metricColumn: {
+            flex: 1,
+        },
+        metricColumnSpaced: {
+            flex: 1,
+            marginLeft: tokens.spacing.md,
+        },
+        insightsRow: {
+            flexDirection: 'row',
+        },
+        insightsPrimary: {
+            flex: 2,
+        },
+        insightsSecondary: {
+            flex: 1,
+            marginLeft: tokens.spacing.lg,
+        },
+    });
 
 export default Dashboard;

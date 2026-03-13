@@ -10,6 +10,9 @@ jest.mock('@pos/reporting/data-access', () => ({
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
+    UIScreen: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    UICard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    UIStack: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     UIDateRange: () => <>DateRange</>,
     UIEmptyState: ({ text }: { text: string }) => <>{text}</>,
     UISpinner: ({ message }: { message: string }) => <>{message}</>,

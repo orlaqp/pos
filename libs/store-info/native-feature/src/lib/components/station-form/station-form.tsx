@@ -57,56 +57,60 @@ export function StationForm({ navigation }: StationFormProps) {
     return (
         <UIScreen padded>
             <FormProvider {...form}>
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
-                >
-                    <UIStack spacing="lg">
-                        <UICard tone="muted" radius="lg">
-                            <Text style={styles.title}>Station Configuration</Text>
-                            <Text style={styles.subtitle}>
-                                Configure station identity used to generate order references.
-                            </Text>
-                        </UICard>
-
-                        <UICard>
+                <View style={styles.screen}>
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <View style={styles.container}>
                             <UIStack spacing="lg">
-                                <Text style={styles.sectionTitle}>Station Details</Text>
-                                <View style={styles.twoColumnRow}>
-                                    <View style={styles.column}>
-                                        <UIInput
-                                            name="currentDate"
-                                            label="Current Date (read only)"
-                                            placeholder="Current Date"
-                                            disabled={true}
-                                        />
-                                    </View>
-                                    <View style={styles.columnSpaced}>
-                                        <UIInput
-                                            name="orderNumber"
-                                            label="Order Number (read only)"
-                                            placeholder="Order Number"
-                                            disabled={true}
-                                        />
-                                    </View>
-                                </View>
+                                <UICard tone="muted" radius="lg">
+                                    <Text style={styles.title}>Station Configuration</Text>
+                                    <Text style={styles.subtitle}>
+                                        Configure station identity used to generate order references.
+                                    </Text>
+                                </UICard>
 
-                                <UIInput
-                                    name="stationNumber"
-                                    label="Station Number"
-                                    placeholder="Station Number"
-                                    rules={{ required: true }}
+                                <UICard>
+                                    <UIStack spacing="lg">
+                                        <Text style={styles.sectionTitle}>Station Details</Text>
+                                        <View style={styles.twoColumnRow}>
+                                            <View style={styles.column}>
+                                                <UIInput
+                                                    name="currentDate"
+                                                    label="Current Date (read only)"
+                                                    placeholder="Current Date"
+                                                    disabled={true}
+                                                />
+                                            </View>
+                                            <View style={styles.columnSpaced}>
+                                                <UIInput
+                                                    name="orderNumber"
+                                                    label="Order Number (read only)"
+                                                    placeholder="Order Number"
+                                                    disabled={true}
+                                                />
+                                            </View>
+                                        </View>
+
+                                        <UIInput
+                                            name="stationNumber"
+                                            label="Station Number"
+                                            placeholder="Station Number"
+                                            rules={{ required: true }}
+                                        />
+                                    </UIStack>
+                                </UICard>
+
+                                <UIActions
+                                    busy={busy}
+                                    submitAction={form.handleSubmit(save)}
+                                    cancelAction={confirmCancel}
                                 />
                             </UIStack>
-                        </UICard>
-
-                        <UIActions
-                            busy={busy}
-                            submitAction={form.handleSubmit(save)}
-                            cancelAction={confirmCancel}
-                        />
-                    </UIStack>
-                </ScrollView>
+                        </View>
+                    </ScrollView>
+                </View>
             </FormProvider>
         </UIScreen>
     );
@@ -114,11 +118,18 @@ export function StationForm({ navigation }: StationFormProps) {
 
 const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     StyleSheet.create({
+        screen: {
+            flex: 1,
+        },
         scrollContent: {
-            width: '64%',
-            alignSelf: 'center',
+            paddingHorizontal: tokens.spacing.xl,
             paddingVertical: tokens.spacing.lg,
             paddingBottom: tokens.spacing.xl,
+            alignItems: 'center',
+        },
+        container: {
+            width: '100%',
+            maxWidth: 1240,
         },
         title: {
             color: tokens.colors.textPrimary,

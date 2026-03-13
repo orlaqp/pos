@@ -1,9 +1,20 @@
-import { DateRange, UIDateRange, UISpinner } from '@pos/shared/ui-native';
-import { useSharedStyles } from '@pos/theme/native';
+import {
+    DateRange,
+    UICard,
+    UIDateRange,
+    UIEmptyState,
+    UIScreen,
+    UISpinner,
+    UIStack,
+} from '@pos/shared/ui-native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import * as RNFS from 'react-native-fs';
+import { Icon } from '@rneui/themed';
 
-import { FlatList, Text, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Share } from 'react-native';
 
 export interface ReportHeader {
     label: string;
@@ -19,32 +30,142 @@ export interface ReportViewerProps {
     total: number;
     headers: ReportHeader[];
     getData: (range: DateRange) => Promise<any[]>;
+    title?: string;
+    subtitle?: string;
 }
 
-export function ReportViewer({ getData, headers }: ReportViewerProps) {
-    const styles = useSharedStyles();
+const formatCellValue = (
+    value: unknown,
+    format?: ReportHeader['format']
+) => {
+    if (format === 'money') {
+        const amount = Number(value || 0);
+        return `$${amount.toFixed(2)}`;
+    }
+
+    if (value === undefined || value === null) return '-';
+    return String(value);
+};
+
+const getRowKey = (item: Record<string, unknown>, index: number) =>
+    String(item.id || item.orderNo || item.orderDate || index);
+
+const escapeCsv = (value: unknown) => {
+    const normalized = value === null || value === undefined ? '' : String(value);
+    const escaped = normalized.replace(/"/g, '""');
+    return `"${escaped}"`;
+};
+
+export const buildReportCsv = (
+    headers: ReportHeader[],
+    items: Record<string, unknown>[],
+    totals?: Record<string, number>
+) => {
+    const lines: string[] = [];
+    lines.push(headers.map((h) => escapeCsv(h.label)).join(','));
+
+    items.forEach((item) => {
+        lines.push(
+            headers
+                .map((h) => escapeCsv(formatCellValue(item[h.field], h.format)))
+                .join(',')
+        );
+    });
+
+    if (totals) {
+        const totalRow = headers.map((h, index) => {
+            if (h.sum) return escapeCsv(formatCellValue(totals[h.field], h.format));
+            if (index === 0) return escapeCsv('TOTAL');
+            return escapeCsv('');
+        });
+        lines.push(totalRow.join(','));
+    }
+
+    return lines.join('\n');
+};
+
+const toSafeFileSlug = (value: string) =>
+    value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+export function ReportViewer({
+    getData,
+    headers,
+    title = 'Sales Report',
+    subtitle = 'Filter by date range to review transactions.',
+}: ReportViewerProps) {
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const [loading, setLoading] = useState<boolean>(true);
     const [totals, setTotals] = useState<Record<string, number>>();
-    const [items, setItems] = useState<any[]>(true);
+    const [items, setItems] = useState<any[]>([]);
     const [dateRange, setDateRange] = useState<DateRange>({
         startDate: moment().startOf('day'),
         endDate: moment().endOf('day'),
     });
+    const selectedRangeLabel = `${dateRange.startDate.format('MM-DD-YYYY')}  ->  ${dateRange.endDate.format(
+        'MM-DD-YYYY'
+    )}`;
+
+    const exportToCsv = async () => {
+        try {
+            const filename = `${toSafeFileSlug(title || 'report')}-${moment().format(
+                'YYYYMMDD-HHmmss'
+            )}.csv`;
+            const path = `${RNFS.DocumentDirectoryPath}/${filename}`;
+            const csv = buildReportCsv(headers, items as Record<string, unknown>[], totals);
+
+            await RNFS.writeFile(path, csv, 'utf8');
+            await Share.share({
+                title: filename,
+                url: `file://${path}`,
+                message: `Exported report: ${filename}`,
+            });
+        } catch {
+            Alert.alert('Export failed', 'Could not generate CSV file.');
+        }
+    };
 
     useEffect(() => {
+        let cancelled = false;
         setLoading(true);
-        getData(dateRange).then((res) => setItems(res));
-        setLoading(false);
+
+        getData(dateRange)
+            .then((res) => {
+                if (!cancelled) {
+                    setItems(res || []);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setItems([]);
+                }
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
     }, [getData, dateRange]);
 
     useEffect(() => {
-        if (!items.length) return;
+        if (!items.length) {
+            setTotals(undefined);
+            return;
+        }
 
         const totals: Record<string, number> = {};
         items.reduce((total, item) => {
             headers.forEach((h) => {
                 if (h.sum) {
-                    total[h.field] = (total[h.field] || 0) + item[h.field];
+                    total[h.field] = (total[h.field] || 0) + Number(item[h.field] || 0);
                 }
             });
 
@@ -54,103 +175,222 @@ export function ReportViewer({ getData, headers }: ReportViewerProps) {
         setTotals(totals);
     }, [headers, items]);
 
-    if (loading)
-        return (
-            <View style={[styles.page, { paddingTop: 50 }]}>
-                <UISpinner size="small" message="Loading..." />
-            </View>
-        );
-
     return (
-        <View style={[styles.page, { flexDirection: 'column', margin: 20 }]}>
-            <View style={{ flex: 1, zIndex: 2000 }}>
-                <UIDateRange
-                    initialRange={dateRange}
-                    onRangeChange={setDateRange}
-                />
-            </View>
-
-            <View
-                style={{
-                    flex: 7,
-                    backgroundColor: styles.dataRow.backgroundColor,
-                    borderRadius: 5,
-                    marginHorizontal: 150,
-                    paddingHorizontal: 30,
-                    // paddingVertical: 20,
-                }}
-            >
-                <View
-                    style={{
-                        flexDirection: 'row',
-                        marginBottom: 15,
-                        flex: 0.2,
-                    }}
-                >
-                    {headers.map((h, idx) => (
-                        <View key={idx} style={{ flex: h.width }}>
-                            <Text
-                                style={[
-                                    styles.secondaryText,
-                                    { textAlign: h.align },
-                                ]}
-                            >
-                                {h.label}
-                            </Text>
-                        </View>
-                    ))}
-                </View>
-
-                <View style={{ flex: 6 }}>
-                    <FlatList
-                        data={items}
-                        renderItem={(data: any, idx: number) => (
-                            <View key={idx} style={{ flexDirection: 'row' }}>
-                                {headers.map((h) => (
-                                    <View
-                                        style={{
-                                            flex: h.width,
-                                            marginBottom: 5,
-                                        }}
+        <UIScreen padded>
+            <View style={styles.screen}>
+                <View style={styles.container}>
+                    <UIStack spacing="lg">
+                        <UICard tone="muted" radius="lg">
+                            <Text style={styles.title}>{title}</Text>
+                            <Text style={styles.subtitle}>{subtitle}</Text>
+                            <UIDateRange
+                                initialRange={dateRange}
+                                onRangeChange={setDateRange}
+                                showSummary={false}
+                                rightAction={
+                                    <Pressable
+                                        testID="report-export-csv-btn"
+                                        style={styles.exportButton}
+                                        onPress={exportToCsv}
                                     >
-                                        <Text
-                                            style={[
-                                                styles.primaryText,
-                                                { textAlign: h.align },
-                                            ]}
-                                        >
-                                            {h.format === 'money'
-                                                ? `$${data.item[
-                                                      h.field
-                                                  ].toFixed(2)}`
-                                                : data.item[h.field]}
-                                        </Text>
-                                    </View>
-                                ))}
-                            </View>
-                        )}
-                    />
-                </View>
+                                        <Icon
+                                            name="download-outline"
+                                            type="ionicon"
+                                            size={14}
+                                            color={tokens.colors.accent}
+                                        />
+                                        <Text style={styles.exportButtonText}>Export</Text>
+                                    </Pressable>
+                                }
+                            />
+                        </UICard>
 
-                {totals && (
-                    <View style={{ flex: .3 }}>
-                        {headers.map((h, idx) => (
-                            <View key={idx} style={{ flex: h.width }}>
-                                <Text
-                                    style={[
-                                        styles.primaryText,
-                                        { textAlign: h.align, fontSize: 16, fontWeight: 'bold', marginTop: -20 },
-                                    ]}
-                                >
-                                    {h.sum ? `$${totals[h.field].toFixed(2)}` : ''}
-                                </Text>
+                        <View style={styles.reportCardWrap}>
+                            <View style={styles.rangeTagWrap}>
+                                <View style={styles.rangeTag}>
+                                    <Text style={styles.rangeTagText}>{selectedRangeLabel}</Text>
+                                </View>
                             </View>
-                        ))}
-                    </View>
-                )}
+                            <UICard>
+                                <View style={styles.tableHeaderRow}>
+                                    {headers.map((h) => (
+                                        <View key={h.field} style={[styles.colCell, { flex: h.width }]}>
+                                            <Text style={[styles.colHeader, { textAlign: h.align }]}>
+                                                {h.label}
+                                            </Text>
+                                        </View>
+                                    ))}
+                                </View>
+
+                                {loading && (
+                                    <View style={styles.stateWrap}>
+                                        <UISpinner size="small" message="Loading..." />
+                                    </View>
+                                )}
+
+                                {!loading && !items.length && (
+                                    <View style={styles.stateWrap}>
+                                        <UIEmptyState text="No sales found for this date range" />
+                                    </View>
+                                )}
+
+                                {!loading && !!items.length && (
+                                    <>
+                                        <FlatList
+                                            data={items}
+                                            keyExtractor={(item, index) =>
+                                                getRowKey(item as Record<string, unknown>, index)
+                                            }
+                                            renderItem={({ item }) => (
+                                                <View style={styles.dataRow}>
+                                                    {headers.map((h) => (
+                                                        <View key={h.field} style={[styles.colCell, { flex: h.width }]}>
+                                                            <Text style={[styles.colValue, { textAlign: h.align }]}>
+                                                                {formatCellValue(item[h.field], h.format)}
+                                                            </Text>
+                                                        </View>
+                                                    ))}
+                                                </View>
+                                            )}
+                                        />
+
+                                        {!!totals && (
+                                            <View style={styles.totalRow}>
+                                                {headers.map((h) => (
+                                                    <View key={h.field} style={[styles.colCell, { flex: h.width }]}>
+                                                        <Text
+                                                            style={[
+                                                                styles.totalValue,
+                                                                { textAlign: h.align },
+                                                            ]}
+                                                        >
+                                                            {h.sum
+                                                                ? formatCellValue(
+                                                                      totals[h.field],
+                                                                      h.format
+                                                                  )
+                                                                : ''}
+                                                        </Text>
+                                                    </View>
+                                                ))}
+                                            </View>
+                                        )}
+                                    </>
+                                )}
+                            </UICard>
+                        </View>
+                    </UIStack>
+                </View>
             </View>
-        </View>
+        </UIScreen>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        screen: {
+            flex: 1,
+        },
+        container: {
+            width: '100%',
+        },
+        title: {
+            color: tokens.colors.textPrimary,
+            fontSize: 26,
+            fontWeight: '700',
+        },
+        subtitle: {
+            color: tokens.colors.textSecondary,
+            fontSize: 14,
+            marginTop: tokens.spacing.xs,
+            marginBottom: tokens.spacing.sm,
+        },
+        exportButton: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderRadius: tokens.radii.md,
+            borderWidth: 1,
+            borderColor: `${tokens.colors.accent}99`,
+            backgroundColor: `${tokens.colors.accent}22`,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.xs,
+        },
+        exportButtonText: {
+            color: tokens.colors.accent,
+            fontSize: 13,
+            fontWeight: '700',
+            marginLeft: tokens.spacing.xs,
+            letterSpacing: 0.3,
+            textTransform: 'uppercase',
+        },
+        tableHeaderRow: {
+            flexDirection: 'row',
+            paddingTop: tokens.spacing.md,
+            paddingBottom: tokens.spacing.sm,
+            borderBottomWidth: 1,
+            borderBottomColor: tokens.colors.border,
+        },
+        reportCardWrap: {
+            position: 'relative',
+            paddingTop: tokens.spacing.sm,
+        },
+        rangeTagWrap: {
+            position: 'absolute',
+            top: 0,
+            width: '100%',
+            alignItems: 'center',
+            zIndex: 2,
+        },
+        rangeTag: {
+            borderRadius: tokens.radii.lg,
+            borderWidth: 1,
+            borderColor: `${tokens.colors.warning}99`,
+            backgroundColor: `${tokens.colors.warning}22`,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: 5,
+        },
+        rangeTagText: {
+            color: tokens.colors.warning,
+            fontSize: 12,
+            fontWeight: '700',
+            letterSpacing: 0.3,
+        },
+        colCell: {
+            paddingHorizontal: tokens.spacing.sm,
+        },
+        colHeader: {
+            color: tokens.colors.textMuted,
+            fontSize: 14,
+            fontWeight: '700',
+            textTransform: 'uppercase',
+            letterSpacing: 0.4,
+        },
+        dataRow: {
+            flexDirection: 'row',
+            paddingVertical: tokens.spacing.sm,
+            borderBottomWidth: 1,
+            borderBottomColor: `${tokens.colors.border}66`,
+        },
+        colValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 16,
+        },
+        totalRow: {
+            flexDirection: 'row',
+            marginTop: tokens.spacing.sm,
+            paddingTop: tokens.spacing.sm,
+            borderTopWidth: 1,
+            borderTopColor: tokens.colors.border,
+        },
+        totalValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 17,
+            fontWeight: '700',
+        },
+        stateWrap: {
+            minHeight: 160,
+            justifyContent: 'center',
+        },
+    });
 
 export default ReportViewer;

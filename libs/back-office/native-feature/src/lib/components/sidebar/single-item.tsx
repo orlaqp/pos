@@ -103,9 +103,10 @@ const useStyles = (colors: Record<string, string>) =>
             width: 26,
             alignItems: 'center',
             justifyContent: 'center',
+            marginRight: 6,
         },
         content: {
-            marginLeft: 6,
+            marginLeft: 0,
         },
         title: {
             color: colors.grey1,

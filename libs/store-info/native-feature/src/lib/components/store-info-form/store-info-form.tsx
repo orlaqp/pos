@@ -69,73 +69,77 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
     return (
         <UIScreen padded>
             <FormProvider {...form}>
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
-                >
-                    <UIStack spacing="lg">
-                        <UICard tone="muted" radius="lg">
-                            <Text style={styles.title}>Store Profile</Text>
-                            <Text style={styles.subtitle}>
-                                Manage store identity and contact details used across receipts and reports.
-                            </Text>
-                        </UICard>
-
-                        <UICard>
+                <View style={styles.screen}>
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <View style={styles.container}>
                             <UIStack spacing="lg">
-                                <Text style={styles.sectionTitle}>Business Details</Text>
-                                <View style={styles.twoColumnRow}>
-                                    <View style={styles.column}>
-                                        <UIInput name="name" label="Name" placeholder="Name" rules={{ required: true }} />
-                                    </View>
-                                    <View style={styles.columnSpaced}>
-                                        <UIInput name="email" label="Email" placeholder="Email" rules={{ required: true }} />
-                                    </View>
-                                </View>
-                                <UIInput name="address" label="Address" placeholder="Address" rules={{ required: true }} />
-                                <View style={styles.twoColumnRow}>
-                                    <View style={styles.column}>
-                                        <UIInput name="city" label="City" placeholder="City" rules={{ required: true }} />
-                                    </View>
-                                    <View style={styles.columnSpaced}>
-                                        <UIInput name="state" label="State" placeholder="State" rules={{ required: true }} />
-                                    </View>
-                                </View>
-                                <View style={styles.threeColumnRow}>
-                                    <View style={styles.column}>
-                                        <UIInput name="zipCode" label="Zip Code" placeholder="Zip Code" rules={{ required: true }} />
-                                    </View>
-                                    <View style={styles.columnSpaced}>
-                                        <UIInput name="phone" label="Phone" placeholder="Phone" rules={{ required: true }} />
-                                    </View>
-                                    <View style={styles.columnSpaced}>
-                                        <UIInput name="fax" label="Fax" placeholder="Fax" rules={{ required: true }} />
-                                    </View>
-                                </View>
-                            </UIStack>
-                        </UICard>
+                                <UICard tone="muted" radius="lg">
+                                    <Text style={styles.title}>Store Profile</Text>
+                                    <Text style={styles.subtitle}>
+                                        Manage store identity and contact details used across receipts and reports.
+                                    </Text>
+                                </UICard>
 
-                        <UICard tone="muted">
-                            <UIStack spacing="md">
-                                <Text style={styles.sectionTitle}>Receipt Footer</Text>
-                                <UIInput
-                                    name="disclaimer"
-                                    label="Disclaimer"
-                                    placeholder="Disclaimer"
-                                    multiline={true}
-                                    numberOfLines={3}
-                                    style={styles.disclaimerInput}
+                                <UICard>
+                                    <UIStack spacing="lg">
+                                        <Text style={styles.sectionTitle}>Business Details</Text>
+                                        <View style={styles.twoColumnRow}>
+                                            <View style={styles.column}>
+                                                <UIInput name="name" label="Name" placeholder="Name" rules={{ required: true }} />
+                                            </View>
+                                            <View style={styles.columnSpaced}>
+                                                <UIInput name="email" label="Email" placeholder="Email" rules={{ required: true }} />
+                                            </View>
+                                        </View>
+                                        <UIInput name="address" label="Address" placeholder="Address" rules={{ required: true }} />
+                                        <View style={styles.twoColumnRow}>
+                                            <View style={styles.column}>
+                                                <UIInput name="city" label="City" placeholder="City" rules={{ required: true }} />
+                                            </View>
+                                            <View style={styles.columnSpaced}>
+                                                <UIInput name="state" label="State" placeholder="State" rules={{ required: true }} />
+                                            </View>
+                                        </View>
+                                        <View style={styles.threeColumnRow}>
+                                            <View style={styles.column}>
+                                                <UIInput name="zipCode" label="Zip Code" placeholder="Zip Code" rules={{ required: true }} />
+                                            </View>
+                                            <View style={styles.columnSpaced}>
+                                                <UIInput name="phone" label="Phone" placeholder="Phone" rules={{ required: true }} />
+                                            </View>
+                                            <View style={styles.columnSpaced}>
+                                                <UIInput name="fax" label="Fax" placeholder="Fax" rules={{ required: true }} />
+                                            </View>
+                                        </View>
+                                    </UIStack>
+                                </UICard>
+
+                                <UICard tone="muted">
+                                    <UIStack spacing="md">
+                                        <Text style={styles.sectionTitle}>Receipt Footer</Text>
+                                        <UIInput
+                                            name="disclaimer"
+                                            label="Disclaimer"
+                                            placeholder="Disclaimer"
+                                            multiline={true}
+                                            numberOfLines={3}
+                                            style={styles.disclaimerInput}
+                                        />
+                                    </UIStack>
+                                </UICard>
+
+                                <UIActions
+                                    busy={busy}
+                                    submitAction={form.handleSubmit(save)}
+                                    cancelAction={confirmCancel}
                                 />
                             </UIStack>
-                        </UICard>
-
-                        <UIActions
-                            busy={busy}
-                            submitAction={form.handleSubmit(save)}
-                            cancelAction={confirmCancel}
-                        />
-                    </UIStack>
-                </ScrollView>
+                        </View>
+                    </ScrollView>
+                </View>
             </FormProvider>
         </UIScreen>
     );
@@ -143,11 +147,18 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
 
 const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     StyleSheet.create({
+        screen: {
+            flex: 1,
+        },
         scrollContent: {
-            width: '64%',
-            alignSelf: 'center',
+            paddingHorizontal: tokens.spacing.xl,
             paddingVertical: tokens.spacing.lg,
             paddingBottom: tokens.spacing.xl,
+            alignItems: 'center',
+        },
+        container: {
+            width: '100%',
+            maxWidth: 1240,
         },
         title: {
             color: tokens.colors.textPrimary,

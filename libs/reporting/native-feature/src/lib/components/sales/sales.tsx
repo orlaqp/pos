@@ -2,17 +2,14 @@ import React from 'react';
 import { getSalesForRange } from '@pos/reporting/data-access';
 import { OrderStatus } from '@pos/shared/models';
 import { DateRange } from '@pos/shared/ui-native';
-import { useSharedStyles } from '@pos/theme/native';
 
-import { View } from 'react-native';
 import ReportViewer, { ReportHeader } from '../report-viewer/report-viewer';
 import moment from 'moment';
 
 /* eslint-disable-next-line */
 export interface SalesProps {}
 
-export function Sales(props: SalesProps) {
-    const styles = useSharedStyles();
+export function Sales(_props: SalesProps) {
     const headers: ReportHeader[] = [
         { label: 'Number', field: 'orderNo', width: 3 },
         { label: 'Employee', field: 'employee', width: 3 },
@@ -34,8 +31,11 @@ export function Sales(props: SalesProps) {
     };
 
     return (
-        <View style={styles.page}>
-            <ReportViewer getData={getData} headers={headers} />
-        </View>
+        <ReportViewer
+            title="Sale List"
+            subtitle="Review paid transactions and totals for the selected period."
+            getData={getData}
+            headers={headers}
+        />
     );
 }
