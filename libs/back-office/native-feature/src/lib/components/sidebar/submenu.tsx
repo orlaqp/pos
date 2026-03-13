@@ -1,66 +1,132 @@
 import React from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { Icon, ListItem, useTheme } from '@rneui/themed';
-import { SidebarItem } from './definitions';
 import { SingleItem, SingleItemProps } from './single-item';
-import { View } from 'react-native';
 
 export interface SubmenuProps extends SingleItemProps {
-    expanded: SidebarItem | null | undefined;
-    setExpanded: (item?: SidebarItem | null | undefined) => void;
+    expandedId?: string;
+    setExpandedId: (itemId?: string) => void;
 }
 
 export function Submenu({
     item,
-    selected,
+    selectedId,
     setSelected,
-    expanded,
-    setExpanded,
+    expandedId,
+    setExpandedId,
 }: SubmenuProps) {
     const theme = useTheme();
-    // const toggle = (sidebar) => setExpanded(expanded === item ? null : item);
+    const styles = useStyles(theme.theme.colors);
+    const hasActiveChild = !!item.children?.some((c) => c.id === selectedId);
+    const isExpanded = expandedId === item.id;
+    const parentActive = hasActiveChild || selectedId === item.id;
 
     return (
         <ListItem.Accordion
+            containerStyle={[
+                styles.accordionContainer,
+                parentActive ? styles.accordionContainerActive : undefined,
+            ]}
             content={
-                <>
+                <View style={styles.headerContent}>
                     {item.icon && (
-                        <Icon
-                            name={item.icon}
-                            type="material-community"
-                            color={selected && item.children?.includes(selected) ? theme.theme.colors.grey0 : theme.theme.colors.grey3}
-                        />
-                    )}
-                    <ListItem.Content style={{ marginLeft: 20 }}>
-                        <ListItem.Title
-                            style={{
-                                color: theme.theme.colors.grey1,
-                                fontWeight: selected && item.children?.includes(selected) ? 'bold' : 'normal',
-                                backgroundColor:
-                                    item === selected
+                        <View style={styles.iconSlot}>
+                            <Icon
+                                name={item.icon}
+                                type="material-community"
+                                size={20}
+                                color={
+                                    parentActive
                                         ? theme.theme.colors.primary
-                                        : 'transparent',
-                            }}
+                                        : theme.theme.colors.grey3
+                                }
+                            />
+                        </View>
+                    )}
+                    <ListItem.Content style={styles.headerTitleContent}>
+                        <ListItem.Title
+                            style={[
+                                styles.headerTitle,
+                                parentActive && styles.headerTitleActive,
+                            ]}
                         >
                             {item.title}
                         </ListItem.Title>
                     </ListItem.Content>
-                </>
+                </View>
             }
-            isExpanded={expanded === item}
-            onPress={() => setExpanded(expanded === item ? undefined : item)}
+            isExpanded={isExpanded}
+            onPress={() => setExpandedId(isExpanded ? undefined : item.id)}
         >
-            <View style={{ marginLeft: 20 }}>
-                {item.children?.map((c, idx) => (
+            <View style={styles.childrenContainer}>
+                <View style={styles.childrenRail} />
+                <View style={styles.childrenItems}>
+                    {item.children?.map((c) => (
                     <SingleItem
                         key={c.id}
                         chevron
+                        compact
                         item={c}
-                        selected={selected}
+                        selectedId={selectedId}
+                        isActive={selectedId === c.id}
                         setSelected={setSelected}
                     />
                 ))}
+                </View>
             </View>
         </ListItem.Accordion>
     );
 }
+
+const useStyles = (colors: Record<string, string>) =>
+    StyleSheet.create({
+        accordionContainer: {
+            borderRadius: 10,
+            borderLeftWidth: 3,
+            borderLeftColor: 'transparent',
+            paddingHorizontal: 10,
+            minHeight: 52,
+            marginBottom: 6,
+        },
+        accordionContainerActive: {
+            backgroundColor: `${colors.primary}22`,
+            borderLeftColor: colors.primary,
+        },
+        headerContent: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        iconSlot: {
+            width: 26,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        headerTitleContent: {
+            marginLeft: 6,
+        },
+        headerTitle: {
+            color: colors.grey1,
+            fontWeight: '500',
+            fontSize: 17,
+        },
+        headerTitleActive: {
+            color: colors.primary,
+            fontWeight: '700',
+        },
+        childrenContainer: {
+            flexDirection: 'row',
+            marginTop: 4,
+            marginLeft: 12,
+            marginBottom: 2,
+        },
+        childrenRail: {
+            width: 1,
+            backgroundColor: `${colors.grey4}99`,
+            marginRight: 10,
+            marginLeft: 3,
+        },
+        childrenItems: {
+            flex: 1,
+        },
+    });

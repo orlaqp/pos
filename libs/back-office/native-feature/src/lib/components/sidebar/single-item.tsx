@@ -1,54 +1,124 @@
 import React from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Icon, ListItem, useTheme } from '@rneui/themed';
 import { SidebarItem } from './definitions';
 
 export interface SingleItemProps {
-    key: string;
     chevron?: boolean;
+    compact?: boolean;
     item: SidebarItem;
-    selected: SidebarItem | null;
+    selectedId: string | null;
+    isActive?: boolean;
     setSelected: (item: SidebarItem) => void;
 }
 
 export function SingleItem({
     chevron,
+    compact,
     item,
-    selected,
+    selectedId,
+    isActive,
     setSelected,
 }: SingleItemProps) {
     const theme = useTheme();
+    const styles = useStyles(theme.theme.colors);
+    const active = isActive ?? selectedId === item.id;
+
     return (
         <ListItem
-            fileKey={item.id}
-            onPress={() => selected !== item && setSelected(item)}
+            testID={`sidebar-item-${item.id}`}
+            onPress={() => selectedId !== item.id && setSelected(item)}
+            containerStyle={[
+                styles.containerBase,
+                compact ? styles.containerCompact : styles.containerRegular,
+                active ? styles.containerActive : styles.containerInactive,
+            ]}
         >
             {item.icon && (
-                <Icon
-                    name={item.icon}
-                    type="material-community"
-                    color={item === selected ? theme.theme.colors.grey0 : theme.theme.colors.grey3}
-                />
+                <View style={styles.iconSlot}>
+                    <Icon
+                        name={item.icon}
+                        type="material-community"
+                        size={compact ? 17 : 20}
+                        color={
+                            active
+                                ? theme.theme.colors.primary
+                                : theme.theme.colors.grey3
+                        }
+                    />
+                </View>
             )}
             <ListItem.Content
-                style={{
-                    paddingLeft: 10,
-                    borderLeftWidth: 4,
-                    borderLeftColor: item === selected ? theme.theme.colors.primary : 'transparent',
-
-                }}
+                style={styles.content}
             >
                 <ListItem.Title
                     style={[
-                        {
-                            color: item === selected ? theme.theme.colors.primary : theme.theme.colors.grey1,
-                            fontWeight: item === selected ? 'bold' : 'normal'
-                        },
+                        styles.title,
+                        compact && styles.titleCompact,
+                        active && styles.titleActive,
                     ]}
                 >
                     {item.title}
                 </ListItem.Title>
             </ListItem.Content>
-            {chevron && <ListItem.Chevron color={item === selected ? theme.theme.colors.primary : theme.theme.colors.grey5} />}
+            {chevron && (
+                <ListItem.Chevron
+                    color={
+                        active
+                            ? theme.theme.colors.primary
+                            : theme.theme.colors.grey4
+                    }
+                />
+            )}
         </ListItem>
     );
 }
+
+const useStyles = (colors: Record<string, string>) =>
+    StyleSheet.create({
+        containerBase: {
+            borderRadius: 10,
+            borderLeftWidth: 3,
+            marginBottom: 6,
+        },
+        containerRegular: {
+            minHeight: 52,
+            paddingHorizontal: 10,
+            paddingVertical: 8,
+        },
+        containerCompact: {
+            minHeight: 42,
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+        },
+        containerActive: {
+            backgroundColor: `${colors.primary}22`,
+            borderLeftColor: colors.primary,
+        },
+        containerInactive: {
+            backgroundColor: 'transparent',
+            borderLeftColor: 'transparent',
+        },
+        iconSlot: {
+            width: 26,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        content: {
+            marginLeft: 6,
+        },
+        title: {
+            color: colors.grey1,
+            fontWeight: '500',
+            fontSize: 17,
+        },
+        titleCompact: {
+            fontSize: 15,
+            color: colors.grey2,
+            fontWeight: '500',
+        },
+        titleActive: {
+            color: colors.primary,
+            fontWeight: '700',
+        },
+    });

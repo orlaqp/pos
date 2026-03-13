@@ -7,6 +7,7 @@ export const menuItems: SidebarItem[] = [
         title: 'Dashboard',
         icon: 'view-dashboard-outline',
         role: Role.Admin,
+        group: 'Core',
     },
     // {
     //     id: '2',
@@ -25,18 +26,21 @@ export const menuItems: SidebarItem[] = [
             { id: '3-3', title: 'By Product' },
         ],
         role: Role.Admin,
+        group: 'Core',
     },
     {
         id: '8',
         title: 'Employees',
         icon: 'account-group-outline',
         role: Role.Admin,
+        group: 'Management',
     },
     {
         id: '5',
         title: 'Products',
         icon: 'qrcode',
         role: Role.Admin,
+        group: 'Management',
         children: [
             { id: '5-1', title: 'Products' },
             { id: '5-2', title: 'Categories' },
@@ -54,6 +58,7 @@ export const menuItems: SidebarItem[] = [
             { id: '4-3', title: 'Receives' },
         ],
         role: Role.Admin,
+        group: 'Management',
     },
     // {
     //     id: '6',
@@ -70,6 +75,7 @@ export const menuItems: SidebarItem[] = [
         title: 'Settings',
         icon: 'cog-outline',
         role: Role.Admin,
+        group: 'Configuration',
         children: [
             { id: '7-0', title: 'General' },
             { id: '7-1', title: 'Store' },

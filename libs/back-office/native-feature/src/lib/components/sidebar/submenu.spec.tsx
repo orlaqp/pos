@@ -4,14 +4,32 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { Pressable, Text, View } from 'react-native';
 
 jest.mock('./single-item', () => ({
-  SingleItem: ({ item }: { item: { title: string } }) => <Text>{item.title}</Text>,
+  SingleItem: ({
+    item,
+    isActive,
+  }: {
+    item: { title: string };
+    isActive?: boolean;
+  }) => <Text>{`${item.title}:${isActive ? 'active' : 'inactive'}`}</Text>,
 }));
 
 jest.mock('@rneui/themed', () => {
   const ListItem: any = {};
-  ListItem.Accordion = ({ content, onPress, children, isExpanded }: { content: React.ReactNode; onPress: () => void; children: React.ReactNode; isExpanded: boolean }) => (
+  ListItem.Accordion = ({
+    content,
+    onPress,
+    children,
+    isExpanded,
+    containerStyle,
+  }: {
+    content: React.ReactNode;
+    onPress: () => void;
+    children: React.ReactNode;
+    isExpanded: boolean;
+    containerStyle?: unknown;
+  }) => (
     <View>
-      <Pressable testID="submenu-toggle" onPress={onPress}>
+      <Pressable testID="submenu-toggle" onPress={onPress} style={containerStyle}>
         {content}
       </Pressable>
       {isExpanded ? <View testID="submenu-children">{children}</View> : null}
@@ -43,39 +61,51 @@ describe('Submenu', () => {
   };
 
   it('renders children when expanded and toggles collapse', () => {
-    const setExpanded = jest.fn();
+    const setExpandedId = jest.fn();
     const { getByTestId, getByText } = render(
       <Submenu
-        key="i"
         item={parent}
-        selected={null}
+        selectedId={null}
         setSelected={jest.fn()}
-        expanded={parent}
-        setExpanded={setExpanded}
+        expandedId="i"
+        setExpandedId={setExpandedId}
       />
     );
 
     expect(getByTestId('submenu-children')).toBeTruthy();
-    expect(getByText('In Stock')).toBeTruthy();
+    expect(getByText('In Stock:inactive')).toBeTruthy();
 
     fireEvent.press(getByTestId('submenu-toggle'));
-    expect(setExpanded).toHaveBeenCalledWith(undefined);
+    expect(setExpandedId).toHaveBeenCalledWith(undefined);
   });
 
   it('expands when currently collapsed', () => {
-    const setExpanded = jest.fn();
+    const setExpandedId = jest.fn();
     const { getByTestId } = render(
       <Submenu
-        key="i"
         item={parent}
-        selected={null}
+        selectedId={null}
         setSelected={jest.fn()}
-        expanded={undefined}
-        setExpanded={setExpanded}
+        expandedId={undefined}
+        setExpandedId={setExpandedId}
       />
     );
 
     fireEvent.press(getByTestId('submenu-toggle'));
-    expect(setExpanded).toHaveBeenCalledWith(parent);
+    expect(setExpandedId).toHaveBeenCalledWith('i');
+  });
+
+  it('highlights parent state when a child is selected', () => {
+    const { getByText } = render(
+      <Submenu
+        item={parent}
+        selectedId="i-1"
+        setSelected={jest.fn()}
+        expandedId="i"
+        setExpandedId={jest.fn()}
+      />
+    );
+
+    expect(getByText('In Stock:active')).toBeTruthy();
   });
 });

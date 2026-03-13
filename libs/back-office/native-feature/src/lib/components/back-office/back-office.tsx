@@ -42,21 +42,14 @@ export function BackOffice({ navigation }: BackOfficeProps) {
         <SafeAreaView style={styles.page}>
             <View style={[styles.page, styles.row]}>
                 <View style={styles.leftSide}>
-                    <ScrollView>
-                        <View
-                            style={{
-                                position: 'relative',
-                                alignItems: 'flex-start',
-                                marginLeft: 60,
-                                marginBottom: 20,
-                            }}
-                        >
+                    <ScrollView contentContainerStyle={styles.leftScrollContent}>
+                        <View style={styles.sidebarHeader}>
                             <Image source={Logo} style={styles.logo} />
-                            <Text style={{ color: 'white' }}>
+                            <Text style={styles.employeeName}>
                                 {`${employee?.firstName} ${employee?.lastName}`}
                             </Text>
                         </View>
-                        <View style={{ marginLeft: 10 }}>
+                        <View style={styles.sidebarNavContainer}>
                             <Sidebar navigation={navigation} />
                         </View>
                     </ScrollView>
@@ -99,6 +92,7 @@ const useStyles = () => {
             leftSide: {
                 flex: 2.3,
                 flexDirection: 'column',
+                paddingHorizontal: 12,
             },
             rightSide: {
                 ...sharedStyles.darkerGrayBackground,
@@ -111,6 +105,27 @@ const useStyles = () => {
             logo: {
                 width: 100,
                 height: 100,
+            },
+            leftScrollContent: {
+                paddingTop: 8,
+                paddingBottom: 16,
+            },
+            sidebarHeader: {
+                position: 'relative',
+                alignItems: 'center',
+                marginBottom: 14,
+            },
+            employeeName: {
+                color: theme.theme.colors.grey1,
+                fontWeight: '600',
+                marginTop: 2,
+            },
+            sidebarNavContainer: {
+                ...sharedStyles.darkBackground,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: `${theme.theme.colors.grey4}55`,
+                paddingVertical: 8,
             },
             navHeader: {
                 backgroundColor: theme.theme.colors.background,
