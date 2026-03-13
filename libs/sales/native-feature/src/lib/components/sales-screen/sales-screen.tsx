@@ -4,7 +4,7 @@ import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Dialog } from '@rneui/themed';
 
-import { View, StyleSheet, Alert, TextInput, Text } from 'react-native';
+import { View, StyleSheet, Alert, TextInput } from 'react-native';
 
 import {
     CategoryEntity,
@@ -86,8 +86,8 @@ export function SalesScreen({
         deselectProduct();
     };
 
-    const onCategoryChange = async (c: CategoryEntity) => {
-        if (!c.id) {
+    const onCategoryChange = async (c?: CategoryEntity) => {
+        if (!c?.id) {
             setFilteredProducts(allProducts.filter((p) => p.isActive));
             return;
         }
@@ -210,11 +210,9 @@ export function SalesScreen({
         <UIScreen padded>
             <View style={styles.salesLayout}>
                 <UICard style={styles.categoriesCard} padding="md" radius="lg" tone="muted">
-                    <Text style={styles.sectionTitle}>Categories</Text>
                     <CategorySelection key='categorySelection' onSelected={onCategoryChange} />
                 </UICard>
                 <UICard style={styles.productsCard} padding="md" radius="lg">
-                    <Text style={styles.sectionTitle}>Products</Text>
                     <ProductSearch
                         key='productSearch'
                         ref={searchRef}
@@ -227,7 +225,6 @@ export function SalesScreen({
                     />
                 </UICard>
                 <UICard style={styles.cartCard} padding="md" radius="lg" tone="muted">
-                    <Text style={styles.sectionTitle}>Cart</Text>
                     <Cart key='cart' mode={route.params.mode} onSubmit={onCartSubmit} searchRef={searchRef} products={allProducts} />
                 </UICard>
             </View>
@@ -255,26 +252,22 @@ const useStyles = () => {
             salesLayout: {
                 flex: 1,
                 flexDirection: 'row',
-            },
-            sectionTitle: {
-                color: tokens.colors.textMuted,
-                fontSize: 12,
-                fontWeight: '700',
-                letterSpacing: 0.6,
-                textTransform: 'uppercase',
-                marginBottom: tokens.spacing.sm,
+                alignItems: 'stretch',
             },
             categoriesCard: {
-                flex: 0.9,
+                width: 150,
+                minWidth: 140,
                 marginRight: tokens.spacing.sm,
                 paddingRight: tokens.spacing.sm,
             },
             productsCard: {
-                flex: 5,
+                flex: 1,
+                minWidth: 0,
                 marginRight: tokens.spacing.sm,
             },
             cartCard: {
-                flex: 2,
+                width: 330,
+                minWidth: 300,
             },
         }),
     };

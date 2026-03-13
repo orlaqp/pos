@@ -19,6 +19,49 @@ export interface ProductSearchResponse {
 }
 
 export class ProductService {
+    private static matchesBarcodeOrSku(
+        product: ProductEntity,
+        code: string
+    ): boolean {
+        return (
+            (!!product.barcode && product.barcode === code) ||
+            (!!product.sku && product.sku === code)
+        );
+    }
+
+    private static findByBarcodeOrSku(
+        products: ProductEntity[],
+        code: string,
+        onlyActive: boolean
+    ): ProductEntity[] {
+        return products.filter((p) =>
+            onlyActive
+                ? p.isActive && ProductService.matchesBarcodeOrSku(p, code)
+                : ProductService.matchesBarcodeOrSku(p, code)
+        );
+    }
+
+    private static findByEmbeddedNumericCode(
+        products: ProductEntity[],
+        candidate: string,
+        onlyActive: boolean
+    ): ProductEntity[] {
+        const isNumericCode = (code?: string): boolean =>
+            !!code && /^\d{4,}$/.test(code);
+
+        return products.filter((p) => {
+            if (onlyActive && !p.isActive) return false;
+
+            const barcode = p.barcode || '';
+            const sku = p.sku || '';
+            const barcodeMatches =
+                isNumericCode(barcode) && candidate.includes(barcode);
+            const skuMatches = isNumericCode(sku) && candidate.includes(sku);
+
+            return barcodeMatches || skuMatches;
+        });
+    }
+
     static async save(
         dispatch: Dispatch<any>,
         product: ProductEntity
@@ -102,6 +145,8 @@ export class ProductService {
         products: ProductEntity[],
         { categoryId, text, onlyActive = false }: ProductSearchRequest,
     ): ProductSearchResponse {
+        const normalizedText = (text || '').replace(/[\r\n\t]/g, '').trim();
+
         if (categoryId)
             return {
                 items: products.filter(
@@ -114,20 +159,20 @@ export class ProductService {
                 allNumbers: false,
             };
 
-        if (!text) {
+        if (!normalizedText) {
             return {
                 items: products,
                 allNumbers: false,
             };
         }
 
-        const allNumbers = !!text?.match(/^\d*$/);
+        const allNumbers = !!normalizedText.match(/^\d+$/);
         // ex: 206110115089
-        if (allNumbers && text.length > 11) {
+        if (allNumbers && normalizedText.length > 11) {
             // Toledo code
             // const plu = text.substring(2, 6);
             // DLP-300
-            const plu = text.substring(2, 6);
+            const plu = normalizedText.substring(2, 6);
             const prod = products.find((p) => {
                 return onlyActive
                     ? p.isActive && p.plu === plu
@@ -138,7 +183,7 @@ export class ProductService {
                 // Toledo code
                 // const totalPrice = +text.substring(7, 11);
                 // DLP-300
-                const totalPrice = +text.substring(7, 11);
+                const totalPrice = +normalizedText.substring(7, 11);
                 const quantity = totalPrice / 100 / prod.price; 
 
                 return {
@@ -150,12 +195,12 @@ export class ProductService {
             }
         }
 
-        if (allNumbers && text.length > 3) {
+        if (allNumbers && normalizedText.length > 3) {
             const items = products.filter(
                 (p) => {
                     return onlyActive 
-                        ? p.isActive && ((p.barcode && p.barcode === text!) || (p.sku && p.sku === text!))
-                        : (p.barcode && p.barcode === text!) || (p.sku && p.sku === text!);
+                        ? p.isActive && ((p.barcode && p.barcode === normalizedText) || (p.sku && p.sku === normalizedText))
+                        : (p.barcode && p.barcode === normalizedText) || (p.sku && p.sku === normalizedText);
                 }
             );
 
@@ -165,7 +210,43 @@ export class ProductService {
             };
         }
 
-        const lower = text.toLowerCase();
+        const numericCandidates = Array.from(
+            new Set(
+                (normalizedText.match(/\d{4,}/g) || []).sort(
+                    (a, b) => b.length - a.length
+                )
+            )
+        );
+
+        for (const code of numericCandidates) {
+            const exactItems = ProductService.findByBarcodeOrSku(
+                products,
+                code,
+                onlyActive
+            );
+
+            if (exactItems.length > 0) {
+                return {
+                    items: exactItems,
+                    allNumbers: true,
+                };
+            }
+
+            const embeddedItems = ProductService.findByEmbeddedNumericCode(
+                products,
+                code,
+                onlyActive
+            );
+
+            if (embeddedItems.length > 0) {
+                return {
+                    items: embeddedItems,
+                    allNumbers: true,
+                };
+            }
+        }
+
+        const lower = normalizedText.toLowerCase();
 
         const filteredItems = products.filter(
             (p) => {

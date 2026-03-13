@@ -173,13 +173,58 @@ export class OrderService {
         await DataStore.save(refundedOrder);
         await OrderService.updateInventory(refundedOrder);
 
-        const cartOrder: CartState = {
-            ...request.order,
-            id: request.id,
-        };
+        const hasCartItems = !!(request.order as unknown as CartState)?.items;
+        const cartOrder: CartState = hasCartItems
+            ? ({
+                  ...(request.order as unknown as CartState),
+                  id: request.id,
+              } as CartState)
+            : OrderEntityMapper.asCartState({
+                  id: request.id,
+                  orderNo: (request.order as unknown as Partial<OrderEntity>).orderNo || existing.orderNo,
+                  subtotal:
+                      (request.order as unknown as Partial<OrderEntity>).subtotal ??
+                      existing.subtotal,
+                  tax: (request.order as unknown as Partial<OrderEntity>).tax ?? existing.tax,
+                  total:
+                      (request.order as unknown as Partial<OrderEntity>).total ??
+                      existing.total,
+                  status:
+                      ((request.order as unknown as Partial<OrderEntity>).status as
+                          | OrderStatus
+                          | keyof typeof OrderStatus
+                          | undefined) || existing.status,
+                  employeeId:
+                      (request.order as unknown as Partial<OrderEntity>).employeeId ||
+                      existing.employeeId,
+                  employeeName:
+                      (request.order as unknown as Partial<OrderEntity>).employeeName ||
+                      existing.employeeName,
+                  lines:
+                      (request.order as unknown as Partial<OrderEntity>).lines ||
+                      OrderEntityMapper.fromModel(existing).lines,
+                  payments:
+                      (request.order as unknown as Partial<OrderEntity>).payments ||
+                      null,
+                  paymentInfo:
+                      (request.order as unknown as Partial<OrderEntity>).paymentInfo ||
+                      null,
+                  refundInfo:
+                      (request.order as unknown as Partial<OrderEntity>).refundInfo ||
+                      null,
+                  orderDate:
+                      (request.order as unknown as Partial<OrderEntity>).orderDate ||
+                      existing.orderDate,
+                  createdAt:
+                      (request.order as unknown as Partial<OrderEntity>).createdAt ||
+                      existing.createdAt,
+                  updatedAt:
+                      (request.order as unknown as Partial<OrderEntity>).updatedAt ||
+                      existing.updatedAt,
+              } as OrderEntity);
 
         request.refundedLines.forEach((l) => {
-            const line = cartOrder.items?.find(
+            const line = cartOrder.items.find(
                 (li) => li.identifier === l.identifier && li.quantity > 0
             );
 

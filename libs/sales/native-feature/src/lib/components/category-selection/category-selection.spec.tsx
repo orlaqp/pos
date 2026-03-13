@@ -28,6 +28,7 @@ jest.mock('react-redux', () => ({
 jest.mock('@pos/categories/data-access', () => ({
     categoriesActions: {
         select: (item: unknown) => ({ type: 'categories/select', payload: item }),
+        clearSelection: () => ({ type: 'categories/clearSelection' }),
     },
     selectAllCategories: () => mockCategories,
     selectedCategory: () => mockCategories[0],
@@ -54,6 +55,19 @@ describe('CategorySelection', () => {
         expect(mockDispatch).toHaveBeenCalledWith({
             type: 'categories/select',
             payload: mockCategories[1],
+        });
+    });
+
+    it('clears selection when pressing selected category', () => {
+        const { getByTestId } = render(
+            <CategorySelection onSelected={mockOnSelected} />
+        );
+
+        fireEvent.press(getByTestId('sales-category-c1'));
+
+        expect(mockOnSelected).toHaveBeenCalledWith(undefined);
+        expect(mockDispatch).toHaveBeenCalledWith({
+            type: 'categories/clearSelection',
         });
     });
 });

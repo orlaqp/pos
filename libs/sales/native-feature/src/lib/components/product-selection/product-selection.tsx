@@ -80,9 +80,9 @@ export function ProductSelection({
                                     style={{
                                         ...productBackgroundColor(p),
                                         borderRadius: tokens.radii.md,
-                                        marginRight: tokens.spacing.sm,
+                                        marginRight: 0,
                                         marginBottom: tokens.spacing.sm,
-                                        width: 210,
+                                        width: '32%',
                                         position: 'relative',
                                         borderWidth: 1,
                                         borderColor: tokens.colors.border,
@@ -141,8 +141,9 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             paddingBottom: tokens.spacing.md,
         },
         row: {
-            alignContent: 'space-around',
-            justifyContent: 'flex-start',
+            alignContent: 'stretch',
+            justifyContent: 'space-between',
+            flexWrap: 'nowrap',
         },
         productMeta: {
             marginTop: 4,

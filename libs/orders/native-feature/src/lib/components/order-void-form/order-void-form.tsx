@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
-import { View, Text, Alert, FlatList } from 'react-native';
+import { View, Text, Alert, FlatList, StyleSheet } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import {
     OrderEntity,
     OrderLineEntity,
@@ -9,9 +10,13 @@ import {
 } from '@pos/orders/data-access';
 import OrderVoidableItem from '../order-voidable-item/order-voidable-item';
 import { Button, useTheme } from '@rneui/themed';
-import { EACH } from '@pos/unit-of-measures/data-access';
 import { useSelector } from 'react-redux';
 import { selectLoginEmployee } from '@pos/employees/data-access';
+import { UICard } from '@pos/shared/ui-native';
+import {
+    calculateRefundSummary,
+    spreadOrderLinesForVoid,
+} from './order-void-form.logic';
 
 export interface OrderItemProps {
     order: OrderEntity;
@@ -21,12 +26,28 @@ export interface OrderItemProps {
 export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const local = useStyles(tokens);
     const [refundAmount, setRefundAmount] = useState<number>(0);
     const [itemList, setItemList] = useState<OrderLineEntity[]>([]);
     const [newTotal, setNewTotal] = useState<number>(0);
     const [linesToRefund, setLinesToRefund] = useState<OrderLineEntity[]>([]);
     const [busy, setBusy] = useState<boolean>(false);
     const employee = useSelector(selectLoginEmployee);
+    const paymentSummary = (order.paymentInfo?.payments || []).reduce(
+        (acc: Record<string, number>, payment) => {
+            const type = String(payment.type || 'Unknown');
+            acc[type] = (acc[type] || 0) + Number(payment.amount || 0);
+            return acc;
+        },
+        {}
+    );
+    const paymentTypes = Object.keys(paymentSummary);
+    const ebtFromPayments = paymentSummary.EBT || 0;
+    const ebtFromLines = (order.lines || []).reduce(
+        (acc, line) => acc + Number(line?.ebtPaidAmount || 0),
+        0
+    );
 
     const onItemToggle = (line: OrderLineEntity, selected: boolean) => {
         if (selected) {
@@ -68,41 +89,47 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     };
 
     useEffect(() => {
-        const refundAmount = linesToRefund.reduce(
-            (prev, next) => prev + next.price * next.quantity,
-            0
-        );
-
-        setRefundAmount(-1 * refundAmount);
-        setNewTotal(order.total - refundAmount);
+        const summary = calculateRefundSummary(order.total, linesToRefund);
+        setRefundAmount(-1 * summary.refundTotal);
+        setNewTotal(summary.newTotal);
     }, [order, linesToRefund]);
 
     useEffect(() => {
-        const spreadLines: OrderLineEntity[] = [];
-        order.lines?.forEach((line) => {
-            if (line.unitOfMeasure === EACH) {
-                for (let i = 0; i < line.quantity; i++) {
-                    spreadLines.push({ ...line, quantity: 1 });
-                }
-            } else {
-                spreadLines.push(line);
-            }
-        });
-
-        setItemList(spreadLines);
+        setItemList(spreadOrderLinesForVoid(order.lines));
     }, [order]);
 
     return (
-        <View
-            style={
-                (styles.pageBackground,
-                { height: 500, flexDirection: 'column', margin: 20 })
-            }
-        >
-            <View style={{ flex: 9 }}>
+        <View style={[styles.pageBackground, local.container]}>
+            <View style={local.headerRow}>
+                <Text style={local.title}>Void Items</Text>
+                <Text style={local.subtitle}>Select items to refund from this order</Text>
+            </View>
+            <UICard tone="default" padding="sm" radius="md" style={local.referenceCard}>
+                <Text style={local.referenceTitle}>Payment Reference</Text>
+                {paymentTypes.length === 0 && (
+                    <Text style={local.referenceText}>No payment details were found for this order.</Text>
+                )}
+                {paymentTypes.length > 0 && (
+                    <View style={local.paymentRow}>
+                        {paymentTypes.map((type) => (
+                            <View key={type} style={local.paymentChip}>
+                                <Text style={local.paymentChipLabel}>{type}</Text>
+                                <Text style={local.paymentChipValue}>$ {paymentSummary[type].toFixed(2)}</Text>
+                            </View>
+                        ))}
+                    </View>
+                )}
+                {!!(ebtFromPayments || ebtFromLines) && (
+                    <Text style={local.ebtHint}>
+                        EBT reference: $ {Math.max(ebtFromPayments, ebtFromLines).toFixed(2)}
+                    </Text>
+                )}
+            </UICard>
+            <UICard tone="muted" padding="sm" radius="md" style={local.listCard}>
                 <FlatList
                     horizontal={false}
                     data={itemList}
+                    keyExtractor={(item, index) => `${item.identifier}-${index}`}
                     renderItem={(data) => (
                         <OrderVoidableItem
                             key={data.index}
@@ -115,77 +142,62 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         flexDirection: 'column',
                     }}
                 />
-            </View>
+            </UICard>
 
-            <View style={[styles.dataRow, { flex: 1 }]}>
+            <UICard tone="default" padding="sm" radius="md" style={local.summaryCard}>
+                <View style={local.summaryRow}>
                 <View
-                    style={{
-                        flex: 2,
-                        flexDirection: 'column',
-                        alignItems: 'flex-end',
-                    }}
+                        style={local.summaryCol}
                 >
-                    <Text style={[styles.secondaryText, { fontSize: 14 }]}>
+                    <Text style={[styles.secondaryText, local.label]}>
                         Original Amount:
                     </Text>
                     <Text
                         style={[
                             styles.primaryText,
                             styles.textRight,
-                            { fontSize: 24, fontWeight: 'bold' },
+                            local.value,
                         ]}
                     >
                         $ {order.total.toFixed(2)}
                     </Text>
                 </View>
                 <View
-                    style={{
-                        flex: 2,
-                        flexDirection: 'column',
-                        alignItems: 'flex-end',
-                    }}
+                        style={local.summaryCol}
                 >
-                    <Text style={[styles.secondaryText, { fontSize: 14 }]}>
+                    <Text style={[styles.secondaryText, local.label]}>
                         Refund Amount:
                     </Text>
                     <Text
                         style={[
                             styles.textRight,
-                            {
-                                fontSize: 24,
-                                fontWeight: 'bold',
-                                color: theme.theme.colors.error,
-                            },
+                            local.value,
+                            { color: theme.theme.colors.error },
                         ]}
                     >
                         $ {(refundAmount * -1).toFixed(2)}
                     </Text>
                 </View>
                 <View
-                    style={{
-                        flex: 2,
-                        flexDirection: 'column',
-                        alignItems: 'flex-end',
-                    }}
+                        style={local.summaryCol}
                 >
-                    <Text style={[styles.secondaryText, { fontSize: 14 }]}>
+                    <Text style={[styles.secondaryText, local.label]}>
                         New Amount:
                     </Text>
                     <Text
                         style={[
                             styles.textRight,
-                            {
-                                fontSize: 24,
-                                fontWeight: 'bold',
-                                color: theme.theme.colors.success,
-                            },
+                            local.value,
+                            { color: theme.theme.colors.success },
                         ]}
                     >
                         $ {newTotal.toFixed(2)}
                     </Text>
                 </View>
-                <View style={{ flex: 2, paddingLeft: 60 }}>
+                </View>
+                <View style={local.actionsWrap}>
                     <Button
+                        testID="order-void-process-button"
                         title="Process"
                         icon={{
                             name: 'check',
@@ -198,11 +210,111 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         disabled={refundAmount === 0}
                         loading={busy}
                         onPress={confirmRefund}
+                        buttonStyle={local.processBtn}
                     />
                 </View>
-            </View>
+            </UICard>
         </View>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        container: {
+            height: 560,
+            flexDirection: 'column',
+            margin: 8,
+        },
+        headerRow: {
+            marginBottom: tokens.spacing.sm,
+        },
+        title: {
+            color: tokens.colors.textPrimary,
+            fontSize: 24,
+            fontWeight: '800',
+        },
+        subtitle: {
+            color: tokens.colors.textMuted,
+            fontSize: 13,
+            marginTop: 2,
+        },
+        listCard: {
+            flex: 1,
+            marginBottom: tokens.spacing.sm,
+        },
+        referenceCard: {
+            marginBottom: tokens.spacing.sm,
+        },
+        referenceTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 12,
+            fontWeight: '800',
+            letterSpacing: 0.5,
+            textTransform: 'uppercase',
+            marginBottom: tokens.spacing.xs,
+        },
+        referenceText: {
+            color: tokens.colors.textMuted,
+            fontSize: 13,
+        },
+        paymentRow: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+        },
+        paymentChip: {
+            borderRadius: tokens.radii.sm,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            backgroundColor: tokens.colors.surfaceMuted,
+            paddingVertical: 4,
+            paddingHorizontal: 8,
+            marginRight: tokens.spacing.xs,
+            marginBottom: tokens.spacing.xs,
+        },
+        paymentChipLabel: {
+            color: tokens.colors.textMuted,
+            fontSize: 11,
+            fontWeight: '700',
+            textTransform: 'uppercase',
+        },
+        paymentChipValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 14,
+            fontWeight: '800',
+        },
+        ebtHint: {
+            marginTop: 2,
+            color: tokens.colors.warning,
+            fontSize: 12,
+            fontWeight: '700',
+        },
+        summaryCard: {
+            flexShrink: 0,
+        },
+        summaryRow: {
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+        },
+        summaryCol: {
+            flex: 1,
+            alignItems: 'flex-end',
+            paddingHorizontal: tokens.spacing.xs,
+        },
+        label: {
+            fontSize: 13,
+        },
+        value: {
+            fontSize: 24,
+            fontWeight: '800',
+        },
+        actionsWrap: {
+            marginTop: tokens.spacing.sm,
+            alignItems: 'flex-end',
+        },
+        processBtn: {
+            borderRadius: tokens.radii.lg,
+            minWidth: 160,
+        },
+    });
 
 export default OrderVoidForm;

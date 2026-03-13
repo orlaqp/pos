@@ -118,7 +118,10 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
     };
 
     const orderDate = new Date(item.orderDate!);
-    const orderDateString = `${orderDate.toLocaleDateString()} ${orderDate.toLocaleTimeString()}`;
+    const orderDateString = `${orderDate.toLocaleDateString()} ${orderDate.toLocaleTimeString(
+        [],
+        { hour: '2-digit', minute: '2-digit', second: '2-digit' }
+    )}`;
     const parsedOrderNo = parseOrderNoSegments(item.orderNo);
     const statusColor = getStatusAccentColor(item.status, {
         accent: tokens.colors.accent,
@@ -175,11 +178,11 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                 </View>
                 <View style={local.metaColumn}>
                     <Text style={styles.primaryText}>{item.employeeName}</Text>
-                    <Text style={[styles.secondaryText, local.metaTop]}>
+                    <Text numberOfLines={1} style={[styles.secondaryText, local.metaTop]}>
                         {orderDateString}
                     </Text>
                     {!!statusOwner && (
-                        <Text style={[styles.secondaryText, local.metaTop]}>
+                        <Text numberOfLines={1} style={[styles.secondaryText, local.metaTop]}>
                             By: {statusOwner}
                         </Text>
                     )}
@@ -200,14 +203,17 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                     <Button
                         testID="order-item-pay-button"
                         type="solid"
-                        title="Receive Payment"
+                        title="Payment"
                         color={theme.theme.colors.primary}
                         icon={{
                             name: 'credit-card-outline',
                             type: 'material-community',
                             color: theme.theme.colors.grey0,
                         }}
-                        buttonStyle={{ borderRadius: tokens.radii.md }}
+                        buttonStyle={{
+                            borderRadius: tokens.radii.md,
+                            paddingHorizontal: tokens.spacing.sm,
+                        }}
                         titleStyle={{ paddingRight: 10, color: theme.theme.colors.grey0 }}
                         onPress={openItem}
                     />
@@ -218,11 +224,12 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                         <Button
                             type="clear"
                             title="Void"
-                            icon={{
-                                name: 'close-circle-outline',
-                                type: 'material-community',
-                                color: theme.theme.colors.primary,
-                            }}
+                        icon={{
+                            name: 'close-circle-outline',
+                            type: 'material-community',
+                            color: theme.theme.colors.primary,
+                        }}
+                            buttonStyle={{ paddingHorizontal: tokens.spacing.sm }}
                             titleStyle={{ paddingRight: 10 }}
                             onPress={() => onVoid(item)}
                         />
@@ -235,6 +242,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                                 type: 'material-community',
                                 color: theme.theme.colors.primary,
                             }}
+                            buttonStyle={{ paddingHorizontal: tokens.spacing.sm }}
                             titleStyle={{ paddingRight: 10 }}
                             onPress={printItem}
                         />
@@ -269,17 +277,17 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             marginRight: tokens.spacing.md,
         },
         infoBlock: {
-            flex: 4,
+            flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
         },
         orderNoColumn: {
-            flex: 3,
+            flex: 3.5,
             justifyContent: 'center',
             paddingRight: tokens.spacing.md,
         },
         metaColumn: {
-            flex: 2,
+            flex: 1.5,
             justifyContent: 'center',
             paddingLeft: tokens.spacing.md,
             borderLeftWidth: 1,
@@ -294,26 +302,27 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             borderWidth: 1,
             borderColor: tokens.colors.border,
             borderRadius: tokens.radii.sm,
-            paddingVertical: tokens.spacing.sm,
-            paddingHorizontal: tokens.spacing.sm,
+            paddingVertical: 4,
+            paddingHorizontal: 6,
             marginRight: tokens.spacing.xs,
             marginBottom: tokens.spacing.xs,
             backgroundColor: tokens.colors.surfaceMuted,
         },
         chipLabel: {
             color: tokens.colors.textMuted,
-            fontSize: 11,
+            fontSize: 10,
             textTransform: 'uppercase',
         },
         chipValue: {
-            fontSize: 14,
+            fontSize: 13,
             marginTop: 1,
         },
         metaTop: {
             marginTop: tokens.spacing.xs,
         },
         amountBlock: {
-            flex: 1.2,
+            minWidth: 120,
+            flexShrink: 0,
             alignItems: 'flex-end',
             justifyContent: 'center',
             marginLeft: tokens.spacing.md,
@@ -331,8 +340,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             marginBottom: 0,
         },
         actionsBlock: {
-            flex: 2,
+            minWidth: 250,
+            flexShrink: 0,
             flexDirection: 'row',
+            alignItems: 'center',
             justifyContent: 'flex-end',
             marginLeft: tokens.spacing.md,
         },

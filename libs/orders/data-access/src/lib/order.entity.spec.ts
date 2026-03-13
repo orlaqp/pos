@@ -106,4 +106,45 @@ describe('OrderEntityMapper', () => {
             { type: 'EBT', amount: 24.9 },
         ]);
     });
+
+    it('rebuilds refunded cart even when incoming cart header is missing', async () => {
+        const refundedCart = await OrderEntityMapper.fromRefundedCart(
+            {
+                id: 'e-1',
+                firstName: 'Test',
+                lastName: 'Cashier',
+            },
+            {
+                id: 'o-1',
+                items: [
+                    {
+                        identifier: 'line-1',
+                        quantity: 2,
+                        product: {
+                            id: 'p-1',
+                            name: 'Apple',
+                            price: 2.5,
+                            unitOfMeasure: 'EA',
+                            barcode: null,
+                            sku: null,
+                            isEBTEligible: true,
+                        },
+                    },
+                ],
+                footer: {
+                    discount: 0,
+                    subtotal: 5,
+                    tax: 0,
+                    total: 5,
+                },
+                selected: undefined,
+                header: undefined,
+            }
+        );
+
+        expect(refundedCart.header).toBeDefined();
+        expect(refundedCart.items).toHaveLength(1);
+        expect(refundedCart.items[0].product.name).toBe('Apple');
+        expect(refundedCart.footer.total).toBe(5);
+    });
 });

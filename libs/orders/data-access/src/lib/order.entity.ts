@@ -3,7 +3,6 @@ import { EmployeeEntity } from '@pos/employees/data-access';
 import type { CartState } from '@pos/sales/data-access';
 import { StationService } from '@pos/settings/data-access';
 import { Order, OrderLine, OrderStatus, Payment, PaymentType } from '@pos/shared/models';
-import { Alert } from 'react-native';
 
 export interface PaymentInfoEntity {
     employeeId?: string;
@@ -170,10 +169,13 @@ export class OrderEntityMapper {
     static async fromRefundedCart(employee: EmployeeEntity, cart: CartState) {
         const state: CartState = OrderEntityMapper.getInitialCartState();
 
-        if (!cart.header) {
-            Alert.alert('Cart header is missing, cannot recreate the order');
-        }
-        const header = cart.header!;
+        const header = cart.header || {
+            orderDate: new Date().toISOString(),
+            orderNumber: cart.id || '',
+            status: 'OPEN',
+            employeeId: employee.id!,
+            employeeName: `${employee.firstName} ${employee.lastName}`,
+        };
 
         state.header = {
             orderDate: header.orderDate,
@@ -208,7 +210,7 @@ export class OrderEntityMapper {
         state.footer = {
             discount: 0,
             subtotal: total,
-            tax: cart.footer.tax,
+            tax: cart.footer?.tax || 0,
             total: total,
         };
 

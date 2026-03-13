@@ -122,7 +122,6 @@ export function ReportViewer({
             await Share.share({
                 title: filename,
                 url: `file://${path}`,
-                message: `Exported report: ${filename}`,
             });
         } catch {
             Alert.alert('Export failed', 'Could not generate CSV file.');

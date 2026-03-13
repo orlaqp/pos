@@ -85,7 +85,7 @@ describe('OrderItem integration', () => {
         jest.clearAllMocks();
     });
 
-    it('shows Receive Payment action for OPEN orders and navigates to Sales payment mode', () => {
+    it('shows Payment action for OPEN orders and navigates to Sales payment mode', () => {
         const item = {
             id: 'o-1',
             orderNo: '51-EBTDEV01-260311-0001',
@@ -107,7 +107,7 @@ describe('OrderItem integration', () => {
             />
         );
 
-        expect(queryByText('Receive Payment')).toBeTruthy();
+        expect(queryByText('Payment')).toBeTruthy();
         fireEvent.press(getByTestId('order-item-pay-button'));
 
         expect(setAction).toHaveBeenCalledWith(item);
