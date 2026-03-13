@@ -18,13 +18,6 @@ jest.mock('react-redux', () => ({
         selector({ brands: { selected: mockSelectedBrand } }),
 }));
 
-jest.mock('@pos/theme/native', () => ({
-    useSharedStyles: () => ({
-        page: {},
-        centeredHorizontally: {},
-    }),
-}));
-
 jest.mock('@pos/shared/ui-native', () => ({
     UIActions: ({
         submitAction,
@@ -43,6 +36,8 @@ jest.mock('@pos/shared/ui-native', () => ({
         </View>
     ),
     UIInput: ({ name }: { name: string }) => <View testID={`brand-input-${name}`} />,
+    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
 }));
 
 jest.mock('@pos/brands/data-access', () => ({

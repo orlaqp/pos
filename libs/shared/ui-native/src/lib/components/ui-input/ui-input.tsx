@@ -1,7 +1,7 @@
 import { useSharedStyles } from '@pos/theme/native';
 import { InputProps } from '@rneui/base';
 import { Input, useTheme } from '@rneui/themed';
-import React from 'react';
+import React, { useState } from 'react';
 import { useFormContext, Controller, RegisterOptions } from 'react-hook-form';
 import { TextInput } from 'react-native';
 
@@ -22,6 +22,7 @@ export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
     const { name, rules, formatter, onValid, lIcon, rIcon, textAlign, ...restOfProps } =
         props;
     const { control } = useFormContext();
+    const [focused, setFocused] = useState(false);
 
     const inputProps = restOfProps as InputProps;
     inputProps.leftIcon = lIcon
@@ -30,14 +31,14 @@ export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
               type: 'material-community',
               color: theme.theme.colors.grey2,
           }
-        : undefined;
+        : inputProps.leftIcon;
     inputProps.rightIcon = rIcon
         ? {
               name: rIcon,
               type: 'material-community',
               color: theme.theme.colors.grey2,
           }
-        : undefined;
+        : inputProps.rightIcon;
 
     //   const value = watch(name)
 
@@ -66,10 +67,26 @@ export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
                     textAlign={textAlign || 'left'}
                     placeholder={props.placeholder}
                     value={value}
-                    onBlur={onBlur}
+                    onBlur={(event) => {
+                        setFocused(false);
+                        onBlur();
+                        props.onBlur?.(event);
+                    }}
+                    onFocus={(event) => {
+                        setFocused(true);
+                        props.onFocus?.(event);
+                    }}
                     onChangeText={onChange}
                     errorMessage={error?.message}
-                    inputContainerStyle={styles.inputContainerStyle}
+                    inputContainerStyle={[
+                        styles.inputContainerStyle,
+                        focused
+                            ? {
+                                  borderWidth: 1,
+                                  borderColor: theme.theme.colors.primary,
+                              }
+                            : undefined,
+                    ]}
                     inputStyle={styles.inputStyle}
                 />
             )}

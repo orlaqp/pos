@@ -48,6 +48,10 @@ jest.mock('react-hook-form', () => ({
         getValues: () => mockGetValues(),
         setValue: (...args: unknown[]) => mockSetValue(...args),
         handleSubmit: (...args: unknown[]) => mockHandleSubmit(...args),
+        watch: (name: string) => {
+            const values = mockGetValues();
+            return values?.[name];
+        },
     }),
 }));
 
@@ -78,13 +82,16 @@ jest.mock('@pos/shared/ui-native', () => ({
     UIOverlaySelect: () => <View />,
     UISwitch: () => <View />,
     UIVerticalSpacer: () => <View />,
+    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UIStack: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
 }));
 
 jest.mock('@rneui/themed', () => {
     const React = require('react');
     const { TextInput } = require('react-native');
     return {
-        useTheme: () => ({ theme: { colors: { grey2: '#777' } } }),
+        useTheme: () => ({ theme: { colors: { grey1: '#d0d6dd', grey2: '#777', grey5: '#4a4f57' } } }),
         Input: React.forwardRef((props: any, ref: any) => (
             <TextInput ref={ref} {...props} />
         )),

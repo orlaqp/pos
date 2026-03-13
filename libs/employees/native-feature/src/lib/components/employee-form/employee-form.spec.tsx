@@ -49,11 +49,24 @@ jest.mock('@pos/shared/ui-native', () => ({
     ),
     UIInput: ({ name }: { name: string }) => <View testID={`employee-input-${name}`} />,
     UISwitch: ({ name }: { name: string }) => <View testID={`employee-switch-${name}`} />,
-    UiFileUpload: () => <View testID="employee-upload" />,
-    UIVerticalSpacer: () => <View testID="employee-spacer" />,
+    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UIStack: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
 }));
 
 jest.mock('@rneui/themed', () => ({
+    Button: ({
+        title,
+        onPress,
+    }: {
+        title: string;
+        onPress: () => void;
+    }) => (
+        <Pressable testID={`employee-button-${title}`} onPress={onPress}>
+            <Text>{title}</Text>
+        </Pressable>
+    ),
+    Icon: ({ name }: { name: string }) => <Text>{name}</Text>,
     CheckBox: ({
         title,
         onPress,
@@ -225,5 +238,21 @@ describe('EmployeeForm integration', () => {
         );
         expect(nextRoles.CASHIER).toBe(true);
         expect(roleSet).toEqual(expect.arrayContaining(['ADMIN', 'CASHIER']));
+    });
+
+    it('supports role quick actions and reset pin action', async () => {
+        const navigation = { goBack: mockGoBack };
+        const { getByTestId } = render(<EmployeeForm navigation={navigation as any} />);
+
+        fireEvent.press(getByTestId('employee-button-Clear all'));
+        fireEvent.press(getByTestId('employee-button-Select common'));
+        fireEvent.press(getByTestId('employee-button-Reset PIN'));
+        fireEvent.press(getByTestId('employee-form-save'));
+
+        await waitFor(() => {
+            const savedPayload = mockEmployeeSave.mock.calls[0][1];
+            expect(savedPayload.pin).toBe('');
+            expect(savedPayload.roles.length).toBeGreaterThan(0);
+        });
     });
 });

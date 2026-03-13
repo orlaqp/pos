@@ -1,7 +1,7 @@
 import { useSharedStyles } from '@pos/theme/native';
 import { InputProps } from '@rneui/base';
 import { Input, useTheme } from '@rneui/themed';
-import React from 'react';
+import React, { useState } from 'react';
 import { useFormContext, Controller, RegisterOptions } from 'react-hook-form';
 
 type Props = React.ComponentProps<typeof Input> & {
@@ -16,6 +16,7 @@ export const UINumericInput = React.forwardRef<typeof Input, Props>(
     (props, ref) => {
         const theme = useTheme();
         const styles = useSharedStyles();
+        const [focused, setFocused] = useState(false);
         const { name, allowDecimals, rules, lIcon, rIcon, ...restOfProps } =
             props;
         const { control } = useFormContext();
@@ -27,14 +28,14 @@ export const UINumericInput = React.forwardRef<typeof Input, Props>(
                   type: 'material-community',
                   color: theme.theme.colors.grey2,
               }
-            : undefined;
+            : inputProps.leftIcon;
         inputProps.rightIcon = rIcon
             ? {
                   name: rIcon,
                   type: 'material-community',
                   color: theme.theme.colors.grey2,
               }
-            : undefined;
+            : inputProps.rightIcon;
 
         const mergedRules = {
             // ...rules,
@@ -67,8 +68,13 @@ export const UINumericInput = React.forwardRef<typeof Input, Props>(
                         placeholder={props.placeholder}
                         value={value?.toString()}
                         onBlur={(event) => {
+                            setFocused(false);
                             onBlur();
                             props.onBlur?.(event);
+                        }}
+                        onFocus={(event) => {
+                            setFocused(true);
+                            props.onFocus?.(event);
                         }}
                         onChange={onChange}
                         onChangeText={(text) => {
@@ -77,7 +83,15 @@ export const UINumericInput = React.forwardRef<typeof Input, Props>(
                         }}
                         // onChangeText={(text)=>onChange(validate(text))}
                         errorMessage={error?.message}
-                        inputContainerStyle={styles.inputContainerStyle}
+                        inputContainerStyle={[
+                            styles.inputContainerStyle,
+                            focused
+                                ? {
+                                      borderWidth: 1,
+                                      borderColor: theme.theme.colors.primary,
+                                  }
+                                : undefined,
+                        ]}
                         inputStyle={styles.inputStyle}
                     />
                 )}

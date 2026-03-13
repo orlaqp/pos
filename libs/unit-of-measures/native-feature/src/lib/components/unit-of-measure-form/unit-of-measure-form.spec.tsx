@@ -18,13 +18,6 @@ jest.mock('react-redux', () => ({
         selector({ unitOfMeasures: { selected: mockSelectedUom } }),
 }));
 
-jest.mock('@pos/theme/native', () => ({
-    useSharedStyles: () => ({
-        page: {},
-        centeredHorizontally: {},
-    }),
-}));
-
 jest.mock('@pos/shared/ui-native', () => ({
     UIActions: ({
         submitAction,
@@ -43,6 +36,8 @@ jest.mock('@pos/shared/ui-native', () => ({
         </View>
     ),
     UIInput: ({ name }: { name: string }) => <View testID={`uom-input-${name}`} />,
+    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
 }));
 
 jest.mock('@pos/unit-of-measures/data-access', () => ({

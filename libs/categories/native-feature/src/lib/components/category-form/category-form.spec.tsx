@@ -19,13 +19,6 @@ jest.mock('react-redux', () => ({
         selector({ categories: { selected: mockSelectedCategory } }),
 }));
 
-jest.mock('@pos/theme/native', () => ({
-    useSharedStyles: () => ({
-        page: {},
-        centeredHorizontally: {},
-    }),
-}));
-
 jest.mock('@pos/shared/ui-native', () => ({
     UIActions: ({
         submitAction,
@@ -53,7 +46,8 @@ jest.mock('@pos/shared/ui-native', () => ({
             <Text>Upload</Text>
         </Pressable>
     ),
-    UIVerticalSpacer: () => <View testID="category-spacer" />,
+    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
 }));
 
 jest.mock('@pos/categories/data-access', () => ({

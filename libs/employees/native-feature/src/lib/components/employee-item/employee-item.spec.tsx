@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert, TouchableOpacity } from 'react-native';
 import { render } from '@testing-library/react-native';
+import EmployeeItem from './employee-item';
 
 const mockDispatch = jest.fn();
 const mockDelete = jest.fn(() => Promise.resolve());
@@ -22,9 +23,6 @@ jest.mock('@pos/employees/data-access', () => ({
         delete: (id: string) => mockDelete(id),
     },
 }));
-
-import EmployeeItem from './employee-item';
-
 describe('EmployeeItem', () => {
     const baseItem: any = {
         id: 'emp-1',
