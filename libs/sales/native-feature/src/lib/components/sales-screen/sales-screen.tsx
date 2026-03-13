@@ -36,7 +36,6 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ButtonItemType, UICard, UIScreen } from '@pos/shared/ui-native';
 import { RootState } from '@pos/store';
 import { Dictionary } from '@reduxjs/toolkit';
-import { EACH } from '@pos/unit-of-measures/data-access';
 import { getDefaultPrinter } from '@pos/printings/data-access';
 import {
     payOrder,
@@ -44,6 +43,15 @@ import {
 } from '@pos/orders/data-access';
 import { selectStore } from '@pos/store-info/data-access';
 import { getGlobalSettings, subscribeToGlobalSettingsChanges } from '@pos/settings/data-access';
+import {
+    getActiveProducts,
+    getAutoAddQuantity,
+    getCategoryFilteredProducts,
+    getSelectedQuantity,
+    getSingleProductFromDictionary,
+    shouldBlockSelectionByInventory,
+    shouldSetFilteredProducts,
+} from './sales-screen.logic';
 
 export interface NavigationParamList {
     [key: string]: object | undefined;
@@ -88,7 +96,7 @@ export function SalesScreen({
 
     const onCategoryChange = async (c?: CategoryEntity) => {
         if (!c?.id) {
-            setFilteredProducts(allProducts.filter((p) => p.isActive));
+            setFilteredProducts(getCategoryFilteredProducts(allProducts, c));
             return;
         }
 
@@ -105,7 +113,7 @@ export function SalesScreen({
         searchRef.current?.focus();
         const res = await ProductService.search(allProducts, { text, onlyActive: true });
 
-        if (!res.allNumbers || (res.allNumbers && text.length < 4)) {
+        if (shouldSetFilteredProducts(text, res.allNumbers)) {
             setFilteredProducts(res.items);
             // return text;
         }
@@ -119,7 +127,7 @@ export function SalesScreen({
                 cartActions.upsert(
                     CartItemMapper.fromProduct(
                         p,
-                        res.quantity || (p.unitOfMeasure === EACH ? 1 : 0)
+                        getAutoAddQuantity(p, res.quantity)
                     )
                 )
             );
@@ -133,7 +141,13 @@ export function SalesScreen({
         (p: ButtonItemType) => {
             const product = p as ProductEntity;
 
-            if (globalSettings?.enforceSalesBasedOnInventory && product.quantity < MINIMUM_INVENTORY_FOR_SALE) {
+            if (
+                shouldBlockSelectionByInventory(
+                    globalSettings?.enforceSalesBasedOnInventory,
+                    product.quantity,
+                    MINIMUM_INVENTORY_FOR_SALE
+                )
+            ) {
                 Alert.alert('Not Available', 'We do not have this product in inventory at the moment');
                 return;
             }
@@ -141,7 +155,7 @@ export function SalesScreen({
             dispatch(
                 cartActions.select({
                     product,
-                    quantity: product.unitOfMeasure === EACH ? 1 : 0,
+                    quantity: getSelectedQuantity(product.unitOfMeasure),
                 })
             );
         },
@@ -188,12 +202,8 @@ export function SalesScreen({
     }, [dispatch]);
 
     useEffect(() => {
-        if (!products) return;
-
-        const productIds = Object.keys(products || {});
-        if (productIds.length === 1) {
-            onProductSelected(products[productIds[0]] as any);
-        }
+        const selectedProduct = getSingleProductFromDictionary(products);
+        if (selectedProduct) onProductSelected(selectedProduct as any);
     }, [onProductSelected, products]);
 
     useEffect(() => {
@@ -203,7 +213,7 @@ export function SalesScreen({
     }, [onProductSelected, filteredProducts, allProducts, products, searchRef])
 
     useEffect(() => {
-        setFilteredProducts(allProducts.filter((p) => p.isActive));
+        setFilteredProducts(getActiveProducts(allProducts));
     }, [allProducts]);
 
     return (

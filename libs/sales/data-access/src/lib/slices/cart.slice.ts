@@ -1,16 +1,35 @@
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { RootState } from '@pos/store';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { EACH } from '@pos/unit-of-measures/data-access';
+import type { RootState } from '@pos/store';
 import {
-    createAsyncThunk,
     createSelector,
     createSlice,
     PayloadAction,
 } from '@reduxjs/toolkit';
 import { CartItem, CartPayment, CartState } from '../cart-entity';
 import uuid from 'react-native-uuid';
-import { OrderEntity } from '@pos/orders/data-access';
+
+type OrderLineLike = {
+    quantity: number;
+    identifier?: string;
+    productId: string;
+    productName: string;
+    price: number;
+    unitOfMeasure: string;
+    isEBTEligible?: boolean | null;
+};
+
+type OrderEntityLike = {
+    id: string;
+    orderNo?: string;
+    orderDate?: string;
+    status: string;
+    employeeId: string;
+    employeeName: string;
+    subtotal: number;
+    tax: number;
+    total: number;
+    lines?: OrderLineLike[];
+};
 
 export const CART_FEATURE_KEY = 'cart';
 
@@ -31,7 +50,7 @@ export const cartSlice = createSlice({
     name: CART_FEATURE_KEY,
     initialState: initialCartState,
     reducers: {
-        set: (state: CartState, action: PayloadAction<OrderEntity>) => {
+        set: (state: CartState, action: PayloadAction<OrderEntityLike>) => {
             const o = action.payload;
 
             if (!o.lines) return;
@@ -88,7 +107,7 @@ export const cartSlice = createSlice({
 
             if (!sameProducts.length) {
                 addItem(state, action.payload);
-            } else if (action.payload.product.unitOfMeasure === EACH) {
+            } else if (action.payload.product.unitOfMeasure === 'EA') {
                 sameProducts[0].quantity += action.payload.quantity;
             } else if (action.payload.quantity === 0) {
                 addItem(state, action.payload);

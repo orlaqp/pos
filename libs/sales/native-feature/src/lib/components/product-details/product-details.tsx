@@ -11,6 +11,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Alert } from 'react-native';
 import NumericInput from 'react-native-numeric-input';
 import { useSelector } from 'react-redux';
+import {
+    buildCartUpsertItem,
+    calculateLinePrice,
+    hasEnoughInventory,
+    isQuantityInputValid,
+} from './product-details.logic';
 
 /* eslint-disable-next-line */
 export interface ProductDetailsProps {
@@ -32,21 +38,22 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
     const each = item.product.unitOfMeasure === EACH;
 
     const validateInfo = () => {
-        const q = quantity === '' ? 0 : +quantity;
-        if (enforceSalesBasedOnInventory && product && product?.quantity - q < 0 ) {
+        if (
+            !hasEnoughInventory(
+                enforceSalesBasedOnInventory,
+                product?.quantity,
+                quantity
+            )
+        ) {
             Alert.alert('Cannot sale this much', 'There is not enough inventory to fulfill your request');
             return;
         }
 
-        upsertCart({
-            identifier: item.identifier,
-            product: item.product,
-            quantity: quantity === '' ? 0 : +quantity,
-        });
+        upsertCart(buildCartUpsertItem(item, quantity));
     }
 
     useEffect(() => {
-        setPrice(+quantity * item.product.price);
+        setPrice(calculateLinePrice(quantity, item.product.price));
     }, [item, quantity]);
 
     useEffect(() => {
@@ -103,9 +110,7 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
                             style={{ fontSize: 32 }}
                             textAlign="center"
                             onChangeText={(text) => {
-                                const val = +text;
-                                
-                                if (text.length > 0 && (isNaN(val) || !text.match(/^[0-9]+(\.[0-9]*)*$/)))
+                                if (!isQuantityInputValid(text))
                                     return;
 
                                 setQuantity(text);

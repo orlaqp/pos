@@ -1,5 +1,4 @@
 import { ProductEntity } from '@pos/products/data-access';
-import { MINIMUM_INVENTORY_FOR_SALE } from '@pos/sales/data-access';
 import {
     ButtonItemType,
     UIButton,
@@ -12,6 +11,11 @@ import { EACH } from '@pos/unit-of-measures/data-access';
 import React, { useEffect, useState } from 'react';
 
 import { View, Text, FlatList, StyleSheet } from 'react-native';
+import {
+    chunkProducts,
+    getNextRowsToShow,
+    getProductCardState,
+} from './product-selection.logic';
 
 /* eslint-disable-next-line */
 export interface ProductSelectionProps {
@@ -30,25 +34,17 @@ export function ProductSelection({
     const [rowsToShow, setRowsToShow] = useState<number>(6);
 
     const productBackgroundColor = (product: ProductEntity) => {
-        if (product.quantity < MINIMUM_INVENTORY_FOR_SALE)
+        const state = getProductCardState(product);
+        if (state === 'danger')
             return styles.dangerBackground;
-        if (product.reorderPoint && product.quantity > 0 && product.quantity <= product.reorderPoint)
+        if (state === 'warning')
             return styles.warningBackground;
 
         return styles.itemBackground;
     }
 
     useEffect(() => {
-        const chunkSize = 3;
-        const rows = [];
-
-        for (let i = 0; i < products.length; i += chunkSize) {
-            const chunk = products.slice(i, i + chunkSize);
-            rows.push(chunk);
-            // do whatever
-        }
-
-        setRows(rows);
+        setRows(chunkProducts(products));
     }, [products]);
 
     return (
@@ -64,9 +60,10 @@ export function ProductSelection({
 
             <View style={localStyles.listWrap}>
                 <FlatList
+                    testID="product-selection-list"
                     data={rows?.slice(0, rowsToShow)}
                     // onEndReachedThreshold={0.2}
-                    onEndReached={() => setRowsToShow(rowsToShow + 6)}
+                    onEndReached={() => setRowsToShow(getNextRowsToShow(rowsToShow))}
                     contentContainerStyle={localStyles.listContent}
                     renderItem={(info) => (
                         <View

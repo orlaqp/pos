@@ -1,4 +1,3 @@
-import { PaymentEntity } from '@pos/orders/data-access';
 import { Product } from '@pos/shared/models';
 
 export interface CartHeader {
@@ -43,7 +42,7 @@ export interface CartState {
     orderNo?: string;
     header?: CartHeader;
     items: CartItem[];
-    payments?: PaymentEntity[];
+    payments?: CartPayment[];
     footer: CartFooter;
     selected?: CartItem;
 }

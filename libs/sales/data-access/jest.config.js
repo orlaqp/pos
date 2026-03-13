@@ -6,4 +6,12 @@ module.exports = {
     },
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
     coverageDirectory: '../../../coverage/libs/sales/data-access',
+    coverageThreshold: {
+        global: {
+            statements: 95,
+            branches: 70,
+            functions: 95,
+            lines: 95,
+        },
+    },
 };

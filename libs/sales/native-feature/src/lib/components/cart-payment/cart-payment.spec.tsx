@@ -186,4 +186,44 @@ describe('CartPayment integration', () => {
             'Received payment cannot be less than the total'
         );
     });
+
+    it('validates EBT cannot exceed eligible total', () => {
+        const onPaymentEntered = jest.fn();
+        const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
+        const { getByTestId } = render(
+            <CartPayment
+                total={100}
+                ebtEligibleTotal={24.9}
+                canReceiveChecks={false}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent(getByTestId('payment-switch-ebt'), 'valueChange', true);
+        fireEvent.changeText(getByTestId('payment-input-ebt'), '50');
+        fireEvent(getByTestId('payment-switch-cash'), 'valueChange', true);
+        fireEvent.changeText(getByTestId('payment-input-cash'), '50');
+        fireEvent.press(getByTestId('payment-submit-button'));
+
+        expect(alertSpy).toHaveBeenCalledWith(
+            'EBT validation failed',
+            expect.stringContaining('$50.00')
+        );
+        expect(onPaymentEntered).not.toHaveBeenCalled();
+    });
+
+    it('renders check method when user can receive checks', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId } = render(
+            <CartPayment
+                total={10}
+                ebtEligibleTotal={0}
+                canReceiveChecks={true}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        expect(getByTestId('payment-switch-check')).toBeTruthy();
+        expect(getByTestId('payment-input-check')).toBeTruthy();
+    });
 });

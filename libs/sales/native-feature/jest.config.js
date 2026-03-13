@@ -14,4 +14,12 @@ module.exports = {
       'react-native/jest/assetFileTransformer.js'
     ),
   },
+  coverageThreshold: {
+    global: {
+      statements: 94,
+      branches: 75,
+      functions: 95,
+      lines: 95,
+    },
+  },
 };
