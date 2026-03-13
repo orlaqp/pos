@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
+import DatePicker from 'react-native-date-picker';
 
 import EndOfDay, {
     buildEndOfDayWidgets,
@@ -132,7 +133,6 @@ describe('EndOfDay', () => {
     });
 
     it('renders date controls and handles date-picker callbacks', async () => {
-        const DatePicker = require('react-native-date-picker').default || require('react-native-date-picker');
         const { getByText, UNSAFE_getByType } = render(<EndOfDay />);
 
         expect(getByText('Date')).toBeTruthy();

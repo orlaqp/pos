@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
-import { Pressable, Text } from 'react-native';
 
 const menu = [
   { id: '1', title: 'Dashboard', icon: 'i', group: 'Core' },
@@ -24,17 +23,21 @@ jest.mock('@rneui/themed', () => ({
 }));
 
 jest.mock('./single-item', () => ({
-  SingleItem: ({ item, setSelected }: { item: { title: string }; setSelected: (item: { title: string }) => void }) => (
-    <Pressable testID={`single-${item.title}`} onPress={() => setSelected(item)}>
-      <Text>{item.title}</Text>
-    </Pressable>
-  ),
+  SingleItem: ({ item, setSelected }: { item: { title: string }; setSelected: (item: { title: string }) => void }) => {
+    const { Pressable, Text } = require('react-native');
+    return (
+      <Pressable testID={`single-${item.title}`} onPress={() => setSelected(item)}>
+        <Text>{item.title}</Text>
+      </Pressable>
+    );
+  },
 }));
 
 jest.mock('./submenu', () => ({
-  Submenu: ({ item }: { item: { title: string } }) => (
-    <Text testID={`submenu-${item.title}`}>{item.title}</Text>
-  ),
+  Submenu: ({ item }: { item: { title: string } }) => {
+    const { Text } = require('react-native');
+    return <Text testID={`submenu-${item.title}`}>{item.title}</Text>;
+  },
 }));
 
 const { Sidebar } = require('./sidebar');

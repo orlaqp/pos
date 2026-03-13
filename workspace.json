@@ -37,5 +37,6 @@
         "theme-native": "libs/theme/native",
         "unit-of-measures-data-access": "libs/unit-of-measures/data-access",
         "unit-of-measures-native-feature": "libs/unit-of-measures/native-feature"
-    }
+    },
+    "$schema": "./node_modules/nx/schemas/workspace-schema.json"
 }

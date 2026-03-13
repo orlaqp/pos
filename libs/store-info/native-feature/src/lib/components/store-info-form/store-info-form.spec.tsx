@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert } from 'react-native';
 
 const mockDispatch = jest.fn();
 const mockGoBack = jest.fn();
@@ -33,26 +33,41 @@ jest.mock('@pos/theme/native/design-tokens', () => ({
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
-    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UIStack: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    UIScreen: ({ children }: { children: React.ReactNode }) => {
+        const { View } = require('react-native');
+        return <View>{children}</View>;
+    },
+    UICard: ({ children }: { children: React.ReactNode }) => {
+        const { View } = require('react-native');
+        return <View>{children}</View>;
+    },
+    UIStack: ({ children }: { children: React.ReactNode }) => {
+        const { View } = require('react-native');
+        return <View>{children}</View>;
+    },
     UIActions: ({
         submitAction,
         cancelAction,
     }: {
         submitAction: () => void;
         cancelAction: () => void;
-    }) => (
-        <View>
-            <Pressable testID="store-info-save" onPress={submitAction}>
-                <Text>Save</Text>
-            </Pressable>
-            <Pressable testID="store-info-cancel" onPress={cancelAction}>
-                <Text>Cancel</Text>
-            </Pressable>
-        </View>
-    ),
-    UIInput: ({ name }: { name: string }) => <View testID={`store-info-input-${name}`} />,
+    }) => {
+        const { View, Pressable, Text } = require('react-native');
+        return (
+            <View>
+                <Pressable testID="store-info-save" onPress={submitAction}>
+                    <Text>Save</Text>
+                </Pressable>
+                <Pressable testID="store-info-cancel" onPress={cancelAction}>
+                    <Text>Cancel</Text>
+                </Pressable>
+            </View>
+        );
+    },
+    UIInput: ({ name }: { name: string }) => {
+        const { View } = require('react-native');
+        return <View testID={`store-info-input-${name}`} />;
+    },
 }));
 
 jest.mock('@pos/store-info/data-access', () => ({

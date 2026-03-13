@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
-import { Pressable, Text } from 'react-native';
 
 const mockDispatch = jest.fn();
 const mockNavigate = jest.fn();
@@ -31,11 +30,14 @@ jest.mock('@pos/theme/native/design-tokens', () => ({
 
 jest.mock('@rneui/themed', () => ({
     useTheme: () => ({ theme: { colors: { primary: '#4da3ff', error: '#ff5f5f' } } }),
-    Button: ({ title, onPress, testID }: { title?: string; onPress: () => void; testID?: string }) => (
-        <Pressable onPress={onPress} testID={testID || title}>
-            <Text>{title || 'icon-button'}</Text>
-        </Pressable>
-    ),
+    Button: ({ title, onPress, testID }: { title?: string; onPress: () => void; testID?: string }) => {
+        const { Pressable, Text } = require('react-native');
+        return (
+            <Pressable onPress={onPress} testID={testID || title}>
+                <Text>{title || 'icon-button'}</Text>
+            </Pressable>
+        );
+    },
 }));
 
 jest.mock('react-redux', () => ({
@@ -60,11 +62,11 @@ jest.mock('@pos/auth/data-access', () => ({
     Role: { VoidOrder: 'VoidOrder', RemoveSale: 'RemoveSale' },
 }));
 
-const setAction = jest.fn((payload) => ({ type: 'cart/set', payload }));
+const mockSetAction = jest.fn((payload) => ({ type: 'cart/set', payload }));
 
 jest.mock('@pos/sales/data-access', () => ({
     cartActions: {
-        set: (payload: unknown) => setAction(payload),
+        set: (payload: unknown) => mockSetAction(payload),
     },
 }));
 
@@ -110,7 +112,7 @@ describe('OrderItem integration', () => {
         expect(queryByText('Payment')).toBeTruthy();
         fireEvent.press(getByTestId('order-item-pay-button'));
 
-        expect(setAction).toHaveBeenCalledWith(item);
+        expect(mockSetAction).toHaveBeenCalledWith(item);
         expect(mockDispatch).toHaveBeenCalledWith({
             type: 'cart/set',
             payload: item,

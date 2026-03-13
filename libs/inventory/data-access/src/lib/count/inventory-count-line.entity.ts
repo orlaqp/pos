@@ -1,4 +1,3 @@
-import { ProductEntity } from '@pos/products/data-access';
 import {
     InventoryCount,
     InventoryCountLine,
@@ -20,6 +19,11 @@ export type InventoryCountLineDTO = {
     updatedAt?: string | null | undefined;
     inventoryCountLineInventoryCountId: string | null | undefined;
 };
+
+type CountSelectableProduct = Pick<
+    Product,
+    'id' | 'name' | 'unitOfMeasure' | 'quantity'
+>;
 
 export class InventoryCountLineMapper {
     static fromProduct(x: Product): InventoryCountLineDTO {
@@ -51,7 +55,7 @@ export class InventoryCountLineMapper {
     }
 
     static toSelectable(
-        products: Dictionary<ProductEntity>,
+        products: Dictionary<CountSelectableProduct>,
         count?: InventoryCountDTO
     ): Dictionary<Selectable<InventoryCountLineDTO>> {
         if (!products) return {};

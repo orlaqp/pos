@@ -1,4 +1,3 @@
-import { ProductEntity } from '@pos/products/data-access';
 import { InventoryReceiveLine, Product } from '@pos/shared/models';
 
 export type InventoryReceiveLineDTO = {
@@ -13,8 +12,10 @@ export type InventoryReceiveLineDTO = {
     inventoryReceiveLineInventoryReceiveId: string | null | undefined;
 };
 
+type ReceiveSelectableProduct = Pick<Product, 'id' | 'name' | 'unitOfMeasure'>;
+
 export class InventoryReceiveLineMapper {
-    static fromProduct(x: ProductEntity): InventoryReceiveLineDTO {
+    static fromProduct(x: ReceiveSelectableProduct): InventoryReceiveLineDTO {
         return {
             productId: x.id,
             productName: x.name,
@@ -39,5 +40,4 @@ export class InventoryReceiveLineMapper {
         };
     }
 }
-
 

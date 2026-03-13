@@ -1,11 +1,11 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
-import UiSearchInput from './ui-search-input';
+import { UISearchInput } from './ui-search-input';
 
 describe('UiSearchInput', () => {
   it('should render successfully', () => {
-    const { container } = render(<UiSearchInput />);
-    expect(container).toBeTruthy();
+    const { toJSON } = render(<UISearchInput onSubmit={jest.fn()} />);
+    expect(toJSON()).toBeTruthy();
   });
 });

@@ -21,4 +21,4 @@ initializeDataStore(store.dispatch);
 // i18n
 store.dispatch(settingsActions.setLanguage('en'));
 
-AppRegistry.registerComponent('main', () => App);
+AppRegistry.registerComponent('MobileUi', () => App);

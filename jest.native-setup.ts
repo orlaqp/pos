@@ -1,6 +1,11 @@
 import mockRNCNetInfo from '@react-native-community/netinfo/jest/netinfo-mock.js';
-import React from 'react';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import mockReact from 'react';
+import {
+  Text as mockText,
+  TextInput as mockTextInput,
+  TouchableOpacity as mockTouchableOpacity,
+  View as mockView,
+} from 'react-native';
 
 const emptyEntityState = {
   ids: [],
@@ -38,12 +43,12 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: jest.fn(), goBack: jest.fn() }),
   useRoute: () => ({ params: {} }),
   useTheme: () => ({ dark: true, colors: { primary: '#2f95dc', background: '#000000' } }),
-  NavigationContainer: ({ children }: any) => React.createElement(View, null, children),
+  NavigationContainer: ({ children }: any) => mockReact.createElement(mockView, null, children),
 }));
 jest.mock('@react-navigation/native-stack', () => ({
   createNativeStackNavigator: () => ({
-    Navigator: ({ children }: any) => React.createElement(View, null, children),
-    Screen: ({ children }: any) => React.createElement(View, null, children),
+    Navigator: ({ children }: any) => mockReact.createElement(mockView, null, children),
+    Screen: ({ children }: any) => mockReact.createElement(mockView, null, children),
   }),
 }));
 
@@ -70,11 +75,11 @@ jest.mock('react-native-image-picker', () => ({
   MediaType: {},
 }));
 jest.mock('react-native-date-picker', () => {
-  const Comp = (props: any) => React.createElement(View, props, props.children);
+  const Comp = (props: any) => mockReact.createElement(mockView, props, props.children);
   return Comp;
 });
 jest.mock('react-native-daterange-picker', () => {
-  const Comp = (props: any) => React.createElement(View, props, props.children);
+  const Comp = (props: any) => mockReact.createElement(mockView, props, props.children);
   return Comp;
 });
 jest.mock('react-native-localize', () => ({
@@ -95,23 +100,23 @@ jest.mock('react-native-localize', () => ({
   removeEventListener: jest.fn(),
 }));
 jest.mock('react-native-dropdown-picker', () => {
-  const Comp = (props: any) => React.createElement(View, props, props.children);
+  const Comp = (props: any) => mockReact.createElement(mockView, props, props.children);
   return Comp;
 });
 jest.mock('react-native-chart-kit', () => ({
-  LineChart: (props: any) => React.createElement(View, props, props.children),
-  PieChart: (props: any) => React.createElement(View, props, props.children),
+  LineChart: (props: any) => mockReact.createElement(mockView, props, props.children),
+  PieChart: (props: any) => mockReact.createElement(mockView, props, props.children),
 }));
 jest.mock('react-native-gesture-handler', () => {
-  const Mock = (props: any) => React.createElement(View, props, props.children);
+  const Mock = (props: any) => mockReact.createElement(mockView, props, props.children);
   return {
     GestureHandlerRootView: Mock,
     Swipeable: Mock,
     PanGestureHandler: Mock,
     TapGestureHandler: Mock,
-    TouchableOpacity,
-    TouchableHighlight: TouchableOpacity,
-    TouchableWithoutFeedback: TouchableOpacity,
+    TouchableOpacity: mockTouchableOpacity,
+    TouchableHighlight: mockTouchableOpacity,
+    TouchableWithoutFeedback: mockTouchableOpacity,
     ScrollView: Mock,
     State: {},
   };
@@ -172,41 +177,41 @@ jest.mock('@pos/theme/native', () => ({
   },
 }));
 jest.mock('@rneui/themed', () => {
-  const mk = (Base: any = View) =>
-    React.forwardRef((props: any, ref: any) =>
-      React.createElement(Base, { ...props, ref }, props.children)
+  const mk = (Base: any = mockView) =>
+    mockReact.forwardRef((props: any, ref: any) =>
+      mockReact.createElement(Base, { ...props, ref }, props.children)
     );
 
-  const ListItem: any = mk(TouchableOpacity);
-  ListItem.Content = mk(View);
-  ListItem.Title = mk(Text);
-  ListItem.Subtitle = mk(Text);
-  ListItem.Chevron = mk(View);
-  ListItem.Swipeable = mk(View);
+  const ListItem: any = mk(mockTouchableOpacity);
+  ListItem.Content = mk(mockView);
+  ListItem.Title = mk(mockText);
+  ListItem.Subtitle = mk(mockText);
+  ListItem.Chevron = mk(mockView);
+  ListItem.Swipeable = mk(mockView);
 
   return {
-    Avatar: mk(View),
-    Badge: mk(View),
-    BottomSheet: mk(View),
-    Button: mk(TouchableOpacity),
-    ButtonGroup: mk(View),
-    Card: mk(View),
-    CheckBox: mk(TouchableOpacity),
-    Divider: mk(View),
-    FAB: mk(TouchableOpacity),
-    Header: mk(View),
-    Icon: mk(View),
-    Image: mk(View),
-    Input: mk(TextInput),
+    Avatar: mk(mockView),
+    Badge: mk(mockView),
+    BottomSheet: mk(mockView),
+    Button: mk(mockTouchableOpacity),
+    ButtonGroup: mk(mockView),
+    Card: mk(mockView),
+    CheckBox: mk(mockTouchableOpacity),
+    Divider: mk(mockView),
+    FAB: mk(mockTouchableOpacity),
+    Header: mk(mockView),
+    Icon: mk(mockView),
+    Image: mk(mockView),
+    Input: mk(mockTextInput),
     ListItem,
-    Overlay: mk(View),
-    Slider: mk(View),
-    SpeedDial: mk(View),
-    Switch: mk(View),
-    Tab: mk(View),
-    Text: mk(Text),
-    Tile: mk(View),
-    Tooltip: mk(View),
+    Overlay: mk(mockView),
+    Slider: mk(mockView),
+    SpeedDial: mk(mockView),
+    Switch: mk(mockView),
+    Tab: mk(mockView),
+    Text: mk(mockText),
+    Tile: mk(mockView),
+    Tooltip: mk(mockView),
     useTheme: () => ({
       theme: {
         colors: {
@@ -226,7 +231,7 @@ jest.mock('@rneui/themed', () => {
         },
       },
     }),
-    ThemeProvider: mk(View),
+    ThemeProvider: mk(mockView),
     withTheme: (Component: any) => Component,
   };
 });

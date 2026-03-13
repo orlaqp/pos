@@ -45,11 +45,15 @@ jest.mock('@rneui/themed', () => ({
         title: string;
         onPress: () => void;
         testID?: string;
-    }) => (
-        <Pressable onPress={onPress} testID={testID || 'submit-payment'}>
-            <Text>{title}</Text>
-        </Pressable>
-    ),
+    }) =>
+        (() => {
+            const { Pressable, Text } = require('react-native');
+            return (
+                <Pressable onPress={onPress} testID={testID || 'submit-payment'}>
+                    <Text>{title}</Text>
+                </Pressable>
+            );
+        })(),
 }));
 
 jest.mock('@pos/shared/ui-native', () => {

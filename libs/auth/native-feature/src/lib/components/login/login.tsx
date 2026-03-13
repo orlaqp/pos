@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { signIn } from '@pos/auth/data-access';
 import { RootState } from '@pos/store';
 
-import logo from '../assets/logo.png';
+import logo from '../../assets/logo.png';
 import { translate } from '@pos/settings/data-access';
 
 /* eslint-disable-next-line */

@@ -1,5 +1,3 @@
-import { StoreInfoEntity } from '@pos/store-info/data-access';
-import { CartState } from '@pos/sales/data-access';
 import {
     InterfaceType,
     StarConnectionSettings,
@@ -12,7 +10,49 @@ import { PrinterEntity } from './slices/printer.entity';
 import { Alert } from 'react-native';
 import { CutType } from 'react-native-star-io10/src/StarXpandCommand/Printer/CutType';
 import { Alignment } from 'react-native-star-io10/src/StarXpandCommand/Printer/Alignment';
-import { OrderEntity } from '@pos/orders/data-access';
+
+type ReceiptStoreInfo = {
+    name?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    phone?: string;
+    fax?: string;
+    email?: string;
+    disclaimer?: string;
+};
+
+type ReceiptCartState = {
+    items: Array<{
+        quantity: number;
+        product: {
+            name: string;
+            price: number;
+        };
+    }>;
+    footer: {
+        total: number;
+    };
+};
+
+type ReceiptOrderEntity = {
+    id?: string;
+    status?: 'OPEN' | 'PAID' | 'REFUNDED' | string;
+    orderNo?: string;
+    paymentInfo?: {
+        payments?: Array<{
+            type: string;
+            amount: number;
+        }>;
+    };
+    lines?: Array<{
+        quantity?: number;
+        productName?: string;
+        ebtPaidAmount?: number;
+        nonEbtPaidAmount?: number;
+    }>;
+};
 
 let starManager: StarDeviceDiscoveryManager;
 
@@ -61,10 +101,10 @@ export const stopDiscovery = () => {
 };
 
 export const printReceipt = async (
-    store: StoreInfoEntity,
+    store: ReceiptStoreInfo,
     printerInfo: PrinterEntity,
-    cart: CartState,
-    order?: OrderEntity,
+    cart: ReceiptCartState,
+    order?: ReceiptOrderEntity,
 ) => {
     if (!store || !printerInfo) {
         Alert.alert('Store and printer should be available in order to print..');
@@ -195,7 +235,7 @@ const formatQty = (quantity: number) =>
 const formatLine = (qty: number, name: string, amount: number) =>
     `${formatQty(qty).padEnd(5, ' ')}  ${name.substring(0, 15).padEnd(15, ' ')}  ${amount.toFixed(2).padStart(7, ' ')}`;
 
-const buildClassicLines = (cart: CartState) => {
+const buildClassicLines = (cart: ReceiptCartState) => {
     return (
         'Qty    Description        Total\\n' +
         '-------------------------------\\n' +
@@ -207,7 +247,7 @@ const buildClassicLines = (cart: CartState) => {
     );
 };
 
-const buildEbtLines = (order: OrderEntity) => {
+const buildEbtLines = (order: ReceiptOrderEntity) => {
     const lines = order.lines || [];
     const ebtLines = lines.filter((line) => (line?.ebtPaidAmount || 0) > 0);
     const nonEbtLines = lines.filter((line) => (line?.nonEbtPaidAmount || 0) > 0);
@@ -261,7 +301,7 @@ const buildEbtLines = (order: OrderEntity) => {
     );
 };
 
-const buildReceiptLines = (cart: CartState, order?: OrderEntity) => {
+const buildReceiptLines = (cart: ReceiptCartState, order?: ReceiptOrderEntity) => {
     const hasEbtPayment = !!order?.paymentInfo?.payments?.some(
         (payment) => payment.type?.toUpperCase() === 'EBT'
     );

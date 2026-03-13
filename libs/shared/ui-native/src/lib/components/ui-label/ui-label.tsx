@@ -13,13 +13,20 @@ export interface UiLabelProps {
 }
 
 const getColors = (type: LabelType, theme: any) => {
+    const colors = theme?.theme?.colors || {
+        primary: '#4aa3eb',
+        black: '#ffffff',
+        error: '#ef4444',
+        success: '#34c759',
+        grey1: '#dddddd',
+    };
     switch (type) {
         case 'info':
-            return [theme.theme.colors.primary, theme.theme.colors.black]
+            return [colors.primary, colors.black]
         case 'error':
-            return [theme.theme.colors.error, theme.theme.colors.grey1]
+            return [colors.error, colors.grey1]
         case 'success':
-            return [theme.theme.colors.success, theme.theme.colors.grey1]
+            return [colors.success, colors.grey1]
         default:
             return [];
     }

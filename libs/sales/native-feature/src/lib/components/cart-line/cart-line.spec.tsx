@@ -8,15 +8,22 @@ const mockOnSelect = jest.fn();
 
 jest.mock('@rneui/themed', () => ({
     useTheme: () => ({ theme: { colors: { grey2: '#999', error: '#f66' } } }),
-    Button: ({ onPress }: { onPress: () => void }) => (
-        <Pressable testID="cart-line-remove" onPress={onPress}>
-            <Text>Remove</Text>
-        </Pressable>
-    ),
+    Button: ({ onPress }: { onPress: () => void }) =>
+        (() => {
+            const { Pressable, Text } = require('react-native');
+            return (
+                <Pressable testID="cart-line-remove" onPress={onPress}>
+                    <Text>Remove</Text>
+                </Pressable>
+            );
+        })(),
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
-    UIEbtRibbon: () => <Text>EBT</Text>,
+    UIEbtRibbon: () => {
+        const { Text } = require('react-native');
+        return <Text>EBT</Text>;
+    },
 }));
 
 const { CartLine } = require('./cart-line');

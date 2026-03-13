@@ -1,58 +1,23 @@
+import { ordersActions, ordersReducer, initialOrdersState } from './orders.slice';
 
-import {
-  fetchOrders,
-  OrdersAdapter,
-  OrdersReducer,
-} from './orders.slice';
-
-describe('Orders reducer', () => {
-  it('should handle initial state', () => {
-    const expected = OrdersAdapter.getInitialState({
-      loadingStatus: 'not loaded',
-      error: null,
-    });
-
-    expect(OrdersReducer(undefined, { type: '' })).toEqual(expected);
+describe('orders reducer', () => {
+  it('returns initial state', () => {
+    expect(ordersReducer(undefined, { type: '' })).toEqual(initialOrdersState);
   });
 
-  it('should handle fetchOrders', () => {
-    let state = ordersReducer(
-      undefined,
-      fetchOrders.pending(null, null)
-    );
+  it('handles setAll/filter/remove', () => {
+    const items = [
+      { id: 'o1', status: 'OPEN', orderNo: 'N1' },
+      { id: 'o2', status: 'PAID', orderNo: 'N2' },
+    ] as any[];
+    let state = ordersReducer(undefined, ordersActions.setAll(items as any));
+    expect(state.loadingStatus).toBe('loaded');
+    expect(state.ids).toHaveLength(2);
 
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'loading',
-        error: null,
-        entities: {},
-      })
-    );
+    state = ordersReducer(state, ordersActions.filter({ status: 'OPEN' } as any));
+    expect(state.filterQuery).toEqual({ status: 'OPEN' });
 
-    state = ordersReducer(
-      state,
-      fetchOrders.fulfilled([{ id: 1 }], null, null)
-    );
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'loaded',
-        error: null,
-        entities: { 1: { id: 1 } },
-      })
-    );
-
-    state = ordersReducer(
-      state,
-      fetchOrders.rejected(new Error('Uh oh'), null, null)
-    );
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'error',
-        error: 'Uh oh',
-        entities: { 1: { id: 1 } },
-      })
-    );
+    state = ordersReducer(state, ordersActions.remove('o2'));
+    expect(state.entities['o2']).toBeUndefined();
   });
 });

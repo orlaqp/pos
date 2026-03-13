@@ -6,13 +6,13 @@ import { fireEvent, render } from '@testing-library/react-native';
 const mockDispatch = jest.fn();
 const mockOnSubmit = jest.fn();
 
-let cartState: any;
-let employeeState: any;
+let mockCartState: any;
+let mockEmployeeState: any;
 
 jest.mock('react-redux', () => ({
     useDispatch: () => mockDispatch,
     useSelector: (selector: (state: any) => unknown) =>
-        selector({ cart: cartState, employee: employeeState }),
+        selector({ cart: mockCartState, employee: mockEmployeeState }),
 }));
 
 jest.mock('@pos/sales/data-access', () => ({
@@ -35,8 +35,14 @@ jest.mock('@pos/auth/data-access', () => ({
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
-    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UIEmptyState: ({ text }: { text: string }) => <Text>{text}</Text>,
+    UICard: ({ children }: { children: React.ReactNode }) => {
+        const { View } = require('react-native');
+        return <View>{children}</View>;
+    },
+    UIEmptyState: ({ text }: { text: string }) => {
+        const { Text } = require('react-native');
+        return <Text>{text}</Text>;
+    },
 }));
 
 jest.mock('@rneui/themed', () => ({
@@ -64,9 +70,14 @@ jest.mock('@rneui/themed', () => ({
         onPress: () => void;
         testID?: string;
     }) => (
-        <Pressable onPress={onPress} testID={testID || title}>
-            <Text>{title}</Text>
-        </Pressable>
+        (() => {
+            const { Pressable, Text } = require('react-native');
+            return (
+                <Pressable onPress={onPress} testID={testID || title}>
+                    <Text>{title}</Text>
+                </Pressable>
+            );
+        })()
     ),
     Dialog: ({
         isVisible,
@@ -78,15 +89,20 @@ jest.mock('@rneui/themed', () => ({
         children: React.ReactNode;
     }) =>
         isVisible ? (
-            <View>
-                {children}
-                <Pressable
-                    testID="cart-payment-backdrop"
-                    onPress={onBackdropPress}
-                >
-                    <Text>Close</Text>
-                </Pressable>
-            </View>
+            (() => {
+                const { View, Pressable, Text } = require('react-native');
+                return (
+                    <View>
+                        {children}
+                        <Pressable
+                            testID="cart-payment-backdrop"
+                            onPress={onBackdropPress}
+                        >
+                            <Text>Close</Text>
+                        </Pressable>
+                    </View>
+                );
+            })()
         ) : null,
 }));
 
@@ -100,29 +116,37 @@ jest.mock('../cart-line/cart-line', () => ({
         item: { product: { name: string } };
         onSelect: (item: any) => void;
         onRemove: (item: any) => void;
-    }) => (
-        <View>
-            <Text>{item.product.name}</Text>
-            <Pressable testID="cart-line-select" onPress={() => onSelect(item)}>
-                <Text>Select</Text>
-            </Pressable>
-            <Pressable testID="cart-line-remove" onPress={() => onRemove(item)}>
-                <Text>Remove</Text>
-            </Pressable>
-        </View>
-    ),
+    }) =>
+        (() => {
+            const { View, Text, Pressable } = require('react-native');
+            return (
+                <View>
+                    <Text>{item.product.name}</Text>
+                    <Pressable testID="cart-line-select" onPress={() => onSelect(item)}>
+                        <Text>Select</Text>
+                    </Pressable>
+                    <Pressable testID="cart-line-remove" onPress={() => onRemove(item)}>
+                        <Text>Remove</Text>
+                    </Pressable>
+                </View>
+            );
+        })(),
 }));
 
 jest.mock('../cart-payment/cart-payment', () => ({
     __esModule: true,
-    default: ({ onPaymentEntered }: { onPaymentEntered: (payments: any[]) => void }) => (
-        <Pressable
-            testID="cart-payment-entered"
-            onPress={() => onPaymentEntered([{ method: 'cash', amount: 5 }])}
-        >
-            <Text>CartPayment</Text>
-        </Pressable>
-    ),
+    default: ({ onPaymentEntered }: { onPaymentEntered: (payments: any[]) => void }) =>
+        (() => {
+            const { Pressable, Text } = require('react-native');
+            return (
+                <Pressable
+                    testID="cart-payment-entered"
+                    onPress={() => onPaymentEntered([{ method: 'cash', amount: 5 }])}
+                >
+                    <Text>CartPayment</Text>
+                </Pressable>
+            );
+        })(),
 }));
 
 const { Cart } = require('./cart');
@@ -132,7 +156,7 @@ describe('Cart', () => {
         jest.clearAllMocks();
         jest.useFakeTimers();
         jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
-        cartState = {
+        mockCartState = {
             items: [
                 {
                     identifier: 'i-1',
@@ -148,7 +172,7 @@ describe('Cart', () => {
             ],
             footer: { total: 5, subtotal: 5, tax: 0, discount: 0 },
         };
-        employeeState = { roles: ['Checks'] };
+        mockEmployeeState = { roles: ['Checks'] };
     });
 
     afterEach(() => {
@@ -169,7 +193,7 @@ describe('Cart', () => {
     };
 
     it('shows empty state when cart has no items', () => {
-        cartState.items = [];
+        mockCartState.items = [];
         const { getByText } = renderCart('order');
         expect(getByText('Cart is empty')).toBeTruthy();
     });
@@ -189,7 +213,7 @@ describe('Cart', () => {
     it('submits directly in order mode', () => {
         const { getByText } = renderCart('order');
         fireEvent.press(getByText(/Print Order/));
-        expect(mockOnSubmit).toHaveBeenCalledWith(cartState);
+        expect(mockOnSubmit).toHaveBeenCalledWith(mockCartState);
     });
 
     it('opens payment modal in payment mode and submits payments', () => {
@@ -197,7 +221,7 @@ describe('Cart', () => {
         fireEvent.press(getByText(/Receive Payment/));
         fireEvent.press(getByTestId('cart-payment-entered'));
         expect(mockOnSubmit).toHaveBeenCalledWith(
-            cartState,
+            mockCartState,
             expect.arrayContaining([expect.objectContaining({ method: 'cash' })])
         );
     });

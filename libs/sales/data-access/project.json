@@ -1,5 +1,5 @@
 {
-    "root": "libs/sales/data-access",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/sales/data-access/src",
     "projectType": "library",
     "tags": [],
@@ -17,7 +17,7 @@
             "executor": "@nrwl/jest:jest",
             "outputs": ["coverage/libs/sales/data-access"],
             "options": {
-                "jestConfig": "libs/sales/data-access/jest.config.js",
+                "jestConfig": "libs/sales/data-access/jest.config.ts",
                 "passWithNoTests": true
             }
         }

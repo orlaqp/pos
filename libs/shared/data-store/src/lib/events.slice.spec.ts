@@ -1,50 +1,28 @@
-import { fetchEvents, eventsAdapter, eventsReducer } from './events.slice';
+import {
+  eventsActions,
+  eventsAdapter,
+  eventsReducer,
+  initialEventsState,
+} from './events.slice';
 
 describe('events reducer', () => {
-    it('should handle initial state', () => {
-        const expected = eventsAdapter.getInitialState({
-            loadingStatus: 'not loaded',
-            error: null,
-        });
+  it('returns initial state', () => {
+    expect(eventsReducer(undefined, { type: '' })).toEqual(initialEventsState);
+  });
 
-        expect(eventsReducer(undefined, { type: '' })).toEqual(expected);
-    });
+  it('adds and removes events', () => {
+    let state = eventsReducer(
+      undefined,
+      eventsActions.add({
+        id: 'e1',
+        event: 'TEST',
+        data: '{}',
+        timestamp: '2026-03-13T10:00:00.000Z',
+      })
+    );
+    expect(eventsAdapter.getSelectors().selectById(state, 'e1')).toBeTruthy();
 
-    it('should handle fetchEventss', () => {
-        let state = eventsReducer(undefined, fetchEvents.pending(null, null));
-
-        expect(state).toEqual(
-            expect.objectContaining({
-                loadingStatus: 'loading',
-                error: null,
-                entities: {},
-            })
-        );
-
-        state = eventsReducer(
-            state,
-            fetchEvents.fulfilled([{ id: 1 }], null, null)
-        );
-
-        expect(state).toEqual(
-            expect.objectContaining({
-                loadingStatus: 'loaded',
-                error: null,
-                entities: { 1: { id: 1 } },
-            })
-        );
-
-        state = eventsReducer(
-            state,
-            fetchEvents.rejected(new Error('Uh oh'), null, null)
-        );
-
-        expect(state).toEqual(
-            expect.objectContaining({
-                loadingStatus: 'error',
-                error: 'Uh oh',
-                entities: { 1: { id: 1 } },
-            })
-        );
-    });
+    state = eventsReducer(state, eventsActions.remove('e1'));
+    expect(eventsAdapter.getSelectors().selectById(state, 'e1')).toBeUndefined();
+  });
 });

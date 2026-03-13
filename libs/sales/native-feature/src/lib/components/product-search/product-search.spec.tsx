@@ -8,16 +8,20 @@ const mockPrimary = '#00f';
 const mockGrey = '#999';
 
 jest.mock('@pos/shared/ui-native', () => ({
-    UISearchInput: React.forwardRef(
-        (
-            { onSubmit }: { onSubmit: (value: string) => void },
-            _ref: React.ForwardedRef<any>
-        ) => (
-            <Pressable testID="product-search-submit" onPress={() => onSubmit('apple')}>
-                <Text>Search</Text>
-            </Pressable>
-        )
-    ),
+    UISearchInput: (() => {
+        const React = require('react');
+        const { Pressable, Text } = require('react-native');
+        return React.forwardRef(
+            (
+                { onSubmit }: { onSubmit: (value: string) => void },
+                _ref: React.ForwardedRef<any>
+            ) => (
+                <Pressable testID="product-search-submit" onPress={() => onSubmit('apple')}>
+                    <Text>Search</Text>
+                </Pressable>
+            )
+        );
+    })(),
 }));
 
 jest.mock('@rneui/themed', () => ({
@@ -35,11 +39,15 @@ jest.mock('@rneui/themed', () => ({
     }: {
         onPress: () => void;
         icon: { color: string };
-    }) => (
-        <Pressable testID="product-search-keyboard" onPress={onPress}>
-            <Text>{icon.color}</Text>
-        </Pressable>
-    ),
+    }) =>
+        (() => {
+            const { Pressable, Text } = require('react-native');
+            return (
+                <Pressable testID="product-search-keyboard" onPress={onPress}>
+                    <Text>{icon.color}</Text>
+                </Pressable>
+            );
+        })(),
 }));
 
 const { ProductSearch } = require('./product-search');

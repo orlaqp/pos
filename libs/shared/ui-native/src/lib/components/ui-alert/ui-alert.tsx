@@ -20,6 +20,12 @@ export function UIAlert(props: UIAlertProps) {
 
 const useStyles = () => {
   const theme = useTheme();
+  const colors = theme?.theme?.colors || {
+    black: '#ffffff',
+    success: '#34c759',
+    warning: '#ffb020',
+    error: '#ef4444',
+  };
   return StyleSheet.create({
     container: {
       padding: 15,
@@ -27,17 +33,17 @@ const useStyles = () => {
       borderRadius: 5,
     },
     message: {
-      color: theme.theme.colors.black,
+      color: colors.black,
       fontSize: 14,
     },
     success: {
-      backgroundColor: theme.theme.colors.success,
+      backgroundColor: colors.success,
     },
     warning: {
-      backgroundColor: theme.theme.colors.warning,
+      backgroundColor: colors.warning,
     },
     error: {
-      backgroundColor: theme.theme.colors.error,
+      backgroundColor: colors.error,
     },
   });
 };

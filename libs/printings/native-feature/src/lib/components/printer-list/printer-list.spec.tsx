@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 
 import {
     createSetDefaultPrinterHandler,
@@ -85,7 +86,7 @@ describe('PrinterList', () => {
     });
 
     it('returns empty list and alerts when discovery fails', async () => {
-        const alertSpy = jest.spyOn(require('react-native').Alert, 'alert');
+        const alertSpy = jest.spyOn(Alert, 'alert');
         const failingDiscover = jest.fn(async () => {
             throw new Error('failed');
         });

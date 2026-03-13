@@ -1,4 +1,4 @@
-import { sortListBy } from './../../../../../shared/utils/src/lib/sorting';
+import { sortListBy } from '@pos/shared/utils';
 import { ProductEntityMapper } from './../product.entity';
 
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries

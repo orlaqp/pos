@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert } from 'react-native';
 
 const mockDispatch = jest.fn();
 const mockGoBack = jest.fn();
@@ -37,21 +37,39 @@ jest.mock('@pos/shared/ui-native', () => ({
     }: {
         submitAction: () => void;
         cancelAction: () => void;
-    }) => (
-        <View>
-            <Pressable testID="employee-form-save" onPress={submitAction}>
-                <Text>Save</Text>
-            </Pressable>
-            <Pressable testID="employee-form-cancel" onPress={cancelAction}>
-                <Text>Cancel</Text>
-            </Pressable>
-        </View>
-    ),
-    UIInput: ({ name }: { name: string }) => <View testID={`employee-input-${name}`} />,
-    UISwitch: ({ name }: { name: string }) => <View testID={`employee-switch-${name}`} />,
-    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UIStack: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    }) => {
+        const { Pressable: RNPressable, Text: RNText, View: RNView } = require('react-native');
+        return (
+            <RNView>
+                <RNPressable testID="employee-form-save" onPress={submitAction}>
+                    <RNText>Save</RNText>
+                </RNPressable>
+                <RNPressable testID="employee-form-cancel" onPress={cancelAction}>
+                    <RNText>Cancel</RNText>
+                </RNPressable>
+            </RNView>
+        );
+    },
+    UIInput: ({ name }: { name: string }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView testID={`employee-input-${name}`} />;
+    },
+    UISwitch: ({ name }: { name: string }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView testID={`employee-switch-${name}`} />;
+    },
+    UICard: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
+    UIScreen: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
+    UIStack: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
 }));
 
 jest.mock('@rneui/themed', () => ({
@@ -61,23 +79,32 @@ jest.mock('@rneui/themed', () => ({
     }: {
         title: string;
         onPress: () => void;
-    }) => (
-        <Pressable testID={`employee-button-${title}`} onPress={onPress}>
-            <Text>{title}</Text>
-        </Pressable>
-    ),
-    Icon: ({ name }: { name: string }) => <Text>{name}</Text>,
+    }) => {
+        const { Pressable: RNPressable, Text: RNText } = require('react-native');
+        return (
+            <RNPressable testID={`employee-button-${title}`} onPress={onPress}>
+                <RNText>{title}</RNText>
+            </RNPressable>
+        );
+    },
+    Icon: ({ name }: { name: string }) => {
+        const { Text: RNText } = require('react-native');
+        return <RNText>{name}</RNText>;
+    },
     CheckBox: ({
         title,
         onPress,
     }: {
         title: string;
         onPress: () => void;
-    }) => (
-        <Pressable testID={`employee-role-${title}`} onPress={onPress}>
-            <Text>{title}</Text>
-        </Pressable>
-    ),
+    }) => {
+        const { Pressable: RNPressable, Text: RNText } = require('react-native');
+        return (
+            <RNPressable testID={`employee-role-${title}`} onPress={onPress}>
+                <RNText>{title}</RNText>
+            </RNPressable>
+        );
+    },
 }));
 
 jest.mock('@pos/auth/data-access', () => ({

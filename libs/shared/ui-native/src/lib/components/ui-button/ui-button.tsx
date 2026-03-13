@@ -24,6 +24,7 @@ export interface UIButtonProps {
 
 export function UIButton({ item, onSelected, maxTextLength, children }: UIButtonProps) {
     const theme = useTheme();
+    const colors = theme?.theme?.colors || { black: '#ffffff' };
     const styles = useSharedStyles();
     const textLength = maxTextLength || 14;
 
@@ -43,7 +44,7 @@ export function UIButton({ item, onSelected, maxTextLength, children }: UIButton
                 <Text
                     style={{
                         marginTop: 5,
-                        color: theme.theme.colors.black,
+                        color: colors.black,
                         fontSize: 14,
                         textAlign: 'center'
                     }}

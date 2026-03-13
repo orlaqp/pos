@@ -27,6 +27,7 @@ export function UIEmptyState({
     icon,
 }: EmptyStateProps) {
     const theme = useTheme();
+    const colors = theme?.theme?.colors || { primary: '#4aa3eb' };
     const styles = useStyles();
     const size = imageSize || 200;
 
@@ -55,7 +56,7 @@ export function UIEmptyState({
                         icon={{
                             name: icon || 'plus',
                             type: 'material-community',
-                            color: theme.theme.colors.primary,
+                            color: colors.primary,
                         }}
                     />
                 )}
@@ -66,6 +67,7 @@ export function UIEmptyState({
 
 const useStyles = () => {
     const theme = useTheme();
+    const colors = theme?.theme?.colors || { grey3: '#8491a2' };
     const sharedStyles = useSharedStyles();
 
     return {
@@ -76,7 +78,7 @@ const useStyles = () => {
                 height: 75,
             },
             text: {
-                color: theme.theme.colors.grey3,
+                color: colors.grey3,
                 fontSize: 18,
                 textAlign: 'center',
                 marginBottom: 25,

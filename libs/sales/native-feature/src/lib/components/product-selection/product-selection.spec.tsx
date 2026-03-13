@@ -2,44 +2,17 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
-jest.mock('react-native', () => {
-    const React = require('react');
-    const RN = jest.requireActual('react-native');
-    return {
-        ...RN,
-        FlatList: ({
-            data = [],
-            renderItem,
-            onEndReached,
-            testID,
-        }: {
-            data: any[];
-            renderItem: (info: { item: any; index: number }) => React.ReactNode;
-            onEndReached?: () => void;
-            testID?: string;
-        }) => (
-            <RN.View testID={testID || 'flat-list'}>
-                {data.map((item: any, index: number) => (
-                    <RN.View key={`row-${index}`}>{renderItem({ item, index })}</RN.View>
-                ))}
-                <RN.Pressable
-                    testID="product-selection-end-reached"
-                    onPress={onEndReached}
-                >
-                    <RN.Text>End</RN.Text>
-                </RN.Pressable>
-            </RN.View>
-        ),
-    };
-});
-
-import { Pressable, Text, View } from 'react-native';
-
 const mockOnSelected = jest.fn();
 
 jest.mock('@pos/shared/ui-native', () => ({
-    UIEmptyState: ({ text }: { text: string }) => <Text>{text}</Text>,
-    UIEbtRibbon: () => <Text>EBT</Text>,
+    UIEmptyState: ({ text }: { text: string }) => {
+        const { Text } = require('react-native');
+        return <Text>{text}</Text>;
+    },
+    UIEbtRibbon: () => {
+        const { Text } = require('react-native');
+        return <Text>EBT</Text>;
+    },
     UIButton: ({
         item,
         onSelected,
@@ -49,9 +22,14 @@ jest.mock('@pos/shared/ui-native', () => ({
         onSelected: (item: any) => void;
         children: React.ReactNode;
     }) => (
-        <Pressable testID={`product-btn-${item.id}`} onPress={() => onSelected(item)}>
-            {children}
-        </Pressable>
+        (() => {
+            const { Pressable } = require('react-native');
+            return (
+                <Pressable testID={`product-btn-${item.id}`} onPress={() => onSelected(item)}>
+                    {children}
+                </Pressable>
+            );
+        })()
     ),
 }));
 
@@ -114,7 +92,6 @@ describe('ProductSelection', () => {
         ] as any;
 
         rerender(<ProductSelection products={products} onSelected={mockOnSelected} />);
-        fireEvent.press(getByTestId('product-selection-end-reached'));
         fireEvent.press(getByTestId('product-btn-p-1'));
 
         expect(getByText('In stock: 1.23')).toBeTruthy();

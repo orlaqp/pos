@@ -3,9 +3,6 @@
     "affected": {
         "defaultBase": "main"
     },
-    "cli": {
-        "defaultCollection": "@nrwl/react-native"
-    },
     "implicitDependencies": {
         "package.json": {
             "dependencies": "*",
@@ -21,20 +18,18 @@
             }
         }
     },
-    "targetDependencies": {
-        "build": [
-            {
-                "target": "build",
-                "projects": "dependencies"
-            }
-        ]
-    },
     "defaultProject": "mobile-ui",
     "generators": {
         "@nrwl/react": {
             "application": {
                 "babel": true
             }
+        }
+    },
+    "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "targetDefaults": {
+        "build": {
+            "dependsOn": ["^build"]
         }
     }
 }

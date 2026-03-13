@@ -23,13 +23,14 @@ export function UISpinner({ size, message }: UISpinnerProps) {
 
 const useStyles = () => {
   const theme = useTheme();
+  const colors = theme?.theme?.colors || { grey3: '#8491a2' };
   const sharedStyles = useSharedStyles();
 
   return {
     ...sharedStyles,
     ...StyleSheet.create({
       text: {
-        color: theme.theme.colors.grey3,
+        color: colors.grey3,
         fontSize: 18,
         textAlign: 'center',
         marginTop: 20

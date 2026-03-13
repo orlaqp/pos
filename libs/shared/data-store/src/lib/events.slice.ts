@@ -1,5 +1,4 @@
 import { sortDescListBy } from '@pos/shared/utils';
-import { RootState } from '@pos/store';
 import {
     createEntityAdapter,
     createSelector,
@@ -93,7 +92,9 @@ export const eventsActions = eventsSlice.actions;
  */
 const { selectAll, selectEntities } = eventsAdapter.getSelectors();
 
-export const getEventsState = (rootState: RootState): EventsState =>
+export const getEventsState = (
+    rootState: Record<string, EventsState>
+): EventsState =>
     rootState[EVENTS_FEATURE_KEY];
 
 export const selectAllEvents = createSelector(

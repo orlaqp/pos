@@ -5,7 +5,7 @@ import UIAlert from './ui-alert';
 
 describe('UIAlert', () => {
   it('should render successfully', () => {
-    const { container } = render(<UIAlert />);
-    expect(container).toBeTruthy();
+    const { getByText } = render(<UIAlert type="success" message="Saved" />);
+    expect(getByText('Saved')).toBeTruthy();
   });
 });

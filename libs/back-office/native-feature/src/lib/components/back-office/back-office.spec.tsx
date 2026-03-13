@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { Text, View } from 'react-native';
 
 const mockUseSelector = jest.fn();
 const mockNavigation = { goBack: jest.fn(), replace: jest.fn() };
@@ -30,24 +29,37 @@ jest.mock('@rneui/themed', () => ({
 }));
 
 jest.mock('react-native-gesture-handler', () => ({
-  ScrollView: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+  ScrollView: ({ children }: { children: React.ReactNode }) => {
+    const { View } = require('react-native');
+    return <View>{children}</View>;
+  },
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
-  SafeAreaView: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+  SafeAreaView: ({ children }: { children: React.ReactNode }) => {
+    const { View } = require('react-native');
+    return <View>{children}</View>;
+  },
 }));
 
 jest.mock('../sidebar/sidebar', () => ({
   __esModule: true,
-  default: () => <Text testID="sidebar-stub">Sidebar</Text>,
+  default: () => {
+    const { Text } = require('react-native');
+    return <Text testID="sidebar-stub">Sidebar</Text>;
+  },
 }));
 
 jest.mock('@react-navigation/native-stack', () => ({
   createNativeStackNavigator: () => ({
-    Navigator: ({ children }: { children: React.ReactNode }) => (
-      <View testID="stack-navigator">{children}</View>
-    ),
-    Screen: ({ name }: { name: string }) => <Text>{name}</Text>,
+    Navigator: ({ children }: { children: React.ReactNode }) => {
+      const { View } = require('react-native');
+      return <View testID="stack-navigator">{children}</View>;
+    },
+    Screen: ({ name }: { name: string }) => {
+      const { Text } = require('react-native');
+      return <Text>{name}</Text>;
+    },
   }),
 }));
 

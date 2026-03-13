@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
-import { Pressable, Text, View } from 'react-native';
 
 jest.mock('./single-item', () => ({
   SingleItem: ({
@@ -10,10 +9,14 @@ jest.mock('./single-item', () => ({
   }: {
     item: { title: string };
     isActive?: boolean;
-  }) => <Text>{`${item.title}:${isActive ? 'active' : 'inactive'}`}</Text>,
+  }) => {
+    const { Text } = require('react-native');
+    return <Text>{`${item.title}:${isActive ? 'active' : 'inactive'}`}</Text>;
+  },
 }));
 
 jest.mock('@rneui/themed', () => {
+  const { Pressable, Text, View } = require('react-native');
   const ListItem: any = {};
   ListItem.Accordion = ({
     content,

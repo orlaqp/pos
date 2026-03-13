@@ -3,34 +3,41 @@ const { getDefaultConfig } = require('metro-config');
 const exclusionList = require('metro-config/src/defaults/exclusionList');
 
 module.exports = (async () => {
-  const {
-    resolver: { sourceExts, assetExts },
-  } = await getDefaultConfig();
-  return withNxMetro(
-    {
-      transformer: {
-        getTransformOptions: async () => ({
-          transform: {
-            experimentalImportSupport: false,
-            inlineRequires: false,
-          },
-        }),
-        babelTransformerPath: require.resolve('react-native-svg-transformer'),
-      },
-      resolver: {
-        assetExts: assetExts.filter((ext) => ext !== 'svg'),
-        sourceExts: [...sourceExts, 'svg'],
-        resolverMainFields: ['react-native', 'browser', 'main'],
-        platforms: ['ios', 'android', 'native'],
-        blacklistRE: exclusionList([/\.\/dist\/.*/, /#current-cloud-backend\/.*/]),
-      },
-    },
-    {
-      // Change this to true to see debugging info.
-      // Useful if you have issues resolving modules
-      debug: false,
-      // all the file extensions used for imports other than 'ts', 'tsx', 'js', 'jsx'
-      extensions: [],
-    }
-  );
+    const {
+        resolver: { sourceExts, assetExts },
+    } = await getDefaultConfig();
+    return withNxMetro(
+        {
+            transformer: {
+                getTransformOptions: async () => ({
+                    transform: {
+                        experimentalImportSupport: false,
+                        inlineRequires: false,
+                    },
+                }),
+                babelTransformerPath: require.resolve(
+                    'react-native-svg-transformer'
+                ),
+            },
+            resolver: {
+                assetExts: assetExts.filter((ext) => ext !== 'svg'),
+                sourceExts: [...sourceExts, 'svg'],
+                resolverMainFields: ['react-native', 'browser', 'main'],
+                platforms: ['ios', 'android', 'native'],
+                blockList: exclusionList([
+                    /\.\/dist\/.*/,
+                    /#current-cloud-backend\/.*/,
+                ]),
+            },
+        },
+        {
+            // Change this to true to see debugging info.
+            // Useful if you have issues resolving modules
+            projectRoot: __dirname,
+            watchFolders: [],
+            debug: false,
+            // all the file extensions used for imports other than 'ts', 'tsx', 'js', 'jsx'
+            extensions: [],
+        }
+    );
 })();

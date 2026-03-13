@@ -32,17 +32,21 @@ export function StackNavigation({ Stack, children }: StackNavigationProps) {
 
 const useStyles = () => {
     const theme = useTheme();
+    const colors = theme?.theme?.colors || {
+        background: '#000000',
+        grey3: '#8491a2',
+    };
     const sharedStyles = useSharedStyles();
 
     return {
         ...sharedStyles,
         ...StyleSheet.create({
             navHeader: {
-                backgroundColor: theme.theme.colors.background,
-                color: theme.theme.colors.grey3,
+                backgroundColor: colors.background,
+                color: colors.grey3,
             },
             headerTitle: {
-                color: theme.theme.colors.grey3,
+                color: colors.grey3,
             },
         }),
     };

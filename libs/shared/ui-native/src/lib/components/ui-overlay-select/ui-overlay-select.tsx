@@ -153,12 +153,17 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
 
 const useStyles = () => {
     const theme = useTheme();
+    const colors = theme?.theme?.colors || {
+        background: '#000000',
+        grey2: '#8f9baa',
+        grey1: '#ffffff',
+    };
     const sharedStyles = useSharedStyles();
 
     return {
         ...StyleSheet.create({
             overlay: {
-                backgroundColor: theme.theme.colors.background,
+                backgroundColor: colors.background,
                 width: 420,
                 maxHeight: 520,
                 borderRadius: 8,
@@ -167,7 +172,7 @@ const useStyles = () => {
                 minHeight: 120,
             },
             emptyText: {
-                color: theme.theme.colors.grey2,
+                color: colors.grey2,
                 textAlign: 'center',
                 paddingVertical: 20,
             },
@@ -176,7 +181,7 @@ const useStyles = () => {
                 borderRadius: 6,
             },
             name: {
-                color: theme.theme.colors.grey1,
+                color: colors.grey1,
             },
             dataRow: {
                 ...sharedStyles.row,

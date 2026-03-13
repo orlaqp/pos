@@ -20,17 +20,29 @@ jest.mock('@pos/brands/data-access', () => ({
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
-    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UIEbtRibbon: () => <Text>EBT</Text>,
-    UIS3Image: () => <Text>Image</Text>,
+    UICard: ({ children }: { children: React.ReactNode }) => {
+        const { View } = require('react-native');
+        return <View>{children}</View>;
+    },
+    UIEbtRibbon: () => {
+        const { Text } = require('react-native');
+        return <Text>EBT</Text>;
+    },
+    UIS3Image: () => {
+        const { Text } = require('react-native');
+        return <Text>Image</Text>;
+    },
 }));
 
 jest.mock('react-native-numeric-input', () => {
-    return ({ onChange }: { onChange: (value: number) => void }) => (
-        <Pressable testID="product-details-numeric" onPress={() => onChange(5)}>
-            <Text>Numeric Input</Text>
-        </Pressable>
-    );
+    return ({ onChange }: { onChange: (value: number) => void }) => {
+        const { Pressable, Text } = require('react-native');
+        return (
+            <Pressable testID="product-details-numeric" onPress={() => onChange(5)}>
+                <Text>Numeric Input</Text>
+            </Pressable>
+        );
+    };
 });
 
 jest.mock('@rneui/themed', () => {

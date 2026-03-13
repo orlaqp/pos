@@ -89,7 +89,9 @@
                 "libs/store-info/native-feature/src/index.ts"
             ],
             "@pos/theme/native": ["libs/theme/native/src/index.ts"],
-            "@pos/theme/native/design-tokens": ["libs/theme/native/src/design-tokens.ts"],
+            "@pos/theme/native/design-tokens": [
+                "libs/theme/native/src/design-tokens.ts"
+            ],
             "@pos/unit-of-measures/data-access": [
                 "libs/unit-of-measures/data-access/src/index.ts"
             ],

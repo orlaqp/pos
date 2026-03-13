@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
-import { Pressable, Text, View } from 'react-native';
 
 const mockDispatch = jest.fn();
 const mockSearch = jest.fn();
@@ -63,24 +62,34 @@ jest.mock('@pos/shared/ui-native', () => ({
     }: {
         children: React.ReactNode;
         testID?: string;
-    }) => <View testID={testID}>{children}</View>,
-    UIStack: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    }) => {
+        const { View } = require('react-native');
+        return <View testID={testID}>{children}</View>;
+    },
+    UIStack: ({ children }: { children: React.ReactNode }) => {
+        const { View } = require('react-native');
+        return <View>{children}</View>;
+    },
     UICard: ({
         children,
         testID,
     }: {
         children: React.ReactNode;
         testID?: string;
-    }) => <View testID={testID}>{children}</View>,
-    UISearchInput: React.forwardRef(
+    }) => {
+        const { View } = require('react-native');
+        return <View testID={testID}>{children}</View>;
+    },
+    UISearchInput: require('react').forwardRef(
         (
             { onSubmit }: { onSubmit: (value: string) => void },
             ref: React.Ref<{ focus: () => void; clear: () => void }>
         ) => {
-            React.useImperativeHandle(ref, () => ({
+            require('react').useImperativeHandle(ref, () => ({
                 focus: jest.fn(),
                 clear: jest.fn(),
             }));
+            const { Pressable, Text } = require('react-native');
             return (
                 <Pressable
                     testID="order-list-search-input"
@@ -91,7 +100,10 @@ jest.mock('@pos/shared/ui-native', () => ({
             );
         }
     ),
-    UIEmptyState: ({ text }: { text: string }) => <Text>{text}</Text>,
+    UIEmptyState: ({ text }: { text: string }) => {
+        const { Text } = require('react-native');
+        return <Text>{text}</Text>;
+    },
 }));
 
 jest.mock('@rneui/themed', () => ({
@@ -101,26 +113,32 @@ jest.mock('@rneui/themed', () => ({
     }: {
         buttons: string[];
         onPress: (index: number) => void;
-    }) => (
-        <View>
-            {buttons.map((button, index) => (
-                <Pressable
-                    key={button}
-                    testID={`status-${button}`}
-                    onPress={() => onPress(index)}
-                >
-                    <Text>{button}</Text>
-                </Pressable>
-            ))}
-        </View>
-    ),
+    }) => {
+        const { View, Pressable, Text } = require('react-native');
+        return (
+            <View>
+                {buttons.map((button, index) => (
+                    <Pressable
+                        key={button}
+                        testID={`status-${button}`}
+                        onPress={() => onPress(index)}
+                    >
+                        <Text>{button}</Text>
+                    </Pressable>
+                ))}
+            </View>
+        );
+    },
     Dialog: ({
         children,
         isVisible,
     }: {
         children: React.ReactNode;
         isVisible: boolean;
-    }) => (isVisible ? <View testID="order-void-dialog">{children}</View> : null),
+    }) => {
+        const { View } = require('react-native');
+        return isVisible ? <View testID="order-void-dialog">{children}</View> : null;
+    },
 }));
 
 jest.mock('@pos/shared/data-store', () => ({
@@ -160,19 +178,25 @@ jest.mock('../order-item/order-item', () => ({
     }: {
         item: { id: string; orderNo: string };
         onVoid: (order: { id: string }) => void;
-    }) => (
-        <View>
-            <Text>{item.orderNo}</Text>
-            <Pressable testID={`order-void-${item.id}`} onPress={() => onVoid(item)}>
-                <Text>Void</Text>
-            </Pressable>
-        </View>
-    ),
+    }) => {
+        const { View, Text, Pressable } = require('react-native');
+        return (
+            <View>
+                <Text>{item.orderNo}</Text>
+                <Pressable testID={`order-void-${item.id}`} onPress={() => onVoid(item)}>
+                    <Text>Void</Text>
+                </Pressable>
+            </View>
+        );
+    },
 }));
 
 jest.mock('../order-void-form/order-void-form', () => ({
     __esModule: true,
-    default: () => <Text>Void Form</Text>,
+    default: () => {
+        const { Text } = require('react-native');
+        return <Text>Void Form</Text>;
+    },
 }));
 
 const { OrderList } = require('./order-list');

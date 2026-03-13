@@ -6,9 +6,9 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 const mockDispatch = jest.fn();
 const mockGoBack = jest.fn();
 const mockSearch = jest.fn();
-const categoriesUnsubscribe = jest.fn();
-const productsUnsubscribe = jest.fn();
-const settingsUnsubscribe = jest.fn();
+const mockCategoriesUnsubscribe = jest.fn();
+const mockProductsUnsubscribe = jest.fn();
+const mockSettingsUnsubscribe = jest.fn();
 
 const mockProduct = {
     id: 'p-1',
@@ -20,7 +20,7 @@ const mockProduct = {
     productCategoryId: 'c-1',
 } as any;
 
-const lowInventoryProduct = {
+const mockLowInventoryProduct = {
     ...mockProduct,
     id: 'p-2',
     quantity: 0,
@@ -34,7 +34,7 @@ jest.mock('react-redux', () => ({
 }));
 
 jest.mock('@pos/categories/data-access', () => ({
-    subscribeToCategoryChanges: () => ({ unsubscribe: categoriesUnsubscribe }),
+    subscribeToCategoryChanges: () => ({ unsubscribe: mockCategoriesUnsubscribe }),
 }));
 
 jest.mock('@pos/products/data-access', () => ({
@@ -43,13 +43,13 @@ jest.mock('@pos/products/data-access', () => ({
     ProductService: {
         search: (...args: unknown[]) => mockSearch(...args),
     },
-    subscribeToProductChanges: () => ({ unsubscribe: productsUnsubscribe }),
+    subscribeToProductChanges: () => ({ unsubscribe: mockProductsUnsubscribe }),
 }));
 
 jest.mock('@pos/settings/data-access', () => ({
     getGlobalSettings: (state: any) => state.settings,
     subscribeToGlobalSettingsChanges: () => ({
-        unsubscribe: settingsUnsubscribe,
+        unsubscribe: mockSettingsUnsubscribe,
     }),
 }));
 
@@ -85,115 +85,135 @@ jest.mock('@pos/sales/data-access', () => ({
 
 jest.mock('../category-selection/category-selection', () => ({
     __esModule: true,
-    default: ({ onSelected }: { onSelected: (item?: any) => Promise<void> }) => (
-        <View>
-            <Pressable
-                testID="sales-category-clear"
-                onPress={() => onSelected(undefined)}
-            >
-                <Text>Clear Category</Text>
-            </Pressable>
-            <Pressable
-                testID="sales-category-select"
-                onPress={() => onSelected({ id: 'c-1' })}
-            >
-                <Text>Select Category</Text>
-            </Pressable>
-        </View>
-    ),
+    default: ({ onSelected }: { onSelected: (item?: any) => Promise<void> }) =>
+        (() => {
+            const { View, Pressable, Text } = require('react-native');
+            return (
+                <View>
+                    <Pressable
+                        testID="sales-category-clear"
+                        onPress={() => onSelected(undefined)}
+                    >
+                        <Text>Clear Category</Text>
+                    </Pressable>
+                    <Pressable
+                        testID="sales-category-select"
+                        onPress={() => onSelected({ id: 'c-1' })}
+                    >
+                        <Text>Select Category</Text>
+                    </Pressable>
+                </View>
+            );
+        })(),
 }));
 
 jest.mock('../product-search/product-search', () => ({
-    ProductSearch: React.forwardRef(
-        (
-            { onFilterChange }: { onFilterChange: (text: string) => Promise<string | undefined> },
-            _ref: React.ForwardedRef<any>
-        ) => (
-            <View>
-                <Pressable
-                    testID="sales-search-submit"
-                    onPress={() => onFilterChange('apple')}
-                >
-                    <Text>Search</Text>
-                </Pressable>
-                <Pressable
-                    testID="sales-search-barcode"
-                    onPress={() => onFilterChange('12345')}
-                >
-                    <Text>Search Barcode</Text>
-                </Pressable>
-                <Pressable testID="sales-search-empty" onPress={() => onFilterChange('')}>
-                    <Text>Search Empty</Text>
-                </Pressable>
-            </View>
-        )
-    ),
+    ProductSearch: (() => {
+        const React = require('react');
+        const { View, Pressable, Text } = require('react-native');
+        return React.forwardRef(
+            (
+                { onFilterChange }: { onFilterChange: (text: string) => Promise<string | undefined> },
+                _ref: React.ForwardedRef<any>
+            ) => (
+                <View>
+                    <Pressable
+                        testID="sales-search-submit"
+                        onPress={() => onFilterChange('apple')}
+                    >
+                        <Text>Search</Text>
+                    </Pressable>
+                    <Pressable
+                        testID="sales-search-barcode"
+                        onPress={() => onFilterChange('12345')}
+                    >
+                        <Text>Search Barcode</Text>
+                    </Pressable>
+                    <Pressable testID="sales-search-empty" onPress={() => onFilterChange('')}>
+                        <Text>Search Empty</Text>
+                    </Pressable>
+                </View>
+            )
+        );
+    })(),
 }));
 
 jest.mock('../product-selection/product-selection', () => ({
     __esModule: true,
-    default: ({ onSelected }: { onSelected: (item: any) => void }) => (
-        <View>
-            <Pressable
-                testID="sales-product-select"
-                onPress={() => onSelected(mockProduct)}
-            >
-                <Text>Product</Text>
-            </Pressable>
-            <Pressable
-                testID="sales-product-select-low"
-                onPress={() => onSelected(lowInventoryProduct)}
-            >
-                <Text>Low Stock Product</Text>
-            </Pressable>
-        </View>
-    ),
+    default: ({ onSelected }: { onSelected: (item: any) => void }) =>
+        (() => {
+            const { View, Pressable, Text } = require('react-native');
+            return (
+                <View>
+                    <Pressable
+                        testID="sales-product-select"
+                        onPress={() => onSelected(mockProduct)}
+                    >
+                        <Text>Product</Text>
+                    </Pressable>
+                    <Pressable
+                        testID="sales-product-select-low"
+                        onPress={() => onSelected(mockLowInventoryProduct)}
+                    >
+                        <Text>Low Stock Product</Text>
+                    </Pressable>
+                </View>
+            );
+        })(),
 }));
 
 jest.mock('../cart/cart', () => ({
     __esModule: true,
-    default: ({ onSubmit }: { onSubmit: (cart: any, payments?: any[]) => void }) => (
-        <View>
-            <Pressable
-                testID="sales-cart-submit-order"
-                onPress={() => onSubmit({ id: 'cart-1' })}
-            >
-                <Text>Submit Order</Text>
-            </Pressable>
-            <Pressable
-                testID="sales-cart-submit-payment-empty"
-                onPress={() => onSubmit({ id: 'cart-1' }, undefined)}
-            >
-                <Text>Submit Payment Empty</Text>
-            </Pressable>
-            <Pressable
-                testID="sales-cart-submit-payment"
-                onPress={() =>
-                    onSubmit({ id: 'cart-1' }, [{ method: 'cash', amount: 10 }])
-                }
-            >
-                <Text>Submit Payment</Text>
-            </Pressable>
-        </View>
-    ),
+    default: ({ onSubmit }: { onSubmit: (cart: any, payments?: any[]) => void }) =>
+        (() => {
+            const { View, Pressable, Text } = require('react-native');
+            return (
+                <View>
+                    <Pressable
+                        testID="sales-cart-submit-order"
+                        onPress={() => onSubmit({ id: 'cart-1' })}
+                    >
+                        <Text>Submit Order</Text>
+                    </Pressable>
+                    <Pressable
+                        testID="sales-cart-submit-payment-empty"
+                        onPress={() => onSubmit({ id: 'cart-1' }, undefined)}
+                    >
+                        <Text>Submit Payment Empty</Text>
+                    </Pressable>
+                    <Pressable
+                        testID="sales-cart-submit-payment"
+                        onPress={() =>
+                            onSubmit({ id: 'cart-1' }, [{ method: 'cash', amount: 10 }])
+                        }
+                    >
+                        <Text>Submit Payment</Text>
+                    </Pressable>
+                </View>
+            );
+        })(),
 }));
 
 jest.mock('../product-details/product-details', () => ({
     __esModule: true,
-    default: ({ upsertCart }: { upsertCart: (item: any) => void }) => (
-        <Pressable
-            testID="sales-product-details-submit"
-            onPress={() =>
-                upsertCart({
-                    identifier: 'i-2',
-                    product: mockProduct,
-                    quantity: 3,
-                })
-            }
-        >
-            <Text>Details</Text>
-        </Pressable>
-    ),
+    default: ({ upsertCart }: { upsertCart: (item: any) => void }) =>
+        (() => {
+            const { Pressable, Text } = require('react-native');
+            return (
+                <Pressable
+                    testID="sales-product-details-submit"
+                    onPress={() =>
+                        upsertCart({
+                            identifier: 'i-2',
+                            product: mockProduct,
+                            quantity: 3,
+                        })
+                    }
+                >
+                    <Text>Details</Text>
+                </Pressable>
+            );
+        })(),
 }));
 
 const { SalesScreen } = require('./sales-screen');
@@ -209,7 +229,7 @@ describe('SalesScreen', () => {
         mockState = {
             activeProduct: undefined,
             filteredList: {},
-            allProducts: [mockProduct, lowInventoryProduct],
+            allProducts: [mockProduct, mockLowInventoryProduct],
             store: { id: 's-1' },
             printer: { id: 'printer-1' },
             settings: { enforceSalesBasedOnInventory: false },
@@ -376,8 +396,8 @@ describe('SalesScreen', () => {
     it('unsubscribes subscriptions on unmount', () => {
         const view = renderSalesScreen();
         view.unmount();
-        expect(categoriesUnsubscribe).toHaveBeenCalled();
-        expect(productsUnsubscribe).toHaveBeenCalled();
-        expect(settingsUnsubscribe).toHaveBeenCalled();
+        expect(mockCategoriesUnsubscribe).toHaveBeenCalled();
+        expect(mockProductsUnsubscribe).toHaveBeenCalled();
+        expect(mockSettingsUnsubscribe).toHaveBeenCalled();
     });
 });

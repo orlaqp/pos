@@ -5,7 +5,7 @@ export class Transform {
     static toObject<T>(arr: any[] | undefined, key: string): Dictionary<T> {
         if (!arr) return {};
 
-        let output = {};
+        const output = {};
         arr.reduce((res, i) => {
             res[i[key]] = i;
             return res;

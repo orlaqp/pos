@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
-import { FlatList } from 'react-native';
 
 const mockDispatch = jest.fn();
 const mockOnSelected = jest.fn();
-let selectedCategoryMock: any;
+let mockSelectedCategory: any;
 const mockCategories = [
     { id: 'c1', name: 'Fruits', picture: null },
     { id: 'c2', name: 'Snacks', picture: null },
@@ -19,7 +18,7 @@ jest.mock('@react-native-community/netinfo', () => ({
 }));
 
 jest.mock('react-native-gesture-handler', () => ({
-    FlatList,
+    FlatList: require('react-native').FlatList,
 }));
 
 jest.mock('react-redux', () => ({
@@ -33,7 +32,7 @@ jest.mock('@pos/categories/data-access', () => ({
         clearSelection: () => ({ type: 'categories/clearSelection' }),
     },
     selectAllCategories: () => mockCategories,
-    selectedCategory: () => selectedCategoryMock,
+    selectedCategory: () => mockSelectedCategory,
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
@@ -46,7 +45,7 @@ describe('CategorySelection', () => {
     beforeEach(() => {
         mockDispatch.mockClear();
         mockOnSelected.mockClear();
-        selectedCategoryMock = mockCategories[0];
+        mockSelectedCategory = mockCategories[0];
     });
 
     it('renders categories and handles selection', () => {
@@ -86,7 +85,7 @@ describe('CategorySelection', () => {
     });
 
     it('selects category when no category is currently selected', () => {
-        selectedCategoryMock = undefined;
+        mockSelectedCategory = undefined;
         const { getByTestId } = render(
             <CategorySelection onSelected={mockOnSelected} />
         );

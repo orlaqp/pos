@@ -5,7 +5,12 @@ import UIButton from './ui-button';
 
 describe('UIButton', () => {
     it('should render successfully', () => {
-        const { container } = render(<UIButton />);
-        expect(container).toBeTruthy();
+        const { toJSON } = render(
+            <UIButton
+                item={{ id: '1', name: 'Button' }}
+                onSelected={jest.fn()}
+            />
+        );
+        expect(toJSON()).toBeTruthy();
     });
 });

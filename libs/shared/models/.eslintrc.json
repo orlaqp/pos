@@ -1,5 +1,5 @@
 {
-  "extends": ["plugin:@nrwl/nx/react", "../../.eslintrc.json"],
+  "extends": ["plugin:@nrwl/nx/react", "../../../.eslintrc.json"],
   "ignorePatterns": ["!**/*"],
   "overrides": [
     {
@@ -9,6 +9,12 @@
     {
       "files": ["*.ts", "*.tsx"],
       "rules": {}
+    },
+    {
+      "files": ["*.d.ts"],
+      "rules": {
+        "@typescript-eslint/ban-ts-comment": "off"
+      }
     },
     {
       "files": ["*.js", "*.jsx"],

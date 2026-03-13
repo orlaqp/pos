@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert } from 'react-native';
 
 const mockDispatch = jest.fn();
 const mockGoBack = jest.fn();
@@ -25,19 +25,31 @@ jest.mock('@pos/shared/ui-native', () => ({
     }: {
         submitAction: () => void;
         cancelAction: () => void;
-    }) => (
-        <View>
-            <Pressable testID="brand-form-save" onPress={submitAction}>
-                <Text>Save</Text>
-            </Pressable>
-            <Pressable testID="brand-form-cancel" onPress={cancelAction}>
-                <Text>Cancel</Text>
-            </Pressable>
-        </View>
-    ),
-    UIInput: ({ name }: { name: string }) => <View testID={`brand-input-${name}`} />,
-    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    }) => {
+        const { View, Pressable, Text } = require('react-native');
+        return (
+            <View>
+                <Pressable testID="brand-form-save" onPress={submitAction}>
+                    <Text>Save</Text>
+                </Pressable>
+                <Pressable testID="brand-form-cancel" onPress={cancelAction}>
+                    <Text>Cancel</Text>
+                </Pressable>
+            </View>
+        );
+    },
+    UIInput: ({ name }: { name: string }) => {
+        const { View } = require('react-native');
+        return <View testID={`brand-input-${name}`} />;
+    },
+    UIScreen: ({ children }: { children: React.ReactNode }) => {
+        const { View } = require('react-native');
+        return <View>{children}</View>;
+    },
+    UICard: ({ children }: { children: React.ReactNode }) => {
+        const { View } = require('react-native');
+        return <View>{children}</View>;
+    },
 }));
 
 jest.mock('@pos/brands/data-access', () => ({

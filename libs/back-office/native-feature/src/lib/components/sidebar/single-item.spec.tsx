@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
-import { Pressable, Text, View } from 'react-native';
 
 jest.mock('@rneui/themed', () => {
+  const { Pressable, Text, View } = require('react-native');
   const ListItem = ({
     children,
     onPress,

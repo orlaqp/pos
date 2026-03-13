@@ -1,58 +1,33 @@
+import { fetchProducts, productsAdapter, productsReducer } from './products.slice';
 
-import {
-  fetchProducts,
-  ProductsAdapter,
-  ProductsReducer,
-} from './products.slice';
-
-describe('Products reducer', () => {
-  it('should handle initial state', () => {
-    const expected = ProductsAdapter.getInitialState({
-      loadingStatus: 'not loaded',
-      error: null,
-    });
-
-    expect(ProductsReducer(undefined, { type: '' })).toEqual(expected);
+describe('products reducer', () => {
+  it('returns initial state', () => {
+    expect(productsReducer(undefined, { type: '' })).toEqual(
+      productsAdapter.getInitialState({
+        loadingStatus: 'not loaded',
+        selected: undefined,
+        filterQuery: undefined,
+        filteredList: undefined,
+      })
+    );
   });
 
-  it('should handle fetchProducts', () => {
-    let state = productsReducer(
-      undefined,
-      fetchProducts.pending(null, null)
-    );
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'loading',
-        error: null,
-        entities: {},
-      })
-    );
+  it('handles fetchProducts pending/fulfilled/rejected', () => {
+    let state = productsReducer(undefined, fetchProducts.pending('', undefined));
+    expect(state.loadingStatus).toBe('loading');
 
     state = productsReducer(
       state,
-      fetchProducts.fulfilled([{ id: 1 }], null, null)
+      fetchProducts.fulfilled([{ id: '1' } as any], '', undefined)
     );
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'loaded',
-        error: null,
-        entities: { 1: { id: 1 } },
-      })
-    );
+    expect(state.loadingStatus).toBe('loaded');
+    expect(state.entities['1']).toEqual(expect.objectContaining({ id: '1' }));
 
     state = productsReducer(
       state,
-      fetchProducts.rejected(new Error('Uh oh'), null, null)
+      fetchProducts.rejected(new Error('Uh oh'), '', undefined)
     );
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'error',
-        error: 'Uh oh',
-        entities: { 1: { id: 1 } },
-      })
-    );
+    expect(state.loadingStatus).toBe('error');
+    expect(state.error).toBe('Uh oh');
   });
 });

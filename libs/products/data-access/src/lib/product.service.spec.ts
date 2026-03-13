@@ -1,3 +1,4 @@
+/* eslint-disable import/first */
 jest.mock('react-native', () => ({
     Alert: { alert: jest.fn() },
 }));

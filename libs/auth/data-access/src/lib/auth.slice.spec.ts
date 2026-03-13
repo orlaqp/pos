@@ -1,47 +1,38 @@
-import { fetchAuth, authAdapter, authReducer } from './auth.slice';
+import { authActions, authReducer, initialAuthState, signIn } from './auth.slice';
 
 describe('auth reducer', () => {
-  it('should handle initial state', () => {
-    const expected = authAdapter.getInitialState({
-      loadingStatus: 'not loaded',
-      error: null,
-    });
-
-    expect(authReducer(undefined, { type: '' })).toEqual(expected);
+  it('returns initial state', () => {
+    expect(authReducer(undefined, { type: '' })).toEqual(initialAuthState);
   });
 
-  it('should handle fetchAuths', () => {
-    let state = authReducer(undefined, fetchAuth.pending(null, null));
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'loading',
-        error: null,
-        entities: {},
-      })
-    );
-
-    state = authReducer(state, fetchAuth.fulfilled([{ id: 1 }], null, null));
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'loaded',
-        error: null,
-        entities: { 1: { id: 1 } },
-      })
-    );
+  it('handles signIn pending/fulfilled/rejected', () => {
+    let state = authReducer(undefined, signIn.pending('', { email: 'a', password: 'b' }));
+    expect(state.signInStatus).toBe('inProgress');
 
     state = authReducer(
       state,
-      fetchAuth.rejected(new Error('Uh oh'), null, null)
+      signIn.fulfilled(
+        { id: '1', email: 'a@b.com', email_verified: true, name: 'A', groups: [] },
+        '',
+        { email: 'a', password: 'b' }
+      )
     );
+    expect(state.signInStatus).toBe('complete');
+    expect(state.user?.id).toBe('1');
 
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'error',
-        error: 'Uh oh',
-        entities: { 1: { id: 1 } },
-      })
+    state = authReducer(
+      state,
+      signIn.rejected(new Error('Uh oh'), '', { email: 'a', password: 'b' })
     );
+    expect(state.signInStatus).toBe('error');
+    expect(state.error).toBe('Uh oh');
+  });
+
+  it('handles logoff', () => {
+    const state = authReducer(
+      { ...initialAuthState, user: { id: '1' } as any },
+      authActions.logoff()
+    );
+    expect(state.user).toBeUndefined();
   });
 });

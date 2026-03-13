@@ -5,7 +5,7 @@ import UiSpinner from './ui-spinner';
 
 describe('UiSpinner', () => {
   it('should render successfully', () => {
-    const { container } = render(<UiSpinner />);
-    expect(container).toBeTruthy();
+    const { toJSON } = render(<UiSpinner message="Loading" />);
+    expect(toJSON()).toBeTruthy();
   });
 });

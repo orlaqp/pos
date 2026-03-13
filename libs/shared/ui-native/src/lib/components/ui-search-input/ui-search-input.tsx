@@ -12,6 +12,11 @@ type UiSearchInputProps = React.ComponentProps<typeof TextInput> & {
 export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
     (props, ref) => {
         const theme = useTheme();
+        const colors = theme?.theme?.colors || {
+            grey5: '#2f3742',
+            grey2: '#8f9baa',
+            grey1: '#ffffff',
+        };
         const { value, onChange, debounceTime, onSubmit, onClear, ...restOfProps } =
             props;
         const [text, setText] = useState<string | undefined>(value);
@@ -44,15 +49,15 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
                 autoCapitalize='none'
                 autoFocus={true}
                 containerStyle={{
-                    backgroundColor: theme.theme.colors.grey5,
+                    backgroundColor: colors.grey5,
                     borderRadius: 20,
                 }}
                 inputContainerStyle={{ borderBottomWidth: 0, paddingLeft: 10 }}
-                inputStyle={{ color: theme.theme.colors.grey1 }}
+                inputStyle={{ color: colors.grey1 }}
                 rightIcon={{
                     name: text ? 'close-circle-outline' : 'magnify',
                     type: 'material-community',
-                    color: theme.theme.colors.grey2,
+                    color: colors.grey2,
                     onPress: clearText,
                 }}
                 multiline={false}

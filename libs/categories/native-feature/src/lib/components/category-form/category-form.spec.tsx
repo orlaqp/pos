@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert } from 'react-native';
 
 const mockDispatch = jest.fn();
 const mockGoBack = jest.fn();
@@ -26,28 +26,43 @@ jest.mock('@pos/shared/ui-native', () => ({
     }: {
         submitAction: () => void;
         cancelAction: () => void;
-    }) => (
-        <View>
-            <Pressable testID="category-form-save" onPress={submitAction}>
-                <Text>Save</Text>
-            </Pressable>
-            <Pressable testID="category-form-cancel" onPress={cancelAction}>
-                <Text>Cancel</Text>
-            </Pressable>
-        </View>
-    ),
-    UIInput: ({ name }: { name: string }) => <View testID={`category-input-${name}`} />,
+    }) => {
+        const { Pressable: RNPressable, Text: RNText, View: RNView } = require('react-native');
+        return (
+            <RNView>
+                <RNPressable testID="category-form-save" onPress={submitAction}>
+                    <RNText>Save</RNText>
+                </RNPressable>
+                <RNPressable testID="category-form-cancel" onPress={cancelAction}>
+                    <RNText>Cancel</RNText>
+                </RNPressable>
+            </RNView>
+        );
+    },
+    UIInput: ({ name }: { name: string }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView testID={`category-input-${name}`} />;
+    },
     UiFileUpload: ({
         onAssetUploaded,
     }: {
         onAssetUploaded: (key: string) => void;
-    }) => (
-        <Pressable testID="category-upload" onPress={() => onAssetUploaded('new-key')}>
-            <Text>Upload</Text>
-        </Pressable>
-    ),
-    UIScreen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-    UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    }) => {
+        const { Pressable: RNPressable, Text: RNText } = require('react-native');
+        return (
+            <RNPressable testID="category-upload" onPress={() => onAssetUploaded('new-key')}>
+                <RNText>Upload</RNText>
+            </RNPressable>
+        );
+    },
+    UIScreen: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
+    UICard: ({ children }: { children: React.ReactNode }) => {
+        const { View: RNView } = require('react-native');
+        return <RNView>{children}</RNView>;
+    },
 }));
 
 jest.mock('@pos/categories/data-access', () => ({

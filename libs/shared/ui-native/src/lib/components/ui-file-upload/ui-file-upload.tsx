@@ -41,6 +41,7 @@ export function UiFileUpload({
 }: UiFileUploadProps) {
     
     const theme = useTheme();
+    const colors = theme?.theme?.colors || { grey1: '#dddddd' };
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
     const [s3Key, setS3Key] = useState<string | null | undefined>(imageKey);
@@ -145,7 +146,7 @@ export function UiFileUpload({
                         />
                         <Text
                             style={{
-                                color: theme.theme.colors.grey1,
+                                color: colors.grey1,
                                 textAlign: 'center',
                             }}
                         >

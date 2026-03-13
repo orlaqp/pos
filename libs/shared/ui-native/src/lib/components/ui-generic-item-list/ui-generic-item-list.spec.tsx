@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
-import { Text, View } from 'react-native';
 
 const mockDispatch = jest.fn();
 const mockFilterAction = jest.fn((query: string) => ({
@@ -51,12 +50,18 @@ jest.mock('@rneui/themed', () => ({
 
 jest.mock('../ui-empty-state/ui-empty-state', () => ({
     __esModule: true,
-    default: () => <Text>empty-state</Text>,
+    default: () => {
+        const { Text } = require('react-native');
+        return <Text>empty-state</Text>;
+    },
 }));
 
 jest.mock('../ui-spinner/ui-spinner', () => ({
     __esModule: true,
-    default: () => <Text>spinner</Text>,
+    default: () => {
+        const { Text } = require('react-native');
+        return <Text>spinner</Text>;
+    },
 }));
 
 const { UIGenericItemList } = require('./ui-generic-item-list');
@@ -81,9 +86,14 @@ describe('UIGenericItemList integration', () => {
                 filterAction={mockFilterAction}
                 fetchItemsAction={mockFetchAction}
                 ItemComponent={({ item }: { item: { name: string } }) => (
-                    <View>
-                        <Text>{item.name}</Text>
-                    </View>
+                    (() => {
+                        const { View, Text } = require('react-native');
+                        return (
+                            <View>
+                                <Text>{item.name}</Text>
+                            </View>
+                        );
+                    })()
                 )}
             />
         );

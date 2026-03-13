@@ -1,4 +1,3 @@
-import { EmployeeEntity } from '@pos/employees/data-access';
 import { InventoryCount, InventoryCountLine, InventoryCountStatus } from '@pos/shared/models';
 import { InventoryCountLineDTO } from './inventory-count-line.entity';
 
@@ -15,8 +14,14 @@ export type InventoryCountDTO = {
     updatedAt?: string | null | undefined;
 };
 
+type CountEmployee = {
+    id?: string;
+    firstName?: string;
+    lastName?: string;
+};
+
 export class InventoryCountMapper {
-    static newCount(employee: EmployeeEntity): InventoryCountDTO {
+    static newCount(employee: CountEmployee): InventoryCountDTO {
         return {
             status: 'IN_PROGRESS',
             comments: 'n/a',
@@ -68,5 +73,4 @@ export class InventoryCountMapper {
         }));
     }
 }
-
 

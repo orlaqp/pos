@@ -1,26 +1,25 @@
-
 {
-  "root": "libs/brands/native-feature",
-  "sourceRoot": "libs/brands/native-feature/src",
-  "projectType": "library",
-  "tags": [],
-  "targets": {
-    "lint": {
-      "executor": "@nrwl/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": [
-          "libs/brands/native-feature/**/*.{ts,tsx,js,jsx}"
-        ]
-      }
-    },
-    "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/brands/native-feature"],
-      "options": {
-        "jestConfig": "libs/brands/native-feature/jest.config.js",
-        "passWithNoTests": true
-      }
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/brands/native-feature/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "lint": {
+            "executor": "@nrwl/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": [
+                    "libs/brands/native-feature/**/*.{ts,tsx,js,jsx}"
+                ]
+            }
+        },
+        "test": {
+            "executor": "@nrwl/jest:jest",
+            "outputs": ["coverage/libs/brands/native-feature"],
+            "options": {
+                "jestConfig": "libs/brands/native-feature/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
     }
-  }
 }

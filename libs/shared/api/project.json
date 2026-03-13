@@ -1,5 +1,5 @@
 {
-    "root": "libs/shared/api",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/shared/api/src",
     "projectType": "library",
     "tags": [],
@@ -15,7 +15,7 @@
             "executor": "@nrwl/jest:jest",
             "outputs": ["coverage/libs/shared/api"],
             "options": {
-                "jestConfig": "libs/shared/api/jest.config.js",
+                "jestConfig": "libs/shared/api/jest.config.ts",
                 "passWithNoTests": true
             }
         }

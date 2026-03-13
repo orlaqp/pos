@@ -5,7 +5,8 @@ import UIInfo from './ui-info';
 
 describe('UIInfo', () => {
     it('should render successfully', () => {
-        const { container } = render(<UIInfo />);
-        expect(container).toBeTruthy();
+        const { getByText } = render(<UIInfo primary="A" secondary="B" />);
+        expect(getByText('A')).toBeTruthy();
+        expect(getByText('B')).toBeTruthy();
     });
 });

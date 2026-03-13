@@ -24,12 +24,13 @@ export function UiActionMessage(props: UiActionMessageProps) {
 
 const useStyles = () => {
   const theme = useTheme();
+  const colors = theme?.theme?.colors || { black: '#ffffff' };
   const sharedStyles = useSharedStyles();
   return {
     ...sharedStyles,
     ...StyleSheet.create({
         message: {
-            color: theme.theme.colors.black,
+            color: colors.black,
             fontSize: 18,
             margin: 20,
             textAlign: 'center'

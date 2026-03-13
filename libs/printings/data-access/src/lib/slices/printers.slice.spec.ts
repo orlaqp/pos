@@ -1,58 +1,27 @@
-
 import {
-  fetchPrintings,
-  PrintingsAdapter,
-  PrintingsReducer,
-} from './printings.slice';
+  fetchDefaultPrinter,
+  initialPrintingsState,
+  printingsActions,
+  printingsReducer,
+} from './printers.slice';
 
-describe('Printings reducer', () => {
-  it('should handle initial state', () => {
-    const expected = PrintingsAdapter.getInitialState({
-      loadingStatus: 'not loaded',
-      error: null,
-    });
-
-    expect(PrintingsReducer(undefined, { type: '' })).toEqual(expected);
+describe('printings reducer', () => {
+  it('returns initial state', () => {
+    expect(printingsReducer(undefined, { type: '' })).toEqual(initialPrintingsState);
   });
 
-  it('should handle fetchPrintings', () => {
-    let state = printingsReducer(
+  it('handles setAsDefault', () => {
+    const printer = { id: 'printer-1', name: 'P1' } as any;
+    const state = printingsReducer(undefined, printingsActions.setAsDefault(printer));
+    expect(state.defaultPrinter).toEqual(printer);
+  });
+
+  it('handles fetchDefaultPrinter.fulfilled', () => {
+    const printer = { id: 'printer-1', name: 'P1' } as any;
+    const state = printingsReducer(
       undefined,
-      fetchPrintings.pending(null, null)
+      fetchDefaultPrinter.fulfilled(printer, '', undefined)
     );
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'loading',
-        error: null,
-        entities: {},
-      })
-    );
-
-    state = printingsReducer(
-      state,
-      fetchPrintings.fulfilled([{ id: 1 }], null, null)
-    );
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'loaded',
-        error: null,
-        entities: { 1: { id: 1 } },
-      })
-    );
-
-    state = printingsReducer(
-      state,
-      fetchPrintings.rejected(new Error('Uh oh'), null, null)
-    );
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'error',
-        error: 'Uh oh',
-        entities: { 1: { id: 1 } },
-      })
-    );
+    expect(state.defaultPrinter).toEqual(printer);
   });
 });

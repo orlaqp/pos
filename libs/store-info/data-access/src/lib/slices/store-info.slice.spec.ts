@@ -1,57 +1,39 @@
 import {
-    fetchStoreInfo,
-    storeInfoAdapter,
-    storeInfoReducer,
+  fetchStoreInfo,
+  initialStoreInfoState,
+  storeInfoActions,
+  storeInfoReducer,
 } from './store-info.slice';
 
 describe('storeInfo reducer', () => {
-    it('should handle initial state', () => {
-        const expected = storeInfoAdapter.getInitialState({
-            loadingStatus: 'not loaded',
-            error: null,
-        });
+  it('returns initial state', () => {
+    expect(storeInfoReducer(undefined, { type: '' })).toEqual(initialStoreInfoState);
+  });
 
-        expect(storeInfoReducer(undefined, { type: '' })).toEqual(expected);
-    });
+  it('handles fetchStoreInfo pending/fulfilled/rejected', () => {
+    let state = storeInfoReducer(undefined, fetchStoreInfo.pending('', undefined));
+    expect(state.loadingStatus).toBe('loading');
 
-    it('should handle fetchStoreInfos', () => {
-        let state = storeInfoReducer(
-            undefined,
-            fetchStoreInfo.pending(null, null)
-        );
+    state = storeInfoReducer(
+      state,
+      fetchStoreInfo.fulfilled({ id: 'store-1' } as any, '', undefined)
+    );
+    expect(state.loadingStatus).toBe('loaded');
+    expect(state.store).toEqual(expect.objectContaining({ id: 'store-1' }));
 
-        expect(state).toEqual(
-            expect.objectContaining({
-                loadingStatus: 'loading',
-                error: null,
-                entities: {},
-            })
-        );
+    state = storeInfoReducer(
+      state,
+      fetchStoreInfo.rejected(new Error('Uh oh'), '', undefined)
+    );
+    expect(state.loadingStatus).toBe('error');
+    expect(state.error).toBe('Uh oh');
+  });
 
-        state = storeInfoReducer(
-            state,
-            fetchStoreInfo.fulfilled([{ id: 1 }], null, null)
-        );
-
-        expect(state).toEqual(
-            expect.objectContaining({
-                loadingStatus: 'loaded',
-                error: null,
-                entities: { 1: { id: 1 } },
-            })
-        );
-
-        state = storeInfoReducer(
-            state,
-            fetchStoreInfo.rejected(new Error('Uh oh'), null, null)
-        );
-
-        expect(state).toEqual(
-            expect.objectContaining({
-                loadingStatus: 'error',
-                error: 'Uh oh',
-                entities: { 1: { id: 1 } },
-            })
-        );
-    });
+  it('handles set', () => {
+    const state = storeInfoReducer(
+      undefined,
+      storeInfoActions.set({ id: 'store-2' } as any)
+    );
+    expect(state.store).toEqual(expect.objectContaining({ id: 'store-2' }));
+  });
 });
