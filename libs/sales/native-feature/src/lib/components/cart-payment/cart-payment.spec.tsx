@@ -15,6 +15,27 @@ jest.mock('@pos/theme/native', () => ({
     }),
 }));
 
+jest.mock('@pos/theme/native/design-tokens', () => ({
+    useDesignTokens: () => ({
+        colors: {
+            border: '#222',
+            surface: '#111',
+            surfaceMuted: '#1a1a1a',
+            textPrimary: '#fff',
+            textMuted: '#999',
+        },
+        spacing: {
+            xs: 4,
+            sm: 8,
+            md: 12,
+        },
+        radii: {
+            md: 8,
+            lg: 12,
+        },
+    }),
+}));
+
 jest.mock('@rneui/themed', () => ({
     Button: ({
         title,
@@ -88,6 +109,7 @@ jest.mock('@pos/shared/ui-native', () => {
     };
 
     return {
+        UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
         UISwitch,
         UINumericInput,
         UIVerticalSpacer: () => <View />,

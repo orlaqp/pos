@@ -5,11 +5,12 @@ import {
     CartState,
     selectCart,
 } from '@pos/sales/data-access';
-import { UIEmptyState } from '@pos/shared/ui-native';
+import { UICard, UIEmptyState } from '@pos/shared/ui-native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, Dialog } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
 
-import { View, TextInput, Alert } from 'react-native';
+import { View, TextInput, Alert, Text, StyleSheet } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 import every from 'lodash/every';
@@ -36,6 +37,8 @@ export interface CartProps {
 
 export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
     const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const localStyles = useStyles(tokens);
     const dispatch = useDispatch();
     const cart = useSelector(selectCart);
     const employee = useSelector(selectLoginEmployee);
@@ -113,7 +116,7 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
 
     if (!cart.items.length) {
         return (
-            <View style={{ marginTop: 150, flexDirection: 'column', justifyContent: 'center' }}>
+            <View style={localStyles.emptyWrap}>
                 <UIEmptyState
                     text="Cart is empty"
                     picture={EmptyCart}
@@ -124,9 +127,19 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
     }
 
     return (
-        <View style={{ flexGrow: 1, flexDirection: 'column' }}>
-            <View style={{ flex: 11 }}>
-                <ScrollView>
+        <View style={localStyles.root}>
+            <UICard tone="default" padding="sm" radius="md" style={localStyles.summaryCard}>
+                <View style={localStyles.summaryRow}>
+                    <Text style={localStyles.summaryLabel}>Items</Text>
+                    <Text style={localStyles.summaryValue}>{cart.items.length}</Text>
+                </View>
+                <View style={localStyles.summaryRow}>
+                    <Text style={localStyles.summaryLabel}>Total</Text>
+                    <Text style={localStyles.summaryTotal}>$ {cart.footer.total.toFixed(2)}</Text>
+                </View>
+            </UICard>
+            <View style={localStyles.linesWrap}>
+                <ScrollView contentContainerStyle={localStyles.linesContent}>
                     {cart.items.map((i, idx) => (
                         <CartLine
                             key={idx}
@@ -137,16 +150,22 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                     ))}
                 </ScrollView>
             </View>
-            <View style={{ flex: 1 }}>
+            <View style={localStyles.actionsWrap}>
                 <Button
                     testID="cart-pay-order-button"
-                    title={`$ ${cart.footer.total.toFixed(2)}\n${
-                        mode === 'order' ? 'Print Order' : 'Pay Order'
-                    }`}
+                    title={
+                        mode === 'order'
+                            ? `Print Order  •  $${cart.footer.total.toFixed(2)}`
+                            : `Receive Payment  •  $${cart.footer.total.toFixed(2)}`
+                    }
+                    icon={{
+                        name: mode === 'order' ? 'printer' : 'credit-card-check-outline',
+                        type: 'material-community',
+                        color: '#ffffff',
+                    }}
                     type="solid"
                     disabled={!ready}
                     onPress={submitOrder}
-                    // loading={orderStatus === 'saving'}
                 />
             </View>
 
@@ -165,5 +184,52 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
         </View>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        root: {
+            flex: 1,
+            flexDirection: 'column',
+        },
+        emptyWrap: {
+            marginTop: 120,
+            flexDirection: 'column',
+            justifyContent: 'center',
+        },
+        summaryCard: {
+            marginBottom: tokens.spacing.sm,
+        },
+        summaryRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+        },
+        summaryLabel: {
+            color: tokens.colors.textMuted,
+            fontSize: 12,
+            fontWeight: '700',
+            letterSpacing: 0.5,
+            textTransform: 'uppercase',
+        },
+        summaryValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 18,
+            fontWeight: '700',
+        },
+        summaryTotal: {
+            color: tokens.colors.textPrimary,
+            fontSize: 24,
+            fontWeight: '800',
+        },
+        linesWrap: {
+            flex: 1,
+        },
+        linesContent: {
+            paddingBottom: tokens.spacing.xs,
+        },
+        actionsWrap: {
+            marginTop: tokens.spacing.sm,
+        },
+    });
 
 export default Cart;

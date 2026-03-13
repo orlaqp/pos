@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { useSharedStyles } from '@pos/theme/native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Dialog } from '@rneui/themed';
 
-import { View, StyleSheet, SafeAreaView, Alert, TextInput } from 'react-native';
+import { View, StyleSheet, Alert, TextInput, Text } from 'react-native';
 
 import {
     CategoryEntity,
@@ -32,7 +33,7 @@ import {
 } from '@pos/products/data-access';
 import { ProductSearch } from '../product-search/product-search';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ButtonItemType } from '@pos/shared/ui-native';
+import { ButtonItemType, UICard, UIScreen } from '@pos/shared/ui-native';
 import { RootState } from '@pos/store';
 import { Dictionary } from '@reduxjs/toolkit';
 import { EACH } from '@pos/unit-of-measures/data-access';
@@ -64,7 +65,7 @@ export function SalesScreen({
 }: NativeStackScreenProps<NavigationParamList, 'Sales'>) {
     const styles = useStyles();
     const dispatch = useDispatch();
-    const searchRef = React.createRef<TextInput>();
+    const searchRef = React.useRef<TextInput>(null);
     const product = useSelector(selectActiveProduct);
     const products = useSelector<
         RootState,
@@ -174,10 +175,6 @@ export function SalesScreen({
     };
 
     useEffect(() => {
-        searchRef.current?.focus();
-    });
-
-    useEffect(() => {
         const categoriesSub = subscribeToCategoryChanges(dispatch);
         const productsSub = subscribeToProductChanges(dispatch);
         const globalSettingsSub = subscribeToGlobalSettingsChanges(dispatch);
@@ -210,24 +207,29 @@ export function SalesScreen({
     }, [allProducts]);
 
     return (
-        <SafeAreaView style={[styles.page, styles.row]}>
-            <View style={styles.categories}>
-                <CategorySelection key='categorySelection' onSelected={onCategoryChange} />
-            </View>
-            <View style={styles.products}>
-                <ProductSearch
-                    key='productSearch'
-                    ref={searchRef}
-                    onFilterChange={onFilterChange}
-                />
-                <ProductSelection
-                    key='productSelection'
-                    products={filteredProducts}
-                    onSelected={onProductSelected}
-                />
-            </View>
-            <View style={styles.cart}>
-                <Cart key='cart' mode={route.params.mode} onSubmit={onCartSubmit} searchRef={searchRef} products={allProducts} />
+        <UIScreen padded>
+            <View style={styles.salesLayout}>
+                <UICard style={styles.categoriesCard} padding="md" radius="lg" tone="muted">
+                    <Text style={styles.sectionTitle}>Categories</Text>
+                    <CategorySelection key='categorySelection' onSelected={onCategoryChange} />
+                </UICard>
+                <UICard style={styles.productsCard} padding="md" radius="lg">
+                    <Text style={styles.sectionTitle}>Products</Text>
+                    <ProductSearch
+                        key='productSearch'
+                        ref={searchRef}
+                        onFilterChange={onFilterChange}
+                    />
+                    <ProductSelection
+                        key='productSelection'
+                        products={filteredProducts}
+                        onSelected={onProductSelected}
+                    />
+                </UICard>
+                <UICard style={styles.cartCard} padding="md" radius="lg" tone="muted">
+                    <Text style={styles.sectionTitle}>Cart</Text>
+                    <Cart key='cart' mode={route.params.mode} onSubmit={onCartSubmit} searchRef={searchRef} products={allProducts} />
+                </UICard>
             </View>
             <Dialog
                 isVisible={!!product}
@@ -239,32 +241,40 @@ export function SalesScreen({
                     upsertCart={upsertCart}
                     enforceSalesBasedOnInventory={globalSettings?.enforceSalesBasedOnInventory} />
             </Dialog>
-        </SafeAreaView>
+        </UIScreen>
     );
 }
 
 const useStyles = () => {
     const sharedStyles = useSharedStyles();
+    const tokens = useDesignTokens();
 
     return {
         ...sharedStyles,
         ...StyleSheet.create({
-            categories: {
-                flex: 0.7,
-                justifyContent: 'flex-start',
-                flexDirection: 'column',
+            salesLayout: {
+                flex: 1,
+                flexDirection: 'row',
             },
-            products: {
-                ...sharedStyles.darkBackground,
+            sectionTitle: {
+                color: tokens.colors.textMuted,
+                fontSize: 12,
+                fontWeight: '700',
+                letterSpacing: 0.6,
+                textTransform: 'uppercase',
+                marginBottom: tokens.spacing.sm,
+            },
+            categoriesCard: {
+                flex: 0.9,
+                marginRight: tokens.spacing.sm,
+                paddingRight: tokens.spacing.sm,
+            },
+            productsCard: {
                 flex: 5,
-                height: '96%',
-                flexDirection: 'column',
-                marginHorizontal: 10,
+                marginRight: tokens.spacing.sm,
             },
-            cart: {
+            cartCard: {
                 flex: 2,
-                flexDirection: 'column',
-                ...sharedStyles.darkBackground,
             },
         }),
     };

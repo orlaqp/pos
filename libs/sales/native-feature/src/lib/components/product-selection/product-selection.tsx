@@ -7,10 +7,11 @@ import {
     UIEmptyState,
 } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { EACH } from '@pos/unit-of-measures/data-access';
 import React, { useEffect, useState } from 'react';
 
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 
 /* eslint-disable-next-line */
 export interface ProductSelectionProps {
@@ -23,6 +24,8 @@ export function ProductSelection({
     onSelected,
 }: ProductSelectionProps) {
     const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const localStyles = useStyles(tokens);
     const [rows, setRows] = useState<ProductEntity[][]>();
     const [rowsToShow, setRowsToShow] = useState<number>(6);
 
@@ -49,9 +52,9 @@ export function ProductSelection({
     }, [products]);
 
     return (
-        <View>
+        <View style={localStyles.container}>
             {!products.length && (
-                <View style={{ marginTop: 100 }}>
+                <View style={localStyles.emptyWrap}>
                     <UIEmptyState
                         text="Select a category from the left or search for a product on top"
                         backgroundColor="transparent"
@@ -59,19 +62,16 @@ export function ProductSelection({
                 </View>
             )}
 
-            <View style={{ padding: 25 }}>
+            <View style={localStyles.listWrap}>
                 <FlatList
                     data={rows?.slice(0, rowsToShow)}
                     // onEndReachedThreshold={0.2}
                     onEndReached={() => setRowsToShow(rowsToShow + 6)}
+                    contentContainerStyle={localStyles.listContent}
                     renderItem={(info) => (
                         <View
                             style={[
-                                styles.row,
-                                {
-                                    alignContent: 'space-around',
-                                    justifyContent: 'center',
-                                },
+                                styles.row, localStyles.row,
                             ]}
                         >
                             {info.item?.map((p) => (
@@ -79,11 +79,13 @@ export function ProductSelection({
                                     key={p.id}
                                     style={{
                                         ...productBackgroundColor(p),
-                                        borderRadius: 5,
-                                        marginRight: 10,
-                                        marginBottom: 10,
-                                        width: 180,
+                                        borderRadius: tokens.radii.md,
+                                        marginRight: tokens.spacing.sm,
+                                        marginBottom: tokens.spacing.sm,
+                                        width: 210,
                                         position: 'relative',
+                                        borderWidth: 1,
+                                        borderColor: tokens.colors.border,
                                     }}
                                 >
                                     {p.isEBTEligible && <UIEbtRibbon />}
@@ -93,18 +95,12 @@ export function ProductSelection({
                                         maxTextLength={14}
                                     >
                                         <View
-                                            style={{
-                                                marginTop: 4,
-                                                padding: 4,
-                                            }}
+                                            style={localStyles.productMeta}
                                         >
                                             <Text
                                                 style={[
                                                     styles.labelText,
-                                                    {
-                                                        fontWeight: 'bold',
-                                                        fontSize: 14,
-                                                    },
+                                                    localStyles.stockText,
                                                 ]}
                                             >
                                                 In stock: {p.unitOfMeasure === EACH ? p.quantity : p.quantity.toFixed(2)}
@@ -112,10 +108,7 @@ export function ProductSelection({
                                             <Text
                                                 style={[
                                                     styles.labelText,
-                                                    {
-                                                        fontWeight: 'bold',
-                                                        fontSize: 18,
-                                                    },
+                                                    localStyles.priceText,
                                                 ]}
                                             >
                                                 $ {p.price.toFixed(2)}
@@ -127,12 +120,42 @@ export function ProductSelection({
                         </View>
                     )}
                 />
-                {/* <ScrollView>
-                    
-                </ScrollView> */}
             </View>
         </View>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+        },
+        emptyWrap: {
+            marginTop: 80,
+        },
+        listWrap: {
+            flex: 1,
+            paddingHorizontal: tokens.spacing.xs,
+        },
+        listContent: {
+            paddingBottom: tokens.spacing.md,
+        },
+        row: {
+            alignContent: 'space-around',
+            justifyContent: 'flex-start',
+        },
+        productMeta: {
+            marginTop: 4,
+            padding: 8,
+        },
+        stockText: {
+            fontWeight: '700',
+            fontSize: 14,
+        },
+        priceText: {
+            fontWeight: '800',
+            fontSize: 20,
+        },
+    });
 
 export default ProductSelection;

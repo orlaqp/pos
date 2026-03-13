@@ -1,10 +1,11 @@
 import { CartItem } from '@pos/sales/data-access';
 import { UIEbtRibbon } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, useTheme } from '@rneui/themed';
 import React from 'react';
 
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 
 /* eslint-disable-next-line */
 export interface CartLineProps {
@@ -16,6 +17,8 @@ export interface CartLineProps {
 export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const localStyles = useStyles(tokens, theme.theme.colors.error);
     
     const confirmDeletion = () => {
         Alert.alert(
@@ -31,28 +34,19 @@ export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
 
     return (
         <TouchableOpacity
-            style={{
-                // ...styles.darkBackground,
-                backgroundColor: item.quantity === 0 ? theme.theme.colors.error : theme.theme.colors.grey4,
-                marginBottom: 5,
-                paddingHorizontal: 10,
-                paddingVertical: 15,
-                borderRadius: 5,
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                position: 'relative',
-                overflow: 'hidden',
-            }}
+            style={[
+                localStyles.container,
+                item.quantity === 0 && localStyles.containerError,
+            ]}
             onPress={() => onSelect(item)}
         >
-            <View>
+            <View style={localStyles.content}>
                 <Text style={styles.primaryText}>{item.product.name}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+                <View style={localStyles.metaRow}>
                     <Text
                         style={[
                             styles.secondaryText,
-                            { fontSize: 14, fontWeight: 'bold', marginTop: 5 },
+                            localStyles.metaText,
                         ]}
                     >
                         $ {item.product.price.toFixed(2)}x
@@ -61,15 +55,14 @@ export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
                     <Text
                         style={[
                             styles.primaryText,
-                            { fontSize: 20, fontWeight: 'bold', marginTop: 5 },
+                            localStyles.totalText,
                         ]}
                     >
-                        {'  '}(${' '}
+                        {'  '}($
                         {(item.product.price * item.quantity).toFixed(2)})
                     </Text>
                 </View>
             </View>
-            <View style={{ flexGrow: 1 }}></View>
             <Button
                 type="clear"
                 icon={{
@@ -83,5 +76,42 @@ export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
         </TouchableOpacity>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: string) =>
+    StyleSheet.create({
+        container: {
+            backgroundColor: `${tokens.colors.surfaceMuted}`,
+            marginBottom: tokens.spacing.xs,
+            paddingHorizontal: tokens.spacing.sm,
+            paddingVertical: tokens.spacing.sm,
+            borderRadius: tokens.radii.md,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            flexDirection: 'row',
+            alignItems: 'center',
+            position: 'relative',
+            overflow: 'hidden',
+        },
+        containerError: {
+            borderColor: `${dangerColor}99`,
+        },
+        content: {
+            flex: 1,
+            paddingRight: tokens.spacing.xs,
+        },
+        metaRow: {
+            flexDirection: 'row',
+            alignItems: 'flex-end',
+            marginTop: 2,
+        },
+        metaText: {
+            fontSize: 14,
+            fontWeight: '700',
+        },
+        totalText: {
+            fontSize: 20,
+            fontWeight: '800',
+        },
+    });
 
 export default CartLine;

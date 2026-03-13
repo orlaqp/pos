@@ -1,90 +1,109 @@
-import React, { useEffect, useState } from 'react';
-
-import { useSharedStyles } from '@pos/theme/native';
-import { useTheme } from '@rneui/themed';
-import { Storage } from 'aws-amplify';
-import { Category } from '@pos/shared/models';
-
-import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    ScrollView,
-    Image,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-    categoriesActions,
-    CategoryEntity,
-    selectAllCategories,
-    selectedCategory,
-} from '@pos/categories/data-access';
-import { UIButton, UIS3Image } from '@pos/shared/ui-native';
+import React from 'react';
+import { categoriesActions, CategoryEntity, selectAllCategories, selectedCategory } from '@pos/categories/data-access';
+import { UIS3Image } from '@pos/shared/ui-native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
+import { useDispatch, useSelector } from 'react-redux';
 
-const categories: Category[] = [];
-
-/* eslint-disable-next-line */
 export interface CategorySelectionProps {
     onSelected: (c: CategoryEntity) => void;
 }
 
 export function CategorySelection({ onSelected }: CategorySelectionProps) {
-    const theme = useTheme();
-    const styles = useStyles();
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const categories = useSelector(selectAllCategories);
-    const dispatch = useDispatch();
-    const allCategories: CategoryEntity = { name: 'Show\nAll' };
     const selected = useSelector(selectedCategory);
+    const dispatch = useDispatch();
 
     const onSelection = (item: CategoryEntity) => {
         onSelected(item);
         dispatch(categoriesActions.select(item));
-    }
+    };
 
     return (
-        <SafeAreaView style={[styles.pageBackground, styles.list]}>
-            {/* <UIButton item={allCategories} onSelected={onSelection} /> */}
+        <View style={styles.container}>
             <FlatList
                 data={categories}
-                renderItem={({ item }) => (
-                    <View
-                        style={{
-                            borderLeftWidth: 8,
-                            borderColor:
-                                item === selected
-                                    ? theme.theme.colors.primary
-                                    : `${theme.theme.colors.searchBg}44`,
-                        }}
-                    >
-                        <UIButton item={item} onSelected={onSelection} />
-                    </View>
-                )}
+                keyExtractor={(item) => item.id || item.name}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.listContent}
+                renderItem={({ item }) => {
+                    const isSelected = selected?.id === item.id;
+                    return (
+                        <Pressable
+                            testID={`sales-category-${item.id || item.name}`}
+                            onPress={() => onSelection(item)}
+                            style={[
+                                styles.itemCard,
+                                isSelected && styles.itemCardSelected,
+                            ]}
+                        >
+                            <View style={styles.imageWrap}>
+                                <UIS3Image
+                                    s3Key={item.picture}
+                                    width={42}
+                                    height={42}
+                                    factor={1.5}
+                                />
+                            </View>
+                            <Text
+                                numberOfLines={2}
+                                style={[styles.itemLabel, isSelected && styles.itemLabelSelected]}
+                            >
+                                {item.name}
+                            </Text>
+                        </Pressable>
+                    );
+                }}
             />
-        </SafeAreaView>
+        </View>
     );
 }
 
-const useStyles = () => {
-    const theme = useTheme();
-    const sharedStyles = useSharedStyles();
-
-    return {
-        ...sharedStyles,
-        ...StyleSheet.create({
-            list: {
-                ...sharedStyles.darkBackground,
-            },
-            categoryBtn: {
-                width: 80,
-                height: 80,
-                borderRadius: 4,
-            },
-            picture: { marginBottom: 15, width: 50, height: 50 },
-        }),
-    };
-};
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+        },
+        listContent: {
+            paddingBottom: tokens.spacing.sm,
+        },
+        itemCard: {
+            borderRadius: tokens.radii.md,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            backgroundColor: tokens.colors.surfaceMuted,
+            paddingVertical: tokens.spacing.sm,
+            paddingHorizontal: tokens.spacing.xs,
+            marginBottom: tokens.spacing.xs,
+            alignItems: 'center',
+        },
+        itemCardSelected: {
+            backgroundColor: `${tokens.colors.accent}22`,
+            borderColor: `${tokens.colors.accent}bb`,
+        },
+        imageWrap: {
+            width: 56,
+            height: 56,
+            borderRadius: tokens.radii.sm,
+            backgroundColor: tokens.colors.surface,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: tokens.spacing.xs,
+        },
+        itemLabel: {
+            color: tokens.colors.textSecondary,
+            fontSize: 12,
+            fontWeight: '700',
+            textAlign: 'center',
+            lineHeight: 16,
+            minHeight: 32,
+        },
+        itemLabelSelected: {
+            color: tokens.colors.accent,
+        },
+    });
 
 export default CategorySelection;

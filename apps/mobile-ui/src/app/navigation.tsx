@@ -7,15 +7,13 @@ import { SalesScreen } from '@pos/sales/native-feature';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@pos/store';
 import { BackOffice } from '@pos/back-office/native-feature';
-import { Auth, DataStore } from 'aws-amplify';
-import { CompactOrderList, OrderList, Orders } from '@pos/orders/native-feature';
+import { CompactOrderList, Orders } from '@pos/orders/native-feature';
 import { Button, Dialog, useTheme } from '@rneui/themed';
-import { Alert, Text } from 'react-native';
+import { Alert } from 'react-native';
 import { cartActions, selectCart } from '@pos/sales/data-access';
 import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import { selectStore } from '@pos/store-info/data-access';
 import { useSharedStyles } from '@pos/theme/native';
-import { authActions } from '@pos/auth/data-access';
 import { employeesActions, selectLoginEmployee } from '@pos/employees/data-access';
 
 /* eslint-disable-next-line */
@@ -66,9 +64,20 @@ export function Navigation() {
             <Dialog
                 isVisible={showOtherOrders}
                 onBackdropPress={() => setShowOtherOrders(false)}
-                overlayStyle={[styles.overlay, { width: 700 }]}
+                overlayStyle={[
+                    styles.overlay,
+                    {
+                        width: 780,
+                        maxWidth: '95%',
+                        borderRadius: 16,
+                        padding: 20,
+                    },
+                ]}
             >
-                <CompactOrderList onSelect={() => setShowOtherOrders(false)} />
+                <CompactOrderList
+                    onSelect={() => setShowOtherOrders(false)}
+                    onClose={() => setShowOtherOrders(false)}
+                />
             </Dialog>
             <Stack.Navigator
                 screenOptions={{
