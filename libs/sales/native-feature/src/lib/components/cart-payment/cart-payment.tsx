@@ -11,6 +11,7 @@ import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button } from '@rneui/themed';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import i18next from 'i18next';
 import {
     getAutoFillAmount,
     getRestoredValue,
@@ -24,10 +25,10 @@ import { View, Text, Alert, StyleSheet } from 'react-native';
 const round2Dec = (value: number) => +value.toFixed(2);
 
 const PaymentMethod = {
-    cc: { label: 'Credit Card', type: PaymentType.CC },
-    cash: { label: 'Cash', type: PaymentType.CASH },
-    check: { label: 'Check', type: PaymentType.CHECK },
-    ebt: { label: 'EBT', type: PaymentType.EBT },
+    cc: { labelKey: 'PAYMENT_Method_CreditCard', label: 'Credit Card', type: PaymentType.CC },
+    cash: { labelKey: 'PAYMENT_Method_Cash', label: 'Cash', type: PaymentType.CASH },
+    check: { labelKey: 'PAYMENT_Method_Check', label: 'Check', type: PaymentType.CHECK },
+    ebt: { labelKey: 'PAYMENT_Method_EBT', label: 'EBT', type: PaymentType.EBT },
 } as const;
 
 interface PaymentInfo {
@@ -54,6 +55,10 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
     const tokens = useDesignTokens();
     const local = useStyles(tokens);
     const [formValue, setFormValue] = useState<PaymentInfo>();
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
     const previousValues = useRef<Partial<Record<PaymentKey, number>>>({});
     const form = useForm<PaymentInfo>({
         mode: 'onChange',
@@ -106,14 +111,22 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
         });
 
         if (round2Dec(received) < round2Dec(total)) {
-            Alert.alert('Received payment cannot be less than the total');
+            Alert.alert(
+                t(
+                    'PAYMENT_ReceivedCannotBeLess',
+                    'Received payment cannot be less than the total'
+                )
+            );
             return;
         }
 
         if (round2Dec(ebtReceived) > round2Dec(ebtEligibleTotal)) {
             Alert.alert(
-                'EBT validation failed',
-                `EBT amount ($${ebtReceived.toFixed(2)}) cannot exceed EBT-eligible amount ($${ebtEligibleTotal.toFixed(2)}).`
+                t('PAYMENT_EBTValidationTitle', 'EBT validation failed'),
+                `${t(
+                    'PAYMENT_EBTValidationMessage',
+                    'EBT amount cannot exceed EBT-eligible amount.'
+                )}\n$${ebtReceived.toFixed(2)} > $${ebtEligibleTotal.toFixed(2)}`
             );
             return;
         }
@@ -175,17 +188,23 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
         <View>
             <FormProvider {...form}>
                 <UICard tone="muted" padding="md" radius="lg">
-                    <Text style={[styles.secondaryText, local.totalLabel]}>Amount Due</Text>
+                    <Text style={[styles.secondaryText, local.totalLabel]}>
+                        {t('PAYMENT_AmountDue', 'Amount Due')}
+                    </Text>
                     <Text style={[styles.primaryText, styles.textCenter, local.totalAmount]}>
                         $ {total.toFixed(2)}
                     </Text>
                     <View style={local.summaryRow}>
                         <View style={[local.summaryPill, local.summaryPillSpaced]}>
-                            <Text style={local.summaryPillLabel}>EBT Eligible</Text>
+                            <Text style={local.summaryPillLabel}>
+                                {t('PAYMENT_EBTEligible', 'EBT Eligible')}
+                            </Text>
                             <Text style={local.summaryPillValue}>$ {ebtEligibleTotal.toFixed(2)}</Text>
                         </View>
                         <View style={local.summaryPill}>
-                            <Text style={local.summaryPillLabel}>Remaining</Text>
+                            <Text style={local.summaryPillLabel}>
+                                {t('PAYMENT_Remaining', 'Remaining')}
+                            </Text>
                             <Text style={local.summaryPillValue}>$ {remainingTotal.toFixed(2)}</Text>
                         </View>
                     </View>
@@ -207,7 +226,7 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
                                         local.methodLabel,
                                 ]}
                             >
-                                {PaymentMethod[m].label}
+                                {t(PaymentMethod[m].labelKey, PaymentMethod[m].label)}
                             </Text>
                             </View>
                             <View style={local.methodInputWrap}>
@@ -240,7 +259,9 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
                             isFullyPaid && local.summaryFooterRowComplete,
                         ]}
                     >
-                        <Text style={local.summaryFooterLabel}>Received</Text>
+                        <Text style={local.summaryFooterLabel}>
+                            {t('PAYMENT_Received', 'Received')}
+                        </Text>
                         <Text
                             style={[
                                 local.summaryFooterValue,
@@ -251,17 +272,27 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
                         </Text>
                     </View>
                     {isFullyPaid && (
-                        <Text style={local.completeHint}>Ready to finalize payment</Text>
+                        <Text style={local.completeHint}>
+                            {t(
+                                'PAYMENT_ReadyToFinalize',
+                                'Ready to finalize payment'
+                            )}
+                        </Text>
                     )}
                     {!isFullyPaid && (
-                        <Text style={local.pendingHint}>Enter remaining amount to continue</Text>
+                        <Text style={local.pendingHint}>
+                            {t(
+                                'PAYMENT_EnterRemaining',
+                                'Enter remaining amount to continue'
+                            )}
+                        </Text>
                     )}
                 </UICard>
                 <UIVerticalSpacer size="small" />
                 <View style={local.ctaWrap}>
                     <Button
                         testID="payment-submit-button"
-                        title={`Receive Payment ($${total.toFixed(2)})`}
+                        title={`${t('PAYMENT_ReceivePayment', 'Receive Payment')} ($${total.toFixed(2)})`}
                         buttonStyle={local.ctaButton}
                         icon={{
                             name: 'check',

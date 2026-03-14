@@ -16,6 +16,7 @@ import { Order } from '@pos/shared/models';
 import { UISpinner } from '@pos/shared/ui-native';
 import OrderDetails from './order-details';
 import Widget from '../widget/widget';
+import i18next from 'i18next';
 
 /* eslint-disable-next-line */
 export interface EndOfDayProps {}
@@ -61,34 +62,47 @@ export const loadPaidSalesForRange = async (
 export const buildEndOfDayWidgets = (
     ordersCount: number,
     summary: PaymentMethodsSummary,
-    defaultBackgroundColor: string
+    defaultBackgroundColor: string,
+    labels: {
+        sales: string;
+        total: string;
+        creditCard: string;
+        cash: string;
+        checks: string;
+    } = {
+        sales: 'Sales',
+        total: 'Total',
+        creditCard: 'Credit Card',
+        cash: 'Cash',
+        checks: 'Checks',
+    }
 ): EndOfDayWidget[] => [
     {
-        text: 'Sales',
+        text: labels.sales,
         value: `${ordersCount}`,
         backgroundColor: defaultBackgroundColor,
         flex: 0.7,
     },
     {
-        text: 'Total',
+        text: labels.total,
         value: formatPaymentAmount(getPaymentMethodsTotal(summary)),
         backgroundColor: defaultBackgroundColor,
         flex: 1,
     },
     {
-        text: 'Credit Card',
+        text: labels.creditCard,
         value: formatPaymentAmount(summary.CC),
         backgroundColor: '#1976d2',
         flex: 1,
     },
     {
-        text: 'Cash',
+        text: labels.cash,
         value: formatPaymentAmount(summary.CASH),
         backgroundColor: '#e91e63',
         flex: 1,
     },
     {
-        text: 'Checks',
+        text: labels.checks,
         value: formatPaymentAmount(summary.CHECK),
         backgroundColor: '#43a047',
         flex: 1,
@@ -112,9 +126,14 @@ export const buildEndOfDayFilterConfigs = (params: {
     setProductsOpen: (value: boolean) => void;
     setProductValue: (value: string | null) => void;
     setProductItems: (items: ItemType<string>[]) => void;
+    labels?: {
+        openedBy: string;
+        closedBy: string;
+        products: string;
+    };
 }): EndOfDayFilterConfig[] => [
     {
-        label: 'Opened by',
+        label: params.labels?.openedBy || 'Opened by',
         open: params.employeesOpen,
         value: params.employeeValue,
         items: params.employeeItems,
@@ -123,7 +142,7 @@ export const buildEndOfDayFilterConfigs = (params: {
         setItems: params.setEmployeeItems,
     },
     {
-        label: 'Closed by',
+        label: params.labels?.closedBy || 'Closed by',
         open: params.closedByOpen,
         value: params.closedByValue,
         items: params.employeeItems,
@@ -133,7 +152,7 @@ export const buildEndOfDayFilterConfigs = (params: {
         leftPadding: true,
     },
     {
-        label: 'Product(s)',
+        label: params.labels?.products || 'Product(s)',
         open: params.productsOpen,
         value: params.productValue,
         items: params.productItems,
@@ -167,6 +186,10 @@ export const createDateUpdater = (
 
 export function EndOfDay(props: EndOfDayProps) {
     const styles = useSharedStyles();
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
 
     const [date, setDate] = useState(new Date());
     const [drOpen, setDrOpen] = useState(true);
@@ -210,11 +233,23 @@ export function EndOfDay(props: EndOfDayProps) {
         setProductsOpen,
         setProductValue,
         setProductItems,
+        labels: {
+            openedBy: t('EOD_OpenedBy', 'Opened by'),
+            closedBy: t('EOD_ClosedBy', 'Closed by'),
+            products: t('EOD_Products', 'Product(s)'),
+        },
     });
     const widgets = buildEndOfDayWidgets(
         filteredOrders.length,
         paymentMethodsSummary,
-        styles.dataRow.backgroundColor
+        styles.dataRow.backgroundColor,
+        {
+            sales: t('EOD_Sales', 'Sales'),
+            total: t('EOD_Total', 'Total'),
+            creditCard: t('EOD_CreditCard', 'Credit Card'),
+            cash: t('EOD_Cash', 'Cash'),
+            checks: t('EOD_Checks', 'Checks'),
+        }
     );
     const updateDate = createDateUpdater(
         setDate,
@@ -239,7 +274,9 @@ export function EndOfDay(props: EndOfDayProps) {
             <View style={[styles.box, { height: '100%' }]}>
                 <View style={[styles.row, { zIndex: 1000 }]}>
                     <View style={{ flex: .5, paddingRight: 10, flexDirection: 'column' }}>
-                        <Text style={[styles.secondaryText, { marginBottom: 5 }]}>Date</Text>
+                        <Text style={[styles.secondaryText, { marginBottom: 5 }]}>
+                            {t('EOD_Date', 'Date')}
+                        </Text>
                         <Button title={date.toLocaleDateString()} onPress={() => setDrOpen(true)} />
                         <DatePicker
                             modal
@@ -286,7 +323,10 @@ export function EndOfDay(props: EndOfDayProps) {
 
                 {loading && 
                     <View style={[styles.centered, { paddingTop: 50 }]}>
-                        <UISpinner size="small" message="Loading..." />
+                        <UISpinner
+                            size="small"
+                            message={t('COMMON_Loading', 'Loading...')}
+                        />
                     </View>
                 }
 

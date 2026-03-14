@@ -2,6 +2,7 @@ import { Order } from '@pos/shared/models';
 import { useSharedStyles } from '@pos/theme/native';
 import { Icon } from '@rneui/themed';
 import React from 'react';
+import i18next from 'i18next';
 
 import { View, Text } from 'react-native';
 import { OrderLineDetails } from './order-line-details';
@@ -14,44 +15,66 @@ export interface OrderDetailsProps {
 
 export function OrderDetails({ order, productId }: OrderDetailsProps) {
     const styles = useSharedStyles();
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
 
     return (
         <View style={[styles.box, styles.column]}>
             <View style={styles.row}>
                 <View style={[styles.column, { flex: 1.50, marginRight: 45 }]}>
-                    <Text style={styles.secondaryText}>Order No.</Text>
+                    <Text style={styles.secondaryText}>
+                        {t('EOD_OrderNo', 'Order No.')}
+                    </Text>
                     <Text style={styles.primaryText}>{order.orderNo}</Text>
                 </View>
                 <View style={[styles.column, { flex: 1.5, marginRight: 45 }]}>
-                    <Text style={styles.secondaryText}>Created By</Text>
+                    <Text style={styles.secondaryText}>
+                        {t('EOD_CreatedBy', 'Created By')}
+                    </Text>
                     <Text style={styles.primaryText}>{order.createdBy?.name}</Text>
                 </View>
                 <View style={[styles.column, styles.centered, { flex: .15, marginRight: 45 }]}>
                     <Icon name='arrow-right' type='material-community' size={16} />
                 </View>
                 <View style={[styles.column, { flex: 1.5, marginRight: 45 }]}>
-                    <Text style={styles.secondaryText}>Closed By</Text>
+                    <Text style={styles.secondaryText}>
+                        {t('EOD_ClosedBy', 'Closed By')}
+                    </Text>
                     <Text style={styles.primaryText}>{order.paymentInfo?.employeeName}</Text>
                 </View>
                 <View style={{ flex: .5 }}></View>
                 <View style={[styles.column, { marginRight: 45 }]}>
-                    <Text style={[styles.secondaryText, styles.textRight ]}>Total</Text>
+                    <Text style={[styles.secondaryText, styles.textRight ]}>
+                        {t('EOD_Total', 'Total')}
+                    </Text>
                     <Text style={[styles.primaryText, styles.textWarning, styles.textBold ]}>$ {order.total.toFixed(2)}</Text>
                 </View>
             </View>
             <View style={[styles.row, { marginRight: 26, marginTop: 10 }]}>
                 <View style={{ flex: 2 }}>
-                    <Text style={styles.secondaryText}>Payments</Text>
+                    <Text style={styles.secondaryText}>
+                        {t('EOD_Payments', 'Payments')}
+                    </Text>
                     {order.paymentInfo?.payments?.map(p => (
                         <Text style={styles.primaryText}>{p?.type}: ${p?.amount.toFixed(2)}</Text>
                     ))}
                 </View>
                 <View style={[styles.box, { flex: 6 }]}>
                     <View style={[styles.row]}>
-                        <Text style={[styles.secondaryText, styles.textRight, { flex: 1, marginRight: 30 }]}>Quantity</Text>
-                        <Text style={[styles.secondaryText, { flex: 3 }]}>Name</Text>
-                        <Text style={[styles.secondaryText, styles.textRight, { flex: 1 }]}>Price</Text>
-                        <Text style={[styles.secondaryText, styles.textRight, { flex: 1 }]}>Total</Text>
+                        <Text style={[styles.secondaryText, styles.textRight, { flex: 1, marginRight: 30 }]}>
+                            {t('EOD_Quantity', 'Quantity')}
+                        </Text>
+                        <Text style={[styles.secondaryText, { flex: 3 }]}>
+                            {t('EOD_Name', 'Name')}
+                        </Text>
+                        <Text style={[styles.secondaryText, styles.textRight, { flex: 1 }]}>
+                            {t('EOD_Price', 'Price')}
+                        </Text>
+                        <Text style={[styles.secondaryText, styles.textRight, { flex: 1 }]}>
+                            {t('EOD_Total', 'Total')}
+                        </Text>
                     </View>
                     {order.lines.map(l => !l ? null : <OrderLineDetails key={l.identifier} line={l} productId={productId} />)}
                 </View>

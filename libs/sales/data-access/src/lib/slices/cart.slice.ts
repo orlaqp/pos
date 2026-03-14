@@ -1,4 +1,4 @@
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import type { RootState } from '@pos/store';
 import {
     createSelector,
@@ -157,10 +157,7 @@ export const selectActiveProduct = createSelector(
     (state: CartState) => state.selected
 );
 
-export const selectCart = createSelector(
-    getCartState,
-    (state) => state
-)
+export const selectCart = getCartState;
 
 
 const updateTotals = (state: CartState) => {

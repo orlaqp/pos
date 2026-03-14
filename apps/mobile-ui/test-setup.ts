@@ -85,8 +85,8 @@ jest.mock(
 jest.mock('react-native-chart-kit', () => {
     const React = jest.requireActual('react');
     const { View } = jest.requireActual('react-native');
-    const MockChart = (props: any) =>
-        React.createElement(View, props, props.children);
+    const MockChart = ({ children, ...rest }: { children?: unknown }) =>
+        React.createElement(View, rest, children);
     return {
         LineChart: MockChart,
         PieChart: MockChart,

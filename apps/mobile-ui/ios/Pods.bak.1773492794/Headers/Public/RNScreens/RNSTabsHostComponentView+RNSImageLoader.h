@@ -1,0 +1,1 @@
+../../../../../node_modules/react-native-screens/ios/tabs/extensions/RNSTabsHostComponentView+RNSImageLoader.h

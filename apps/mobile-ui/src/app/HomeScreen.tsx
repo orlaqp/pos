@@ -14,20 +14,19 @@ import { UIKeyPad } from '@pos/shared/ui-native';
 import { employeesActions, EmployeeService, selectLoginEmployee } from '@pos/employees/data-access';
 import { StationService } from '@pos/settings/data-access';
 import { cartActions } from '@pos/sales/data-access';
+import brandMark from '../../assets/branding/pos-icon-transparent-2048.png';
 
 interface PathDetails {
     title: string;
     path: string;
-    icon?: string;
-    image?: any;
+    image?: number;
     role: string;
     params?: object;
-    action?: () => void;
-    validate?: () => Promise<string>;
+    validate?: () => Promise<string | null>;
 }
 
 interface HomeScreenProps {
-    navigation: NativeStackNavigationProp<any>;
+    navigation: NativeStackNavigationProp<Record<string, object | undefined>>;
 }
 
 export const HomeScreen = (props: HomeScreenProps) => {
@@ -76,7 +75,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
         });
     }
 
-    const onPinUpdated = (pin) => {
+    const onPinUpdated = (pin: string) => {
         console.log(pin);
 
         if (pin.length === 4) {
@@ -92,11 +91,16 @@ export const HomeScreen = (props: HomeScreenProps) => {
 
         EmployeeService.getEmployee(pin).then(emp => {
             if (!emp) {
-                Alert.alert('The PIN number you entered is not valid')
+                Alert.alert('The PIN number you entered is not valid');
+                setPin('');
                 return;
             }
             dispatch(employeesActions.loginEmployee(emp));
-        })
+        }).catch((error) => {
+            console.error('PIN login failed', error);
+            Alert.alert('Unable to validate PIN at the moment. Please try again.');
+            setPin('');
+        });
     }, [dispatch, pin]);
 
     useEffect(() => {
@@ -107,7 +111,12 @@ export const HomeScreen = (props: HomeScreenProps) => {
         <View style={[sharedStyles.page, sharedStyles.centered, { position: 'relative' }]}>
 
             { !employee &&
-            <View>
+            <View style={styles.pinContainer}>
+                <Image
+                    source={brandMark}
+                    style={styles.brandMark}
+                    resizeMode="contain"
+                />
                 <UIKeyPad initialValue={''} onChange={onPinUpdated} />
             </View>
             }
@@ -166,6 +175,15 @@ const useStyles = () => {
             padding: 20,
             minWidth: 150,
             minHeight: 150,
+        },
+        pinContainer: {
+            alignItems: 'center',
+        },
+        brandMark: {
+            width: 200,
+            height: 120,
+            marginBottom: 24,
+            opacity: 0.95,
         },
     });
 };

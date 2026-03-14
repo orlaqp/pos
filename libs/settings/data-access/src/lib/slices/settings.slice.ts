@@ -1,5 +1,5 @@
 import { GlobalSettingsDTO } from './../global-settings.dto';
-/* eslint-disable @nrwl/nx/enforce-module-boundaries */
+/* eslint-disable @nx/enforce-module-boundaries */
 import { RootState } from '@pos/store';
 import {
     createAsyncThunk,
@@ -18,6 +18,7 @@ export const SETTINGS_FEATURE_KEY = 'settings';
 export interface SettingsState {
     darkTheme: boolean;
     dataStoreStatus: 'not synced' | 'resetting' | 'error' | 'synced';
+    globalSettingsStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
     languageTag: AvailableLanguage;
     globalSettings: GlobalSettingsDTO | null;
 }
@@ -25,6 +26,7 @@ export interface SettingsState {
 export const initialSettingsState: SettingsState = {
     darkTheme: false,
     dataStoreStatus: 'not synced',
+    globalSettingsStatus: 'not loaded',
     languageTag: 'en',
     globalSettings: null,
 };
@@ -82,8 +84,15 @@ export const settingsSlice = createSlice({
         .addCase(resetDataStore.rejected, (state: SettingsState) => {
             state.dataStoreStatus = 'error';
         })
+        .addCase(fetchGlobalSettings.pending, (state: SettingsState) => {
+            state.globalSettingsStatus = 'loading';
+        })
         .addCase(fetchGlobalSettings.fulfilled, (state: SettingsState, action: PayloadAction<GlobalSettingsDTO | null>) => {
             state.globalSettings = action.payload;
+            state.globalSettingsStatus = 'loaded';
+        })
+        .addCase(fetchGlobalSettings.rejected, (state: SettingsState) => {
+            state.globalSettingsStatus = 'error';
         })
 });
 
@@ -94,12 +103,14 @@ export const getSettingsState = (rootState: RootState): SettingsState =>
     rootState[SETTINGS_FEATURE_KEY];
 
     
-export const selectSettings = createSelector(
-    getSettingsState,
-    (state) => state
-);
+export const selectSettings = getSettingsState;
         
 export const getGlobalSettings = createSelector(
     getSettingsState,
     (state) => state.globalSettings
+);
+
+export const getGlobalSettingsLoadingStatus = createSelector(
+    getSettingsState,
+    (state) => state.globalSettingsStatus
 );

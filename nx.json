@@ -1,14 +1,14 @@
 {
-    "implicitDependencies": {
-        "package.json": {
-            "dependencies": "*",
-            "devDependencies": "*"
-        },
-        ".eslintrc.json": "*"
+    "namedInputs": {
+        "sharedGlobals": [
+            "{workspaceRoot}/package.json",
+            "{workspaceRoot}/.eslintrc.json"
+        ],
+        "default": ["{projectRoot}/**/*", "sharedGlobals"]
     },
     "defaultProject": "mobile-ui",
     "generators": {
-        "@nrwl/react": {
+        "@nx/react": {
             "application": {
                 "babel": true
             }

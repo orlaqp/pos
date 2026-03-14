@@ -5,15 +5,20 @@ import { DateRange } from '@pos/shared/ui-native';
 
 import ReportViewer, { ReportHeader } from '../report-viewer/report-viewer';
 import moment from 'moment';
+import i18next from 'i18next';
 
 /* eslint-disable-next-line */
 export interface SalesProps {}
 
 export function Sales(_props: SalesProps) {
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
     const headers: ReportHeader[] = [
-        { label: 'Number', field: 'orderNo', width: 3 },
-        { label: 'Employee', field: 'employee', width: 3 },
-        { label: 'Amount', field: 'amount', width: 1, format: 'money', align: 'right', sum: true },
+        { label: t('REPORT_Header_Number', 'Number'), field: 'orderNo', width: 3 },
+        { label: t('REPORT_Header_Employee', 'Employee'), field: 'employee', width: 3 },
+        { label: t('REPORT_Header_Amount', 'Amount'), field: 'amount', width: 1, format: 'money', align: 'right', sum: true },
     ];
 
     const getData = (range: DateRange) => {
@@ -32,8 +37,11 @@ export function Sales(_props: SalesProps) {
 
     return (
         <ReportViewer
-            title="Sale List"
-            subtitle="Review paid transactions and totals for the selected period."
+            title={t('REPORT_SaleListTitle', 'Sale List')}
+            subtitle={t(
+                'REPORT_SaleListSubtitle',
+                'Review paid transactions and totals for the selected period.'
+            )}
             getData={getData}
             headers={headers}
         />

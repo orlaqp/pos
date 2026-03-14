@@ -1,5 +1,6 @@
 import { useSharedStyles } from '@pos/theme/native';
 import React from 'react';
+import i18next from 'i18next';
 
 import { View, Text } from 'react-native';
 import { PieChart as PC } from 'react-native-chart-kit';
@@ -32,11 +33,17 @@ export const buildPieChartConfig = () => ({
 export function PieChart({ header, items }: PieChartProps) {
     const styles = useSharedStyles();
     const chartConfig = buildPieChartConfig();
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
 
     if (!items?.length)
       return (
           <View style={styles.centered}>
-              <Text style={styles.secondaryText}>No data provided</Text>
+              <Text style={styles.secondaryText}>
+                  {t('CHART_NoData', 'No data provided')}
+              </Text>
           </View>
       )
 

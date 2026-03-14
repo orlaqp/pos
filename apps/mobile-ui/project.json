@@ -6,23 +6,23 @@
     "tags": [],
     "targets": {
         "start": {
-            "executor": "@nrwl/react-native:start",
+            "executor": "@nx/react-native:start",
             "options": {
                 "port": 8081
             }
         },
         "serve": {
-            "executor": "nx:run-commands",
+            "executor": "@nx/react-native:start",
             "options": {
-                "command": "nx start mobile-ui"
+                "port": 8081
             }
         },
         "run-ios": {
-            "executor": "@nrwl/react-native:run-ios",
+            "executor": "@nx/react-native:run-ios",
             "options": {}
         },
         "bundle-ios": {
-            "executor": "@nrwl/react-native:bundle",
+            "executor": "@nx/react-native:bundle",
             "outputs": ["{projectRoot}/build"],
             "options": {
                 "entryFile": "src/main.tsx",
@@ -31,11 +31,11 @@
             }
         },
         "run-android": {
-            "executor": "@nrwl/react-native:run-android",
+            "executor": "@nx/react-native:run-android",
             "options": {}
         },
         "build-android": {
-            "executor": "@nrwl/react-native:build-android",
+            "executor": "@nx/react-native:build-android",
             "outputs": [
                 "{projectRoot}/android/app/build/outputs/bundle",
                 "{projectRoot}/android/app/build/outputs/apk"
@@ -43,7 +43,7 @@
             "options": {}
         },
         "bundle-android": {
-            "executor": "@nrwl/react-native:bundle",
+            "executor": "@nx/react-native:bundle",
             "options": {
                 "entryFile": "src/main.tsx",
                 "platform": "android",
@@ -51,22 +51,22 @@
             }
         },
         "sync-deps": {
-            "executor": "@nrwl/react-native:sync-deps",
+            "executor": "@nx/react-native:sync-deps",
             "options": {}
         },
         "ensure-symlink": {
-            "executor": "@nrwl/react-native:ensure-symlink",
+            "executor": "@nx/react-native:ensure-symlink",
             "options": {}
         },
         "lint": {
-            "executor": "@nrwl/linter:eslint",
+            "executor": "@nx/eslint:lint",
             "outputs": ["{options.outputFile}"],
             "options": {
                 "lintFilePatterns": ["apps/mobile-ui/**/*.{ts,tsx,js,jsx}"]
             }
         },
         "test": {
-            "executor": "@nrwl/jest:jest",
+            "executor": "@nx/jest:jest",
             "outputs": ["{workspaceRoot}/coverage/apps/mobile-ui"],
             "options": {
                 "jestConfig": "apps/mobile-ui/jest.config.ts",

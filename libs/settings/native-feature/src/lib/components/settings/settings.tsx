@@ -3,6 +3,7 @@ import {
     selectSettings,
     settingsActions,
     fetchGlobalSettings,
+    translate,
 } from '@pos/settings/data-access';
 import { UICard, UIScreen, UIStack } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
@@ -44,14 +45,18 @@ export function Settings(_props: SettingsProps) {
                         <UICard tone="muted" radius="lg">
                             <View style={styles.headerRow}>
                                 <View style={styles.headerTextWrap}>
-                                    <Text style={styles.title}>Settings</Text>
+                                    <Text style={styles.title}>
+                                        {translate('SETTINGS_Title')}
+                                    </Text>
                                     <Text style={styles.subtitle}>
-                                        Configure app behavior and device controls.
+                                        {translate('SETTINGS_Subtitle')}
                                     </Text>
                                 </View>
                                 <View style={styles.statusBadge}>
                                     <Text style={styles.statusText}>
-                                        {settings.dataStoreStatus}
+                                        {translate(
+                                            `SETTINGS_Status_${settings.dataStoreStatus}`
+                                        )}
                                     </Text>
                                 </View>
                             </View>
@@ -59,7 +64,9 @@ export function Settings(_props: SettingsProps) {
 
                         <UICard>
                             <UIStack spacing="lg">
-                                <Text style={styles.sectionTitle}>Preferences</Text>
+                                <Text style={styles.sectionTitle}>
+                                    {translate('SETTINGS_Preferences')}
+                                </Text>
                                 <UIStack
                                     direction="horizontal"
                                     justify="space-between"
@@ -67,7 +74,7 @@ export function Settings(_props: SettingsProps) {
                                     style={styles.settingRow}
                                 >
                                     <Text style={styles.settingLabel}>
-                                        Use Dark Theme:
+                                        {translate('SETTINGS_UseDarkTheme')}
                                     </Text>
                                     <Switch
                                         testID="settings-dark-theme-switch"
@@ -83,7 +90,9 @@ export function Settings(_props: SettingsProps) {
                                     style={styles.settingRow}
                                 >
                                     <Text style={styles.settingLabel}>
-                                        Enforce Sales Based on Inventory:
+                                        {translate(
+                                            'SETTINGS_EnforceInventory'
+                                        )}
                                     </Text>
                                     <Switch
                                         testID="settings-enforce-inventory-switch"
@@ -96,19 +105,62 @@ export function Settings(_props: SettingsProps) {
                                         }
                                     />
                                 </UIStack>
+
+                                <UIStack spacing="sm">
+                                    <Text style={styles.settingLabel}>
+                                        {translate('SETTINGS_Language')}
+                                    </Text>
+                                    <UIStack direction="horizontal" spacing="sm">
+                                        <Button
+                                            testID="settings-language-en-button"
+                                            title={translate('SETTINGS_English')}
+                                            type={
+                                                settings.languageTag === 'en'
+                                                    ? 'solid'
+                                                    : 'outline'
+                                            }
+                                            buttonStyle={styles.languageButton}
+                                            onPress={() =>
+                                                dispatch(
+                                                    settingsActions.setLanguage(
+                                                        'en'
+                                                    )
+                                                )
+                                            }
+                                        />
+                                        <Button
+                                            testID="settings-language-es-button"
+                                            title={translate('SETTINGS_Spanish')}
+                                            type={
+                                                settings.languageTag === 'es'
+                                                    ? 'solid'
+                                                    : 'outline'
+                                            }
+                                            buttonStyle={styles.languageButton}
+                                            onPress={() =>
+                                                dispatch(
+                                                    settingsActions.setLanguage(
+                                                        'es'
+                                                    )
+                                                )
+                                            }
+                                        />
+                                    </UIStack>
+                                </UIStack>
                             </UIStack>
                         </UICard>
 
                         <UICard tone="muted">
                             <UIStack spacing="lg">
-                                <Text style={styles.sectionTitle}>Data Management</Text>
+                                <Text style={styles.sectionTitle}>
+                                    {translate('SETTINGS_DataManagement')}
+                                </Text>
                                 <Text style={styles.warningText}>
-                                    This resets local cached data on this device.
-                                    It does not delete your master business data.
+                                    {translate('SETTINGS_ResetWarning')}
                                 </Text>
                                 <Button
                                     testID="settings-reset-data-button"
-                                    title="Reset Data"
+                                    title={translate('SETTINGS_ResetData')}
                                     buttonStyle={styles.resetButton}
                                     titleStyle={styles.resetButtonTitle}
                                     onPress={() => dispatch(resetDataStore())}
@@ -192,6 +244,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         resetButtonTitle: {
             fontWeight: '700',
             color: '#111827',
+        },
+        languageButton: {
+            borderRadius: tokens.radii.lg,
+            minWidth: 120,
         },
     });
 

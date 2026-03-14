@@ -10,6 +10,7 @@
         "categories-native-feature": "libs/categories/native-feature",
         "employees-data-access": "libs/employees/data-access",
         "employees-native-feature": "libs/employees/native-feature",
+        "graph-client": "tools/graph-client",
         "inventory-data-access": "libs/inventory/data-access",
         "inventory-native-feature": "libs/inventory/native-feature",
         "mobile-ui": "apps/mobile-ui",

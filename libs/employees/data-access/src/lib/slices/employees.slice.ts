@@ -1,5 +1,5 @@
 
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
 import {
     createAsyncThunk,
@@ -76,7 +76,7 @@ export const employeesSlice = createSlice({
         state.filterQuery = action.payload;
     },
     loginEmployee: (state: EmployeesState, action: PayloadAction<EmployeeEntity>) => {
-        state.loginEmployee = state.entities[action.payload.id!]; //  action.payload;
+        state.loginEmployee = state.entities[action.payload.id!] ?? action.payload;
     },
     logoffEmployee: (state: EmployeesState) => {
         state.loginEmployee = undefined;
@@ -168,4 +168,3 @@ function filterList(state: EmployeesState, query?: string) {
       || x.phone?.toLowerCase().indexOf(lowerQuery) !== -1
     );
 }
-

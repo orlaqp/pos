@@ -78,10 +78,14 @@ jest.mock('react-native-date-picker', () => {
   const Comp = (props: any) => mockReact.createElement(mockView, props, props.children);
   return Comp;
 });
-jest.mock('react-native-daterange-picker', () => {
-  const Comp = (props: any) => mockReact.createElement(mockView, props, props.children);
-  return Comp;
-});
+jest.mock(
+  'react-native-daterange-picker',
+  () => {
+    const Comp = (props: any) => mockReact.createElement(mockView, props, props.children);
+    return Comp;
+  },
+  { virtual: true }
+);
 jest.mock('react-native-localize', () => ({
   getLocales: jest.fn(() => [{ languageTag: 'en-US', isRTL: false }]),
   getNumberFormatSettings: jest.fn(() => ({

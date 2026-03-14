@@ -1,5 +1,5 @@
 import { Product } from '@pos/shared/models';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 export type ProductEntity = {
     id: string;
     name: string;

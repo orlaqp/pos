@@ -3,6 +3,51 @@
 Last updated: 2026-03-11 (America/New_York)
 Workspace: `/Users/orlando/dev/pos`
 
+## Current Upgrade Snapshot (2026-03-13)
+- Node: `22.21.0`
+- Yarn: `1.22.22`
+- Nx: `22.5.4`
+- React Native: `0.84.1`
+- React / React DOM: `19.2.3`
+- React Test Renderer: `19.2.3`
+- Redux Toolkit: `2.11.2`
+- React Redux: `9.2.0`
+
+### Verified gates
+- `mobile-ui:lint` passes (0 warnings/errors after cleanup).
+- `mobile-ui:test` navigation-focused pass is green.
+- `shared-ui-native:test` is green.
+- `sales-native-feature:test` is green.
+- `reporting-native-feature:test` is green for report viewer and related specs.
+- `settings-data-access:test` is green after i18n foundation migration.
+
+### i18n migration progress
+- Added `i18next` + `react-i18next`.
+- Replaced `i18n-js` usage in settings language utility with `i18next` while preserving current `translate`/`setI18nConfig` API.
+- Removed `i18n-js` from root dependencies.
+- Added EN/ES language selector to Settings UI and translated Settings labels/status messages.
+- Startup language now initializes from best available device language instead of hardcoded `'en'`.
+
+### Bundling fix applied
+- Root cause: RN CLI startup could block in `setup_env.sh` execution path when invoked via Node `execFileSync(...)`.
+- Added workspace patch script: `tools/patch-rn-cli-setup.js`.
+- Added `postinstall` hook to apply the patch after installs.
+- Verified fixed behavior:
+  - `react-native/cli.js --help` returns immediately.
+  - `mobile-ui:bundle-ios` succeeds.
+  - `mobile-ui:bundle-android` succeeds.
+
+### Remaining notes
+- One-time output dir issue (`EEXIST`) can occur when bundle output folders already exist; clear/rotate output folders before reruns if needed.
+
+### Stability hardening progress
+- Added a global app-level error boundary with user fallback and retry action (`AppErrorBoundary`).
+- Added startup diagnostics logging on app boot (platform/env/AWS config presence flags).
+- Added/updated tests for error boundary and startup diagnostics behavior.
+
+### Workspace runtime default
+- Added `.nvmrc` with `22.21.0` to match Metro `0.83.x` requirements in this upgraded stack.
+
 ## Baseline
 - Node: `22.21.0`
 - Yarn: `1.22.22`
@@ -63,7 +108,7 @@ These can be upgraded without jumping React/RN/Nx majors.
 - `rn-select-date-range` `3.2.2 -> 3.3.0`
 
 #### A3: Tooling (no major jump)
-- `@nrwl/cli` `14.5.1 -> 14.8.9` (keep rest on Nx 13.10.3 for now)
+- `@nx/cli` `14.5.1 -> 14.8.9` (keep rest on Nx 13.10.3 for now)
 - `@aws-sdk/client-dynamodb` `3.121.0 -> 3.1007.0`
 - `@aws-sdk/lib-dynamodb` `3.121.0 -> 3.1007.0`
 - `prettier` `2.6.2 -> 2.8.8`
@@ -76,7 +121,7 @@ Hold until after redesign prep branch is stable.
 - React (`17 -> 18/19`), React DOM, React Test Renderer
 - Redux Toolkit (`1.x -> 2.x`), React Redux (`7.x -> 9.x`)
 - Jest stack (`27 -> 30`), TS (`4.6 -> 5.9`), ESLint and TS-ESLint majors
-- Detox (`19 -> 20`) and `@nrwl/detox` major alignment
+- Detox (`19 -> 20`) and `@nx/detox` major alignment
 - Metro/CLI major lifts
 
 Reason: these are coupled upgrades and should be done with migration tooling (`nx migrate`) plus RN migration steps, not ad hoc.

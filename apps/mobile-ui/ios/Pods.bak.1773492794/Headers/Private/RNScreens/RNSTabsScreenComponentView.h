@@ -1,0 +1,1 @@
+../../../../../node_modules/react-native-screens/ios/tabs/screen/RNSTabsScreenComponentView.h

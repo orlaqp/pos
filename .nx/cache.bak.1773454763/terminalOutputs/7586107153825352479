@@ -1,0 +1,13 @@
+(node:76430) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+Linting "reporting-data-access"...
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/data-access/src/lib/reporting.service.spec.ts[24m[0m
+[0m  [2m34:69[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m35:69[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[33m[1m✖ 2 problems (0 errors, 2 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[0m
+✖ 2 problems (0 errors, 2 warnings)
+

@@ -1,0 +1,20 @@
+(node:91955) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+Linting "employees-data-access"...
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/employees/data-access/src/lib/employee.service.ts[24m[0m
+[0m  [2m10:42[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m63:73[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/employees/data-access/src/lib/slices/employees.slice.spec.ts[24m[0m
+[0m  [2m26:48[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/employees/data-access/src/lib/slices/employees.slice.ts[24m[0m
+[0m  [2m65:50[22m  [33mwarning[39m  Forbidden non-null assertion  [2m@typescript-eslint/no-non-null-assertion[22m[0m
+[0m  [2m79:46[22m  [33mwarning[39m  Forbidden non-null assertion  [2m@typescript-eslint/no-non-null-assertion[22m[0m
+[0m[0m
+[0m[33m[1m✖ 5 problems (0 errors, 5 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[0m
+✖ 5 problems (0 errors, 5 warnings)
+

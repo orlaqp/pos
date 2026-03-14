@@ -1,0 +1,37 @@
+(node:29587) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+Linting "printings-native-feature"...
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/printings/native-feature/src/lib/components/printer-item/printer-item.spec.tsx[24m[0m
+[0m   [2m9:17[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m17:27[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m27:27[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m40:21[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m46:27[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/printings/native-feature/src/lib/components/printer-item/printer-item.tsx[24m[0m
+[0m   [2m1:17[22m  [33mwarning[39m  'useState' is defined but never used      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m11:43[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/printings/native-feature/src/lib/components/printer-list/printer-list.spec.tsx[24m[0m
+[0m   [2m18:27[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m37:52[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m55:24[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m107:71[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m108:70[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/printings/native-feature/src/lib/components/printer-list/printer-list.tsx[24m[0m
+[0m   [2m21:45[22m  [33mwarning[39m  Unexpected any. Specify a different type    [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m31:29[22m  [33mwarning[39m  Unexpected any. Specify a different type    [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m36:24[22m  [33mwarning[39m  Unexpected any. Specify a different type    [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m39:28[22m  [33mwarning[39m  Unexpected any. Specify a different type    [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m41:18[22m  [33mwarning[39m  Unexpected any. Specify a different type    [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m45:29[22m  [33mwarning[39m  Unexpected any. Specify a different type    [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m69:43[22m  [33mwarning[39m  Unexpected any. Specify a different type    [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m133:11[22m  [33mwarning[39m  'theme' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[33m[1m✖ 20 problems (0 errors, 20 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[0m
+✖ 20 problems (0 errors, 20 warnings)
+

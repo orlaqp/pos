@@ -8,6 +8,10 @@ const mockSetThemeAction = jest.fn((payload) => ({
     type: 'settings/set',
     payload,
 }));
+const mockSetLanguageAction = jest.fn((payload) => ({
+    type: 'settings/setLanguage',
+    payload,
+}));
 const mockResetDataStore = jest.fn(() => ({
     type: 'settings/reset/pending',
 }));
@@ -104,8 +108,28 @@ jest.mock('@rneui/themed', () => ({
 
 jest.mock('@pos/settings/data-access', () => ({
     selectSettings: jest.fn(),
+    translate: (key: string) => {
+        const values: Record<string, string> = {
+            SETTINGS_Title: 'Settings',
+            SETTINGS_Subtitle:
+                'Configure app behavior and device controls.',
+            SETTINGS_Preferences: 'Preferences',
+            SETTINGS_UseDarkTheme: 'Use Dark Theme:',
+            SETTINGS_EnforceInventory: 'Enforce Sales Based on Inventory:',
+            SETTINGS_Language: 'Language:',
+            SETTINGS_English: 'English',
+            SETTINGS_Spanish: 'Español',
+            SETTINGS_DataManagement: 'Data Management',
+            SETTINGS_ResetWarning:
+                'This resets local cached data on this device. It does not delete your master business data.',
+            SETTINGS_ResetData: 'Reset Data',
+            SETTINGS_Status_synced: 'synced',
+        };
+        return values[key] || key;
+    },
     settingsActions: {
         set: (payload: boolean) => mockSetThemeAction(payload),
+        setLanguage: (payload: 'en' | 'es') => mockSetLanguageAction(payload),
     },
     resetDataStore: () => mockResetDataStore(),
     fetchGlobalSettings: (payload: unknown) => mockFetchGlobalSettings(payload),
@@ -128,8 +152,12 @@ describe('Settings', () => {
         const { getByTestId, getByText } = render(<Settings />);
 
         expect(getByTestId('settings-screen')).toBeTruthy();
+        expect(getByText('Settings')).toBeTruthy();
         expect(getByText('Use Dark Theme:')).toBeTruthy();
         expect(getByText('Enforce Sales Based on Inventory:')).toBeTruthy();
+        expect(getByText('Language:')).toBeTruthy();
+        expect(getByText('English')).toBeTruthy();
+        expect(getByText('Español')).toBeTruthy();
         expect(getByText('Reset Data')).toBeTruthy();
     });
 
@@ -176,6 +204,18 @@ describe('Settings', () => {
         expect(mockResetDataStore).toHaveBeenCalled();
         expect(mockDispatch).toHaveBeenCalledWith({
             type: 'settings/reset/pending',
+        });
+    });
+
+    it('dispatches language action when Spanish is selected', () => {
+        const { getByTestId } = render(<Settings />);
+
+        fireEvent.press(getByTestId('settings-language-es-button'));
+
+        expect(mockSetLanguageAction).toHaveBeenCalledWith('es');
+        expect(mockDispatch).toHaveBeenCalledWith({
+            type: 'settings/setLanguage',
+            payload: 'es',
         });
     });
 });

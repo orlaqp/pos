@@ -9,6 +9,7 @@ import { UICard, UIEmptyState } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, Dialog } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
+import i18next from 'i18next';
 
 import { View, TextInput, Alert, Text, StyleSheet } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -47,6 +48,10 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
     const [ready, setReady] = useState(false);
     const [receivePayment, setReceivePayment] = useState<boolean>(false);
     const ebtEligibleTotal = getEbtEligibleTotal(cart);
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
     
     const onSelect = (item: CartItem) => {
         dispatch(cartActions.select(item));
@@ -80,8 +85,11 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
 
         if (notAvailableProducts.length) {
             Alert.alert(
-                'Product(s) not available',
-                `You do not have enough of these product(s) in inventory:\n${notAvailableProducts}`
+                t('CART_InventoryNotAvailableTitle', 'Product(s) not available'),
+                `${t(
+                    'CART_InventoryNotAvailableMessage',
+                    'You do not have enough of these product(s) in inventory:'
+                )}\n${notAvailableProducts}`
             );
         }
 
@@ -103,7 +111,7 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
         return (
             <View style={localStyles.emptyWrap}>
                 <UIEmptyState
-                    text="Cart is empty"
+                    text={t('CART_Empty', 'Cart is empty')}
                     picture={EmptyCart}
                     backgroundColor={styles.darkBackground.backgroundColor}
                 />
@@ -115,11 +123,11 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
         <View style={localStyles.root}>
             <UICard tone="default" padding="sm" radius="md" style={localStyles.summaryCard}>
                 <View style={localStyles.summaryRow}>
-                    <Text style={localStyles.summaryLabel}>Items</Text>
+                    <Text style={localStyles.summaryLabel}>{t('CART_Items', 'Items')}</Text>
                     <Text style={localStyles.summaryValue}>{cart.items.length}</Text>
                 </View>
                 <View style={localStyles.summaryRow}>
-                    <Text style={localStyles.summaryLabel}>Total</Text>
+                    <Text style={localStyles.summaryLabel}>{t('CART_Total', 'Total')}</Text>
                     <Text style={localStyles.summaryTotal}>$ {cart.footer.total.toFixed(2)}</Text>
                 </View>
             </UICard>
@@ -140,8 +148,8 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                     testID="cart-pay-order-button"
                     title={
                         mode === 'order'
-                            ? `Print Order  •  $${cart.footer.total.toFixed(2)}`
-                            : `Receive Payment  •  $${cart.footer.total.toFixed(2)}`
+                            ? `${t('CART_PrintOrder', 'Print Order')}  •  $${cart.footer.total.toFixed(2)}`
+                            : `${t('CART_ReceivePayment', 'Receive Payment')}  •  $${cart.footer.total.toFixed(2)}`
                     }
                     icon={{
                         name: mode === 'order' ? 'printer' : 'credit-card-check-outline',

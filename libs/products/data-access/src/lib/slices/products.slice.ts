@@ -1,7 +1,7 @@
 import { sortListBy } from '@pos/shared/utils';
 import { ProductEntityMapper } from './../product.entity';
 
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
 import {
     createAsyncThunk,

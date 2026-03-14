@@ -1,0 +1,446 @@
+(node:87902) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:87904) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[36m[1minfo[22m[39m [0mBuilding the app...[0m
+> Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:shared:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:shared:compileJava NO-SOURCE
+> Task :gradle-plugin:shared:processResources NO-SOURCE
+> Task :gradle-plugin:shared:classes UP-TO-DATE
+> Task :gradle-plugin:shared:jar UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:settings-plugin:pluginDescriptors UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:processResources UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:classes UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:jar UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:react-native-gradle-plugin:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:processResources UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:classes UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:jar UP-TO-DATE
+
+> Configure project :app
+Reading env from: .env
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-async-storage_async-storage
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-community_netinfo
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-config
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-date-picker
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-device-info
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-fast-image
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-fs
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-gesture-handler
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-image-picker
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-localize
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-reanimated
+
+
+
+
+****************************************************************************************
+
+
+
+
+WARNING reanimated - no version-specific reanimated AAR for react-native version 76 found.
+Falling back to AAR for react-native version 71.
+The react-native JSI interface is not ABI-safe yet, this may result in crashes.
+Please post a pull request to implement support for react-native version 76 to the reanimated repo.
+Thanks!
+
+
+
+
+****************************************************************************************
+
+> Configure project :react-native-safe-area-context
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-screens
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-star-io10
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+WARNING: Using flatDir2 should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-svg
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-vector-icons
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Task :app:generateAutolinkingPackageList UP-TO-DATE
+> Task :app:generateCodegenSchemaFromJavaScript SKIPPED
+> Task :app:generateCodegenArtifactsFromSchema SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :react-native-async-storage_async-storage:preBuild UP-TO-DATE
+> Task :react-native-async-storage_async-storage:preDebugBuild UP-TO-DATE
+> Task :react-native-async-storage_async-storage:generateDebugResValues UP-TO-DATE
+> Task :react-native-async-storage_async-storage:generateDebugResources UP-TO-DATE
+> Task :react-native-async-storage_async-storage:packageDebugResources UP-TO-DATE
+> Task :react-native-community_netinfo:preBuild UP-TO-DATE
+> Task :react-native-community_netinfo:preDebugBuild UP-TO-DATE
+> Task :react-native-community_netinfo:generateDebugResValues UP-TO-DATE
+> Task :react-native-community_netinfo:generateDebugResources UP-TO-DATE
+> Task :react-native-community_netinfo:packageDebugResources UP-TO-DATE
+> Task :react-native-config:preBuild UP-TO-DATE
+> Task :react-native-config:preDebugBuild UP-TO-DATE
+> Task :react-native-config:generateDebugResValues UP-TO-DATE
+> Task :react-native-config:generateDebugResources UP-TO-DATE
+> Task :react-native-config:packageDebugResources UP-TO-DATE
+> Task :react-native-date-picker:preBuild UP-TO-DATE
+> Task :react-native-date-picker:preDebugBuild UP-TO-DATE
+> Task :react-native-date-picker:generateDebugResValues UP-TO-DATE
+> Task :react-native-date-picker:generateDebugResources UP-TO-DATE
+> Task :react-native-date-picker:packageDebugResources UP-TO-DATE
+> Task :react-native-device-info:preBuild UP-TO-DATE
+> Task :react-native-device-info:preDebugBuild UP-TO-DATE
+> Task :react-native-device-info:generateDebugResValues UP-TO-DATE
+> Task :react-native-device-info:generateDebugResources UP-TO-DATE
+> Task :react-native-device-info:packageDebugResources UP-TO-DATE
+> Task :react-native-fast-image:preBuild UP-TO-DATE
+> Task :react-native-fast-image:preDebugBuild UP-TO-DATE
+> Task :react-native-fast-image:generateDebugResValues UP-TO-DATE
+> Task :react-native-fast-image:generateDebugResources UP-TO-DATE
+> Task :react-native-fast-image:packageDebugResources UP-TO-DATE
+> Task :react-native-fs:preBuild UP-TO-DATE
+> Task :react-native-fs:preDebugBuild UP-TO-DATE
+> Task :react-native-fs:generateDebugResValues UP-TO-DATE
+> Task :react-native-fs:generateDebugResources UP-TO-DATE
+> Task :react-native-fs:packageDebugResources UP-TO-DATE
+> Task :react-native-gesture-handler:preBuild UP-TO-DATE
+> Task :react-native-gesture-handler:preDebugBuild UP-TO-DATE
+> Task :react-native-gesture-handler:generateDebugResValues UP-TO-DATE
+> Task :react-native-gesture-handler:generateDebugResources UP-TO-DATE
+> Task :react-native-gesture-handler:packageDebugResources UP-TO-DATE
+> Task :react-native-image-picker:preBuild UP-TO-DATE
+> Task :react-native-image-picker:preDebugBuild UP-TO-DATE
+> Task :react-native-image-picker:generateDebugResValues UP-TO-DATE
+> Task :react-native-image-picker:generateDebugResources UP-TO-DATE
+> Task :react-native-image-picker:packageDebugResources UP-TO-DATE
+> Task :react-native-localize:preBuild UP-TO-DATE
+> Task :react-native-localize:preDebugBuild UP-TO-DATE
+> Task :react-native-localize:generateDebugResValues UP-TO-DATE
+> Task :react-native-localize:generateDebugResources UP-TO-DATE
+> Task :react-native-localize:packageDebugResources UP-TO-DATE
+> Task :react-native-safe-area-context:preBuild UP-TO-DATE
+> Task :react-native-safe-area-context:preDebugBuild UP-TO-DATE
+> Task :react-native-safe-area-context:generateDebugResValues UP-TO-DATE
+> Task :react-native-safe-area-context:generateDebugResources UP-TO-DATE
+> Task :react-native-safe-area-context:packageDebugResources UP-TO-DATE
+> Task :react-native-screens:preBuild UP-TO-DATE
+> Task :react-native-screens:preDebugBuild UP-TO-DATE
+> Task :react-native-screens:generateDebugResValues UP-TO-DATE
+> Task :react-native-screens:generateDebugResources UP-TO-DATE
+> Task :react-native-screens:packageDebugResources UP-TO-DATE
+> Task :react-native-star-io10:preBuild UP-TO-DATE
+> Task :react-native-star-io10:preDebugBuild UP-TO-DATE
+> Task :react-native-star-io10:generateDebugResValues UP-TO-DATE
+> Task :react-native-star-io10:generateDebugResources UP-TO-DATE
+> Task :react-native-star-io10:packageDebugResources UP-TO-DATE
+> Task :react-native-svg:preBuild UP-TO-DATE
+> Task :react-native-svg:preDebugBuild UP-TO-DATE
+> Task :react-native-svg:generateDebugResValues UP-TO-DATE
+> Task :react-native-svg:generateDebugResources UP-TO-DATE
+> Task :react-native-svg:packageDebugResources UP-TO-DATE
+> Task :react-native-vector-icons:preBuild UP-TO-DATE
+> Task :react-native-vector-icons:preDebugBuild UP-TO-DATE
+> Task :react-native-vector-icons:generateDebugResValues UP-TO-DATE
+> Task :react-native-vector-icons:generateDebugResources UP-TO-DATE
+> Task :react-native-vector-icons:packageDebugResources UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-async-storage_async-storage:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-async-storage_async-storage:processDebugManifest UP-TO-DATE
+> Task :react-native-community_netinfo:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-community_netinfo:processDebugManifest UP-TO-DATE
+> Task :react-native-config:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-config:processDebugManifest UP-TO-DATE
+> Task :react-native-date-picker:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-date-picker:processDebugManifest UP-TO-DATE
+> Task :react-native-device-info:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-device-info:processDebugManifest UP-TO-DATE
+> Task :react-native-fast-image:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-fast-image:processDebugManifest UP-TO-DATE
+> Task :react-native-fs:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-fs:processDebugManifest UP-TO-DATE
+> Task :react-native-gesture-handler:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-gesture-handler:processDebugManifest UP-TO-DATE
+> Task :react-native-image-picker:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-image-picker:processDebugManifest UP-TO-DATE
+> Task :react-native-localize:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-localize:processDebugManifest UP-TO-DATE
+> Task :react-native-safe-area-context:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-safe-area-context:processDebugManifest UP-TO-DATE
+> Task :react-native-screens:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-screens:processDebugManifest UP-TO-DATE
+> Task :react-native-star-io10:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-star-io10:processDebugManifest UP-TO-DATE
+> Task :react-native-svg:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-svg:processDebugManifest UP-TO-DATE
+> Task :react-native-vector-icons:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-vector-icons:processDebugManifest UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processApplicationManifestDebugForBundle UP-TO-DATE
+> Task :react-native-async-storage_async-storage:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-community_netinfo:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-config:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-date-picker:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-device-info:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-fast-image:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-fs:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-gesture-handler:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-image-picker:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-localize:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-safe-area-context:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-screens:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-star-io10:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-svg:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-vector-icons:writeDebugAarMetadata UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :react-native-async-storage_async-storage:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-async-storage_async-storage:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-async-storage_async-storage:generateDebugRFile UP-TO-DATE
+> Task :react-native-community_netinfo:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-community_netinfo:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-community_netinfo:generateDebugRFile UP-TO-DATE
+> Task :react-native-config:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-config:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-config:generateDebugRFile UP-TO-DATE
+> Task :react-native-date-picker:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-date-picker:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-date-picker:generateDebugRFile UP-TO-DATE
+> Task :react-native-device-info:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-device-info:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-device-info:generateDebugRFile UP-TO-DATE
+> Task :react-native-fast-image:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-fast-image:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-fast-image:generateDebugRFile UP-TO-DATE
+> Task :react-native-fs:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-fs:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-fs:generateDebugRFile UP-TO-DATE
+> Task :react-native-gesture-handler:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-gesture-handler:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-gesture-handler:generateDebugRFile UP-TO-DATE
+> Task :react-native-image-picker:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-image-picker:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-image-picker:generateDebugRFile UP-TO-DATE
+> Task :react-native-localize:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-localize:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-localize:generateDebugRFile UP-TO-DATE
+> Task :react-native-safe-area-context:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-safe-area-context:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-safe-area-context:generateDebugRFile UP-TO-DATE
+> Task :react-native-screens:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-screens:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-screens:generateDebugRFile UP-TO-DATE
+> Task :react-native-star-io10:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-star-io10:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-star-io10:generateDebugRFile UP-TO-DATE
+> Task :react-native-svg:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-svg:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-svg:generateDebugRFile UP-TO-DATE
+> Task :react-native-vector-icons:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-vector-icons:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-vector-icons:generateDebugRFile UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:bundleDebugResources UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :react-native-async-storage_async-storage:mergeDebugShaders UP-TO-DATE
+> Task :react-native-async-storage_async-storage:compileDebugShaders NO-SOURCE
+> Task :react-native-async-storage_async-storage:generateDebugAssets UP-TO-DATE
+> Task :react-native-async-storage_async-storage:packageDebugAssets UP-TO-DATE
+> Task :react-native-community_netinfo:mergeDebugShaders UP-TO-DATE
+> Task :react-native-community_netinfo:compileDebugShaders NO-SOURCE
+> Task :react-native-community_netinfo:generateDebugAssets UP-TO-DATE
+> Task :react-native-community_netinfo:packageDebugAssets UP-TO-DATE
+> Task :react-native-config:mergeDebugShaders UP-TO-DATE
+> Task :react-native-config:compileDebugShaders NO-SOURCE
+> Task :react-native-config:generateDebugAssets UP-TO-DATE
+> Task :react-native-config:packageDebugAssets UP-TO-DATE
+> Task :react-native-date-picker:mergeDebugShaders UP-TO-DATE
+> Task :react-native-date-picker:compileDebugShaders NO-SOURCE
+> Task :react-native-date-picker:generateDebugAssets UP-TO-DATE
+> Task :react-native-date-picker:packageDebugAssets UP-TO-DATE
+> Task :react-native-device-info:mergeDebugShaders UP-TO-DATE
+> Task :react-native-device-info:compileDebugShaders NO-SOURCE
+> Task :react-native-device-info:generateDebugAssets UP-TO-DATE
+> Task :react-native-device-info:packageDebugAssets UP-TO-DATE
+> Task :react-native-fast-image:mergeDebugShaders UP-TO-DATE
+> Task :react-native-fast-image:compileDebugShaders NO-SOURCE
+> Task :react-native-fast-image:generateDebugAssets UP-TO-DATE
+> Task :react-native-fast-image:packageDebugAssets UP-TO-DATE
+> Task :react-native-fs:mergeDebugShaders UP-TO-DATE
+> Task :react-native-fs:compileDebugShaders NO-SOURCE
+> Task :react-native-fs:generateDebugAssets UP-TO-DATE
+> Task :react-native-fs:packageDebugAssets UP-TO-DATE
+> Task :react-native-gesture-handler:mergeDebugShaders UP-TO-DATE
+> Task :react-native-gesture-handler:compileDebugShaders NO-SOURCE
+> Task :react-native-gesture-handler:generateDebugAssets UP-TO-DATE
+> Task :react-native-gesture-handler:packageDebugAssets UP-TO-DATE
+> Task :react-native-image-picker:mergeDebugShaders UP-TO-DATE
+> Task :react-native-image-picker:compileDebugShaders NO-SOURCE
+> Task :react-native-image-picker:generateDebugAssets UP-TO-DATE
+> Task :react-native-image-picker:packageDebugAssets UP-TO-DATE
+> Task :react-native-localize:mergeDebugShaders UP-TO-DATE
+> Task :react-native-localize:compileDebugShaders NO-SOURCE
+> Task :react-native-localize:generateDebugAssets UP-TO-DATE
+> Task :react-native-localize:packageDebugAssets UP-TO-DATE
+> Task :react-native-safe-area-context:mergeDebugShaders UP-TO-DATE
+> Task :react-native-safe-area-context:compileDebugShaders NO-SOURCE
+> Task :react-native-safe-area-context:generateDebugAssets UP-TO-DATE
+> Task :react-native-safe-area-context:packageDebugAssets UP-TO-DATE
+> Task :react-native-screens:mergeDebugShaders UP-TO-DATE
+> Task :react-native-screens:compileDebugShaders NO-SOURCE
+> Task :react-native-screens:generateDebugAssets UP-TO-DATE
+> Task :react-native-screens:packageDebugAssets UP-TO-DATE
+> Task :react-native-star-io10:mergeDebugShaders UP-TO-DATE
+> Task :react-native-star-io10:compileDebugShaders NO-SOURCE
+> Task :react-native-star-io10:generateDebugAssets UP-TO-DATE
+> Task :react-native-star-io10:packageDebugAssets UP-TO-DATE
+> Task :react-native-svg:mergeDebugShaders UP-TO-DATE
+> Task :react-native-svg:compileDebugShaders NO-SOURCE
+> Task :react-native-svg:generateDebugAssets UP-TO-DATE
+> Task :react-native-svg:packageDebugAssets UP-TO-DATE
+> Task :react-native-vector-icons:mergeDebugShaders UP-TO-DATE
+> Task :react-native-vector-icons:compileDebugShaders NO-SOURCE
+> Task :react-native-vector-icons:generateDebugAssets UP-TO-DATE
+> Task :react-native-vector-icons:packageDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :react-native-gesture-handler:checkKotlinGradlePluginConfigurationErrors
+> Task :react-native-gesture-handler:generateDebugBuildConfig UP-TO-DATE
+> Task :react-native-gesture-handler:javaPreCompileDebug UP-TO-DATE
+> Task :react-native-safe-area-context:checkKotlinGradlePluginConfigurationErrors
+> Task :react-native-safe-area-context:generateDebugBuildConfig UP-TO-DATE
+> Task :react-native-safe-area-context:javaPreCompileDebug UP-TO-DATE
+> Task :react-native-screens:checkKotlinGradlePluginConfigurationErrors
+> Task :react-native-screens:generateDebugBuildConfig UP-TO-DATE
+> Task :react-native-screens:javaPreCompileDebug UP-TO-DATE
+> Task :react-native-star-io10:checkKotlinGradlePluginConfigurationErrors
+> Task :react-native-star-io10:generateDebugBuildConfig UP-TO-DATE
+> Task :react-native-star-io10:compileDebugKotlin UP-TO-DATE
+> Task :react-native-star-io10:javaPreCompileDebug UP-TO-DATE
+
+> Task :react-native-safe-area-context:compileDebugKotlin FAILED
+e: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaContextModule.kt:17:63 Type mismatch: inferred type is Map<String, Any>? but Any was expected
+e: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaViewManager.kt:67:67 Type mismatch: inferred type is StateWrapper? but StateWrapper was expected
+
+> Task :react-native-screens:compileDebugKotlin FAILED
+e: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStack.kt:304:25 Type mismatch: inferred type is Canvas? but Canvas was expected
+e: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfig.kt:406:46 Unresolved reference: attr
+
+> Task :react-native-star-io10:compileDebugJavaWithJavac
+
+> Task :react-native-gesture-handler:compileDebugKotlin FAILED
+e: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-gesture-handler/android/lib/src/main/java/com/swmansion/gesturehandler/PanGestureHandler.kt:57:36 Type mismatch: inferred type is Context? but Context was expected
+e: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerModule.kt:427:32 Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type JavaScriptContextHolder?
+
+FAILURE: Build completed with 3 failures.
+
+1: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':react-native-safe-area-context:compileDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+2: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':react-native-screens:compileDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+3: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':react-native-gesture-handler:compileDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+BUILD FAILED in 5s
+
+213 actionable tasks: 11 executed, 202 up-to-date
+
+[36m[1minfo[22m[39m [0m[2m[2m💡 Tip: Make sure that you have set up your development environment correctly, by running[22m[2m [0m[0m[1mnpx react-native doctor[22m[2m[0m[0m. [2mTo read more about doctor command visit: https://github.com/react-native-community/cli/blob/main/packages/cli-doctor/README.md#doctor [22m[2m[22m[0m
+[0m[2m[2m[22m[2m[22m[0m
+[31m[1merror[22m[39m [0mFailed to build the app.[0m
+[0mError: Command failed with exit code 1: ./gradlew app:bundleDebug[0m
+[0m    at makeError (/Users/orlando/dev/pos/node_modules/execa/lib/error.js:60:11)[0m
+[0m    at module.exports.sync (/Users/orlando/dev/pos/node_modules/execa/index.js:194:17)[0m
+[0m    at build (/Users/orlando/dev/pos/node_modules/@react-native-community/cli-platform-android/build/commands/buildAndroid/index.js:74:22)[0m
+[0m    at Object.buildAndroid [as func] (/Users/orlando/dev/pos/node_modules/@react-native-community/cli-platform-android/build/commands/buildAndroid/index.js:66:10)[0m
+[0m    at Command.handleAction (/Users/orlando/dev/pos/node_modules/@react-native-community/cli/build/index.js:126:23)[0m
+[0m    at Command.listener [as _actionHandler] (/Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:482:17)[0m
+[0m    at /Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:1283:65[0m
+[0m    at Command._chainOrCall (/Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:1177:12)[0m
+[0m    at Command._parseCommand (/Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:1283:27)[0m
+[0m    at /Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:1081:27[0m
+[36m[1minfo[22m[39m [0m[2mRun CLI with [0m[0m--verbose[0m[0m [2mflag for more details.[22m[2m[22m[0m
+
+ NX   1
+
+

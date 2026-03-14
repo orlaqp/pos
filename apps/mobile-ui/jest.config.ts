@@ -3,14 +3,14 @@ export default {
     displayName: 'mobile-ui',
     preset: '../../jest.react-native.preset.js',
 
-    resolver: '@nrwl/jest/plugins/resolver',
+    resolver: '@nx/jest/plugins/resolver',
     moduleFileExtensions: ['ts', 'js', 'html', 'tsx', 'jsx'],
     setupFilesAfterEnv: ['<rootDir>/test-setup.ts'],
     modulePathIgnorePatterns: ['<rootDir>/#current-cloud-backend'],
     moduleNameMapper: {
-        '.svg': '@nrwl/react-native/plugins/jest/svg-mock',
+        '.svg': '@nx/react-native/plugins/jest/svg-mock',
     },
     transformIgnorePatterns: [
-        'node_modules/(?!(@react-native|react-native|@react-navigation|@rneui|react-native-.*|aws-amplify|@aws-amplify|@aws-sdk|uuid)/)',
+        'node_modules/(?!(@react-native|react-native|@react-navigation|@rneui|react-native-.*|aws-amplify|@aws-amplify|@aws-sdk|uuid|react-redux|@reduxjs|redux-thunk|reselect|immer)/)',
     ],
 };

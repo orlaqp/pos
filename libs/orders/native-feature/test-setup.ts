@@ -111,7 +111,6 @@ jest.mock('@rneui/themed', () => ({
         updateTheme: jest.fn(),
     }),
 }));
-jest.mock('react-native-daterange-picker', () => 'DateRangePicker');
 jest.mock('react-native-gesture-handler', () => {
     return {
         GestureHandlerRootView: mockView,

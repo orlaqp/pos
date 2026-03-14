@@ -1,4 +1,4 @@
-/* eslint-disable @nrwl/nx/enforce-module-boundaries */
+/* eslint-disable @nx/enforce-module-boundaries */
 import { EmployeeEntity } from '@pos/employees/data-access';
 import { InventoryReceive, InventoryReceiveLine, InventoryReceiveStatus } from '@pos/shared/models';
 import { InventoryReceiveLineDTO } from './inventory-receive-line.entity';

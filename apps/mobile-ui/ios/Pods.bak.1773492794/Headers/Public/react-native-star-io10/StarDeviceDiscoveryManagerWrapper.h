@@ -1,0 +1,1 @@
+../../../../../node_modules/react-native-star-io10/ios/StarDeviceDiscoveryManager/StarDeviceDiscoveryManagerWrapper.h

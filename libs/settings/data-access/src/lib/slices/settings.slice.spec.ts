@@ -43,5 +43,17 @@ describe('settings reducer', () => {
       fetchGlobalSettings.fulfilled(payload, '', undefined)
     );
     expect(state.globalSettings).toEqual(payload);
+    expect(state.globalSettingsStatus).toBe('loaded');
+  });
+
+  it('handles fetchGlobalSettings pending/rejected', () => {
+    let state = settingsReducer(undefined, fetchGlobalSettings.pending('', undefined));
+    expect(state.globalSettingsStatus).toBe('loading');
+
+    state = settingsReducer(
+      state,
+      fetchGlobalSettings.rejected(new Error('fail'), '', undefined)
+    );
+    expect(state.globalSettingsStatus).toBe('error');
   });
 });

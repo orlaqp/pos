@@ -1,0 +1,3548 @@
+{
+  "apps/mobile-ui": {
+    "root": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "apps/mobile-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:private": [
+      "apps/mobile-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups": [
+      "apps/mobile-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js": [
+      "apps/mobile-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageName": [
+      "apps/mobile-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageVersion": [
+      "apps/mobile-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.isInPackageManagerWorkspaces": [
+      "apps/mobile-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "targets": [
+      "apps/mobile-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "$schema": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.start": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.start.executor": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.start.options": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.start.options.port": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.executor": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.options": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.options.command": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.run-ios": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.run-ios.executor": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.run-ios.options": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.bundle-ios": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.bundle-ios.executor": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.bundle-ios.outputs": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.bundle-ios.options": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.bundle-ios.options.entryFile": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.bundle-ios.options.platform": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.bundle-ios.options.bundleOutput": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.run-android": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.run-android.executor": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.run-android.options": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-android": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-android.executor": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-android.outputs": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-android.options": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.bundle-android": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.bundle-android.executor": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.bundle-android.options": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.bundle-android.options.entryFile": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.bundle-android.options.platform": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.bundle-android.options.bundleOutput": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.sync-deps": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.sync-deps.executor": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.sync-deps.options": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.ensure-symlink": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.ensure-symlink.executor": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.ensure-symlink.options": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "apps/mobile-ui/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "apps/mobile-ui-e2e": {
+    "root": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "implicitDependencies": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "implicitDependencies.mobile-ui": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-ios": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-ios.executor": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-ios.options": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-ios.configurations": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-ios.options.detoxConfiguration": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-ios.configurations.production": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-ios.configurations.production.detoxConfiguration": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-ios": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-ios.executor": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-ios.options": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-ios.configurations": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-ios.options.detoxConfiguration": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-ios.options.buildTarget": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-ios.configurations.production": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-ios.configurations.production.detoxConfiguration": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-ios.configurations.production.buildTarget": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-android": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-android.executor": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-android.options": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-android.configurations": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-android.options.detoxConfiguration": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-android.configurations.production": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build-android.configurations.production.detoxConfiguration": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-android": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-android.executor": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-android.options": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-android.configurations": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-android.options.detoxConfiguration": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-android.options.buildTarget": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-android.configurations.production": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-android.configurations.production.detoxConfiguration": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test-android.configurations.production.buildTarget": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "apps/mobile-ui-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/auth/data-access": {
+    "root": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/auth/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/auth/native-feature": {
+    "root": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/auth/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/back-office/native-feature": {
+    "root": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/back-office/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/brands/data-access": {
+    "root": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/brands/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/brands/native-feature": {
+    "root": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/brands/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/categories/data-access": {
+    "root": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/categories/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/categories/native-feature": {
+    "root": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/categories/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/employees/data-access": {
+    "root": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/employees/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/employees/native-feature": {
+    "root": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/employees/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/inventory/data-access": {
+    "root": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/inventory/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/inventory/native-feature": {
+    "root": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/inventory/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/orders/data-access": {
+    "root": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/orders/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/orders/native-feature": {
+    "root": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/orders/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/printings/data-access": {
+    "root": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/printings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/printings/native-feature": {
+    "root": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/printings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/products/data-access": {
+    "root": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/products/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/products/native-feature": {
+    "root": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/products/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/reporting/data-access": {
+    "root": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/reporting/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/reporting/native-feature": {
+    "root": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/reporting/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/sales/data-access": {
+    "root": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/sales/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/sales/native-feature": {
+    "root": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/sales/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/settings/data-access": {
+    "root": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/settings/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/settings/native-feature": {
+    "root": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/settings/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/shared/api": {
+    "root": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/shared/api/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/shared/data-store": {
+    "root": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/shared/data-store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/shared/models": {
+    "root": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/shared/models/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/shared/ui-native": {
+    "root": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/shared/ui-native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/shared/utils": {
+    "root": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/shared/utils/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/store": {
+    "root": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/store/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/store-info/data-access": {
+    "root": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/store-info/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/store-info/native-feature": {
+    "root": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/store-info/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/theme/native": {
+    "root": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/theme/native/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/unit-of-measures/data-access": {
+    "root": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/unit-of-measures/data-access/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "libs/unit-of-measures/native-feature": {
+    "root": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.lintFilePatterns": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "libs/unit-of-measures/native-feature/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "tools/graph-client": {
+    "root": [
+      "tools/graph-client/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "tools/graph-client/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "tools/graph-client/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "tools/graph-client/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "tools/graph-client/project.json",
+      "nx/core/project-json"
+    ],
+    "// targets": [
+      "tools/graph-client/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "tools/graph-client/project.json",
+      "nx/core/project-json"
+    ]
+  }
+}

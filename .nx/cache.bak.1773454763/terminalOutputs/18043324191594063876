@@ -1,0 +1,46 @@
+(node:93844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m orders-native-feature [39m[27m[0m [2mlibs/orders/native-feature/src/lib/components/orders/[22m[1morders.spec.tsx[22m
+  [1m● [22mTest suite failed to run
+
+    Cannot find module 'i18n-js' from '../../settings/data-access/src/lib/language/language.utils.ts'
+
+    Require stack:
+      /Users/orlando/dev/pos/libs/settings/data-access/src/lib/language/language.utils.ts
+      /Users/orlando/dev/pos/libs/settings/data-access/src/lib/slices/settings.slice.ts
+      /Users/orlando/dev/pos/libs/settings/data-access/src/index.ts
+      /Users/orlando/dev/pos/libs/orders/data-access/src/lib/order.entity.ts
+      /Users/orlando/dev/pos/libs/orders/data-access/src/lib/slices/orders.slice.ts
+      /Users/orlando/dev/pos/libs/orders/data-access/src/index.ts
+      src/lib/components/order-list/order-list.tsx
+      src/lib/components/orders/orders.tsx
+      src/lib/components/orders/orders.spec.tsx
+
+    [0m [90m 1 |[39m [36mimport[39m [33m*[39m [36mas[39m [33mRNLocalize[39m [36mfrom[39m [32m"react-native-localize"[39m[33m;[39m[0m
+    [0m [90m 2 |[39m [36mimport[39m memoize [36mfrom[39m [32m"lodash/memoize"[39m[33m;[39m[0m
+    [0m[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m i18n [36mfrom[39m [32m"i18n-js"[39m[33m;[39m[0m
+    [0m [90m   |[39m [31m[1m^[22m[39m[0m
+    [0m [90m 4 |[39m [36mimport[39m { [33mI18nManager[39m } [36mfrom[39m [32m'react-native'[39m[33m;[39m[0m
+    [0m [90m 5 |[39m[0m
+    [0m [90m 6 |[39m [36mconst[39m translationGetters [33m=[39m {[0m
+
+      [2mat Resolver._throwModNotFoundError ([22m../../../node_modules/jest-resolve/build/resolver.js[2m:427:11)[22m
+      [2mat Object.<anonymous> ([22m../../settings/data-access/src/lib/language/language.utils.ts[2m:3:1)[22m
+      [2mat Object.<anonymous> ([22m../../settings/data-access/src/lib/slices/settings.slice.ts[2m:13:1)[22m
+      [2mat Object.<anonymous> ([22m../../settings/data-access/src/index.ts[2m:2:1)[22m
+      [2mat Object.<anonymous> ([22m../data-access/src/lib/order.entity.ts[2m:4:1)[22m
+      [2mat Object.<anonymous> ([22m../data-access/src/lib/slices/orders.slice.ts[2m:17:1)[22m
+      [2mat Object.<anonymous> ([22m../data-access/src/index.ts[2m:1:1)[22m
+      [2mat Object.<anonymous> ([22msrc/lib/components/order-list/order-list.tsx[2m:2:1)[22m
+      [2mat Object.<anonymous> ([22msrc/lib/components/orders/orders.tsx[2m:4:1)[22m
+      [2mat Object.<anonymous> ([22m[0m[36msrc/lib/components/orders/orders.spec.tsx[39m[0m[2m:28:20)[22m
+
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m orders-native-feature [39m[27m[0m [2mlibs/orders/native-feature/src/lib/components/order-list/[22m[1morder-list.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m orders-native-feature [39m[27m[0m [2mlibs/orders/native-feature/src/lib/components/order-void-form/[22m[1morder-void-form.spec.ts[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m orders-native-feature [39m[27m[0m [2mlibs/orders/native-feature/src/lib/components/order-item/[22m[1morder-item.spec.tsx[22m
+
+[1mTest Suites: [22m[1m[31m1 failed[39m[22m, [1m[32m3 passed[39m[22m, 4 total
+[1mTests:       [22m[1m[32m11 passed[39m[22m, 11 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        2.932 s, estimated 6 s
+[2mRan all test suites[22m[2m.[22m

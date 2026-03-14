@@ -1,8 +1,8 @@
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import React from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
     ScrollView,
-    SafeAreaView,
     StyleSheet,
     StyleProp,
     View,

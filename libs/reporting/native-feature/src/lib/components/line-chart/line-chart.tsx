@@ -1,5 +1,6 @@
 import { useSharedStyles } from '@pos/theme/native';
 import React, { useState } from 'react';
+import i18next from 'i18next';
 
 import { View, Text } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
@@ -48,11 +49,17 @@ export const buildLineChartConfig = (textColor: string) => ({
 export function LineChartComponent({ header, data }: LineChartProps) {
     const styles = useSharedStyles();
     const [width, setWidth] = useState<number>();
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
 
     if (!data?.length)
         return (
             <View style={styles.centered}>
-                <Text style={styles.secondaryText}>No data provided</Text>
+                <Text style={styles.secondaryText}>
+                    {t('CHART_NoData', 'No data provided')}
+                </Text>
             </View>
         );
 

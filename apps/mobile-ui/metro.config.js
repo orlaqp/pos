@@ -1,43 +1,36 @@
-const { withNxMetro } = require('@nrwl/react-native');
-const { getDefaultConfig } = require('metro-config');
-const exclusionList = require('metro-config/src/defaults/exclusionList');
+const { withNxMetro } = require('@nx/react-native');
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 
-module.exports = (async () => {
-    const {
-        resolver: { sourceExts, assetExts },
-    } = await getDefaultConfig();
-    return withNxMetro(
-        {
-            transformer: {
-                getTransformOptions: async () => ({
-                    transform: {
-                        experimentalImportSupport: false,
-                        inlineRequires: false,
-                    },
-                }),
-                babelTransformerPath: require.resolve(
-                    'react-native-svg-transformer'
-                ),
+const defaultConfig = getDefaultConfig(__dirname);
+const { assetExts, sourceExts } = defaultConfig.resolver;
+
+/**
+ * Metro configuration
+ * https://reactnative.dev/docs/metro
+ *
+ * @type {import('metro-config').MetroConfig}
+ */
+const customConfig = {
+    cacheVersion: 'mobile-ui',
+    transformer: {
+        getTransformOptions: async () => ({
+            transform: {
+                experimentalImportSupport: false,
+                inlineRequires: false,
             },
-            resolver: {
-                assetExts: assetExts.filter((ext) => ext !== 'svg'),
-                sourceExts: [...sourceExts, 'svg'],
-                resolverMainFields: ['react-native', 'browser', 'main'],
-                platforms: ['ios', 'android', 'native'],
-                blockList: exclusionList([
-                    /\.\/dist\/.*/,
-                    /#current-cloud-backend\/.*/,
-                ]),
-            },
-        },
-        {
-            // Change this to true to see debugging info.
-            // Useful if you have issues resolving modules
-            projectRoot: __dirname,
-            watchFolders: [],
-            debug: false,
-            // all the file extensions used for imports other than 'ts', 'tsx', 'js', 'jsx'
-            extensions: [],
-        }
-    );
-})();
+        }),
+        babelTransformerPath: require.resolve('react-native-svg-transformer'),
+    },
+    resolver: {
+        assetExts: assetExts.filter((ext) => ext !== 'svg'),
+        sourceExts: [...sourceExts, 'cjs', 'mjs', 'svg'],
+        resolverMainFields: ['react-native', 'browser', 'main'],
+        platforms: ['ios', 'android', 'native'],
+    },
+};
+
+module.exports = withNxMetro(mergeConfig(defaultConfig, customConfig), {
+    debug: false,
+    extensions: [],
+    watchFolders: [],
+});

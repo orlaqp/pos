@@ -1,0 +1,1 @@
+../../../../../node_modules/react-native-star-io10/ios/StarIO10DiagInfoUpload/StarIO10DiagInfoUploadWrapper.h

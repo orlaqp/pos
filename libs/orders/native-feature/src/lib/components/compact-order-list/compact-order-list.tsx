@@ -11,6 +11,7 @@ import { View, StyleSheet, FlatList, Text, Pressable } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { OrderStatus } from '@pos/shared/api';
 import CompactOrderItem from '../compact-order-item/compact-order-item';
+import i18next from 'i18next';
 
 export interface CompactOrderListProps {
     onSelect: () => void;
@@ -25,6 +26,10 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
     const [filterText, setFilterText] = useState<string>();
     const openOrders = useSelector(selectOpenOrders);
     const [filteredList, setFilteredList] = useState<OrderEntity[]>(openOrders);
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
 
     useEffect(() => {
         const ordersSub = subscribeToOrderChanges(dispatch);
@@ -62,33 +67,35 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
             <View style={local.headerRow}>
                 <View style={local.titleBlock}>
                     <View style={local.titleRow}>
-                        <Text style={local.title}>Open Orders</Text>
+                        <Text style={local.title}>{t('ORDERS_OpenOrders', 'Open Orders')}</Text>
                         <View style={local.countBadge}>
                             <Text style={local.countText}>{filteredList.length}</Text>
                         </View>
                     </View>
-                    <Text style={local.subtitle}>Tap an order to resume checkout</Text>
+                    <Text style={local.subtitle}>
+                        {t('ORDERS_OpenOrdersSubtitle', 'Tap an order to resume checkout')}
+                    </Text>
                 </View>
                 <Pressable
                     testID="compact-order-list-close"
                     onPress={onClose}
                     style={local.closeButton}
                 >
-                    <Text style={local.closeText}>X</Text>
+                    <Text style={local.closeText}>{t('COMMON_Close', 'X')}</Text>
                 </Pressable>
             </View>
             <UICard tone="muted" padding="sm" radius="md" style={local.searchCard}>
                 <UISearchInput
                     debounceTime={300}
                     value={searchTerm}
-                    placeholder="Search open orders..."
+                    placeholder={t('ORDERS_SearchOpenOrders', 'Search open orders...')}
                     onChangeText={(text) => setSearchTerm(text)}
                     onSubmit={(text) => setSearchTerm(text)}
                 />
             </UICard>
             <View style={local.listWrap}>
                 {filteredList.length === 0 && (
-                    <UIEmptyState text="No open orders found" />
+                    <UIEmptyState text={t('ORDERS_NoOpenOrdersFound', 'No open orders found')} />
                 )}
                 {filteredList.length > 0 && (
                     <FlatList

@@ -6,7 +6,7 @@ import {
     PayloadAction,
 } from '@reduxjs/toolkit';
 import { Auth } from 'aws-amplify';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
 
 export const AUTH_FEATURE_KEY = 'auth';

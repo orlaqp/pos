@@ -1,0 +1,1 @@
+../../../../../node_modules/react-native-star-io10/ios/StarIo10.h

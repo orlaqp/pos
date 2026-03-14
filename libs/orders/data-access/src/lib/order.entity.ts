@@ -1,4 +1,4 @@
-/* eslint-disable @nrwl/nx/enforce-module-boundaries */
+/* eslint-disable @nx/enforce-module-boundaries */
 import { EmployeeEntity } from '@pos/employees/data-access';
 import type { CartState } from '@pos/sales/data-access';
 import { StationService } from '@pos/settings/data-access';

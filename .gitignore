@@ -115,3 +115,4 @@ amplifytools.xcconfig
 #amplify-do-not-edit-end
 .nx/cache
 .nx/workspace-data
+.nx/polygraph

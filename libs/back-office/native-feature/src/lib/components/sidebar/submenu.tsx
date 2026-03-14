@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Icon, ListItem, useTheme } from '@rneui/themed';
 import { SingleItem, SingleItemProps } from './single-item';
+import i18next from 'i18next';
 
 export interface SubmenuProps extends SingleItemProps {
     expandedId?: string;
@@ -21,6 +22,10 @@ export function Submenu({
     const hasActiveChild = !!item.children?.some((c) => c.id === selectedId);
     const isExpanded = expandedId === item.id;
     const parentActive = hasActiveChild || selectedId === item.id;
+    const title =
+        item.labelKey && i18next.isInitialized && i18next.exists(item.labelKey)
+            ? i18next.t(item.labelKey)
+            : item.title;
 
     return (
         <ListItem.Accordion
@@ -51,7 +56,7 @@ export function Submenu({
                                 parentActive && styles.headerTitleActive,
                             ]}
                         >
-                            {item.title}
+                            {title}
                         </ListItem.Title>
                     </ListItem.Content>
                 </View>

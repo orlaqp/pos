@@ -1,0 +1,1 @@
+../../../../../build/generated/ios/ReactCodegen/rnsvg/rnsvg.h

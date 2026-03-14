@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import i18next from 'i18next';
 
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
@@ -87,6 +88,10 @@ export function SalesScreen({
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
         []
     );
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
     const deselectProduct = () => dispatch(cartActions.select(undefined));
 
     const upsertCart = (item: CartItem) => {
@@ -148,7 +153,13 @@ export function SalesScreen({
                     MINIMUM_INVENTORY_FOR_SALE
                 )
             ) {
-                Alert.alert('Not Available', 'We do not have this product in inventory at the moment');
+                Alert.alert(
+                    t('SALES_NotAvailableTitle', 'Not Available'),
+                    t(
+                        'SALES_NotAvailableMessage',
+                        'We do not have this product in inventory at the moment'
+                    )
+                );
                 return;
             }
 
@@ -159,14 +170,17 @@ export function SalesScreen({
                 })
             );
         },
-        [dispatch]
+        [dispatch, globalSettings]
     );
 
     const onCartSubmit = (cart: CartState, payments?: CartPayment[]) => {
-        Alert.alert('Are you sure?', 'Press yes to confirm', [
-            { text: 'No' },
+        Alert.alert(
+            t('SALES_ConfirmTitle', 'Are you sure?'),
+            t('SALES_ConfirmMessage', 'Press yes to confirm'),
+            [
+            { text: t('SALES_No', 'No') },
             {
-                text: 'Yes',
+                text: t('SALES_Yes', 'Yes'),
                 onPress: () => {
                     if (route.params.mode === 'order') {
                         dispatch(
@@ -174,7 +188,12 @@ export function SalesScreen({
                         );
                     } else {
                         if (!payments) {
-                            Alert.alert('An order cannot be marked as paid without payment information');
+                            Alert.alert(
+                                t(
+                                    'SALES_PaymentRequiredMessage',
+                                    'An order cannot be marked as paid without payment information'
+                                )
+                            );
                             return;
                         }
                         
@@ -185,7 +204,8 @@ export function SalesScreen({
                     return;
                 },
             },
-        ]);
+        ]
+        );
     };
 
     useEffect(() => {

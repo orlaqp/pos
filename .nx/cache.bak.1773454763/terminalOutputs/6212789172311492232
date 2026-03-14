@@ -1,0 +1,13 @@
+(node:78275) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m back-office-native-feature [39m[27m[0m [2mlibs/back-office/native-feature/src/lib/components/back-office/[22m[1mback-office.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m back-office-native-feature [39m[27m[0m [2mlibs/back-office/native-feature/src/lib/components/sidebar/[22m[1msubmenu.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m back-office-native-feature [39m[27m[0m [2mlibs/back-office/native-feature/src/lib/components/sidebar/[22m[1msidebar.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m back-office-native-feature [39m[27m[0m [2mlibs/back-office/native-feature/src/lib/components/sidebar/[22m[1msingle-item.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m back-office-native-feature [39m[27m[0m [2mlibs/back-office/native-feature/src/lib/components/sidebar/[22m[1mmenu-items.spec.ts[22m
+
+[1mTest Suites: [22m[1m[32m5 passed[39m[22m, 5 total
+[1mTests:       [22m[1m[32m12 passed[39m[22m, 12 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        1.588 s
+[2mRan all test suites[22m[2m.[22m

@@ -21,6 +21,7 @@ import OrderVoidForm from '../order-void-form/order-void-form';
 import { eventsActions } from '@pos/shared/data-store';
 import uuid from 'react-native-uuid';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import i18next from 'i18next';
 
 export interface OrderListProps {
     navigation?: NativeStackNavigationProp<any>;
@@ -42,6 +43,10 @@ export function OrderList({ navigation }: OrderListProps) {
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
     const allOrders = useSelector(selectAllOrders);
     const [filteredOrders, setFilteredOrders] = useState<OrderEntity[]>();
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
     
     useEffect(() => {
         const ordersSub = subscribeToOrderChanges(dispatch);
@@ -123,7 +128,7 @@ export function OrderList({ navigation }: OrderListProps) {
                     padding="lg"
                 >
                     {filteredOrders?.length === 0 && (
-                        <UIEmptyState text="No orders found" />
+                        <UIEmptyState text={t('ORDERS_NoOrdersFound', 'No orders found')} />
                     )}
                     {filteredOrders && filteredOrders?.length > 0 && (
                         <FlatList

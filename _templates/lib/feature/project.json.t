@@ -11,7 +11,7 @@ pluralParamCase = h.pluralParamCase(name)
   "tags": [],
   "targets": {
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": [
@@ -20,7 +20,7 @@ pluralParamCase = h.pluralParamCase(name)
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
+      "executor": "@nx/jest:jest",
       "outputs": ["coverage/libs/<%= pluralParamCase %>/native"],
       "options": {
         "jestConfig": "libs/<%= pluralParamCase %>/native/jest.config.js",

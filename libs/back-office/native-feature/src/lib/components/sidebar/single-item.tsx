@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Icon, ListItem, useTheme } from '@rneui/themed';
 import { SidebarItem } from './definitions';
+import i18next from 'i18next';
 
 export interface SingleItemProps {
     chevron?: boolean;
@@ -23,6 +24,10 @@ export function SingleItem({
     const theme = useTheme();
     const styles = useStyles(theme.theme.colors);
     const active = isActive ?? selectedId === item.id;
+    const title =
+        item.labelKey && i18next.isInitialized && i18next.exists(item.labelKey)
+            ? i18next.t(item.labelKey)
+            : item.title;
 
     return (
         <ListItem
@@ -58,7 +63,7 @@ export function SingleItem({
                         active && styles.titleActive,
                     ]}
                 >
-                    {item.title}
+                    {title}
                 </ListItem.Title>
             </ListItem.Content>
             {chevron && (

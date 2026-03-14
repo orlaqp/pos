@@ -1,0 +1,15 @@
+(node:99437) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m store-info-native-feature [39m[27m[0m [2mlibs/store-info/native-feature/src/lib/components/store-info-form/[22m[1mstore-info-form.spec.tsx[22m
+  StoreInfoForm integration
+    [32m✓[39m [2mdispatches fetchStoreInfo on mount (194 ms)[22m
+    [32m✓[39m [2msaves and shows success alert on submit (60 ms)[22m
+    [32m✓[39m [2mconfirms cancel and navigates back on confirmation (3 ms)[22m
+    [32m✓[39m [2mdoes not navigate back when cancel confirmation is declined (3 ms)[22m
+    [32m✓[39m [2momits id when saving a new store info record (55 ms)[22m
+
+[1mTest Suites: [22m[1m[32m1 passed[39m[22m, 1 total
+[1mTests:       [22m[1m[32m5 passed[39m[22m, 5 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0.62 s, estimated 1 s
+[2mRan all test suites[22m[2m.[22m

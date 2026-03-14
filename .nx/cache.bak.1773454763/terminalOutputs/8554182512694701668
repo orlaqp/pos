@@ -1,0 +1,21 @@
+(node:76601) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-data-access [39m[27m[0m [2mlibs/sales/data-access/src/lib/slices/[22m[1mcart.slice.spec.ts[22m
+  cart.slice
+    [32m✓[39m [2mreturns initial state (2 ms)[22m
+    [32m✓[39m [2mselects and resets selected item (1 ms)[22m
+    [32m✓[39m [2madds first product and computes totals (1 ms)[22m
+    [32m✓[39m [2mupdates existing line by identifier[22m
+    [32m✓[39m [2mmerges EACH quantities on repeated add (1 ms)[22m
+    [32m✓[39m [2mfor non-EACH product: inserts new line when quantity is zero[22m
+    [32m✓[39m [2mfor non-EACH product: replaces existing zero-quantity line first[22m
+    [32m✓[39m [2mremoves product and updates totals[22m
+    [32m✓[39m [2msets and resets cart from order payload (1 ms)[22m
+    [32m✓[39m [2mstores footer payments with addPayment[22m
+    [32m✓[39m [2mselectors return expected values[22m
+
+[1mTest Suites: [22m[1m[32m1 passed[39m[22m, 1 total
+[1mTests:       [22m[1m[32m11 passed[39m[22m, 11 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0.523 s, estimated 1 s
+[2mRan all test suites[22m[2m.[22m

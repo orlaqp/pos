@@ -12,6 +12,7 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import * as RNFS from 'react-native-fs';
 import { Icon } from '@rneui/themed';
+import i18next from 'i18next';
 
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Share } from 'react-native';
@@ -59,7 +60,8 @@ const escapeCsv = (value: unknown) => {
 export const buildReportCsv = (
     headers: ReportHeader[],
     items: Record<string, unknown>[],
-    totals?: Record<string, number>
+    totals?: Record<string, number>,
+    totalLabel = 'TOTAL'
 ) => {
     const lines: string[] = [];
     lines.push(headers.map((h) => escapeCsv(h.label)).join(','));
@@ -75,7 +77,7 @@ export const buildReportCsv = (
     if (totals) {
         const totalRow = headers.map((h, index) => {
             if (h.sum) return escapeCsv(formatCellValue(totals[h.field], h.format));
-            if (index === 0) return escapeCsv('TOTAL');
+            if (index === 0) return escapeCsv(totalLabel);
             return escapeCsv('');
         });
         lines.push(totalRow.join(','));
@@ -102,6 +104,10 @@ export function ReportViewer({
     const [loading, setLoading] = useState<boolean>(true);
     const [totals, setTotals] = useState<Record<string, number>>();
     const [items, setItems] = useState<any[]>([]);
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
     const [dateRange, setDateRange] = useState<DateRange>({
         startDate: moment().startOf('day'),
         endDate: moment().endOf('day'),
@@ -116,7 +122,12 @@ export function ReportViewer({
                 'YYYYMMDD-HHmmss'
             )}.csv`;
             const path = `${RNFS.DocumentDirectoryPath}/${filename}`;
-            const csv = buildReportCsv(headers, items as Record<string, unknown>[], totals);
+            const csv = buildReportCsv(
+                headers,
+                items as Record<string, unknown>[],
+                totals,
+                t('REPORT_TotalLabel', 'TOTAL')
+            );
 
             await RNFS.writeFile(path, csv, 'utf8');
             await Share.share({
@@ -124,7 +135,10 @@ export function ReportViewer({
                 url: `file://${path}`,
             });
         } catch {
-            Alert.alert('Export failed', 'Could not generate CSV file.');
+            Alert.alert(
+                t('REPORT_ExportFailedTitle', 'Export failed'),
+                t('REPORT_ExportFailedMessage', 'Could not generate CSV file.')
+            );
         }
     };
 
@@ -198,7 +212,9 @@ export function ReportViewer({
                                             size={14}
                                             color={tokens.colors.accent}
                                         />
-                                        <Text style={styles.exportButtonText}>Export</Text>
+                                        <Text style={styles.exportButtonText}>
+                                            {t('REPORT_Export', 'Export')}
+                                        </Text>
                                     </Pressable>
                                 }
                             />
@@ -223,13 +239,21 @@ export function ReportViewer({
 
                                 {loading && (
                                     <View style={styles.stateWrap}>
-                                        <UISpinner size="small" message="Loading..." />
+                                        <UISpinner
+                                            size="small"
+                                            message={t('COMMON_Loading', 'Loading...')}
+                                        />
                                     </View>
                                 )}
 
                                 {!loading && !items.length && (
                                     <View style={styles.stateWrap}>
-                                        <UIEmptyState text="No sales found for this date range" />
+                                        <UIEmptyState
+                                            text={t(
+                                                'REPORT_NoSalesForRange',
+                                                'No sales found for this date range'
+                                            )}
+                                        />
                                     </View>
                                 )}
 

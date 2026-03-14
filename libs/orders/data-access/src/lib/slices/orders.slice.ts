@@ -1,5 +1,5 @@
-/* eslint-disable @nrwl/nx/enforce-module-boundaries */
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+/* eslint-disable @nx/enforce-module-boundaries */
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { PrinterEntity, printReceipt } from '@pos/printings/data-access';
 import { CartPayment, CartState } from '@pos/sales/data-access';
 import { Order, OrderStatus } from '@pos/shared/models';

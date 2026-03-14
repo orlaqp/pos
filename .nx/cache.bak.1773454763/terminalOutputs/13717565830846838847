@@ -1,0 +1,24 @@
+(node:29521) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+Linting "shared-data-store"...
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/data-store/src/config.ts[24m[0m
+[0m   [2m2:5[22m   [33mwarning[39m  'Order' is defined but never used                 [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m3:5[22m   [33mwarning[39m  'OrderLine' is defined but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m4:5[22m   [33mwarning[39m  'InventoryCount' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m5:5[22m   [33mwarning[39m  'InventoryCountLine' is defined but never used    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m6:5[22m   [33mwarning[39m  'InventoryReceive' is defined but never used      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m7:5[22m   [33mwarning[39m  'InventoryReceiveLine' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m8:5[22m   [33mwarning[39m  'Printer' is defined but never used               [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m9:5[22m   [33mwarning[39m  'Station' is defined but never used               [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m11:10[22m  [33mwarning[39m  'DatesService' is defined but never used          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:21[22m  [33mwarning[39m  'syncExpression' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m17:7[22m   [33mwarning[39m  'deviceId' is assigned a value but never used     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m22:11[22m  [33mwarning[39m  'lastMonth' is assigned a value but never used    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m23:11[22m  [33mwarning[39m  'isoDate' is assigned a value but never used      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[33m[1m✖ 13 problems (0 errors, 13 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[0m
+✖ 13 problems (0 errors, 13 warnings)
+

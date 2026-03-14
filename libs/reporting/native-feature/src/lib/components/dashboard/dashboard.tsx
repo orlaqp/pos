@@ -21,6 +21,7 @@ import Widget from '../widget/widget';
 import { getSalesSummaryForRange } from '@pos/reporting/data-access';
 import { sortDescListBy } from '@pos/shared/utils';
 import { EACH } from '@pos/unit-of-measures/data-access';
+import i18next from 'i18next';
 
 /* eslint-disable-next-line */
 export interface DashboardProps {}
@@ -91,6 +92,10 @@ export function Dashboard(_props: DashboardProps) {
         endDate: moment().endOf('day'),
     });
     const [salesSummary, setSalesSummary] = useState<SalesSummary>();
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
 
     const updateDateRange = (range: DateRange) => {
         setDateRange(range);
@@ -137,9 +142,12 @@ export function Dashboard(_props: DashboardProps) {
                 <View style={styles.container}>
                     <UIStack spacing="lg">
                         <UICard tone="muted" radius="lg">
-                            <Text style={styles.title}>Dashboard</Text>
+                            <Text style={styles.title}>{t('DASHBOARD_Title', 'Dashboard')}</Text>
                             <Text style={styles.subtitle}>
-                                Sales performance and trends across the selected period.
+                                {t(
+                                    'DASHBOARD_Subtitle',
+                                    'Sales performance and trends across the selected period.'
+                                )}
                             </Text>
                             <UIDateRange
                                 initialRange={dateRange}
@@ -149,13 +157,21 @@ export function Dashboard(_props: DashboardProps) {
 
                         {loading && (
                             <UICard style={styles.centerBlock}>
-                                <UISpinner size="small" message="Loading..." />
+                                <UISpinner
+                                    size="small"
+                                    message={t('COMMON_Loading', 'Loading...')}
+                                />
                             </UICard>
                         )}
 
                         {!loading && !hasSalesData(salesSummary) && (
                             <UICard tone="muted" style={styles.centerBlock}>
-                                <UIEmptyState text="No data found for this date range" />
+                                <UIEmptyState
+                                    text={t(
+                                        'DASHBOARD_NoDataForRange',
+                                        'No data found for this date range'
+                                    )}
+                                />
                             </UICard>
                         )}
 
@@ -166,7 +182,7 @@ export function Dashboard(_props: DashboardProps) {
                                         <Widget
                                             backgroundColor={tokens.colors.accent}
                                             icon="trending-up"
-                                            text="Gross Income"
+                                            text={t('DASHBOARD_GrossIncome', 'Gross Income')}
                                             value={`$ ${salesSummary.totalAmount.toFixed(
                                                 2
                                             )}`}
@@ -176,7 +192,7 @@ export function Dashboard(_props: DashboardProps) {
                                         <Widget
                                             backgroundColor={tokens.colors.warning}
                                             icon="sigma"
-                                            text="Total Sales"
+                                            text={t('DASHBOARD_TotalSales', 'Total Sales')}
                                             value={salesSummary.totalOrders.toString()}
                                         />
                                     </View>
@@ -184,8 +200,8 @@ export function Dashboard(_props: DashboardProps) {
                                         <Widget
                                             backgroundColor={tokens.colors.success}
                                             icon="account-multiple-plus-outline"
-                                            text="New Customers"
-                                            value="N/A"
+                                            text={t('DASHBOARD_NewCustomers', 'New Customers')}
+                                            value={t('COMMON_NotAvailableShort', 'N/A')}
                                         />
                                     </View>
                                 </View>
@@ -194,13 +210,19 @@ export function Dashboard(_props: DashboardProps) {
                                     <View style={styles.insightsRow}>
                                         <View style={styles.insightsPrimary}>
                                             <PieChart
-                                                header="Top 5 Products"
+                                                header={t(
+                                                    'DASHBOARD_TopProducts',
+                                                    'Top 5 Products'
+                                                )}
                                                 items={buildTopProductItems(salesSummary)}
                                             />
                                         </View>
                                         <View style={styles.insightsSecondary}>
                                             <ListWidget
-                                                header="Top 5 Employees"
+                                                header={t(
+                                                    'DASHBOARD_TopEmployees',
+                                                    'Top 5 Employees'
+                                                )}
                                                 items={buildTopEmployeeItems(salesSummary)}
                                             />
                                         </View>
@@ -209,7 +231,10 @@ export function Dashboard(_props: DashboardProps) {
 
                                 <UICard>
                                     <LineChartComponent
-                                        header="Revenue over time"
+                                        header={t(
+                                            'DASHBOARD_RevenueOverTime',
+                                            'Revenue over time'
+                                        )}
                                         data={buildRevenueOverTime(salesSummary)}
                                     />
                                 </UICard>

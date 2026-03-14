@@ -6,6 +6,7 @@ import { EACH, POUND, selectAllUnitOfMeasures } from '@pos/unit-of-measures/data
 import { ButtonGroup } from '@rneui/themed';
 import React, { useState } from 'react';
 import { SalesSummary } from '@pos/shared/models';
+import i18next from 'i18next';
 
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -41,9 +42,13 @@ export const createUnitChangeHandler = (
 
 export function SalesByProduct(props: SalesByProductProps) {
     const styles = useSharedStyles();
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
     const headers: ReportHeader[] = [
-        { label: 'Product', field: 'product', width: 5 },
-        { label: 'Quantity', field: 'amount', width: 1, align: 'right' },
+        { label: t('REPORT_Header_Product', 'Product'), field: 'product', width: 5 },
+        { label: t('REPORT_Header_Quantity', 'Quantity'), field: 'amount', width: 1, align: 'right' },
     ];
     const unitOfMeasures = useSelector(selectAllUnitOfMeasures);
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
@@ -67,7 +72,15 @@ export function SalesByProduct(props: SalesByProductProps) {
                     containerStyle={{ marginBottom: 20, backgroundColor: 'transparent', borderWidth: 0 }}
                 />
             </View>
-            <ReportViewer getData={getData} headers={headers} />
+            <ReportViewer
+                title={t('REPORT_ByProductTitle', 'Sales By Product')}
+                subtitle={t(
+                    'REPORT_ByProductSubtitle',
+                    'Compare sold quantities grouped by product.'
+                )}
+                getData={getData}
+                headers={headers}
+            />
         </View>
     );
 }

@@ -1,0 +1,9 @@
+{
+  "run": {
+    "command": "nx run-ios mobile-ui --simulator iPad (A16)",
+    "startTime": "2026-03-14T12:17:16.169Z",
+    "endTime": "2026-03-14T12:18:58.858Z",
+    "inner": false
+  },
+  "tasks": []
+}

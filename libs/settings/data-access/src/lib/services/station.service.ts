@@ -1,4 +1,4 @@
-/* eslint-disable @nrwl/nx/enforce-module-boundaries */
+/* eslint-disable @nx/enforce-module-boundaries */
 import { EmployeeEntity } from '@pos/employees/data-access';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';

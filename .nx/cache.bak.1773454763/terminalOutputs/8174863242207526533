@@ -1,0 +1,85 @@
+(node:82850) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:82853) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[36m[1minfo[22m[39m [0mBuilding the app...[0m
+Downloading https://services.gradle.org/distributions/gradle-8.10.2-all.zip
+.....................10%......................20%......................30%.....................40%......................50%......................60%......................70%.....................80%......................90%......................100%
+
+Welcome to Gradle 8.10.2!
+
+Here are the highlights of this release:
+ - Support for Java 23
+ - Faster configuration cache
+ - Better configuration cache reports
+
+For more details see https://docs.gradle.org/8.10.2/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+> Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:shared:processResources NO-SOURCE
+> Task :gradle-plugin:settings-plugin:pluginDescriptors
+> Task :gradle-plugin:settings-plugin:processResources
+> Task :gradle-plugin:shared:compileKotlin
+> Task :gradle-plugin:shared:compileJava NO-SOURCE
+> Task :gradle-plugin:shared:classes UP-TO-DATE
+> Task :gradle-plugin:shared:jar
+> Task :gradle-plugin:settings-plugin:compileKotlin
+> Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:settings-plugin:classes
+> Task :gradle-plugin:settings-plugin:jar
+> Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors
+> Task :gradle-plugin:react-native-gradle-plugin:processResources
+> Task :gradle-plugin:react-native-gradle-plugin:compileKotlin
+> Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:react-native-gradle-plugin:classes
+> Task :gradle-plugin:react-native-gradle-plugin:jar
+
+> Configure project :app
+Reading env from: .env
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file '/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-i18n/android/build.gradle' line: 25
+
+* What went wrong:
+A problem occurred evaluating project ':react-native-i18n'.
+> Could not find method compile() for arguments [com.facebook.react:react-native:+] on object of type org.gradle.api.internal.artifacts.dsl.dependencies.DefaultDependencyHandler.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 1m 51s
+13 actionable tasks: 13 executed
+
+[36m[1minfo[22m[39m [0m[2m[2m💡 Tip: Make sure that you have set up your development environment correctly, by running[22m[2m [0m[0m[1mnpx react-native doctor[22m[2m[0m[0m. [2mTo read more about doctor command visit: https://github.com/react-native-community/cli/blob/main/packages/cli-doctor/README.md#doctor [22m[2m[22m[0m
+[0m[2m[2m[22m[2m[22m[0m
+[31m[1merror[22m[39m [0mFailed to build the app.[0m
+[0mError: Command failed with exit code 1: ./gradlew app:bundleDebug[0m
+[0m    at makeError (/Users/orlando/dev/pos/node_modules/execa/lib/error.js:60:11)[0m
+[0m    at module.exports.sync (/Users/orlando/dev/pos/node_modules/execa/index.js:194:17)[0m
+[0m    at build (/Users/orlando/dev/pos/node_modules/@react-native-community/cli-platform-android/build/commands/buildAndroid/index.js:74:22)[0m
+[0m    at Object.buildAndroid [as func] (/Users/orlando/dev/pos/node_modules/@react-native-community/cli-platform-android/build/commands/buildAndroid/index.js:66:10)[0m
+[0m    at Command.handleAction (/Users/orlando/dev/pos/node_modules/@react-native-community/cli/build/index.js:126:23)[0m
+[0m    at Command.listener [as _actionHandler] (/Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:482:17)[0m
+[0m    at /Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:1283:65[0m
+[0m    at Command._chainOrCall (/Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:1177:12)[0m
+[0m    at Command._parseCommand (/Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:1283:27)[0m
+[0m    at /Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:1081:27[0m
+[36m[1minfo[22m[39m [0m[2mRun CLI with [0m[0m--verbose[0m[0m [2mflag for more details.[22m[2m[22m[0m
+
+ NX   1
+
+

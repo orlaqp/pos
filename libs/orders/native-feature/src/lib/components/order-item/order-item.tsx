@@ -17,6 +17,7 @@ import { selectStore } from '@pos/store-info/data-access';
 import { Role } from '@pos/auth/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import i18next from 'i18next';
 
 export interface OrderItemProps {
     item: OrderEntity;
@@ -78,6 +79,10 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
     const employee = useSelector(selectLoginEmployee);
     const store = useSelector(selectStore);
     const [busy, setBusy] = useState<boolean>(false);
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
 
     const deleteItem = async () => {
         if (!item.id) return;
@@ -96,7 +101,10 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
     const printItem = async () => {
         if (!store || !defaultPrinter) {
             Alert.alert(
-                'Store info and printer setup needs ro be ready before closing an order'
+                t(
+                    'ORDERITEM_PrintRequirements',
+                    'Store info and printer setup needs ro be ready before closing an order'
+                )
             );
             return;
         }
@@ -111,9 +119,15 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
 
     const confirmDeletion = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
-            [{ text: 'No' }, { text: 'Yes', onPress: () => deleteItem() }]
+            t('ORDERITEM_ConfirmTitle', 'Are you sure?'),
+            t(
+                'ORDERITEM_DeleteMessage',
+                'You will not be able to undo this operation'
+            ),
+            [
+                { text: t('ORDERITEM_No', 'No') },
+                { text: t('ORDERITEM_Yes', 'Yes'), onPress: () => deleteItem() },
+            ]
         );
     };
 
@@ -145,19 +159,25 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                         {parsedOrderNo ? (
                             <>
                                 <View style={local.chip}>
-                                    <Text style={local.chipLabel}>Store</Text>
+                                    <Text style={local.chipLabel}>
+                                        {t('ORDERITEM_Store', 'Store')}
+                                    </Text>
                                     <Text style={[styles.primaryText, local.chipValue]}>
                                         {parsedOrderNo.store}
                                     </Text>
                                 </View>
                                 <View style={local.chip}>
-                                    <Text style={local.chipLabel}>Station</Text>
+                                    <Text style={local.chipLabel}>
+                                        {t('ORDERITEM_Station', 'Station')}
+                                    </Text>
                                     <Text style={[styles.primaryText, local.chipValue]}>
                                         {parsedOrderNo.station}
                                     </Text>
                                 </View>
                                 <View style={local.chip}>
-                                    <Text style={local.chipLabel}>Date</Text>
+                                    <Text style={local.chipLabel}>
+                                        {t('ORDERITEM_Date', 'Date')}
+                                    </Text>
                                     <Text style={[styles.primaryText, local.chipValue]}>
                                         {parsedOrderNo.date}
                                     </Text>
@@ -183,7 +203,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                     </Text>
                     {!!statusOwner && (
                         <Text numberOfLines={1} style={[styles.secondaryText, local.metaTop]}>
-                            By: {statusOwner}
+                            {t('ORDERITEM_By', 'By')}: {statusOwner}
                         </Text>
                     )}
                 </View>
@@ -203,7 +223,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                     <Button
                         testID="order-item-pay-button"
                         type="solid"
-                        title="Payment"
+                        title={t('ORDERITEM_Payment', 'Payment')}
                         color={theme.theme.colors.primary}
                         icon={{
                             name: 'credit-card-outline',
@@ -223,7 +243,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                         { employee?.roles.includes(Role.VoidOrder) &&
                         <Button
                             type="clear"
-                            title="Void"
+                            title={t('ORDERITEM_Void', 'Void')}
                         icon={{
                             name: 'close-circle-outline',
                             type: 'material-community',
@@ -236,7 +256,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                         }
                         <Button
                             type="clear"
-                            title="Print"
+                            title={t('ORDERITEM_Print', 'Print')}
                             icon={{
                                 name: 'printer-outline',
                                 type: 'material-community',

@@ -1,4 +1,4 @@
-/* eslint-disable @nrwl/nx/enforce-module-boundaries */
+/* eslint-disable @nx/enforce-module-boundaries */
 import { syncBrands } from '@pos/brands/data-access';
 import { syncCategories } from '@pos/categories/data-access';
 import { syncEmployees } from '@pos/employees/data-access';

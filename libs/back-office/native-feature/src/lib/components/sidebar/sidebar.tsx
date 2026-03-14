@@ -7,6 +7,7 @@ import { SingleItem } from './single-item';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { menuItems } from './menu-items';
 import { useTheme } from '@rneui/themed';
+import i18next from 'i18next';
 
 export interface SidebarProps {
     navigation: NativeStackNavigationProp<any>;
@@ -25,6 +26,11 @@ export function Sidebar({ navigation }: SidebarProps) {
             items: menuItems.filter((item) => item.group === group),
         }));
     }, []);
+
+    const getLabel = (key: string, fallback: string) => {
+        if (!i18next.isInitialized || !i18next.exists(key)) return fallback;
+        return i18next.t(key);
+    };
 
     const getParentForItem = (item: SidebarItem) =>
         menuItems.find((parent) => parent.children?.some((child) => child.id === item.id));
@@ -48,7 +54,9 @@ export function Sidebar({ navigation }: SidebarProps) {
 
                 return (
                     <View key={group} style={styles.groupContainer}>
-                        <Text style={styles.groupLabel}>{group}</Text>
+                        <Text style={styles.groupLabel}>
+                            {getLabel(`SIDEBAR_GROUP_${group.toUpperCase()}`, group)}
+                        </Text>
                         {items.map((item) => {
                             if (!item.children) {
                                 return (

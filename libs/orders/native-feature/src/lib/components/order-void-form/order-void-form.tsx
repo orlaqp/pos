@@ -17,6 +17,7 @@ import {
     calculateRefundSummary,
     spreadOrderLinesForVoid,
 } from './order-void-form.logic';
+import i18next from 'i18next';
 
 export interface OrderItemProps {
     order: OrderEntity;
@@ -33,6 +34,10 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     const [newTotal, setNewTotal] = useState<number>(0);
     const [linesToRefund, setLinesToRefund] = useState<OrderLineEntity[]>([]);
     const [busy, setBusy] = useState<boolean>(false);
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
     const employee = useSelector(selectLoginEmployee);
     const paymentSummary = (order.paymentInfo?.payments || []).reduce(
         (acc: Record<string, number>, payment) => {
@@ -61,7 +66,13 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
 
     const processRefund = async () => {
         if (!employee) {
-            Alert.alert('Error', 'Refund is not possible because no login employee was found');
+            Alert.alert(
+                t('ORDERVOID_Error', 'Error'),
+                t(
+                    'ORDERVOID_NoEmployee',
+                    'Refund is not possible because no login employee was found'
+                )
+            );
             return;
         }
 
@@ -82,9 +93,15 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
 
     const confirmRefund = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
-            [{ text: 'No' }, { text: 'Yes', onPress: processRefund }]
+            t('ORDERVOID_ConfirmTitle', 'Are you sure?'),
+            t(
+                'ORDERVOID_ConfirmMessage',
+                'You will not be able to undo this operation'
+            ),
+            [
+                { text: t('ORDERVOID_No', 'No') },
+                { text: t('ORDERVOID_Yes', 'Yes'), onPress: processRefund },
+            ]
         );
     };
 
@@ -101,13 +118,25 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     return (
         <View style={[styles.pageBackground, local.container]}>
             <View style={local.headerRow}>
-                <Text style={local.title}>Void Items</Text>
-                <Text style={local.subtitle}>Select items to refund from this order</Text>
+                <Text style={local.title}>{t('ORDERVOID_Title', 'Void Items')}</Text>
+                <Text style={local.subtitle}>
+                    {t(
+                        'ORDERVOID_Subtitle',
+                        'Select items to refund from this order'
+                    )}
+                </Text>
             </View>
             <UICard tone="default" padding="sm" radius="md" style={local.referenceCard}>
-                <Text style={local.referenceTitle}>Payment Reference</Text>
+                <Text style={local.referenceTitle}>
+                    {t('ORDERVOID_PaymentReference', 'Payment Reference')}
+                </Text>
                 {paymentTypes.length === 0 && (
-                    <Text style={local.referenceText}>No payment details were found for this order.</Text>
+                    <Text style={local.referenceText}>
+                        {t(
+                            'ORDERVOID_NoPaymentDetails',
+                            'No payment details were found for this order.'
+                        )}
+                    </Text>
                 )}
                 {paymentTypes.length > 0 && (
                     <View style={local.paymentRow}>
@@ -121,7 +150,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                 )}
                 {!!(ebtFromPayments || ebtFromLines) && (
                     <Text style={local.ebtHint}>
-                        EBT reference: $ {Math.max(ebtFromPayments, ebtFromLines).toFixed(2)}
+                        {t('ORDERVOID_EBTReference', 'EBT reference')}: $ {Math.max(ebtFromPayments, ebtFromLines).toFixed(2)}
                     </Text>
                 )}
             </UICard>
@@ -150,7 +179,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         style={local.summaryCol}
                 >
                     <Text style={[styles.secondaryText, local.label]}>
-                        Original Amount:
+                        {t('ORDERVOID_OriginalAmount', 'Original Amount')}:
                     </Text>
                     <Text
                         style={[
@@ -166,7 +195,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         style={local.summaryCol}
                 >
                     <Text style={[styles.secondaryText, local.label]}>
-                        Refund Amount:
+                        {t('ORDERVOID_RefundAmount', 'Refund Amount')}:
                     </Text>
                     <Text
                         style={[
@@ -182,7 +211,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         style={local.summaryCol}
                 >
                     <Text style={[styles.secondaryText, local.label]}>
-                        New Amount:
+                        {t('ORDERVOID_NewAmount', 'New Amount')}:
                     </Text>
                     <Text
                         style={[
@@ -198,7 +227,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                 <View style={local.actionsWrap}>
                     <Button
                         testID="order-void-process-button"
-                        title="Process"
+                        title={t('ORDERVOID_Process', 'Process')}
                         icon={{
                             name: 'check',
                             type: 'material-community',
