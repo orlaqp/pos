@@ -8,7 +8,7 @@ import { EACH } from '@pos/unit-of-measures/data-access';
 import { Button, Input, useTheme } from '@rneui/themed';
 import React, { useEffect, useRef, useState } from 'react';
 
-import { View, Text, StyleSheet, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Alert, useWindowDimensions } from 'react-native';
 import NumericInput from 'react-native-numeric-input';
 import { useSelector } from 'react-redux';
 import {
@@ -27,7 +27,8 @@ export interface ProductDetailsProps {
 
 export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory }: ProductDetailsProps) {
     const theme = useTheme();
-    const styles = useStyles();
+    const { width: windowWidth } = useWindowDimensions();
+    const styles = useStyles(windowWidth);
     const ref = useRef<TextInput>(null);
     const [quantity, setQuantity] = useState<string>(
         item.quantity === 0 ? '' : item.quantity.toString()
@@ -135,10 +136,17 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
     );
 }
 
-const useStyles = () => {
+const useStyles = (windowWidth: number) => {
     const theme = useTheme();
     const sharedStyles = useSharedStyles();
     const tokens = useDesignTokens();
+    const compactLayout = windowWidth < 900;
+    const contentWidth = compactLayout ? 300 : 340;
+    const pictureWrapSize = compactLayout ? 92 : 108;
+    const quantityWidth = compactLayout ? 168 : 200;
+    const nameSize = compactLayout ? 20 : 24;
+    const priceSize = compactLayout ? 36 : 44;
+    const unitSize = compactLayout ? 20 : 24;
 
     return {
         ...sharedStyles,
@@ -148,27 +156,32 @@ const useStyles = () => {
                 alignItems: 'center',
                 position: 'relative',
                 overflow: 'hidden',
-                minWidth: 340,
+                width: '100%',
+                maxWidth: contentWidth,
+                minWidth: compactLayout ? 280 : 320,
+                alignSelf: 'center',
             },
             heroCard: {
                 width: '100%',
             },
             heroRow: {
                 flexDirection: 'row',
-                alignItems: 'center',
+                alignItems: 'flex-start',
             },
             pictureWrap: {
-                width: 108,
-                height: 108,
+                width: pictureWrapSize,
+                height: pictureWrapSize,
                 borderRadius: tokens.radii.md,
                 overflow: 'hidden',
                 backgroundColor: tokens.colors.surface,
                 justifyContent: 'center',
                 alignItems: 'center',
                 marginRight: tokens.spacing.sm,
+                flexShrink: 0,
             },
             metaWrap: {
                 flex: 1,
+                minWidth: 0,
             },
             brandText: {
                 color: tokens.colors.textMuted,
@@ -180,8 +193,9 @@ const useStyles = () => {
             },
             productName: {
                 color: tokens.colors.textPrimary,
-                fontSize: 24,
+                fontSize: nameSize,
                 fontWeight: '800',
+                lineHeight: compactLayout ? 28 : 34,
             },
             descriptionText: {
                 color: tokens.colors.textSecondary,
@@ -190,14 +204,17 @@ const useStyles = () => {
             },
             quantityWrap: {
                 marginTop: tokens.spacing.lg,
+                width: '100%',
+                alignItems: 'center',
             },
             weightRow: {
-                width: 200,
+                width: quantityWidth,
                 flexDirection: 'row',
                 justifyContent: 'center',
+                alignItems: 'center',
             },
             price: {
-                fontSize: 44,
+                fontSize: priceSize,
                 fontWeight: '800',
                 color: theme.theme.colors.grey0,
             },
@@ -207,10 +224,10 @@ const useStyles = () => {
                 alignItems: 'flex-end',
             },
             unitOfMeasure: {
-                fontSize: 24,
+                fontSize: unitSize,
                 fontWeight: 'bold',
                 color: theme.theme.colors.grey3,
-                lineHeight: 48,
+                lineHeight: compactLayout ? 40 : 48,
             },
             ctaContainer: {
                 marginTop: tokens.spacing.lg,

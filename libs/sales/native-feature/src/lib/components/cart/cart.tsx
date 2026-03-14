@@ -165,6 +165,8 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
             <Dialog
                     isVisible={receivePayment}
                     onBackdropPress={() => setReceivePayment(false)}
+                    supportedOrientations={['landscape']}
+                    presentationStyle="fullScreen"
                     overlayStyle={[styles.overlay, { width: 450 }]}
                 >
                     <CartPayment

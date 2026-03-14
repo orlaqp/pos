@@ -13,6 +13,7 @@ import { RootState } from '@pos/store';
 
 import logo from '../../assets/logo.png';
 import { translate } from '@pos/settings/data-access';
+import { getThemeColors } from '@pos/theme/native';
 
 /* eslint-disable-next-line */
 export interface LoginProps {
@@ -102,10 +103,11 @@ export function LoginScreen(props: LoginProps) {
 
 const useStyles = () => {
     const theme = useTheme();
+    const colors = getThemeColors(theme);
 
     return StyleSheet.create({
         container: {
-            backgroundColor: theme.theme.colors.background,
+            backgroundColor: colors.background,
         },
         centered: {
             flex: 1,
@@ -120,7 +122,7 @@ const useStyles = () => {
         signUpLink: {
             fontSize: 18,
             textAlign: 'center',
-            color: theme.theme.colors.primary,
+            color: colors.primary,
         },
         bottomMargin: {
             marginBottom: 50,

@@ -5,6 +5,7 @@ import {
     selectFilteredList,
     selectIsEmpty,
     selectLoadingStatus,
+    syncCategories,
     subscribeToCategoryChanges,
 } from '@pos/categories/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
@@ -33,6 +34,7 @@ export function CategoryList({ navigation }: CategoryListProps) {
     const dispatch = useDispatch();
 
     useEffect(() => {
+        syncCategories(dispatch);
         const sub = subscribeToCategoryChanges(dispatch);
         return () => {
             console.log('Closing category subscription');

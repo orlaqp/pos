@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSharedStyles } from '@pos/theme/native';
+import { getThemeColors, useSharedStyles } from '@pos/theme/native';
 import { useTheme, Text } from '@rneui/themed';
 
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
@@ -23,7 +23,7 @@ export function UISpinner({ size, message }: UISpinnerProps) {
 
 const useStyles = () => {
   const theme = useTheme();
-  const colors = theme?.theme?.colors || { grey3: '#8491a2' };
+  const colors = getThemeColors(theme);
   const sharedStyles = useSharedStyles();
 
   return {

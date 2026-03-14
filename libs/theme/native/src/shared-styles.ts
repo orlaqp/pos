@@ -1,23 +1,12 @@
 import { useTheme } from '@rneui/themed';
 import { StyleSheet } from 'react-native';
+import { getThemeColors } from './theme';
 
 
 
 export const useSharedStyles = () => {
     const theme = useTheme();
-    const colors = theme?.theme?.colors || {
-        background: '#000000',
-        grey0: '#ffffff',
-        grey1: '#dddddd',
-        grey2: '#aaaaaa',
-        grey3: '#777777',
-        grey4: '#666666',
-        grey5: '#444444',
-        black: '#ffffff',
-        error: '#ef4444',
-        warning: '#ffb020',
-        success: '#34c759',
-    };
+    const colors = getThemeColors(theme);
     return StyleSheet.create({
         page: {
             flex: 1,

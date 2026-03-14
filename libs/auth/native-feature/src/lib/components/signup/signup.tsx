@@ -9,6 +9,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Auth } from 'aws-amplify';
 import { useForm, FormProvider } from 'react-hook-form';
 import { UiActionMessage, UIAlert, UIInput } from '@pos/shared/ui-native';
+import { getThemeColors } from '@pos/theme/native';
 
 import logo from '../../assets/logo.png';
 export interface SignupProps {
@@ -112,10 +113,11 @@ export function SignUpScreen(props: SignupProps) {
 
 const useStyles = () => {
   const theme = useTheme();
+  const colors = getThemeColors(theme);
 
   return StyleSheet.create({
     container: {
-      backgroundColor: theme.theme.colors.background,
+      backgroundColor: colors.background,
     },
     centered: {
       flex: 1,

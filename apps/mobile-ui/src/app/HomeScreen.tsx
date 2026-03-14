@@ -1,4 +1,4 @@
-import { useSharedStyles } from '@pos/theme/native';
+import { getThemeColors, useSharedStyles } from '@pos/theme/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
@@ -32,6 +32,7 @@ interface HomeScreenProps {
 export const HomeScreen = (props: HomeScreenProps) => {
     const dispatch = useDispatch();
     const theme = useTheme();
+    const colors = getThemeColors(theme);
     const sharedStyles = useSharedStyles();
     const styles = useStyles();
     const employee = useSelector(selectLoginEmployee);
@@ -145,7 +146,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
                                     />
                                 )}
                                 <Text
-                                    style={{ color: theme.theme.colors.black }}
+                                    style={{ color: colors.black }}
                                 >
                                     {p.title}
                                 </Text>
@@ -161,15 +162,16 @@ export const HomeScreen = (props: HomeScreenProps) => {
 
 const useStyles = () => {
     const theme = useTheme();
+    const colors = getThemeColors(theme);
     const sharedStyles = useSharedStyles();
 
     return StyleSheet.create({
         ...sharedStyles,
         icon: {
-            color: theme.theme.colors.white,
+            color: colors.white,
         },
         bigButton: {
-            backgroundColor: `${theme.theme.colors.grey5}33`,
+            backgroundColor: `${colors.grey5}33`,
             borderRadius: 10,
             margin: 15,
             padding: 20,

@@ -7,7 +7,7 @@ import { ordersActions } from './slices/orders.slice';
 
 import moment from 'moment';
 
-const LAST_X_DAYS = 3;
+const LAST_X_DAYS = 30;
 
 export const syncOrders = (dispatch: Dispatch) => {
     console.log('Syncing orders to the store');
@@ -29,8 +29,7 @@ export const subscribeToOrderChanges = (dispatch: Dispatch) => {
         (o) => o.orderDate('gt', moment().subtract(LAST_X_DAYS, 'days').toISOString())
     )
     .subscribe(({ isSynced, items }) => {
-        if (!isSynced) return;
-        console.log('Order changes detected');
+        console.log(`Order changes detected (isSynced: ${isSynced})`);
         updateStoreOrders(dispatch, items);
     });
 };

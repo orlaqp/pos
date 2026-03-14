@@ -11,6 +11,12 @@ import {
     createNativeStackNavigator,
     NativeStackNavigationProp,
 } from '@react-navigation/native-stack';
+import {
+    createNavigationContainerRef,
+    NavigationContainer,
+    NavigationIndependentTree,
+    StackActions,
+} from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 
 import { Brands } from '@pos/brands/native-feature';
@@ -28,6 +34,7 @@ import Logo from '../../assets/logo.png';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 
 const Stack = createNativeStackNavigator();
+const backOfficeNavigationRef = createNavigationContainerRef();
 
 /* eslint-disable-next-line */
 export interface BackOfficeProps {
@@ -37,6 +44,12 @@ export interface BackOfficeProps {
 export function BackOffice({ navigation }: BackOfficeProps) {
     const styles = useStyles();
     const employee = useSelector(selectLoginEmployee);
+    const sidebarNavigation = {
+        replace: (name: string, params?: object) => {
+            if (!backOfficeNavigationRef.isReady()) return;
+            backOfficeNavigationRef.dispatch(StackActions.replace(name, params));
+        },
+    };
 
     return (
         <SafeAreaView style={styles.page}>
@@ -50,32 +63,36 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                             </Text>
                         </View>
                         <View style={styles.sidebarNavContainer}>
-                            <Sidebar navigation={navigation} />
+                            <Sidebar navigation={sidebarNavigation as any} />
                         </View>
                     </ScrollView>
                 </View>
                 
                 <View style={styles.rightSide}>
-                    <Stack.Navigator screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="Dashboard" component={Dashboard} />
-                        <Stack.Screen name="Sale List" component={Sales} />
-                        <Stack.Screen name="Station" component={StationForm} />
-                        <Stack.Screen name="By Employee" component={SalesByEmployee} />
-                        <Stack.Screen name="By Product" component={SalesByProduct} />
-                        <Stack.Screen name="End of Day" component={EndOfDay} />
-                        <Stack.Screen name="In Stock" component={InventoryList} />
-                        <Stack.Screen name="Counts" component={InventoryCounts} />
-                        <Stack.Screen name="Receives" component={InventoryReceives} />
-                        <Stack.Screen name="Products" component={Products} />
-                        <Stack.Screen name="Brands" component={Brands} />
-                        <Stack.Screen name="U/M" component={UnitOfMeasures} />
-                        <Stack.Screen name="Categories" component={Categories} />
-                        <Stack.Screen name="Printers" component={PrinterList} />
-                        <Stack.Screen name="Store" component={StoreInfoForm} />
-                        <Stack.Screen name="General" component={Settings} />
-                        <Stack.Screen name="Employees" component={Employees} />
-                        <Stack.Screen name="Logs" component={LogList} />
-                    </Stack.Navigator>
+                    <NavigationIndependentTree>
+                        <NavigationContainer ref={backOfficeNavigationRef}>
+                            <Stack.Navigator screenOptions={{ headerShown: false }}>
+                                <Stack.Screen name="Dashboard" component={Dashboard} />
+                                <Stack.Screen name="Sale List" component={Sales} />
+                                <Stack.Screen name="Station" component={StationForm} />
+                                <Stack.Screen name="By Employee" component={SalesByEmployee} />
+                                <Stack.Screen name="By Product" component={SalesByProduct} />
+                                <Stack.Screen name="End of Day" component={EndOfDay} />
+                                <Stack.Screen name="In Stock" component={InventoryList} />
+                                <Stack.Screen name="Counts" component={InventoryCounts} />
+                                <Stack.Screen name="Receives" component={InventoryReceives} />
+                                <Stack.Screen name="Products" component={Products} />
+                                <Stack.Screen name="Brands" component={Brands} />
+                                <Stack.Screen name="U/M" component={UnitOfMeasures} />
+                                <Stack.Screen name="Categories" component={Categories} />
+                                <Stack.Screen name="Printers" component={PrinterList} />
+                                <Stack.Screen name="Store" component={StoreInfoForm} />
+                                <Stack.Screen name="General" component={Settings} />
+                                <Stack.Screen name="Employees" component={Employees} />
+                                <Stack.Screen name="Logs" component={LogList} />
+                            </Stack.Navigator>
+                        </NavigationContainer>
+                    </NavigationIndependentTree>
                 </View>
             </View>
         </SafeAreaView>

@@ -13,7 +13,7 @@ import { Alert } from 'react-native';
 import { cartActions, selectCart } from '@pos/sales/data-access';
 import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import { selectStore } from '@pos/store-info/data-access';
-import { useSharedStyles } from '@pos/theme/native';
+import { getThemeColors, useSharedStyles } from '@pos/theme/native';
 import { employeesActions, selectLoginEmployee } from '@pos/employees/data-access';
 
 /* eslint-disable-next-line */
@@ -28,6 +28,7 @@ const Stack = createNativeStackNavigator<NavigationParamList>();
 
 export function Navigation() {
     const theme = useTheme();
+    const colors = getThemeColors(theme);
     const styles = useSharedStyles();
     const user = useSelector((state: RootState) => state.auth.user);
     const employee = useSelector(selectLoginEmployee);
@@ -64,6 +65,8 @@ export function Navigation() {
             <Dialog
                 isVisible={showOtherOrders}
                 onBackdropPress={() => setShowOtherOrders(false)}
+                supportedOrientations={['landscape']}
+                presentationStyle="fullScreen"
                 overlayStyle={[
                     styles.overlay,
                     {
@@ -82,10 +85,10 @@ export function Navigation() {
             <Stack.Navigator
                 screenOptions={{
                     headerStyle: {
-                        backgroundColor: theme.theme.colors.background,
+                        backgroundColor: colors.background,
                     },
                     headerTitleStyle: {
-                        color: theme.theme.colors.grey0,
+                        color: colors.grey0,
                     },
                 }}
             >

@@ -9,6 +9,7 @@ import { View, StyleSheet, Alert, TextInput } from 'react-native';
 
 import {
     CategoryEntity,
+    syncCategories,
     subscribeToCategoryChanges,
 } from '@pos/categories/data-access';
 import CategorySelection from '../category-selection/category-selection';
@@ -30,6 +31,7 @@ import {
     ProductService,
     selectAllProducts,
     selectFilteredList,
+    syncProducts,
     subscribeToProductChanges,
 } from '@pos/products/data-access';
 import { ProductSearch } from '../product-search/product-search';
@@ -209,6 +211,8 @@ export function SalesScreen({
     };
 
     useEffect(() => {
+        syncCategories(dispatch);
+        syncProducts(dispatch);
         const categoriesSub = subscribeToCategoryChanges(dispatch);
         const productsSub = subscribeToProductChanges(dispatch);
         const globalSettingsSub = subscribeToGlobalSettingsChanges(dispatch);
@@ -261,12 +265,17 @@ export function SalesScreen({
             <Dialog
                 isVisible={!!product}
                 onBackdropPress={deselectProduct}
+                supportedOrientations={['landscape']}
+                presentationStyle="fullScreen"
                 overlayStyle={[styles.overlay, { maxWidth: 350 }]}
             >
-                <ProductDetails
-                    item={product!}
-                    upsertCart={upsertCart}
-                    enforceSalesBasedOnInventory={globalSettings?.enforceSalesBasedOnInventory} />
+                {product ? (
+                    <ProductDetails
+                        item={product}
+                        upsertCart={upsertCart}
+                        enforceSalesBasedOnInventory={globalSettings?.enforceSalesBasedOnInventory}
+                    />
+                ) : null}
             </Dialog>
         </UIScreen>
     );

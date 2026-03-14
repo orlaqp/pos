@@ -14,10 +14,8 @@ export const syncCategories = (dispatch: Dispatch) => {
 
 export const subscribeToCategoryChanges = (dispatch: Dispatch) => {
     return DataStore.observeQuery(Category).subscribe(({ isSynced, items }) => {
-        if (isSynced) {
-            console.log('Category changes detected');
-            updateStore(dispatch, items);
-        }
+        console.log(`Category changes detected (isSynced: ${isSynced})`);
+        updateStore(dispatch, items);
     });
 };
 

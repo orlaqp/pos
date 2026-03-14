@@ -3,6 +3,7 @@ import {
     OrderEntity,
     OrderService,
     selectAllOrders,
+    syncOrders,
     subscribeToOrderChanges,
 } from '@pos/orders/data-access';
 import {
@@ -49,6 +50,7 @@ export function OrderList({ navigation }: OrderListProps) {
             : fallback;
     
     useEffect(() => {
+        syncOrders(dispatch);
         const ordersSub = subscribeToOrderChanges(dispatch);
         return () => {
             ordersSub?.unsubscribe();
@@ -149,12 +151,16 @@ export function OrderList({ navigation }: OrderListProps) {
             <Dialog
                 isVisible={!!orderToVoid}
                 onBackdropPress={() => setOrderToVoid(undefined)}
+                supportedOrientations={['landscape']}
+                presentationStyle="fullScreen"
                 overlayStyle={[styles.overlay, { width: 700 }]}
             >
-                <OrderVoidForm
-                    order={orderToVoid!}
-                    onRefundComplete={() => setOrderToVoid(undefined)}
-                />
+                {orderToVoid ? (
+                    <OrderVoidForm
+                        order={orderToVoid}
+                        onRefundComplete={() => setOrderToVoid(undefined)}
+                    />
+                ) : null}
             </Dialog>
         </UIScreen>
     );

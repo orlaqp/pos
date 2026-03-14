@@ -15,10 +15,8 @@ export const syncProducts = (dispatch: Dispatch) => {
 
 export const subscribeToProductChanges = (dispatch: Dispatch) => {
     return DataStore.observeQuery(Product).subscribe(({ isSynced, items }) => {
-        if (!isSynced) return;
-        console.log('Product changes detected');
+        console.log(`Product changes detected (isSynced: ${isSynced})`);
         updateStore(dispatch, items);
-        
     });
 };
 

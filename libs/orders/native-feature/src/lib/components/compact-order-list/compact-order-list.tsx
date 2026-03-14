@@ -3,6 +3,7 @@ import {
     OrderEntity,
     OrderService,
     selectOpenOrders,
+    syncOrders,
     subscribeToOrderChanges,
 } from '@pos/orders/data-access';
 import { UICard, UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
@@ -32,6 +33,7 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
             : fallback;
 
     useEffect(() => {
+        syncOrders(dispatch);
         const ordersSub = subscribeToOrderChanges(dispatch);
         return () => {
             console.log('Closing orders subscription');
