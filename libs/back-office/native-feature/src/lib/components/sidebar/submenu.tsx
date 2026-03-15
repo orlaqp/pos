@@ -54,7 +54,7 @@ export function Submenu({
             content={
                 <View style={styles.headerContent}>
                     {item.icon && (
-                        <View style={styles.iconSlot}>
+                        <View key={`sidebar-submenu-icon-${item.id}`} style={styles.iconSlot}>
                             <Icon
                                 name={item.icon}
                                 type="material-community"
@@ -67,7 +67,10 @@ export function Submenu({
                             />
                         </View>
                     )}
-                    <ListItem.Content style={styles.headerTitleContent}>
+                    <ListItem.Content
+                        key={`sidebar-submenu-content-${item.id}`}
+                        style={styles.headerTitleContent}
+                    >
                         <ListItem.Title
                             style={[
                                 styles.headerTitle,
@@ -82,9 +85,9 @@ export function Submenu({
             isExpanded={isExpanded}
             onPress={() => setExpandedId(isExpanded ? undefined : item.id)}
         >
-            <View style={styles.childrenContainer}>
-                <View style={styles.childrenRail} />
-                <View style={styles.childrenItems}>
+            <View key={`sidebar-submenu-children-${item.id}`} style={styles.childrenContainer}>
+                <View key={`sidebar-submenu-rail-${item.id}`} style={styles.childrenRail} />
+                <View key={`sidebar-submenu-items-${item.id}`} style={styles.childrenItems}>
                     {item.children?.map((c) => (
                     <SingleItem
                         key={c.id}

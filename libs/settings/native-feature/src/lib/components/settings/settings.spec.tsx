@@ -15,8 +15,8 @@ const mockSetLanguageAction = jest.fn((payload) => ({
 const mockResetDataStore = jest.fn(() => ({
     type: 'settings/reset/pending',
 }));
-const mockFetchGlobalSettings = jest.fn((payload) => ({
-    type: 'globalSettings/fetch/pending',
+const mockUpdateGlobalSettings = jest.fn((payload) => ({
+    type: 'gllbalSettings/update/pending',
     payload,
 }));
 
@@ -33,6 +33,10 @@ const mockSettingsState = {
 jest.mock('react-redux', () => ({
     useDispatch: () => mockDispatch,
     useSelector: jest.fn(() => mockSettingsState),
+}));
+
+jest.mock('@pos/store', () => ({
+    useAppDispatch: () => mockDispatch,
 }));
 
 jest.mock('@pos/theme/native/design-tokens', () => ({
@@ -132,7 +136,8 @@ jest.mock('@pos/settings/data-access', () => ({
         setLanguage: (payload: 'en' | 'es') => mockSetLanguageAction(payload),
     },
     resetDataStore: () => mockResetDataStore(),
-    fetchGlobalSettings: (payload: unknown) => mockFetchGlobalSettings(payload),
+    fetchGlobalSettings: jest.fn(),
+    updateGlobalSettings: (payload: unknown) => mockUpdateGlobalSettings(payload),
 }));
 
 const { Settings } = require('./settings');
@@ -174,7 +179,7 @@ describe('Settings', () => {
         });
     });
 
-    it('dispatches global settings refresh when enforce inventory changes', () => {
+    it('dispatches global settings update when enforce inventory changes', () => {
         const { getByTestId } = render(<Settings />);
 
         fireEvent(
@@ -183,12 +188,12 @@ describe('Settings', () => {
             true
         );
 
-        expect(mockFetchGlobalSettings).toHaveBeenCalledWith({
+        expect(mockUpdateGlobalSettings).toHaveBeenCalledWith({
             id: 'global-settings-id',
             enforceSalesBasedOnInventory: true,
         });
         expect(mockDispatch).toHaveBeenCalledWith({
-            type: 'globalSettings/fetch/pending',
+            type: 'gllbalSettings/update/pending',
             payload: {
                 id: 'global-settings-id',
                 enforceSalesBasedOnInventory: true,

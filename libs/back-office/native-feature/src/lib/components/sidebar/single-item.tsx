@@ -42,7 +42,7 @@ export function SingleItem({
             ]}
         >
             {item.icon && (
-                <View style={styles.iconSlot}>
+                <View key={`sidebar-item-icon-${item.id}`} style={styles.iconSlot}>
                     <Icon
                         name={item.icon}
                         type="material-community"
@@ -56,6 +56,7 @@ export function SingleItem({
                 </View>
             )}
             <ListItem.Content
+                key={`sidebar-item-content-${item.id}`}
                 style={styles.content}
             >
                 <ListItem.Title
@@ -70,6 +71,7 @@ export function SingleItem({
             </ListItem.Content>
             {chevron && (
                 <Icon
+                    key={`sidebar-item-chevron-${item.id}`}
                     name="chevron-right"
                     type="material-community"
                     size={18}
