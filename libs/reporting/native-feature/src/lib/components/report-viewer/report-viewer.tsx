@@ -2,7 +2,6 @@ import {
     DateRange,
     UICard,
     UIDateRange,
-    UIEmptyState,
     UIScreen,
     UISpinner,
     UIStack,
@@ -227,16 +226,6 @@ export function ReportViewer({
                                 </View>
                             </View>
                             <UICard>
-                                <View style={styles.tableHeaderRow}>
-                                    {headers.map((h) => (
-                                        <View key={h.field} style={[styles.colCell, { flex: h.width }]}>
-                                            <Text style={[styles.colHeader, { textAlign: h.align }]}>
-                                                {h.label}
-                                            </Text>
-                                        </View>
-                                    ))}
-                                </View>
-
                                 {loading && (
                                     <View style={styles.stateWrap}>
                                         <UISpinner
@@ -247,18 +236,34 @@ export function ReportViewer({
                                 )}
 
                                 {!loading && !items.length && (
-                                    <View style={styles.stateWrap}>
-                                        <UIEmptyState
-                                            text={t(
+                                    <View style={styles.emptyStateWrap}>
+                                        <Text style={styles.emptyStateTitle}>
+                                            {t(
                                                 'REPORT_NoSalesForRange',
-                                                'No sales found for this date range'
+                                                'No data found for this date range'
                                             )}
-                                        />
+                                        </Text>
+                                        <Text style={styles.emptyStateSubtitle}>
+                                            {t(
+                                                'REPORT_NoSalesForRangeSubtitle',
+                                                'Completed sales matching the selected filters will appear here.'
+                                            )}
+                                        </Text>
                                     </View>
                                 )}
 
                                 {!loading && !!items.length && (
                                     <>
+                                        <View style={styles.tableHeaderRow}>
+                                            {headers.map((h) => (
+                                                <View key={h.field} style={[styles.colCell, { flex: h.width }]}>
+                                                    <Text style={[styles.colHeader, { textAlign: h.align }]}>
+                                                        {h.label}
+                                                    </Text>
+                                                </View>
+                                            ))}
+                                        </View>
+
                                         <FlatList
                                             data={items}
                                             keyExtractor={(item, index) =>
@@ -413,6 +418,27 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         stateWrap: {
             minHeight: 160,
             justifyContent: 'center',
+        },
+        emptyStateWrap: {
+            minHeight: 240,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: tokens.spacing.xl,
+            paddingVertical: tokens.spacing.xl,
+        },
+        emptyStateTitle: {
+            color: tokens.colors.textSecondary,
+            fontSize: 18,
+            fontWeight: '700',
+            textAlign: 'center',
+        },
+        emptyStateSubtitle: {
+            color: tokens.colors.textMuted,
+            fontSize: 14,
+            lineHeight: 21,
+            marginTop: tokens.spacing.sm,
+            maxWidth: 420,
+            textAlign: 'center',
         },
     });
 

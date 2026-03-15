@@ -86,33 +86,49 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
                     <Text style={local.closeText}>{t('COMMON_Close', 'X')}</Text>
                 </Pressable>
             </View>
-            <UICard tone="muted" padding="sm" radius="md" style={local.searchCard}>
-                <UISearchInput
-                    debounceTime={300}
-                    value={searchTerm}
-                    placeholder={t('ORDERS_SearchOpenOrders', 'Search open orders...')}
-                    onChangeText={(text) => setSearchTerm(text)}
-                    onSubmit={(text) => setSearchTerm(text)}
-                />
-            </UICard>
-            <View style={local.listWrap}>
-                {filteredList.length === 0 && (
-                    <UIEmptyState text={t('ORDERS_NoOpenOrdersFound', 'No open orders found')} />
-                )}
-                {filteredList.length > 0 && (
-                    <FlatList
-                        data={filteredList}
-                        keyExtractor={(item) => item.id}
-                        contentContainerStyle={local.listContent}
-                        renderItem={({ item }) => (
-                            <CompactOrderItem
-                                item={item}
-                                onSelect={onSelect}
+            {openOrders.length === 0 ? (
+                <View style={local.emptyWrap}>
+                    <Text style={local.emptyTitle}>
+                        {t('ORDERS_NoOpenOrdersFound', 'No open orders found')}
+                    </Text>
+                    <Text style={local.emptySubtitle}>
+                        {t(
+                            'ORDERS_NoOpenOrdersEmptyState',
+                            'Orders started in sales will show up here until they are completed.'
+                        )}
+                    </Text>
+                </View>
+            ) : (
+                <>
+                    <UICard tone="muted" padding="sm" radius="md" style={local.searchCard}>
+                        <UISearchInput
+                            debounceTime={300}
+                            value={searchTerm}
+                            placeholder={t('ORDERS_SearchOpenOrders', 'Search open orders...')}
+                            onChangeText={(text) => setSearchTerm(text)}
+                            onSubmit={(text) => setSearchTerm(text)}
+                        />
+                    </UICard>
+                    <View style={local.listWrap}>
+                        {filteredList.length === 0 && (
+                            <UIEmptyState text={t('ORDERS_NoOpenOrdersFound', 'No open orders found')} />
+                        )}
+                        {filteredList.length > 0 && (
+                            <FlatList
+                                data={filteredList}
+                                keyExtractor={(item) => item.id}
+                                contentContainerStyle={local.listContent}
+                                renderItem={({ item }) => (
+                                    <CompactOrderItem
+                                        item={item}
+                                        onSelect={onSelect}
+                                    />
+                                )}
                             />
                         )}
-                    />
-                )}
-            </View>
+                    </View>
+                </>
+            )}
         </View>
     );
 }
@@ -182,6 +198,27 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         searchCard: {
             marginBottom: tokens.spacing.sm,
+        },
+        emptyWrap: {
+            minHeight: 320,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: tokens.spacing.xl,
+            paddingBottom: tokens.spacing.md,
+        },
+        emptyTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 24,
+            fontWeight: '700',
+            marginBottom: tokens.spacing.xs,
+            textAlign: 'center',
+        },
+        emptySubtitle: {
+            color: tokens.colors.textSecondary,
+            fontSize: 15,
+            lineHeight: 22,
+            textAlign: 'center',
+            maxWidth: 420,
         },
         listWrap: {
             minHeight: 320,

@@ -4,7 +4,6 @@ import {
     DateRange,
     UICard,
     UIDateRange,
-    UIEmptyState,
     UIScreen,
     UISpinner,
     UIStack,
@@ -166,12 +165,20 @@ export function Dashboard(_props: DashboardProps) {
 
                         {!loading && !hasSalesData(salesSummary) && (
                             <UICard tone="muted" style={styles.centerBlock}>
-                                <UIEmptyState
-                                    text={t(
-                                        'DASHBOARD_NoDataForRange',
-                                        'No data found for this date range'
-                                    )}
-                                />
+                                <View style={styles.emptyWrap}>
+                                    <Text style={styles.emptyTitle}>
+                                        {t(
+                                            'DASHBOARD_NoDataForRange',
+                                            'No data found for this date range'
+                                        )}
+                                    </Text>
+                                    <Text style={styles.emptySubtitle}>
+                                        {t(
+                                            'DASHBOARD_NoDataForRangeHelp',
+                                            'Completed sales in the selected period will appear here.'
+                                        )}
+                                    </Text>
+                                </View>
                             </UICard>
                         )}
 
@@ -271,6 +278,26 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         centerBlock: {
             minHeight: 130,
             justifyContent: 'center',
+        },
+        emptyWrap: {
+            minHeight: 300,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: tokens.spacing.xl,
+        },
+        emptyTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 24,
+            fontWeight: '700',
+            textAlign: 'center',
+            marginBottom: tokens.spacing.xs,
+        },
+        emptySubtitle: {
+            color: tokens.colors.textSecondary,
+            fontSize: 15,
+            lineHeight: 22,
+            textAlign: 'center',
+            maxWidth: 420,
         },
         metricsRow: {
             flexDirection: 'row',

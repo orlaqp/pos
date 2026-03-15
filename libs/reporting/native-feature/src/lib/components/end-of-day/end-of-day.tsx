@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
 
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { selectAllEmployees } from '@pos/employees/data-access';
 import { selectAllProducts } from '@pos/products/data-access';
@@ -185,6 +185,7 @@ export const createDateUpdater = (
 
 export function EndOfDay(props: EndOfDayProps) {
     const styles = useSharedStyles();
+    const local = localStyles;
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
@@ -250,6 +251,7 @@ export function EndOfDay(props: EndOfDayProps) {
             checks: t('EOD_Checks', 'Checks'),
         }
     );
+    const hasFilteredData = filteredOrders.length > 0;
     const updateDate = createDateUpdater(
         setDate,
         setLoading,
@@ -329,35 +331,73 @@ export function EndOfDay(props: EndOfDayProps) {
                     </View>
                 }
 
-                {!loading &&
-                <>
-                    <View style={{ flexDirection: 'row' }}>
-                        {widgets.map((widget) => (
-                            <View key={widget.text} style={{ flex: widget.flex || 1 }}>
-                                <Widget
-                                    height={80}
-                                    backgroundColor={widget.backgroundColor}
-                                    text={widget.text}
-                                    value={widget.value}
-                                    primaryTextSize={16}
-                                    secondaryTextSize={12}
-                                />
-                            </View>
-                        ))}
-                    </View>  
+                {!loading && !hasFilteredData && (
+                    <View style={local.emptyWrap}>
+                        <Text style={local.emptyTitle}>
+                            {t('EOD_NoDataForRange', 'No data found for this date range')}
+                        </Text>
+                        <Text style={local.emptySubtitle}>
+                            {t(
+                                'EOD_NoDataForRangeHelp',
+                                'Completed sales matching the selected filters will appear here.'
+                            )}
+                        </Text>
+                    </View>
+                )}
 
-                    <FlatList
-                        style={{ marginTop: 10 }}
-                        data={filteredOrders}
-                        renderItem={({ item }) => (
-                            <OrderDetails key={item.id} order={item} productId={productValue} />
-                        )}
-                    />
-                </>
-                }
+                {!loading && hasFilteredData && (
+                    <>
+                        <View style={{ flexDirection: 'row' }}>
+                            {widgets.map((widget) => (
+                                <View key={widget.text} style={{ flex: widget.flex || 1 }}>
+                                    <Widget
+                                        height={80}
+                                        backgroundColor={widget.backgroundColor}
+                                        text={widget.text}
+                                        value={widget.value}
+                                        primaryTextSize={16}
+                                        secondaryTextSize={12}
+                                    />
+                                </View>
+                            ))}
+                        </View>  
+
+                        <FlatList
+                            style={{ marginTop: 10 }}
+                            data={filteredOrders}
+                            renderItem={({ item }) => (
+                                <OrderDetails key={item.id} order={item} productId={productValue} />
+                            )}
+                        />
+                    </>
+                )}
             </View>
         </View>
     );
 }
+
+const localStyles = StyleSheet.create({
+    emptyWrap: {
+        flex: 1,
+        minHeight: 320,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 32,
+    },
+    emptyTitle: {
+        color: '#f3f7ff',
+        fontSize: 24,
+        fontWeight: '700',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    emptySubtitle: {
+        color: '#a3adba',
+        fontSize: 15,
+        lineHeight: 22,
+        textAlign: 'center',
+        maxWidth: 440,
+    },
+});
 
 export default EndOfDay;
