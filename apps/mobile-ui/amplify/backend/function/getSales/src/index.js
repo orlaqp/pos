@@ -14,24 +14,30 @@ const docClient = new AWS.DynamoDB.DocumentClient();
  */
 exports.handler = async (event) => {
     console.log(`EVENT: ${JSON.stringify(event)}`);
-    
-    return getOrders(event.arguments);
+
+    return getOrders(event.arguments, event.identity?.claims?.sub);
 };
 
-async function getOrders(range) {
+async function getOrders(range, tenantId) {
+    if (!tenantId) {
+        throw new Error('Missing tenant claim');
+    }
+
     var params = {
         TableName: process.env.API_POS_ORDERTABLE_NAME,
-        // TableName: 'Order-libe2xk2rvftbi24xplh4x5gnm-develop',
         IndexName: 'byStatusByOrderDate',
         KeyConditionExpression: '#status = :status AND #orderDate BETWEEN :from AND :to',
+        FilterExpression: '#tenantId = :tenantId',
         ExpressionAttributeValues: {
             ':status': 'PAID',
             ':from': range.from,
             ':to': range.to,
+            ':tenantId': tenantId,
         },
         ExpressionAttributeNames: {
             '#status': 'status',
             '#orderDate': 'orderDate',
+            '#tenantId': 'tenantId',
         },
     };
     

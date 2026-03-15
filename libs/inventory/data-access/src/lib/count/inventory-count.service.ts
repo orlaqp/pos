@@ -8,6 +8,7 @@ import { DataStore } from '@pos/shared/amplify';
 import { inventoryCountActions } from './inventory-count.slice';
 import { InventoryCountDTO } from './inventory-count.entity';
 import { Alert } from 'react-native';
+import { requireCurrentTenantId, stampTenant } from '@pos/auth/data-access';
 
 const isInventoryDebugEnabled = () =>
     typeof __DEV__ !== 'undefined' && __DEV__;
@@ -55,14 +56,14 @@ export class InventoryCountService {
 
 async function createCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
     const { lines, ...rest } = count;
-    const entity = new InventoryCount({
+    const entity = new InventoryCount(stampTenant({
         comments: rest.comments,
         status: rest.status,
         createdBy: {
             id: rest.createdBy?.id || '',
             name: rest.createdBy?.name || '',
         },
-    });
+    }) as never);
     const res = await DataStore.save(entity);
     count.id = res.id;
 
@@ -70,6 +71,7 @@ async function createCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
         l.inventoryCountLineInventoryCountId = count.id;
         return DataStore.save(
             new InventoryCountLine({
+                tenantId: requireCurrentTenantId(),
                 productId: l.productId,
                 productName: l.productName,
                 unitOfMeasure: l.unitOfMeasure,
@@ -77,7 +79,7 @@ async function createCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
                 newCount: l.newCount,
                 comments: l.comments,
                 inventoryCountLineInventoryCountId: count.id!,
-            })
+            } as never)
         );
     });
 
@@ -111,6 +113,7 @@ async function updateCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
         if (!l.id) {
             await DataStore.save(
                 new InventoryCountLine({
+                    tenantId: requireCurrentTenantId(),
                     productId: l.productId,
                     productName: l.productName,
                     unitOfMeasure: l.unitOfMeasure,
@@ -118,7 +121,7 @@ async function updateCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
                     newCount: l.newCount,
                     comments: l.comments,
                     inventoryCountLineInventoryCountId: existing.id,
-                })
+                } as never)
             );
             return;
         }

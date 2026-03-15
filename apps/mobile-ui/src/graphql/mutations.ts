@@ -8,12 +8,139 @@ type GeneratedMutation<InputType, OutputType> = string & {
   __generatedMutationOutput: OutputType;
 };
 
+export const createTenant = /* GraphQL */ `mutation CreateTenant(
+  $input: CreateTenantInput!
+  $condition: ModelTenantConditionInput
+) {
+  createTenant(input: $input, condition: $condition) {
+    id
+    name
+    slug
+    ownerUserId
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateTenantMutationVariables,
+  APITypes.CreateTenantMutation
+>;
+export const updateTenant = /* GraphQL */ `mutation UpdateTenant(
+  $input: UpdateTenantInput!
+  $condition: ModelTenantConditionInput
+) {
+  updateTenant(input: $input, condition: $condition) {
+    id
+    name
+    slug
+    ownerUserId
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateTenantMutationVariables,
+  APITypes.UpdateTenantMutation
+>;
+export const deleteTenant = /* GraphQL */ `mutation DeleteTenant(
+  $input: DeleteTenantInput!
+  $condition: ModelTenantConditionInput
+) {
+  deleteTenant(input: $input, condition: $condition) {
+    id
+    name
+    slug
+    ownerUserId
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteTenantMutationVariables,
+  APITypes.DeleteTenantMutation
+>;
+export const createTenantUser = /* GraphQL */ `mutation CreateTenantUser(
+  $input: CreateTenantUserInput!
+  $condition: ModelTenantUserConditionInput
+) {
+  createTenantUser(input: $input, condition: $condition) {
+    id
+    tenantId
+    userId
+    role
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateTenantUserMutationVariables,
+  APITypes.CreateTenantUserMutation
+>;
+export const updateTenantUser = /* GraphQL */ `mutation UpdateTenantUser(
+  $input: UpdateTenantUserInput!
+  $condition: ModelTenantUserConditionInput
+) {
+  updateTenantUser(input: $input, condition: $condition) {
+    id
+    tenantId
+    userId
+    role
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateTenantUserMutationVariables,
+  APITypes.UpdateTenantUserMutation
+>;
+export const deleteTenantUser = /* GraphQL */ `mutation DeleteTenantUser(
+  $input: DeleteTenantUserInput!
+  $condition: ModelTenantUserConditionInput
+) {
+  deleteTenantUser(input: $input, condition: $condition) {
+    id
+    tenantId
+    userId
+    role
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteTenantUserMutationVariables,
+  APITypes.DeleteTenantUserMutation
+>;
 export const createStore = /* GraphQL */ `mutation CreateStore(
   $input: CreateStoreInput!
   $condition: ModelStoreConditionInput
 ) {
   createStore(input: $input, condition: $condition) {
     id
+    tenantId
     name
     address
     city
@@ -42,6 +169,7 @@ export const updateStore = /* GraphQL */ `mutation UpdateStore(
 ) {
   updateStore(input: $input, condition: $condition) {
     id
+    tenantId
     name
     address
     city
@@ -70,6 +198,7 @@ export const deleteStore = /* GraphQL */ `mutation DeleteStore(
 ) {
   deleteStore(input: $input, condition: $condition) {
     id
+    tenantId
     name
     address
     city
@@ -98,6 +227,7 @@ export const createBrand = /* GraphQL */ `mutation CreateBrand(
 ) {
   createBrand(input: $input, condition: $condition) {
     id
+    tenantId
     name
     description
     createdAt
@@ -118,6 +248,7 @@ export const updateBrand = /* GraphQL */ `mutation UpdateBrand(
 ) {
   updateBrand(input: $input, condition: $condition) {
     id
+    tenantId
     name
     description
     createdAt
@@ -138,6 +269,7 @@ export const deleteBrand = /* GraphQL */ `mutation DeleteBrand(
 ) {
   deleteBrand(input: $input, condition: $condition) {
     id
+    tenantId
     name
     description
     createdAt
@@ -158,6 +290,7 @@ export const createCategory = /* GraphQL */ `mutation CreateCategory(
 ) {
   createCategory(input: $input, condition: $condition) {
     id
+    tenantId
     name
     description
     code
@@ -181,6 +314,7 @@ export const updateCategory = /* GraphQL */ `mutation UpdateCategory(
 ) {
   updateCategory(input: $input, condition: $condition) {
     id
+    tenantId
     name
     description
     code
@@ -204,6 +338,7 @@ export const deleteCategory = /* GraphQL */ `mutation DeleteCategory(
 ) {
   deleteCategory(input: $input, condition: $condition) {
     id
+    tenantId
     name
     description
     code
@@ -227,6 +362,7 @@ export const createCustomer = /* GraphQL */ `mutation CreateCustomer(
 ) {
   createCustomer(input: $input, condition: $condition) {
     id
+    tenantId
     firstName
     lastName
     middleName
@@ -251,6 +387,7 @@ export const updateCustomer = /* GraphQL */ `mutation UpdateCustomer(
 ) {
   updateCustomer(input: $input, condition: $condition) {
     id
+    tenantId
     firstName
     lastName
     middleName
@@ -275,6 +412,7 @@ export const deleteCustomer = /* GraphQL */ `mutation DeleteCustomer(
 ) {
   deleteCustomer(input: $input, condition: $condition) {
     id
+    tenantId
     firstName
     lastName
     middleName
@@ -299,6 +437,7 @@ export const createEmployee = /* GraphQL */ `mutation CreateEmployee(
 ) {
   createEmployee(input: $input, condition: $condition) {
     id
+    tenantId
     code
     firstName
     lastName
@@ -327,6 +466,7 @@ export const updateEmployee = /* GraphQL */ `mutation UpdateEmployee(
 ) {
   updateEmployee(input: $input, condition: $condition) {
     id
+    tenantId
     code
     firstName
     lastName
@@ -355,6 +495,7 @@ export const deleteEmployee = /* GraphQL */ `mutation DeleteEmployee(
 ) {
   deleteEmployee(input: $input, condition: $condition) {
     id
+    tenantId
     code
     firstName
     lastName
@@ -383,6 +524,7 @@ export const createOrder = /* GraphQL */ `mutation CreateOrder(
 ) {
   createOrder(input: $input, condition: $condition) {
     id
+    tenantId
     orderNo
     orderDate
     subtotal
@@ -429,6 +571,7 @@ export const createOrder = /* GraphQL */ `mutation CreateOrder(
     }
     Customer {
       id
+      tenantId
       firstName
       lastName
       middleName
@@ -461,6 +604,7 @@ export const updateOrder = /* GraphQL */ `mutation UpdateOrder(
 ) {
   updateOrder(input: $input, condition: $condition) {
     id
+    tenantId
     orderNo
     orderDate
     subtotal
@@ -507,6 +651,7 @@ export const updateOrder = /* GraphQL */ `mutation UpdateOrder(
     }
     Customer {
       id
+      tenantId
       firstName
       lastName
       middleName
@@ -539,6 +684,7 @@ export const deleteOrder = /* GraphQL */ `mutation DeleteOrder(
 ) {
   deleteOrder(input: $input, condition: $condition) {
     id
+    tenantId
     orderNo
     orderDate
     subtotal
@@ -585,6 +731,7 @@ export const deleteOrder = /* GraphQL */ `mutation DeleteOrder(
     }
     Customer {
       id
+      tenantId
       firstName
       lastName
       middleName
@@ -617,6 +764,7 @@ export const createProduct = /* GraphQL */ `mutation CreateProduct(
 ) {
   createProduct(input: $input, condition: $condition) {
     id
+    tenantId
     name
     description
     price
@@ -633,6 +781,7 @@ export const createProduct = /* GraphQL */ `mutation CreateProduct(
     picture
     Category {
       id
+      tenantId
       name
       description
       code
@@ -647,6 +796,7 @@ export const createProduct = /* GraphQL */ `mutation CreateProduct(
     }
     Brand {
       id
+      tenantId
       name
       description
       createdAt
@@ -678,6 +828,7 @@ export const updateProduct = /* GraphQL */ `mutation UpdateProduct(
 ) {
   updateProduct(input: $input, condition: $condition) {
     id
+    tenantId
     name
     description
     price
@@ -694,6 +845,7 @@ export const updateProduct = /* GraphQL */ `mutation UpdateProduct(
     picture
     Category {
       id
+      tenantId
       name
       description
       code
@@ -708,6 +860,7 @@ export const updateProduct = /* GraphQL */ `mutation UpdateProduct(
     }
     Brand {
       id
+      tenantId
       name
       description
       createdAt
@@ -739,6 +892,7 @@ export const deleteProduct = /* GraphQL */ `mutation DeleteProduct(
 ) {
   deleteProduct(input: $input, condition: $condition) {
     id
+    tenantId
     name
     description
     price
@@ -755,6 +909,7 @@ export const deleteProduct = /* GraphQL */ `mutation DeleteProduct(
     picture
     Category {
       id
+      tenantId
       name
       description
       code
@@ -769,6 +924,7 @@ export const deleteProduct = /* GraphQL */ `mutation DeleteProduct(
     }
     Brand {
       id
+      tenantId
       name
       description
       createdAt
@@ -800,6 +956,7 @@ export const createUnitOfMeasure = /* GraphQL */ `mutation CreateUnitOfMeasure(
 ) {
   createUnitOfMeasure(input: $input, condition: $condition) {
     id
+    tenantId
     name
     description
     createdAt
@@ -820,6 +977,7 @@ export const updateUnitOfMeasure = /* GraphQL */ `mutation UpdateUnitOfMeasure(
 ) {
   updateUnitOfMeasure(input: $input, condition: $condition) {
     id
+    tenantId
     name
     description
     createdAt
@@ -840,6 +998,7 @@ export const deleteUnitOfMeasure = /* GraphQL */ `mutation DeleteUnitOfMeasure(
 ) {
   deleteUnitOfMeasure(input: $input, condition: $condition) {
     id
+    tenantId
     name
     description
     createdAt
@@ -860,6 +1019,7 @@ export const createInventoryChanges = /* GraphQL */ `mutation CreateInventoryCha
 ) {
   createInventoryChanges(input: $input, condition: $condition) {
     id
+    tenantId
     timestamp
     type
     typeId
@@ -867,6 +1027,7 @@ export const createInventoryChanges = /* GraphQL */ `mutation CreateInventoryCha
     quantityOut
     Product {
       id
+      tenantId
       name
       description
       price
@@ -911,6 +1072,7 @@ export const updateInventoryChanges = /* GraphQL */ `mutation UpdateInventoryCha
 ) {
   updateInventoryChanges(input: $input, condition: $condition) {
     id
+    tenantId
     timestamp
     type
     typeId
@@ -918,6 +1080,7 @@ export const updateInventoryChanges = /* GraphQL */ `mutation UpdateInventoryCha
     quantityOut
     Product {
       id
+      tenantId
       name
       description
       price
@@ -962,6 +1125,7 @@ export const deleteInventoryChanges = /* GraphQL */ `mutation DeleteInventoryCha
 ) {
   deleteInventoryChanges(input: $input, condition: $condition) {
     id
+    tenantId
     timestamp
     type
     typeId
@@ -969,6 +1133,7 @@ export const deleteInventoryChanges = /* GraphQL */ `mutation DeleteInventoryCha
     quantityOut
     Product {
       id
+      tenantId
       name
       description
       price
@@ -1013,6 +1178,7 @@ export const createInventoryCount = /* GraphQL */ `mutation CreateInventoryCount
 ) {
   createInventoryCount(input: $input, condition: $condition) {
     id
+    tenantId
     comments
     status
     createdBy {
@@ -1038,6 +1204,7 @@ export const updateInventoryCount = /* GraphQL */ `mutation UpdateInventoryCount
 ) {
   updateInventoryCount(input: $input, condition: $condition) {
     id
+    tenantId
     comments
     status
     createdBy {
@@ -1063,6 +1230,7 @@ export const deleteInventoryCount = /* GraphQL */ `mutation DeleteInventoryCount
 ) {
   deleteInventoryCount(input: $input, condition: $condition) {
     id
+    tenantId
     comments
     status
     createdBy {
@@ -1088,6 +1256,7 @@ export const createInventoryCountLine = /* GraphQL */ `mutation CreateInventoryC
 ) {
   createInventoryCountLine(input: $input, condition: $condition) {
     id
+    tenantId
     productId
     productName
     unitOfMeasure
@@ -1096,6 +1265,7 @@ export const createInventoryCountLine = /* GraphQL */ `mutation CreateInventoryC
     comments
     InventoryCount {
       id
+      tenantId
       comments
       status
       createdAt
@@ -1124,6 +1294,7 @@ export const updateInventoryCountLine = /* GraphQL */ `mutation UpdateInventoryC
 ) {
   updateInventoryCountLine(input: $input, condition: $condition) {
     id
+    tenantId
     productId
     productName
     unitOfMeasure
@@ -1132,6 +1303,7 @@ export const updateInventoryCountLine = /* GraphQL */ `mutation UpdateInventoryC
     comments
     InventoryCount {
       id
+      tenantId
       comments
       status
       createdAt
@@ -1160,6 +1332,7 @@ export const deleteInventoryCountLine = /* GraphQL */ `mutation DeleteInventoryC
 ) {
   deleteInventoryCountLine(input: $input, condition: $condition) {
     id
+    tenantId
     productId
     productName
     unitOfMeasure
@@ -1168,6 +1341,7 @@ export const deleteInventoryCountLine = /* GraphQL */ `mutation DeleteInventoryC
     comments
     InventoryCount {
       id
+      tenantId
       comments
       status
       createdAt
@@ -1196,6 +1370,7 @@ export const createInventoryReceive = /* GraphQL */ `mutation CreateInventoryRec
 ) {
   createInventoryReceive(input: $input, condition: $condition) {
     id
+    tenantId
     comments
     status
     createdBy {
@@ -1221,6 +1396,7 @@ export const updateInventoryReceive = /* GraphQL */ `mutation UpdateInventoryRec
 ) {
   updateInventoryReceive(input: $input, condition: $condition) {
     id
+    tenantId
     comments
     status
     createdBy {
@@ -1246,6 +1422,7 @@ export const deleteInventoryReceive = /* GraphQL */ `mutation DeleteInventoryRec
 ) {
   deleteInventoryReceive(input: $input, condition: $condition) {
     id
+    tenantId
     comments
     status
     createdBy {
@@ -1271,6 +1448,7 @@ export const createInventoryReceiveLine = /* GraphQL */ `mutation CreateInventor
 ) {
   createInventoryReceiveLine(input: $input, condition: $condition) {
     id
+    tenantId
     productId
     productName
     unitOfMeasure
@@ -1278,6 +1456,7 @@ export const createInventoryReceiveLine = /* GraphQL */ `mutation CreateInventor
     comments
     InventoryReceive {
       id
+      tenantId
       comments
       status
       createdAt
@@ -1306,6 +1485,7 @@ export const updateInventoryReceiveLine = /* GraphQL */ `mutation UpdateInventor
 ) {
   updateInventoryReceiveLine(input: $input, condition: $condition) {
     id
+    tenantId
     productId
     productName
     unitOfMeasure
@@ -1313,6 +1493,7 @@ export const updateInventoryReceiveLine = /* GraphQL */ `mutation UpdateInventor
     comments
     InventoryReceive {
       id
+      tenantId
       comments
       status
       createdAt
@@ -1341,6 +1522,7 @@ export const deleteInventoryReceiveLine = /* GraphQL */ `mutation DeleteInventor
 ) {
   deleteInventoryReceiveLine(input: $input, condition: $condition) {
     id
+    tenantId
     productId
     productName
     unitOfMeasure
@@ -1348,6 +1530,7 @@ export const deleteInventoryReceiveLine = /* GraphQL */ `mutation DeleteInventor
     comments
     InventoryReceive {
       id
+      tenantId
       comments
       status
       createdAt
@@ -1376,6 +1559,7 @@ export const createPrinter = /* GraphQL */ `mutation CreatePrinter(
 ) {
   createPrinter(input: $input, condition: $condition) {
     id
+    tenantId
     deviceId
     identifier
     interfaceType
@@ -1400,6 +1584,7 @@ export const updatePrinter = /* GraphQL */ `mutation UpdatePrinter(
 ) {
   updatePrinter(input: $input, condition: $condition) {
     id
+    tenantId
     deviceId
     identifier
     interfaceType
@@ -1424,6 +1609,7 @@ export const deletePrinter = /* GraphQL */ `mutation DeletePrinter(
 ) {
   deletePrinter(input: $input, condition: $condition) {
     id
+    tenantId
     deviceId
     identifier
     interfaceType
@@ -1448,6 +1634,7 @@ export const createStation = /* GraphQL */ `mutation CreateStation(
 ) {
   createStation(input: $input, condition: $condition) {
     id
+    tenantId
     deviceId
     alias
     createdAt
@@ -1468,6 +1655,7 @@ export const updateStation = /* GraphQL */ `mutation UpdateStation(
 ) {
   updateStation(input: $input, condition: $condition) {
     id
+    tenantId
     deviceId
     alias
     createdAt
@@ -1488,6 +1676,7 @@ export const deleteStation = /* GraphQL */ `mutation DeleteStation(
 ) {
   deleteStation(input: $input, condition: $condition) {
     id
+    tenantId
     deviceId
     alias
     createdAt
@@ -1507,8 +1696,9 @@ export const createGlobalSettings = /* GraphQL */ `mutation CreateGlobalSettings
   $condition: ModelGlobalSettingsConditionInput
 ) {
   createGlobalSettings(input: $input, condition: $condition) {
-    enforceSalesBasedOnInventory
     id
+    tenantId
+    enforceSalesBasedOnInventory
     createdAt
     updatedAt
     _version
@@ -1526,8 +1716,9 @@ export const updateGlobalSettings = /* GraphQL */ `mutation UpdateGlobalSettings
   $condition: ModelGlobalSettingsConditionInput
 ) {
   updateGlobalSettings(input: $input, condition: $condition) {
-    enforceSalesBasedOnInventory
     id
+    tenantId
+    enforceSalesBasedOnInventory
     createdAt
     updatedAt
     _version
@@ -1545,8 +1736,9 @@ export const deleteGlobalSettings = /* GraphQL */ `mutation DeleteGlobalSettings
   $condition: ModelGlobalSettingsConditionInput
 ) {
   deleteGlobalSettings(input: $input, condition: $condition) {
-    enforceSalesBasedOnInventory
     id
+    tenantId
+    enforceSalesBasedOnInventory
     createdAt
     updatedAt
     _version

@@ -148,11 +148,12 @@ export const useSharedStyles = () => {
         },
         inputContainerStyle: {
             marginTop: 10,
-            borderRadius: 5,
+            borderRadius: 16,
             borderBottomWidth: 0,
-            paddingLeft: 10,
-            backgroundColor:
-                colors.grey5,
+            paddingLeft: 12,
+            paddingRight: 12,
+            minHeight: 56,
+            backgroundColor: colors.grey5,
         },
         inputStyle: {
             color: colors.grey1,

@@ -3,6 +3,7 @@ import { StoreInfoEntity } from './store-info.entity';
 import { Store } from '@pos/shared/models'
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from '@pos/shared/amplify'
+import { stampTenant } from '@pos/auth/data-access';
 
 export class StoreInfoService {
     static getStore() {
@@ -11,7 +12,7 @@ export class StoreInfoService {
 
     static async save(dispatch: Dispatch<any>, store: StoreInfoEntity) {
         if (!store.id) {
-            const model = new Store(store);
+            const model = new Store(stampTenant(store) as never);
             const res = await DataStore.save(model);
             
             store.id = res.id;

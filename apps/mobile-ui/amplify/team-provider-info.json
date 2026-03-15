@@ -33,6 +33,9 @@
       },
       "storage": {
         "assets": {}
+      },
+      "api": {
+        "pos": {}
       }
     }
   },
@@ -51,6 +54,9 @@
     "categories": {
       "auth": {
         "pos0614c248": {}
+      },
+      "api": {
+        "pos": {}
       }
     }
   },
@@ -77,11 +83,11 @@
         },
         "getSales": {
           "deploymentBucketName": "amplify-pos-ebtdev-1d738-deployment",
-          "s3Key": "amplify-builds/getSales-4d4a3234353435484777-build.zip"
+          "s3Key": "amplify-builds/getSales-512b4144576d39457657-build.zip"
         },
         "getSalesSummaryQuery": {
           "deploymentBucketName": "amplify-pos-ebtdev-1d738-deployment",
-          "s3Key": "amplify-builds/getSalesSummaryQuery-61586f4e315552426a37-build.zip"
+          "s3Key": "amplify-builds/getSalesSummaryQuery-4b4e5a347a4b36695574-build.zip"
         },
         "pos0614c248": {},
         "pos": {}

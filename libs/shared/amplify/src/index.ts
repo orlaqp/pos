@@ -3,6 +3,8 @@ import {
     signIn,
     signOut,
     signUp,
+    confirmSignUp,
+    resendSignUpCode,
     getCurrentUser,
     fetchUserAttributes,
     fetchAuthSession,
@@ -14,6 +16,11 @@ type SignUpRequest = {
     username: string;
     password: string;
     attributes?: Record<string, string | undefined>;
+};
+
+type ConfirmSignUpRequest = {
+    username: string;
+    confirmationCode: string;
 };
 
 type StorageGetOptions = {
@@ -101,6 +108,17 @@ export const Auth = {
             username,
             password,
             options: attributes ? { userAttributes: attributes } : undefined,
+        });
+    },
+    async confirmSignUp({ username, confirmationCode }: ConfirmSignUpRequest) {
+        return confirmSignUp({
+            username,
+            confirmationCode,
+        });
+    },
+    async resendSignUpCode(username: string) {
+        return resendSignUpCode({
+            username,
         });
     },
     async signOut() {

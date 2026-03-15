@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSharedStyles } from '@pos/theme/native';
 
 import { View, Text, StyleSheet, Image } from 'react-native';
@@ -39,17 +39,38 @@ const backOfficeNavigationRef = createNavigationContainerRef();
 /* eslint-disable-next-line */
 export interface BackOfficeProps {
     navigation: NativeStackNavigationProp<any>;
+    route?: {
+        params?: {
+            initialScreen?: 'Dashboard' | 'Products' | 'Categories';
+            initialScreenParams?: object;
+        };
+    };
 }
 
-export function BackOffice({ navigation }: BackOfficeProps) {
+export function BackOffice({ navigation, route }: BackOfficeProps) {
     const styles = useStyles();
     const employee = useSelector(selectLoginEmployee);
+    const initialScreen = route?.params?.initialScreen || 'Dashboard';
+    const initialScreenParams = route?.params?.initialScreenParams;
     const sidebarNavigation = {
         replace: (name: string, params?: object) => {
             if (!backOfficeNavigationRef.isReady()) return;
             backOfficeNavigationRef.dispatch(StackActions.replace(name, params));
         },
     };
+
+    const syncInitialRouteParams = () => {
+        if (!backOfficeNavigationRef.isReady()) return;
+        if (!route?.params?.initialScreen || !initialScreenParams) return;
+
+        backOfficeNavigationRef.dispatch(
+            StackActions.replace(route.params.initialScreen, initialScreenParams)
+        );
+    };
+
+    useEffect(() => {
+        syncInitialRouteParams();
+    }, [route?.params?.initialScreen, initialScreenParams]);
 
     return (
         <SafeAreaView style={styles.page}>
@@ -70,9 +91,13 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                 
                 <View style={styles.rightSide}>
                     <NavigationIndependentTree>
-                        <NavigationContainer ref={backOfficeNavigationRef}>
+                        <NavigationContainer
+                            ref={backOfficeNavigationRef}
+                            onReady={syncInitialRouteParams}
+                        >
                             <Stack.Navigator
                                 id="back-office-navigation"
+                                initialRouteName={initialScreen}
                                 screenOptions={{ headerShown: false }}
                             >
                                 <Stack.Screen name="Dashboard" component={Dashboard} />

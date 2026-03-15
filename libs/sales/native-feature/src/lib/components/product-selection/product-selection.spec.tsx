@@ -46,7 +46,9 @@ describe('ProductSelection', () => {
         );
 
         expect(
-            getByText('Select a category from the left or search for a product on top')
+            getByText(
+                'No products found. Add products in Back Office, choose another category, or search again.'
+            )
         ).toBeTruthy();
 
         const products = [

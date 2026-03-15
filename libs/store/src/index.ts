@@ -3,7 +3,12 @@ import logger from 'redux-logger';
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux';
 
-import { authReducer, AUTH_FEATURE_KEY } from '@pos/auth/data-access';
+import {
+  authReducer,
+  AUTH_FEATURE_KEY,
+  tenantSessionReducer,
+  TENANT_SESSION_FEATURE_KEY,
+} from '@pos/auth/data-access';
 import { brandsReducer, BRAND_FEATURE_KEY } from '@pos/brands/data-access';
 import { unitOfMeasuresReducer, UNITOFMEASURE_FEATURE_KEY } from '@pos/unit-of-measures/data-access';
 import { cartReducer, CART_FEATURE_KEY } from '@pos/sales/data-access';
@@ -21,6 +26,7 @@ export const store = configureStore({
   reducer: {
       [AWS_CONFIG_FEATURE_KEY]: awsConfigReducer,
       [AUTH_FEATURE_KEY]: authReducer,
+      [TENANT_SESSION_FEATURE_KEY]: tenantSessionReducer,
       [CATEGORIES_FEATURE_KEY]: categoriesReducer,
       [EMPLOYEE_FEATURE_KEY]: employeesReducer,
       [PRODUCT_FEATURE_KEY]: productsReducer,

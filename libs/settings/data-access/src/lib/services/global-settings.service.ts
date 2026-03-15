@@ -1,6 +1,7 @@
 import { GlobalSettings } from '@pos/shared/models';
 import { DataStore } from '@pos/shared/amplify';
 import { GlobalSettingsDTO, GlobalSettingsEntityMapper } from './../global-settings.dto';
+import { stampTenant } from '@pos/auth/data-access';
 export class GlobalSettingsService {
 
     static async fetch() {
@@ -19,9 +20,9 @@ export class GlobalSettingsService {
                 })
             );
 
-        return DataStore.save(new GlobalSettings({
+        return DataStore.save(new GlobalSettings(stampTenant({
             enforceSalesBasedOnInventory: newSettings.enforceSalesBasedOnInventory || false
-        }));
+        }) as never));
     }
 
 }

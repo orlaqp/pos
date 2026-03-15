@@ -4,13 +4,14 @@ import { DataStore } from '@pos/shared/amplify';
 import { PrinterEntity } from './printer.entity';
 import { Dispatch } from '@reduxjs/toolkit';
 import { printingsActions } from './printers.slice';
+import { stampTenant } from '@pos/auth/data-access';
 
 export class PrinterService {
     static async setDefaultPrinter(dispatch: Dispatch, printer: PrinterEntity) {
         const defaultPrinter = await this.getDefaultPrinter();
 
         if (!defaultPrinter) {
-            const entity = new Printer(printer);
+            const entity = new Printer(stampTenant(printer) as never);
             const res = await DataStore.save(entity);
 
             printer.id = res.id;

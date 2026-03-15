@@ -4,6 +4,7 @@ import { DataStore } from '@pos/shared/amplify';
 import { productsActions } from './slices/products.slice';
 import { ProductEntity } from './product.entity';
 import { Alert } from 'react-native';
+import { stampTenant } from '@pos/auth/data-access';
 
 export interface ProductSearchRequest {
     text?: string;
@@ -74,7 +75,7 @@ export class ProductService {
             if (!validationRes) return false;
             product.isEBTEligible = product.isEBTEligible ?? false;
 
-            const entity = new Product(product);
+            const entity = new Product(stampTenant(product) as never);
             const res = await DataStore.save(entity);
 
             product.id = res.id;

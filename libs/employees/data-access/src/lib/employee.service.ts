@@ -4,13 +4,14 @@ import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from '@pos/shared/amplify';
 import { EmployeeEntity } from './employee.entity';
 import { EmployeeEntityMapper } from './employee.entity';
+import { stampTenant } from '@pos/auth/data-access';
 
 export class EmployeeService {
     static async save(dispatch: Dispatch<any>, employee: EmployeeEntity) {
         const { employeesActions } = require('./slices/employees.slice');
 
         if (!employee.id) {
-            const entity = new Employee(employee);
+            const entity = new Employee(stampTenant(employee) as never);
             const res = await DataStore.save(entity);
 
             employee.id = res.id;

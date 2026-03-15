@@ -17,6 +17,7 @@ import {
     fetchUnitOfMeasures,
     selectLoadingStatus as umSelectLadingStatus,
 } from '@pos/unit-of-measures/data-access';
+import { RouteProp } from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
 export const shouldFetchLookup = (status: string) => status === 'new';
@@ -30,11 +31,20 @@ export const bootstrapProductsLookups = (
     }
 };
 
-export function Products() {
+export interface ProductsRouteParams {
+    initialRouteName?: 'Product List' | 'Product Form';
+}
+
+export interface ProductsProps {
+    route?: RouteProp<Record<string, ProductsRouteParams | undefined>, string>;
+}
+
+export function Products({ route }: ProductsProps) {
     const dispatch = useDispatch();
     const catLoadingStatus = useSelector(categorySelectLoadingStatus);
     const brLoadingStatus = useSelector(brandSelectLoadingStatus);
     const umLoadingStatus = useSelector(umSelectLadingStatus);
+    const initialRouteName = route?.params?.initialRouteName || 'Product List';
 
     useEffect(() => {
         bootstrapProductsLookups(dispatch, catLoadingStatus, fetchCategories);
@@ -49,7 +59,7 @@ export function Products() {
     }, [umLoadingStatus, dispatch]);
 
     return (
-        <StackNavigation Stack={Stack}>
+        <StackNavigation Stack={Stack} initialRouteName={initialRouteName}>
             <Stack.Screen name="Product List" component={ProductList} />
             <Stack.Screen name="Product Form" component={ProductForm} />
         </StackNavigation>

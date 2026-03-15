@@ -4,11 +4,12 @@ import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from '@pos/shared/amplify';
 import { CategoryEntity } from './category.entity';
 import { categoriesActions } from './slices/categories.slice';
+import { stampTenant } from '@pos/auth/data-access';
 
 export class CategoryService {
     static async save(dispatch: Dispatch<any>, category: CategoryEntity) {
         if (!category.id) {
-            const cat = new Category(category);
+            const cat = new Category(stampTenant(category) as never);
             await DataStore.save(cat);
             return dispatch(categoriesActions.add(category));
         }

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import basePreset from '../../../jest.preset.js';
+const basePreset = require('../../../jest.preset.js');
 
 export default {
     displayName: 'orders-data-access',
@@ -9,7 +9,6 @@ export default {
             'ts-jest',
             {
                 tsconfig: '<rootDir>/tsconfig.spec.json',
-                isolatedModules: true,
                 diagnostics: false,
             },
         ],

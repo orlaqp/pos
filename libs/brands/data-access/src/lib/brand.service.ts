@@ -4,11 +4,12 @@ import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from '@pos/shared/amplify';
 import { brandsActions } from './slices/brands.slice';
 import { BrandEntity } from './brand.entity';
+import { stampTenant } from '@pos/auth/data-access';
 
 export class BrandService {
     static async save(dispatch: Dispatch<any>, brand: BrandEntity) {
         if (!brand.id) {
-            const entity = new Brand(brand);
+            const entity = new Brand(stampTenant(brand) as never);
             const res = await DataStore.save(entity);
             
             brand.id = res.id;

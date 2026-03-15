@@ -7,7 +7,6 @@ export default {
             'ts-jest',
             {
                 tsconfig: '<rootDir>/tsconfig.spec.json',
-                isolatedModules: true,
                 diagnostics: false,
             },
         ],

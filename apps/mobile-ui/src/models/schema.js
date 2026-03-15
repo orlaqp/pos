@@ -1,10 +1,201 @@
 export const schema = {
     "models": {
+        "Tenant": {
+            "name": "Tenant",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "name": {
+                    "name": "name",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "slug": {
+                    "name": "slug",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "ownerUserId": {
+                    "name": "ownerUserId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "Tenants",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "bySlug",
+                        "queryField": "tenantBySlug",
+                        "fields": [
+                            "slug"
+                        ]
+                    }
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "provider": "userPools",
+                                "ownerField": "ownerUserId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "TenantUser": {
+            "name": "TenantUser",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "userId": {
+                    "name": "userId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "role": {
+                    "name": "role",
+                    "isArray": false,
+                    "type": {
+                        "enum": "TenantUserRole"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "TenantUsers",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byTenantId",
+                        "queryField": "tenantUsersByTenant",
+                        "fields": [
+                            "tenantId"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byUserId",
+                        "queryField": "tenantUsersByUser",
+                        "fields": [
+                            "userId"
+                        ]
+                    }
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "provider": "userPools",
+                                "ownerField": "userId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
         "Store": {
             "name": "Store",
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -109,7 +300,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -127,6 +321,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -175,7 +376,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -193,6 +397,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -262,7 +473,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -280,6 +494,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -356,7 +577,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -374,6 +598,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -479,7 +710,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -497,6 +731,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -684,7 +925,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -702,6 +946,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -890,7 +1141,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -908,6 +1162,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -956,7 +1217,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -974,6 +1238,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1064,7 +1335,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1082,6 +1356,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1141,7 +1422,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1159,6 +1443,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1256,7 +1547,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1274,6 +1568,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1333,7 +1634,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1351,6 +1655,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1441,7 +1752,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1459,6 +1773,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1535,7 +1856,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1553,6 +1877,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1601,7 +1932,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1619,6 +1953,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1660,7 +2001,10 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1675,6 +2019,13 @@ export const schema = {
         }
     },
     "enums": {
+        "TenantUserRole": {
+            "name": "TenantUserRole",
+            "values": [
+                "OWNER",
+                "ADMIN"
+            ]
+        },
         "PaymentType": {
             "name": "PaymentType",
             "values": [
@@ -2042,5 +2393,5 @@ export const schema = {
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "753ed7608733eade21023bfa8ec81382"
+    "version": "20342ccb27f3269db319be5b09b6fc76"
 };

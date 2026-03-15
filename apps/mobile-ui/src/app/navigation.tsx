@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeScreen } from './HomeScreen';
-import { LoginScreen, SignUpScreen } from '@pos/auth/native-feature';
+import { ConfirmSignupScreen, LoginScreen, SignUpScreen } from '@pos/auth/native-feature';
 import { SalesScreen } from '@pos/sales/native-feature';
 
 import { useSelector } from 'react-redux';
@@ -16,16 +16,33 @@ import { selectStore } from '@pos/store-info/data-access';
 import { getThemeColors, useSharedStyles } from '@pos/theme/native';
 import { employeesActions, selectLoginEmployee } from '@pos/employees/data-access';
 import { Auth } from '@pos/shared/amplify';
-import { authActions } from '@pos/auth/data-access';
+import {
+    authActions,
+    clearCurrentTenantContext,
+    tenantSessionActions,
+} from '@pos/auth/data-access';
+import { DataStore } from '@pos/shared/amplify';
 
 /* eslint-disable-next-line */
 export interface NavigationParamList {
     [key: string]: object | undefined;
     Home: undefined;
-    Login: undefined;
+    Login: {
+        email?: string;
+    };
     Signup: undefined;
+    ConfirmSignup: {
+        email?: string;
+    };
     Payments: undefined;
-    BackOffice: undefined;
+    BackOffice:
+        | {
+              initialScreen?: 'Dashboard' | 'Products' | 'Categories';
+              initialScreenParams?: {
+                  initialRouteName?: string;
+              };
+          }
+        | undefined;
     Sales: {
         mode: 'order' | 'payment';
     };
@@ -39,6 +56,9 @@ export function Navigation() {
     const styles = useSharedStyles();
     const user = useSelector((state: RootState) => state.auth.user);
     const employee = useSelector(selectLoginEmployee);
+    const businessName = useSelector(
+        (state: RootState) => state.tenantSession.businessName
+    );
     const dispatch = useAppDispatch();
     const cart = useSelector(selectCart);
     const defaultPrinter = useSelector(getDefaultPrinter);
@@ -65,8 +85,12 @@ export function Navigation() {
                 onPress: async () => {
                     try {
                         await Auth.signOut();
+                        await DataStore.stop();
+                        await DataStore.clear();
                     } finally {
+                        clearCurrentTenantContext();
                         dispatch(authActions.logoff());
+                        dispatch(tenantSessionActions.clearTenantSession());
                         dispatch(employeesActions.logoffEmployee());
                     }
                 },
@@ -165,6 +189,9 @@ export function Navigation() {
                         <Stack.Screen
                             name="BackOffice"
                             component={BackOffice}
+                            options={{
+                                headerTitle: businessName || 'Back Office',
+                            }}
                         />
                     </>
                 ) : (
@@ -177,6 +204,11 @@ export function Navigation() {
                         <Stack.Screen
                             name="Signup"
                             component={SignUpScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="ConfirmSignup"
+                            component={ConfirmSignupScreen}
                             options={{ headerShown: false }}
                         />
                     </>

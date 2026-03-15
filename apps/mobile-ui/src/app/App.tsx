@@ -16,14 +16,22 @@ import {
     fetchGlobalSettings,
     fetchStationInfo,
 } from '@pos/settings/data-access';
-import { fetchEmployees } from '@pos/employees/data-access';
-import {
-    fetchStoreInfo,
-} from '@pos/store-info/data-access';
-import { selectStationLoadindStatus } from '@pos/settings/data-access';
+import { fetchEmployees, employeesActions } from '@pos/employees/data-access';
+import { fetchStoreInfo } from '@pos/store-info/data-access';
 import brandMark from '../../assets/branding/pos-icon-transparent-2048.png';
+import {
+    authActions,
+    bootstrapTenantSession,
+    clearCurrentTenantContext,
+    restoreSession,
+    selectAuthRestoreStatus,
+    setCurrentTenantContext,
+    tenantSessionActions,
+} from '@pos/auth/data-access';
+import { configureDataStore } from '@pos/shared/data-store';
+import { DataStore } from '@pos/shared/amplify';
 
-type BootstrapStatus = 'idle' | 'loading' | 'ready' | 'error';
+type BootstrapStatus = 'idle' | 'checking-session' | 'resolving-tenant' | 'preparing-business-data' | 'ready' | 'error';
 const appTheme = theme('dark');
 const appColors = designTokens.colors;
 
@@ -53,6 +61,12 @@ const StartupScreen = ({
 }) => {
     const styles = useStartupStyles();
     const isError = status === 'error';
+    const messageByStatus: Record<Exclude<BootstrapStatus, 'ready' | 'error'>, string> = {
+        idle: 'Starting...',
+        'checking-session': 'Restoring business admin session...',
+        'resolving-tenant': 'Resolving business workspace...',
+        'preparing-business-data': 'Loading employees and tenant data...',
+    };
 
     return (
         <View style={styles.container}>
@@ -61,7 +75,7 @@ const StartupScreen = ({
                 <>
                     <Text h3 style={styles.title}>Startup failed</Text>
                     <Text style={styles.message}>
-                        The app could not load required local data. Retry the startup sequence.
+                        The app could not restore the business workspace. Retry the startup sequence.
                     </Text>
                     {errorMessage ? (
                         <Text style={styles.errorDetail}>{errorMessage}</Text>
@@ -71,7 +85,7 @@ const StartupScreen = ({
             ) : (
                 <>
                     <Text h3 style={styles.title}>Preparing POS</Text>
-                    <UISpinner size="large" message="Loading employees and device settings..." />
+                    <UISpinner size="large" message={messageByStatus[status]} />
                 </>
             )}
         </View>
@@ -80,27 +94,85 @@ const StartupScreen = ({
 
 const AppContent = () => {
     const dispatch = useAppDispatch();
-    const stationStatus = useSelector(selectStationLoadindStatus);
-    const stationError = useSelector((state: RootState) => state.station.error);
     const authUser = useSelector((state: RootState) => state.auth.user);
+    const authError = useSelector((state: RootState) => state.auth.error);
+    const authRestoreStatus = useSelector(selectAuthRestoreStatus);
+    const tenantSession = useSelector((state: RootState) => state.tenantSession);
     const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('idle');
     const [bootstrapError, setBootstrapError] = useState<string>();
 
     const startBootstrap = useCallback(async () => {
-        setBootstrapStatus('loading');
+        if (process.env.NODE_ENV === 'test') {
+            setBootstrapStatus('ready');
+            return;
+        }
+
         setBootstrapError(undefined);
+        setBootstrapStatus('checking-session');
+
         try {
+            let user = authUser;
+
+            if (!user) {
+                try {
+                    user = await dispatch(restoreSession()).unwrap();
+                } catch (error) {
+                    if (error === 'NO_SESSION') {
+                        clearCurrentTenantContext();
+                        dispatch(authActions.logoff());
+                        dispatch(tenantSessionActions.clearTenantSession());
+                        dispatch(employeesActions.logoffEmployee());
+                        setBootstrapStatus('ready');
+                        return;
+                    }
+
+                    throw error;
+                }
+            }
+
+            if (!user) {
+                clearCurrentTenantContext();
+                dispatch(authActions.logoff());
+                dispatch(tenantSessionActions.clearTenantSession());
+                dispatch(employeesActions.logoffEmployee());
+                setBootstrapStatus('ready');
+                return;
+            }
+
+            setBootstrapStatus('resolving-tenant');
+            dispatch(
+                tenantSessionActions.setTenantSession({
+                    tenantId: user.tenantId,
+                    businessName: user.businessName,
+                })
+            );
+            setCurrentTenantContext({
+                tenantId: user.tenantId,
+                businessName: user.businessName,
+            });
+            dispatch(tenantSessionActions.setBootstrapStatus('restoring'));
+
+            await DataStore.stop();
+            await DataStore.clear();
+            configureDataStore();
+            await DataStore.start();
+            await bootstrapTenantSession(user);
+
+            setBootstrapStatus('preparing-business-data');
+            dispatch(tenantSessionActions.setBootstrapStatus('bootstrapping'));
+
             await withTimeout(
                 'fetchStationInfo()',
                 dispatch(fetchStationInfo()).unwrap()
             );
 
-            dispatch(fetchStoreInfo());
-            dispatch(fetchGlobalSettings());
+            await Promise.all([
+                dispatch(fetchStoreInfo()),
+                dispatch(fetchGlobalSettings()),
+                dispatch(fetchEmployees()),
+            ]);
 
-            // Employee sync is allowed to continue in the background so the app can
-            // reach the login shell even if DataStore is still warming up.
-            dispatch(fetchEmployees());
+            dispatch(tenantSessionActions.setBootstrapStatus('ready'));
             setBootstrapStatus('ready');
         } catch (error) {
             console.error('App bootstrap failed', error);
@@ -108,33 +180,42 @@ const AppContent = () => {
                 typeof error === 'string'
                     ? error
                     : error instanceof Error
-                        ? error.message
-                        : error && typeof error === 'object' && 'message' in error
-                            ? String((error as { message?: unknown }).message)
-                            : 'Bootstrap failed with an unknown error';
+                      ? error.message
+                      : error && typeof error === 'object' && 'message' in error
+                        ? String((error as { message?: unknown }).message)
+                        : 'Bootstrap failed with an unknown error';
+            dispatch(tenantSessionActions.setTenantSessionError(message));
             setBootstrapError(message);
             setBootstrapStatus('error');
         }
-    }, [dispatch]);
+    }, [authUser, dispatch]);
 
     useEffect(() => {
-        if (process.env.NODE_ENV === 'test') {
-            setBootstrapStatus('ready');
-            return;
-        }
         startBootstrap();
     }, [startBootstrap]);
 
     const visibleBootstrapError = useMemo(() => {
-        if (bootstrapError) return bootstrapError;
+        return bootstrapError || tenantSession.error || authError || undefined;
+    }, [authError, bootstrapError, tenantSession.error]);
 
-        return stationError || undefined;
-    }, [bootstrapError, stationError]);
+    const shouldShowStartup =
+        bootstrapStatus !== 'ready' ||
+        authRestoreStatus === 'inProgress' ||
+        tenantSession.bootstrapStatus === 'restoring' ||
+        tenantSession.bootstrapStatus === 'bootstrapping';
 
-    if (bootstrapStatus !== 'ready' && !authUser) {
+    if (shouldShowStartup) {
         return (
             <StartupScreen
-                status={bootstrapStatus === 'error' ? 'error' : 'loading'}
+                status={
+                    bootstrapStatus === 'error'
+                        ? 'error'
+                        : bootstrapStatus === 'ready'
+                          ? 'checking-session'
+                          : bootstrapStatus === 'idle'
+                            ? 'checking-session'
+                            : bootstrapStatus
+                }
                 onRetry={startBootstrap}
                 errorMessage={visibleBootstrapError}
             />
@@ -153,10 +234,7 @@ export const App = () => {
         <AppErrorBoundary>
             <GestureHandlerRootView style={{ flex: 1 }}>
                 <Provider store={store}>
-                    <ThemeProvider
-                        // theme={theme(colorScheme === 'light' ? 'light' : 'dark')}
-                        theme={appTheme}
-                    >
+                    <ThemeProvider theme={appTheme}>
                         <SafeAreaProvider>
                             <AppContent />
                         </SafeAreaProvider>

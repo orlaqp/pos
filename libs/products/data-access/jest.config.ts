@@ -1,11 +1,11 @@
 /* eslint-disable */
-import basePreset from '../../../jest.preset.js';
+const basePreset = require('../../../jest.preset.js');
 
 export default {
     displayName: 'products-data-access',
     preset: '../../../jest.preset.js',
     transform: {
-        '^.+\\.[tj]sx?$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json', isolatedModules: true, diagnostics: false }],
+        '^.+\\.[tj]sx?$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json', diagnostics: false }],
     },
     moduleNameMapper: {
         ...(basePreset.moduleNameMapper || {}),

@@ -16,27 +16,59 @@ export interface User {
     name: string;
     email: string;
     groups: string[];
+    businessName?: string;
+    tenantId: string;
 }
 
 export interface AuthState {
     user?: User;
     error?: string;
     signInStatus: 'not-started' | 'inProgress' | 'complete' | 'error';
+    restoreStatus: 'not-started' | 'inProgress' | 'complete' | 'error';
 }
+
+const buildMessage = (error: unknown) =>
+    error instanceof Error && error.message
+        ? error.message
+        : error &&
+            typeof error === 'object' &&
+            'message' in error &&
+            typeof (error as { message?: unknown }).message === 'string'
+          ? (error as { message: string }).message
+          : String(error);
+
+const toUser = (currentUser: {
+    attributes?: Record<string, unknown>;
+    signInUserSession?: {
+        accessToken?: {
+            payload?: Record<string, unknown>;
+        };
+    };
+}) => {
+    const attrs = currentUser.attributes || {};
+    const groups =
+        currentUser?.signInUserSession?.accessToken?.payload?.[
+            'cognito:groups'
+        ];
+    const tenantId = String(attrs.sub || '');
+
+    return {
+        id: tenantId,
+        email: String(attrs.email || ''),
+        email_verified: String(attrs.email_verified) === 'true',
+        name: String(attrs.name || ''),
+        businessName:
+            typeof attrs['custom:businessName'] === 'string'
+                ? attrs['custom:businessName']
+                : undefined,
+        tenantId,
+        groups: Array.isArray(groups) ? groups : [],
+    } as User;
+};
 
 export const signIn = createAsyncThunk(
     'auth/signInStatus',
     async (req: SignInRequest, thunkAPI) => {
-        const buildMessage = (error: unknown) =>
-            error instanceof Error && error.message
-                ? error.message
-                : error &&
-                    typeof error === 'object' &&
-                    'message' in error &&
-                    typeof (error as { message?: unknown }).message === 'string'
-                  ? (error as { message: string }).message
-                  : String(error);
-
         try {
             let signInResponse;
 
@@ -53,20 +85,8 @@ export const signIn = createAsyncThunk(
                 }
             }
 
-            const attrs = signInResponse.attributes;
             const currentUser = await Auth.currentAuthenticatedUser();
-            const groups =
-                currentUser?.signInUserSession?.accessToken?.payload[
-                    'cognito:groups'
-                ];
-
-            return {
-                id: attrs.sub,
-                email: attrs.email,
-                email_verified: String(attrs.email_verified) === 'true',
-                name: attrs.name,
-                groups: Array.isArray(groups) ? groups : [],
-            } as User;
+            return toUser(currentUser || signInResponse);
         } catch (error) {
             const message = buildMessage(error);
 
@@ -93,10 +113,35 @@ export const signIn = createAsyncThunk(
     }
 );
 
+export const restoreSession = createAsyncThunk(
+    'auth/restoreSession',
+    async (_, thunkAPI) => {
+        try {
+            const currentUser = await Auth.currentAuthenticatedUser();
+            return toUser(currentUser);
+        } catch (error) {
+            const message = buildMessage(error);
+
+            if (
+                message.includes('No current user') ||
+                message.includes('not authenticated') ||
+                message.includes('User needs to be authenticated') ||
+                message.includes('User does not exist') ||
+                message.includes('The user does not exist')
+            ) {
+                return thunkAPI.rejectWithValue('NO_SESSION');
+            }
+
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const initialAuthState: AuthState = {
     user: undefined,
     error: undefined,
     signInStatus: 'not-started',
+    restoreStatus: 'not-started',
 };
 
 export const authSlice = createSlice({
@@ -107,6 +152,7 @@ export const authSlice = createSlice({
             state.user = undefined;
             state.error = undefined;
             state.signInStatus = 'not-started';
+            state.restoreStatus = 'not-started';
         }
     },
     extraReducers: (builder) => {
@@ -119,6 +165,7 @@ export const authSlice = createSlice({
                 signIn.fulfilled,
                 (state: AuthState, action: PayloadAction<User>) => {
                     state.signInStatus = 'complete';
+                    state.restoreStatus = 'complete';
                     state.user = action.payload;
                 }
             )
@@ -128,6 +175,27 @@ export const authSlice = createSlice({
                     typeof action.payload === 'string'
                         ? action.payload
                         : action.error?.message || 'Unable to sign in';
+            })
+            .addCase(restoreSession.pending, (state: AuthState) => {
+                state.restoreStatus = 'inProgress';
+            })
+            .addCase(
+                restoreSession.fulfilled,
+                (state: AuthState, action: PayloadAction<User>) => {
+                    state.restoreStatus = 'complete';
+                    state.user = action.payload;
+                    state.error = undefined;
+                }
+            )
+            .addCase(restoreSession.rejected, (state: AuthState, action) => {
+                state.restoreStatus = 'error';
+                state.user = undefined;
+                if (action.payload !== 'NO_SESSION') {
+                    state.error =
+                        typeof action.payload === 'string'
+                            ? action.payload
+                            : action.error?.message || 'Unable to restore session';
+                }
             });
     },
 });
@@ -149,5 +217,10 @@ export const selectEmployee = createSelector(
     getAuthState,
     (state: AuthState) => state.user
 );   
+
+export const selectAuthRestoreStatus = createSelector(
+    getAuthState,
+    (state: AuthState) => state.restoreStatus
+);
 
 // export const selectAuthEntities = createSelector(getAuthState, selectEntities);

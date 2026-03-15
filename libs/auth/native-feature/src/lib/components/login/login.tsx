@@ -1,22 +1,25 @@
 import React from 'react';
 
-import { View, StyleSheet, Image } from 'react-native';
-import { useTheme, Button, Text, Input } from '@rneui/themed';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import { useTheme, Button, Text } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { FormProvider, useForm } from 'react-hook-form';
-import { UIInput, UIAlert, UIVerticalSpacer } from '@pos/shared/ui-native';
+import { UIInput, UIAlert } from '@pos/shared/ui-native';
 import { useSelector } from 'react-redux';
 import { signIn } from '@pos/auth/data-access';
 import { RootState, useAppDispatch } from '@pos/store';
 
-import logo from '../../assets/logo.png';
-import { translate } from '@pos/settings/data-access';
 import { getThemeColors } from '@pos/theme/native';
+import { AuthGlyph } from '../auth-glyph/auth-glyph';
 
-/* eslint-disable-next-line */
 export interface LoginProps {
     navigation: NativeStackNavigationProp<any>;
+    route?: {
+        params?: {
+            email?: string;
+        };
+    };
 }
 
 type SignInModel = {
@@ -26,74 +29,80 @@ type SignInModel = {
 
 export function LoginScreen(props: LoginProps) {
     const styles = useStyles();
+    const { width } = useWindowDimensions();
     const dispatch = useAppDispatch();
     const error = useSelector((state: RootState) => state.auth.error);
     const loading = useSelector(
         (state: RootState) => state.auth.signInStatus === 'inProgress'
     );
+    const initialEmail = props.route?.params?.email?.trim() || '';
     const formMethods = useForm<SignInModel>({
         mode: 'onChange',
         defaultValues: {
-            email: 'orlaqp@gmail.com',
-            password: 'Password01$',
+            email: initialEmail,
+            password: '',
         },
     });
 
     const login = async (model: SignInModel) => {
-        await dispatch(signIn({ email: model.email, password: model.password }));
+        await dispatch(signIn({ email: model.email.trim(), password: model.password }));
     };
+
+    const isWide = width >= 980;
 
     return (
         <FormProvider {...formMethods}>
-            <View style={[styles.container, styles.centered]}>
-                <View style={{ width: '40%' }}>
-                    <View style={[styles.centered, styles.bottomMargin]}>
-                        <Image source={logo} style={styles.logo} />
-                    </View>
-                    <UIVerticalSpacer size="medium" />
-                    {error && <UIAlert message={error} type="error" />}
-
-                    <UIInput
-                        name="email"
-                        autoCapitalize="none"
-                        placeholder="Email address"
-                        keyboardType="email-address"
-                        textAlign="left"
-                        rules={{
-                            required: 'Email address is required',
-                            // eslint-disable-next-line no-useless-escape
-                            pattern: {
-                                value: /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-                                message: 'Email address is invalid',
-                            },
-                        }}
-                    />
-                    <UIInput
-                        name="password"
-                        placeholder="Password"
-                        secureTextEntry={true}
-                        textAlign="left"
-                        rules={{ required: 'Password is required' }}
-                    />
-
-                    <View style={{ paddingHorizontal: 100 }}>
-                        <Button
-                            title={translate('LOGIN_Login')}
-                            type="solid"
-                            containerStyle={styles.topMargin}
-                            onPress={formMethods.handleSubmit(login)}
-                            loading={loading}
-                        />
-                    </View>
-                    <Text style={styles.signUpText}>
-                        If you need a new account click{' '}
-                        <Text
-                            style={styles.signUpLink}
-                            onPress={() => props.navigation.navigate('Signup')}
-                        >
-                            HERE
+            <View style={styles.container}>
+                <View style={[styles.shell, isWide ? styles.shellWide : styles.shellStacked]}>
+                    <View style={[styles.heroPanel, isWide ? styles.heroPanelWide : null]}>
+                        <AuthGlyph />
+                        <Text style={styles.eyebrow}>Business Admin Access</Text>
+                        <Text h2 style={styles.title}>Open your workspace</Text>
+                        <Text style={styles.subtitle}>
+                            Restore your business session, sync the latest catalog, and hand the device back to staff PIN entry.
                         </Text>
-                    </Text>
+                    </View>
+                    <View style={[styles.formPanel, isWide ? styles.formPanelWide : null]}>
+                        <View style={styles.formInner}>
+                            <Text style={styles.formTitle}>Sign in</Text>
+                            <Text style={styles.formSubtitle}>Use the owner account for this business.</Text>
+                            {error ? <UIAlert message={error} type="error" /> : null}
+                            <UIInput
+                                name="email"
+                                autoCapitalize="none"
+                                placeholder="owner@business.com"
+                                keyboardType="email-address"
+                                textAlign="left"
+                                rules={{
+                                    required: 'Email address is required',
+                                    pattern: {
+                                        value: /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                                        message: 'Email address is invalid',
+                                    },
+                                }}
+                            />
+                            <UIInput
+                                name="password"
+                                placeholder="Password"
+                                secureTextEntry={true}
+                                textAlign="left"
+                                rules={{ required: 'Password is required' }}
+                            />
+
+                            <Button
+                                title="Continue"
+                                buttonStyle={styles.primaryButton}
+                                onPress={formMethods.handleSubmit(login)}
+                                loading={loading}
+                            />
+                            <Button
+                                title="Create business account"
+                                type="clear"
+                                titleStyle={styles.secondaryAction}
+                                onPress={() => props.navigation.navigate('Signup')}
+                            />
+                        </View>
+                    </View>
                 </View>
             </View>
         </FormProvider>
@@ -106,32 +115,90 @@ const useStyles = () => {
 
     return StyleSheet.create({
         container: {
-            backgroundColor: colors.background,
-        },
-        centered: {
             flex: 1,
-            alignItems: 'center',
+            backgroundColor: '#05070b',
+            paddingHorizontal: 24,
+            paddingVertical: 32,
             justifyContent: 'center',
         },
-        signUpText: {
-            textAlign: 'center',
-            fontSize: 18,
-            marginTop: 45,
+        shell: {
+            width: '100%',
+            maxWidth: 1180,
+            alignSelf: 'center',
         },
-        signUpLink: {
-            fontSize: 18,
-            textAlign: 'center',
-            color: colors.primary,
+        shellWide: {
+            flexDirection: 'row',
+            alignItems: 'stretch',
         },
-        bottomMargin: {
-            marginBottom: 50,
+        shellStacked: {
+            flexDirection: 'column',
         },
-        topMargin: {
-            marginTop: 20,
+        heroPanel: {
+            backgroundColor: '#10141b',
+            borderRadius: 28,
+            padding: 28,
+            marginBottom: 18,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.08)',
         },
-        logo: {
-            width: 150,
-            height: 150,
+        heroPanelWide: {
+            flex: 1.1,
+            marginBottom: 0,
+            marginRight: 18,
+            justifyContent: 'center',
+        },
+        formPanel: {
+            backgroundColor: colors.background,
+            borderRadius: 28,
+            padding: 28,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.08)',
+        },
+        formPanelWide: {
+            flex: 0.9,
+            justifyContent: 'center',
+        },
+        formInner: {
+            width: '100%',
+            maxWidth: 440,
+            alignSelf: 'center',
+        },
+        eyebrow: {
+            color: '#7eb6ff',
+            textTransform: 'uppercase',
+            letterSpacing: 2,
+            marginBottom: 10,
+            marginTop: 16,
+            fontSize: 12,
+            fontWeight: '700',
+        },
+        title: {
+            color: '#f3f7ff',
+            marginBottom: 10,
+        },
+        subtitle: {
+            color: '#a3adba',
+            lineHeight: 22,
+        },
+        formTitle: {
+            color: colors.black,
+            fontSize: 28,
+            fontWeight: '700',
+            marginBottom: 6,
+        },
+        formSubtitle: {
+            color: colors.grey2,
+            marginBottom: 18,
+        },
+        primaryButton: {
+            borderRadius: 16,
+            minHeight: 52,
+            marginTop: 16,
+            backgroundColor: colors.primary,
+        },
+        secondaryAction: {
+            color: '#7eb6ff',
+            fontWeight: '700',
         },
     });
 };

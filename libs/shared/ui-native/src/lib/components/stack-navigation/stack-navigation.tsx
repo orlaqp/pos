@@ -9,16 +9,22 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export interface StackNavigationProps {
     Stack: any;
     children: any;
+    initialRouteName?: string;
 }
 
 /* eslint-disable-next-line */
-export function StackNavigation({ Stack, children }: StackNavigationProps) {
+export function StackNavigation({
+    Stack,
+    children,
+    initialRouteName,
+}: StackNavigationProps) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const styles = useStyles();
 
     return (
         <SafeAreaView style={styles.page}>
             <Stack.Navigator
+                initialRouteName={initialRouteName}
                 screenOptions={{
                     headerStyle: styles.navHeader,
                     headerTitleStyle: styles.headerTitle,

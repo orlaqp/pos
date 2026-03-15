@@ -57,6 +57,7 @@ export const UIInput: any = React.forwardRef<any, Props>((props, ref) => {
         <Controller
             control={control}
             name={name}
+            defaultValue=""
             render={({
                 field: { onChange, value, onBlur, ref: fieldRef },
                 fieldState: { isTouched, isDirty, error },
@@ -66,7 +67,13 @@ export const UIInput: any = React.forwardRef<any, Props>((props, ref) => {
                     {...inputProps}
                     textAlign={textAlign || 'left'}
                     placeholder={props.placeholder}
-                    value={value}
+                    value={
+                        typeof value === 'string'
+                            ? value
+                            : value == null
+                            ? ''
+                            : String(value)
+                    }
                     onBlur={(event) => {
                         setFocused(false);
                         onBlur();

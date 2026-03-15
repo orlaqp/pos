@@ -15,7 +15,7 @@ jest.mock('react-redux', () => ({
 
 describe('Login', () => {
   it('should render successfully', () => {
-    const { container } = render(<Login />);
-    expect(container).toBeTruthy();
+    const { root } = render(<Login />);
+    expect(root).toBeTruthy();
   });
 });

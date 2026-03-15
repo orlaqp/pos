@@ -10,6 +10,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "tenantId": {
+                    "name": "tenantId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "name": {
                     "name": "name",
                     "isArray": false,
@@ -109,7 +116,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -127,6 +136,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -175,7 +191,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -193,6 +211,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -262,7 +287,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -280,6 +307,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -356,7 +390,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -374,6 +410,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -479,7 +522,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -497,6 +542,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -684,7 +736,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -702,6 +756,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -890,7 +951,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -908,6 +971,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -956,7 +1026,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -974,6 +1046,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1064,7 +1143,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1082,6 +1163,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1141,7 +1229,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1159,6 +1249,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1256,7 +1353,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1274,6 +1373,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1333,7 +1439,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1351,6 +1459,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1441,7 +1556,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1459,6 +1576,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1535,7 +1659,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1553,6 +1679,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1601,7 +1734,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1619,6 +1754,13 @@ export const schema = {
             "fields": {
                 "id": {
                     "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
@@ -1660,7 +1802,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "public",
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",

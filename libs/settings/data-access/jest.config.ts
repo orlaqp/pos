@@ -1,12 +1,12 @@
 /* eslint-disable */
-import basePreset from '../../../jest.preset.js';
+const basePreset = require('../../../jest.preset.js');
 
 export default {
     displayName: 'settings-data-access',
     preset: '../../../jest.preset.js',
     setupFilesAfterEnv: ['<rootDir>/test-setup.ts'],
     transform: {
-        '^.+\\.[tj]sx?$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json', isolatedModules: true, diagnostics: false }],
+        '^.+\\.[tj]sx?$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json', diagnostics: false }],
     },
     moduleNameMapper: {
         ...(basePreset.moduleNameMapper || {}),

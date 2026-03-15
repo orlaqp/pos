@@ -5,7 +5,7 @@ import Signup from './signup';
 
 describe('Signup', () => {
   it('should render successfully', () => {
-    const { container } = render(<Signup />);
-    expect(container).toBeTruthy();
+    const { root } = render(<Signup />);
+    expect(root).toBeTruthy();
   });
 });

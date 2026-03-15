@@ -52,8 +52,9 @@ export function ProductSelection({
             {!products.length && (
                 <View style={localStyles.emptyWrap}>
                     <UIEmptyState
-                        text="Select a category from the left or search for a product on top"
+                        text="No products found. Add products in Back Office, choose another category, or search again."
                         backgroundColor="transparent"
+                        imageSize={150}
                     />
                 </View>
             )}

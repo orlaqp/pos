@@ -5,7 +5,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 const mockDispatch = jest.fn();
 const mockOnSelected = jest.fn();
 let mockSelectedCategory: any;
-const mockCategories = [
+let mockCategories = [
     { id: 'c1', name: 'Fruits', picture: null },
     { id: 'c2', name: 'Snacks', picture: null },
     { id: undefined, name: 'NoId', picture: null },
@@ -37,6 +37,10 @@ jest.mock('@pos/categories/data-access', () => ({
 
 jest.mock('@pos/shared/ui-native', () => ({
     UIS3Image: () => null,
+    UIEmptyState: ({ text }: { text: string }) => {
+        const { Text } = require('react-native');
+        return <Text>{text}</Text>;
+    },
 }));
 
 const { default: CategorySelection } = require('./category-selection');
@@ -46,6 +50,11 @@ describe('CategorySelection', () => {
         mockDispatch.mockClear();
         mockOnSelected.mockClear();
         mockSelectedCategory = mockCategories[0];
+        mockCategories = [
+            { id: 'c1', name: 'Fruits', picture: null },
+            { id: 'c2', name: 'Snacks', picture: null },
+            { id: undefined, name: 'NoId', picture: null },
+        ];
     });
 
     it('renders categories and handles selection', () => {
@@ -96,5 +105,18 @@ describe('CategorySelection', () => {
             type: 'categories/select',
             payload: mockCategories[0],
         });
+    });
+
+    it('shows empty state when there are no categories', () => {
+        mockCategories = [];
+        const { getByText } = render(
+            <CategorySelection onSelected={mockOnSelected} />
+        );
+
+        expect(
+            getByText(
+                'No categories yet. Add categories in Back Office to start organizing the catalog.'
+            )
+        ).toBeTruthy();
     });
 });

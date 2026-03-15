@@ -8,6 +8,7 @@ import { DataStore } from '@pos/shared/amplify';
 import { inventoryReceiveActions } from './inventory-receive.slice';
 import { InventoryReceiveDTO } from './inventory-receive.entity';
 import { Alert } from 'react-native';
+import { requireCurrentTenantId, stampTenant } from '@pos/auth/data-access';
 
 const isInventoryDebugEnabled = () =>
     typeof __DEV__ !== 'undefined' && __DEV__;
@@ -55,14 +56,14 @@ export class InventoryReceiveService {
 
 async function createReceive(count: InventoryReceiveDTO, dispatch: Dispatch<any>) {
     const { lines, ...rest } = count;
-    const entity = new InventoryReceive({
+    const entity = new InventoryReceive(stampTenant({
         comments: rest.comments,
         status: rest.status,
         createdBy: {
             id: rest.createdBy?.id || '',
             name: rest.createdBy?.name || '',
         },
-    });
+    }) as never);
     const res = await DataStore.save(entity);
     count.id = res.id;
 
@@ -70,13 +71,14 @@ async function createReceive(count: InventoryReceiveDTO, dispatch: Dispatch<any>
         l.inventoryReceiveLineInventoryReceiveId = res.id;
         return DataStore.save(
             new InventoryReceiveLine({
+                tenantId: requireCurrentTenantId(),
                 productId: l.productId,
                 productName: l.productName,
                 unitOfMeasure: l.unitOfMeasure,
                 received: l.received,
                 comments: l.comments,
                 inventoryReceiveLineInventoryReceiveId: res.id,
-            })
+            } as never)
         );
     });
 
@@ -106,13 +108,14 @@ async function updateReceive(receive: InventoryReceiveDTO, dispatch: Dispatch<an
         if (!l.id) {
             await DataStore.save(
                 new InventoryReceiveLine({
+                    tenantId: requireCurrentTenantId(),
                     productId: l.productId,
                     productName: l.productName,
                     unitOfMeasure: l.unitOfMeasure,
                     received: l.received,
                     comments: l.comments,
                     inventoryReceiveLineInventoryReceiveId: existing.id,
-                })
+                } as never)
             );
             return;
         }

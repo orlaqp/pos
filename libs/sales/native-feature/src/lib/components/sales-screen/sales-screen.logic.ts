@@ -45,3 +45,16 @@ export const getSingleProductFromDictionary = (
     if (productIds.length !== 1) return undefined;
     return products[productIds[0]] as ProductEntity | undefined;
 };
+
+export const isSameProductList = (
+    left: ProductEntity[],
+    right: ProductEntity[]
+): boolean => {
+    if (left === right) return true;
+    if (left.length !== right.length) return false;
+
+    return left.every((product, index) => {
+        const next = right[index];
+        return product?.id === next?.id;
+    });
+};

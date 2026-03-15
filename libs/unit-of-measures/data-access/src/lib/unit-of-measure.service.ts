@@ -4,11 +4,12 @@ import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from '@pos/shared/amplify';
 import { unitOfMeasuresActions } from './slices/unit-of-measures.slice';
 import { UnitOfMeasureEntity } from './unit-of-measure.entity';
+import { stampTenant } from '@pos/auth/data-access';
 
 export class UnitOfMeasureService {
     static async save(dispatch: Dispatch<any>, unitOfMeasure: UnitOfMeasureEntity) {
         if (!unitOfMeasure.id) {
-            const entity = new UnitOfMeasure(unitOfMeasure);
+            const entity = new UnitOfMeasure(stampTenant(unitOfMeasure) as never);
             const res = await DataStore.save(entity);
 
             unitOfMeasure.id = res.id;

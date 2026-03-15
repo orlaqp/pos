@@ -2,6 +2,11 @@ import { ModelInit, MutableModel } from "@aws-amplify/datastore";
 // @ts-ignore
 import { LazyLoading, LazyLoadingDisabled, AsyncItem } from "@aws-amplify/datastore";
 
+export enum TenantUserRole {
+  OWNER = "OWNER",
+  ADMIN = "ADMIN"
+}
+
 export enum PaymentType {
   CASH = "CASH",
   CHECK = "CHECK",
@@ -193,6 +198,14 @@ export declare type SalesSummary = LazyLoading extends LazyLoadingDisabled ? Eag
 
 export declare const SalesSummary: (new (init: ModelInit<SalesSummary>) => SalesSummary)
 
+type TenantMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type TenantUserMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
 type StoreMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
@@ -257,8 +270,57 @@ type GlobalSettingsMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
+type EagerTenant = {
+  readonly id: string;
+  readonly name: string;
+  readonly slug: string;
+  readonly ownerUserId: string;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyTenant = {
+  readonly id: string;
+  readonly name: string;
+  readonly slug: string;
+  readonly ownerUserId: string;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Tenant = LazyLoading extends LazyLoadingDisabled ? EagerTenant : LazyTenant
+
+export declare const Tenant: (new (init: ModelInit<Tenant, TenantMetaData>) => Tenant) & {
+  copyOf(source: Tenant, mutator: (draft: MutableModel<Tenant, TenantMetaData>) => MutableModel<Tenant, TenantMetaData> | void): Tenant;
+}
+
+type EagerTenantUser = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly userId: string;
+  readonly role: TenantUserRole | keyof typeof TenantUserRole;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyTenantUser = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly userId: string;
+  readonly role: TenantUserRole | keyof typeof TenantUserRole;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type TenantUser = LazyLoading extends LazyLoadingDisabled ? EagerTenantUser : LazyTenantUser
+
+export declare const TenantUser: (new (init: ModelInit<TenantUser, TenantUserMetaData>) => TenantUser) & {
+  copyOf(source: TenantUser, mutator: (draft: MutableModel<TenantUser, TenantUserMetaData>) => MutableModel<TenantUser, TenantUserMetaData> | void): TenantUser;
+}
+
 type EagerStore = {
   readonly id: string;
+  readonly tenantId: string;
   readonly name: string;
   readonly address: string;
   readonly city: string;
@@ -275,6 +337,7 @@ type EagerStore = {
 
 type LazyStore = {
   readonly id: string;
+  readonly tenantId: string;
   readonly name: string;
   readonly address: string;
   readonly city: string;
@@ -297,6 +360,7 @@ export declare const Store: (new (init: ModelInit<Store, StoreMetaData>) => Stor
 
 type EagerBrand = {
   readonly id: string;
+  readonly tenantId: string;
   readonly name: string;
   readonly description?: string | null;
   readonly createdAt?: string | null;
@@ -305,6 +369,7 @@ type EagerBrand = {
 
 type LazyBrand = {
   readonly id: string;
+  readonly tenantId: string;
   readonly name: string;
   readonly description?: string | null;
   readonly createdAt?: string | null;
@@ -319,6 +384,7 @@ export declare const Brand: (new (init: ModelInit<Brand, BrandMetaData>) => Bran
 
 type EagerCategory = {
   readonly id: string;
+  readonly tenantId: string;
   readonly name: string;
   readonly description?: string | null;
   readonly code?: string | null;
@@ -330,6 +396,7 @@ type EagerCategory = {
 
 type LazyCategory = {
   readonly id: string;
+  readonly tenantId: string;
   readonly name: string;
   readonly description?: string | null;
   readonly code?: string | null;
@@ -347,6 +414,7 @@ export declare const Category: (new (init: ModelInit<Category, CategoryMetaData>
 
 type EagerCustomer = {
   readonly id: string;
+  readonly tenantId: string;
   readonly firstName: string;
   readonly lastName?: string | null;
   readonly middleName?: string | null;
@@ -359,6 +427,7 @@ type EagerCustomer = {
 
 type LazyCustomer = {
   readonly id: string;
+  readonly tenantId: string;
   readonly firstName: string;
   readonly lastName?: string | null;
   readonly middleName?: string | null;
@@ -377,6 +446,7 @@ export declare const Customer: (new (init: ModelInit<Customer, CustomerMetaData>
 
 type EagerEmployee = {
   readonly id: string;
+  readonly tenantId: string;
   readonly code: string;
   readonly firstName: string;
   readonly lastName?: string | null;
@@ -393,6 +463,7 @@ type EagerEmployee = {
 
 type LazyEmployee = {
   readonly id: string;
+  readonly tenantId: string;
   readonly code: string;
   readonly firstName: string;
   readonly lastName?: string | null;
@@ -415,6 +486,7 @@ export declare const Employee: (new (init: ModelInit<Employee, EmployeeMetaData>
 
 type EagerOrder = {
   readonly id: string;
+  readonly tenantId: string;
   readonly orderNo: string;
   readonly orderDate: string;
   readonly subtotal: number;
@@ -436,6 +508,7 @@ type EagerOrder = {
 
 type LazyOrder = {
   readonly id: string;
+  readonly tenantId: string;
   readonly orderNo: string;
   readonly orderDate: string;
   readonly subtotal: number;
@@ -463,6 +536,7 @@ export declare const Order: (new (init: ModelInit<Order, OrderMetaData>) => Orde
 
 type EagerProduct = {
   readonly id: string;
+  readonly tenantId: string;
   readonly name: string;
   readonly description?: string | null;
   readonly price: number;
@@ -489,6 +563,7 @@ type EagerProduct = {
 
 type LazyProduct = {
   readonly id: string;
+  readonly tenantId: string;
   readonly name: string;
   readonly description?: string | null;
   readonly price: number;
@@ -521,6 +596,7 @@ export declare const Product: (new (init: ModelInit<Product, ProductMetaData>) =
 
 type EagerUnitOfMeasure = {
   readonly id: string;
+  readonly tenantId: string;
   readonly name: string;
   readonly description?: string | null;
   readonly createdAt?: string | null;
@@ -529,6 +605,7 @@ type EagerUnitOfMeasure = {
 
 type LazyUnitOfMeasure = {
   readonly id: string;
+  readonly tenantId: string;
   readonly name: string;
   readonly description?: string | null;
   readonly createdAt?: string | null;
@@ -543,6 +620,7 @@ export declare const UnitOfMeasure: (new (init: ModelInit<UnitOfMeasure, UnitOfM
 
 type EagerInventoryChanges = {
   readonly id: string;
+  readonly tenantId: string;
   readonly timestamp: string;
   readonly type: string;
   readonly typeId?: string | null;
@@ -556,6 +634,7 @@ type EagerInventoryChanges = {
 
 type LazyInventoryChanges = {
   readonly id: string;
+  readonly tenantId: string;
   readonly timestamp: string;
   readonly type: string;
   readonly typeId?: string | null;
@@ -575,6 +654,7 @@ export declare const InventoryChanges: (new (init: ModelInit<InventoryChanges, I
 
 type EagerInventoryCount = {
   readonly id: string;
+  readonly tenantId: string;
   readonly comments?: string | null;
   readonly status: InventoryCountStatus | keyof typeof InventoryCountStatus;
   readonly createdBy: ByEmployee;
@@ -584,6 +664,7 @@ type EagerInventoryCount = {
 
 type LazyInventoryCount = {
   readonly id: string;
+  readonly tenantId: string;
   readonly comments?: string | null;
   readonly status: InventoryCountStatus | keyof typeof InventoryCountStatus;
   readonly createdBy: ByEmployee;
@@ -599,6 +680,7 @@ export declare const InventoryCount: (new (init: ModelInit<InventoryCount, Inven
 
 type EagerInventoryCountLine = {
   readonly id: string;
+  readonly tenantId: string;
   readonly productId: string;
   readonly productName: string;
   readonly unitOfMeasure: string;
@@ -613,6 +695,7 @@ type EagerInventoryCountLine = {
 
 type LazyInventoryCountLine = {
   readonly id: string;
+  readonly tenantId: string;
   readonly productId: string;
   readonly productName: string;
   readonly unitOfMeasure: string;
@@ -633,6 +716,7 @@ export declare const InventoryCountLine: (new (init: ModelInit<InventoryCountLin
 
 type EagerInventoryReceive = {
   readonly id: string;
+  readonly tenantId: string;
   readonly comments?: string | null;
   readonly status: InventoryReceiveStatus | keyof typeof InventoryReceiveStatus;
   readonly createdBy: ByEmployee;
@@ -642,6 +726,7 @@ type EagerInventoryReceive = {
 
 type LazyInventoryReceive = {
   readonly id: string;
+  readonly tenantId: string;
   readonly comments?: string | null;
   readonly status: InventoryReceiveStatus | keyof typeof InventoryReceiveStatus;
   readonly createdBy: ByEmployee;
@@ -657,6 +742,7 @@ export declare const InventoryReceive: (new (init: ModelInit<InventoryReceive, I
 
 type EagerInventoryReceiveLine = {
   readonly id: string;
+  readonly tenantId: string;
   readonly productId: string;
   readonly productName: string;
   readonly unitOfMeasure: string;
@@ -670,6 +756,7 @@ type EagerInventoryReceiveLine = {
 
 type LazyInventoryReceiveLine = {
   readonly id: string;
+  readonly tenantId: string;
   readonly productId: string;
   readonly productName: string;
   readonly unitOfMeasure: string;
@@ -689,6 +776,7 @@ export declare const InventoryReceiveLine: (new (init: ModelInit<InventoryReceiv
 
 type EagerPrinter = {
   readonly id: string;
+  readonly tenantId: string;
   readonly deviceId: string;
   readonly identifier: string;
   readonly interfaceType: string;
@@ -701,6 +789,7 @@ type EagerPrinter = {
 
 type LazyPrinter = {
   readonly id: string;
+  readonly tenantId: string;
   readonly deviceId: string;
   readonly identifier: string;
   readonly interfaceType: string;
@@ -719,6 +808,7 @@ export declare const Printer: (new (init: ModelInit<Printer, PrinterMetaData>) =
 
 type EagerStation = {
   readonly id: string;
+  readonly tenantId: string;
   readonly deviceId: string;
   readonly alias: string;
   readonly createdAt?: string | null;
@@ -727,6 +817,7 @@ type EagerStation = {
 
 type LazyStation = {
   readonly id: string;
+  readonly tenantId: string;
   readonly deviceId: string;
   readonly alias: string;
   readonly createdAt?: string | null;
@@ -741,6 +832,7 @@ export declare const Station: (new (init: ModelInit<Station, StationMetaData>) =
 
 type EagerGlobalSettings = {
   readonly id: string;
+  readonly tenantId: string;
   readonly enforceSalesBasedOnInventory: boolean;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
@@ -748,6 +840,7 @@ type EagerGlobalSettings = {
 
 type LazyGlobalSettings = {
   readonly id: string;
+  readonly tenantId: string;
   readonly enforceSalesBasedOnInventory: boolean;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;

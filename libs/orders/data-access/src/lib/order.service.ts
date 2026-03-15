@@ -16,6 +16,7 @@ import {
     validateEbtPayment,
     EbtLineAllocation,
 } from './ebt-allocation';
+import { stampTenant } from '@pos/auth/data-access';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -57,7 +58,7 @@ export class OrderService {
      * @memberof OrderService
      */
     static async create(request: CreateOrderRequest) {
-        const order = new Order({
+        const order = new Order(stampTenant({
             orderNo: await StationService.getNextOrderNumber(request.by),
             status: 'OPEN',
             subtotal: request.order.footer.subtotal,
@@ -71,7 +72,7 @@ export class OrderService {
                 name: `${request.by.firstName} ${request.by.lastName}`
             },
             orderDate: moment().toISOString(),
-        });
+        }) as never);
 
         console.log('[create]: order to be stored', order);
         

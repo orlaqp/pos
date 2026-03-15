@@ -18,7 +18,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useSharedStyles } from '@pos/theme/native';
 
 import CartLine from '../cart-line/cart-line';
-import EmptyCart from '../../../../../../../apps/mobile-ui/assets/empty-cart.png';
+import EmptyCart from '../../../../../../../apps/mobile-ui/assets/illustrations/empty-cart-1600.png';
 import CartPayment from '../cart-payment/cart-payment';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { Role } from '@pos/auth/data-access';
@@ -45,8 +45,8 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
     const dispatch = useDispatch();
     const cart = useSelector(selectCart);
     const employee = useSelector(selectLoginEmployee);
-    const [ready, setReady] = useState(false);
     const [receivePayment, setReceivePayment] = useState<boolean>(false);
+    const ready = isCartReady(cart);
     const ebtEligibleTotal = getEbtEligibleTotal(cart);
     const invalidItemCount = cart.items.filter((item) => item.quantity === 0).length;
     const t = (key: string, fallback: string) =>
@@ -98,14 +98,11 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
     }
 
     useEffect(() => {
-        setReady(isCartReady(cart));
-
         setTimeout(() => {
             searchRef.current?.focus();
             // console.log('[cart]: setting focus');
         }, 25);
         
-
     }, [cart, searchRef]);
 
     if (!cart.items.length) {
@@ -118,6 +115,9 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                 />
                 <Text style={localStyles.emptyText}>
                     {t('CART_Empty', 'Cart is empty')}
+                </Text>
+                <Text style={localStyles.emptyHint}>
+                    Scan items or search the catalog to start a sale.
                 </Text>
             </View>
         );
@@ -208,14 +208,23 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             paddingHorizontal: tokens.spacing.lg,
         },
         emptyImage: {
-            width: 180,
-            height: 180,
-            marginBottom: tokens.spacing.md,
+            width: 220,
+            height: 220,
+            marginBottom: tokens.spacing.sm,
         },
         emptyText: {
-            color: tokens.colors.textSecondary,
-            fontSize: 18,
+            color: tokens.colors.textPrimary,
+            fontSize: 20,
+            fontWeight: '700',
             textAlign: 'center',
+        },
+        emptyHint: {
+            color: tokens.colors.textSecondary,
+            fontSize: 15,
+            lineHeight: 22,
+            textAlign: 'center',
+            marginTop: tokens.spacing.xs,
+            maxWidth: 260,
         },
         linesWrap: {
             flex: 1,

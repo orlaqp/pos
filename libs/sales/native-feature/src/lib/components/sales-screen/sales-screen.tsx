@@ -3,9 +3,9 @@ import i18next from 'i18next';
 
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-import { Dialog } from '@rneui/themed';
+import { Button, Dialog } from '@rneui/themed';
 
-import { View, StyleSheet, Alert, TextInput } from 'react-native';
+import { View, StyleSheet, Alert, Text, TextInput } from 'react-native';
 
 import {
     CategoryEntity,
@@ -31,7 +31,6 @@ import {
     ProductService,
     selectAllProducts,
     selectProductsEntities,
-    selectFilteredList,
     syncProducts,
     subscribeToProductChanges,
 } from '@pos/products/data-access';
@@ -46,11 +45,14 @@ import {
 } from '@pos/orders/data-access';
 import { selectStore } from '@pos/store-info/data-access';
 import { getGlobalSettings, subscribeToGlobalSettingsChanges } from '@pos/settings/data-access';
+import { Role } from '@pos/auth/data-access';
+import { selectLoginEmployee } from '@pos/employees/data-access';
 import {
     getActiveProducts,
     getAutoAddQuantity,
     getCategoryFilteredProducts,
     getSelectedQuantity,
+    isSameProductList,
     getSingleProductFromDictionary,
     shouldBlockSelectionByInventory,
     shouldSetFilteredProducts,
@@ -58,6 +60,12 @@ import {
 
 export interface NavigationParamList {
     [key: string]: object | undefined;
+    BackOffice: {
+        initialScreen?: 'Dashboard' | 'Products' | 'Categories';
+        initialScreenParams?: {
+            initialRouteName?: string;
+        };
+    };
     Sales: {
         mode: 'order' | 'payment';
     };
@@ -75,6 +83,7 @@ export function SalesScreen({
     route,
 }: NativeStackScreenProps<NavigationParamList, 'Sales'>) {
     const styles = useStyles();
+    const tokens = useDesignTokens();
     const dispatch = useAppDispatch();
     const searchRef = React.useRef<TextInput>(null);
     const product = useSelector(selectActiveProduct);
@@ -86,14 +95,18 @@ export function SalesScreen({
     const defaultPrinter = useSelector(getDefaultPrinter);
     const allProducts = useSelector(selectAllProducts);
     const globalSettings = useSelector(getGlobalSettings);
+    const employee = useSelector(selectLoginEmployee);
 
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
         []
     );
+    const [showCategories, setShowCategories] = useState(true);
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
             : fallback;
+    const hasCatalogProducts = getActiveProducts(allProducts).length > 0;
+    const canManageCatalog = !!employee?.roles?.includes(Role.Admin);
     const deselectProduct = () => dispatch(cartActions.select(undefined));
 
     const upsertCart = (item: CartItem) => {
@@ -231,32 +244,125 @@ export function SalesScreen({
     }, [onProductSelected, products]);
 
     useEffect(() => {
+        if (!hasCatalogProducts) return;
+
         setTimeout(() => {
             searchRef.current?.focus();
         }, 25);
-    }, [onProductSelected, filteredProducts, allProducts, products, searchRef])
+    }, [hasCatalogProducts, onProductSelected, filteredProducts, allProducts, products, searchRef])
 
     useEffect(() => {
-        setFilteredProducts(getActiveProducts(allProducts));
+        const nextProducts = getActiveProducts(allProducts);
+        setFilteredProducts((current) =>
+            isSameProductList(current, nextProducts) ? current : nextProducts
+        );
     }, [allProducts]);
+
+    const openBackOfficeForm = useCallback(
+        (screen: 'Products' | 'Categories', initialRouteName: string) => {
+            navigation.navigate('BackOffice', {
+                initialScreen: screen,
+                initialScreenParams: {
+                    initialRouteName,
+                },
+            });
+        },
+        [navigation]
+    );
 
     return (
         <UIScreen padded>
             <View style={styles.salesLayout}>
-                <View style={styles.categoriesCard}>
-                    <CategorySelection key='categorySelection' onSelected={onCategoryChange} />
-                </View>
+                {showCategories ? (
+                    <View style={styles.categoriesCard}>
+                        <CategorySelection
+                            key="categorySelection"
+                            onSelected={onCategoryChange}
+                        />
+                    </View>
+                ) : null}
                 <UICard style={styles.productsCard} padding="md" radius="lg">
-                    <ProductSearch
-                        key='productSearch'
-                        ref={searchRef}
-                        onFilterChange={onFilterChange}
-                    />
-                    <ProductSelection
-                        key='productSelection'
-                        products={filteredProducts}
-                        onSelected={onProductSelected}
-                    />
+                    <View style={styles.productsHeader}>
+                        <View>
+                            <Text style={styles.sectionTitle}>Products</Text>
+                            <Text style={styles.sectionSubtitle}>
+                                {showCategories
+                                    ? 'Browse by category or search the catalog.'
+                                    : 'Search the catalog or show categories again.'}
+                            </Text>
+                        </View>
+                        <Button
+                            testID="sales-toggle-categories"
+                            type="clear"
+                            title={showCategories ? 'Hide categories' : 'Show categories'}
+                            onPress={() => setShowCategories((current) => !current)}
+                            icon={{
+                                name: showCategories ? 'dock-right' : 'dock-left',
+                                type: 'material-community',
+                                color: tokens.colors.accent,
+                                size: 18,
+                            }}
+                            titleStyle={styles.toggleTitle}
+                            buttonStyle={styles.toggleButton}
+                        />
+                    </View>
+
+                    {hasCatalogProducts ? (
+                        <>
+                            <ProductSearch
+                                key="productSearch"
+                                ref={searchRef}
+                                onFilterChange={onFilterChange}
+                            />
+                            <ProductSelection
+                                key="productSelection"
+                                products={filteredProducts}
+                                onSelected={onProductSelected}
+                            />
+                        </>
+                    ) : (
+                        <View style={styles.emptyCatalogWrap}>
+                            <Text style={styles.emptyTitle}>No products yet</Text>
+                            <Text style={styles.emptySubtitle}>
+                                Add your first category or product in Back Office before using sales search.
+                            </Text>
+                            {canManageCatalog ? (
+                                <View style={styles.emptyActions}>
+                                    <Button
+                                        testID="sales-empty-add-category"
+                                        title="Add category"
+                                        onPress={() =>
+                                            openBackOfficeForm('Categories', 'Category Form')
+                                        }
+                                        buttonStyle={styles.primaryAction}
+                                        titleStyle={styles.primaryActionTitle}
+                                        icon={{
+                                            name: 'shape-outline',
+                                            type: 'material-community',
+                                            color: '#ffffff',
+                                            size: 18,
+                                        }}
+                                    />
+                                    <Button
+                                        testID="sales-empty-add-product"
+                                        title="Add product"
+                                        type="outline"
+                                        onPress={() =>
+                                            openBackOfficeForm('Products', 'Product Form')
+                                        }
+                                        buttonStyle={styles.secondaryAction}
+                                        titleStyle={styles.secondaryActionTitle}
+                                        icon={{
+                                            name: 'plus-box-outline',
+                                            type: 'material-community',
+                                            color: tokens.colors.accent,
+                                            size: 18,
+                                        }}
+                                    />
+                                </View>
+                            ) : null}
+                        </View>
+                    )}
                 </UICard>
                 <UICard style={styles.cartCard} padding="md" radius="lg" tone="muted">
                     <Cart key='cart' mode={route.params.mode} onSubmit={onCartSubmit} searchRef={searchRef} products={allProducts} />
@@ -302,6 +408,81 @@ const useStyles = () => {
                 flex: 1,
                 minWidth: 0,
                 marginRight: tokens.spacing.sm,
+            },
+            productsHeader: {
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                marginBottom: tokens.spacing.sm,
+            },
+            sectionTitle: {
+                color: tokens.colors.textPrimary,
+                fontSize: 20,
+                fontWeight: '700',
+                marginBottom: 4,
+            },
+            sectionSubtitle: {
+                color: tokens.colors.textSecondary,
+                fontSize: 13,
+                maxWidth: 360,
+            },
+            toggleButton: {
+                borderRadius: tokens.radii.xl,
+                paddingHorizontal: tokens.spacing.sm,
+                minHeight: 36,
+            },
+            toggleTitle: {
+                color: tokens.colors.accent,
+                fontSize: 13,
+                fontWeight: '700',
+                marginLeft: 6,
+            },
+            emptyCatalogWrap: {
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: tokens.spacing.xl,
+                paddingBottom: tokens.spacing.lg,
+            },
+            emptyTitle: {
+                color: tokens.colors.textPrimary,
+                fontSize: 24,
+                fontWeight: '700',
+                marginBottom: tokens.spacing.xs,
+            },
+            emptySubtitle: {
+                color: tokens.colors.textSecondary,
+                fontSize: 15,
+                lineHeight: 22,
+                textAlign: 'center',
+                maxWidth: 420,
+                marginBottom: tokens.spacing.lg,
+            },
+            emptyActions: {
+                flexDirection: 'row',
+                gap: tokens.spacing.sm,
+            },
+            primaryAction: {
+                backgroundColor: tokens.colors.accent,
+                borderRadius: tokens.radii.xl,
+                paddingHorizontal: tokens.spacing.md,
+                minHeight: 46,
+            },
+            primaryActionTitle: {
+                color: '#ffffff',
+                fontWeight: '700',
+                marginLeft: 8,
+            },
+            secondaryAction: {
+                borderRadius: tokens.radii.xl,
+                borderColor: tokens.colors.accent,
+                paddingHorizontal: tokens.spacing.md,
+                minHeight: 46,
+            },
+            secondaryActionTitle: {
+                color: tokens.colors.accent,
+                fontWeight: '700',
+                marginLeft: 8,
             },
             cartCard: {
                 width: 330,

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { categoriesActions, CategoryEntity, selectAllCategories, selectedCategory } from '@pos/categories/data-access';
-import { UIS3Image } from '@pos/shared/ui-native';
+import { UIEmptyState, UIS3Image } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
@@ -75,6 +75,14 @@ export function CategorySelection({ onSelected }: CategorySelectionProps) {
 
     return (
         <View style={styles.container}>
+            {!categories.length ? (
+                <View style={styles.emptyWrap}>
+                    <UIEmptyState
+                        text="No categories yet"
+                        imageSize={150}
+                    />
+                </View>
+            ) : null}
             <FlatList
                 data={categories}
                 keyExtractor={(item) => item.id || item.name}
@@ -97,6 +105,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         listContent: {
             paddingBottom: tokens.spacing.sm,
+        },
+        emptyWrap: {
+            marginTop: tokens.spacing.xl,
+            marginBottom: tokens.spacing.lg,
         },
         itemCard: {
             borderRadius: tokens.radii.md,
@@ -123,10 +135,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         itemLabel: {
             color: tokens.colors.textSecondary,
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: '700',
             textAlign: 'center',
-            lineHeight: 16,
+            lineHeight: 14,
             minHeight: 32,
         },
         itemLabelSelected: {

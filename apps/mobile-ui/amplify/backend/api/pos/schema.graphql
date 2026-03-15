@@ -1,5 +1,25 @@
-type Store @model @auth(rules: [{allow: public}]) {
+enum TenantUserRole {
+  OWNER
+  ADMIN
+}
+
+type Tenant @model @auth(rules: [{ allow: owner, ownerField: "ownerUserId", identityClaim: "sub" }]) {
   id: ID!
+  name: String!
+  slug: String! @index(name: "bySlug", queryField: "tenantBySlug")
+  ownerUserId: String!
+}
+
+type TenantUser @model @auth(rules: [{ allow: owner, ownerField: "userId", identityClaim: "sub" }]) {
+  id: ID!
+  tenantId: ID! @index(name: "byTenantId", queryField: "tenantUsersByTenant")
+  userId: String! @index(name: "byUserId", queryField: "tenantUsersByUser")
+  role: TenantUserRole!
+}
+
+type Store @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+  id: ID!
+  tenantId: ID!
   name: String!
   address: String!
   city: String!
@@ -12,14 +32,16 @@ type Store @model @auth(rules: [{allow: public}]) {
   disclaimer: String
 }
 
-type Brand @model @auth(rules: [{allow: public}]) {
+type Brand @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
+  tenantId: ID!
   name: String!
   description: String
 }
 
-type Category @model @auth(rules: [{allow: public}]) {
+type Category @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
+  tenantId: ID!
   name: String!
   description: String
   code: String
@@ -27,8 +49,9 @@ type Category @model @auth(rules: [{allow: public}]) {
   picture: String
 }
 
-type Customer @model @auth(rules: [{allow: public}]) {
+type Customer @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
+  tenantId: ID!
   firstName: String!
   lastName: String
   middleName: String
@@ -37,8 +60,9 @@ type Customer @model @auth(rules: [{allow: public}]) {
   email: String
 }
 
-type Employee @model @auth(rules: [{allow: public}]) {
+type Employee @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
+  tenantId: ID!
   code: String!
   firstName: String!
   lastName: String
@@ -68,8 +92,9 @@ type ByEmployee {
     name: String!
 }
 
-type Order @model @auth(rules: [{allow: public}]) {
+type Order @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
+  tenantId: ID!
   orderNo: String! @index(name: "byOrderNo")
   orderDate: AWSDateTime! @index(name: "byOrderDate")
   subtotal: Float!
@@ -79,7 +104,7 @@ type Order @model @auth(rules: [{allow: public}]) {
   employeeId: String!
   employeeName: String!
   lines: [OrderLine]!
-  paymentInfo: PaymentInfo 
+  paymentInfo: PaymentInfo
   refundInfo: RefundInfo
   createdBy: ByEmployee
   updatedBy: ByEmployee
@@ -110,7 +135,7 @@ enum PaymentType {
 
 type Payment {
     type: PaymentType!
-    amount: Float! 
+    amount: Float!
 }
 
 enum OrderStatus {
@@ -119,8 +144,9 @@ enum OrderStatus {
   PAID
 }
 
-type Product @model @auth(rules: [{allow: public}]) {
+type Product @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
+  tenantId: ID!
   name: String!
   description: String
   price: Float!
@@ -131,7 +157,7 @@ type Product @model @auth(rules: [{allow: public}]) {
   plu: String
   quantity: Float!
   unitOfMeasure: String!
-  trackStock: Boolean! 
+  trackStock: Boolean!
   reorderPoint: Float
   reorderQuantity: Float
   picture: String
@@ -141,56 +167,19 @@ type Product @model @auth(rules: [{allow: public}]) {
   isEBTEligible: Boolean
 }
 
-# type PurchaseOrder @model @auth(rules: [{allow: public}]) {
-#   id: ID!
-#   Supplier: Supplier @hasOne
-#   purchaseDate: AWSDateTime
-#   amount: Float
-# }
-
-# type PurchaseOrderLine @model @auth(rules: [{allow: public}]) {
-#   id: ID!
-#   Product: Product @hasOne
-#   unitPrice: Float
-#   quantity: Float
-# }
-
-
-# type Supplier @model @auth(rules: [{allow: public}]) {
-#   id: ID!
-#   code: String
-#   name: String!
-# }
-
-# type Stock @model @auth(rules: [{allow: public}]) {
-#   id: ID!
-#   Product: Product @hasOne
-#   quantity: Float!
-#   updatedAt: AWSDateTime
-# }
-
-# type Tag @model @auth(rules: [{allow: public}]) {
-#   id: ID!
-#   name: String!
-# }
-
-type UnitOfMeasure @model @auth(rules: [{allow: public}]) {
+type UnitOfMeasure @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
+  tenantId: ID!
   name: String!
   description: String
 }
 
-# type Inventory @model @auth(rules: [{allow: public}]) {
-#     id: ID!
-#     quantity: Float!
-#     Product: Product @hasOne
-# }
-
-type InventoryChanges @model @auth(rules: [{allow: public}]) {
+type InventoryChanges @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
     id: ID!
+    tenantId: ID!
     timestamp: AWSDateTime!
-    type: String! # type of operation Purchase Order/Inventory count
-    typeId: String # identifier to that type
+    type: String!
+    typeId: String
     quantityIn: Int!
     quantityOut: Int!
     Product: Product @hasOne
@@ -201,15 +190,17 @@ enum InventoryCountStatus {
   COMPLETED
 }
 
-type InventoryCount @model @auth(rules: [{allow: public}]) {
+type InventoryCount @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
     id: ID!
+    tenantId: ID!
     comments: String
     status: InventoryCountStatus!
     createdBy: ByEmployee!
 }
 
-type InventoryCountLine @model @auth(rules: [{allow: public}]) {
+type InventoryCountLine @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
     id: ID!
+    tenantId: ID!
     productId: String!
     productName: String!
     unitOfMeasure: String!
@@ -224,15 +215,17 @@ enum InventoryReceiveStatus {
   COMPLETED
 }
 
-type InventoryReceive @model @auth(rules: [{allow: public}]) {
+type InventoryReceive @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
     id: ID!
-    comments: String   
-    status: InventoryReceiveStatus! 
+    tenantId: ID!
+    comments: String
+    status: InventoryReceiveStatus!
     createdBy: ByEmployee!
 }
 
-type InventoryReceiveLine @model @auth(rules: [{allow: public}]) {
+type InventoryReceiveLine @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
     id: ID!
+    tenantId: ID!
     productId: String!
     productName: String!
     unitOfMeasure: String!
@@ -241,8 +234,9 @@ type InventoryReceiveLine @model @auth(rules: [{allow: public}]) {
     InventoryReceive: InventoryReceive @hasOne
 }
 
-type Printer @model @auth(rules: [{allow: public}]) {
+type Printer @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
     id: ID!
+    tenantId: ID!
     deviceId: String!
     identifier: String!
     interfaceType: String!
@@ -251,15 +245,19 @@ type Printer @model @auth(rules: [{allow: public}]) {
     alias: String
 }
 
-type Station @model @auth(rules: [{allow: public}]) {
+type Station @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
     id: ID!
+    tenantId: ID!
     deviceId: String!
     alias: String!
 }
 
-type GlobalSettings @model @auth(rules: [{allow: public}]) {
+type GlobalSettings @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
     enforceSalesBasedOnInventory: Boolean! @default(value: "false")
 }
+
 # Reporting
 
 type ProductSaleSummary {

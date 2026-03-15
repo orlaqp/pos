@@ -5,6 +5,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 const mockDispatch = jest.fn();
 const mockGoBack = jest.fn();
+const mockNavigate = jest.fn();
 const mockSearch = jest.fn();
 const mockCategoriesUnsubscribe = jest.fn();
 const mockProductsUnsubscribe = jest.fn();
@@ -35,6 +36,16 @@ jest.mock('react-redux', () => ({
 
 jest.mock('@pos/store', () => ({
     useAppDispatch: () => mockDispatch,
+}));
+
+jest.mock('@pos/auth/data-access', () => ({
+    Role: {
+        Admin: 'Admin',
+    },
+}));
+
+jest.mock('@pos/employees/data-access', () => ({
+    selectLoginEmployee: (state: any) => state.employee,
 }));
 
 jest.mock('@pos/categories/data-access', () => ({
@@ -243,6 +254,10 @@ describe('SalesScreen', () => {
                 [mockProduct.id]: mockProduct,
                 [mockLowInventoryProduct.id]: mockLowInventoryProduct,
             },
+            employee: {
+                id: 'e-1',
+                roles: ['Admin'],
+            },
             store: { id: 's-1' },
             printer: { id: 'printer-1' },
             settings: { enforceSalesBasedOnInventory: false },
@@ -257,7 +272,7 @@ describe('SalesScreen', () => {
     const renderSalesScreen = (mode: 'order' | 'payment' = 'order') =>
         render(
             <SalesScreen
-                navigation={{ goBack: mockGoBack } as any}
+                navigation={{ goBack: mockGoBack, navigate: mockNavigate } as any}
                 route={{ key: 'Sales', name: 'Sales', params: { mode } } as any}
             />
         );
@@ -412,5 +427,43 @@ describe('SalesScreen', () => {
         expect(mockCategoriesUnsubscribe).toHaveBeenCalled();
         expect(mockProductsUnsubscribe).toHaveBeenCalled();
         expect(mockSettingsUnsubscribe).toHaveBeenCalled();
+    });
+
+    it('shows the no-catalog state and opens back office create routes for admins', () => {
+        mockState.allProducts = [];
+        mockState.productsEntities = {};
+
+        const { getByText, getByTestId, queryByTestId } = renderSalesScreen();
+
+        expect(getByText('No products yet')).toBeTruthy();
+        expect(queryByTestId('sales-search-submit')).toBeNull();
+
+        fireEvent.press(getByTestId('sales-empty-add-category'));
+        expect(mockNavigate).toHaveBeenCalledWith('BackOffice', {
+            initialScreen: 'Categories',
+            initialScreenParams: {
+                initialRouteName: 'Category Form',
+            },
+        });
+
+        fireEvent.press(getByTestId('sales-empty-add-product'));
+        expect(mockNavigate).toHaveBeenCalledWith('BackOffice', {
+            initialScreen: 'Products',
+            initialScreenParams: {
+                initialRouteName: 'Product Form',
+            },
+        });
+    });
+
+    it('toggles the category sidebar', () => {
+        const { getByTestId, queryByTestId } = renderSalesScreen();
+
+        expect(queryByTestId('sales-category-select')).toBeTruthy();
+
+        fireEvent.press(getByTestId('sales-toggle-categories'));
+        expect(queryByTestId('sales-category-select')).toBeNull();
+
+        fireEvent.press(getByTestId('sales-toggle-categories'));
+        expect(queryByTestId('sales-category-select')).toBeTruthy();
     });
 });
