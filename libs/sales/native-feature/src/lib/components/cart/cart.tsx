@@ -5,20 +5,20 @@ import {
     CartState,
     selectCart,
 } from '@pos/sales/data-access';
-import { UICard, UIEmptyState } from '@pos/shared/ui-native';
+import { UICard } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, Dialog } from '@rneui/themed';
 import React, { useEffect, useState } from 'react';
 import i18next from 'i18next';
 
-import { View, TextInput, Alert, Text, StyleSheet } from 'react-native';
+import { View, TextInput, Alert, Text, StyleSheet, Image } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { useSharedStyles } from '@pos/theme/native';
 
 import CartLine from '../cart-line/cart-line';
-import EmptyCart from '../../../../assets/images/empty-cart.png';
+import EmptyCart from '../../../../../../../apps/mobile-ui/assets/empty-cart.png';
 import CartPayment from '../cart-payment/cart-payment';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { Role } from '@pos/auth/data-access';
@@ -111,11 +111,14 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
     if (!cart.items.length) {
         return (
             <View style={localStyles.emptyWrap}>
-                <UIEmptyState
-                    text={t('CART_Empty', 'Cart is empty')}
-                    picture={EmptyCart}
-                    backgroundColor={styles.darkBackground.backgroundColor}
+                <Image
+                    source={EmptyCart}
+                    style={localStyles.emptyImage}
+                    resizeMode="contain"
                 />
+                <Text style={localStyles.emptyText}>
+                    {t('CART_Empty', 'Cart is empty')}
+                </Text>
             </View>
         );
     }
@@ -199,9 +202,20 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flexDirection: 'column',
         },
         emptyWrap: {
-            marginTop: 120,
-            flexDirection: 'column',
+            flex: 1,
             justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: tokens.spacing.lg,
+        },
+        emptyImage: {
+            width: 180,
+            height: 180,
+            marginBottom: tokens.spacing.md,
+        },
+        emptyText: {
+            color: tokens.colors.textSecondary,
+            fontSize: 18,
+            textAlign: 'center',
         },
         linesWrap: {
             flex: 1,

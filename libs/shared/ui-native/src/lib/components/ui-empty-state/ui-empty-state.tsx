@@ -44,6 +44,7 @@ export function UIEmptyState({
                 <Image
                     source={picture || EmptyBox}
                     style={{ width: size, height: size }}
+                    resizeMode="contain"
                 />
                 <Text style={styles.text}>{text}</Text>
                 {actionText && (

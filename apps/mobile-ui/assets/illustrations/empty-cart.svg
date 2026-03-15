@@ -1,0 +1,27 @@
+<svg width="1600" height="1600" viewBox="0 0 1600 1600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cartStroke" x1="392" y1="518" x2="1158" y2="1248" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#36E4C0"/>
+      <stop offset="1" stop-color="#317BFF"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="1036" y1="364" x2="1250" y2="578" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD86F"/>
+      <stop offset="1" stop-color="#FF8756"/>
+    </linearGradient>
+    <linearGradient id="faded" x1="548" y1="544" x2="1058" y2="970" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#D9F7EF"/>
+      <stop offset="1" stop-color="#B8EAF1"/>
+    </linearGradient>
+  </defs>
+  <path d="M438 610H548L630 958H1136" stroke="url(#cartStroke)" stroke-width="82" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M620 874H1164L1228 714H572" stroke="url(#cartStroke)" stroke-width="82" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="744" cy="1110" r="68" fill="url(#cartStroke)"/>
+  <circle cx="1006" cy="1110" r="68" fill="url(#cartStroke)"/>
+  <path d="M1104 388L1132 448L1192 476L1132 504L1104 564L1076 504L1016 476L1076 448L1104 388Z" fill="url(#accent)"/>
+  <rect x="572" y="530" width="354" height="56" rx="28" fill="#C8FFF2" fill-opacity="0.7"/>
+  <path d="M706 686H1036" stroke="url(#faded)" stroke-width="58" stroke-linecap="round" stroke-dasharray="2 96"/>
+  <path d="M622 1260C685 1301 752 1322 824 1322C892 1322 958 1304 1024 1268" stroke="#A9E9DF" stroke-width="34" stroke-linecap="round" opacity="0.72"/>
+  <circle cx="1220" cy="1110" r="138" fill="#EAF9F5" fill-opacity="0.9"/>
+  <path d="M1158 1048L1282 1172" stroke="#8FD6C7" stroke-width="56" stroke-linecap="round"/>
+  <path d="M1282 1048L1158 1172" stroke="#8FD6C7" stroke-width="56" stroke-linecap="round"/>
+</svg>

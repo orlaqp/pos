@@ -243,9 +243,9 @@ export function SalesScreen({
     return (
         <UIScreen padded>
             <View style={styles.salesLayout}>
-                <UICard style={styles.categoriesCard} padding="md" radius="lg" tone="muted">
+                <View style={styles.categoriesCard}>
                     <CategorySelection key='categorySelection' onSelected={onCategoryChange} />
-                </UICard>
+                </View>
                 <UICard style={styles.productsCard} padding="md" radius="lg">
                     <ProductSearch
                         key='productSearch'
@@ -297,7 +297,6 @@ const useStyles = () => {
                 width: 150,
                 minWidth: 140,
                 marginRight: tokens.spacing.sm,
-                paddingRight: tokens.spacing.sm,
             },
             productsCard: {
                 flex: 1,
