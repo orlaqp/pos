@@ -5,7 +5,9 @@ import UIKeyPad from './ui-key-pad';
 
 describe('UIKeyPad', () => {
     it('should render successfully', () => {
-        const { container } = render(<UIKeyPad />);
-        expect(container).toBeTruthy();
+        const { toJSON } = render(
+            <UIKeyPad initialValue="" onChange={(value) => value} />
+        );
+        expect(toJSON()).toBeTruthy();
     });
 });

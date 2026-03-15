@@ -33,16 +33,25 @@ jest.mock('react-redux', () => ({
     useSelector: (selector: (state: any) => unknown) => selector(mockState),
 }));
 
+jest.mock('@pos/store', () => ({
+    useAppDispatch: () => mockDispatch,
+}));
+
 jest.mock('@pos/categories/data-access', () => ({
+    syncCategories: jest.fn(),
     subscribeToCategoryChanges: () => ({ unsubscribe: mockCategoriesUnsubscribe }),
 }));
 
 jest.mock('@pos/products/data-access', () => ({
     selectFilteredList: (state: any) => state.filteredList,
     selectAllProducts: (state: any) => state.allProducts,
+    selectProductsEntities: (state: any) =>
+        state.productsEntities ||
+        Object.fromEntries((state.allProducts || []).map((product: any) => [product.id, product])),
     ProductService: {
         search: (...args: unknown[]) => mockSearch(...args),
     },
+    syncProducts: jest.fn(),
     subscribeToProductChanges: () => ({ unsubscribe: mockProductsUnsubscribe }),
 }));
 
@@ -230,6 +239,10 @@ describe('SalesScreen', () => {
             activeProduct: undefined,
             filteredList: {},
             allProducts: [mockProduct, mockLowInventoryProduct],
+            productsEntities: {
+                [mockProduct.id]: mockProduct,
+                [mockLowInventoryProduct.id]: mockLowInventoryProduct,
+            },
             store: { id: 's-1' },
             printer: { id: 'printer-1' },
             settings: { enforceSalesBasedOnInventory: false },
@@ -385,8 +398,8 @@ describe('SalesScreen', () => {
         );
     });
 
-    it('auto-selects single filtered product from dictionary', () => {
-        mockState.filteredList = { 'p-1': mockProduct };
+    it('auto-selects single product from the products dictionary', () => {
+        mockState.productsEntities = { 'p-1': mockProduct };
         renderSalesScreen();
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/select' })

@@ -37,6 +37,15 @@ jest.mock('react-native-fs', () => ({
 }));
 
 jest.mock('@pos/shared/amplify', () => ({
+    Amplify: {
+        configure: jest.fn(),
+    },
+    Auth: {
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+        signUp: jest.fn(),
+        currentAuthenticatedUser: jest.fn(),
+    },
     Storage: {
         get: jest.fn().mockResolvedValue('https://example.com/mock.png'),
         put: jest.fn().mockResolvedValue({}),
@@ -47,6 +56,22 @@ jest.mock('@pos/shared/amplify', () => ({
         save: jest.fn(),
         delete: jest.fn(),
     },
+}));
+
+jest.mock('@aws-amplify/datastore', () => ({
+    initSchema: jest.fn(() => ({})),
+    DataStore: {
+        query: jest.fn(),
+        save: jest.fn(),
+        delete: jest.fn(),
+        observe: jest.fn(),
+        observeQuery: jest.fn(),
+        start: jest.fn(),
+        stop: jest.fn(),
+        clear: jest.fn(),
+        configure: jest.fn(),
+    },
+    syncExpression: jest.fn(),
 }));
 
 jest.mock('react-native-image-picker', () => ({

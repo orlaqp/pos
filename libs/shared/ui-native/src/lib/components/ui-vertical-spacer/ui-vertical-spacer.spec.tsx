@@ -5,7 +5,7 @@ import UiVerticalSpacer from './ui-vertical-spacer';
 
 describe('UiVerticalSpacer', () => {
     it('should render successfully', () => {
-        const { container } = render(<UiVerticalSpacer />);
-        expect(container).toBeTruthy();
+        const { toJSON } = render(<UiVerticalSpacer size="medium" />);
+        expect(toJSON()).toBeTruthy();
     });
 });
