@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import i18next from 'i18next';
 
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, Dialog } from '@rneui/themed';
 
-import { View, StyleSheet, Alert, Text, TextInput } from 'react-native';
+import { Animated, View, StyleSheet, Alert, Text, TextInput } from 'react-native';
 
 import {
     CategoryEntity,
@@ -107,6 +107,9 @@ export function SalesScreen({
             : fallback;
     const hasCatalogProducts = getActiveProducts(allProducts).length > 0;
     const canManageCatalog = !!employee?.roles?.includes(Role.Admin);
+    const categoryWidth = useRef(new Animated.Value(showCategories ? 150 : 0)).current;
+    const categoryOpacity = useRef(new Animated.Value(showCategories ? 1 : 0)).current;
+    const contentOpacity = useRef(new Animated.Value(1)).current;
     const deselectProduct = () => dispatch(cartActions.select(undefined));
 
     const upsertCart = (item: CartItem) => {
@@ -258,6 +261,30 @@ export function SalesScreen({
         );
     }, [allProducts]);
 
+    useEffect(() => {
+        Animated.parallel([
+            Animated.timing(categoryWidth, {
+                toValue: showCategories ? 150 : 0,
+                duration: 220,
+                useNativeDriver: false,
+            }),
+            Animated.timing(categoryOpacity, {
+                toValue: showCategories ? 1 : 0,
+                duration: 180,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [categoryOpacity, categoryWidth, showCategories]);
+
+    useEffect(() => {
+        contentOpacity.setValue(0.6);
+        Animated.timing(contentOpacity, {
+            toValue: 1,
+            duration: 180,
+            useNativeDriver: true,
+        }).start();
+    }, [contentOpacity, filteredProducts.length, hasCatalogProducts, showCategories]);
+
     const openBackOfficeForm = useCallback(
         (screen: 'Products' | 'Categories', initialRouteName: string) => {
             navigation.navigate('BackOffice', {
@@ -273,14 +300,26 @@ export function SalesScreen({
     return (
         <UIScreen padded>
             <View style={styles.salesLayout}>
-                {showCategories ? (
-                    <View style={styles.categoriesCard}>
+                <Animated.View
+                    style={[
+                        styles.categoriesCard,
+                        {
+                            width: categoryWidth,
+                            opacity: categoryOpacity,
+                            marginRight: categoryWidth.interpolate({
+                                inputRange: [0, 150],
+                                outputRange: [0, tokens.spacing.sm],
+                            }),
+                        },
+                    ]}
+                >
+                    {showCategories ? (
                         <CategorySelection
                             key="categorySelection"
                             onSelected={onCategoryChange}
                         />
-                    </View>
-                ) : null}
+                    ) : null}
+                </Animated.View>
                 <UICard style={styles.productsCard} padding="md" radius="lg">
                     <View style={styles.productsHeader}>
                         <View>
@@ -307,6 +346,7 @@ export function SalesScreen({
                         />
                     </View>
 
+                    <Animated.View style={{ flex: 1, opacity: contentOpacity }}>
                     {hasCatalogProducts ? (
                         <>
                             <ProductSearch
@@ -363,6 +403,7 @@ export function SalesScreen({
                             ) : null}
                         </View>
                     )}
+                    </Animated.View>
                 </UICard>
                 <UICard style={styles.cartCard} padding="md" radius="lg" tone="muted">
                     <Cart key='cart' mode={route.params.mode} onSubmit={onCartSubmit} searchRef={searchRef} products={allProducts} />
@@ -400,9 +441,7 @@ const useStyles = () => {
                 alignItems: 'stretch',
             },
             categoriesCard: {
-                width: 150,
-                minWidth: 140,
-                marginRight: tokens.spacing.sm,
+                overflow: 'hidden',
             },
             productsCard: {
                 flex: 1,

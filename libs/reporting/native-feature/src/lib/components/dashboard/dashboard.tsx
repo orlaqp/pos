@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SalesSummary } from '@pos/shared/models';
 import {
     DateRange,
@@ -11,7 +11,7 @@ import {
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import moment from 'moment';
 
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LineChartComponent } from '../line-chart/line-chart';
 import ListWidget from '../list-widget/list-widget';
 import PieChart from '../pie-chart/pie-chart';
@@ -91,6 +91,8 @@ export function Dashboard(_props: DashboardProps) {
         endDate: moment().endOf('day'),
     });
     const [salesSummary, setSalesSummary] = useState<SalesSummary>();
+    const emptyOpacity = useRef(new Animated.Value(0)).current;
+    const emptyTranslateY = useRef(new Animated.Value(12)).current;
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
@@ -132,6 +134,25 @@ export function Dashboard(_props: DashboardProps) {
         };
     }, [dateRange]);
 
+    useEffect(() => {
+        if (loading || hasSalesData(salesSummary)) return;
+
+        emptyOpacity.setValue(0);
+        emptyTranslateY.setValue(12);
+        Animated.parallel([
+            Animated.timing(emptyOpacity, {
+                toValue: 1,
+                duration: 220,
+                useNativeDriver: true,
+            }),
+            Animated.timing(emptyTranslateY, {
+                toValue: 0,
+                duration: 220,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [emptyOpacity, emptyTranslateY, loading, salesSummary]);
+
     return (
         <UIScreen padded>
             <ScrollView
@@ -165,7 +186,15 @@ export function Dashboard(_props: DashboardProps) {
 
                         {!loading && !hasSalesData(salesSummary) && (
                             <UICard tone="muted" style={styles.centerBlock}>
-                                <View style={styles.emptyWrap}>
+                                <Animated.View
+                                    style={[
+                                        styles.emptyWrap,
+                                        {
+                                            opacity: emptyOpacity,
+                                            transform: [{ translateY: emptyTranslateY }],
+                                        },
+                                    ]}
+                                >
                                     <Text style={styles.emptyTitle}>
                                         {t(
                                             'DASHBOARD_NoDataForRange',
@@ -178,7 +207,7 @@ export function Dashboard(_props: DashboardProps) {
                                             'Completed sales in the selected period will appear here.'
                                         )}
                                     </Text>
-                                </View>
+                                </Animated.View>
                             </UICard>
                         )}
 

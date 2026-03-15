@@ -1,9 +1,9 @@
 import { useSharedStyles } from '@pos/theme/native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
 
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { Animated, View, Text, FlatList, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { selectAllEmployees } from '@pos/employees/data-access';
 import { selectAllProducts } from '@pos/products/data-access';
@@ -216,6 +216,8 @@ export function EndOfDay(props: EndOfDayProps) {
 
     const [closedByOpen, setClosedByOpen] = useState(false);
     const [closedByValue, setClosedByValue] = useState(null);
+    const emptyOpacity = useRef(new Animated.Value(0)).current;
+    const emptyTranslateY = useRef(new Animated.Value(12)).current;
     const filterConfigs = buildEndOfDayFilterConfigs({
         employeesOpen,
         employeeValue,
@@ -269,6 +271,25 @@ export function EndOfDay(props: EndOfDayProps) {
         setPaymentMethodsSummary(prev => filterResponse.summary);
         
     }, [orders, employeeValue, closedByValue, productValue])
+
+    useEffect(() => {
+        if (loading || hasFilteredData) return;
+
+        emptyOpacity.setValue(0);
+        emptyTranslateY.setValue(12);
+        Animated.parallel([
+            Animated.timing(emptyOpacity, {
+                toValue: 1,
+                duration: 220,
+                useNativeDriver: true,
+            }),
+            Animated.timing(emptyTranslateY, {
+                toValue: 0,
+                duration: 220,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [emptyOpacity, emptyTranslateY, hasFilteredData, loading]);
 
     return (
         <View style={styles.page}>
@@ -332,7 +353,15 @@ export function EndOfDay(props: EndOfDayProps) {
                 }
 
                 {!loading && !hasFilteredData && (
-                    <View style={local.emptyWrap}>
+                    <Animated.View
+                        style={[
+                            local.emptyWrap,
+                            {
+                                opacity: emptyOpacity,
+                                transform: [{ translateY: emptyTranslateY }],
+                            },
+                        ]}
+                    >
                         <Text style={local.emptyTitle}>
                             {t('EOD_NoDataForRange', 'No data found for this date range')}
                         </Text>
@@ -342,7 +371,7 @@ export function EndOfDay(props: EndOfDayProps) {
                                 'Completed sales matching the selected filters will appear here.'
                             )}
                         </Text>
-                    </View>
+                    </Animated.View>
                 )}
 
                 {!loading && hasFilteredData && (

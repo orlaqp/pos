@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
 const padMatrix: Array<Array<number | 'back' | null>> = [
     [1, 2, 3],
@@ -11,15 +11,57 @@ const padMatrix: Array<Array<number | 'back' | null>> = [
 export interface UIKeyPadProps {
     initialValue: string;
     onChange: (numbers: string) => string;
+    invalidAttempt?: number;
+    resetToken?: number;
+    disabled?: boolean;
 }
 
-export function UIKeyPad({ initialValue, onChange }: UIKeyPadProps) {
+export function UIKeyPad({
+    initialValue,
+    onChange,
+    invalidAttempt = 0,
+    resetToken = 0,
+    disabled = false,
+}: UIKeyPadProps) {
     const styles = useStyles();
     const [numbers, setNumbers] = useState<string>(initialValue || '');
+    const shakeX = React.useRef(new Animated.Value(0)).current;
+    const displayScale = React.useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
         setNumbers(initialValue || '');
     }, [initialValue]);
+
+    useEffect(() => {
+        setNumbers('');
+    }, [resetToken]);
+
+    useEffect(() => {
+        Animated.sequence([
+            Animated.timing(displayScale, {
+                toValue: 1.05,
+                duration: 90,
+                useNativeDriver: true,
+            }),
+            Animated.timing(displayScale, {
+                toValue: 1,
+                duration: 120,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [displayScale, numbers.length]);
+
+    useEffect(() => {
+        if (!invalidAttempt) return;
+
+        Animated.sequence([
+            Animated.timing(shakeX, { toValue: -10, duration: 45, useNativeDriver: true }),
+            Animated.timing(shakeX, { toValue: 10, duration: 45, useNativeDriver: true }),
+            Animated.timing(shakeX, { toValue: -8, duration: 40, useNativeDriver: true }),
+            Animated.timing(shakeX, { toValue: 8, duration: 40, useNativeDriver: true }),
+            Animated.timing(shakeX, { toValue: 0, duration: 45, useNativeDriver: true }),
+        ]).start();
+    }, [invalidAttempt, shakeX]);
 
     const maskedValue = useMemo(
         () => `${numbers}`.split('').map(() => '•').join(' '),
@@ -32,6 +74,8 @@ export function UIKeyPad({ initialValue, onChange }: UIKeyPadProps) {
     };
 
     const onPress = (val: number | 'back') => {
+        if (disabled) return;
+
         if (val === 'back') {
             commitValue((numbers || '').slice(0, -1));
             return;
@@ -41,11 +85,11 @@ export function UIKeyPad({ initialValue, onChange }: UIKeyPadProps) {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.display}>
+        <Animated.View style={[styles.container, { transform: [{ translateX: shakeX }] }]}>
+            <Animated.View style={[styles.display, { transform: [{ scale: displayScale }] }]}>
                 <Text style={styles.displayLabel}>Enter PIN</Text>
                 <Text style={styles.displayValue}>{maskedValue || '• • • •'}</Text>
-            </View>
+            </Animated.View>
             {padMatrix.map((row, rowIndex) => (
                 <View key={`row-${rowIndex}`} style={styles.row}>
                     {row.map((item, itemIndex) => {
@@ -62,9 +106,16 @@ export function UIKeyPad({ initialValue, onChange }: UIKeyPadProps) {
                                     styles.key,
                                     pressed ? styles.keyPressed : null,
                                     isBackspace ? styles.secondaryKey : null,
+                                    disabled ? styles.keyDisabled : null,
                                 ]}
                             >
-                                <Text style={[styles.keyText, isBackspace ? styles.secondaryKeyText : null]}>
+                                <Text
+                                    style={[
+                                        styles.keyText,
+                                        isBackspace ? styles.secondaryKeyText : null,
+                                        disabled ? styles.keyTextDisabled : null,
+                                    ]}
+                                >
                                     {isBackspace ? '⌫' : item}
                                 </Text>
                             </Pressable>
@@ -72,7 +123,7 @@ export function UIKeyPad({ initialValue, onChange }: UIKeyPadProps) {
                     })}
                 </View>
             ))}
-        </View>
+        </Animated.View>
     );
 }
 
@@ -137,10 +188,16 @@ const useStyles = () =>
         secondaryKey: {
             backgroundColor: '#141922',
         },
+        keyDisabled: {
+            opacity: 0.4,
+        },
         keyText: {
             color: '#f4f8ff',
             fontSize: 30,
             fontWeight: '700',
+        },
+        keyTextDisabled: {
+            color: '#7a8593',
         },
         secondaryKeyText: {
             color: '#7eb6ff',

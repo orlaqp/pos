@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     OrderEntity,
     OrderService,
@@ -8,7 +8,7 @@ import {
 } from '@pos/orders/data-access';
 import { UICard, UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-import { View, StyleSheet, FlatList, Text, Pressable } from 'react-native';
+import { Animated, View, StyleSheet, FlatList, Text, Pressable } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { OrderStatus } from '@pos/shared/api';
 import CompactOrderItem from '../compact-order-item/compact-order-item';
@@ -27,6 +27,8 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
     const [filterText, setFilterText] = useState<string>();
     const openOrders = useSelector(selectOpenOrders);
     const [filteredList, setFilteredList] = useState<OrderEntity[]>(openOrders);
+    const emptyOpacity = useRef(new Animated.Value(0)).current;
+    const emptyTranslateY = useRef(new Animated.Value(12)).current;
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
@@ -64,6 +66,26 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
+    useEffect(() => {
+        const showEmpty = openOrders.length === 0 || filteredList.length === 0;
+        if (!showEmpty) return;
+
+        emptyOpacity.setValue(0);
+        emptyTranslateY.setValue(12);
+        Animated.parallel([
+            Animated.timing(emptyOpacity, {
+                toValue: 1,
+                duration: 220,
+                useNativeDriver: true,
+            }),
+            Animated.timing(emptyTranslateY, {
+                toValue: 0,
+                duration: 220,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [emptyOpacity, emptyTranslateY, filteredList.length, openOrders.length]);
+
     return (
         <View style={local.container}>
             <View style={local.headerRow}>
@@ -87,7 +109,12 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
                 </Pressable>
             </View>
             {openOrders.length === 0 ? (
-                <View style={local.emptyWrap}>
+                <Animated.View
+                    style={[
+                        local.emptyWrap,
+                        { opacity: emptyOpacity, transform: [{ translateY: emptyTranslateY }] },
+                    ]}
+                >
                     <Text style={local.emptyTitle}>
                         {t('ORDERS_NoOpenOrdersFound', 'No open orders found')}
                     </Text>
@@ -97,7 +124,7 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
                             'Orders started in sales will show up here until they are completed.'
                         )}
                     </Text>
-                </View>
+                </Animated.View>
             ) : (
                 <>
                     <UICard tone="muted" padding="sm" radius="md" style={local.searchCard}>
@@ -111,7 +138,14 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
                     </UICard>
                     <View style={local.listWrap}>
                         {filteredList.length === 0 && (
-                            <UIEmptyState text={t('ORDERS_NoOpenOrdersFound', 'No open orders found')} />
+                            <Animated.View
+                                style={{
+                                    opacity: emptyOpacity,
+                                    transform: [{ translateY: emptyTranslateY }],
+                                }}
+                            >
+                                <UIEmptyState text={t('ORDERS_NoOpenOrdersFound', 'No open orders found')} />
+                            </Animated.View>
                         )}
                         {filteredList.length > 0 && (
                             <FlatList

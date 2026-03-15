@@ -1,8 +1,9 @@
 import { getThemeColors, useSharedStyles } from '@pos/theme/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme, Text, Button, Icon, Input } from '@rneui/themed';
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Image, Alert, ScrollView, Animated } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { Role } from '@pos/auth/data-access';
@@ -46,6 +47,49 @@ type StoreSetupModel = {
     country: string;
 };
 
+type PinLockState = {
+    failedAttempts: number;
+    lockedUntil: number | null;
+};
+
+const PIN_LOCK_STORAGE_KEY = 'pin-lock-state-v1';
+const MAX_PIN_ATTEMPTS = 3;
+const PIN_LOCK_DURATION_MS = 5 * 60 * 1000;
+
+const readPinLockState = async (): Promise<PinLockState> => {
+    try {
+        const raw = await AsyncStorage.getItem(PIN_LOCK_STORAGE_KEY);
+        if (!raw) {
+            return { failedAttempts: 0, lockedUntil: null };
+        }
+
+        const parsed = JSON.parse(raw) as Partial<PinLockState>;
+        return {
+            failedAttempts:
+                typeof parsed.failedAttempts === 'number' ? parsed.failedAttempts : 0,
+            lockedUntil:
+                typeof parsed.lockedUntil === 'number' ? parsed.lockedUntil : null,
+        };
+    } catch {
+        return { failedAttempts: 0, lockedUntil: null };
+    }
+};
+
+const writePinLockState = async (state: PinLockState) => {
+    await AsyncStorage.setItem(PIN_LOCK_STORAGE_KEY, JSON.stringify(state));
+};
+
+const clearPinLockState = async () => {
+    await AsyncStorage.removeItem(PIN_LOCK_STORAGE_KEY);
+};
+
+const formatLockCountdown = (remainingMs: number) => {
+    const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
+
 const getOwnerNameParts = (name?: string) => {
     const trimmed = name?.trim() || '';
     if (!trimmed) {
@@ -71,6 +115,13 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const user = useSelector((state: RootState) => state.auth.user);
     const businessName = useSelector((state: RootState) => state.tenantSession.businessName);
     const [pin, setPin] = useState<string>('');
+    const [invalidPinAttempt, setInvalidPinAttempt] = useState(0);
+    const [pinResetToken, setPinResetToken] = useState(0);
+    const [pinLockState, setPinLockState] = useState<PinLockState>({
+        failedAttempts: 0,
+        lockedUntil: null,
+    });
+    const [lockNow, setLockNow] = useState<number>(Date.now());
     const [setupError, setSetupError] = useState<string | null>(null);
     const [setupSaving, setSetupSaving] = useState(false);
     const [setupStep, setSetupStep] = useState<'employee' | 'store'>('employee');
@@ -107,7 +158,6 @@ export const HomeScreen = (props: HomeScreenProps) => {
         store.phone === '000-000-0000';
     const needsInitialEmployee = employees.length === 0;
     const needsSetupWizard = !employee && (needsInitialEmployee || storeNeedsSetup);
-
     const paths: PathDetails[] = useMemo(() => [
         {
             title: 'Sales',
@@ -134,6 +184,33 @@ export const HomeScreen = (props: HomeScreenProps) => {
             role: Role.Admin,
         },
     ], [dispatch]);
+    const visiblePaths = useMemo(
+        () => paths.filter((p) => employee?.roles?.includes(p.role)),
+        [employee?.roles, paths]
+    );
+    const routeAnimations = useMemo(
+        () => visiblePaths.map(() => new Animated.Value(0)),
+        [visiblePaths]
+    );
+    const setupContentOpacity = useRef(new Animated.Value(1)).current;
+    const setupContentTranslateY = useRef(new Animated.Value(0)).current;
+    const lockedUntil = pinLockState.lockedUntil;
+    const isPinLocked = !!lockedUntil && lockedUntil > lockNow;
+    const remainingPinAttempts = Math.max(
+        0,
+        MAX_PIN_ATTEMPTS - pinLockState.failedAttempts
+    );
+    const pinLockMessage = isPinLocked
+        ? `Too many invalid PIN attempts. Try again in ${formatLockCountdown(
+              lockedUntil - lockNow
+          )}.`
+        : null;
+    const pinAttemptsMessage =
+        !isPinLocked && pinLockState.failedAttempts > 0
+            ? `${remainingPinAttempts} ${
+                  remainingPinAttempts === 1 ? 'attempt' : 'attempts'
+              } remaining before this device locks for 5 minutes.`
+            : null;
 
     const goto = (details: PathDetails) => {
         if (!details.validate) {
@@ -150,6 +227,10 @@ export const HomeScreen = (props: HomeScreenProps) => {
     };
 
     const onPinUpdated = (nextPin: string) => {
+        if (isPinLocked) {
+            return '';
+        }
+
         if (nextPin.length <= 4) {
             setPin(nextPin);
             return nextPin;
@@ -158,29 +239,107 @@ export const HomeScreen = (props: HomeScreenProps) => {
         return pin;
     };
 
+    const resetPinEntry = () => {
+        setPin('');
+        setPinResetToken((current) => current + 1);
+    };
+
+    const recordFailedPinAttempt = async (message: string) => {
+        const nextFailedAttempts = pinLockState.failedAttempts + 1;
+        const shouldLock = nextFailedAttempts >= MAX_PIN_ATTEMPTS;
+        const nextState: PinLockState = shouldLock
+            ? {
+                  failedAttempts: 0,
+                  lockedUntil: Date.now() + PIN_LOCK_DURATION_MS,
+              }
+            : {
+                  failedAttempts: nextFailedAttempts,
+                  lockedUntil: null,
+              };
+
+        setInvalidPinAttempt((current) => current + 1);
+        setPinLockState(nextState);
+        await writePinLockState(nextState);
+        resetPinEntry();
+
+        if (shouldLock) {
+            Alert.alert(
+                'PIN locked',
+                'Too many invalid PIN attempts. This device is locked for 5 minutes.'
+            );
+            return;
+        }
+
+        Alert.alert(message);
+    };
+
     useEffect(() => {
         if (pin.length !== 4) return;
+        if (isPinLocked) {
+            resetPinEntry();
+            return;
+        }
 
         EmployeeService.getEmployee(pin)
             .then((emp) => {
                 if (!emp) {
-                    Alert.alert('The PIN number you entered is not valid');
-                    setPin('');
+                    void recordFailedPinAttempt('The PIN number you entered is not valid');
                     return;
                 }
                 dispatch(employeesActions.loginEmployee(emp));
-                setPin('');
+                setInvalidPinAttempt(0);
+                setPinLockState({ failedAttempts: 0, lockedUntil: null });
+                void clearPinLockState();
+                resetPinEntry();
             })
             .catch((error) => {
                 console.error('PIN login failed', error);
-                Alert.alert('Unable to validate PIN at the moment. Please try again.');
-                setPin('');
+                void recordFailedPinAttempt(
+                    'Unable to validate PIN at the moment. Please try again.'
+                );
             });
-    }, [dispatch, pin]);
+    }, [dispatch, isPinLocked, pin, pinLockState.failedAttempts]);
 
     useEffect(() => {
-        setPin('');
+        resetPinEntry();
     }, [employee]);
+
+    useEffect(() => {
+        let active = true;
+
+        readPinLockState().then((state) => {
+            if (!active) return;
+
+            if (state.lockedUntil && state.lockedUntil <= Date.now()) {
+                setPinLockState({ failedAttempts: 0, lockedUntil: null });
+                void clearPinLockState();
+                return;
+            }
+
+            setPinLockState(state);
+        });
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!isPinLocked) return;
+
+        const interval = setInterval(() => {
+            const now = Date.now();
+            setLockNow(now);
+
+            if (lockedUntil && lockedUntil <= now) {
+                setPinLockState({ failedAttempts: 0, lockedUntil: null });
+                void clearPinLockState();
+                resetPinEntry();
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [isPinLocked, lockedUntil]);
 
     useEffect(() => {
         if (needsInitialEmployee) {
@@ -206,6 +365,42 @@ export const HomeScreen = (props: HomeScreenProps) => {
             country: store?.country || 'US',
         });
     }, [businessName, store, storeSetupForm, user?.email]);
+
+    useEffect(() => {
+        if (!needsSetupWizard) return;
+
+        setupContentOpacity.setValue(0);
+        setupContentTranslateY.setValue(14);
+        Animated.parallel([
+            Animated.timing(setupContentOpacity, {
+                toValue: 1,
+                duration: 220,
+                useNativeDriver: true,
+            }),
+            Animated.timing(setupContentTranslateY, {
+                toValue: 0,
+                duration: 220,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [needsSetupWizard, setupContentOpacity, setupContentTranslateY, setupStep]);
+
+    useEffect(() => {
+        if (!employee || !visiblePaths.length) return;
+
+        routeAnimations.forEach((value) => value.setValue(0));
+
+        Animated.stagger(
+            100,
+            routeAnimations.map((value) =>
+                Animated.timing(value, {
+                    toValue: 1,
+                    duration: 220,
+                    useNativeDriver: true,
+                })
+            )
+        ).start();
+    }, [employee, routeAnimations, visiblePaths.length]);
 
     const createOwnerEmployee = async (model: FirstEmployeeSetupModel) => {
         const trimmedPin = model.pin.trim();
@@ -334,10 +529,14 @@ export const HomeScreen = (props: HomeScreenProps) => {
                             </View>
                         </View>
                     </View>
-                    <View
+                    <Animated.View
                         style={[
                             styles.keypadCard,
                             setupStep === 'store' ? styles.wizardCardWide : undefined,
+                            {
+                                opacity: setupContentOpacity,
+                                transform: [{ translateY: setupContentTranslateY }],
+                            },
                         ]}
                     >
                         <Text style={styles.keypadTitle}>
@@ -500,7 +699,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
                                 </>
                             </FormProvider>
                         )}
-                    </View>
+                    </Animated.View>
                 </View>
             ) : !employee ? (
                 <View style={styles.shell}>
@@ -515,32 +714,54 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     <View style={styles.keypadCard}>
                         <Text style={styles.keypadTitle}>Shared device access</Text>
                         <Text style={styles.keypadHint}>PIN is required every time the app is reopened.</Text>
-                        <UIKeyPad initialValue={''} onChange={onPinUpdated} />
+                        {pinLockMessage ? <UIAlert message={pinLockMessage} type="error" /> : null}
+                        {pinAttemptsMessage ? (
+                            <UIAlert message={pinAttemptsMessage} type="warning" />
+                        ) : null}
+                        <UIKeyPad
+                            initialValue={pin}
+                            onChange={onPinUpdated}
+                            invalidAttempt={invalidPinAttempt}
+                            resetToken={pinResetToken}
+                            disabled={isPinLocked}
+                        />
                     </View>
                 </View>
             ) : (
                 <View style={styles.routeGrid}>
-                    {paths.map((p) => {
-                        if (!employee.roles?.includes(p.role)) return null;
+                    {visiblePaths.map((p, index) => {
+                        const animation = routeAnimations[index];
+                        const animatedStyle = {
+                            opacity: animation,
+                            transform: [
+                                {
+                                    scale: animation.interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: [0.92, 1],
+                                    }),
+                                },
+                            ],
+                        };
 
                         return (
-                            <TouchableOpacity
-                                onPress={() => goto(p)}
-                                key={p.title}
-                                testID={`home-nav-${p.path.toLowerCase()}`}
-                            >
-                                <View style={[styles.bigButton, sharedStyles.centered]}>
-                                    <View style={styles.routeIconWrap}>
-                                        <Icon
-                                            name={p.icon}
-                                            type="material-community"
-                                            size={52}
-                                            color="#eef4ff"
-                                        />
+                            <Animated.View key={p.title} style={animatedStyle}>
+                                <TouchableOpacity
+                                    onPress={() => goto(p)}
+                                    testID={`home-nav-${p.path.toLowerCase()}`}
+                                >
+                                    <View style={[styles.bigButton, sharedStyles.centered]}>
+                                        <View style={styles.routeIconWrap}>
+                                            <Icon
+                                                name={p.icon}
+                                                type="material-community"
+                                                size={52}
+                                                color="#eef4ff"
+                                            />
+                                        </View>
+                                        <Text style={styles.routeTitle}>{p.title}</Text>
                                     </View>
-                                    <Text style={styles.routeTitle}>{p.title}</Text>
-                                </View>
-                            </TouchableOpacity>
+                                </TouchableOpacity>
+                            </Animated.View>
                         );
                     })}
                 </View>

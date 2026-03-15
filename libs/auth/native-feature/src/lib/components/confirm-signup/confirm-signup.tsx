@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, View, StyleSheet, useWindowDimensions } from 'react-native';
 import { Button, Text, useTheme } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -25,6 +25,10 @@ type ConfirmSignupModel = {
 export function ConfirmSignupScreen(props: ConfirmSignupProps) {
     const styles = useStyles();
     const { width } = useWindowDimensions();
+    const heroOpacity = useRef(new Animated.Value(0)).current;
+    const heroTranslateY = useRef(new Animated.Value(18)).current;
+    const formOpacity = useRef(new Animated.Value(0)).current;
+    const formTranslateY = useRef(new Animated.Value(24)).current;
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
@@ -41,6 +45,36 @@ export function ConfirmSignupScreen(props: ConfirmSignupProps) {
 
     const emailValue = formMethods.watch('email');
     const isWide = width >= 980;
+
+    useEffect(() => {
+        Animated.parallel([
+            Animated.timing(heroOpacity, {
+                toValue: 1,
+                duration: 260,
+                useNativeDriver: true,
+            }),
+            Animated.timing(heroTranslateY, {
+                toValue: 0,
+                duration: 260,
+                useNativeDriver: true,
+            }),
+            Animated.sequence([
+                Animated.delay(80),
+                Animated.parallel([
+                    Animated.timing(formOpacity, {
+                        toValue: 1,
+                        duration: 260,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(formTranslateY, {
+                        toValue: 0,
+                        duration: 260,
+                        useNativeDriver: true,
+                    }),
+                ]),
+            ]),
+        ]).start();
+    }, [formOpacity, formTranslateY, heroOpacity, heroTranslateY]);
 
     const onSubmit = async (model: ConfirmSignupModel) => {
         setSubmitting(true);
@@ -84,15 +118,27 @@ export function ConfirmSignupScreen(props: ConfirmSignupProps) {
         <FormProvider {...formMethods}>
             <View style={styles.container}>
                 <View style={[styles.shell, isWide ? styles.shellWide : styles.shellStacked]}>
-                    <View style={[styles.heroPanel, isWide ? styles.heroPanelWide : null]}>
+                    <Animated.View
+                        style={[
+                            styles.heroPanel,
+                            isWide ? styles.heroPanelWide : null,
+                            { opacity: heroOpacity, transform: [{ translateY: heroTranslateY }] },
+                        ]}
+                    >
                         <AuthGlyph />
                         <Text style={styles.eyebrow}>Verify Account</Text>
                         <Text h2 style={styles.title}>Confirm your owner login</Text>
                         <Text style={styles.subtitle}>
                             Enter the verification code sent to your email before signing in to initialize the workspace.
                         </Text>
-                    </View>
-                    <View style={[styles.formPanel, isWide ? styles.formPanelWide : null]}>
+                    </Animated.View>
+                    <Animated.View
+                        style={[
+                            styles.formPanel,
+                            isWide ? styles.formPanelWide : null,
+                            { opacity: formOpacity, transform: [{ translateY: formTranslateY }] },
+                        ]}
+                    >
                         <View style={styles.formInner}>
                             <Text style={styles.formTitle}>Enter verification code</Text>
                             <Text style={styles.formSubtitle}>Use the code from the Cognito email.</Text>
@@ -137,7 +183,7 @@ export function ConfirmSignupScreen(props: ConfirmSignupProps) {
                                 }
                             />
                         </View>
-                    </View>
+                    </Animated.View>
                 </View>
             </View>
         </FormProvider>

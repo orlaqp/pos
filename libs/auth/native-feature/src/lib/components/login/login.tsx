@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
-import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import { Animated, View, StyleSheet, useWindowDimensions } from 'react-native';
 import { useTheme, Button, Text } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -30,6 +30,10 @@ type SignInModel = {
 export function LoginScreen(props: LoginProps) {
     const styles = useStyles();
     const { width } = useWindowDimensions();
+    const heroOpacity = useRef(new Animated.Value(0)).current;
+    const heroTranslateY = useRef(new Animated.Value(18)).current;
+    const formOpacity = useRef(new Animated.Value(0)).current;
+    const formTranslateY = useRef(new Animated.Value(24)).current;
     const dispatch = useAppDispatch();
     const error = useSelector((state: RootState) => state.auth.error);
     const loading = useSelector(
@@ -50,19 +54,61 @@ export function LoginScreen(props: LoginProps) {
 
     const isWide = width >= 980;
 
+    useEffect(() => {
+        Animated.parallel([
+            Animated.timing(heroOpacity, {
+                toValue: 1,
+                duration: 260,
+                useNativeDriver: true,
+            }),
+            Animated.timing(heroTranslateY, {
+                toValue: 0,
+                duration: 260,
+                useNativeDriver: true,
+            }),
+            Animated.sequence([
+                Animated.delay(80),
+                Animated.parallel([
+                    Animated.timing(formOpacity, {
+                        toValue: 1,
+                        duration: 260,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(formTranslateY, {
+                        toValue: 0,
+                        duration: 260,
+                        useNativeDriver: true,
+                    }),
+                ]),
+            ]),
+        ]).start();
+    }, [formOpacity, formTranslateY, heroOpacity, heroTranslateY]);
+
     return (
         <FormProvider {...formMethods}>
             <View style={styles.container}>
                 <View style={[styles.shell, isWide ? styles.shellWide : styles.shellStacked]}>
-                    <View style={[styles.heroPanel, isWide ? styles.heroPanelWide : null]}>
+                    <Animated.View
+                        style={[
+                            styles.heroPanel,
+                            isWide ? styles.heroPanelWide : null,
+                            { opacity: heroOpacity, transform: [{ translateY: heroTranslateY }] },
+                        ]}
+                    >
                         <AuthGlyph />
                         <Text style={styles.eyebrow}>Business Admin Access</Text>
                         <Text h2 style={styles.title}>Open your workspace</Text>
                         <Text style={styles.subtitle}>
                             Restore your business session, sync the latest catalog, and hand the device back to staff PIN entry.
                         </Text>
-                    </View>
-                    <View style={[styles.formPanel, isWide ? styles.formPanelWide : null]}>
+                    </Animated.View>
+                    <Animated.View
+                        style={[
+                            styles.formPanel,
+                            isWide ? styles.formPanelWide : null,
+                            { opacity: formOpacity, transform: [{ translateY: formTranslateY }] },
+                        ]}
+                    >
                         <View style={styles.formInner}>
                             <Text style={styles.formTitle}>Sign in</Text>
                             <Text style={styles.formSubtitle}>Use the owner account for this business.</Text>
@@ -102,7 +148,7 @@ export function LoginScreen(props: LoginProps) {
                                 onPress={() => props.navigation.navigate('Signup')}
                             />
                         </View>
-                    </View>
+                    </Animated.View>
                 </View>
             </View>
         </FormProvider>

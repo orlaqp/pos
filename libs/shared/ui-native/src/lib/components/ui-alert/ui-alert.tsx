@@ -12,8 +12,8 @@ export interface UIAlertProps {
 export function UIAlert(props: UIAlertProps) {
   const styles = useStyles();
   return (
-    <View style={[styles.container, styles[props.type]]}>
-      <Text style={styles.message}>{props.message}</Text>
+    <View style={[styles.container, styles[`${props.type}Container`]]}>
+      <Text style={[styles.message, styles[`${props.type}Message`]]}>{props.message}</Text>
     </View>
   );
 }
@@ -30,20 +30,33 @@ const useStyles = () => {
     container: {
       padding: 15,
       margin: 10,
-      borderRadius: 5,
+      borderRadius: 16,
+      borderWidth: 1,
     },
     message: {
-      color: colors.black,
       fontSize: 14,
+      lineHeight: 21,
     },
-    success: {
-      backgroundColor: colors.success,
+    successContainer: {
+      backgroundColor: 'rgba(52, 199, 89, 0.18)',
+      borderColor: 'rgba(52, 199, 89, 0.34)',
     },
-    warning: {
-      backgroundColor: colors.warning,
+    successMessage: {
+      color: '#d8ffe3',
     },
-    error: {
-      backgroundColor: colors.error,
+    warningContainer: {
+      backgroundColor: 'rgba(255, 176, 32, 0.12)',
+      borderColor: 'rgba(255, 176, 32, 0.26)',
+    },
+    warningMessage: {
+      color: '#f4d98b',
+    },
+    errorContainer: {
+      backgroundColor: 'rgba(239, 68, 68, 0.16)',
+      borderColor: 'rgba(239, 68, 68, 0.32)',
+    },
+    errorMessage: {
+      color: '#ffd7d7',
     },
   });
 };

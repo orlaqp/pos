@@ -77,6 +77,38 @@ export function Navigation() {
         ]);
     };
 
+    const switchEmployee = (navigation: any) => {
+        setShowOtherOrders(false);
+        dispatch(cartActions.reset());
+        dispatch(employeesActions.logoffEmployee());
+        navigation.navigate('Home');
+    };
+
+    const confirmSwitchEmployee = (navigation: any) => {
+        const hasCartItems = (cart.items?.length || 0) > 0;
+
+        Alert.alert(
+            'Switch employee?',
+            hasCartItems
+                ? 'This will clear the current sale and return to the PIN screen.'
+                : 'This will return to the PIN screen without logging out the business admin.',
+            [
+                { text: 'Cancel' },
+                { text: 'Switch', onPress: () => switchEmployee(navigation) },
+            ]
+        );
+    };
+
+    const renderSwitchEmployeeButton = (navigation: any) =>
+        employee ? (
+            <Button
+                type="clear"
+                title="Switch Employee"
+                style={{ marginRight: 20 }}
+                onPress={() => confirmSwitchEmployee(navigation)}
+            />
+        ) : null;
+
     const confirmLogoff = () => {
         Alert.alert('Are you sure?', 'Press yes to confirm', [
             { text: 'No' },
@@ -136,26 +168,30 @@ export function Navigation() {
                         <Stack.Screen
                             name="Home"
                             component={HomeScreen}
-                            options={{
+                            options={({ navigation }) => ({
                                 headerShown: true,
                                 headerTitle: 'Home',
                                 headerRight: () => (
-                                    <Button
-                                        type="clear"
-                                        title="Logoff"
-                                        style={{ marginRight: 20 }}
-                                        onPress={confirmLogoff}
-                                    />
+                                    <>
+                                        {renderSwitchEmployeeButton(navigation)}
+                                        <Button
+                                            type="clear"
+                                            title="Logoff"
+                                            style={{ marginRight: 20 }}
+                                            onPress={confirmLogoff}
+                                        />
+                                    </>
                                 )
-                            }}
+                            })}
                         />
                         <Stack.Screen
                             name="Sales"
                             component={SalesScreen}
-                            options={{
+                            options={({ navigation }) => ({
                                 headerTitle: employee ? `${employee.firstName} ${employee.lastName}` : user.name,
                                 headerRight: () => (
                                     <>
+                                        {renderSwitchEmployeeButton(navigation)}
                                         <Button
                                             testID="nav-open-orders-button"
                                             type="clear"
@@ -183,15 +219,22 @@ export function Navigation() {
                                         />
                                     </>
                                 ),
-                            }}
+                            })}
                         />
-                        <Stack.Screen name="Payments" component={Orders} />
+                        <Stack.Screen
+                            name="Payments"
+                            component={Orders}
+                            options={({ navigation }) => ({
+                                headerRight: () => renderSwitchEmployeeButton(navigation),
+                            })}
+                        />
                         <Stack.Screen
                             name="BackOffice"
                             component={BackOffice}
-                            options={{
+                            options={({ navigation }) => ({
                                 headerTitle: businessName || 'Back Office',
-                            }}
+                                headerRight: () => renderSwitchEmployeeButton(navigation),
+                            })}
                         />
                     </>
                 ) : (

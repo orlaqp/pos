@@ -8,12 +8,12 @@ import {
 } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as RNFS from 'react-native-fs';
 import { Icon } from '@rneui/themed';
 import i18next from 'i18next';
 
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Animated, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Share } from 'react-native';
 
 export interface ReportHeader {
@@ -103,6 +103,8 @@ export function ReportViewer({
     const [loading, setLoading] = useState<boolean>(true);
     const [totals, setTotals] = useState<Record<string, number>>();
     const [items, setItems] = useState<any[]>([]);
+    const emptyOpacity = useRef(new Animated.Value(0)).current;
+    const emptyTranslateY = useRef(new Animated.Value(12)).current;
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
@@ -187,6 +189,25 @@ export function ReportViewer({
         setTotals(totals);
     }, [headers, items]);
 
+    useEffect(() => {
+        if (loading || items.length) return;
+
+        emptyOpacity.setValue(0);
+        emptyTranslateY.setValue(12);
+        Animated.parallel([
+            Animated.timing(emptyOpacity, {
+                toValue: 1,
+                duration: 220,
+                useNativeDriver: true,
+            }),
+            Animated.timing(emptyTranslateY, {
+                toValue: 0,
+                duration: 220,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [emptyOpacity, emptyTranslateY, items.length, loading]);
+
     return (
         <UIScreen padded>
             <View style={styles.screen}>
@@ -236,7 +257,15 @@ export function ReportViewer({
                                 )}
 
                                 {!loading && !items.length && (
-                                    <View style={styles.emptyStateWrap}>
+                                    <Animated.View
+                                        style={[
+                                            styles.emptyStateWrap,
+                                            {
+                                                opacity: emptyOpacity,
+                                                transform: [{ translateY: emptyTranslateY }],
+                                            },
+                                        ]}
+                                    >
                                         <Text style={styles.emptyStateTitle}>
                                             {t(
                                                 'REPORT_NoSalesForRange',
@@ -249,7 +278,7 @@ export function ReportViewer({
                                                 'Completed sales matching the selected filters will appear here.'
                                             )}
                                         </Text>
-                                    </View>
+                                    </Animated.View>
                                 )}
 
                                 {!loading && !!items.length && (
