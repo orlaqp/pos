@@ -7,8 +7,6 @@ import {
     createEntityAdapter,
     createSelector,
     createSlice,
-    Dictionary,
-    EntityId,
     EntityState,
     PayloadAction,
     Update,
@@ -18,15 +16,17 @@ import { UnitOfMeasureService } from '../unit-of-measure.service';
 
 export const UNITOFMEASURE_FEATURE_KEY = 'unitOfMeasures';
 
-export interface UnitOfMeasuresState extends EntityState< UnitOfMeasureEntity > {
-  loadingStatus: 'new' | 'loading' | 'loaded' | 'error';
+export interface UnitOfMeasuresState extends EntityState<UnitOfMeasureEntity, string> {
+  loadingStatus: 'not loaded' | 'new' | 'loading' | 'loaded' | 'error';
   error?: string;
   selected?: UnitOfMeasureEntity;
   filterQuery?: string;
   filteredList?: UnitOfMeasureEntity[];
 }
 
-export const unitOfMeasuresAdapter = createEntityAdapter< UnitOfMeasureEntity >();
+export const unitOfMeasuresAdapter = createEntityAdapter<UnitOfMeasureEntity, string>({
+    selectId: (unit) => unit.id ?? '',
+});
 
 export const fetchUnitOfMeasures = createAsyncThunk(
   'unitOfMeasures/fetchStatus',
@@ -54,15 +54,15 @@ export const unitOfMeasuresSlice = createSlice({
         filterList(state, state.filterQuery);
     },
     add: (state: UnitOfMeasuresState, action: PayloadAction< UnitOfMeasureEntity >) => {
-        unitOfMeasuresAdapter.addOne(state, action);
+        unitOfMeasuresAdapter.addOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    remove: (state: UnitOfMeasuresState, action: PayloadAction< EntityId >) => {
-        unitOfMeasuresAdapter.removeOne(state, action);
+    remove: (state: UnitOfMeasuresState, action: PayloadAction<string>) => {
+        unitOfMeasuresAdapter.removeOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    update: (state: UnitOfMeasuresState, action: PayloadAction<Update<UnitOfMeasureEntity>>) => {
-        unitOfMeasuresAdapter.updateOne(state, action);
+    update: (state: UnitOfMeasuresState, action: PayloadAction<Update<UnitOfMeasureEntity, string>>) => {
+        unitOfMeasuresAdapter.updateOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
     select: (state: UnitOfMeasuresState, action: PayloadAction< UnitOfMeasureEntity >) => {
@@ -103,19 +103,21 @@ export const unitOfMeasuresSlice = createSlice({
 export const unitOfMeasuresReducer = unitOfMeasuresSlice.reducer;
 export const unitOfMeasuresActions = unitOfMeasuresSlice.actions;
 
-const { selectAll, selectEntities } = unitOfMeasuresAdapter.getSelectors();
-
 export const getUnitOfMeasuresState = (rootState: RootState): UnitOfMeasuresState =>
   rootState[UNITOFMEASURE_FEATURE_KEY];
 
+const unitSelectors = unitOfMeasuresAdapter.getSelectors<RootState>(getUnitOfMeasuresState);
+
 export const selectAllUnitOfMeasures = createSelector(
   getUnitOfMeasuresState,
-  selectAll
+  (state) =>
+      unitSelectors.selectAll({ [UNITOFMEASURE_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectUnitOfMeasuresEntities = createSelector(
   getUnitOfMeasuresState,
-  selectEntities
+  (state) =>
+      unitSelectors.selectEntities({ [UNITOFMEASURE_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectLoadingStatus = createSelector(
@@ -139,7 +141,7 @@ export const selectUnitOfMeasure = (id: string | null | undefined) => createSele
 )
 
 function filterList(state: UnitOfMeasuresState, query?: string) {
-  const all = selectAll(state);
+  const all = unitOfMeasuresAdapter.getSelectors().selectAll(state);
   
   if (!query) {
       state.filteredList = all;
@@ -149,4 +151,3 @@ function filterList(state: UnitOfMeasuresState, query?: string) {
   const lowerQuery = query.toLowerCase();
   state.filteredList = all.filter(x => x.name.toLowerCase().indexOf(lowerQuery) !== -1)
 }
-

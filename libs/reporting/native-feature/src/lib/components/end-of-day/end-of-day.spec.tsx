@@ -1,6 +1,31 @@
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
-import DatePicker from 'react-native-date-picker';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
+
+jest.mock('@pos/shared/ui-native', () => {
+    const actual = jest.requireActual('@pos/shared/ui-native');
+    const React = require('react');
+    const { Pressable, Text, View } = require('react-native');
+
+    return {
+        ...actual,
+        UIDatePickerModal: ({ onConfirm, onCancel }: any) => (
+            <View testID="mock-ui-date-picker-modal">
+                <Pressable
+                    testID="mock-ui-date-picker-confirm"
+                    onPress={() => onConfirm(new Date('2026-03-12T00:00:00.000Z'))}
+                >
+                    <Text>confirm</Text>
+                </Pressable>
+                <Pressable
+                    testID="mock-ui-date-picker-cancel"
+                    onPress={() => onCancel?.()}
+                >
+                    <Text>cancel</Text>
+                </Pressable>
+            </View>
+        ),
+    };
+});
 
 import EndOfDay, {
     buildEndOfDayWidgets,
@@ -133,13 +158,12 @@ describe('EndOfDay', () => {
     });
 
     it('renders date controls and handles date-picker callbacks', async () => {
-        const { getByText, UNSAFE_getByType } = render(<EndOfDay />);
+        const { getByTestId, getByText } = render(<EndOfDay />);
 
         expect(getByText('Date')).toBeTruthy();
 
-        const picker = UNSAFE_getByType(DatePicker);
-        picker.props.onCancel();
-        picker.props.onConfirm(new Date('2026-03-12T00:00:00.000Z'));
+        fireEvent.press(getByTestId('mock-ui-date-picker-cancel'));
+        fireEvent.press(getByTestId('mock-ui-date-picker-confirm'));
 
         await waitFor(() => {
             expect(getByText('Date')).toBeTruthy();

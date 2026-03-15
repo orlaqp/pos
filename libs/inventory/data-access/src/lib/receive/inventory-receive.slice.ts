@@ -6,8 +6,6 @@ import {
     createEntityAdapter,
     createSelector,
     createSlice,
-    Dictionary,
-    EntityId,
     EntityState,
     PayloadAction,
     Update,
@@ -18,7 +16,7 @@ import { InventoryReceiveService } from './inventory-receive.service';
 
 export const INVENTORY_RECEIVE_FEATURE_KEY = 'inventoryReceive';
 
-export interface InventoryReceiveState extends EntityState< InventoryReceiveDTO > {
+export interface InventoryReceiveState extends EntityState<InventoryReceiveDTO, string> {
   loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
   error?: string;
   selected?: InventoryReceiveDTO;
@@ -27,7 +25,9 @@ export interface InventoryReceiveState extends EntityState< InventoryReceiveDTO 
   lines: InventoryReceiveLineDTO[];
 }
 
-export const inventoryReceiveAdapter = createEntityAdapter< InventoryReceiveDTO >();
+export const inventoryReceiveAdapter = createEntityAdapter<InventoryReceiveDTO, string>({
+    selectId: (inventoryReceive) => inventoryReceive.id ?? '',
+});
 
 export const fetchInventoryReceive = createAsyncThunk(
   'inventoryReceive/fetchStatus',
@@ -74,15 +74,15 @@ export const inventoryReceiveSlice = createSlice({
         state.loadingStatus = 'loaded';
     },
     add: (state: InventoryReceiveState, action: PayloadAction< InventoryReceiveDTO >) =>{
-        inventoryReceiveAdapter.addOne(state, action);
+        inventoryReceiveAdapter.addOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    remove: (state: InventoryReceiveState, action: PayloadAction< EntityId >) => {
-        inventoryReceiveAdapter.removeOne(state, action);
+    remove: (state: InventoryReceiveState, action: PayloadAction<string>) => {
+        inventoryReceiveAdapter.removeOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    update: (state: InventoryReceiveState, action: PayloadAction<Update< InventoryReceiveDTO>>) => {
-        inventoryReceiveAdapter.updateOne(state, action);
+    update: (state: InventoryReceiveState, action: PayloadAction<Update<InventoryReceiveDTO, string>>) => {
+        inventoryReceiveAdapter.updateOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
     select: (state: InventoryReceiveState, action: PayloadAction< InventoryReceiveDTO >) => {
@@ -123,19 +123,22 @@ export const inventoryReceiveSlice = createSlice({
 export const inventoryReceiveReducer = inventoryReceiveSlice.reducer;
 
 export const inventoryReceiveActions = inventoryReceiveSlice.actions;
-const { selectAll, selectEntities } = inventoryReceiveAdapter.getSelectors();
-
 export const getInventoryReceiveState = (rootState: RootState): InventoryReceiveState =>
   rootState[INVENTORY_RECEIVE_FEATURE_KEY];
 
+const inventoryReceiveSelectors =
+    inventoryReceiveAdapter.getSelectors<RootState>(getInventoryReceiveState);
+
 export const selectAllInventoryReceive = createSelector(
   getInventoryReceiveState,
-  selectAll
+  (state) =>
+      inventoryReceiveSelectors.selectAll({ [INVENTORY_RECEIVE_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectInventoryReceiveEntities = createSelector(
   getInventoryReceiveState,
-  selectEntities
+  (state) =>
+      inventoryReceiveSelectors.selectEntities({ [INVENTORY_RECEIVE_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectInventoryReceiveLoadingStatus = createSelector(
@@ -156,7 +159,7 @@ export const selectInventoryReceiveFilteredList = createSelector(
 
 function filterList(state: InventoryReceiveState, query?: string) {
   state.loadingStatus = 'loaded';
-  const all = selectAll(state);
+  const all = inventoryReceiveAdapter.getSelectors().selectAll(state);
   
   if (!query) {
       state.filteredList = all;

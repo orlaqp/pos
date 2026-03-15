@@ -1,7 +1,7 @@
 import { MutableModel } from '@aws-amplify/datastore';
 /* eslint-disable @nx/enforce-module-boundaries */
 import { Order, OrderLine, OrderMetaData, OrderStatus, Payment, PaymentInfo, Product, RefundInfo } from '@pos/shared/models';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { OrderEntity, OrderEntityMapper } from './order.entity';
 import { CartPayment, CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
@@ -460,7 +460,7 @@ export class OrderService {
     }
 
     static updateReorderPoint(id: string, value: number) {
-        DataStore.query(Product, (p) => p.id('eq', id)).then((p) => {
+        DataStore.query(Product, (p) => p.id.eq(id)).then((p) => {
             if (!p?.length) return;
 
             DataStore.save(
@@ -472,7 +472,7 @@ export class OrderService {
     }
 
     static updateReorderQuantity(id: string, value: number): void {
-        DataStore.query(Product, (p) => p.id('eq', id)).then((p) => {
+        DataStore.query(Product, (p) => p.id.eq(id)).then((p) => {
             if (!p?.length) return;
 
             DataStore.save(

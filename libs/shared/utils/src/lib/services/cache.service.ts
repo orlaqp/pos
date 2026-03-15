@@ -1,5 +1,5 @@
 import * as RNFS from 'react-native-fs';
-import { Storage } from 'aws-amplify';
+import { Storage } from '@pos/shared/amplify';
 import { blobToBase64 } from './conversion.service';
 
 const picturesDirectoryPath = RNFS.CachesDirectoryPath;

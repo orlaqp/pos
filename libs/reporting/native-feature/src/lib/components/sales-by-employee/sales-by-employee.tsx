@@ -48,6 +48,7 @@ export function SalesByEmployee(props: SalesByEmployeeProps) {
                     'REPORT_ByEmployeeSubtitle',
                     'Compare paid totals grouped by employee.'
                 )}
+                total={0}
                 getData={getData}
                 headers={headers}
             />

@@ -1,6 +1,6 @@
 import { Product } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { productsActions } from './slices/products.slice';
 import { ProductEntity } from './product.entity';
 import { Alert } from 'react-native';
@@ -210,9 +210,10 @@ export class ProductService {
             };
         }
 
+        const numericMatches: string[] = normalizedText.match(/\d{4,}/g) ?? [];
         const numericCandidates = Array.from(
             new Set(
-                (normalizedText.match(/\d{4,}/g) || []).sort(
+                numericMatches.sort(
                     (a, b) => b.length - a.length
                 )
             )
@@ -270,9 +271,8 @@ export class ProductService {
     }
 
     static async searchByCode(code: string) {
-        return DataStore.query(Product, (x) =>
-            x.or((p) => p.barcode('eq', code).sku('eq', code))
-        );
+        const items = await DataStore.query(Product);
+        return items.filter((item) => item.barcode === code || item.sku === code);
     }
 }
 
@@ -298,11 +298,11 @@ async function validateNameBarcodeAndSku(
         return false;
     }
 
-    const barcodeChanged = !isEdit || normalize(existing?.barcode) !== normalize(product.barcode);
-    if (product.barcode && barcodeChanged) {
-        const withSameBarcode = await DataStore.query(Product, (p) =>
-            p.barcode('eq', product.barcode!).id('ne', product.id)
-        );
+        const barcodeChanged = !isEdit || normalize(existing?.barcode) !== normalize(product.barcode);
+        if (product.barcode && barcodeChanged) {
+            const withSameBarcode = allProducts.filter(
+                (p) => p.id !== product.id && p.barcode === product.barcode
+            );
 
         if (withSameBarcode.length) {
             Alert.alert('A product with same barcode already exist');
@@ -310,11 +310,11 @@ async function validateNameBarcodeAndSku(
         }
     }
 
-    const skuChanged = !isEdit || normalize(existing?.sku) !== normalize(product.sku);
-    if (product.sku && skuChanged) {
-        const withSameSku = await DataStore.query(Product, (p) =>
-            p.sku('eq', product.sku!).id('ne', product.id)
-        );
+        const skuChanged = !isEdit || normalize(existing?.sku) !== normalize(product.sku);
+        if (product.sku && skuChanged) {
+            const withSameSku = allProducts.filter(
+                (p) => p.id !== product.id && p.sku === product.sku
+            );
 
         if (withSameSku.length) {
             Alert.alert('A product with same sku already exist');
@@ -322,11 +322,11 @@ async function validateNameBarcodeAndSku(
         }
     }
 
-    const pluChanged = !isEdit || normalize(existing?.plu) !== normalize(product.plu);
-    if (product.plu && pluChanged) {
-        const withSamePlu = await DataStore.query(Product, (p) =>
-            p.plu('eq', product.plu!).id('ne', product.id)
-        );
+        const pluChanged = !isEdit || normalize(existing?.plu) !== normalize(product.plu);
+        if (product.plu && pluChanged) {
+            const withSamePlu = allProducts.filter(
+                (p) => p.id !== product.id && p.plu === product.plu
+            );
 
         if (withSamePlu.length) {
             Alert.alert('A product with same plu already exist');

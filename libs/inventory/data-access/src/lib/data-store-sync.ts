@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { Dispatch } from '@reduxjs/toolkit';
 import { InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine } from '@pos/shared/models';
 import { inventoryCountActions } from './count/inventory-count.slice';

@@ -4,7 +4,7 @@ import {
     Product,
 } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { inventoryCountActions } from './inventory-count.slice';
 import { InventoryCountDTO } from './inventory-count.entity';
 import { Alert } from 'react-native';
@@ -44,7 +44,7 @@ export class InventoryCountService {
         if (!item) return console.error(`Inventory Id: ${id} not found`);
 
         const lines = DataStore.query(InventoryCountLine, (l) =>
-            l.inventoryCountLineInventoryCountId('eq', item.id)
+            l.inventoryCountLineInventoryCountId.eq(item.id)
         );
 
         (await lines).forEach(l => DataStore.delete(l));
@@ -55,13 +55,30 @@ export class InventoryCountService {
 
 async function createCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
     const { lines, ...rest } = count;
-    const entity = new InventoryCount(rest);
+    const entity = new InventoryCount({
+        comments: rest.comments,
+        status: rest.status,
+        createdBy: {
+            id: rest.createdBy?.id || '',
+            name: rest.createdBy?.name || '',
+        },
+    });
     const res = await DataStore.save(entity);
     count.id = res.id;
 
     const promises = lines.map((l) => {
         l.inventoryCountLineInventoryCountId = count.id;
-        return DataStore.save(new InventoryCountLine(l));
+        return DataStore.save(
+            new InventoryCountLine({
+                productId: l.productId,
+                productName: l.productName,
+                unitOfMeasure: l.unitOfMeasure,
+                current: l.current,
+                newCount: l.newCount,
+                comments: l.comments,
+                inventoryCountLineInventoryCountId: count.id!,
+            })
+        );
     });
 
     await Promise.all(promises);
@@ -94,7 +111,12 @@ async function updateCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
         if (!l.id) {
             await DataStore.save(
                 new InventoryCountLine({
-                    ...l,
+                    productId: l.productId,
+                    productName: l.productName,
+                    unitOfMeasure: l.unitOfMeasure,
+                    current: l.current,
+                    newCount: l.newCount,
+                    comments: l.comments,
                     inventoryCountLineInventoryCountId: existing.id,
                 })
             );
@@ -102,7 +124,7 @@ async function updateCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
         }
 
         const line = await DataStore.query(InventoryCountLine, (c) =>
-            c.id('eq', l.id!)
+            c.id.eq(l.id!)
         );
 
         if (line.length === 0) {

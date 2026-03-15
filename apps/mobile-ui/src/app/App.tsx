@@ -5,8 +5,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider, Button, Text } from '@rneui/themed';
 import { designTokens, theme } from '@pos/theme/native';
-import { Provider, useDispatch, useSelector } from 'react-redux';
-import { store, RootState } from '@pos/store';
+import { Provider, useSelector } from 'react-redux';
+import { store, RootState, useAppDispatch } from '@pos/store';
 import Navigation from './navigation';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppErrorBoundary } from './app-error-boundary';
@@ -15,15 +15,10 @@ import { UISpinner } from '@pos/shared/ui-native';
 import {
     fetchGlobalSettings,
     fetchStationInfo,
-    getGlobalSettingsLoadingStatus,
 } from '@pos/settings/data-access';
-import {
-    fetchEmployees,
-    selectLoadingStatus as selectEmployeesLoadingStatus,
-} from '@pos/employees/data-access';
+import { fetchEmployees } from '@pos/employees/data-access';
 import {
     fetchStoreInfo,
-    selectLoadindStatus as selectStoreInfoLoadingStatus,
 } from '@pos/store-info/data-access';
 import { selectStationLoadindStatus } from '@pos/settings/data-access';
 import brandMark from '../../assets/branding/pos-icon-transparent-2048.png';
@@ -32,12 +27,29 @@ type BootstrapStatus = 'idle' | 'loading' | 'ready' | 'error';
 const appTheme = theme('dark');
 const appColors = designTokens.colors;
 
+const withTimeout = <T,>(
+    label: string,
+    promise: Promise<T>,
+    ms = 10000
+) =>
+    Promise.race([
+        promise,
+        new Promise<T>((_, reject) =>
+            setTimeout(
+                () => reject(new Error(`${label} timed out after ${ms}ms`)),
+                ms
+            )
+        ),
+    ]);
+
 const StartupScreen = ({
     status,
     onRetry,
+    errorMessage,
 }: {
     status: Exclude<BootstrapStatus, 'ready'>;
     onRetry: () => void;
+    errorMessage?: string;
 }) => {
     const styles = useStartupStyles();
     const isError = status === 'error';
@@ -51,6 +63,9 @@ const StartupScreen = ({
                     <Text style={styles.message}>
                         The app could not load required local data. Retry the startup sequence.
                     </Text>
+                    {errorMessage ? (
+                        <Text style={styles.errorDetail}>{errorMessage}</Text>
+                    ) : null}
                     <Button title="Retry" onPress={onRetry} buttonStyle={styles.retryButton} />
                 </>
             ) : (
@@ -64,26 +79,40 @@ const StartupScreen = ({
 };
 
 const AppContent = () => {
-    const dispatch = useDispatch();
-    const employeeStatus = useSelector(selectEmployeesLoadingStatus);
+    const dispatch = useAppDispatch();
     const stationStatus = useSelector(selectStationLoadindStatus);
-    const storeStatus = useSelector(selectStoreInfoLoadingStatus);
-    const globalSettingsStatus = useSelector(getGlobalSettingsLoadingStatus);
+    const stationError = useSelector((state: RootState) => state.station.error);
     const authUser = useSelector((state: RootState) => state.auth.user);
     const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('idle');
+    const [bootstrapError, setBootstrapError] = useState<string>();
 
     const startBootstrap = useCallback(async () => {
         setBootstrapStatus('loading');
+        setBootstrapError(undefined);
         try {
-            await Promise.all([
-                dispatch(fetchEmployees()).unwrap(),
-                dispatch(fetchStoreInfo()).unwrap(),
-                dispatch(fetchStationInfo()).unwrap(),
-                dispatch(fetchGlobalSettings()).unwrap(),
-            ]);
+            await withTimeout(
+                'fetchStationInfo()',
+                dispatch(fetchStationInfo()).unwrap()
+            );
+
+            dispatch(fetchStoreInfo());
+            dispatch(fetchGlobalSettings());
+
+            // Employee sync is allowed to continue in the background so the app can
+            // reach the login shell even if DataStore is still warming up.
+            dispatch(fetchEmployees());
             setBootstrapStatus('ready');
         } catch (error) {
             console.error('App bootstrap failed', error);
+            const message =
+                typeof error === 'string'
+                    ? error
+                    : error instanceof Error
+                        ? error.message
+                        : error && typeof error === 'object' && 'message' in error
+                            ? String((error as { message?: unknown }).message)
+                            : 'Bootstrap failed with an unknown error';
+            setBootstrapError(message);
             setBootstrapStatus('error');
         }
     }, [dispatch]);
@@ -96,20 +125,20 @@ const AppContent = () => {
         startBootstrap();
     }, [startBootstrap]);
 
-    const hasBootstrapError = useMemo(
-        () =>
-            [employeeStatus, stationStatus, storeStatus, globalSettingsStatus].includes('error'),
-        [employeeStatus, stationStatus, storeStatus, globalSettingsStatus]
-    );
+    const visibleBootstrapError = useMemo(() => {
+        if (bootstrapError) return bootstrapError;
 
-    useEffect(() => {
-        if (bootstrapStatus === 'loading' && hasBootstrapError) {
-            setBootstrapStatus('error');
-        }
-    }, [bootstrapStatus, hasBootstrapError]);
+        return stationError || undefined;
+    }, [bootstrapError, stationError]);
 
     if (bootstrapStatus !== 'ready' && !authUser) {
-        return <StartupScreen status={bootstrapStatus === 'error' ? 'error' : 'loading'} onRetry={startBootstrap} />;
+        return (
+            <StartupScreen
+                status={bootstrapStatus === 'error' ? 'error' : 'loading'}
+                onRetry={startBootstrap}
+                errorMessage={visibleBootstrapError}
+            />
+        );
     }
 
     return (
@@ -164,6 +193,13 @@ const useStartupStyles = () =>
             textAlign: 'center',
             maxWidth: 420,
             marginBottom: 20,
+        },
+        errorDetail: {
+            color: appColors.textSecondary,
+            textAlign: 'center',
+            maxWidth: 520,
+            marginBottom: 20,
+            opacity: 0.85,
         },
         retryButton: {
             borderRadius: 14,

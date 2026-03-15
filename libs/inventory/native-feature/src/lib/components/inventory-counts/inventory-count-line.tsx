@@ -79,7 +79,7 @@ export function InventoryCountLine({
                     value={comment}
                     onChangeText={setComment}
                     placeholder='comments ...'
-                    onBlur={(e) => updateComment(e.nativeEvent.text)}
+                    onBlur={() => updateComment(comment || '')}
                     style={[styles.input, styles.primaryText]}
                     editable={!readOnly}
                 />

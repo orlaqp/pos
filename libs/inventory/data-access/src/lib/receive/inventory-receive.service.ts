@@ -4,7 +4,7 @@ import {
     Product,
 } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { inventoryReceiveActions } from './inventory-receive.slice';
 import { InventoryReceiveDTO } from './inventory-receive.entity';
 import { Alert } from 'react-native';
@@ -44,7 +44,7 @@ export class InventoryReceiveService {
             return console.error(`Inventory received id: ${id} not found`);
 
         const lines = DataStore.query(InventoryReceiveLine, (l) =>
-            l.inventoryReceiveLineInventoryReceiveId('eq', item.id)
+            l.inventoryReceiveLineInventoryReceiveId.eq(item.id)
         );
 
         (await lines).forEach(l => DataStore.delete(l));
@@ -55,13 +55,29 @@ export class InventoryReceiveService {
 
 async function createReceive(count: InventoryReceiveDTO, dispatch: Dispatch<any>) {
     const { lines, ...rest } = count;
-    const entity = new InventoryReceive(rest);
+    const entity = new InventoryReceive({
+        comments: rest.comments,
+        status: rest.status,
+        createdBy: {
+            id: rest.createdBy?.id || '',
+            name: rest.createdBy?.name || '',
+        },
+    });
     const res = await DataStore.save(entity);
     count.id = res.id;
 
     const promises = lines.map((l) => {
         l.inventoryReceiveLineInventoryReceiveId = res.id;
-        return DataStore.save(new InventoryReceiveLine(l));
+        return DataStore.save(
+            new InventoryReceiveLine({
+                productId: l.productId,
+                productName: l.productName,
+                unitOfMeasure: l.unitOfMeasure,
+                received: l.received,
+                comments: l.comments,
+                inventoryReceiveLineInventoryReceiveId: res.id,
+            })
+        );
     });
 
     await Promise.all(promises);
@@ -90,7 +106,11 @@ async function updateReceive(receive: InventoryReceiveDTO, dispatch: Dispatch<an
         if (!l.id) {
             await DataStore.save(
                 new InventoryReceiveLine({
-                    ...l,
+                    productId: l.productId,
+                    productName: l.productName,
+                    unitOfMeasure: l.unitOfMeasure,
+                    received: l.received,
+                    comments: l.comments,
                     inventoryReceiveLineInventoryReceiveId: existing.id,
                 })
             );
@@ -98,7 +118,7 @@ async function updateReceive(receive: InventoryReceiveDTO, dispatch: Dispatch<an
         }
 
         const line = await DataStore.query(InventoryReceiveLine, (c) =>
-            c.id('eq', l.id!)
+            c.id.eq(l.id!)
         );
 
         if (line.length === 0) {

@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Icon, ListItem, useTheme } from '@rneui/themed';
 import { SidebarItem } from './definitions';
 import i18next from 'i18next';
+import { getThemeColors } from '@pos/theme/native';
 
 export interface SingleItemProps {
     chevron?: boolean;
@@ -22,7 +23,8 @@ export function SingleItem({
     setSelected,
 }: SingleItemProps) {
     const theme = useTheme();
-    const styles = useStyles(theme.theme.colors);
+    const colors = getThemeColors(theme);
+    const styles = useStyles(colors);
     const active = isActive ?? selectedId === item.id;
     const title =
         item.labelKey && i18next.isInitialized && i18next.exists(item.labelKey)
@@ -47,8 +49,8 @@ export function SingleItem({
                         size={compact ? 17 : 20}
                         color={
                             active
-                                ? theme.theme.colors.primary
-                                : theme.theme.colors.grey3
+                                ? colors.primary
+                                : colors.grey3
                         }
                     />
                 </View>
@@ -70,8 +72,8 @@ export function SingleItem({
                 <ListItem.Chevron
                     color={
                         active
-                            ? theme.theme.colors.primary
-                            : theme.theme.colors.grey4
+                            ? colors.primary
+                            : colors.grey4
                     }
                 />
             )}
@@ -79,7 +81,7 @@ export function SingleItem({
     );
 }
 
-const useStyles = (colors: Record<string, string>) =>
+const useStyles = (colors: ReturnType<typeof getThemeColors>) =>
     StyleSheet.create({
         containerBase: {
             borderRadius: 10,

@@ -10,7 +10,6 @@ import {
     createEntityAdapter,
     createSelector,
     createSlice,
-    EntityId,
     EntityState,
     PayloadAction,
 } from '@reduxjs/toolkit';
@@ -33,7 +32,7 @@ export interface SubmitOrderResponse extends CreateOrderRequest {
     order: OrderEntity;
 }
 
-export interface OrdersState extends EntityState<OrderEntity> {
+export interface OrdersState extends EntityState<OrderEntity, string> {
     loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
     submitStatus: 'not saved' | 'saving' | 'saved' | 'error';
     error?: string;
@@ -43,7 +42,9 @@ export interface OrdersState extends EntityState<OrderEntity> {
     filteredList?: OrderEntity[];
 }
 
-export const ordersAdapter = createEntityAdapter<OrderEntity>();
+export const ordersAdapter = createEntityAdapter<OrderEntity, string>({
+    selectId: (order) => order.id,
+});
 
 // export const fetchOpenOrders = createAsyncThunk(
 //     'orders/fetchStatus',
@@ -123,8 +124,8 @@ export const ordersSlice = createSlice({
             filterList(state, state.filterQuery);
             state.loadingStatus = 'loaded';
         },
-        remove: (state: OrdersState, action: PayloadAction<EntityId>) => {
-            ordersAdapter.removeOne(state, action);
+        remove: (state: OrdersState, action: PayloadAction<string>) => {
+            ordersAdapter.removeOne(state, action.payload);
             filterList(state, state.filterQuery);
         },
         clearSelection: (state: OrdersState) => {
@@ -194,12 +195,15 @@ export const ordersSlice = createSlice({
 export const ordersReducer = ordersSlice.reducer;
 
 export const ordersActions = ordersSlice.actions;
-const { selectAll, selectEntities } = ordersAdapter.getSelectors();
-
 export const getOrdersState = (rootState: RootState): OrdersState =>
     rootState[ORDER_FEATURE_KEY];
 
-export const selectAllOrders = createSelector(getOrdersState, selectAll);
+const orderSelectors = ordersAdapter.getSelectors<RootState>(getOrdersState);
+
+export const selectAllOrders = createSelector(
+    getOrdersState,
+    (state) => ordersAdapter.getSelectors<OrdersState>((ordersState) => ordersState).selectAll(state)
+);
 export const selectOpenOrders = createSelector(getOrdersState, (state) =>
     ordersAdapter
         .getSelectors()
@@ -212,7 +216,7 @@ export const selectOrderLines = (id: string) =>
 
 export const selectOrdersEntities = createSelector(
     getOrdersState,
-    selectEntities
+    (state) => ordersAdapter.getSelectors<OrdersState>((ordersState) => ordersState).selectEntities(state)
 );
 
 export const selectLoadingStatus = createSelector(

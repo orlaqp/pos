@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useFormContext, Controller, RegisterOptions } from 'react-hook-form';
 import { TextInput } from 'react-native';
 
-type Props = React.ComponentProps<typeof Input> & {
+type Props = InputProps & {
     name: string;
     placeholder: string;
     rules?: RegisterOptions;
@@ -16,7 +16,7 @@ type Props = React.ComponentProps<typeof Input> & {
     onValid?: () => void;
 };
 
-export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
+export const UIInput: any = React.forwardRef<any, Props>((props, ref) => {
     const theme = useTheme();
     const styles = useSharedStyles();
     const { name, rules, formatter, onValid, lIcon, rIcon, textAlign, ...restOfProps } =
@@ -58,23 +58,23 @@ export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
             control={control}
             name={name}
             render={({
-                field: { onChange, value, onBlur, ref },
+                field: { onChange, value, onBlur, ref: fieldRef },
                 fieldState: { isTouched, isDirty, error },
             }) => (
                 <Input
-                    ref={ref}
-                    {...restOfProps}
+                    ref={fieldRef as any}
+                    {...inputProps}
                     textAlign={textAlign || 'left'}
                     placeholder={props.placeholder}
                     value={value}
                     onBlur={(event) => {
                         setFocused(false);
                         onBlur();
-                        props.onBlur?.(event);
+                        inputProps.onBlur?.(event);
                     }}
                     onFocus={(event) => {
                         setFocused(true);
-                        props.onFocus?.(event);
+                        inputProps.onFocus?.(event);
                     }}
                     onChangeText={onChange}
                     errorMessage={error?.message}

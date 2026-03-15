@@ -4,8 +4,8 @@ import { HomeScreen } from './HomeScreen';
 import { LoginScreen, SignUpScreen } from '@pos/auth/native-feature';
 import { SalesScreen } from '@pos/sales/native-feature';
 
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@pos/store';
+import { useSelector } from 'react-redux';
+import { RootState, useAppDispatch } from '@pos/store';
 import { BackOffice } from '@pos/back-office/native-feature';
 import { CompactOrderList, Orders } from '@pos/orders/native-feature';
 import { Button, Dialog, useTheme } from '@rneui/themed';
@@ -15,10 +15,17 @@ import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import { selectStore } from '@pos/store-info/data-access';
 import { getThemeColors, useSharedStyles } from '@pos/theme/native';
 import { employeesActions, selectLoginEmployee } from '@pos/employees/data-access';
+import { Auth } from '@pos/shared/amplify';
+import { authActions } from '@pos/auth/data-access';
 
 /* eslint-disable-next-line */
 export interface NavigationParamList {
     [key: string]: object | undefined;
+    Home: undefined;
+    Login: undefined;
+    Signup: undefined;
+    Payments: undefined;
+    BackOffice: undefined;
     Sales: {
         mode: 'order' | 'payment';
     };
@@ -32,7 +39,7 @@ export function Navigation() {
     const styles = useSharedStyles();
     const user = useSelector((state: RootState) => state.auth.user);
     const employee = useSelector(selectLoginEmployee);
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const cart = useSelector(selectCart);
     const defaultPrinter = useSelector(getDefaultPrinter);
     const store = useSelector(selectStore);
@@ -53,10 +60,17 @@ export function Navigation() {
     const confirmLogoff = () => {
         Alert.alert('Are you sure?', 'Press yes to confirm', [
             { text: 'No' },
-            { text: 'Yes', onPress: () => {
-                // Auth.signOut();
-                dispatch(employeesActions.logoffEmployee());
-            }},
+            {
+                text: 'Yes',
+                onPress: async () => {
+                    try {
+                        await Auth.signOut();
+                    } finally {
+                        dispatch(authActions.logoff());
+                        dispatch(employeesActions.logoffEmployee());
+                    }
+                },
+            },
         ]);
     };
 
@@ -83,6 +97,7 @@ export function Navigation() {
                 />
             </Dialog>
             <Stack.Navigator
+                id="root-navigation"
                 screenOptions={{
                     headerStyle: {
                         backgroundColor: colors.background,

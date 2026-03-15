@@ -86,8 +86,7 @@ export function InventoryLine({ item }: InventoryLineProps) {
                         local.input,
                     ]}
                     onFocus={() => setReorderPoint('')}
-                    onChange={(e) => updateReorderPoint(e.nativeEvent.text)}
-                    onBlur={(e) => updateReorderPoint(e.nativeEvent.text)}
+                    onBlur={() => updateReorderPoint(reorderPoint || '')}
                 />
             </View>
             <View style={local.inputColumn}>
@@ -100,8 +99,7 @@ export function InventoryLine({ item }: InventoryLineProps) {
                         local.input,
                     ]}
                     onFocus={() => setReorderQuantity('')}
-                    onChange={(e) => updateReorderQuantity(e.nativeEvent.text)}
-                    onBlur={(e) => updateReorderQuantity(e.nativeEvent.text)}
+                    onBlur={() => updateReorderQuantity(reorderQuantity || '')}
                 />
             </View>
         </View>

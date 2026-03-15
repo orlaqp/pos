@@ -4,12 +4,11 @@ import { View, StyleSheet, Image } from 'react-native';
 import { useTheme, Button, Text, Input } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { Link } from '@react-navigation/native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { UIInput, UIAlert, UIVerticalSpacer } from '@pos/shared/ui-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { signIn } from '@pos/auth/data-access';
-import { RootState } from '@pos/store';
+import { RootState, useAppDispatch } from '@pos/store';
 
 import logo from '../../assets/logo.png';
 import { translate } from '@pos/settings/data-access';
@@ -27,7 +26,7 @@ type SignInModel = {
 
 export function LoginScreen(props: LoginProps) {
     const styles = useStyles();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const error = useSelector((state: RootState) => state.auth.error);
     const loading = useSelector(
         (state: RootState) => state.auth.signInStatus === 'inProgress'
@@ -41,7 +40,7 @@ export function LoginScreen(props: LoginProps) {
     });
 
     const login = async (model: SignInModel) => {
-        dispatch(signIn({ email: model.email, password: model.password }));
+        await dispatch(signIn({ email: model.email, password: model.password }));
     };
 
     return (
@@ -88,12 +87,12 @@ export function LoginScreen(props: LoginProps) {
                     </View>
                     <Text style={styles.signUpText}>
                         If you need a new account click{' '}
-                        <Link
+                        <Text
                             style={styles.signUpLink}
-                            to={{ screen: 'Signup' }}
+                            onPress={() => props.navigation.navigate('Signup')}
                         >
                             HERE
-                        </Link>
+                        </Text>
                     </Text>
                 </View>
             </View>

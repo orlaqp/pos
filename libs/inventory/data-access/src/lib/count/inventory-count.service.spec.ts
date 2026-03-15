@@ -1,8 +1,8 @@
 import { InventoryCountService } from './inventory-count.service';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { Alert } from 'react-native';
 
-jest.mock('aws-amplify', () => ({
+jest.mock('@pos/shared/amplify', () => ({
     DataStore: {
         query: jest.fn(),
         save: jest.fn(),

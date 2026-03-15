@@ -52,10 +52,19 @@ jest.mock('@react-navigation/native-stack', () => ({
   }),
 }));
 
-jest.mock('@react-native-community/netinfo', () => mockRNCNetInfo);
-jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
-);
+jest.mock('@react-native-community/netinfo', () => ({
+  __esModule: true,
+  default: mockRNCNetInfo,
+  ...mockRNCNetInfo,
+}));
+jest.mock('@react-native-async-storage/async-storage', () => {
+  const mock = require('@react-native-async-storage/async-storage/jest/async-storage-mock');
+  return {
+    __esModule: true,
+    default: mock,
+    ...mock,
+  };
+});
 jest.mock(
   'react-native-device-info',
   () => require('react-native-device-info/jest/react-native-device-info-mock'),
@@ -74,7 +83,7 @@ jest.mock('react-native-image-picker', () => ({
   launchCamera: jest.fn(),
   MediaType: {},
 }));
-jest.mock('react-native-date-picker', () => {
+jest.mock('@react-native-community/datetimepicker', () => {
   const Comp = (props: any) => mockReact.createElement(mockView, props, props.children);
   return Comp;
 });
@@ -100,6 +109,7 @@ jest.mock('react-native-localize', () => ({
   uses24HourClock: jest.fn(() => false),
   usesMetricSystem: jest.fn(() => false),
   findBestAvailableLanguage: jest.fn(() => ({ languageTag: 'en', isRTL: false })),
+  findBestLanguageTag: jest.fn(() => ({ languageTag: 'en', isRTL: false })),
   addEventListener: jest.fn(),
   removeEventListener: jest.fn(),
 }));

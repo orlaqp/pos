@@ -7,7 +7,7 @@ import {
     createSlice,
     PayloadAction,
 } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 
 import { productsSubscription, productsActions } from '@pos/products/data-access';
 import { AvailableLanguage, setI18nConfig } from '../language/language.utils';

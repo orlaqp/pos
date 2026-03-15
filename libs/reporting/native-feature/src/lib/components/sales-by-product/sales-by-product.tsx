@@ -78,6 +78,7 @@ export function SalesByProduct(props: SalesByProductProps) {
                     'REPORT_ByProductSubtitle',
                     'Compare sold quantities grouped by product.'
                 )}
+                total={0}
                 getData={getData}
                 headers={headers}
             />

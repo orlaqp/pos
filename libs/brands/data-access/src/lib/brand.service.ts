@@ -1,7 +1,7 @@
 
 import { Brand } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { brandsActions } from './slices/brands.slice';
 import { BrandEntity } from './brand.entity';
 

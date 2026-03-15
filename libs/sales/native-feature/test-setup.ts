@@ -36,7 +36,7 @@ jest.mock('react-native-fs', () => ({
     unlink: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock('aws-amplify', () => ({
+jest.mock('@pos/shared/amplify', () => ({
     Storage: {
         get: jest.fn().mockResolvedValue('https://example.com/mock.png'),
         put: jest.fn().mockResolvedValue({}),
@@ -53,7 +53,7 @@ jest.mock('react-native-image-picker', () => ({
     launchImageLibrary: jest.fn().mockResolvedValue({ didCancel: true }),
 }));
 
-jest.mock('react-native-date-picker', () => {
+jest.mock('@react-native-community/datetimepicker', () => {
     const React = require('react');
     const RN = require('react-native');
     return ({ testID }: { testID?: string }) =>

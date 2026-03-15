@@ -6,17 +6,17 @@ import {
     createEntityAdapter,
     createSelector,
     createSlice,
-    EntityId,
     EntityState,
     PayloadAction,
     Update,
 } from '@reduxjs/toolkit';
 import { EmployeeEntity, EmployeeEntityMapper } from '../employee.entity';
 import { EmployeeService } from '../employee.service';
+import { DataStore } from '@pos/shared/amplify';
 
 export const EMPLOYEE_FEATURE_KEY = 'employees';
 
-export interface EmployeesState extends EntityState< EmployeeEntity > {
+export interface EmployeesState extends EntityState<EmployeeEntity, string> {
   loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
   error?: string;
   selected?: EmployeeEntity;
@@ -25,13 +25,54 @@ export interface EmployeesState extends EntityState< EmployeeEntity > {
   loginEmployee?: EmployeeEntity;
 }
 
-export const employeesAdapter = createEntityAdapter< EmployeeEntity >();
+export const employeesAdapter = createEntityAdapter<EmployeeEntity, string>({
+    selectId: (employee) => employee.id ?? '',
+});
 
 export const fetchEmployees = createAsyncThunk(
   'employees/fetchStatus',
   async (_, thunkAPI) => {
-    const employees = await EmployeeService.getAll();
-    return employees.map(x => EmployeeEntityMapper.fromModel(x));
+    const withTimeout = async <T>(label: string, promise: Promise<T>, ms = 10000) => {
+      return Promise.race([
+        promise,
+        new Promise<T>((_, reject) =>
+          setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+        ),
+      ]);
+    };
+
+    try {
+      const employees = await EmployeeService.getAll();
+      return employees.map(x => EmployeeEntityMapper.fromModel(x));
+    } catch (error) {
+      console.warn('Initial employee query failed, resetting DataStore and retrying once');
+
+      try {
+        console.log('fetchEmployees recovery: clear');
+        await withTimeout('DataStore.clear()', DataStore.clear() as Promise<void>);
+        console.log('fetchEmployees recovery: restart query');
+
+        const employees = (await withTimeout(
+          'EmployeeService.getAll() retry',
+          EmployeeService.getAll()
+        )) as Awaited<ReturnType<typeof EmployeeService.getAll>>;
+        console.log('fetchEmployees recovery: success', employees.length);
+        return employees.map(x => EmployeeEntityMapper.fromModel(x));
+      } catch (retryError) {
+        const message =
+          retryError instanceof Error
+            ? `${retryError.name}: ${retryError.message}`
+            : typeof retryError === 'string'
+              ? retryError
+              : JSON.stringify(retryError);
+
+        console.error('fetchEmployees failed', retryError);
+        if (retryError instanceof Error && retryError.stack) {
+          console.error('fetchEmployees stack', retryError.stack);
+        }
+        return thunkAPI.rejectWithValue(message);
+      }
+    }
   }
 );
 
@@ -49,15 +90,15 @@ export const employeesSlice = createSlice({
   initialState: initialEmployeesState,
   reducers: {
     add: (state: EmployeesState, action: PayloadAction< EmployeeEntity >) =>{
-        employeesAdapter.addOne(state, action);
+        employeesAdapter.addOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    remove: (state: EmployeesState, action: PayloadAction< EntityId >) => {
-        employeesAdapter.removeOne(state, action);
+    remove: (state: EmployeesState, action: PayloadAction<string>) => {
+        employeesAdapter.removeOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    update: (state: EmployeesState, action: PayloadAction<Update< EmployeeEntity>>) => {
-        employeesAdapter.updateOne(state, action);
+    update: (state: EmployeesState, action: PayloadAction<Update<EmployeeEntity, string>>) => {
+        employeesAdapter.updateOne(state, action.payload);
 
         filterList(state, state.filterQuery);
 
@@ -102,7 +143,10 @@ export const employeesSlice = createSlice({
       )
       .addCase(fetchEmployees.rejected, (state: EmployeesState, action) => {
         state.loadingStatus = 'error';
-        state.error = action.error.message;
+        state.error =
+            typeof action.payload === 'string'
+                ? action.payload
+                : action.error?.message || 'Failed to load employees';
       });
   },
 });
@@ -113,19 +157,21 @@ export const employeesSlice = createSlice({
 export const employeesReducer = employeesSlice.reducer;
 
 export const employeesActions = employeesSlice.actions;
-const { selectAll, selectEntities } = employeesAdapter.getSelectors();
-
 export const getEmployeesState = (rootState: RootState): EmployeesState =>
   rootState[EMPLOYEE_FEATURE_KEY];
 
+const employeeSelectors = employeesAdapter.getSelectors<RootState>(getEmployeesState);
+
 export const selectAllEmployees = createSelector(
   getEmployeesState,
-  selectAll
+  (state) =>
+      employeeSelectors.selectAll({ [EMPLOYEE_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectEmployeesEntities = createSelector(
   getEmployeesState,
-  selectEntities
+  (state) =>
+      employeeSelectors.selectEntities({ [EMPLOYEE_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectLoadingStatus = createSelector(
@@ -153,7 +199,7 @@ export const selectLoginEmployee = createSelector(
 
 function filterList(state: EmployeesState, query?: string) {
     state.loadingStatus = 'loaded';
-    const all = selectAll(state);
+    const all = employeesAdapter.getSelectors().selectAll(state);
     
     if (!query) {
         state.filteredList = all;

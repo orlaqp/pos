@@ -5,8 +5,9 @@ import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { View, Text, Alert, ScrollView, StyleSheet } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useAppDispatch } from '@pos/store';
 
 /* eslint-disable-next-line */
 export interface StoreInfoFormProps {
@@ -17,7 +18,7 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
     const storeInfo = useSelector(selectStore);
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const [busy, setBusy] = useState<boolean>(false);
 
     const save = async () => {

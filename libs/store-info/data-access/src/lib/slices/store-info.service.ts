@@ -2,7 +2,7 @@ import { storeInfoActions } from './store-info.slice';
 import { StoreInfoEntity } from './store-info.entity';
 import { Store } from '@pos/shared/models'
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify'
+import { DataStore } from '@pos/shared/amplify'
 
 export class StoreInfoService {
     static getStore() {

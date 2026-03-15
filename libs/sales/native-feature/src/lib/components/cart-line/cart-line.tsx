@@ -19,6 +19,7 @@ export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
     const localStyles = useStyles(tokens, theme.theme.colors.error);
+    const requiresWeight = item.quantity === 0;
     
     const confirmDeletion = () => {
         Alert.alert(
@@ -36,17 +37,24 @@ export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
         <TouchableOpacity
             style={[
                 localStyles.container,
-                item.quantity === 0 && localStyles.containerError,
+                requiresWeight && localStyles.containerError,
             ]}
             onPress={() => onSelect(item)}
         >
+            {requiresWeight ? <View style={localStyles.errorAccent} /> : null}
             <View style={localStyles.content}>
                 <Text style={styles.primaryText}>{item.product.name}</Text>
+                {requiresWeight ? (
+                    <View style={localStyles.statusBadge}>
+                        <Text style={localStyles.statusBadgeText}>Needs weight</Text>
+                    </View>
+                ) : null}
                 <View style={localStyles.metaRow}>
                     <Text
                         style={[
                             styles.secondaryText,
                             localStyles.metaText,
+                            requiresWeight && localStyles.metaTextError,
                         ]}
                     >
                         $ {item.product.price.toFixed(2)}x
@@ -56,6 +64,7 @@ export function CartLine({ item, onRemove, onSelect }: CartLineProps) {
                         style={[
                             styles.primaryText,
                             localStyles.totalText,
+                            requiresWeight && localStyles.totalTextError,
                         ]}
                     >
                         {'  '}($
@@ -93,11 +102,34 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
             overflow: 'hidden',
         },
         containerError: {
-            borderColor: `${dangerColor}99`,
+            borderColor: `${dangerColor}cc`,
+            backgroundColor: `${dangerColor}14`,
+        },
+        errorAccent: {
+            width: 4,
+            alignSelf: 'stretch',
+            borderRadius: 999,
+            backgroundColor: dangerColor,
+            marginRight: tokens.spacing.sm,
         },
         content: {
             flex: 1,
             paddingRight: tokens.spacing.xs,
+        },
+        statusBadge: {
+            alignSelf: 'flex-start',
+            marginTop: tokens.spacing.xs,
+            paddingHorizontal: tokens.spacing.xs,
+            paddingVertical: 3,
+            borderRadius: 999,
+            backgroundColor: `${dangerColor}22`,
+        },
+        statusBadgeText: {
+            color: dangerColor,
+            fontSize: 11,
+            fontWeight: '800',
+            letterSpacing: 0.4,
+            textTransform: 'uppercase',
         },
         metaRow: {
             flexDirection: 'row',
@@ -108,9 +140,15 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
             fontSize: 14,
             fontWeight: '700',
         },
+        metaTextError: {
+            color: dangerColor,
+        },
         totalText: {
             fontSize: 20,
             fontWeight: '800',
+        },
+        totalTextError: {
+            color: dangerColor,
         },
     });
 

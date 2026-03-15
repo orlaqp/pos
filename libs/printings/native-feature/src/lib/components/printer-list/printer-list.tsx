@@ -5,7 +5,7 @@ import { PrinterItem } from '../printer-item/printer-item';
 import { View, StyleSheet, Alert } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { useSharedStyles } from '@pos/theme/native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
     discoverStarPrinters,
     fetchDefaultPrinter,
@@ -15,8 +15,9 @@ import {
     stopDiscovery,
 } from '@pos/printings/data-access';
 import { UIEmptyState, UISpinner } from '@pos/shared/ui-native';
+import { useAppDispatch } from '@pos/store';
 
-const deviceId = DeviceInfo.getUniqueId();
+const deviceId = DeviceInfo.getUniqueIdSync();
 
 export const mapDiscoveredPrinters = (list: any[] | undefined, currentDeviceId: string) =>
     list?.map((sp) => ({
@@ -33,10 +34,10 @@ export const discoverAndMapPrinters = async (
 ) => mapDiscoveredPrinters(await discover(), currentDeviceId);
 
 export const createSetDefaultPrinterHandler = (
-    dispatch: (action: any) => void,
+    dispatch: any,
     printer: PrinterEntity,
     setDefaultPrinter: (
-        dispatch: (action: any) => void,
+        dispatch: any,
         printer: PrinterEntity
     ) => Promise<any> = PrinterService.setDefaultPrinter
 ) => async () => await setDefaultPrinter(dispatch, printer);
@@ -71,7 +72,7 @@ export interface PrintingListProps {
 
 export function PrinterList({ navigation }: PrintingListProps) {
     const styles = useStyles();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const [busy, setBusy] = useState<boolean>();
     const [printers, setPrinters] = useState<PrinterEntity[]>();
     const defaultPrinter = useSelector(getDefaultPrinter);

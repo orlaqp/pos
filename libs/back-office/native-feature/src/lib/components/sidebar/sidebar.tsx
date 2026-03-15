@@ -8,6 +8,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { menuItems } from './menu-items';
 import { useTheme } from '@rneui/themed';
 import i18next from 'i18next';
+import { getThemeColors } from '@pos/theme/native';
 
 export interface SidebarProps {
     navigation: NativeStackNavigationProp<any>;
@@ -15,7 +16,8 @@ export interface SidebarProps {
 
 export function Sidebar({ navigation }: SidebarProps) {
     const theme = useTheme();
-    const styles = useStyles(theme.theme.colors);
+    const colors = getThemeColors(theme);
+    const styles = useStyles(colors);
     const [expandedId, setExpandedId] = useState<string | undefined>(undefined);
     const [selectedId, setSelectedId] = useState<string | null>('1');
 
@@ -87,7 +89,7 @@ export function Sidebar({ navigation }: SidebarProps) {
     );
 }
 
-const useStyles = (colors: Record<string, string>) =>
+const useStyles = (colors: ReturnType<typeof getThemeColors>) =>
     StyleSheet.create({
         container: {
             paddingHorizontal: 6,

@@ -117,7 +117,7 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
     const selectCommonRoles = () => {
         const preferredRoles = ['ADMIN', 'SALES', 'PAYMENTS', 'CASHIER'];
         const common = preferredRoles.filter((roleName) =>
-            roleList.includes(roleName as Role)
+            roleList.includes(roleName as string)
         );
         const defaultSelection = common.length ? common : roleList.slice(0, 2);
         setRolesFromList(defaultSelection);

@@ -9,18 +9,20 @@ jest.mock('@pos/theme/native', () => ({
     }),
 }));
 
-jest.mock('react-native-date-picker', () => {
+jest.mock('../ui-date-picker-modal/ui-date-picker-modal', () => {
     const React = require('react');
     const { Pressable, Text } = require('react-native');
 
-    return ({ onConfirm }) => (
-        <Pressable
-            testID="mock-date-picker-confirm"
-            onPress={() => onConfirm(new Date('2026-03-10T00:00:00.000Z'))}
-        >
-            <Text>confirm</Text>
-        </Pressable>
-    );
+    return {
+        UIDatePickerModal: ({ onConfirm }) => (
+            <Pressable
+                testID="mock-date-picker-confirm"
+                onPress={() => onConfirm(new Date('2026-03-10T00:00:00.000Z'))}
+            >
+                <Text>confirm</Text>
+            </Pressable>
+        ),
+    };
 });
 
 const { UIDateRange } = require('./ui-date-range');

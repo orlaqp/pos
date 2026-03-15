@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Icon, ListItem, useTheme } from '@rneui/themed';
 import { SingleItem, SingleItemProps } from './single-item';
 import i18next from 'i18next';
+import { getThemeColors } from '@pos/theme/native';
 
 export interface SubmenuProps extends SingleItemProps {
     expandedId?: string;
@@ -18,7 +19,8 @@ export function Submenu({
     setExpandedId,
 }: SubmenuProps) {
     const theme = useTheme();
-    const styles = useStyles(theme.theme.colors);
+    const colors = getThemeColors(theme);
+    const styles = useStyles(colors);
     const hasActiveChild = !!item.children?.some((c) => c.id === selectedId);
     const isExpanded = expandedId === item.id;
     const parentActive = hasActiveChild || selectedId === item.id;
@@ -43,8 +45,8 @@ export function Submenu({
                                 size={20}
                                 color={
                                     parentActive
-                                        ? theme.theme.colors.primary
-                                        : theme.theme.colors.grey3
+                                        ? colors.primary
+                                        : colors.grey3
                                 }
                             />
                         </View>
@@ -84,7 +86,7 @@ export function Submenu({
     );
 }
 
-const useStyles = (colors: Record<string, string>) =>
+const useStyles = (colors: ReturnType<typeof getThemeColors>) =>
     StyleSheet.create({
         accordionContainer: {
             borderRadius: 10,

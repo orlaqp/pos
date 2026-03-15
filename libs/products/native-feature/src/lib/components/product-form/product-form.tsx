@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { Alert, ScrollView, StyleSheet, TextInput, View, Text } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View, Text } from 'react-native';
 import {
     UIActions,
     UICard,
@@ -14,14 +14,15 @@ import {
 } from '@pos/shared/ui-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { ProductEntity, ProductService } from '@pos/products/data-access';
-import { RootState } from '@pos/store';
+import { RootState, useAppDispatch } from '@pos/store';
 import { Product } from '@pos/shared/models';
 import { selectAllBrands } from '@pos/brands/data-access';
 import { selectAllUnitOfMeasures } from '@pos/unit-of-measures/data-access';
-import { useTheme, Input } from '@rneui/themed';
+import { useTheme } from '@rneui/themed';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { getThemeColors } from '@pos/theme/native';
 
 export interface ProductFormParams {
     [name: string]: object | undefined;
@@ -36,14 +37,12 @@ export function ProductForm({ navigation }: ProductFormProps) {
     const product = useSelector((state: RootState) => state.products.selected);
     const brands = useSelector(selectAllBrands);
     const ums = useSelector(selectAllUnitOfMeasures);
-    const dispatch = useDispatch();
-    const barcodeRef = React.createRef<TextInput>();
-    const skuRef = React.createRef<TextInput>();
-    const pluRef = React.createRef<TextInput>();
+    const dispatch = useAppDispatch();
 
     const theme = useTheme();
     const tokens = useDesignTokens();
-    const styles = useStyles(tokens, theme.theme.colors);
+    const colors = getThemeColors(theme);
+    const styles = useStyles(tokens, colors);
     const [busy, setBusy] = useState<boolean>(false);
 
     const updatePicture = (key: string) => {
@@ -107,13 +106,6 @@ export function ProductForm({ navigation }: ProductFormProps) {
             ]
         );
     };
-
-    useEffect(() => {
-        const values = form.getValues();
-        barcodeRef.current?.setNativeProps({ text: values.barcode });
-        skuRef.current?.setNativeProps({ text: values.sku });
-        pluRef.current?.setNativeProps({ text: values.plu });
-    }, [barcodeRef, skuRef, pluRef, form]);
 
     return (
         <UIScreen>
@@ -279,52 +271,27 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 <Text style={styles.sectionTitle}>Identifiers</Text>
                                 <View style={styles.row}>
                                     <View style={styles.column}>
-                                        <Input
-                                            ref={barcodeRef}
+                                        <UIInput
+                                            name="barcode"
                                             placeholder="UPC"
                                             label="UPC"
-                                            inputContainerStyle={styles.inputContainerStyle}
-                                            inputStyle={styles.inputStyle}
-                                            leftIcon={{
-                                                name: 'barcode',
-                                                type: 'material-community',
-                                                color: theme.theme.colors.grey2,
-                                            }}
-                                            onBlur={(e) => form.setValue('barcode', e.nativeEvent.text)}
+                                            lIcon="barcode"
                                         />
                                     </View>
                                     <View style={styles.column}>
-                                        <Input
-                                            ref={skuRef}
+                                        <UIInput
+                                            name="sku"
                                             placeholder="SKU"
                                             label="SKU"
-                                            inputContainerStyle={styles.inputContainerStyle}
-                                            inputStyle={styles.inputStyle}
-                                            leftIcon={{
-                                                name: 'barcode',
-                                                type: 'material-community',
-                                                color: theme.theme.colors.grey2,
-                                            }}
-                                            onBlur={(e) => {
-                                                form.setValue('sku', e.nativeEvent.text);
-                                            }}
+                                            lIcon="barcode"
                                         />
                                     </View>
                                     <View style={styles.columnLast}>
-                                        <Input
-                                            ref={pluRef}
+                                        <UIInput
+                                            name="plu"
                                             placeholder="PLU"
                                             label="PLU"
-                                            inputContainerStyle={styles.inputContainerStyle}
-                                            inputStyle={styles.inputStyle}
-                                            leftIcon={{
-                                                name: 'barcode',
-                                                type: 'material-community',
-                                                color: theme.theme.colors.grey2,
-                                            }}
-                                            onBlur={(e) => {
-                                                form.setValue('plu', e.nativeEvent.text);
-                                            }}
+                                            lIcon="barcode"
                                         />
                                     </View>
                                 </View>
@@ -348,7 +315,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
 
 const useStyles = (
     tokens: ReturnType<typeof useDesignTokens>,
-    colors: Record<string, string>
+    colors: ReturnType<typeof getThemeColors>
 ) =>
     StyleSheet.create({
         screen: {

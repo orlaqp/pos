@@ -1,7 +1,7 @@
 
 import { UnitOfMeasure } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { unitOfMeasuresActions } from './slices/unit-of-measures.slice';
 import { UnitOfMeasureEntity } from './unit-of-measure.entity';
 

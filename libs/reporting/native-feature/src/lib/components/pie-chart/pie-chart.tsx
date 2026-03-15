@@ -3,7 +3,8 @@ import React from 'react';
 import i18next from 'i18next';
 
 import { View, Text } from 'react-native';
-import { PieChart as PC } from 'react-native-chart-kit';
+import { PieChart as BasePieChart } from 'react-native-chart-kit';
+const PC = BasePieChart as any;
 
 const legendFontSize = 15;
 const legendFontColor = '#7F7F7F';

@@ -10,7 +10,7 @@ module.exports = {
     '^react-native-fs$': require.resolve('./jest/react-native-fs.mock.js'),
     '^react-native-device-info$': require.resolve('./jest/react-native-device-info.mock.js'),
     '^@react-native-async-storage/async-storage$': require.resolve(
-      '@react-native-async-storage/async-storage/jest/async-storage-mock'
+      './jest/react-native-async-storage.mock.js'
     ),
     '^react-native-image-picker$': require.resolve('./jest/react-native-image-picker.mock.js'),
     '^react-native-star-io10$': require.resolve('./jest/react-native-star-io10.mock.js'),

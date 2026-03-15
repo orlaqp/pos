@@ -9,7 +9,7 @@ import {
     Station,
 } from '@pos/shared/models';
 import { DatesService } from '@pos/shared/utils';
-import { DataStore, syncExpression } from 'aws-amplify';
+import { DataStore, syncExpression } from '@pos/shared/amplify';
 import DeviceInfo from 'react-native-device-info';
 import moment from 'moment';
 

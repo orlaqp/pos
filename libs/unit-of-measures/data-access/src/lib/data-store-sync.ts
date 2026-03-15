@@ -1,5 +1,5 @@
 import { sortListBy } from '@pos/shared/utils';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { Dispatch } from '@reduxjs/toolkit';
 import { UnitOfMeasure } from '@pos/shared/models';
 import { unitOfMeasuresActions } from './slices/unit-of-measures.slice';

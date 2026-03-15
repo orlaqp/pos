@@ -1,7 +1,7 @@
 import { sortByCreatedAt } from '@pos/shared/utils';
 import { Order } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { OrderEntityMapper } from './order.entity';
 import { ordersActions } from './slices/orders.slice';
 
@@ -12,7 +12,7 @@ const LAST_X_DAYS = 30;
 export const syncOrders = (dispatch: Dispatch) => {
     console.log('Syncing orders to the store');
     DataStore
-        .query(Order, (o) => o.orderDate('gt', moment().subtract(LAST_X_DAYS, 'days').toISOString()))
+        .query(Order, (o) => o.orderDate.gt(moment().subtract(LAST_X_DAYS, 'days').toISOString()))
         .then((orders) => updateStoreOrders(dispatch, orders));
 };
 
@@ -26,7 +26,7 @@ export const subscribeToOrderChanges = (dispatch: Dispatch) => {
     //     : (o) => o.status('eq', 'OPEN').orderDate('gt', moment().subtract(LAST_X_DAYS, 'days').toISOString())
     // )
     return DataStore.observeQuery(Order, 
-        (o) => o.orderDate('gt', moment().subtract(LAST_X_DAYS, 'days').toISOString())
+        (o) => o.orderDate.gt(moment().subtract(LAST_X_DAYS, 'days').toISOString())
     )
     .subscribe(({ isSynced, items }) => {
         console.log(`Order changes detected (isSynced: ${isSynced})`);

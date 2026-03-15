@@ -1,14 +1,13 @@
 import React from 'react';
 
 import { useSharedStyles } from '@pos/theme/native';
-import { TypedNavigator } from '@react-navigation/native';
 import { useTheme } from '@rneui/themed';
 
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export interface StackNavigationProps {
-    Stack: TypedNavigator<any, any, any, any, any>
+    Stack: any;
     children: any;
 }
 

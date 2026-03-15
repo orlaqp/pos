@@ -104,7 +104,7 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
                 {!each && (
                     <View style={styles.weightRow}>
                         <Input
-                            ref={ref}
+                            ref={ref as any}
                             value={quantity.toString()}
                             placeholder="Weight ..."
                             keyboardType="decimal-pad"

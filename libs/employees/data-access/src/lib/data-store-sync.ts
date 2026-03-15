@@ -1,4 +1,4 @@
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { Dispatch } from '@reduxjs/toolkit';
 import { Employee } from '@pos/shared/models';
 import { employeesActions } from './slices/employees.slice';

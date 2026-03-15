@@ -4,7 +4,7 @@ import { Input, useTheme } from '@rneui/themed';
 import React, { useState } from 'react';
 import { useFormContext, Controller, RegisterOptions } from 'react-hook-form';
 
-type Props = React.ComponentProps<typeof Input> & {
+type Props = InputProps & {
     name: string;
     allowDecimals?: boolean;
     rules?: RegisterOptions;
@@ -12,7 +12,7 @@ type Props = React.ComponentProps<typeof Input> & {
     rIcon?: string;
 };
 
-export const UINumericInput = React.forwardRef<typeof Input, Props>(
+export const UINumericInput = React.forwardRef<any, Props>(
     (props, ref) => {
         const theme = useTheme();
         const styles = useSharedStyles();
@@ -63,7 +63,7 @@ export const UINumericInput = React.forwardRef<typeof Input, Props>(
                 name={name}
                 render={({ field: { onChange, value, onBlur, ref }, fieldState: { error } }) => (
                     <Input
-                        ref={ref}
+                        ref={ref as any}
                         {...restOfProps}
                         placeholder={props.placeholder}
                         value={value?.toString()}

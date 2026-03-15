@@ -71,7 +71,10 @@ export function BackOffice({ navigation }: BackOfficeProps) {
                 <View style={styles.rightSide}>
                     <NavigationIndependentTree>
                         <NavigationContainer ref={backOfficeNavigationRef}>
-                            <Stack.Navigator screenOptions={{ headerShown: false }}>
+                            <Stack.Navigator
+                                id="back-office-navigation"
+                                screenOptions={{ headerShown: false }}
+                            >
                                 <Stack.Screen name="Dashboard" component={Dashboard} />
                                 <Stack.Screen name="Sale List" component={Sales} />
                                 <Stack.Screen name="Station" component={StationForm} />

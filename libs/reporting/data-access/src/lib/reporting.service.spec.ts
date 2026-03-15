@@ -10,7 +10,7 @@ import {
 const mockGraphql = jest.fn();
 const mockDataStoreQuery = jest.fn();
 
-jest.mock('aws-amplify', () => ({
+jest.mock('@pos/shared/amplify', () => ({
     API: {
         graphql: (...args: unknown[]) => mockGraphql(...args),
     },

@@ -1,5 +1,5 @@
 import { GlobalSettings } from '@pos/shared/models';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { GlobalSettingsDTO, GlobalSettingsEntityMapper } from './../global-settings.dto';
 export class GlobalSettingsService {
 

@@ -1,5 +1,5 @@
 import { productsActions } from './slices/products.slice';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { Dispatch } from '@reduxjs/toolkit';
 import { Product } from '@pos/shared/models';
 import { ProductEntityMapper } from './product.entity';

@@ -5,8 +5,6 @@ import {
     createEntityAdapter,
     createSelector,
     createSlice,
-    Dictionary,
-    EntityId,
     EntityState,
     PayloadAction,
     Update,
@@ -16,7 +14,7 @@ import { CategoryService } from '../category.service';
 
 export const CATEGORIES_FEATURE_KEY = 'categories';
 
-export interface CategoriesState extends EntityState<CategoryEntity> {
+export interface CategoriesState extends EntityState<CategoryEntity, string> {
   loadingStatus: 'new' | 'loading' | 'loaded' | 'error';
   error?: string;
   selected?: CategoryEntity;
@@ -24,7 +22,9 @@ export interface CategoriesState extends EntityState<CategoryEntity> {
   filteredList?: CategoryEntity[];
 }
 
-export const categoriesAdapter = createEntityAdapter<CategoryEntity>();
+export const categoriesAdapter = createEntityAdapter<CategoryEntity, string>({
+    selectId: (category) => category.id ?? '',
+});
 
 export const fetchCategories = createAsyncThunk(
   'categories/fetchStatus',
@@ -53,15 +53,15 @@ export const categoriesSlice = createSlice({
         filterList(state, state.filterQuery);
     },
     add: (state: CategoriesState, action: PayloadAction< CategoryEntity >) =>{
-        categoriesAdapter.addOne(state, action);
+        categoriesAdapter.addOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    remove: (state: CategoriesState, action: PayloadAction< EntityId >) => {
-        categoriesAdapter.removeOne(state, action);
+    remove: (state: CategoriesState, action: PayloadAction<string>) => {
+        categoriesAdapter.removeOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    update: (state: CategoriesState, action: PayloadAction<Update<CategoryEntity>>) => {
-        categoriesAdapter.updateOne(state, action);
+    update: (state: CategoriesState, action: PayloadAction<Update<CategoryEntity, string>>) => {
+        categoriesAdapter.updateOne(state, action.payload);
         filterList(state, state.filterQuery);
     },  
     select: (state: CategoriesState, action: PayloadAction<CategoryEntity>) => {
@@ -135,19 +135,21 @@ export const categoriesActions = categoriesSlice.actions;
  *
  * See: https://react-redux.js.org/next/api/hooks#useselector
  */
-const { selectAll, selectEntities } = categoriesAdapter.getSelectors();
-
 export const getCategoriesState = (rootState: RootState): CategoriesState =>
   rootState[CATEGORIES_FEATURE_KEY];
 
+const categorySelectors = categoriesAdapter.getSelectors<RootState>(getCategoriesState);
+
 export const selectAllCategories = createSelector(
   getCategoriesState,
-  selectAll
+  (state) =>
+      categorySelectors.selectAll({ [CATEGORIES_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectCategoriesEntities = createSelector(
   getCategoriesState,
-  selectEntities
+  (state) =>
+      categorySelectors.selectEntities({ [CATEGORIES_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectLoadingStatus = createSelector(
@@ -176,7 +178,7 @@ export const selectCategory = (id: string) => createSelector(
 )
 
 function filterList(state: CategoriesState, query?: string) {
-    const all = selectAll(state);
+    const all = categoriesAdapter.getSelectors().selectAll(state);
     
     if (!query) {
         state.filteredList = all;
@@ -186,4 +188,3 @@ function filterList(state: CategoriesState, query?: string) {
     const lowerQuery = query.toLowerCase();
     state.filteredList = all.filter(x => x.name.toLowerCase().indexOf(lowerQuery) !== -1);
 }
-

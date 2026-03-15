@@ -1,5 +1,10 @@
 import { Product } from '@pos/shared/models';
 
+type ProductLike = Pick<
+    Product,
+    'id' | 'name' | 'price' | 'unitOfMeasure' | 'barcode' | 'sku' | 'isEBTEligible'
+>;
+
 export interface CartHeader {
     orderNumber: string;
     orderDate: string;
@@ -49,7 +54,7 @@ export interface CartState {
 
 
 export class CartItemMapper {
-    static fromProduct(p: Product, quantity: number): CartItem {
+    static fromProduct(p: ProductLike, quantity: number): CartItem {
         return {
             identifier: undefined,
             product: {

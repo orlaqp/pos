@@ -13,8 +13,9 @@ import {
     TouchableOpacity,
     Text,
 } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useAppDispatch } from '@pos/store';
 
 const PAGE_SIZE = 10;
 
@@ -30,19 +31,19 @@ export interface ItemListProps<TState, TEntityType> {
     // selectors
     isEmptySelector: (state: TState) => boolean;
     loadingStatusSelector: (state: TState) => unknown;
-    filteredListSelector: (state: TState) => unknown[] | undefined;
+    filteredListSelector: (state: TState) => TEntityType[] | undefined;
     // actions
-    clearSelectionAction: () => unknown;
-    filterAction: (query: string) => unknown;
-    fetchItemsAction?: () => unknown;
+    clearSelectionAction: () => any;
+    filterAction: (query: string) => any;
+    fetchItemsAction?: () => any;
 
-    ItemComponent: (props: ItemComponentProps<TEntityType>) => JSX.Element;
+    ItemComponent: React.ComponentType<ItemComponentProps<TEntityType>>;
     goBackEnable?: boolean;
     emptyText?: string;
     emptyActionText?: string;
     emptyAction?: () => void;
     emptyActionIcon?: string;
-    renderHeader?: () => unknown;
+    renderHeader?: () => React.ReactNode;
 }
 
 export function UIGenericItemList({
@@ -61,15 +62,15 @@ export function UIGenericItemList({
     emptyAction,
     emptyActionIcon,
     renderHeader,
-}: ItemListProps<unknown, unknown>) {
+}: ItemListProps<unknown, any>) {
     const theme = useTheme();
     const styles = useStyles();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
     const isEmpty = useSelector(isEmptySelector);
     const loadingStatus = useSelector(loadingStatusSelector);
     const items = useSelector(filteredListSelector);
-    const [visibleItems, setVisibleItems] = useState<unknown[]>();
+    const [visibleItems, setVisibleItems] = useState<any[]>();
     const [lastIndex, setLastIndex] = useState<number>(10);
     const [query, setQuery] = useState<string>('');
 

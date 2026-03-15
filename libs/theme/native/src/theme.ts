@@ -23,8 +23,32 @@ export const theme = (mode: ThemeMode) => createTheme({
     // }
 });
 
+type ThemeColorMap = Record<string, string | undefined>;
+type ThemeCandidate = unknown;
+
+const hasObject = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null;
+
+const extractColors = (themeValue: ThemeCandidate): ThemeColorMap => {
+    if (!hasObject(themeValue)) {
+        return {};
+    }
+
+    const directColors = themeValue.colors;
+    if (hasObject(directColors)) {
+        return directColors as ThemeColorMap;
+    }
+
+    const nestedTheme = themeValue.theme;
+    if (hasObject(nestedTheme) && hasObject(nestedTheme.colors)) {
+        return nestedTheme.colors as ThemeColorMap;
+    }
+
+    return {};
+};
+
 export const getThemeColors = (
-    themeValue?: { theme?: { colors?: Record<string, string> } } | null
+    themeValue?: ThemeCandidate
 ) => ({
     background: designTokens.colors.canvas,
     black: designTokens.colors.textPrimary,
@@ -40,5 +64,5 @@ export const getThemeColors = (
     warning: designTokens.colors.warning,
     error: designTokens.colors.danger,
     disabled: '#5d6977',
-    ...(themeValue?.theme?.colors ?? {}),
+    ...extractColors(themeValue),
 });

@@ -48,6 +48,7 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
     const [ready, setReady] = useState(false);
     const [receivePayment, setReceivePayment] = useState<boolean>(false);
     const ebtEligibleTotal = getEbtEligibleTotal(cart);
+    const invalidItemCount = cart.items.filter((item) => item.quantity === 0).length;
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
@@ -121,16 +122,6 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
 
     return (
         <View style={localStyles.root}>
-            <UICard tone="default" padding="sm" radius="md" style={localStyles.summaryCard}>
-                <View style={localStyles.summaryRow}>
-                    <Text style={localStyles.summaryLabel}>{t('CART_Items', 'Items')}</Text>
-                    <Text style={localStyles.summaryValue}>{cart.items.length}</Text>
-                </View>
-                <View style={localStyles.summaryRow}>
-                    <Text style={localStyles.summaryLabel}>{t('CART_Total', 'Total')}</Text>
-                    <Text style={localStyles.summaryTotal}>$ {cart.footer.total.toFixed(2)}</Text>
-                </View>
-            </UICard>
             <View style={localStyles.linesWrap}>
                 <ScrollView contentContainerStyle={localStyles.linesContent}>
                     {cart.items.map((i, idx) => (
@@ -144,21 +135,42 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                 </ScrollView>
             </View>
             <View style={localStyles.actionsWrap}>
+                {!ready && invalidItemCount > 0 ? (
+                    <Text style={localStyles.warningText}>
+                        {invalidItemCount === 1
+                            ? '1 item needs weight before checkout'
+                            : `${invalidItemCount} items need weight before checkout`}
+                    </Text>
+                ) : null}
                 <Button
                     testID="cart-pay-order-button"
                     title={
-                        mode === 'order'
-                            ? `${t('CART_PrintOrder', 'Print Order')}  •  $${cart.footer.total.toFixed(2)}`
-                            : `${t('CART_ReceivePayment', 'Receive Payment')}  •  $${cart.footer.total.toFixed(2)}`
+                        !ready && invalidItemCount > 0
+                            ? 'Resolve cart items to continue'
+                            : mode === 'order'
+                              ? `${t('CART_PrintOrder', 'Print Order')}  •  $${cart.footer.total.toFixed(2)}`
+                              : `${t('CART_ReceivePayment', 'Receive Payment')}  •  $${cart.footer.total.toFixed(2)}`
                     }
                     icon={{
-                        name: mode === 'order' ? 'printer' : 'credit-card-check-outline',
+                        name:
+                            !ready && invalidItemCount > 0
+                                ? 'alert-circle-outline'
+                                : mode === 'order'
+                                  ? 'printer'
+                                  : 'credit-card-check-outline',
                         type: 'material-community',
-                        color: '#ffffff',
+                        color: ready ? '#ffffff' : tokens.colors.textSecondary,
                     }}
                     type="solid"
                     disabled={!ready}
                     onPress={submitOrder}
+                    buttonStyle={localStyles.primaryButton}
+                    disabledStyle={localStyles.primaryButtonDisabled}
+                    titleStyle={[
+                        localStyles.primaryButtonTitle,
+                        !ready && localStyles.primaryButtonTitleDisabled,
+                    ]}
+                    containerStyle={localStyles.primaryButtonContainer}
                 />
             </View>
 
@@ -191,31 +203,6 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flexDirection: 'column',
             justifyContent: 'center',
         },
-        summaryCard: {
-            marginBottom: tokens.spacing.sm,
-        },
-        summaryRow: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-        },
-        summaryLabel: {
-            color: tokens.colors.textMuted,
-            fontSize: 12,
-            fontWeight: '700',
-            letterSpacing: 0.5,
-            textTransform: 'uppercase',
-        },
-        summaryValue: {
-            color: tokens.colors.textPrimary,
-            fontSize: 18,
-            fontWeight: '700',
-        },
-        summaryTotal: {
-            color: tokens.colors.textPrimary,
-            fontSize: 24,
-            fontWeight: '800',
-        },
         linesWrap: {
             flex: 1,
         },
@@ -224,6 +211,36 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         actionsWrap: {
             marginTop: tokens.spacing.sm,
+        },
+        warningText: {
+            color: tokens.colors.danger,
+            fontSize: 13,
+            fontWeight: '700',
+            textAlign: 'center',
+            marginBottom: tokens.spacing.xs,
+        },
+        primaryButtonContainer: {
+            borderRadius: tokens.radii.md,
+            overflow: 'hidden',
+        },
+        primaryButton: {
+            minHeight: 60,
+            borderRadius: tokens.radii.md,
+            backgroundColor: tokens.colors.accent,
+        },
+        primaryButtonDisabled: {
+            minHeight: 60,
+            borderRadius: tokens.radii.md,
+            backgroundColor: tokens.colors.surfaceMuted,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+        },
+        primaryButtonTitle: {
+            fontSize: 20,
+            fontWeight: '800',
+        },
+        primaryButtonTitleDisabled: {
+            color: tokens.colors.textSecondary,
         },
     });
 

@@ -41,7 +41,7 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
 
         return (
             <Input
-                ref={ref}
+                ref={ref as any}
                 {...restOfProps}
                 // value={text}
                 autoComplete='off'

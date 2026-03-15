@@ -6,7 +6,7 @@ import { View, StyleSheet, Image } from 'react-native';
 import { useTheme, Button } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { Auth } from 'aws-amplify';
+import { Auth } from '@pos/shared/amplify';
 import { useForm, FormProvider } from 'react-hook-form';
 import { UiActionMessage, UIAlert, UIInput } from '@pos/shared/ui-native';
 import { getThemeColors } from '@pos/theme/native';

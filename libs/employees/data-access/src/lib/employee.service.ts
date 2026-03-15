@@ -1,13 +1,14 @@
 
 import { Employee } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify';
-import { employeesActions } from './slices/employees.slice';
+import { DataStore } from '@pos/shared/amplify';
 import { EmployeeEntity } from './employee.entity';
-import { EmployeeEntityMapper } from '..';
+import { EmployeeEntityMapper } from './employee.entity';
 
 export class EmployeeService {
     static async save(dispatch: Dispatch<any>, employee: EmployeeEntity) {
+        const { employeesActions } = require('./slices/employees.slice');
+
         if (!employee.id) {
             const entity = new Employee(employee);
             const res = await DataStore.save(entity);
@@ -54,12 +55,16 @@ export class EmployeeService {
     }
 
     static async getEmployee(pin: string) {
-        const emp = await DataStore.query(Employee, e => e.pin('eq', pin).active('eq', true));
+        const emp = await DataStore.query(Employee, (e) =>
+            e.and((employee) => [employee.pin.eq(pin), employee.active.eq(true)])
+        );
         return emp[0] ? EmployeeEntityMapper.fromModel(emp[0]): null;
     }
 
-    static async getById(employeeId: string): Promise<Omit<EmployeeEntity, "id"> & { id: string; } | null> {
-        const emp = await DataStore.query(Employee, e => e.id('eq', employeeId));
-        return emp[0] ? EmployeeEntityMapper.fromModel(emp[0]): null as any;
+    static async getById(employeeId: string): Promise<(Omit<EmployeeEntity, "id"> & { id: string; }) | null> {
+        const emp = await DataStore.query(Employee, e => e.id.eq(employeeId));
+        return emp[0]
+            ? (EmployeeEntityMapper.fromModel(emp[0]) as Omit<EmployeeEntity, 'id'> & { id: string })
+            : null;
     }
 }

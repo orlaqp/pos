@@ -4,9 +4,10 @@ import React, { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { View, Text, Alert, ScrollView, StyleSheet } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { saveStationNumber, selectStation, StationConfig } from '@pos/settings/data-access';
+import { useAppDispatch } from '@pos/store';
 
 /* eslint-disable-next-line */
 export interface StationFormProps {
@@ -18,7 +19,7 @@ export type CustomStationConfig = Omit<StationConfig, 'orderNumber'> & { orderNu
 export function StationForm({ navigation }: StationFormProps) {
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const stationInfo = useSelector(selectStation);
     const [busy, setBusy] = useState<boolean>(false);
     

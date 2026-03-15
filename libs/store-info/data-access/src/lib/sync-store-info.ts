@@ -1,6 +1,6 @@
 import { Store } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { StoreInfoEntityMapper } from './slices/store-info.entity';
 import { storeInfoActions } from './slices/store-info.slice';
 

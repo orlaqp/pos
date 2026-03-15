@@ -2,14 +2,14 @@ import React from 'react';
 import moment from 'moment';
 
 import { View, Text, Alert, StyleSheet } from 'react-native';
-import { useSharedStyles } from '@pos/theme/native';
+import { getThemeColors, useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import {
     inventoryReceiveActions,
     InventoryReceiveDTO,
     InventoryReceiveService,
 } from '@pos/inventory/data-access';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from '@pos/store';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
@@ -22,10 +22,11 @@ export interface InventoryItemProps {
 
 export function InventoryReceiveItem({ item, navigation }: InventoryItemProps) {
     const theme = useTheme();
+    const colors = getThemeColors(theme);
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
-    const local = useStyles(tokens, theme.theme.colors);
-    const dispatch = useDispatch();
+    const local = useStyles(tokens, colors);
+    const dispatch = useAppDispatch();
 
     const editItem = () => {
         dispatch(inventoryReceiveActions.select(item));
@@ -121,7 +122,7 @@ export function InventoryReceiveItem({ item, navigation }: InventoryItemProps) {
 
 const useStyles = (
     tokens: ReturnType<typeof useDesignTokens>,
-    colors: Record<string, string>
+    colors: ReturnType<typeof getThemeColors>
 ) =>
     StyleSheet.create({
         row: {

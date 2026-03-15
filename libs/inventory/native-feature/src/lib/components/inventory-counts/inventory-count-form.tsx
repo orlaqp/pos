@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 
 import { Alert, FlatList, StyleSheet, TextInput, View, Text } from 'react-native';
-import { useSharedStyles } from '@pos/theme/native';
+import { getThemeColors, useSharedStyles } from '@pos/theme/native';
 import { UIActions, UICard, UIScreen, UISearchInput } from '@pos/shared/ui-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
     inventoryCountActions,
     InventoryCountDTO,
@@ -24,6 +24,7 @@ import CompactProductList from '../shared/compact-product-list/compact-product-l
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { dedupeProducts } from '../shared/dedupe-products';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { useAppDispatch } from '@pos/store';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -100,11 +101,12 @@ export function InventoryCountForm({
     navigation,
     route,
 }: NativeStackScreenProps<NavigationParamList, 'Inventory Count Form'>) {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const theme = useTheme();
+    const colors = getThemeColors(theme);
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
-    const local = useStyles(tokens, theme.theme.colors);
+    const local = useStyles(tokens, colors);
     const [busy, setBusy] = useState<boolean>(false);
     const [filter, setFilter] = useState<string>();
     const inventoryCount = useSelector(selectInventoryCountSelected);

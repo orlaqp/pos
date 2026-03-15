@@ -8,8 +8,6 @@ import {
     createEntityAdapter,
     createSelector,
     createSlice,
-    Dictionary,
-    EntityId,
     EntityState,
     PayloadAction,
     Update,
@@ -24,7 +22,7 @@ export interface ProductFilterRequest {
     categoryId?: string;
 }
 
-export interface ProductsState extends EntityState<ProductEntity> {
+export interface ProductsState extends EntityState<ProductEntity, string> {
     loadingStatus: 'not loaded' | 'loaded' | 'loading' | 'new' | 'error';
     error?: string;
     selected?: ProductEntity;
@@ -32,7 +30,9 @@ export interface ProductsState extends EntityState<ProductEntity> {
     filteredList?: ProductEntity[];
 }
 
-export const productsAdapter = createEntityAdapter<ProductEntity>();
+export const productsAdapter = createEntityAdapter<ProductEntity, string>({
+    selectId: (product) => product.id,
+});
 
 export const fetchProducts = createAsyncThunk(
     'products/fetchStatus',
@@ -63,18 +63,18 @@ export const productsSlice = createSlice({
             filterList(state, state.filterQuery);
         },
         add: (state: ProductsState, action: PayloadAction<ProductEntity>) => {
-            productsAdapter.addOne(state, action);
+            productsAdapter.addOne(state, action.payload);
             filterList(state, state.filterQuery);
         },
-        remove: (state: ProductsState, action: PayloadAction<EntityId>) => {
-            productsAdapter.removeOne(state, action);
+        remove: (state: ProductsState, action: PayloadAction<string>) => {
+            productsAdapter.removeOne(state, action.payload);
             filterList(state, state.filterQuery);
         },
         update: (
             state: ProductsState,
-            action: PayloadAction<Update<ProductEntity>>
+            action: PayloadAction<Update<ProductEntity, string>>
         ) => {
-            productsAdapter.updateOne(state, action);
+            productsAdapter.updateOne(state, action.payload);
             filterList(state, state.filterQuery);
         },
         select: (
@@ -94,11 +94,10 @@ export const productsSlice = createSlice({
             state.error = action.payload.message;
         },
         reset: (state: ProductsState) => {
-            state.entities = initialProductsState.entities;
+            productsAdapter.removeAll(state);
             state.error = initialProductsState.error;
             state.filterQuery = initialProductsState.filterQuery;
             state.filteredList = initialProductsState.filteredList;
-            state.ids = initialProductsState.ids;
             state.loadingStatus = initialProductsState.loadingStatus;
             state.selected = initialProductsState.selected;
         },
@@ -146,19 +145,22 @@ export const productsReducer = productsSlice.reducer;
 
 export const productsActions = productsSlice.actions;
 
-const { selectAll, selectEntities } = productsAdapter.getSelectors();
-
 export const getProductsState = (rootState: RootState): ProductsState =>
     rootState[PRODUCT_FEATURE_KEY];
 
-export const selectAllProducts = createSelector(getProductsState, selectAll);
+const productSelectors = productsAdapter.getSelectors<RootState>(getProductsState);
+
+export const selectAllProducts = createSelector(
+    getProductsState,
+    (state) => productSelectors.selectAll({ [PRODUCT_FEATURE_KEY]: state } as RootState)
+);
 
 export const selectProduct = (id: string) =>
     createSelector(getProductsState, (state) => state.entities[id]);
 
 export const selectProductsEntities = createSelector(
     getProductsState,
-    selectEntities
+    (state) => productSelectors.selectEntities({ [PRODUCT_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectLoadingStatus = createSelector(
@@ -183,7 +185,7 @@ export const selectFilteredList = createSelector(
 
 export const selectProductsByCategory = (id?: string) =>
     createSelector(getProductsState, (state: ProductsState) => {
-        const products = selectAll(state);
+        const products = productsAdapter.getSelectors().selectAll(state);
         return id
             ? products.filter((p) => p.productCategoryId === id)
             : products;

@@ -19,12 +19,14 @@ export interface EventEntity {
     timestamp: string;
 }
 
-export interface EventsState extends EntityState<EventEntity> {
+export interface EventsState extends EntityState<EventEntity, string> {
     loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
     error?: string;
 }
 
-export const eventsAdapter = createEntityAdapter<EventEntity>();
+export const eventsAdapter = createEntityAdapter<EventEntity, string>({
+    selectId: (event) => event.id,
+});
 
 
 export const initialEventsState: EventsState = eventsAdapter.getInitialState({
@@ -90,17 +92,17 @@ export const eventsActions = eventsSlice.actions;
  *
  * See: https://react-redux.js.org/next/api/hooks#useselector
  */
-const { selectAll, selectEntities } = eventsAdapter.getSelectors();
-
 export const getEventsState = (
     rootState: Record<string, EventsState>
 ): EventsState =>
     rootState[EVENTS_FEATURE_KEY];
 
+const eventSelectors = eventsAdapter.getSelectors<Record<string, EventsState>>(getEventsState);
+
 export const selectAllEvents = createSelector(
     getEventsState,
     (state: EventsState) => {
-        const events = selectAll(state);
+        const events = eventSelectors.selectAll({ [EVENTS_FEATURE_KEY]: state });
         sortDescListBy(events, 'timestamp');
         return events;
     }
@@ -108,5 +110,5 @@ export const selectAllEvents = createSelector(
 
 export const selectEventsEntities = createSelector(
     getEventsState,
-    selectEntities
+    (state) => eventSelectors.selectEntities({ [EVENTS_FEATURE_KEY]: state })
 );

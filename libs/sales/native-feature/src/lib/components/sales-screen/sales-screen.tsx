@@ -14,7 +14,7 @@ import {
 } from '@pos/categories/data-access';
 import CategorySelection from '../category-selection/category-selection';
 import ProductSelection from '../product-selection/product-selection';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
     cartActions,
     CartItem,
@@ -30,6 +30,7 @@ import {
     ProductEntity,
     ProductService,
     selectAllProducts,
+    selectProductsEntities,
     selectFilteredList,
     syncProducts,
     subscribeToProductChanges,
@@ -37,8 +38,7 @@ import {
 import { ProductSearch } from '../product-search/product-search';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ButtonItemType, UICard, UIScreen } from '@pos/shared/ui-native';
-import { RootState } from '@pos/store';
-import { Dictionary } from '@reduxjs/toolkit';
+import { RootState, useAppDispatch } from '@pos/store';
 import { getDefaultPrinter } from '@pos/printings/data-access';
 import {
     payOrder,
@@ -75,13 +75,13 @@ export function SalesScreen({
     route,
 }: NativeStackScreenProps<NavigationParamList, 'Sales'>) {
     const styles = useStyles();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const searchRef = React.useRef<TextInput>(null);
     const product = useSelector(selectActiveProduct);
     const products = useSelector<
         RootState,
-        Dictionary<ProductEntity> | undefined
-    >(selectFilteredList);
+        Record<string, ProductEntity | undefined> | undefined
+    >(selectProductsEntities);
     const storeInfo = useSelector(selectStore);
     const defaultPrinter = useSelector(getDefaultPrinter);
     const allProducts = useSelector(selectAllProducts);
@@ -227,7 +227,7 @@ export function SalesScreen({
 
     useEffect(() => {
         const selectedProduct = getSingleProductFromDictionary(products);
-        if (selectedProduct) onProductSelected(selectedProduct as any);
+        if (selectedProduct) onProductSelected(selectedProduct);
     }, [onProductSelected, products]);
 
     useEffect(() => {

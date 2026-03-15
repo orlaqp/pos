@@ -1,7 +1,7 @@
 import { Category } from '@pos/shared/models';
 import { AssetsService } from '@pos/shared/utils';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { CategoryEntity } from './category.entity';
 import { categoriesActions } from './slices/categories.slice';
 

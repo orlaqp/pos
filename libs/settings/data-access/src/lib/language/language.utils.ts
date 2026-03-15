@@ -38,7 +38,7 @@ export type AvailableLanguage = 'en' | 'es';
 const fallback = { languageTag: "en", isRTL: false };
 
 export const { languageTag, isRTL } =
-    RNLocalize.findBestAvailableLanguage(Object.keys(translationGetters)) ||
+    RNLocalize.findBestLanguageTag(Object.keys(translationGetters)) ||
     fallback;
 
 export const setI18nConfig = (languageTag: string) => {

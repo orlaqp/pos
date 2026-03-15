@@ -42,6 +42,7 @@ export function Sales(_props: SalesProps) {
                 'REPORT_SaleListSubtitle',
                 'Review paid transactions and totals for the selected period.'
             )}
+            total={0}
             getData={getData}
             headers={headers}
         />

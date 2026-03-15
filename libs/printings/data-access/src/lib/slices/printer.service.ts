@@ -1,6 +1,6 @@
 import DeviceInfo from 'react-native-device-info';
 import { Printer } from '@pos/shared/models';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { PrinterEntity } from './printer.entity';
 import { Dispatch } from '@reduxjs/toolkit';
 import { printingsActions } from './printers.slice';
@@ -31,7 +31,10 @@ export class PrinterService {
     }
 
     static async getDefaultPrinter() {
-        const printers = await DataStore.query(Printer, p => p.deviceId('eq', DeviceInfo.getUniqueId()));
+        const printers = await DataStore.query(
+            Printer,
+            (p) => p.deviceId.eq(DeviceInfo.getUniqueIdSync())
+        );
         return printers?.at(0);
     }
 }

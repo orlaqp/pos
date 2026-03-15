@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 
 import { Alert, FlatList, StyleSheet, TextInput, View, Text } from 'react-native';
-import { useSharedStyles } from '@pos/theme/native';
+import { getThemeColors, useSharedStyles } from '@pos/theme/native';
 import { UIActions, UICard, UIScreen, UISearchInput } from '@pos/shared/ui-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
     inventoryReceiveActions,
     InventoryReceiveDTO,
@@ -13,7 +13,7 @@ import {
     InventoryReceiveMapper,
     InventoryReceiveService,
 } from '@pos/inventory/data-access';
-import { RootState } from '@pos/store';
+import { RootState, useAppDispatch } from '@pos/store';
 import { InventoryReceive } from '@pos/shared/models';
 import {
     ProductEntity,
@@ -73,11 +73,12 @@ export function InventoryReceiveForm({
     const inventoryReceive = useSelector(
         (state: RootState) => state.inventoryReceive.selected
     );
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const theme = useTheme();
+    const colors = getThemeColors(theme);
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
-    const local = useStyles(tokens, theme.theme.colors);
+    const local = useStyles(tokens, colors);
     const products = useSelector(selectAllProducts);
     const employee = useSelector(selectLoginEmployee);
     const [busy, setBusy] = useState<boolean>(false);

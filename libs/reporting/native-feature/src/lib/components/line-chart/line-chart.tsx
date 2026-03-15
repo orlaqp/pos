@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import i18next from 'i18next';
 
 import { View, Text } from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
+import { LineChart as BaseLineChart } from 'react-native-chart-kit';
+const LineChart = BaseLineChart as any;
 
 export interface LineChartItem {
     label: string;

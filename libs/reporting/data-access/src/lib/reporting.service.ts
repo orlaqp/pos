@@ -2,7 +2,7 @@ import { GraphQLResult } from '@aws-amplify/api-graphql';
 import { getSalesSummary } from '@pos/shared/api';
 import { Order, OrderStatus, SalesSummary } from '@pos/shared/models';
 import { DateRange } from '@pos/shared/ui-native';
-import { API, DataStore } from 'aws-amplify';
+import { API, DataStore } from '@pos/shared/amplify';
 
 const toIsoRange = (range: DateRange) => ({
     from: range?.startDate.toISOString(),
@@ -100,7 +100,7 @@ const getLocalPaidOrdersForRange = async (
 ) => {
     const normalizedStatus = status as OrderStatus;
     const { from, to } = toIsoRange(range);
-    const orders = await DataStore.query(Order, (o) => o.status('eq', normalizedStatus));
+    const orders = await DataStore.query(Order, (o) => o.status.eq(normalizedStatus));
 
     return orders.filter((order) =>
         isWithinIsoRange(getOrderEventIso(order, normalizedStatus), from, to)
@@ -112,7 +112,7 @@ export const getSalesSummaryForRange = (
     range: DateRange
 ) => {
     const { from, to } = toIsoRange(range);
-    const promise = API.graphql<SalesSummary>({
+    const promise = API.graphql<{ getSalesSummary: SalesSummary }>({
         query: getSalesSummary,
         variables: {
             status,
@@ -148,7 +148,7 @@ export const getSalesForRange = (
     range: DateRange
 ) => {
     const { from, to } = toIsoRange(range);
-    const promise = API.graphql<Order[]>({
+    const promise = API.graphql<{ getSales: Order[] }>({
         query: getSalesCustom,
         variables: {
             status,

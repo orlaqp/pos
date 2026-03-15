@@ -1,4 +1,4 @@
-import { Storage } from 'aws-amplify';
+import { Storage } from '@pos/shared/amplify';
 import { launchImageLibrary, MediaType } from 'react-native-image-picker';
 import { Readable } from 'stream';
 import { blobToBase64 } from './conversion.service';

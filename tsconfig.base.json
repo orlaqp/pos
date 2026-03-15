@@ -14,6 +14,7 @@
         "skipLibCheck": true,
         "skipDefaultLibCheck": true,
         "baseUrl": ".",
+        "typeRoots": ["./types", "./node_modules/@types"],
         "paths": {
             "@pos/auth/data-access": ["libs/auth/data-access/src/index.ts"],
             "@pos/auth/native-feature": [
@@ -77,6 +78,7 @@
                 "libs/settings/native-feature/src/index.ts"
             ],
             "@pos/shared/api": ["libs/shared/api/src/index.ts"],
+            "@pos/shared/amplify": ["libs/shared/amplify/src/index.ts"],
             "@pos/shared/data-store": ["libs/shared/data-store/src/index.ts"],
             "@pos/shared/models": ["libs/shared/models/src/index.ts"],
             "@pos/shared/ui-native": ["libs/shared/ui-native/src/index.ts"],

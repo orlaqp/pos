@@ -1,5 +1,5 @@
 import { Dispatch } from '@reduxjs/toolkit';
-import { Hub } from 'aws-amplify';
+import { Hub } from '@pos/shared/amplify';
 import { ModelSyncedEvent } from './definitions';
 import { eventsActions } from './lib/events.slice';
 import { syncModelsWithStore } from './sync';
@@ -35,6 +35,8 @@ export const subscribeEvents = (dispatch: Dispatch) =>
         }
 
         if (event === 'networkStatus') {
-            console.log(`User has a network connection: ${data.active}`);
+            console.log(
+                `User has a network connection: ${(data as { active?: boolean } | undefined)?.active}`
+            );
         }
     });

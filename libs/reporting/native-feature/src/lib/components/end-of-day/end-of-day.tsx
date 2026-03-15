@@ -8,12 +8,11 @@ import { useSelector } from 'react-redux';
 import { selectAllEmployees } from '@pos/employees/data-access';
 import { selectAllProducts } from '@pos/products/data-access';
 import { filterOrders, getEmployeeItems, getProductItems, PaymentMethodsSummary } from './end-of-day.service';
-import DatePicker from 'react-native-date-picker';
 import { Button } from '@rneui/themed';
 import { getSalesForRange } from '@pos/reporting/data-access';
 import moment from 'moment';
 import { Order } from '@pos/shared/models';
-import { UISpinner } from '@pos/shared/ui-native';
+import { UIDatePickerModal, UISpinner } from '@pos/shared/ui-native';
 import OrderDetails from './order-details';
 import Widget from '../widget/widget';
 import i18next from 'i18next';
@@ -33,9 +32,9 @@ export interface EndOfDayFilterConfig {
     open: boolean;
     value: any;
     items: ItemType<string>[];
-    setOpen: (value: boolean) => void;
+    setOpen: (value: any) => void;
     setValue: (value: any) => void;
-    setItems: (items: ItemType<string>[]) => void;
+    setItems: (items: any) => void;
     searchable?: boolean;
     leftPadding?: boolean;
 }
@@ -115,7 +114,7 @@ export const buildEndOfDayFilterConfigs = (params: {
     employeeItems: ItemType<string>[];
     setEmployeesOpen: (value: boolean) => void;
     setEmployeeValue: (value: any) => void;
-    setEmployeeItems: (items: ItemType<string>[]) => void;
+    setEmployeeItems: (items: any) => void;
     closedByOpen: boolean;
     closedByValue: any;
     setClosedByOpen: (value: boolean) => void;
@@ -125,7 +124,7 @@ export const buildEndOfDayFilterConfigs = (params: {
     productItems: ItemType<string>[];
     setProductsOpen: (value: boolean) => void;
     setProductValue: (value: string | null) => void;
-    setProductItems: (items: ItemType<string>[]) => void;
+    setProductItems: (items: any) => void;
     labels?: {
         openedBy: string;
         closedBy: string;
@@ -278,11 +277,11 @@ export function EndOfDay(props: EndOfDayProps) {
                             {t('EOD_Date', 'Date')}
                         </Text>
                         <Button title={date.toLocaleDateString()} onPress={() => setDrOpen(true)} />
-                        <DatePicker
-                            modal
-                            mode='date'
+                        <UIDatePickerModal
+                            mode="date"
                             open={drOpen}
                             date={date}
+                            title={t('EOD_Date', 'Date')}
                             onConfirm={(date) => {
                                 setDrOpen(false);
                                 updateDate(date);

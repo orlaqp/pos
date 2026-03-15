@@ -6,8 +6,6 @@ import {
     createEntityAdapter,
     createSelector,
     createSlice,
-    Dictionary,
-    EntityId,
     EntityState,
     PayloadAction,
     Update,
@@ -17,15 +15,17 @@ import { BrandService } from '../brand.service';
 
 export const BRAND_FEATURE_KEY = 'brands';
 
-export interface BrandsState extends EntityState< BrandEntity > {
-  loadingStatus: 'new' | 'loading' | 'loaded' | 'error';
+export interface BrandsState extends EntityState<BrandEntity, string> {
+  loadingStatus: 'not loaded' | 'new' | 'loading' | 'loaded' | 'error';
   error?: string;
   selected?: BrandEntity;
   filterQuery?: string;
   filteredList?: BrandEntity[];
 }
 
-export const brandsAdapter = createEntityAdapter< BrandEntity >();
+export const brandsAdapter = createEntityAdapter<BrandEntity, string>({
+    selectId: (brand) => brand.id ?? '',
+});
 
 export const fetchBrands = createAsyncThunk(
   'brands/fetchStatus',
@@ -59,15 +59,15 @@ export const brandsSlice = createSlice({
         filterList(state, state.filterQuery);
     },
     add: (state: BrandsState, action: PayloadAction<BrandEntity>) =>{
-        brandsAdapter.addOne(state, action);
+        brandsAdapter.addOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    remove: (state: BrandsState, action: PayloadAction< EntityId >) => {
-        brandsAdapter.removeOne(state, action);
+    remove: (state: BrandsState, action: PayloadAction<string>) => {
+        brandsAdapter.removeOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    update: (state: BrandsState, action: PayloadAction<Update<BrandEntity>>) => {
-        brandsAdapter.updateOne(state, action);
+    update: (state: BrandsState, action: PayloadAction<Update<BrandEntity, string>>) => {
+        brandsAdapter.updateOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
     select: (state: BrandsState, action: PayloadAction< BrandEntity >) => {
@@ -141,19 +141,19 @@ export const brandsActions = brandsSlice.actions;
  *
  * See: https://react-redux.js.org/next/api/hooks#useselector
  */
-const { selectAll, selectEntities } = brandsAdapter.getSelectors();
-
 export const getBrandsState = (rootState: RootState): BrandsState =>
   rootState[BRAND_FEATURE_KEY];
 
+const brandSelectors = brandsAdapter.getSelectors<RootState>(getBrandsState);
+
 export const selectAllBrands = createSelector(
   getBrandsState,
-  selectAll
+  (state) => brandSelectors.selectAll({ [BRAND_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectBrandsEntities = createSelector(
   getBrandsState,
-  selectEntities
+  (state) => brandSelectors.selectEntities({ [BRAND_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectLoadingStatus = createSelector(
@@ -178,7 +178,7 @@ export const selectBrand = (id: string | null | undefined) => createSelector(
 
 
 function filterList(state: BrandsState, query?: string) {
-    const all = selectAll(state);
+    const all = brandsAdapter.getSelectors().selectAll(state);
     
     if (!query) {
         state.filteredList = all;
@@ -188,4 +188,3 @@ function filterList(state: BrandsState, query?: string) {
     const lowerQuery = query.toLowerCase();
     state.filteredList = all.filter(x => x.name.toLowerCase().indexOf(lowerQuery) !== -1)
 }
-

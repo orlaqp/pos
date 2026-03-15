@@ -2,13 +2,13 @@ import { useSharedStyles } from '@pos/theme/native';
 import { Icon, useTheme } from '@rneui/themed';
 import React from 'react';
 
-import { View, Text } from 'react-native';
+import { View, Text, type DimensionValue } from 'react-native';
 
 export interface WidgetProps {
     icon?: string;
     text: string;
     value: string;
-    height?: number | string;
+    height?: DimensionValue;
     primaryTextColor?: string;
     secondaryTextColor?: string;
     primaryTextSize?: number;

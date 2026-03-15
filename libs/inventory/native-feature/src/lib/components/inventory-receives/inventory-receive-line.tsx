@@ -91,7 +91,7 @@ export function InventoryReceiveLine({
                 <TextInput
                     value={comment}
                     onChangeText={setComment}
-                    onBlur={(e) => updateComment(e.nativeEvent.text)}
+                    onBlur={() => updateComment(comment || '')}
                     style={[styles.input, styles.primaryText]}
                     editable={!readOnly}
                 />

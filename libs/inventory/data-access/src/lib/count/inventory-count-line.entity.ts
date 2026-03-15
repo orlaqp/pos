@@ -4,8 +4,9 @@ import {
     Product,
 } from '@pos/shared/models';
 import { Selectable, Transform } from '@pos/shared/utils';
-import { Dictionary } from '@reduxjs/toolkit';
 import { InventoryCountDTO } from './inventory-count.entity';
+
+type Dictionary<T> = Record<string, T | undefined>;
 
 export type InventoryCountLineDTO = {
     id?: string;
@@ -26,7 +27,7 @@ type CountSelectableProduct = Pick<
 >;
 
 export class InventoryCountLineMapper {
-    static fromProduct(x: Product): InventoryCountLineDTO {
+    static fromProduct(x: CountSelectableProduct): InventoryCountLineDTO {
         return {
             productId: x.id,
             productName: x.name,
@@ -67,11 +68,12 @@ export class InventoryCountLineMapper {
             const line = linesObj[id];
 
             if (count?.status === 'COMPLETED' && !line) return obj;
+            if (!p) return obj;
 
-            obj[id!] = {
+            obj[id] = {
                 selected: !!line,
                 payload: !line
-                    ? InventoryCountLineMapper.fromProduct(p!)
+                    ? InventoryCountLineMapper.fromProduct(p)
                     : line,
             };
 

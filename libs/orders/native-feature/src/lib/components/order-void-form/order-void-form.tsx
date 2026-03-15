@@ -80,7 +80,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
         await OrderService.refund({
             by: employee as any,
             id: order.id,
-            order,
+            order: order as any,
             refundedLines: linesToRefund.map((l) => ({
                 identifier: l.identifier,
                 price: l.price,

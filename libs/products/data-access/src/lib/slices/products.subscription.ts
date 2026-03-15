@@ -1,11 +1,12 @@
 import { Product } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { ProductEntityMapper } from '../product.entity';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { productsActions } from './products.slice';
-import { ZenObservable } from 'zen-observable-ts';
 
-export let productsSubscription: ZenObservable.Subscription | null;
+type Subscription = { unsubscribe: () => void };
+
+export let productsSubscription: Subscription | null;
 
 export const observeProductChanges = (dispatch: Dispatch) => {
     if (productsSubscription) {

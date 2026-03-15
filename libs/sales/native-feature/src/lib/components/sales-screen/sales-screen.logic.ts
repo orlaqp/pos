@@ -1,7 +1,8 @@
 import { CategoryEntity } from '@pos/categories/data-access';
 import { ProductEntity } from '@pos/products/data-access';
 import { EACH } from '@pos/unit-of-measures/data-access';
-import { Dictionary } from '@reduxjs/toolkit';
+
+type Dictionary<T> = Record<string, T | undefined>;
 
 export const getActiveProducts = (products: ProductEntity[]): ProductEntity[] =>
     products.filter((p) => p.isActive);

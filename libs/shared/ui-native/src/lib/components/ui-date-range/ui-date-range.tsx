@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import moment from 'moment';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
-import DatePicker from 'react-native-date-picker';
+import { UIDatePickerModal } from '../ui-date-picker-modal/ui-date-picker-modal';
 
 export interface DateRange {
     startDate: moment.Moment;
@@ -179,11 +179,11 @@ export function UIDateRange({
                 </View>
             )}
             {!!customError && <Text style={styles.customError}>{customError}</Text>}
-            <DatePicker
-                modal
+            <UIDatePickerModal
                 mode="date"
                 open={startPickerOpen}
                 date={customStartDate}
+                title="Select start date"
                 onConfirm={(date) => {
                     setStartPickerOpen(false);
                     setCustomStartDate(date);
@@ -191,11 +191,11 @@ export function UIDateRange({
                 }}
                 onCancel={() => setStartPickerOpen(false)}
             />
-            <DatePicker
-                modal
+            <UIDatePickerModal
                 mode="date"
                 open={endPickerOpen}
                 date={customEndDate}
+                title="Select end date"
                 onConfirm={(date) => {
                     setEndPickerOpen(false);
                     setCustomEndDate(date);

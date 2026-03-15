@@ -1,31 +1,30 @@
 import 'react-native-gesture-handler';
+import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
 import { AppRegistry } from 'react-native';
-import App from './app/App';
-
 import { Amplify } from 'aws-amplify';
+import { cognitoUserPoolsTokenProvider } from 'aws-amplify/auth/cognito';
+import { defaultStorage } from 'aws-amplify/utils';
 import awsconfig from './aws-exports';
-import { initializeDataStore } from '@pos/shared/data-store';
-import { store } from '@pos/store';
-import '@pos/settings/data-access';
+import amplifyConfig from './amplifyconfiguration.json';
+import { logStartupDiagnostics } from './app/startup-diagnostics';
 
-import awsConfig from './aws-exports';
-import {
+// Amplify.Logger.LOG_LEVEL = 'DEBUG';
+cognitoUserPoolsTokenProvider.setKeyValueStorage(defaultStorage);
+Amplify.configure(amplifyConfig);
+const { store } = require('@pos/store');
+const {
     awsConfigActions,
     settingsActions,
     languageTag,
-    AvailableLanguage,
-} from '@pos/settings/data-access';
-import { logStartupDiagnostics } from './app/startup-diagnostics';
-store.dispatch(awsConfigActions.set(awsConfig));
+} = require('@pos/settings/data-access');
 
-// Amplify.Logger.LOG_LEVEL = 'DEBUG';
-Amplify.configure(awsconfig);
-initializeDataStore(store.dispatch);
-logStartupDiagnostics(awsConfig as unknown as Record<string, unknown>);
+store.dispatch(awsConfigActions.set(awsconfig));
+require('@pos/shared/data-store').initializeDataStore(store.dispatch);
+logStartupDiagnostics(amplifyConfig as unknown as Record<string, unknown>);
 
 // i18n
-store.dispatch(settingsActions.setLanguage(languageTag as AvailableLanguage));
+store.dispatch(settingsActions.setLanguage(languageTag));
 
-AppRegistry.registerComponent('main', () => App);
+AppRegistry.registerComponent('main', () => require('./app/App').default);

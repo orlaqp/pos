@@ -81,7 +81,7 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
     }, [canReceiveChecks]);
     const watchedValues = form.watch();
     const receivedTotal = paymentMethods.reduce(
-        (acc, method) => acc + toNumber((watchedValues as Record<string, unknown>)[method]),
+        (acc, method) => acc + toNumber((watchedValues as unknown as Record<string, unknown>)[method]),
         0
     );
     const remainingTotal = Math.max(0, round2Dec(total - receivedTotal));
@@ -241,7 +241,7 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
                                 selectTextOnFocus={true}
                                 onFocus={() => {
                                     previousValues.current[m] = toNumber(form.getValues(m));
-                                    form.setValue(m, '');
+                                    form.setValue(m, '' as any);
                                 }}
                                 onBlur={() => setTimeout(() => restoreIfEmpty(m), 0)}
                                 onEndEditing={() => setTimeout(() => restoreIfEmpty(m), 0)}

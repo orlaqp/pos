@@ -3,6 +3,7 @@ import {
     selectSettings,
     settingsActions,
     fetchGlobalSettings,
+    updateGlobalSettings,
     translate,
 } from '@pos/settings/data-access';
 import { UICard, UIScreen, UIStack } from '@pos/shared/ui-native';
@@ -10,7 +11,8 @@ import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, Switch, useTheme } from '@rneui/themed';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from '@pos/store';
 
 /* eslint-disable-next-line */
 export interface SettingsProps {}
@@ -19,7 +21,7 @@ export function Settings(_props: SettingsProps) {
     const theme = useTheme();
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const settings = useSelector(selectSettings);
 
     const updateThemeMode = (dark: boolean) => {
@@ -31,7 +33,7 @@ export function Settings(_props: SettingsProps) {
 
     const setGlobalSettings = (enforce: boolean) => {
         if (!settings.globalSettings) return;
-        dispatch(fetchGlobalSettings({
+        dispatch(updateGlobalSettings({
             ...settings.globalSettings,
             enforceSalesBasedOnInventory: enforce
         }));

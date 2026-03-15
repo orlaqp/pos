@@ -1,5 +1,5 @@
 import { GlobalSettingsEntityMapper } from './global-settings.dto';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { Dispatch } from '@reduxjs/toolkit';
 import { GlobalSettings } from '@pos/shared/models';
 import { settingsActions } from './slices/settings.slice';

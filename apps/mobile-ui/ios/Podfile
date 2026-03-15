@@ -31,8 +31,6 @@ target 'MobileUi' do
   # Disable it for local development/simulator builds.
   # use_flipper!()
 
-  pod 'RNAWSCognito', :path => '../node_modules/amazon-cognito-identity-js'
-
   post_install do |installer|
     react_native_post_install(
       installer,

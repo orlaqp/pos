@@ -11,7 +11,7 @@ import { StoreInfoService } from './store-info.service';
 import { RootState } from '@pos/store';
 
 export const STORE_INFO_FEATURE_KEY = 'storeInfo';
-const deviceId = DeviceInfo.getUniqueId();
+const deviceId = DeviceInfo.getUniqueIdSync();
 
 export interface StoreInfoState {
     deviceId: string;
@@ -64,7 +64,7 @@ export const storeInfoSlice = createSlice({
                 fetchStoreInfo.rejected,
                 (state: StoreInfoState, action) => {
                     state.loadingStatus = 'error';
-                    state.error = action.error.message;
+                    state.error = action.error?.message || 'Failed to load store info';
                 }
             );
     },
@@ -81,4 +81,3 @@ export const getState = (rootState: RootState): StoreInfoState =>
 
 export const selectStore = createSelector(getState, (state) => state.store);
 export const selectLoadindStatus = createSelector(getState, (state) => state.loadingStatus);
-
