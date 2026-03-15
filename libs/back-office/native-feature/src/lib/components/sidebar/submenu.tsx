@@ -37,6 +37,7 @@ export function Submenu({
             ]}
             icon={
                 <Icon
+                    key={`sidebar-submenu-icon-collapsed-${item.id}`}
                     name="chevron-down"
                     type="material-community"
                     size={18}
@@ -45,6 +46,7 @@ export function Submenu({
             }
             expandIcon={
                 <Icon
+                    key={`sidebar-submenu-icon-expanded-${item.id}`}
                     name="chevron-down"
                     type="material-community"
                     size={18}
@@ -52,7 +54,7 @@ export function Submenu({
                 />
             }
             content={
-                <View style={styles.headerContent}>
+                <View key={`sidebar-submenu-header-${item.id}`} style={styles.headerContent}>
                     {item.icon && (
                         <View key={`sidebar-submenu-icon-${item.id}`} style={styles.iconSlot}>
                             <Icon
@@ -72,6 +74,7 @@ export function Submenu({
                         style={styles.headerTitleContent}
                     >
                         <ListItem.Title
+                            key={`sidebar-submenu-title-${item.id}`}
                             style={[
                                 styles.headerTitle,
                                 parentActive && styles.headerTitleActive,

@@ -60,6 +60,7 @@ export function SingleItem({
                 style={styles.content}
             >
                 <ListItem.Title
+                    key={`sidebar-item-title-${item.id}`}
                     style={[
                         styles.title,
                         compact && styles.titleCompact,

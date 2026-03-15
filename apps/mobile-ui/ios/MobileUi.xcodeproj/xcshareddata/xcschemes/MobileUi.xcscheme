@@ -63,7 +63,7 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "NODE_BINARY"
-            value = "/Users/orlando/.nvm/versions/node/v16.13.0/bin/node"
+            value = "/Users/orlando/.nvm/versions/node/v20.19.4/bin/node"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable

@@ -10,7 +10,7 @@ import {
     fetchAuthSession,
 } from 'aws-amplify/auth';
 import { getUrl, remove, uploadData, downloadData } from 'aws-amplify/storage';
-import { GraphQLResult } from '@aws-amplify/api-graphql';
+import type { GraphQLResult } from '@aws-amplify/api-graphql';
 
 type SignUpRequest = {
     username: string;
@@ -34,6 +34,19 @@ type LegacyStorageDownloadResult = {
 const getApiClient = () => require('aws-amplify/api').generateClient();
 const getDataStoreModule = () => require('@aws-amplify/datastore');
 const getHubModule = () => require('aws-amplify/utils');
+const resolveDataStore = () => {
+    const module = getDataStoreModule();
+    const resolved =
+        module?.DataStore ||
+        module?.default?.DataStore ||
+        module?.default;
+
+    if (!resolved) {
+        throw new Error('Amplify DataStore module is not available');
+    }
+
+    return resolved;
+};
 
 const getErrorMessage = (error: unknown) => {
     if (error instanceof Error && error.message) {
@@ -199,15 +212,15 @@ export const API = {
 };
 
 export const DataStore = {
-    query: (...args: unknown[]) => getDataStoreModule().DataStore.query(...args),
-    save: (...args: unknown[]) => getDataStoreModule().DataStore.save(...args),
-    delete: (...args: unknown[]) => getDataStoreModule().DataStore.delete(...args),
-    observe: (...args: unknown[]) => getDataStoreModule().DataStore.observe(...args),
-    observeQuery: (...args: unknown[]) => getDataStoreModule().DataStore.observeQuery(...args),
-    start: (...args: unknown[]) => getDataStoreModule().DataStore.start(...args),
-    stop: (...args: unknown[]) => getDataStoreModule().DataStore.stop(...args),
-    clear: (...args: unknown[]) => getDataStoreModule().DataStore.clear(...args),
-    configure: (...args: unknown[]) => getDataStoreModule().DataStore.configure(...args),
+    query: (...args: unknown[]) => resolveDataStore().query(...args),
+    save: (...args: unknown[]) => resolveDataStore().save(...args),
+    delete: (...args: unknown[]) => resolveDataStore().delete(...args),
+    observe: (...args: unknown[]) => resolveDataStore().observe(...args),
+    observeQuery: (...args: unknown[]) => resolveDataStore().observeQuery(...args),
+    start: (...args: unknown[]) => resolveDataStore().start(...args),
+    stop: (...args: unknown[]) => resolveDataStore().stop(...args),
+    clear: (...args: unknown[]) => resolveDataStore().clear(...args),
+    configure: (...args: unknown[]) => resolveDataStore().configure(...args),
 };
 
 export const Hub = {
