@@ -8,13 +8,12 @@ import {
 } from '@pos/orders/data-access';
 import {
     UICard,
-    UIEmptyState,
     UIScreen,
     UISearchInput,
 } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import OrderItem from '../order-item/order-item';
-import { View, StyleSheet, FlatList, TextInput } from 'react-native';
+import { View, StyleSheet, FlatList, TextInput, Text } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { ButtonGroup, Dialog } from '@rneui/themed';
 import { OrderStatus } from '@pos/shared/api';
@@ -93,6 +92,13 @@ export function OrderList({ navigation }: OrderListProps) {
         searchRef.current?.clear();
     };
 
+    const selectedStatus = orderStatusList[selectedIndex];
+    const statusOrders = OrderService.search(allOrders, {
+        status: selectedStatus,
+    });
+    const hasStatusOrders = statusOrders.length > 0;
+    const hasFilteredOrders = (filteredOrders?.length || 0) > 0;
+
     return (
         <UIScreen padded testID="order-list-screen">
             <View style={styles.container}>
@@ -112,15 +118,17 @@ export function OrderList({ navigation }: OrderListProps) {
                                 innerBorderStyle={{ color: tokens.colors.border }}
                             />
                         </View>
-                        <View style={styles.searchColumn}>
-                            <UISearchInput
-                                ref={searchRef}
-                                debounceTime={300}
-                                onSubmit={(text) => filter(selectedIndex, text)}
-                                autoFocus={true}
-                                returnKeyType="search"
-                            />
-                        </View>
+                        {hasStatusOrders && (
+                            <View style={styles.searchColumn}>
+                                <UISearchInput
+                                    ref={searchRef}
+                                    debounceTime={300}
+                                    onSubmit={(text) => filter(selectedIndex, text)}
+                                    autoFocus={true}
+                                    returnKeyType="search"
+                                />
+                            </View>
+                        )}
                     </View>
                 </UICard>
 
@@ -129,10 +137,33 @@ export function OrderList({ navigation }: OrderListProps) {
                     testID="order-list-results-card"
                     padding="lg"
                 >
-                    {filteredOrders?.length === 0 && (
-                        <UIEmptyState text={t('ORDERS_NoOrdersFound', 'No orders found')} />
+                    {!hasStatusOrders && (
+                        <View style={styles.emptyStateWrap}>
+                            <Text style={styles.emptyStateTitle}>
+                                {t('ORDERS_NoOrdersFound', 'No orders found')}
+                            </Text>
+                            <Text style={styles.emptyStateSubtitle}>
+                                {t(
+                                    'ORDERS_NoOrdersFoundSubtitle',
+                                    'Orders with the selected status will appear here.'
+                                )}
+                            </Text>
+                        </View>
                     )}
-                    {filteredOrders && filteredOrders?.length > 0 && (
+                    {hasStatusOrders && !hasFilteredOrders && (
+                        <View style={styles.emptyStateWrap}>
+                            <Text style={styles.emptyStateTitle}>
+                                {t('ORDERS_NoOrdersFound', 'No orders found')}
+                            </Text>
+                            <Text style={styles.emptyStateSubtitle}>
+                                {t(
+                                    'ORDERS_NoOrdersFoundSearchSubtitle',
+                                    'Try another search term or switch to a different status.'
+                                )}
+                            </Text>
+                        </View>
+                    )}
+                    {hasStatusOrders && hasFilteredOrders && (
                         <FlatList
                             testID="order-list-flat-list"
                             data={filteredOrders}
@@ -221,6 +252,28 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         resultsCard: {
             flex: 1,
+        },
+        emptyStateWrap: {
+            flex: 1,
+            minHeight: 320,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: tokens.spacing.xl,
+            paddingVertical: tokens.spacing.xl,
+        },
+        emptyStateTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 28,
+            fontWeight: '700',
+            textAlign: 'center',
+        },
+        emptyStateSubtitle: {
+            color: tokens.colors.textSecondary,
+            fontSize: 16,
+            lineHeight: 26,
+            marginTop: tokens.spacing.md,
+            maxWidth: 520,
+            textAlign: 'center',
         },
         overlay: {
             backgroundColor: tokens.colors.canvas,

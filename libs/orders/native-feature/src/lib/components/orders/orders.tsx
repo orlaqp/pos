@@ -20,7 +20,7 @@ export function Orders() {
         <Stack.Screen
           name="Order List"
           component={OrderList}
-          options={{ title: t('ORDERS_ScreenTitle', 'Order List') }}
+          options={{ headerShown: false, title: t('ORDERS_ScreenTitle', 'Order List') }}
         />
         <Stack.Screen
           name="Sales"
