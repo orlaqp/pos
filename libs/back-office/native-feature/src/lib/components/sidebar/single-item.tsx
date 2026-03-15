@@ -69,7 +69,10 @@ export function SingleItem({
                 </ListItem.Title>
             </ListItem.Content>
             {chevron && (
-                <ListItem.Chevron
+                <Icon
+                    name="chevron-right"
+                    type="material-community"
+                    size={18}
                     color={
                         active
                             ? colors.primary

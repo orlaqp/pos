@@ -35,6 +35,22 @@ export function Submenu({
                 styles.accordionContainer,
                 parentActive ? styles.accordionContainerActive : undefined,
             ]}
+            icon={
+                <Icon
+                    name="chevron-down"
+                    type="material-community"
+                    size={18}
+                    color={parentActive ? colors.primary : colors.grey4}
+                />
+            }
+            expandIcon={
+                <Icon
+                    name="chevron-down"
+                    type="material-community"
+                    size={18}
+                    color={parentActive ? colors.primary : colors.grey4}
+                />
+            }
             content={
                 <View style={styles.headerContent}>
                     {item.icon && (

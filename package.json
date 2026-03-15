@@ -3,10 +3,16 @@
     "version": "0.0.0",
     "license": "MIT",
     "packageManager": "yarn@1.22.22",
+    "engines": {
+        "node": "20.19.4",
+        "yarn": "1.22.22"
+    },
     "scripts": {
         "start": "cd apps/mobile-ui && node ../../node_modules/@react-native-community/cli/build/bin.js start",
         "build": "nx build",
         "test": "nx test",
+        "deps:check-mobile": "node tools/check-mobile-deps.js",
+        "deps:audit": "yarn audit --level moderate",
         "ios": "node tools/run-ios.js",
         "ios-new": "IOS_SIMULATOR=\"iPad (9th generation)\" node tools/run-ios.js",
         "list-simulators": "xcrun simctl list --json devices available",
@@ -34,7 +40,14 @@
     "@babel/helper-wrap-function": "7.28.6",
     "**/@babel/plugin-transform-async-to-generator": "7.28.6",
     "**/@babel/helper-remap-async-to-generator": "7.27.1",
-    "**/@babel/helper-wrap-function": "7.28.6"
+    "**/@babel/helper-wrap-function": "7.28.6",
+    "**/cross-spawn": "7.0.6",
+    "**/follow-redirects": "1.15.11",
+    "eslint/ajv": "6.14.0",
+    "eslint/@eslint/eslintrc/ajv": "6.14.0",
+    "eslint/js-yaml": "4.1.1",
+    "eslint/@eslint/eslintrc/js-yaml": "4.1.1",
+    "@react-native-community/cli/@react-native-community/cli-config/cosmiconfig/js-yaml": "4.1.1"
   },
     "private": true,
     "dependencies": {
@@ -83,7 +96,7 @@
         "react-native-worklets": "0.7.4",
         "react-redux": "9.2.0",
         "redux-logger": "^3.0.6",
-        "regenerator-runtime": "0.13.7",
+        "regenerator-runtime": "0.14.1",
         "tslib": "2.8.1"
     },
     "devDependencies": {
@@ -125,8 +138,8 @@
         "@types/react-dom": "19.2.3",
         "@types/react-native": "0.73.0",
         "@types/redux-logger": "3.0.13",
-        "@typescript-eslint/eslint-plugin": "8.46.1",
-        "@typescript-eslint/parser": "8.46.1",
+        "@typescript-eslint/eslint-plugin": "8.57.0",
+        "@typescript-eslint/parser": "8.57.0",
         "aws-sdk": "2.1693.0",
         "babel-jest": "29.7.0",
         "change-case": "^4.1.2",
@@ -134,7 +147,7 @@
         "eslint": "8.57.1",
         "eslint-config-prettier": "10.1.8",
         "eslint-plugin-import": "2.32.0",
-        "eslint-plugin-jsx-a11y": "6.6.1",
+        "eslint-plugin-jsx-a11y": "6.10.2",
         "eslint-plugin-react": "7.37.5",
         "eslint-plugin-react-hooks": "7.0.1",
         "inflection": "1.13.4",
@@ -144,7 +157,7 @@
         "jest-jasmine2": "29.7.0",
         "jest-react-native": "18.0.0",
         "nx": "22.5.4",
-    "prettier": "3.6.2",
+    "prettier": "3.8.1",
         "react-native-config": "1.6.1",
         "react-native-svg": "15.15.3",
         "react-native-svg-transformer": "1.5.3",

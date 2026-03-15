@@ -20,13 +20,11 @@ jest.mock('@rneui/themed', () => {
 
   ListItem.Content = ({ children }: { children: React.ReactNode }) => <View>{children}</View>;
   ListItem.Title = ({ children }: { children: React.ReactNode }) => <Text>{children}</Text>;
-  ListItem.Chevron = () => <Text testID="single-item-chevron">chevron</Text>;
-
   return {
     useTheme: () => ({
       theme: { colors: { grey0: '#fff', grey1: '#eee', grey3: '#ccc', grey5: '#999', primary: '#00f' } },
     }),
-    Icon: ({ name }: { name: string }) => <Text>{name}</Text>,
+    Icon: ({ name }: { name: string }) => <Text testID={`icon-${name}`}>{name}</Text>,
     ListItem,
   };
 });
@@ -61,7 +59,7 @@ describe('SingleItem', () => {
       <SingleItem item={item} selectedId={null} setSelected={jest.fn()} chevron />
     );
 
-    expect(getByTestId('single-item-chevron')).toBeTruthy();
+    expect(getByTestId('icon-chevron-right')).toBeTruthy();
   });
 
   it('applies different container styles for active/inactive states', () => {
