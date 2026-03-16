@@ -3,6 +3,13 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
 import * as mockReactNative from 'react-native';
 
+jest.spyOn(mockReactNative.InteractionManager, 'runAfterInteractions').mockImplementation(
+    (task: any) => {
+        task?.();
+        return { cancel: jest.fn() } as any;
+    }
+);
+
 jest.mock('@pos/shared/ui-native', () => ({
     UIScreen: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     UICard: ({ children }: { children: React.ReactNode }) => <>{children}</>,

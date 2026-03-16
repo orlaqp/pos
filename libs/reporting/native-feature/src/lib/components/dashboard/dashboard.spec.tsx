@@ -5,10 +5,13 @@ import moment from 'moment';
 import * as mockReactNative from 'react-native';
 
 const mockGetSalesSummaryForRange = jest.fn();
+const mockGetLocalSalesSummaryForRange = jest.fn();
 
 jest.mock('@pos/reporting/data-access', () => ({
     getSalesSummaryForRange: (...args: unknown[]) =>
         mockGetSalesSummaryForRange(...args),
+    getLocalSalesSummaryForRange: (...args: unknown[]) =>
+        mockGetLocalSalesSummaryForRange(...args),
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
@@ -60,6 +63,7 @@ import {
 describe('Dashboard', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        mockGetLocalSalesSummaryForRange.mockResolvedValue(undefined);
     });
 
     it('renders loading state', () => {

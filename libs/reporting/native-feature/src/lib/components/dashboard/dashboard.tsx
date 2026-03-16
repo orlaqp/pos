@@ -11,13 +11,16 @@ import {
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import moment from 'moment';
 
-import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, InteractionManager, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LineChartComponent } from '../line-chart/line-chart';
 import ListWidget from '../list-widget/list-widget';
 import PieChart from '../pie-chart/pie-chart';
 import Widget from '../widget/widget';
 
-import { getSalesSummaryForRange } from '@pos/reporting/data-access';
+import {
+    getLocalSalesSummaryForRange,
+    getSalesSummaryForRange,
+} from '@pos/reporting/data-access';
 import { sortDescListBy } from '@pos/shared/utils';
 import { EACH } from '@pos/unit-of-measures/data-access';
 import i18next from 'i18next';
@@ -76,7 +79,9 @@ export const sortDashboardSummary = (summary?: SalesSummary) => {
 
 export const loadDashboardSummary = async (range?: DateRange) => {
     const normalizedRange = normalizeDashboardRange(range);
-    const summary = await getSalesSummaryForRange('PAID', normalizedRange);
+    const summary = await getSalesSummaryForRange('PAID', normalizedRange, {
+        fallbackToLocal: false,
+    });
     return sortDashboardSummary(summary);
 };
 
@@ -104,33 +109,81 @@ export function Dashboard(_props: DashboardProps) {
 
     useEffect(() => {
         let cancelled = false;
+        let interactionHandle: { cancel?: () => void } | undefined;
+        let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
         setLoading(true);
 
-        (async () => {
-            try {
-                const timeoutSummary = new Promise<undefined>((resolve) => {
-                    setTimeout(() => resolve(undefined), DASHBOARD_LOAD_TIMEOUT_MS);
-                });
-                const summary = await Promise.race([
-                    loadDashboardSummary(dateRange),
-                    timeoutSummary,
-                ]);
-                if (!cancelled) {
-                    setSalesSummary(summary);
+        interactionHandle = InteractionManager.runAfterInteractions(() => {
+            (async () => {
+                try {
+                    const timeoutSummary = new Promise<undefined>((resolve) => {
+                        setTimeout(() => resolve(undefined), DASHBOARD_LOAD_TIMEOUT_MS);
+                    });
+                    const summary = await Promise.race([
+                        loadDashboardSummary(dateRange),
+                        timeoutSummary,
+                    ]);
+
+                    if (cancelled) {
+                        return;
+                    }
+
+                    if (hasSalesData(summary)) {
+                        setSalesSummary(summary);
+                        setLoading(false);
+                        return;
+                    }
+
+                    // Defer the heavier local fallback until after the initial screen is interactive.
+                    fallbackTimer = setTimeout(async () => {
+                        try {
+                            const localSummary = await getLocalSalesSummaryForRange(
+                                'PAID',
+                                normalizeDashboardRange(dateRange)
+                            );
+                            if (!cancelled) {
+                                setSalesSummary(sortDashboardSummary(localSummary));
+                            }
+                        } catch {
+                            if (!cancelled) {
+                                setSalesSummary(undefined);
+                            }
+                        } finally {
+                            if (!cancelled) {
+                                setLoading(false);
+                            }
+                        }
+                    }, 120);
+                } catch {
+                    fallbackTimer = setTimeout(async () => {
+                        try {
+                            const localSummary = await getLocalSalesSummaryForRange(
+                                'PAID',
+                                normalizeDashboardRange(dateRange)
+                            );
+                            if (!cancelled) {
+                                setSalesSummary(sortDashboardSummary(localSummary));
+                            }
+                        } catch {
+                            if (!cancelled) {
+                                setSalesSummary(undefined);
+                            }
+                        } finally {
+                            if (!cancelled) {
+                                setLoading(false);
+                            }
+                        }
+                    }, 120);
                 }
-            } catch {
-                if (!cancelled) {
-                    setSalesSummary(undefined);
-                }
-            } finally {
-                if (!cancelled) {
-                    setLoading(false);
-                }
-            }
-        })();
+            })();
+        });
 
         return () => {
             cancelled = true;
+            interactionHandle?.cancel?.();
+            if (fallbackTimer) {
+                clearTimeout(fallbackTimer);
+            }
         };
     }, [dateRange]);
 

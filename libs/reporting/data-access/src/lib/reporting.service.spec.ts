@@ -127,6 +127,21 @@ describe('reporting.service', () => {
         expect(summary?.totalAmount).toBe(10);
     });
 
+    it('skips local fallback when disabled', async () => {
+        mockGraphql.mockResolvedValue({
+            data: {
+                getSalesSummary: { totalAmount: 0, totalOrders: 0 },
+            },
+        });
+
+        const summary = await getSalesSummaryForRange(OrderStatus.PAID, range, {
+            fallbackToLocal: false,
+        });
+
+        expect(mockDataStoreQuery).not.toHaveBeenCalled();
+        expect(summary).toEqual({ totalAmount: 0, totalOrders: 0 });
+    });
+
     it('falls back to local DataStore when remote sales query fails', async () => {
         mockGraphql.mockRejectedValue(new Error('network'));
         mockDataStoreQuery.mockResolvedValue([
@@ -144,5 +159,16 @@ describe('reporting.service', () => {
         const result = await getSalesForRange(OrderStatus.PAID, range);
         expect(Array.isArray(result)).toBe(true);
         expect(result).toHaveLength(1);
+    });
+
+    it('returns undefined on remote failure when local fallback is disabled', async () => {
+        mockGraphql.mockRejectedValue(new Error('network'));
+
+        const summary = await getSalesSummaryForRange(OrderStatus.PAID, range, {
+            fallbackToLocal: false,
+        });
+
+        expect(mockDataStoreQuery).not.toHaveBeenCalled();
+        expect(summary).toBeUndefined();
     });
 });

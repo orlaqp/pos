@@ -2,8 +2,7 @@ import { useSharedStyles } from '@pos/theme/native';
 import React, { useEffect, useRef, useState } from 'react';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
-
-import { Animated, View, Text, FlatList, StyleSheet } from 'react-native';
+import { Animated, InteractionManager, View, Text, FlatList, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { selectAllEmployees } from '@pos/employees/data-access';
 import { selectAllProducts } from '@pos/products/data-access';
@@ -176,10 +175,12 @@ export const createDateUpdater = (
     setDate(date);
     const dateRange = buildDayRange(date);
     setLoading(true);
-    loadForRange(dateRange).then((items) => {
-        setOrders(items);
-        setFilteredOrders(items);
-        setLoading(false);
+    InteractionManager.runAfterInteractions(() => {
+        loadForRange(dateRange).then((items) => {
+            setOrders(items);
+            setFilteredOrders(items);
+            setLoading(false);
+        });
     });
 };
 
@@ -271,6 +272,26 @@ export function EndOfDay(props: EndOfDayProps) {
         setPaymentMethodsSummary(prev => filterResponse.summary);
         
     }, [orders, employeeValue, closedByValue, productValue])
+
+    useEffect(() => {
+        let cancelled = false;
+        const dateRange = buildDayRange(date);
+        setLoading(true);
+
+        const task = InteractionManager.runAfterInteractions(() => {
+            loadPaidSalesForRange(dateRange).then((items) => {
+                if (cancelled) return;
+                setOrders(items);
+                setFilteredOrders(items);
+                setLoading(false);
+            });
+        });
+
+        return () => {
+            cancelled = true;
+            task.cancel?.();
+        };
+    }, []);
 
     useEffect(() => {
         if (loading || hasFilteredData) return;

@@ -1,5 +1,11 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { InteractionManager } from 'react-native';
+
+jest.spyOn(InteractionManager, 'runAfterInteractions').mockImplementation((task: any) => {
+    task?.();
+    return { cancel: jest.fn() } as any;
+});
 
 jest.mock('@pos/shared/ui-native', () => {
     const actual = jest.requireActual('@pos/shared/ui-native');
@@ -8,6 +14,7 @@ jest.mock('@pos/shared/ui-native', () => {
 
     return {
         ...actual,
+        UISpinner: ({ message }: { message: string }) => <Text>{message}</Text>,
         UIDatePickerModal: ({ onConfirm, onCancel }: any) => (
             <View testID="mock-ui-date-picker-modal">
                 <Pressable
@@ -39,8 +46,8 @@ import EndOfDay, {
 
 describe('EndOfDay', () => {
     it('should render successfully', () => {
-        const { container } = render(<EndOfDay />);
-        expect(container).toBeTruthy();
+        const screen = render(<EndOfDay />);
+        expect(screen.toJSON()).toBeTruthy();
     });
 
     it('builds day range boundaries for selected date', () => {

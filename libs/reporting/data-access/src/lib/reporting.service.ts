@@ -107,11 +107,25 @@ const getLocalPaidOrdersForRange = async (
     );
 };
 
-export const getSalesSummaryForRange = (
+export const getLocalSalesSummaryForRange = async (
     status: OrderStatus | keyof typeof OrderStatus,
     range: DateRange
 ) => {
+    const localOrders = await getLocalPaidOrdersForRange(status, range);
+    if (!localOrders.length) {
+        return undefined;
+    }
+
+    return buildSalesSummaryFromOrders(localOrders, status);
+};
+
+export const getSalesSummaryForRange = (
+    status: OrderStatus | keyof typeof OrderStatus,
+    range: DateRange,
+    options?: { fallbackToLocal?: boolean }
+) => {
     const { from, to } = toIsoRange(range);
+    const fallbackToLocal = options?.fallbackToLocal !== false;
     const promise = API.graphql<{ getSalesSummary: SalesSummary }>({
         query: getSalesSummary,
         variables: {
@@ -128,18 +142,18 @@ export const getSalesSummaryForRange = (
                 return summary;
             }
 
-            const localOrders = await getLocalPaidOrdersForRange(status, range);
-            if (!localOrders.length) {
+            if (!fallbackToLocal) {
                 return summary;
             }
-            return buildSalesSummaryFromOrders(localOrders, status);
+
+            return (await getLocalSalesSummaryForRange(status, range)) || summary;
         })
         .catch(async () => {
-            const localOrders = await getLocalPaidOrdersForRange(status, range);
-            if (!localOrders.length) {
+            if (!fallbackToLocal) {
                 return undefined;
             }
-            return buildSalesSummaryFromOrders(localOrders, status);
+
+            return getLocalSalesSummaryForRange(status, range);
         });
 };
 

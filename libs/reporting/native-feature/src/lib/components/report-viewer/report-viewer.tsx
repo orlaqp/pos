@@ -13,7 +13,16 @@ import * as RNFS from 'react-native-fs';
 import { Icon } from '@rneui/themed';
 import i18next from 'i18next';
 
-import { Alert, Animated, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+    Alert,
+    Animated,
+    FlatList,
+    InteractionManager,
+    Pressable,
+    StyleSheet,
+    Text,
+    View,
+} from 'react-native';
 import { Share } from 'react-native';
 
 export interface ReportHeader {
@@ -146,26 +155,28 @@ export function ReportViewer({
     useEffect(() => {
         let cancelled = false;
         setLoading(true);
-
-        getData(dateRange)
-            .then((res) => {
-                if (!cancelled) {
-                    setItems(res || []);
-                }
-            })
-            .catch(() => {
-                if (!cancelled) {
-                    setItems([]);
-                }
-            })
-            .finally(() => {
-                if (!cancelled) {
-                    setLoading(false);
-                }
-            });
+        const task = InteractionManager.runAfterInteractions(() => {
+            getData(dateRange)
+                .then((res) => {
+                    if (!cancelled) {
+                        setItems(res || []);
+                    }
+                })
+                .catch(() => {
+                    if (!cancelled) {
+                        setItems([]);
+                    }
+                })
+                .finally(() => {
+                    if (!cancelled) {
+                        setLoading(false);
+                    }
+                });
+        });
 
         return () => {
             cancelled = true;
+            task.cancel?.();
         };
     }, [getData, dateRange]);
 
