@@ -1430,15 +1430,16 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         dialogTitle: {
             color: tokens.colors.textPrimary,
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: '800',
-            marginBottom: 4,
+            letterSpacing: -0.4,
+            marginBottom: 6,
         },
         dialogHint: {
             color: tokens.colors.textSecondary,
-            fontSize: 13,
-            lineHeight: 18,
-            marginBottom: tokens.spacing.sm,
+            fontSize: 14,
+            lineHeight: 20,
+            marginBottom: tokens.spacing.md,
         },
         dialogInput: {
             borderWidth: 1,
@@ -1464,9 +1465,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         summarySectionTitle: {
             color: tokens.colors.textPrimary,
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: '800',
-            marginBottom: tokens.spacing.xs,
+            letterSpacing: 0.2,
+            marginBottom: tokens.spacing.sm,
         },
         summaryItemRow: {
             flexDirection: 'row',
@@ -1484,19 +1486,19 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         summaryItemName: {
             color: tokens.colors.textPrimary,
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: '800',
         },
         summaryItemMeta: {
             color: tokens.colors.textSecondary,
-            fontSize: 12,
-            marginTop: 4,
+            fontSize: 13,
+            marginTop: 6,
         },
         summaryDiscountLine: {
             color: tokens.colors.accent,
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: '700',
-            marginTop: 4,
+            marginTop: 6,
         },
         summaryItemTotals: {
             alignItems: 'flex-end',
@@ -1504,25 +1506,25 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         summaryItemOriginal: {
             color: tokens.colors.textSecondary,
-            fontSize: 12,
+            fontSize: 13,
             textDecorationLine: 'line-through',
         },
         summaryItemFinal: {
             color: tokens.colors.textPrimary,
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: '800',
         },
         summaryItemSavings: {
             color: tokens.colors.success,
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: '800',
-            marginTop: 2,
+            marginTop: 4,
         },
         totalRow: {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginTop: tokens.spacing.xs,
+            marginTop: tokens.spacing.sm,
         },
         totalRowStrong: {
             marginTop: tokens.spacing.sm,
@@ -1532,7 +1534,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         totalLabel: {
             color: tokens.colors.textSecondary,
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: '600',
         },
         totalLabelStrong: {
@@ -1542,12 +1544,12 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         totalValue: {
             color: tokens.colors.textPrimary,
-            fontSize: 13,
+            fontSize: 15,
             fontWeight: '700',
         },
         totalValueSuccess: {
             color: tokens.colors.success,
-            fontSize: 13,
+            fontSize: 15,
             fontWeight: '800',
         },
         totalValueStrong: {
@@ -1580,16 +1582,16 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         summaryFooterLabel: {
             color: tokens.colors.textSecondary,
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: '700',
             textTransform: 'uppercase',
             letterSpacing: 1,
         },
         summaryFooterValue: {
             color: tokens.colors.textPrimary,
-            fontSize: 28,
+            fontSize: 32,
             fontWeight: '800',
-            marginTop: 2,
+            marginTop: 4,
         },
         summaryFooterActions: {
             flexDirection: 'row',

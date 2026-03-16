@@ -16,7 +16,7 @@ import {
     validateEbtPayment,
     EbtLineAllocation,
 } from './ebt-allocation';
-import { stampTenant } from '@pos/auth/data-access';
+import { requireCurrentTenantId, stampTenant } from '@pos/auth/data-access';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -177,6 +177,7 @@ export class OrderService {
         }
 
         const refundedOrder = Order.copyOf(existing, (o) => {
+            o.tenantId = existing.tenantId || requireCurrentTenantId();
             o.status = 'REFUNDED';
             o.refundInfo = {
                 employeeId: request.by.id,

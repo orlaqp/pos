@@ -13,6 +13,7 @@ import { stampTenant } from '@pos/auth/data-access';
 jest.mock('@pos/shared/amplify', () => ({
   DataStore: {
     save: jest.fn(async (value) => value),
+    query: jest.fn(),
   },
 }));
 
@@ -24,6 +25,7 @@ jest.mock('@pos/settings/data-access', () => ({
 
 jest.mock('@pos/auth/data-access', () => ({
   stampTenant: jest.fn((value) => value),
+  requireCurrentTenantId: jest.fn(() => 'test-tenant'),
 }));
 
 jest.mock('@pos/shared/models', () => {
@@ -322,6 +324,60 @@ describe('OrderService', () => {
             applicationType: 'AUTOMATIC_DISCOUNT',
           }),
         ],
+      })
+    );
+  });
+
+  it('stamps tenantId when refunding an order missing tenant ownership metadata', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const saveMock = jest.mocked(DataStore.save);
+    const sharedModels = jest.requireMock('@pos/shared/models');
+
+    queryMock.mockResolvedValueOnce({
+      id: 'order-1',
+      tenantId: undefined,
+      status: 'PAID',
+      employeeId: 'employee-1',
+      orderNo: '51-25-260316-0001',
+      subtotal: 10,
+      tax: 0,
+      total: 10,
+      lines: [],
+      orderDate: '2026-03-16T12:00:00.000Z',
+      createdAt: '2026-03-16T12:00:00.000Z',
+      updatedAt: '2026-03-16T12:00:00.000Z',
+    } as any);
+
+    (sharedModels.Order as any).copyOf = (_existing: any, mutator: (draft: any) => void) => {
+      const draft = {
+        id: 'order-1',
+        tenantId: undefined,
+        status: 'PAID',
+        refundInfo: null,
+        lines: [],
+      };
+      mutator(draft);
+      return draft;
+    };
+
+    await OrderService.refund({
+      id: 'order-1',
+      by: {
+        id: 'employee-2',
+        firstName: 'Test',
+        lastName: 'Cashier',
+      } as any,
+      order: {
+        items: [],
+      } as any,
+      refundedLines: [],
+    });
+
+    expect(saveMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'order-1',
+        tenantId: 'test-tenant',
+        status: 'REFUNDED',
       })
     );
   });
