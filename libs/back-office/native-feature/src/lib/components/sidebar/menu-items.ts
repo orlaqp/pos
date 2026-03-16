@@ -53,8 +53,8 @@ export const menuItems: SidebarItem[] = [
     },
     {
         id: '5',
-        title: 'Products',
-        labelKey: 'SIDEBAR_Products',
+        title: 'Catalog',
+        labelKey: 'SIDEBAR_Catalog',
         icon: 'qrcode',
         role: Role.Admin,
         group: 'Management',

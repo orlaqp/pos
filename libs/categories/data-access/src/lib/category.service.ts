@@ -16,7 +16,8 @@ export class CategoryService {
                     discountPolicyMode: category.discountPolicyMode || 'DEFAULT',
                 }) as never
             );
-            await DataStore.save(cat);
+            const saved = await DataStore.save(cat);
+            category.id = saved.id;
             return dispatch(categoriesActions.add(category));
         }
         

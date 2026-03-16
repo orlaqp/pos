@@ -7,6 +7,68 @@ export enum TenantUserRole {
   ADMIN = "ADMIN"
 }
 
+export enum CategoryDiscountPolicyMode {
+  DEFAULT = "DEFAULT",
+  FORCE_INCLUDE = "FORCE_INCLUDE",
+  FORCE_EXCLUDE = "FORCE_EXCLUDE"
+}
+
+export enum DiscountDefinitionStatus {
+  DRAFT = "DRAFT",
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  EXPIRED = "EXPIRED"
+}
+
+export enum DiscountDefinitionType {
+  MANUAL = "MANUAL",
+  AUTOMATIC = "AUTOMATIC",
+  PROMO_CODE = "PROMO_CODE"
+}
+
+export enum DiscountMethod {
+  PERCENT = "PERCENT",
+  AMOUNT = "AMOUNT",
+  FINAL_PRICE = "FINAL_PRICE"
+}
+
+export enum DiscountScope {
+  LINE = "LINE",
+  ORDER = "ORDER"
+}
+
+export enum DiscountStackMode {
+  EXCLUSIVE = "EXCLUSIVE",
+  STACKABLE = "STACKABLE",
+  BEST_PRICE_ONLY = "BEST_PRICE_ONLY"
+}
+
+export enum DiscountApplicationType {
+  MANUAL_LINE_DISCOUNT = "MANUAL_LINE_DISCOUNT",
+  MANUAL_ORDER_DISCOUNT = "MANUAL_ORDER_DISCOUNT",
+  AUTOMATIC_DISCOUNT = "AUTOMATIC_DISCOUNT",
+  PROMO_CODE = "PROMO_CODE",
+  PRICE_OVERRIDE = "PRICE_OVERRIDE"
+}
+
+export enum DiscountApprovalStatus {
+  NOT_REQUIRED = "NOT_REQUIRED",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED"
+}
+
+export enum PricingSource {
+  ONLINE_VALIDATED = "ONLINE_VALIDATED",
+  OFFLINE_LOCAL = "OFFLINE_LOCAL"
+}
+
+export enum ReconciliationStatus {
+  NOT_REQUIRED = "NOT_REQUIRED",
+  PENDING = "PENDING",
+  RECONCILED = "RECONCILED",
+  RECONCILED_WITH_EXCEPTION = "RECONCILED_WITH_EXCEPTION"
+}
+
 export enum PaymentType {
   CASH = "CASH",
   CHECK = "CHECK",
@@ -86,6 +148,20 @@ type EagerOrderLine = {
   readonly quantity: number;
   readonly tax: number;
   readonly price: number;
+  readonly basePrice?: number | null;
+  readonly overridePrice?: number | null;
+  readonly netUnitPrice?: number | null;
+  readonly lineSubtotalBeforeOrderDiscount?: number | null;
+  readonly lineDiscountTotal?: number | null;
+  readonly allocatedOrderDiscountTotal?: number | null;
+  readonly lineTotalBeforeTax?: number | null;
+  readonly lineTotalAfterTax?: number | null;
+  readonly appliedDiscounts?: string | null;
+  readonly categoryId?: string | null;
+  readonly discountable?: boolean | null;
+  readonly minAllowedPrice?: number | null;
+  readonly maxManualDiscountPercent?: number | null;
+  readonly maxManualDiscountAmount?: number | null;
   readonly isEBTEligible?: boolean | null;
   readonly ebtPaidAmount?: number | null;
   readonly nonEbtPaidAmount?: number | null;
@@ -101,6 +177,20 @@ type LazyOrderLine = {
   readonly quantity: number;
   readonly tax: number;
   readonly price: number;
+  readonly basePrice?: number | null;
+  readonly overridePrice?: number | null;
+  readonly netUnitPrice?: number | null;
+  readonly lineSubtotalBeforeOrderDiscount?: number | null;
+  readonly lineDiscountTotal?: number | null;
+  readonly allocatedOrderDiscountTotal?: number | null;
+  readonly lineTotalBeforeTax?: number | null;
+  readonly lineTotalAfterTax?: number | null;
+  readonly appliedDiscounts?: string | null;
+  readonly categoryId?: string | null;
+  readonly discountable?: boolean | null;
+  readonly minAllowedPrice?: number | null;
+  readonly maxManualDiscountPercent?: number | null;
+  readonly maxManualDiscountAmount?: number | null;
   readonly isEBTEligible?: boolean | null;
   readonly ebtPaidAmount?: number | null;
   readonly nonEbtPaidAmount?: number | null;
@@ -270,6 +360,34 @@ type GlobalSettingsMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
+type DiscountDefinitionMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type DiscountReasonCodeMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type EmployeeDiscountPolicyMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type DiscountPresetMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type DiscountApplicationMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type ApprovalEventMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type DiscountReconciliationExceptionMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
 type EagerTenant = {
   readonly id: string;
   readonly name: string;
@@ -331,6 +449,7 @@ type EagerStore = {
   readonly fax?: string | null;
   readonly email: string;
   readonly disclaimer?: string | null;
+  readonly timezone: string;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -348,6 +467,7 @@ type LazyStore = {
   readonly fax?: string | null;
   readonly email: string;
   readonly disclaimer?: string | null;
+  readonly timezone: string;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -390,6 +510,8 @@ type EagerCategory = {
   readonly code?: string | null;
   readonly color?: string | null;
   readonly picture?: string | null;
+  readonly discountable: boolean;
+  readonly discountPolicyMode: CategoryDiscountPolicyMode | keyof typeof CategoryDiscountPolicyMode;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -402,6 +524,8 @@ type LazyCategory = {
   readonly code?: string | null;
   readonly color?: string | null;
   readonly picture?: string | null;
+  readonly discountable: boolean;
+  readonly discountPolicyMode: CategoryDiscountPolicyMode | keyof typeof CategoryDiscountPolicyMode;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -457,6 +581,8 @@ type EagerEmployee = {
   readonly pin: string;
   readonly roles: (string | null)[];
   readonly active: boolean;
+  readonly discountPolicyId?: string | null;
+  readonly policyProfileKey?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -474,6 +600,8 @@ type LazyEmployee = {
   readonly pin: string;
   readonly roles: (string | null)[];
   readonly active: boolean;
+  readonly discountPolicyId?: string | null;
+  readonly policyProfileKey?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -489,9 +617,20 @@ type EagerOrder = {
   readonly tenantId: string;
   readonly orderNo: string;
   readonly orderDate: string;
+  readonly baseSubtotal?: number | null;
   readonly subtotal: number;
+  readonly lineDiscountTotal?: number | null;
+  readonly orderDiscountTotal?: number | null;
+  readonly discountTotal?: number | null;
+  readonly savingsTotal?: number | null;
   readonly tax: number;
   readonly total: number;
+  readonly promoCodes?: (string | null)[] | null;
+  readonly pricingVersion?: string | null;
+  readonly pricingSnapshotHash?: string | null;
+  readonly pricingSource?: PricingSource | keyof typeof PricingSource | null;
+  readonly reconciliationStatus?: ReconciliationStatus | keyof typeof ReconciliationStatus | null;
+  readonly appliedDiscountSummary?: string | null;
   readonly status: OrderStatus | keyof typeof OrderStatus;
   readonly employeeId: string;
   readonly employeeName: string;
@@ -511,9 +650,20 @@ type LazyOrder = {
   readonly tenantId: string;
   readonly orderNo: string;
   readonly orderDate: string;
+  readonly baseSubtotal?: number | null;
   readonly subtotal: number;
+  readonly lineDiscountTotal?: number | null;
+  readonly orderDiscountTotal?: number | null;
+  readonly discountTotal?: number | null;
+  readonly savingsTotal?: number | null;
   readonly tax: number;
   readonly total: number;
+  readonly promoCodes?: (string | null)[] | null;
+  readonly pricingVersion?: string | null;
+  readonly pricingSnapshotHash?: string | null;
+  readonly pricingSource?: PricingSource | keyof typeof PricingSource | null;
+  readonly reconciliationStatus?: ReconciliationStatus | keyof typeof ReconciliationStatus | null;
+  readonly appliedDiscountSummary?: string | null;
   readonly status: OrderStatus | keyof typeof OrderStatus;
   readonly employeeId: string;
   readonly employeeName: string;
@@ -555,6 +705,10 @@ type EagerProduct = {
   readonly Brand?: Brand | null;
   readonly isActive: boolean;
   readonly isEBTEligible?: boolean | null;
+  readonly discountable: boolean;
+  readonly minAllowedPrice?: number | null;
+  readonly maxManualDiscountPercent?: number | null;
+  readonly maxManualDiscountAmount?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly productCategoryId?: string | null;
@@ -582,6 +736,10 @@ type LazyProduct = {
   readonly Brand: AsyncItem<Brand | undefined>;
   readonly isActive: boolean;
   readonly isEBTEligible?: boolean | null;
+  readonly discountable: boolean;
+  readonly minAllowedPrice?: number | null;
+  readonly maxManualDiscountPercent?: number | null;
+  readonly maxManualDiscountAmount?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly productCategoryId?: string | null;
@@ -834,6 +992,7 @@ type EagerGlobalSettings = {
   readonly id: string;
   readonly tenantId: string;
   readonly enforceSalesBasedOnInventory: boolean;
+  readonly timezone: string;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -842,6 +1001,7 @@ type LazyGlobalSettings = {
   readonly id: string;
   readonly tenantId: string;
   readonly enforceSalesBasedOnInventory: boolean;
+  readonly timezone: string;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -850,4 +1010,354 @@ export declare type GlobalSettings = LazyLoading extends LazyLoadingDisabled ? E
 
 export declare const GlobalSettings: (new (init: ModelInit<GlobalSettings, GlobalSettingsMetaData>) => GlobalSettings) & {
   copyOf(source: GlobalSettings, mutator: (draft: MutableModel<GlobalSettings, GlobalSettingsMetaData>) => MutableModel<GlobalSettings, GlobalSettingsMetaData> | void): GlobalSettings;
+}
+
+type EagerDiscountDefinition = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly name: string;
+  readonly code?: string | null;
+  readonly description?: string | null;
+  readonly status: DiscountDefinitionStatus | keyof typeof DiscountDefinitionStatus;
+  readonly type: DiscountDefinitionType | keyof typeof DiscountDefinitionType;
+  readonly method: DiscountMethod | keyof typeof DiscountMethod;
+  readonly scope: DiscountScope | keyof typeof DiscountScope;
+  readonly value: number;
+  readonly priority?: number | null;
+  readonly stackMode: DiscountStackMode | keyof typeof DiscountStackMode;
+  readonly approvalRequired?: boolean | null;
+  readonly reasonRequired?: boolean | null;
+  readonly startDate?: string | null;
+  readonly endDate?: string | null;
+  readonly daysOfWeek?: (string | null)[] | null;
+  readonly startTime?: string | null;
+  readonly endTime?: string | null;
+  readonly minSubtotal?: number | null;
+  readonly minQuantity?: number | null;
+  readonly usageLimitTotal?: number | null;
+  readonly usageCountTotal?: number | null;
+  readonly applicableProductIds?: (string | null)[] | null;
+  readonly applicableCategoryIds?: (string | null)[] | null;
+  readonly excludedProductIds?: (string | null)[] | null;
+  readonly excludedCategoryIds?: (string | null)[] | null;
+  readonly excludeAlreadyDiscountedItems?: boolean | null;
+  readonly appliesToAllProducts?: boolean | null;
+  readonly storeIds?: (string | null)[] | null;
+  readonly stationIds?: (string | null)[] | null;
+  readonly active: boolean;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyDiscountDefinition = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly name: string;
+  readonly code?: string | null;
+  readonly description?: string | null;
+  readonly status: DiscountDefinitionStatus | keyof typeof DiscountDefinitionStatus;
+  readonly type: DiscountDefinitionType | keyof typeof DiscountDefinitionType;
+  readonly method: DiscountMethod | keyof typeof DiscountMethod;
+  readonly scope: DiscountScope | keyof typeof DiscountScope;
+  readonly value: number;
+  readonly priority?: number | null;
+  readonly stackMode: DiscountStackMode | keyof typeof DiscountStackMode;
+  readonly approvalRequired?: boolean | null;
+  readonly reasonRequired?: boolean | null;
+  readonly startDate?: string | null;
+  readonly endDate?: string | null;
+  readonly daysOfWeek?: (string | null)[] | null;
+  readonly startTime?: string | null;
+  readonly endTime?: string | null;
+  readonly minSubtotal?: number | null;
+  readonly minQuantity?: number | null;
+  readonly usageLimitTotal?: number | null;
+  readonly usageCountTotal?: number | null;
+  readonly applicableProductIds?: (string | null)[] | null;
+  readonly applicableCategoryIds?: (string | null)[] | null;
+  readonly excludedProductIds?: (string | null)[] | null;
+  readonly excludedCategoryIds?: (string | null)[] | null;
+  readonly excludeAlreadyDiscountedItems?: boolean | null;
+  readonly appliesToAllProducts?: boolean | null;
+  readonly storeIds?: (string | null)[] | null;
+  readonly stationIds?: (string | null)[] | null;
+  readonly active: boolean;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type DiscountDefinition = LazyLoading extends LazyLoadingDisabled ? EagerDiscountDefinition : LazyDiscountDefinition
+
+export declare const DiscountDefinition: (new (init: ModelInit<DiscountDefinition, DiscountDefinitionMetaData>) => DiscountDefinition) & {
+  copyOf(source: DiscountDefinition, mutator: (draft: MutableModel<DiscountDefinition, DiscountDefinitionMetaData>) => MutableModel<DiscountDefinition, DiscountDefinitionMetaData> | void): DiscountDefinition;
+}
+
+type EagerDiscountReasonCode = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly code: string;
+  readonly label: string;
+  readonly description?: string | null;
+  readonly active: boolean;
+  readonly requiresNote?: boolean | null;
+  readonly appliesTo?: (string | null)[] | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyDiscountReasonCode = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly code: string;
+  readonly label: string;
+  readonly description?: string | null;
+  readonly active: boolean;
+  readonly requiresNote?: boolean | null;
+  readonly appliesTo?: (string | null)[] | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type DiscountReasonCode = LazyLoading extends LazyLoadingDisabled ? EagerDiscountReasonCode : LazyDiscountReasonCode
+
+export declare const DiscountReasonCode: (new (init: ModelInit<DiscountReasonCode, DiscountReasonCodeMetaData>) => DiscountReasonCode) & {
+  copyOf(source: DiscountReasonCode, mutator: (draft: MutableModel<DiscountReasonCode, DiscountReasonCodeMetaData>) => MutableModel<DiscountReasonCode, DiscountReasonCodeMetaData> | void): DiscountReasonCode;
+}
+
+type EagerEmployeeDiscountPolicy = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly employeeId?: string | null;
+  readonly roleKey?: string | null;
+  readonly maxManualPercentDiscount?: number | null;
+  readonly maxManualAmountDiscount?: number | null;
+  readonly maxPriceOverrideAmount?: number | null;
+  readonly maxPriceOverridePercentBelowBase?: number | null;
+  readonly canApplyOrderDiscount?: boolean | null;
+  readonly canOverridePrice?: boolean | null;
+  readonly canApproveDiscounts?: boolean | null;
+  readonly canApprovePriceOverrides?: boolean | null;
+  readonly canUsePromoCodes?: boolean | null;
+  readonly requireReasonForManualDiscounts?: boolean | null;
+  readonly requireReasonForOverrides?: boolean | null;
+  readonly requireApprovalForOrderDiscount?: boolean | null;
+  readonly requireApprovalForAnyPriceOverride?: boolean | null;
+  readonly allowExclusiveDiscountOverride?: boolean | null;
+  readonly active: boolean;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyEmployeeDiscountPolicy = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly employeeId?: string | null;
+  readonly roleKey?: string | null;
+  readonly maxManualPercentDiscount?: number | null;
+  readonly maxManualAmountDiscount?: number | null;
+  readonly maxPriceOverrideAmount?: number | null;
+  readonly maxPriceOverridePercentBelowBase?: number | null;
+  readonly canApplyOrderDiscount?: boolean | null;
+  readonly canOverridePrice?: boolean | null;
+  readonly canApproveDiscounts?: boolean | null;
+  readonly canApprovePriceOverrides?: boolean | null;
+  readonly canUsePromoCodes?: boolean | null;
+  readonly requireReasonForManualDiscounts?: boolean | null;
+  readonly requireReasonForOverrides?: boolean | null;
+  readonly requireApprovalForOrderDiscount?: boolean | null;
+  readonly requireApprovalForAnyPriceOverride?: boolean | null;
+  readonly allowExclusiveDiscountOverride?: boolean | null;
+  readonly active: boolean;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type EmployeeDiscountPolicy = LazyLoading extends LazyLoadingDisabled ? EagerEmployeeDiscountPolicy : LazyEmployeeDiscountPolicy
+
+export declare const EmployeeDiscountPolicy: (new (init: ModelInit<EmployeeDiscountPolicy, EmployeeDiscountPolicyMetaData>) => EmployeeDiscountPolicy) & {
+  copyOf(source: EmployeeDiscountPolicy, mutator: (draft: MutableModel<EmployeeDiscountPolicy, EmployeeDiscountPolicyMetaData>) => MutableModel<EmployeeDiscountPolicy, EmployeeDiscountPolicyMetaData> | void): EmployeeDiscountPolicy;
+}
+
+type EagerDiscountPreset = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly name: string;
+  readonly scope: DiscountScope | keyof typeof DiscountScope;
+  readonly method: DiscountMethod | keyof typeof DiscountMethod;
+  readonly value?: number | null;
+  readonly promptForCustomValue?: boolean | null;
+  readonly active: boolean;
+  readonly sortOrder?: number | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyDiscountPreset = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly name: string;
+  readonly scope: DiscountScope | keyof typeof DiscountScope;
+  readonly method: DiscountMethod | keyof typeof DiscountMethod;
+  readonly value?: number | null;
+  readonly promptForCustomValue?: boolean | null;
+  readonly active: boolean;
+  readonly sortOrder?: number | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type DiscountPreset = LazyLoading extends LazyLoadingDisabled ? EagerDiscountPreset : LazyDiscountPreset
+
+export declare const DiscountPreset: (new (init: ModelInit<DiscountPreset, DiscountPresetMetaData>) => DiscountPreset) & {
+  copyOf(source: DiscountPreset, mutator: (draft: MutableModel<DiscountPreset, DiscountPresetMetaData>) => MutableModel<DiscountPreset, DiscountPresetMetaData> | void): DiscountPreset;
+}
+
+type EagerDiscountApplication = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly transactionId: string;
+  readonly lineId?: string | null;
+  readonly discountDefinitionId?: string | null;
+  readonly applicationType: DiscountApplicationType | keyof typeof DiscountApplicationType;
+  readonly scope: DiscountScope | keyof typeof DiscountScope;
+  readonly method: DiscountMethod | keyof typeof DiscountMethod;
+  readonly name: string;
+  readonly code?: string | null;
+  readonly stackMode: DiscountStackMode | keyof typeof DiscountStackMode;
+  readonly originalAmount: number;
+  readonly discountAmount: number;
+  readonly finalAmount: number;
+  readonly quantityBasis?: number | null;
+  readonly reasonCode?: string | null;
+  readonly reasonNote?: string | null;
+  readonly appliedByEmployeeId?: string | null;
+  readonly appliedByEmployeeName?: string | null;
+  readonly approvedByEmployeeId?: string | null;
+  readonly approvedByEmployeeName?: string | null;
+  readonly approvalRequired?: boolean | null;
+  readonly approvalStatus?: DiscountApprovalStatus | keyof typeof DiscountApprovalStatus | null;
+  readonly approvalReference?: string | null;
+  readonly sourceSnapshot?: string | null;
+  readonly appliedAt: string;
+  readonly syncStatus?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyDiscountApplication = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly transactionId: string;
+  readonly lineId?: string | null;
+  readonly discountDefinitionId?: string | null;
+  readonly applicationType: DiscountApplicationType | keyof typeof DiscountApplicationType;
+  readonly scope: DiscountScope | keyof typeof DiscountScope;
+  readonly method: DiscountMethod | keyof typeof DiscountMethod;
+  readonly name: string;
+  readonly code?: string | null;
+  readonly stackMode: DiscountStackMode | keyof typeof DiscountStackMode;
+  readonly originalAmount: number;
+  readonly discountAmount: number;
+  readonly finalAmount: number;
+  readonly quantityBasis?: number | null;
+  readonly reasonCode?: string | null;
+  readonly reasonNote?: string | null;
+  readonly appliedByEmployeeId?: string | null;
+  readonly appliedByEmployeeName?: string | null;
+  readonly approvedByEmployeeId?: string | null;
+  readonly approvedByEmployeeName?: string | null;
+  readonly approvalRequired?: boolean | null;
+  readonly approvalStatus?: DiscountApprovalStatus | keyof typeof DiscountApprovalStatus | null;
+  readonly approvalReference?: string | null;
+  readonly sourceSnapshot?: string | null;
+  readonly appliedAt: string;
+  readonly syncStatus?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type DiscountApplication = LazyLoading extends LazyLoadingDisabled ? EagerDiscountApplication : LazyDiscountApplication
+
+export declare const DiscountApplication: (new (init: ModelInit<DiscountApplication, DiscountApplicationMetaData>) => DiscountApplication) & {
+  copyOf(source: DiscountApplication, mutator: (draft: MutableModel<DiscountApplication, DiscountApplicationMetaData>) => MutableModel<DiscountApplication, DiscountApplicationMetaData> | void): DiscountApplication;
+}
+
+type EagerApprovalEvent = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly transactionId: string;
+  readonly lineId?: string | null;
+  readonly approvalType: string;
+  readonly requestingEmployeeId: string;
+  readonly approvingEmployeeId: string;
+  readonly requestedAction: string;
+  readonly reasonCode?: string | null;
+  readonly reasonNote?: string | null;
+  readonly policySnapshot?: string | null;
+  readonly status: string;
+  readonly syncStatus?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyApprovalEvent = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly transactionId: string;
+  readonly lineId?: string | null;
+  readonly approvalType: string;
+  readonly requestingEmployeeId: string;
+  readonly approvingEmployeeId: string;
+  readonly requestedAction: string;
+  readonly reasonCode?: string | null;
+  readonly reasonNote?: string | null;
+  readonly policySnapshot?: string | null;
+  readonly status: string;
+  readonly syncStatus?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type ApprovalEvent = LazyLoading extends LazyLoadingDisabled ? EagerApprovalEvent : LazyApprovalEvent
+
+export declare const ApprovalEvent: (new (init: ModelInit<ApprovalEvent, ApprovalEventMetaData>) => ApprovalEvent) & {
+  copyOf(source: ApprovalEvent, mutator: (draft: MutableModel<ApprovalEvent, ApprovalEventMetaData>) => MutableModel<ApprovalEvent, ApprovalEventMetaData> | void): ApprovalEvent;
+}
+
+type EagerDiscountReconciliationException = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly transactionId: string;
+  readonly discountApplicationId?: string | null;
+  readonly exceptionType: string;
+  readonly severity: string;
+  readonly message: string;
+  readonly backendSnapshot?: string | null;
+  readonly resolved: boolean;
+  readonly resolvedByEmployeeId?: string | null;
+  readonly resolvedAt?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyDiscountReconciliationException = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly transactionId: string;
+  readonly discountApplicationId?: string | null;
+  readonly exceptionType: string;
+  readonly severity: string;
+  readonly message: string;
+  readonly backendSnapshot?: string | null;
+  readonly resolved: boolean;
+  readonly resolvedByEmployeeId?: string | null;
+  readonly resolvedAt?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type DiscountReconciliationException = LazyLoading extends LazyLoadingDisabled ? EagerDiscountReconciliationException : LazyDiscountReconciliationException
+
+export declare const DiscountReconciliationException: (new (init: ModelInit<DiscountReconciliationException, DiscountReconciliationExceptionMetaData>) => DiscountReconciliationException) & {
+  copyOf(source: DiscountReconciliationException, mutator: (draft: MutableModel<DiscountReconciliationException, DiscountReconciliationExceptionMetaData>) => MutableModel<DiscountReconciliationException, DiscountReconciliationExceptionMetaData> | void): DiscountReconciliationException;
 }

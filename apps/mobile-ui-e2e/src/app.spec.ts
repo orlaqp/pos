@@ -152,4 +152,24 @@ describe('MobileUi', () => {
 
     expect(afterQty).toBe(beforeQty + 3);
   });
+
+  it('opens discounts management smoke path', async () => {
+    if (!(await openBackOfficeFromHome())) return;
+
+    await element(by.text('Discounts')).tap();
+    await element(by.text('Discounts')).tap();
+
+    await expect(element(by.text('Discount definitions'))).toBeVisible();
+
+    if (await isVisible('discounts-empty-add-button', 2000)) {
+      await element(by.id('discounts-empty-add-button')).tap();
+      await expect(element(by.text('Discount Form'))).toBeVisible();
+      return;
+    }
+
+    if (await isVisible('discounts-header-add-button', 2000)) {
+      await element(by.id('discounts-header-add-button')).tap();
+      await expect(element(by.text('Discount Form'))).toBeVisible();
+    }
+  });
 });

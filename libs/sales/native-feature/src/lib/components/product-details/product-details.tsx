@@ -8,8 +8,15 @@ import { EACH } from '@pos/unit-of-measures/data-access';
 import { Button, Input, useTheme } from '@rneui/themed';
 import React, { useEffect, useRef, useState } from 'react';
 
-import { View, Text, StyleSheet, TextInput, Alert, useWindowDimensions } from 'react-native';
-import NumericInput from 'react-native-numeric-input';
+import {
+    View,
+    Text,
+    StyleSheet,
+    TextInput,
+    Alert,
+    useWindowDimensions,
+    Pressable,
+} from 'react-native';
 import { useSelector } from 'react-redux';
 import {
     buildCartUpsertItem,
@@ -58,8 +65,22 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
     }, [item, quantity]);
 
     useEffect(() => {
-        ref.current?.focus();
-    }, []);
+        if (!each) {
+            ref.current?.focus();
+        }
+    }, [each]);
+
+    const numericQuantity = Number.isFinite(Number(quantity)) && Number(quantity) > 0
+        ? Number(quantity)
+        : 1;
+
+    const decrementQuantity = () => {
+        setQuantity(Math.max(1, numericQuantity - 1).toString());
+    };
+
+    const incrementQuantity = () => {
+        setQuantity((numericQuantity + 1).toString());
+    };
 
     return (
         <View style={styles.productDetailsContainer}>
@@ -69,37 +90,52 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
                     <View style={styles.pictureWrap}>
                         <UIS3Image
                             s3Key={product?.picture}
-                            width={96}
-                            height={96}
+                            width={styles.pictureSize.width}
+                            height={styles.pictureSize.height}
                             factor={0.5}
                         />
                     </View>
                     <View style={styles.metaWrap}>
                         <Text style={styles.brandText}>{brand?.name || 'Unbranded'}</Text>
-                        <Text style={styles.productName}>{item.product.name}</Text>
-                        <Text style={styles.descriptionText} numberOfLines={2}>
+                        <Text style={styles.productName} numberOfLines={2}>
+                            {item.product.name}
+                        </Text>
+                        <Text style={styles.descriptionText} numberOfLines={3}>
                             {product?.description || 'No description'}
+                        </Text>
+                        <Text style={styles.unitHint}>
+                            Sold by {item.product.unitOfMeasure}
                         </Text>
                     </View>
                 </View>
             </UICard>
-            <View style={styles.quantityWrap}>
+            <View style={styles.summaryCard}>
+                <View style={styles.priceWrap}>
+                    <Text style={styles.price}>$ {price?.toFixed(2)}</Text>
+                    <Text style={styles.priceLabel}>Current line total</Text>
+                </View>
+                <View style={styles.quantityWrap}>
                 {each && (
-                    <NumericInput
-                        type="plus-minus"
-                        valueType="integer"
-                        value={+quantity}
-                        onChange={(val) => setQuantity(val.toString())}
-                        borderColor="transparent"
-                        textColor={theme.theme.colors.grey1}
-                        iconSize={20}
-                        totalHeight={50}
-                        leftButtonBackgroundColor={theme.theme.colors.grey4}
-                        rightButtonBackgroundColor={theme.theme.colors.success}
-                        minValue={1}
-                        step={1}
-                        rounded={true}
-                    />
+                    <View style={styles.quantityStepper}>
+                        <Pressable
+                            testID="product-details-decrement"
+                            onPress={decrementQuantity}
+                            style={styles.quantityButtonLeft}
+                        >
+                            <Text style={styles.quantityButtonTextDark}>-</Text>
+                        </Pressable>
+                        <View style={styles.quantityValueWrap}>
+                            <Text style={styles.quantityValue}>{numericQuantity}</Text>
+                            <Text style={styles.quantityLabel}>Quantity</Text>
+                        </View>
+                        <Pressable
+                            testID="product-details-increment"
+                            onPress={incrementQuantity}
+                            style={styles.quantityButtonRight}
+                        >
+                            <Text style={styles.quantityButtonTextLight}>+</Text>
+                        </Pressable>
+                    </View>
                 )}
                 {!each && (
                     <View style={styles.weightRow}>
@@ -122,9 +158,7 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
                         >{` (${item.product.unitOfMeasure})`}</Text>
                     </View>
                 )}
-            </View>
-            <View style={styles.priceWrap}>
-                <Text style={styles.price}>$ {price?.toFixed(2)}</Text>
+                </View>
             </View>
             <Button
                 containerStyle={styles.ctaContainer}
@@ -141,14 +175,18 @@ const useStyles = (windowWidth: number) => {
     const sharedStyles = useSharedStyles();
     const tokens = useDesignTokens();
     const compactLayout = windowWidth < 900;
-    const contentWidth = compactLayout ? 300 : 340;
-    const pictureWrapSize = compactLayout ? 92 : 108;
-    const quantityWidth = compactLayout ? 168 : 200;
-    const nameSize = compactLayout ? 20 : 24;
-    const priceSize = compactLayout ? 36 : 44;
+    const contentWidth = compactLayout ? 420 : 520;
+    const pictureWrapSize = compactLayout ? 132 : 164;
+    const quantityWidth = compactLayout ? 220 : 280;
+    const nameSize = compactLayout ? 28 : 34;
+    const priceSize = compactLayout ? 44 : 56;
     const unitSize = compactLayout ? 20 : 24;
 
     return {
+        pictureSize: {
+            width: pictureWrapSize,
+            height: pictureWrapSize,
+        },
         ...sharedStyles,
         ...StyleSheet.create({
             productDetailsContainer: {
@@ -158,7 +196,7 @@ const useStyles = (windowWidth: number) => {
                 overflow: 'hidden',
                 width: '100%',
                 maxWidth: contentWidth,
-                minWidth: compactLayout ? 280 : 320,
+                minWidth: compactLayout ? 380 : 460,
                 alignSelf: 'center',
             },
             heroCard: {
@@ -171,41 +209,115 @@ const useStyles = (windowWidth: number) => {
             pictureWrap: {
                 width: pictureWrapSize,
                 height: pictureWrapSize,
-                borderRadius: tokens.radii.md,
+                borderRadius: tokens.radii.lg,
                 overflow: 'hidden',
                 backgroundColor: tokens.colors.surface,
                 justifyContent: 'center',
                 alignItems: 'center',
-                marginRight: tokens.spacing.sm,
+                marginRight: tokens.spacing.md,
                 flexShrink: 0,
             },
             metaWrap: {
                 flex: 1,
                 minWidth: 0,
+                justifyContent: 'center',
             },
             brandText: {
                 color: tokens.colors.textMuted,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: '700',
                 textTransform: 'uppercase',
-                letterSpacing: 0.4,
-                marginBottom: tokens.spacing.xs,
+                letterSpacing: 0.8,
+                marginBottom: tokens.spacing.sm,
             },
             productName: {
                 color: tokens.colors.textPrimary,
                 fontSize: nameSize,
                 fontWeight: '800',
-                lineHeight: compactLayout ? 28 : 34,
+                lineHeight: compactLayout ? 34 : 40,
             },
             descriptionText: {
                 color: tokens.colors.textSecondary,
+                fontSize: 17,
+                lineHeight: 24,
+                marginTop: tokens.spacing.sm,
+            },
+            unitHint: {
+                color: tokens.colors.textMuted,
                 fontSize: 14,
-                marginTop: tokens.spacing.xs,
+                fontWeight: '600',
+                marginTop: tokens.spacing.md,
+            },
+            summaryCard: {
+                width: '100%',
+                marginTop: tokens.spacing.lg,
+                paddingVertical: tokens.spacing.md,
+                paddingHorizontal: tokens.spacing.md,
+                borderRadius: tokens.radii.lg,
+                backgroundColor: tokens.colors.surface,
             },
             quantityWrap: {
-                marginTop: tokens.spacing.lg,
                 width: '100%',
                 alignItems: 'center',
+                marginTop: tokens.spacing.md,
+            },
+            quantityStepper: {
+                width: quantityWidth,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                minHeight: compactLayout ? 64 : 72,
+            },
+            quantityButtonLeft: {
+                width: compactLayout ? 84 : 96,
+                height: compactLayout ? 64 : 72,
+                borderRadius: tokens.radii.md,
+                backgroundColor: theme.theme.colors.grey4,
+                justifyContent: 'center',
+                alignItems: 'center',
+                alignSelf: 'center',
+                flexShrink: 0,
+                overflow: 'hidden',
+            },
+            quantityButtonRight: {
+                width: compactLayout ? 84 : 96,
+                height: compactLayout ? 64 : 72,
+                borderRadius: tokens.radii.md,
+                backgroundColor: theme.theme.colors.success,
+                justifyContent: 'center',
+                alignItems: 'center',
+                alignSelf: 'center',
+                flexShrink: 0,
+                overflow: 'hidden',
+            },
+            quantityValueWrap: {
+                minWidth: 88,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: tokens.spacing.sm,
+            },
+            quantityButtonTextDark: {
+                color: theme.theme.colors.black,
+                fontSize: 34,
+                fontWeight: '700',
+                lineHeight: compactLayout ? 38 : 42,
+            },
+            quantityButtonTextLight: {
+                color: theme.theme.colors.white,
+                fontSize: 34,
+                fontWeight: '700',
+                lineHeight: compactLayout ? 38 : 42,
+            },
+            quantityValue: {
+                color: theme.theme.colors.grey0,
+                fontSize: compactLayout ? 32 : 38,
+                fontWeight: '700',
+            },
+            quantityLabel: {
+                color: tokens.colors.textMuted,
+                fontSize: 13,
+                fontWeight: '600',
+                marginTop: tokens.spacing.xs,
             },
             weightRow: {
                 width: quantityWidth,
@@ -218,10 +330,14 @@ const useStyles = (windowWidth: number) => {
                 fontWeight: '800',
                 color: theme.theme.colors.grey0,
             },
+            priceLabel: {
+                color: tokens.colors.textSecondary,
+                fontSize: 14,
+                fontWeight: '600',
+                marginTop: tokens.spacing.xs,
+            },
             priceWrap: {
-                marginTop: tokens.spacing.lg,
-                flexDirection: 'row',
-                alignItems: 'flex-end',
+                alignItems: 'center',
             },
             unitOfMeasure: {
                 fontSize: unitSize,

@@ -30,31 +30,18 @@ export function SingleItem({
         item.labelKey && i18next.isInitialized && i18next.exists(item.labelKey)
             ? i18next.t(item.labelKey)
             : item.title;
-
-    return (
-        <ListItem
-            testID={`sidebar-item-${item.id}`}
-            onPress={() => selectedId !== item.id && setSelected(item)}
-            containerStyle={[
-                styles.containerBase,
-                compact ? styles.containerCompact : styles.containerRegular,
-                active ? styles.containerActive : styles.containerInactive,
-            ]}
-        >
-            {item.icon && (
-                <View key={`sidebar-item-icon-${item.id}`} style={styles.iconSlot}>
-                    <Icon
-                        name={item.icon}
-                        type="material-community"
-                        size={compact ? 17 : 20}
-                        color={
-                            active
-                                ? colors.primary
-                                : colors.grey3
-                        }
-                    />
-                </View>
-            )}
+    const listItemChildren = [
+        item.icon ? (
+            <View key={`sidebar-item-icon-${item.id}`} style={styles.iconSlot}>
+                <Icon
+                    name={item.icon}
+                    type="material-community"
+                    size={compact ? 17 : 20}
+                    color={active ? colors.primary : colors.grey3}
+                />
+            </View>
+        ) : null,
+        (
             <ListItem.Content
                 key={`sidebar-item-content-${item.id}`}
                 style={styles.content}
@@ -70,19 +57,29 @@ export function SingleItem({
                     {title}
                 </ListItem.Title>
             </ListItem.Content>
-            {chevron && (
-                <Icon
-                    key={`sidebar-item-chevron-${item.id}`}
-                    name="chevron-right"
-                    type="material-community"
-                    size={18}
-                    color={
-                        active
-                            ? colors.primary
-                            : colors.grey4
-                    }
-                />
-            )}
+        ),
+        chevron ? (
+            <Icon
+                key={`sidebar-item-chevron-${item.id}`}
+                name="chevron-right"
+                type="material-community"
+                size={18}
+                color={active ? colors.primary : colors.grey4}
+            />
+        ) : null,
+    ];
+
+    return (
+        <ListItem
+            testID={`sidebar-item-${item.id}`}
+            onPress={() => selectedId !== item.id && setSelected(item)}
+            containerStyle={[
+                styles.containerBase,
+                compact ? styles.containerCompact : styles.containerRegular,
+                active ? styles.containerActive : styles.containerInactive,
+            ]}
+        >
+            {listItemChildren}
         </ListItem>
     );
 }

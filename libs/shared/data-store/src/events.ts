@@ -30,6 +30,11 @@ export const subscribeEvents = (dispatch: Dispatch) =>
                     (data as ModelSyncedEvent).model.name
                 );
                 break;
+            case 'outboxMutationFailed':
+                console.error(
+                    `DataStore mutation failed: ${JSON.stringify(data)}`
+                );
+                break;
             default:
                 break;
         }

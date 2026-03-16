@@ -151,6 +151,7 @@ export const onCreateStore = /* GraphQL */ `subscription OnCreateStore(
     fax
     email
     disclaimer
+    timezone
     createdAt
     updatedAt
     _version
@@ -180,6 +181,7 @@ export const onUpdateStore = /* GraphQL */ `subscription OnUpdateStore(
     fax
     email
     disclaimer
+    timezone
     createdAt
     updatedAt
     _version
@@ -209,6 +211,7 @@ export const onDeleteStore = /* GraphQL */ `subscription OnDeleteStore(
     fax
     email
     disclaimer
+    timezone
     createdAt
     updatedAt
     _version
@@ -296,6 +299,8 @@ export const onCreateCategory = /* GraphQL */ `subscription OnCreateCategory(
     code
     color
     picture
+    discountable
+    discountPolicyMode
     createdAt
     updatedAt
     _version
@@ -320,6 +325,8 @@ export const onUpdateCategory = /* GraphQL */ `subscription OnUpdateCategory(
     code
     color
     picture
+    discountable
+    discountPolicyMode
     createdAt
     updatedAt
     _version
@@ -344,6 +351,8 @@ export const onDeleteCategory = /* GraphQL */ `subscription OnDeleteCategory(
     code
     color
     picture
+    discountable
+    discountPolicyMode
     createdAt
     updatedAt
     _version
@@ -448,6 +457,8 @@ export const onCreateEmployee = /* GraphQL */ `subscription OnCreateEmployee(
     pin
     roles
     active
+    discountPolicyId
+    policyProfileKey
     createdAt
     updatedAt
     _version
@@ -477,6 +488,8 @@ export const onUpdateEmployee = /* GraphQL */ `subscription OnUpdateEmployee(
     pin
     roles
     active
+    discountPolicyId
+    policyProfileKey
     createdAt
     updatedAt
     _version
@@ -506,6 +519,8 @@ export const onDeleteEmployee = /* GraphQL */ `subscription OnDeleteEmployee(
     pin
     roles
     active
+    discountPolicyId
+    policyProfileKey
     createdAt
     updatedAt
     _version
@@ -527,9 +542,20 @@ export const onCreateOrder = /* GraphQL */ `subscription OnCreateOrder(
     tenantId
     orderNo
     orderDate
+    baseSubtotal
     subtotal
+    lineDiscountTotal
+    orderDiscountTotal
+    discountTotal
+    savingsTotal
     tax
     total
+    promoCodes
+    pricingVersion
+    pricingSnapshotHash
+    pricingSource
+    reconciliationStatus
+    appliedDiscountSummary
     status
     employeeId
     employeeName
@@ -543,6 +569,20 @@ export const onCreateOrder = /* GraphQL */ `subscription OnCreateOrder(
       quantity
       tax
       price
+      basePrice
+      overridePrice
+      netUnitPrice
+      lineSubtotalBeforeOrderDiscount
+      lineDiscountTotal
+      allocatedOrderDiscountTotal
+      lineTotalBeforeTax
+      lineTotalAfterTax
+      appliedDiscounts
+      categoryId
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       isEBTEligible
       ebtPaidAmount
       nonEbtPaidAmount
@@ -607,9 +647,20 @@ export const onUpdateOrder = /* GraphQL */ `subscription OnUpdateOrder(
     tenantId
     orderNo
     orderDate
+    baseSubtotal
     subtotal
+    lineDiscountTotal
+    orderDiscountTotal
+    discountTotal
+    savingsTotal
     tax
     total
+    promoCodes
+    pricingVersion
+    pricingSnapshotHash
+    pricingSource
+    reconciliationStatus
+    appliedDiscountSummary
     status
     employeeId
     employeeName
@@ -623,6 +674,20 @@ export const onUpdateOrder = /* GraphQL */ `subscription OnUpdateOrder(
       quantity
       tax
       price
+      basePrice
+      overridePrice
+      netUnitPrice
+      lineSubtotalBeforeOrderDiscount
+      lineDiscountTotal
+      allocatedOrderDiscountTotal
+      lineTotalBeforeTax
+      lineTotalAfterTax
+      appliedDiscounts
+      categoryId
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       isEBTEligible
       ebtPaidAmount
       nonEbtPaidAmount
@@ -687,9 +752,20 @@ export const onDeleteOrder = /* GraphQL */ `subscription OnDeleteOrder(
     tenantId
     orderNo
     orderDate
+    baseSubtotal
     subtotal
+    lineDiscountTotal
+    orderDiscountTotal
+    discountTotal
+    savingsTotal
     tax
     total
+    promoCodes
+    pricingVersion
+    pricingSnapshotHash
+    pricingSource
+    reconciliationStatus
+    appliedDiscountSummary
     status
     employeeId
     employeeName
@@ -703,6 +779,20 @@ export const onDeleteOrder = /* GraphQL */ `subscription OnDeleteOrder(
       quantity
       tax
       price
+      basePrice
+      overridePrice
+      netUnitPrice
+      lineSubtotalBeforeOrderDiscount
+      lineDiscountTotal
+      allocatedOrderDiscountTotal
+      lineTotalBeforeTax
+      lineTotalAfterTax
+      appliedDiscounts
+      categoryId
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       isEBTEligible
       ebtPaidAmount
       nonEbtPaidAmount
@@ -787,6 +877,8 @@ export const onCreateProduct = /* GraphQL */ `subscription OnCreateProduct(
       code
       color
       picture
+      discountable
+      discountPolicyMode
       createdAt
       updatedAt
       _version
@@ -808,6 +900,10 @@ export const onCreateProduct = /* GraphQL */ `subscription OnCreateProduct(
     }
     isActive
     isEBTEligible
+    discountable
+    minAllowedPrice
+    maxManualDiscountPercent
+    maxManualDiscountAmount
     createdAt
     updatedAt
     _version
@@ -851,6 +947,8 @@ export const onUpdateProduct = /* GraphQL */ `subscription OnUpdateProduct(
       code
       color
       picture
+      discountable
+      discountPolicyMode
       createdAt
       updatedAt
       _version
@@ -872,6 +970,10 @@ export const onUpdateProduct = /* GraphQL */ `subscription OnUpdateProduct(
     }
     isActive
     isEBTEligible
+    discountable
+    minAllowedPrice
+    maxManualDiscountPercent
+    maxManualDiscountAmount
     createdAt
     updatedAt
     _version
@@ -915,6 +1017,8 @@ export const onDeleteProduct = /* GraphQL */ `subscription OnDeleteProduct(
       code
       color
       picture
+      discountable
+      discountPolicyMode
       createdAt
       updatedAt
       _version
@@ -936,6 +1040,10 @@ export const onDeleteProduct = /* GraphQL */ `subscription OnDeleteProduct(
     }
     isActive
     isEBTEligible
+    discountable
+    minAllowedPrice
+    maxManualDiscountPercent
+    maxManualDiscountAmount
     createdAt
     updatedAt
     _version
@@ -1044,6 +1152,10 @@ export const onCreateInventoryChanges = /* GraphQL */ `subscription OnCreateInve
       picture
       isActive
       isEBTEligible
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       createdAt
       updatedAt
       _version
@@ -1097,6 +1209,10 @@ export const onUpdateInventoryChanges = /* GraphQL */ `subscription OnUpdateInve
       picture
       isActive
       isEBTEligible
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       createdAt
       updatedAt
       _version
@@ -1150,6 +1266,10 @@ export const onDeleteInventoryChanges = /* GraphQL */ `subscription OnDeleteInve
       picture
       isActive
       isEBTEligible
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       createdAt
       updatedAt
       _version
@@ -1699,6 +1819,7 @@ export const onCreateGlobalSettings = /* GraphQL */ `subscription OnCreateGlobal
     id
     tenantId
     enforceSalesBasedOnInventory
+    timezone
     createdAt
     updatedAt
     _version
@@ -1719,6 +1840,7 @@ export const onUpdateGlobalSettings = /* GraphQL */ `subscription OnUpdateGlobal
     id
     tenantId
     enforceSalesBasedOnInventory
+    timezone
     createdAt
     updatedAt
     _version
@@ -1739,6 +1861,7 @@ export const onDeleteGlobalSettings = /* GraphQL */ `subscription OnDeleteGlobal
     id
     tenantId
     enforceSalesBasedOnInventory
+    timezone
     createdAt
     updatedAt
     _version
@@ -1750,4 +1873,727 @@ export const onDeleteGlobalSettings = /* GraphQL */ `subscription OnDeleteGlobal
 ` as GeneratedSubscription<
   APITypes.OnDeleteGlobalSettingsSubscriptionVariables,
   APITypes.OnDeleteGlobalSettingsSubscription
+>;
+export const onCreateDiscountDefinition = /* GraphQL */ `subscription OnCreateDiscountDefinition(
+  $filter: ModelSubscriptionDiscountDefinitionFilterInput
+  $tenantId: String
+) {
+  onCreateDiscountDefinition(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    storeIds
+    stationIds
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateDiscountDefinitionSubscriptionVariables,
+  APITypes.OnCreateDiscountDefinitionSubscription
+>;
+export const onUpdateDiscountDefinition = /* GraphQL */ `subscription OnUpdateDiscountDefinition(
+  $filter: ModelSubscriptionDiscountDefinitionFilterInput
+  $tenantId: String
+) {
+  onUpdateDiscountDefinition(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    storeIds
+    stationIds
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateDiscountDefinitionSubscriptionVariables,
+  APITypes.OnUpdateDiscountDefinitionSubscription
+>;
+export const onDeleteDiscountDefinition = /* GraphQL */ `subscription OnDeleteDiscountDefinition(
+  $filter: ModelSubscriptionDiscountDefinitionFilterInput
+  $tenantId: String
+) {
+  onDeleteDiscountDefinition(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    storeIds
+    stationIds
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteDiscountDefinitionSubscriptionVariables,
+  APITypes.OnDeleteDiscountDefinitionSubscription
+>;
+export const onCreateDiscountReasonCode = /* GraphQL */ `subscription OnCreateDiscountReasonCode(
+  $filter: ModelSubscriptionDiscountReasonCodeFilterInput
+  $tenantId: String
+) {
+  onCreateDiscountReasonCode(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    code
+    label
+    description
+    active
+    requiresNote
+    appliesTo
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateDiscountReasonCodeSubscriptionVariables,
+  APITypes.OnCreateDiscountReasonCodeSubscription
+>;
+export const onUpdateDiscountReasonCode = /* GraphQL */ `subscription OnUpdateDiscountReasonCode(
+  $filter: ModelSubscriptionDiscountReasonCodeFilterInput
+  $tenantId: String
+) {
+  onUpdateDiscountReasonCode(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    code
+    label
+    description
+    active
+    requiresNote
+    appliesTo
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateDiscountReasonCodeSubscriptionVariables,
+  APITypes.OnUpdateDiscountReasonCodeSubscription
+>;
+export const onDeleteDiscountReasonCode = /* GraphQL */ `subscription OnDeleteDiscountReasonCode(
+  $filter: ModelSubscriptionDiscountReasonCodeFilterInput
+  $tenantId: String
+) {
+  onDeleteDiscountReasonCode(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    code
+    label
+    description
+    active
+    requiresNote
+    appliesTo
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteDiscountReasonCodeSubscriptionVariables,
+  APITypes.OnDeleteDiscountReasonCodeSubscription
+>;
+export const onCreateEmployeeDiscountPolicy = /* GraphQL */ `subscription OnCreateEmployeeDiscountPolicy(
+  $filter: ModelSubscriptionEmployeeDiscountPolicyFilterInput
+  $tenantId: String
+) {
+  onCreateEmployeeDiscountPolicy(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    employeeId
+    roleKey
+    maxManualPercentDiscount
+    maxManualAmountDiscount
+    maxPriceOverrideAmount
+    maxPriceOverridePercentBelowBase
+    canApplyOrderDiscount
+    canOverridePrice
+    canApproveDiscounts
+    canApprovePriceOverrides
+    canUsePromoCodes
+    requireReasonForManualDiscounts
+    requireReasonForOverrides
+    requireApprovalForOrderDiscount
+    requireApprovalForAnyPriceOverride
+    allowExclusiveDiscountOverride
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateEmployeeDiscountPolicySubscriptionVariables,
+  APITypes.OnCreateEmployeeDiscountPolicySubscription
+>;
+export const onUpdateEmployeeDiscountPolicy = /* GraphQL */ `subscription OnUpdateEmployeeDiscountPolicy(
+  $filter: ModelSubscriptionEmployeeDiscountPolicyFilterInput
+  $tenantId: String
+) {
+  onUpdateEmployeeDiscountPolicy(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    employeeId
+    roleKey
+    maxManualPercentDiscount
+    maxManualAmountDiscount
+    maxPriceOverrideAmount
+    maxPriceOverridePercentBelowBase
+    canApplyOrderDiscount
+    canOverridePrice
+    canApproveDiscounts
+    canApprovePriceOverrides
+    canUsePromoCodes
+    requireReasonForManualDiscounts
+    requireReasonForOverrides
+    requireApprovalForOrderDiscount
+    requireApprovalForAnyPriceOverride
+    allowExclusiveDiscountOverride
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateEmployeeDiscountPolicySubscriptionVariables,
+  APITypes.OnUpdateEmployeeDiscountPolicySubscription
+>;
+export const onDeleteEmployeeDiscountPolicy = /* GraphQL */ `subscription OnDeleteEmployeeDiscountPolicy(
+  $filter: ModelSubscriptionEmployeeDiscountPolicyFilterInput
+  $tenantId: String
+) {
+  onDeleteEmployeeDiscountPolicy(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    employeeId
+    roleKey
+    maxManualPercentDiscount
+    maxManualAmountDiscount
+    maxPriceOverrideAmount
+    maxPriceOverridePercentBelowBase
+    canApplyOrderDiscount
+    canOverridePrice
+    canApproveDiscounts
+    canApprovePriceOverrides
+    canUsePromoCodes
+    requireReasonForManualDiscounts
+    requireReasonForOverrides
+    requireApprovalForOrderDiscount
+    requireApprovalForAnyPriceOverride
+    allowExclusiveDiscountOverride
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteEmployeeDiscountPolicySubscriptionVariables,
+  APITypes.OnDeleteEmployeeDiscountPolicySubscription
+>;
+export const onCreateDiscountPreset = /* GraphQL */ `subscription OnCreateDiscountPreset(
+  $filter: ModelSubscriptionDiscountPresetFilterInput
+  $tenantId: String
+) {
+  onCreateDiscountPreset(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    name
+    scope
+    method
+    value
+    promptForCustomValue
+    active
+    sortOrder
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateDiscountPresetSubscriptionVariables,
+  APITypes.OnCreateDiscountPresetSubscription
+>;
+export const onUpdateDiscountPreset = /* GraphQL */ `subscription OnUpdateDiscountPreset(
+  $filter: ModelSubscriptionDiscountPresetFilterInput
+  $tenantId: String
+) {
+  onUpdateDiscountPreset(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    name
+    scope
+    method
+    value
+    promptForCustomValue
+    active
+    sortOrder
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateDiscountPresetSubscriptionVariables,
+  APITypes.OnUpdateDiscountPresetSubscription
+>;
+export const onDeleteDiscountPreset = /* GraphQL */ `subscription OnDeleteDiscountPreset(
+  $filter: ModelSubscriptionDiscountPresetFilterInput
+  $tenantId: String
+) {
+  onDeleteDiscountPreset(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    name
+    scope
+    method
+    value
+    promptForCustomValue
+    active
+    sortOrder
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteDiscountPresetSubscriptionVariables,
+  APITypes.OnDeleteDiscountPresetSubscription
+>;
+export const onCreateDiscountApplication = /* GraphQL */ `subscription OnCreateDiscountApplication(
+  $filter: ModelSubscriptionDiscountApplicationFilterInput
+  $tenantId: String
+) {
+  onCreateDiscountApplication(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    transactionId
+    lineId
+    discountDefinitionId
+    applicationType
+    scope
+    method
+    name
+    code
+    stackMode
+    originalAmount
+    discountAmount
+    finalAmount
+    quantityBasis
+    reasonCode
+    reasonNote
+    appliedByEmployeeId
+    appliedByEmployeeName
+    approvedByEmployeeId
+    approvedByEmployeeName
+    approvalRequired
+    approvalStatus
+    approvalReference
+    sourceSnapshot
+    appliedAt
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateDiscountApplicationSubscriptionVariables,
+  APITypes.OnCreateDiscountApplicationSubscription
+>;
+export const onUpdateDiscountApplication = /* GraphQL */ `subscription OnUpdateDiscountApplication(
+  $filter: ModelSubscriptionDiscountApplicationFilterInput
+  $tenantId: String
+) {
+  onUpdateDiscountApplication(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    transactionId
+    lineId
+    discountDefinitionId
+    applicationType
+    scope
+    method
+    name
+    code
+    stackMode
+    originalAmount
+    discountAmount
+    finalAmount
+    quantityBasis
+    reasonCode
+    reasonNote
+    appliedByEmployeeId
+    appliedByEmployeeName
+    approvedByEmployeeId
+    approvedByEmployeeName
+    approvalRequired
+    approvalStatus
+    approvalReference
+    sourceSnapshot
+    appliedAt
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateDiscountApplicationSubscriptionVariables,
+  APITypes.OnUpdateDiscountApplicationSubscription
+>;
+export const onDeleteDiscountApplication = /* GraphQL */ `subscription OnDeleteDiscountApplication(
+  $filter: ModelSubscriptionDiscountApplicationFilterInput
+  $tenantId: String
+) {
+  onDeleteDiscountApplication(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    transactionId
+    lineId
+    discountDefinitionId
+    applicationType
+    scope
+    method
+    name
+    code
+    stackMode
+    originalAmount
+    discountAmount
+    finalAmount
+    quantityBasis
+    reasonCode
+    reasonNote
+    appliedByEmployeeId
+    appliedByEmployeeName
+    approvedByEmployeeId
+    approvedByEmployeeName
+    approvalRequired
+    approvalStatus
+    approvalReference
+    sourceSnapshot
+    appliedAt
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteDiscountApplicationSubscriptionVariables,
+  APITypes.OnDeleteDiscountApplicationSubscription
+>;
+export const onCreateApprovalEvent = /* GraphQL */ `subscription OnCreateApprovalEvent(
+  $filter: ModelSubscriptionApprovalEventFilterInput
+  $tenantId: String
+) {
+  onCreateApprovalEvent(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    transactionId
+    lineId
+    approvalType
+    requestingEmployeeId
+    approvingEmployeeId
+    requestedAction
+    reasonCode
+    reasonNote
+    policySnapshot
+    status
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateApprovalEventSubscriptionVariables,
+  APITypes.OnCreateApprovalEventSubscription
+>;
+export const onUpdateApprovalEvent = /* GraphQL */ `subscription OnUpdateApprovalEvent(
+  $filter: ModelSubscriptionApprovalEventFilterInput
+  $tenantId: String
+) {
+  onUpdateApprovalEvent(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    transactionId
+    lineId
+    approvalType
+    requestingEmployeeId
+    approvingEmployeeId
+    requestedAction
+    reasonCode
+    reasonNote
+    policySnapshot
+    status
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateApprovalEventSubscriptionVariables,
+  APITypes.OnUpdateApprovalEventSubscription
+>;
+export const onDeleteApprovalEvent = /* GraphQL */ `subscription OnDeleteApprovalEvent(
+  $filter: ModelSubscriptionApprovalEventFilterInput
+  $tenantId: String
+) {
+  onDeleteApprovalEvent(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    transactionId
+    lineId
+    approvalType
+    requestingEmployeeId
+    approvingEmployeeId
+    requestedAction
+    reasonCode
+    reasonNote
+    policySnapshot
+    status
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteApprovalEventSubscriptionVariables,
+  APITypes.OnDeleteApprovalEventSubscription
+>;
+export const onCreateDiscountReconciliationException = /* GraphQL */ `subscription OnCreateDiscountReconciliationException(
+  $filter: ModelSubscriptionDiscountReconciliationExceptionFilterInput
+  $tenantId: String
+) {
+  onCreateDiscountReconciliationException(
+    filter: $filter
+    tenantId: $tenantId
+  ) {
+    id
+    tenantId
+    transactionId
+    discountApplicationId
+    exceptionType
+    severity
+    message
+    backendSnapshot
+    resolved
+    resolvedByEmployeeId
+    resolvedAt
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateDiscountReconciliationExceptionSubscriptionVariables,
+  APITypes.OnCreateDiscountReconciliationExceptionSubscription
+>;
+export const onUpdateDiscountReconciliationException = /* GraphQL */ `subscription OnUpdateDiscountReconciliationException(
+  $filter: ModelSubscriptionDiscountReconciliationExceptionFilterInput
+  $tenantId: String
+) {
+  onUpdateDiscountReconciliationException(
+    filter: $filter
+    tenantId: $tenantId
+  ) {
+    id
+    tenantId
+    transactionId
+    discountApplicationId
+    exceptionType
+    severity
+    message
+    backendSnapshot
+    resolved
+    resolvedByEmployeeId
+    resolvedAt
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateDiscountReconciliationExceptionSubscriptionVariables,
+  APITypes.OnUpdateDiscountReconciliationExceptionSubscription
+>;
+export const onDeleteDiscountReconciliationException = /* GraphQL */ `subscription OnDeleteDiscountReconciliationException(
+  $filter: ModelSubscriptionDiscountReconciliationExceptionFilterInput
+  $tenantId: String
+) {
+  onDeleteDiscountReconciliationException(
+    filter: $filter
+    tenantId: $tenantId
+  ) {
+    id
+    tenantId
+    transactionId
+    discountApplicationId
+    exceptionType
+    severity
+    message
+    backendSnapshot
+    resolved
+    resolvedByEmployeeId
+    resolvedAt
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteDiscountReconciliationExceptionSubscriptionVariables,
+  APITypes.OnDeleteDiscountReconciliationExceptionSubscription
 >;

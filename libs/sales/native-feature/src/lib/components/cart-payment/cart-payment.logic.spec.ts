@@ -30,6 +30,59 @@ describe('cart-payment.logic', () => {
         expect(amount).toBe(65);
     });
 
+    it('supports discounted-order card combinations when auto-filling remaining balances', () => {
+        const scenarios = [
+            {
+                name: 'ebt then cash',
+                paymentType: 'cash' as const,
+                values: { ebt: 24.9, cash: 0, cc: 0, check: 0 },
+                paymentMethods: ['cash', 'cc', 'ebt'] as ('cash' | 'cc' | 'ebt')[],
+                total: 54.9,
+                ebtEligibleTotal: 24.9,
+                expected: 30,
+            },
+            {
+                name: 'ebt then credit card',
+                paymentType: 'cc' as const,
+                values: { ebt: 24.9, cash: 0, cc: 0, check: 0 },
+                paymentMethods: ['cash', 'cc', 'ebt'] as ('cash' | 'cc' | 'ebt')[],
+                total: 54.9,
+                ebtEligibleTotal: 24.9,
+                expected: 30,
+            },
+            {
+                name: 'cash prefilled before credit card',
+                paymentType: 'cc' as const,
+                values: { ebt: 0, cash: 12.25, cc: 0, check: 0 },
+                paymentMethods: ['cash', 'cc'] as ('cash' | 'cc')[],
+                total: 54.9,
+                ebtEligibleTotal: 24.9,
+                expected: 42.65,
+            },
+            {
+                name: 'check absorbs remaining discounted amount',
+                paymentType: 'check' as const,
+                values: { ebt: 10, cash: 5.5, cc: 0, check: 0 },
+                paymentMethods: ['cash', 'check', 'ebt'] as ('cash' | 'check' | 'ebt')[],
+                total: 29.75,
+                ebtEligibleTotal: 12,
+                expected: 14.25,
+            },
+        ];
+
+        scenarios.forEach((scenario) => {
+            expect(
+                getAutoFillAmount(
+                    scenario.paymentType,
+                    scenario.values,
+                    scenario.paymentMethods,
+                    scenario.total,
+                    scenario.ebtEligibleTotal
+                )
+            ).toBe(scenario.expected);
+        });
+    });
+
     it('returns 0 when remaining is negative', () => {
         const amount = getAutoFillAmount(
             'cash',

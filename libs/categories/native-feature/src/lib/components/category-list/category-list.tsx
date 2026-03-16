@@ -28,6 +28,11 @@ export const buildCategoryListProps = (navigation: NativeStackNavigationProp<any
         clearSelectionAction: categoriesActions.clearSelection,
         filterAction: categoriesActions.filter,
         fetchItemsAction: fetchCategories,
+        emptyTitle: 'No categories yet',
+        emptySubtitle:
+            'Create categories to organize products and make catalog browsing easier.',
+        emptyActionText: 'Add category',
+        emptyActionIcon: 'shape-outline',
     } as ItemListProps<any, any>);
 
 export function CategoryList({ navigation }: CategoryListProps) {

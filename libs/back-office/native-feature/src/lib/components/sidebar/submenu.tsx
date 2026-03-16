@@ -28,6 +28,38 @@ export function Submenu({
         item.labelKey && i18next.isInitialized && i18next.exists(item.labelKey)
             ? i18next.t(item.labelKey)
             : item.title;
+    const headerContent = (
+        <View key={`sidebar-submenu-header-${item.id}`} style={styles.headerContent}>
+            {[
+                item.icon ? (
+                    <View key={`sidebar-submenu-icon-${item.id}`} style={styles.iconSlot}>
+                        <Icon
+                            name={item.icon}
+                            type="material-community"
+                            size={20}
+                            color={parentActive ? colors.primary : colors.grey3}
+                        />
+                    </View>
+                ) : null,
+                (
+                    <ListItem.Content
+                        key={`sidebar-submenu-content-${item.id}`}
+                        style={styles.headerTitleContent}
+                    >
+                        <ListItem.Title
+                            key={`sidebar-submenu-title-${item.id}`}
+                            style={[
+                                styles.headerTitle,
+                                parentActive && styles.headerTitleActive,
+                            ]}
+                        >
+                            {title}
+                        </ListItem.Title>
+                    </ListItem.Content>
+                ),
+            ]}
+        </View>
+    );
 
     return (
         <ListItem.Accordion
@@ -53,38 +85,7 @@ export function Submenu({
                     color={parentActive ? colors.primary : colors.grey4}
                 />
             }
-            content={
-                <View key={`sidebar-submenu-header-${item.id}`} style={styles.headerContent}>
-                    {item.icon && (
-                        <View key={`sidebar-submenu-icon-${item.id}`} style={styles.iconSlot}>
-                            <Icon
-                                name={item.icon}
-                                type="material-community"
-                                size={20}
-                                color={
-                                    parentActive
-                                        ? colors.primary
-                                        : colors.grey3
-                                }
-                            />
-                        </View>
-                    )}
-                    <ListItem.Content
-                        key={`sidebar-submenu-content-${item.id}`}
-                        style={styles.headerTitleContent}
-                    >
-                        <ListItem.Title
-                            key={`sidebar-submenu-title-${item.id}`}
-                            style={[
-                                styles.headerTitle,
-                                parentActive && styles.headerTitleActive,
-                            ]}
-                        >
-                            {title}
-                        </ListItem.Title>
-                    </ListItem.Content>
-                </View>
-            }
+            content={headerContent}
             isExpanded={isExpanded}
             onPress={() => setExpandedId(isExpanded ? undefined : item.id)}
         >

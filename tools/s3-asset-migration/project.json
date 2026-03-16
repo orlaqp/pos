@@ -1,0 +1,16 @@
+{
+  "name": "s3-asset-migration",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/s3-asset-migration/src",
+  "projectType": "library",
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/tools/s3-asset-migration"],
+      "options": {
+        "jestConfig": "tools/s3-asset-migration/jest.config.ts",
+        "passWithNoTests": false
+      }
+    }
+  }
+}

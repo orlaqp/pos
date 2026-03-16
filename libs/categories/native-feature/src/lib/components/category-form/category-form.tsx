@@ -42,15 +42,26 @@ export function CategoryForm({ navigation }: CategoryFormProps) {
 
     const save = async () => {
         setBusy(true);
-        const cat: CategoryEntity = form.getValues();
-        
-        if (!cat.id) {
-            delete cat.id;
-        }
+        try {
+            const cat: CategoryEntity = form.getValues();
 
-        await CategoryService.save(dispatch, cat);
-        navigation.goBack();
-        setBusy(false);
+            if (!cat.id) {
+                delete cat.id;
+            }
+
+            await CategoryService.save(dispatch, cat);
+            navigation.goBack();
+        } catch (error) {
+            const message =
+                error instanceof Error ? error.message : String(error);
+            console.error('Unable to save category', error);
+            Alert.alert(
+                'Unable to save category',
+                message || 'The category could not be saved.'
+            );
+        } finally {
+            setBusy(false);
+        }
     };
 
     const form = useForm<Category>({

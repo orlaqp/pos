@@ -48,7 +48,8 @@ export function UIDatePickerModal({
             transparent
             visible={open}
             onRequestClose={onCancel}
-            supportedOrientations={['landscape']}
+            presentationStyle="fullScreen"
+            supportedOrientations={['landscape-left', 'landscape-right']}
             testID="ui-date-picker-modal"
         >
             <View style={styles.backdrop}>

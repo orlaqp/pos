@@ -42,7 +42,7 @@ export interface BackOfficeProps {
     navigation: NativeStackNavigationProp<any>;
     route?: {
         params?: {
-            initialScreen?: 'Dashboard' | 'Products' | 'Categories';
+            initialScreen?: 'Dashboard' | 'Catalog' | 'Products' | 'Categories';
             initialScreenParams?: object;
         };
     };
@@ -119,6 +119,7 @@ export function BackOffice({ navigation, route }: BackOfficeProps) {
                                 <Stack.Screen name="Discount Form" component={DiscountEditor} />
                                 <Stack.Screen name="Promo Code Form" component={DiscountEditor} />
                                 <Stack.Screen name="Policy Form" component={PolicyEditor} />
+                                <Stack.Screen name="Catalog" component={Products} />
                                 <Stack.Screen name="Products" component={Products} />
                                 <Stack.Screen name="Brands" component={Brands} />
                                 <Stack.Screen name="U/M" component={UnitOfMeasures} />

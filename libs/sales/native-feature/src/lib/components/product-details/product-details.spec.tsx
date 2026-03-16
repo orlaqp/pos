@@ -34,17 +34,6 @@ jest.mock('@pos/shared/ui-native', () => ({
     },
 }));
 
-jest.mock('react-native-numeric-input', () => {
-    return ({ onChange }: { onChange: (value: number) => void }) => {
-        const { Pressable, Text } = require('react-native');
-        return (
-            <Pressable testID="product-details-numeric" onPress={() => onChange(5)}>
-                <Text>Numeric Input</Text>
-            </Pressable>
-        );
-    };
-});
-
 jest.mock('@rneui/themed', () => {
     const React = require('react');
     const { Pressable, Text, View } = require('react-native');
@@ -80,6 +69,7 @@ jest.mock('@rneui/themed', () => {
                 </View>
             )
         ),
+        Icon: () => <Text>Icon</Text>,
         Button: ({ title, onPress }: { title: string; onPress: () => void }) => (
             <Pressable testID="product-details-submit" onPress={onPress}>
                 <Text>{title}</Text>
@@ -123,7 +113,9 @@ describe('ProductDetails', () => {
             <ProductDetails item={item} upsertCart={mockUpsert} enforceSalesBasedOnInventory={false} />
         );
 
-        fireEvent.press(getByTestId('product-details-numeric'));
+        fireEvent.press(getByTestId('product-details-increment'));
+        fireEvent.press(getByTestId('product-details-increment'));
+        fireEvent.press(getByTestId('product-details-increment'));
         fireEvent.press(getByTestId('product-details-submit'));
         expect(mockUpsert).toHaveBeenCalledWith(
             expect.objectContaining({

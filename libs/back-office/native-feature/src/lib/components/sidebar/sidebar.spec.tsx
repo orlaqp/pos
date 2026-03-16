@@ -7,7 +7,7 @@ const menu = [
   { id: '3', title: 'Reports', icon: 'r', group: 'Core' },
   {
     id: '2',
-    title: 'Products',
+    title: 'Catalog',
     icon: 'p',
     group: 'Management',
     children: [{ id: '2-1', title: 'List' }],
@@ -48,7 +48,7 @@ describe('Sidebar', () => {
     const { getByTestId, getByText } = render(<Sidebar navigation={navigation} />);
 
     expect(getByTestId('single-Dashboard')).toBeTruthy();
-    expect(getByTestId('submenu-Products')).toBeTruthy();
+    expect(getByTestId('submenu-Catalog')).toBeTruthy();
     expect(getByText('Core')).toBeTruthy();
     expect(getByText('Management')).toBeTruthy();
   });

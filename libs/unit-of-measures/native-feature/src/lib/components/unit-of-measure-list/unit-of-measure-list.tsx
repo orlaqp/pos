@@ -29,6 +29,11 @@ export const buildUnitOfMeasureListProps = (
         clearSelectionAction: unitOfMeasuresActions.clearSelection,
         filterAction: unitOfMeasuresActions.filter,
         fetchItemsAction: fetchUnitOfMeasures,
+        emptyTitle: 'No units yet',
+        emptySubtitle:
+            'Create units of measure before assigning them to products in the catalog.',
+        emptyActionText: 'Add unit',
+        emptyActionIcon: 'scale-balance',
     } as ItemListProps<any, any>);
 
 export function UnitOfMeasureList({ navigation }: UnitOfMeasureListProps) {

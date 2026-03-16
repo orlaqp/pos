@@ -5,20 +5,32 @@ import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { FormProvider, useForm } from 'react-hook-form';
 import { Button } from '@rneui/themed';
 import {
+  CategoryService,
+  CategoryEntityMapper,
+} from '@pos/categories/data-access';
+import {
   DiscountDefinitionEntity,
   DiscountService,
   EmployeeDiscountPolicyEntity,
 } from '@pos/discounts/data-access';
 import {
+  ProductEntityMapper,
+  ProductService,
+} from '@pos/products/data-access';
+import {
   UICard,
   UIActions,
+  UIDateTimeField,
   UIEmptyState,
   UIInput,
   UINumericInput,
+  UIOverlayMultiSelect,
   UIOverlaySelect,
   UIScreen,
   UISwitch,
 } from '@pos/shared/ui-native';
+import { StationService } from '@pos/settings/data-access';
+import { StoreInfoEntityMapper, StoreInfoService } from '@pos/store-info/data-access';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 const definitionTypeOptions = [
@@ -55,6 +67,16 @@ const roleOptions = [
   { id: 'Admin', name: 'Admin' },
   { id: 'Sales', name: 'Sales' },
   { id: 'Payments', name: 'Payments' },
+];
+
+const dayOfWeekOptions = [
+  { id: 'MONDAY', name: 'Monday' },
+  { id: 'TUESDAY', name: 'Tuesday' },
+  { id: 'WEDNESDAY', name: 'Wednesday' },
+  { id: 'THURSDAY', name: 'Thursday' },
+  { id: 'FRIDAY', name: 'Friday' },
+  { id: 'SATURDAY', name: 'Saturday' },
+  { id: 'SUNDAY', name: 'Sunday' },
 ];
 
 const sectionConfig = {
@@ -118,18 +140,18 @@ interface DefinitionFormValues {
   reasonRequired: boolean;
   startDate: string;
   endDate: string;
-  daysOfWeekInput: string;
+  daysOfWeek: string[];
   startTime: string;
   endTime: string;
   minSubtotal: string;
   minQuantity: string;
   usageLimitTotal: string;
-  applicableProductIdsInput: string;
-  applicableCategoryIdsInput: string;
-  excludedProductIdsInput: string;
-  excludedCategoryIdsInput: string;
-  storeIdsInput: string;
-  stationIdsInput: string;
+  applicableProductIds: string[];
+  applicableCategoryIds: string[];
+  excludedProductIds: string[];
+  excludedCategoryIds: string[];
+  storeIds: string[];
+  stationIds: string[];
   excludeAlreadyDiscountedItems: boolean;
   appliesToAllProducts: boolean;
   active: boolean;
@@ -170,18 +192,18 @@ const defaultDefinitionValues = (promoMode: boolean): DefinitionFormValues => ({
   reasonRequired: true,
   startDate: '',
   endDate: '',
-  daysOfWeekInput: '',
+  daysOfWeek: [],
   startTime: '',
   endTime: '',
   minSubtotal: '',
   minQuantity: '',
   usageLimitTotal: '',
-  applicableProductIdsInput: '',
-  applicableCategoryIdsInput: '',
-  excludedProductIdsInput: '',
-  excludedCategoryIdsInput: '',
-  storeIdsInput: '',
-  stationIdsInput: '',
+  applicableProductIds: [],
+  applicableCategoryIds: [],
+  excludedProductIds: [],
+  excludedCategoryIds: [],
+  storeIds: [],
+  stationIds: [],
   excludeAlreadyDiscountedItems: false,
   appliesToAllProducts: true,
   active: true,
@@ -247,18 +269,18 @@ function mapDefinitionToForm(entity: DiscountDefinitionEntity, promoMode: boolea
     reasonRequired: entity.reasonRequired ?? false,
     startDate: entity.startDate || '',
     endDate: entity.endDate || '',
-    daysOfWeekInput: toCsv(entity.daysOfWeek),
+    daysOfWeek: entity.daysOfWeek?.filter((item): item is string => !!item) || [],
     startTime: entity.startTime || '',
     endTime: entity.endTime || '',
     minSubtotal: entity.minSubtotal == null ? '' : String(entity.minSubtotal),
     minQuantity: entity.minQuantity == null ? '' : String(entity.minQuantity),
     usageLimitTotal: entity.usageLimitTotal == null ? '' : String(entity.usageLimitTotal),
-    applicableProductIdsInput: toCsv(entity.applicableProductIds),
-    applicableCategoryIdsInput: toCsv(entity.applicableCategoryIds),
-    excludedProductIdsInput: toCsv(entity.excludedProductIds),
-    excludedCategoryIdsInput: toCsv(entity.excludedCategoryIds),
-    storeIdsInput: toCsv(entity.storeIds),
-    stationIdsInput: toCsv(entity.stationIds),
+    applicableProductIds: entity.applicableProductIds?.filter((item): item is string => !!item) || [],
+    applicableCategoryIds: entity.applicableCategoryIds?.filter((item): item is string => !!item) || [],
+    excludedProductIds: entity.excludedProductIds?.filter((item): item is string => !!item) || [],
+    excludedCategoryIds: entity.excludedCategoryIds?.filter((item): item is string => !!item) || [],
+    storeIds: entity.storeIds?.filter((item): item is string => !!item) || [],
+    stationIds: entity.stationIds?.filter((item): item is string => !!item) || [],
     excludeAlreadyDiscountedItems: entity.excludeAlreadyDiscountedItems ?? false,
     appliesToAllProducts: entity.appliesToAllProducts ?? true,
     active: entity.active,
@@ -314,18 +336,18 @@ function buildDefinitionEntity(
     reasonRequired: values.reasonRequired,
     startDate: values.startDate.trim() || null,
     endDate: values.endDate.trim() || null,
-    daysOfWeek: parseStringList(values.daysOfWeekInput),
+    daysOfWeek: values.daysOfWeek.length ? values.daysOfWeek : null,
     startTime: values.startTime.trim() || null,
     endTime: values.endTime.trim() || null,
     minSubtotal: parseOptionalNumber(values.minSubtotal),
     minQuantity: parseOptionalNumber(values.minQuantity),
     usageLimitTotal: parseOptionalNumber(values.usageLimitTotal),
-    applicableProductIds: parseStringList(values.applicableProductIdsInput),
-    applicableCategoryIds: parseStringList(values.applicableCategoryIdsInput),
-    excludedProductIds: parseStringList(values.excludedProductIdsInput),
-    excludedCategoryIds: parseStringList(values.excludedCategoryIdsInput),
-    storeIds: parseStringList(values.storeIdsInput),
-    stationIds: parseStringList(values.stationIdsInput),
+    applicableProductIds: values.applicableProductIds.length ? values.applicableProductIds : null,
+    applicableCategoryIds: values.applicableCategoryIds.length ? values.applicableCategoryIds : null,
+    excludedProductIds: values.excludedProductIds.length ? values.excludedProductIds : null,
+    excludedCategoryIds: values.excludedCategoryIds.length ? values.excludedCategoryIds : null,
+    storeIds: values.storeIds.length ? values.storeIds : null,
+    stationIds: values.stationIds.length ? values.stationIds : null,
     excludeAlreadyDiscountedItems: values.excludeAlreadyDiscountedItems,
     appliesToAllProducts: values.appliesToAllProducts,
     active: values.active,
@@ -413,6 +435,7 @@ export function Discounts({ navigation, route }: DiscountsProps) {
                 </View>
                 {config.actionLabel && !empty ? (
                   <Button
+                    testID="discounts-header-add-button"
                     title={config.actionLabel}
                     onPress={() => navigation.navigate(config.createRoute as never)}
                     buttonStyle={styles.headerButton}
@@ -433,6 +456,7 @@ export function Discounts({ navigation, route }: DiscountsProps) {
                       ? [
                           {
                             title: config.actionLabel,
+                            testID: 'discounts-empty-add-button',
                             onPress: () => navigation.navigate(config.createRoute as never),
                             type: 'solid',
                           },
@@ -450,6 +474,7 @@ export function Discounts({ navigation, route }: DiscountsProps) {
                   return (
                     <TouchableOpacity
                       key={id}
+                      testID={`discounts-list-item-${id}`}
                       activeOpacity={0.86}
                       onPress={() =>
                         config.createRoute
@@ -503,6 +528,10 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
   const styles = useStyles(tokens);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(Boolean(editingId));
+  const [categoryOptions, setCategoryOptions] = useState<{ id?: string; name: string }[]>([]);
+  const [productOptions, setProductOptions] = useState<{ id?: string; name: string }[]>([]);
+  const [storeOptions, setStoreOptions] = useState<{ id?: string; name: string }[]>([]);
+  const [stationOptions, setStationOptions] = useState<{ id?: string; name: string }[]>([]);
 
   const form = useForm<DefinitionFormValues>({
     mode: 'onChange',
@@ -514,8 +543,50 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
       let active = true;
 
       const load = async () => {
+        const [categories, products, stores, stationConfig] = await Promise.all([
+          CategoryService.getAll(),
+          ProductService.getAll(),
+          StoreInfoService.getStore(),
+          StationService.getConfig(),
+        ]);
+
+        if (!active) return;
+
+        setCategoryOptions(
+          categories
+            .map((item) => CategoryEntityMapper.fromCategory(item))
+            .map((item) => ({ id: item.id, name: item.name }))
+        );
+        setProductOptions(
+          products
+            .map((item) => ProductEntityMapper.fromProduct(item))
+            .map((item) => ({ id: item.id, name: item.name }))
+        );
+        setStoreOptions(
+          stores
+            .map((item) => StoreInfoEntityMapper.fromModel(item))
+            .map((item) => ({ id: item.id, name: item.name }))
+        );
+        setStationOptions(
+          stationConfig.stationNumber
+            ? [
+                {
+                  id: stationConfig.stationNumber,
+                  name: `Station ${stationConfig.stationNumber}`,
+                },
+              ]
+            : []
+        );
+
+        const currentStoreId = stores[0]?.id;
+        const currentStationId = stationConfig.stationNumber;
+
         if (!editingId) {
-          form.reset(defaultDefinitionValues(promoMode));
+          form.reset({
+            ...defaultDefinitionValues(promoMode),
+            storeIds: currentStoreId ? [currentStoreId] : [],
+            stationIds: currentStationId ? [currentStationId] : [],
+          });
           setLoading(false);
           return;
         }
@@ -530,7 +601,16 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
           return;
         }
 
-        form.reset(mapDefinitionToForm(definition, promoMode));
+        const mapped = mapDefinitionToForm(definition, promoMode);
+        form.reset({
+          ...mapped,
+          storeIds: currentStoreId ? [currentStoreId] : mapped.storeIds,
+          stationIds: currentStationId
+            ? mapped.stationIds.length
+              ? mapped.stationIds.filter((item) => item === currentStationId)
+              : [currentStationId]
+            : mapped.stationIds,
+        });
         setLoading(false);
       };
 
@@ -635,21 +715,53 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
                     <Text style={styles.sectionTitle}>Schedule and thresholds</Text>
                     <View style={styles.formGrid}>
                       <View style={styles.formColumn}>
-                        <UIInput name="startDate" label="Start date" placeholder="YYYY-MM-DD" />
+                        <UIDateTimeField
+                          name="startDate"
+                          label="Start date"
+                          placeholder="Select start date"
+                          mode="date"
+                          title="Select start date"
+                        />
                       </View>
                       <View style={styles.formColumn}>
-                        <UIInput name="endDate" label="End date" placeholder="YYYY-MM-DD" />
+                        <UIDateTimeField
+                          name="endDate"
+                          label="End date"
+                          placeholder="Select end date"
+                          mode="date"
+                          title="Select end date"
+                        />
                       </View>
                     </View>
                     <View style={styles.formGrid}>
                       <View style={styles.formColumn}>
-                        <UIInput name="startTime" label="Start time" placeholder="HH:MM" />
+                        <UIDateTimeField
+                          name="startTime"
+                          label="Start time"
+                          placeholder="Select start time"
+                          mode="time"
+                          title="Select start time"
+                        />
                       </View>
                       <View style={styles.formColumn}>
-                        <UIInput name="endTime" label="End time" placeholder="HH:MM" />
+                        <UIDateTimeField
+                          name="endTime"
+                          label="End time"
+                          placeholder="Select end time"
+                          mode="time"
+                          title="Select end time"
+                        />
                       </View>
                     </View>
-                    <UIInput name="daysOfWeekInput" label="Days of week" placeholder="MONDAY, TUESDAY" />
+                    <View style={styles.formColumnWide}>
+                      <Text style={styles.fieldLabel}>Days of week</Text>
+                      <UIOverlayMultiSelect
+                        name="daysOfWeek"
+                        title="Select days of week"
+                        emptyLabel="Choose days"
+                        list={dayOfWeekOptions}
+                      />
+                    </View>
                     <View style={styles.formGrid}>
                       <View style={styles.formColumn}>
                         <UINumericInput name="minSubtotal" label="Min subtotal" allowDecimals keyboardType="decimal-pad" placeholder="Optional" />
@@ -665,16 +777,61 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
 
                   <UICard style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Eligibility</Text>
-                    <UIInput name="applicableCategoryIdsInput" label="Applicable category IDs" placeholder="cat-1, cat-2" />
-                    <UIInput name="applicableProductIdsInput" label="Applicable product IDs" placeholder="prod-1, prod-2" />
-                    <UIInput name="excludedCategoryIdsInput" label="Excluded category IDs" placeholder="cat-3, cat-4" />
-                    <UIInput name="excludedProductIdsInput" label="Excluded product IDs" placeholder="prod-3, prod-4" />
+                    <View style={styles.formColumnWide}>
+                      <Text style={styles.fieldLabel}>Applicable categories</Text>
+                      <UIOverlayMultiSelect
+                        name="applicableCategoryIds"
+                        title="Select applicable categories"
+                        emptyLabel="Choose categories"
+                        list={categoryOptions}
+                      />
+                    </View>
+                    <View style={styles.formColumnWide}>
+                      <Text style={styles.fieldLabel}>Applicable products</Text>
+                      <UIOverlayMultiSelect
+                        name="applicableProductIds"
+                        title="Select applicable products"
+                        emptyLabel="Choose products"
+                        list={productOptions}
+                      />
+                    </View>
+                    <View style={styles.formColumnWide}>
+                      <Text style={styles.fieldLabel}>Excluded categories</Text>
+                      <UIOverlayMultiSelect
+                        name="excludedCategoryIds"
+                        title="Select excluded categories"
+                        emptyLabel="Choose categories"
+                        list={categoryOptions}
+                      />
+                    </View>
+                    <View style={styles.formColumnWide}>
+                      <Text style={styles.fieldLabel}>Excluded products</Text>
+                      <UIOverlayMultiSelect
+                        name="excludedProductIds"
+                        title="Select excluded products"
+                        emptyLabel="Choose products"
+                        list={productOptions}
+                      />
+                    </View>
                     <View style={styles.formGrid}>
                       <View style={styles.formColumn}>
-                        <UIInput name="storeIdsInput" label="Store IDs" placeholder="store-1, store-2" />
+                        <Text style={styles.fieldLabel}>Stores</Text>
+                        <UIOverlayMultiSelect
+                          name="storeIds"
+                          title="Select stores"
+                          emptyLabel="Choose stores"
+                          list={storeOptions}
+                          disabled
+                        />
                       </View>
                       <View style={styles.formColumn}>
-                        <UIInput name="stationIdsInput" label="Station IDs" placeholder="station-1, station-2" />
+                        <Text style={styles.fieldLabel}>Stations</Text>
+                        <UIOverlayMultiSelect
+                          name="stationIds"
+                          title="Select stations"
+                          emptyLabel="Choose stations"
+                          list={stationOptions}
+                        />
                       </View>
                     </View>
                   </UICard>
@@ -931,6 +1088,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     fieldLabel: { color: tokens.colors.textSecondary, fontSize: 13, fontWeight: '700', marginTop: tokens.spacing.xs },
     formGrid: { flexDirection: 'row', gap: tokens.spacing.md },
     formColumn: { flex: 1 },
+    formColumnWide: { width: '100%' },
     toggleRow: {
       flexDirection: 'row',
       alignItems: 'center',

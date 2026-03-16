@@ -21,6 +21,11 @@ export const buildBrandListProps = (navigation: NativeStackNavigationProp<any>) 
         clearSelectionAction: brandsActions.clearSelection,
         filterAction: brandsActions.filter,
         fetchItemsAction: undefined,
+        emptyTitle: 'No brands yet',
+        emptySubtitle:
+            'Create brands to group products and keep the catalog consistent.',
+        emptyActionText: 'Add brand',
+        emptyActionIcon: 'tag-outline',
     } as ItemListProps<any, any>);
 
 export function BrandList({ navigation }: BrandListProps) {

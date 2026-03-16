@@ -28,6 +28,11 @@ export const buildProductListProps = (navigation: NativeStackNavigationProp<any>
         clearSelectionAction: productsActions.clearSelection,
         filterAction: productsActions.filter as any,
         fetchItemsAction: fetchProducts,
+        emptyTitle: 'No products yet',
+        emptySubtitle:
+            'Add your first product to start building the catalog available to sales.',
+        emptyActionText: 'Add product',
+        emptyActionIcon: 'plus-box-outline',
     } as ItemListProps<any, any>);
 
 export function ProductList({ navigation }: ProductListProps) {

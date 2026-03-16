@@ -9,7 +9,7 @@ describe('menuItems', () => {
   it('includes required back-office sections', () => {
     const titles = menuItems.map((x) => x.title);
     expect(titles).toEqual(
-      expect.arrayContaining(['Dashboard', 'Reports', 'Products', 'Inventory', 'Settings'])
+      expect.arrayContaining(['Dashboard', 'Reports', 'Catalog', 'Inventory', 'Settings'])
     );
   });
 

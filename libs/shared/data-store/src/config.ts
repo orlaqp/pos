@@ -32,6 +32,9 @@ export const configureDataStore = () => {
     const isoDate = moment().subtract(90, 'days').toISOString();
 
     DataStore.configure({
+        errorHandler: (error: unknown) => {
+            console.error('DataStore sync error', error);
+        },
         syncExpressions: [
             syncExpression(Store, () => (x: any) => x.tenantId.eq(tenantId)),
             syncExpression(Brand, () => (x: any) => x.tenantId.eq(tenantId)),

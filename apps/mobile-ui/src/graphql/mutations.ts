@@ -151,6 +151,7 @@ export const createStore = /* GraphQL */ `mutation CreateStore(
     fax
     email
     disclaimer
+    timezone
     createdAt
     updatedAt
     _version
@@ -180,6 +181,7 @@ export const updateStore = /* GraphQL */ `mutation UpdateStore(
     fax
     email
     disclaimer
+    timezone
     createdAt
     updatedAt
     _version
@@ -209,6 +211,7 @@ export const deleteStore = /* GraphQL */ `mutation DeleteStore(
     fax
     email
     disclaimer
+    timezone
     createdAt
     updatedAt
     _version
@@ -296,6 +299,8 @@ export const createCategory = /* GraphQL */ `mutation CreateCategory(
     code
     color
     picture
+    discountable
+    discountPolicyMode
     createdAt
     updatedAt
     _version
@@ -320,6 +325,8 @@ export const updateCategory = /* GraphQL */ `mutation UpdateCategory(
     code
     color
     picture
+    discountable
+    discountPolicyMode
     createdAt
     updatedAt
     _version
@@ -344,6 +351,8 @@ export const deleteCategory = /* GraphQL */ `mutation DeleteCategory(
     code
     color
     picture
+    discountable
+    discountPolicyMode
     createdAt
     updatedAt
     _version
@@ -448,6 +457,8 @@ export const createEmployee = /* GraphQL */ `mutation CreateEmployee(
     pin
     roles
     active
+    discountPolicyId
+    policyProfileKey
     createdAt
     updatedAt
     _version
@@ -477,6 +488,8 @@ export const updateEmployee = /* GraphQL */ `mutation UpdateEmployee(
     pin
     roles
     active
+    discountPolicyId
+    policyProfileKey
     createdAt
     updatedAt
     _version
@@ -506,6 +519,8 @@ export const deleteEmployee = /* GraphQL */ `mutation DeleteEmployee(
     pin
     roles
     active
+    discountPolicyId
+    policyProfileKey
     createdAt
     updatedAt
     _version
@@ -527,9 +542,20 @@ export const createOrder = /* GraphQL */ `mutation CreateOrder(
     tenantId
     orderNo
     orderDate
+    baseSubtotal
     subtotal
+    lineDiscountTotal
+    orderDiscountTotal
+    discountTotal
+    savingsTotal
     tax
     total
+    promoCodes
+    pricingVersion
+    pricingSnapshotHash
+    pricingSource
+    reconciliationStatus
+    appliedDiscountSummary
     status
     employeeId
     employeeName
@@ -543,6 +569,20 @@ export const createOrder = /* GraphQL */ `mutation CreateOrder(
       quantity
       tax
       price
+      basePrice
+      overridePrice
+      netUnitPrice
+      lineSubtotalBeforeOrderDiscount
+      lineDiscountTotal
+      allocatedOrderDiscountTotal
+      lineTotalBeforeTax
+      lineTotalAfterTax
+      appliedDiscounts
+      categoryId
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       isEBTEligible
       ebtPaidAmount
       nonEbtPaidAmount
@@ -607,9 +647,20 @@ export const updateOrder = /* GraphQL */ `mutation UpdateOrder(
     tenantId
     orderNo
     orderDate
+    baseSubtotal
     subtotal
+    lineDiscountTotal
+    orderDiscountTotal
+    discountTotal
+    savingsTotal
     tax
     total
+    promoCodes
+    pricingVersion
+    pricingSnapshotHash
+    pricingSource
+    reconciliationStatus
+    appliedDiscountSummary
     status
     employeeId
     employeeName
@@ -623,6 +674,20 @@ export const updateOrder = /* GraphQL */ `mutation UpdateOrder(
       quantity
       tax
       price
+      basePrice
+      overridePrice
+      netUnitPrice
+      lineSubtotalBeforeOrderDiscount
+      lineDiscountTotal
+      allocatedOrderDiscountTotal
+      lineTotalBeforeTax
+      lineTotalAfterTax
+      appliedDiscounts
+      categoryId
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       isEBTEligible
       ebtPaidAmount
       nonEbtPaidAmount
@@ -687,9 +752,20 @@ export const deleteOrder = /* GraphQL */ `mutation DeleteOrder(
     tenantId
     orderNo
     orderDate
+    baseSubtotal
     subtotal
+    lineDiscountTotal
+    orderDiscountTotal
+    discountTotal
+    savingsTotal
     tax
     total
+    promoCodes
+    pricingVersion
+    pricingSnapshotHash
+    pricingSource
+    reconciliationStatus
+    appliedDiscountSummary
     status
     employeeId
     employeeName
@@ -703,6 +779,20 @@ export const deleteOrder = /* GraphQL */ `mutation DeleteOrder(
       quantity
       tax
       price
+      basePrice
+      overridePrice
+      netUnitPrice
+      lineSubtotalBeforeOrderDiscount
+      lineDiscountTotal
+      allocatedOrderDiscountTotal
+      lineTotalBeforeTax
+      lineTotalAfterTax
+      appliedDiscounts
+      categoryId
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       isEBTEligible
       ebtPaidAmount
       nonEbtPaidAmount
@@ -787,6 +877,8 @@ export const createProduct = /* GraphQL */ `mutation CreateProduct(
       code
       color
       picture
+      discountable
+      discountPolicyMode
       createdAt
       updatedAt
       _version
@@ -808,6 +900,10 @@ export const createProduct = /* GraphQL */ `mutation CreateProduct(
     }
     isActive
     isEBTEligible
+    discountable
+    minAllowedPrice
+    maxManualDiscountPercent
+    maxManualDiscountAmount
     createdAt
     updatedAt
     _version
@@ -851,6 +947,8 @@ export const updateProduct = /* GraphQL */ `mutation UpdateProduct(
       code
       color
       picture
+      discountable
+      discountPolicyMode
       createdAt
       updatedAt
       _version
@@ -872,6 +970,10 @@ export const updateProduct = /* GraphQL */ `mutation UpdateProduct(
     }
     isActive
     isEBTEligible
+    discountable
+    minAllowedPrice
+    maxManualDiscountPercent
+    maxManualDiscountAmount
     createdAt
     updatedAt
     _version
@@ -915,6 +1017,8 @@ export const deleteProduct = /* GraphQL */ `mutation DeleteProduct(
       code
       color
       picture
+      discountable
+      discountPolicyMode
       createdAt
       updatedAt
       _version
@@ -936,6 +1040,10 @@ export const deleteProduct = /* GraphQL */ `mutation DeleteProduct(
     }
     isActive
     isEBTEligible
+    discountable
+    minAllowedPrice
+    maxManualDiscountPercent
+    maxManualDiscountAmount
     createdAt
     updatedAt
     _version
@@ -1044,6 +1152,10 @@ export const createInventoryChanges = /* GraphQL */ `mutation CreateInventoryCha
       picture
       isActive
       isEBTEligible
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       createdAt
       updatedAt
       _version
@@ -1097,6 +1209,10 @@ export const updateInventoryChanges = /* GraphQL */ `mutation UpdateInventoryCha
       picture
       isActive
       isEBTEligible
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       createdAt
       updatedAt
       _version
@@ -1150,6 +1266,10 @@ export const deleteInventoryChanges = /* GraphQL */ `mutation DeleteInventoryCha
       picture
       isActive
       isEBTEligible
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       createdAt
       updatedAt
       _version
@@ -1699,6 +1819,7 @@ export const createGlobalSettings = /* GraphQL */ `mutation CreateGlobalSettings
     id
     tenantId
     enforceSalesBasedOnInventory
+    timezone
     createdAt
     updatedAt
     _version
@@ -1719,6 +1840,7 @@ export const updateGlobalSettings = /* GraphQL */ `mutation UpdateGlobalSettings
     id
     tenantId
     enforceSalesBasedOnInventory
+    timezone
     createdAt
     updatedAt
     _version
@@ -1739,6 +1861,7 @@ export const deleteGlobalSettings = /* GraphQL */ `mutation DeleteGlobalSettings
     id
     tenantId
     enforceSalesBasedOnInventory
+    timezone
     createdAt
     updatedAt
     _version
@@ -1750,4 +1873,718 @@ export const deleteGlobalSettings = /* GraphQL */ `mutation DeleteGlobalSettings
 ` as GeneratedMutation<
   APITypes.DeleteGlobalSettingsMutationVariables,
   APITypes.DeleteGlobalSettingsMutation
+>;
+export const createDiscountDefinition = /* GraphQL */ `mutation CreateDiscountDefinition(
+  $input: CreateDiscountDefinitionInput!
+  $condition: ModelDiscountDefinitionConditionInput
+) {
+  createDiscountDefinition(input: $input, condition: $condition) {
+    id
+    tenantId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    storeIds
+    stationIds
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateDiscountDefinitionMutationVariables,
+  APITypes.CreateDiscountDefinitionMutation
+>;
+export const updateDiscountDefinition = /* GraphQL */ `mutation UpdateDiscountDefinition(
+  $input: UpdateDiscountDefinitionInput!
+  $condition: ModelDiscountDefinitionConditionInput
+) {
+  updateDiscountDefinition(input: $input, condition: $condition) {
+    id
+    tenantId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    storeIds
+    stationIds
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateDiscountDefinitionMutationVariables,
+  APITypes.UpdateDiscountDefinitionMutation
+>;
+export const deleteDiscountDefinition = /* GraphQL */ `mutation DeleteDiscountDefinition(
+  $input: DeleteDiscountDefinitionInput!
+  $condition: ModelDiscountDefinitionConditionInput
+) {
+  deleteDiscountDefinition(input: $input, condition: $condition) {
+    id
+    tenantId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    storeIds
+    stationIds
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteDiscountDefinitionMutationVariables,
+  APITypes.DeleteDiscountDefinitionMutation
+>;
+export const createDiscountReasonCode = /* GraphQL */ `mutation CreateDiscountReasonCode(
+  $input: CreateDiscountReasonCodeInput!
+  $condition: ModelDiscountReasonCodeConditionInput
+) {
+  createDiscountReasonCode(input: $input, condition: $condition) {
+    id
+    tenantId
+    code
+    label
+    description
+    active
+    requiresNote
+    appliesTo
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateDiscountReasonCodeMutationVariables,
+  APITypes.CreateDiscountReasonCodeMutation
+>;
+export const updateDiscountReasonCode = /* GraphQL */ `mutation UpdateDiscountReasonCode(
+  $input: UpdateDiscountReasonCodeInput!
+  $condition: ModelDiscountReasonCodeConditionInput
+) {
+  updateDiscountReasonCode(input: $input, condition: $condition) {
+    id
+    tenantId
+    code
+    label
+    description
+    active
+    requiresNote
+    appliesTo
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateDiscountReasonCodeMutationVariables,
+  APITypes.UpdateDiscountReasonCodeMutation
+>;
+export const deleteDiscountReasonCode = /* GraphQL */ `mutation DeleteDiscountReasonCode(
+  $input: DeleteDiscountReasonCodeInput!
+  $condition: ModelDiscountReasonCodeConditionInput
+) {
+  deleteDiscountReasonCode(input: $input, condition: $condition) {
+    id
+    tenantId
+    code
+    label
+    description
+    active
+    requiresNote
+    appliesTo
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteDiscountReasonCodeMutationVariables,
+  APITypes.DeleteDiscountReasonCodeMutation
+>;
+export const createEmployeeDiscountPolicy = /* GraphQL */ `mutation CreateEmployeeDiscountPolicy(
+  $input: CreateEmployeeDiscountPolicyInput!
+  $condition: ModelEmployeeDiscountPolicyConditionInput
+) {
+  createEmployeeDiscountPolicy(input: $input, condition: $condition) {
+    id
+    tenantId
+    employeeId
+    roleKey
+    maxManualPercentDiscount
+    maxManualAmountDiscount
+    maxPriceOverrideAmount
+    maxPriceOverridePercentBelowBase
+    canApplyOrderDiscount
+    canOverridePrice
+    canApproveDiscounts
+    canApprovePriceOverrides
+    canUsePromoCodes
+    requireReasonForManualDiscounts
+    requireReasonForOverrides
+    requireApprovalForOrderDiscount
+    requireApprovalForAnyPriceOverride
+    allowExclusiveDiscountOverride
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateEmployeeDiscountPolicyMutationVariables,
+  APITypes.CreateEmployeeDiscountPolicyMutation
+>;
+export const updateEmployeeDiscountPolicy = /* GraphQL */ `mutation UpdateEmployeeDiscountPolicy(
+  $input: UpdateEmployeeDiscountPolicyInput!
+  $condition: ModelEmployeeDiscountPolicyConditionInput
+) {
+  updateEmployeeDiscountPolicy(input: $input, condition: $condition) {
+    id
+    tenantId
+    employeeId
+    roleKey
+    maxManualPercentDiscount
+    maxManualAmountDiscount
+    maxPriceOverrideAmount
+    maxPriceOverridePercentBelowBase
+    canApplyOrderDiscount
+    canOverridePrice
+    canApproveDiscounts
+    canApprovePriceOverrides
+    canUsePromoCodes
+    requireReasonForManualDiscounts
+    requireReasonForOverrides
+    requireApprovalForOrderDiscount
+    requireApprovalForAnyPriceOverride
+    allowExclusiveDiscountOverride
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateEmployeeDiscountPolicyMutationVariables,
+  APITypes.UpdateEmployeeDiscountPolicyMutation
+>;
+export const deleteEmployeeDiscountPolicy = /* GraphQL */ `mutation DeleteEmployeeDiscountPolicy(
+  $input: DeleteEmployeeDiscountPolicyInput!
+  $condition: ModelEmployeeDiscountPolicyConditionInput
+) {
+  deleteEmployeeDiscountPolicy(input: $input, condition: $condition) {
+    id
+    tenantId
+    employeeId
+    roleKey
+    maxManualPercentDiscount
+    maxManualAmountDiscount
+    maxPriceOverrideAmount
+    maxPriceOverridePercentBelowBase
+    canApplyOrderDiscount
+    canOverridePrice
+    canApproveDiscounts
+    canApprovePriceOverrides
+    canUsePromoCodes
+    requireReasonForManualDiscounts
+    requireReasonForOverrides
+    requireApprovalForOrderDiscount
+    requireApprovalForAnyPriceOverride
+    allowExclusiveDiscountOverride
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteEmployeeDiscountPolicyMutationVariables,
+  APITypes.DeleteEmployeeDiscountPolicyMutation
+>;
+export const createDiscountPreset = /* GraphQL */ `mutation CreateDiscountPreset(
+  $input: CreateDiscountPresetInput!
+  $condition: ModelDiscountPresetConditionInput
+) {
+  createDiscountPreset(input: $input, condition: $condition) {
+    id
+    tenantId
+    name
+    scope
+    method
+    value
+    promptForCustomValue
+    active
+    sortOrder
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateDiscountPresetMutationVariables,
+  APITypes.CreateDiscountPresetMutation
+>;
+export const updateDiscountPreset = /* GraphQL */ `mutation UpdateDiscountPreset(
+  $input: UpdateDiscountPresetInput!
+  $condition: ModelDiscountPresetConditionInput
+) {
+  updateDiscountPreset(input: $input, condition: $condition) {
+    id
+    tenantId
+    name
+    scope
+    method
+    value
+    promptForCustomValue
+    active
+    sortOrder
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateDiscountPresetMutationVariables,
+  APITypes.UpdateDiscountPresetMutation
+>;
+export const deleteDiscountPreset = /* GraphQL */ `mutation DeleteDiscountPreset(
+  $input: DeleteDiscountPresetInput!
+  $condition: ModelDiscountPresetConditionInput
+) {
+  deleteDiscountPreset(input: $input, condition: $condition) {
+    id
+    tenantId
+    name
+    scope
+    method
+    value
+    promptForCustomValue
+    active
+    sortOrder
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteDiscountPresetMutationVariables,
+  APITypes.DeleteDiscountPresetMutation
+>;
+export const createDiscountApplication = /* GraphQL */ `mutation CreateDiscountApplication(
+  $input: CreateDiscountApplicationInput!
+  $condition: ModelDiscountApplicationConditionInput
+) {
+  createDiscountApplication(input: $input, condition: $condition) {
+    id
+    tenantId
+    transactionId
+    lineId
+    discountDefinitionId
+    applicationType
+    scope
+    method
+    name
+    code
+    stackMode
+    originalAmount
+    discountAmount
+    finalAmount
+    quantityBasis
+    reasonCode
+    reasonNote
+    appliedByEmployeeId
+    appliedByEmployeeName
+    approvedByEmployeeId
+    approvedByEmployeeName
+    approvalRequired
+    approvalStatus
+    approvalReference
+    sourceSnapshot
+    appliedAt
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateDiscountApplicationMutationVariables,
+  APITypes.CreateDiscountApplicationMutation
+>;
+export const updateDiscountApplication = /* GraphQL */ `mutation UpdateDiscountApplication(
+  $input: UpdateDiscountApplicationInput!
+  $condition: ModelDiscountApplicationConditionInput
+) {
+  updateDiscountApplication(input: $input, condition: $condition) {
+    id
+    tenantId
+    transactionId
+    lineId
+    discountDefinitionId
+    applicationType
+    scope
+    method
+    name
+    code
+    stackMode
+    originalAmount
+    discountAmount
+    finalAmount
+    quantityBasis
+    reasonCode
+    reasonNote
+    appliedByEmployeeId
+    appliedByEmployeeName
+    approvedByEmployeeId
+    approvedByEmployeeName
+    approvalRequired
+    approvalStatus
+    approvalReference
+    sourceSnapshot
+    appliedAt
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateDiscountApplicationMutationVariables,
+  APITypes.UpdateDiscountApplicationMutation
+>;
+export const deleteDiscountApplication = /* GraphQL */ `mutation DeleteDiscountApplication(
+  $input: DeleteDiscountApplicationInput!
+  $condition: ModelDiscountApplicationConditionInput
+) {
+  deleteDiscountApplication(input: $input, condition: $condition) {
+    id
+    tenantId
+    transactionId
+    lineId
+    discountDefinitionId
+    applicationType
+    scope
+    method
+    name
+    code
+    stackMode
+    originalAmount
+    discountAmount
+    finalAmount
+    quantityBasis
+    reasonCode
+    reasonNote
+    appliedByEmployeeId
+    appliedByEmployeeName
+    approvedByEmployeeId
+    approvedByEmployeeName
+    approvalRequired
+    approvalStatus
+    approvalReference
+    sourceSnapshot
+    appliedAt
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteDiscountApplicationMutationVariables,
+  APITypes.DeleteDiscountApplicationMutation
+>;
+export const createApprovalEvent = /* GraphQL */ `mutation CreateApprovalEvent(
+  $input: CreateApprovalEventInput!
+  $condition: ModelApprovalEventConditionInput
+) {
+  createApprovalEvent(input: $input, condition: $condition) {
+    id
+    tenantId
+    transactionId
+    lineId
+    approvalType
+    requestingEmployeeId
+    approvingEmployeeId
+    requestedAction
+    reasonCode
+    reasonNote
+    policySnapshot
+    status
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateApprovalEventMutationVariables,
+  APITypes.CreateApprovalEventMutation
+>;
+export const updateApprovalEvent = /* GraphQL */ `mutation UpdateApprovalEvent(
+  $input: UpdateApprovalEventInput!
+  $condition: ModelApprovalEventConditionInput
+) {
+  updateApprovalEvent(input: $input, condition: $condition) {
+    id
+    tenantId
+    transactionId
+    lineId
+    approvalType
+    requestingEmployeeId
+    approvingEmployeeId
+    requestedAction
+    reasonCode
+    reasonNote
+    policySnapshot
+    status
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateApprovalEventMutationVariables,
+  APITypes.UpdateApprovalEventMutation
+>;
+export const deleteApprovalEvent = /* GraphQL */ `mutation DeleteApprovalEvent(
+  $input: DeleteApprovalEventInput!
+  $condition: ModelApprovalEventConditionInput
+) {
+  deleteApprovalEvent(input: $input, condition: $condition) {
+    id
+    tenantId
+    transactionId
+    lineId
+    approvalType
+    requestingEmployeeId
+    approvingEmployeeId
+    requestedAction
+    reasonCode
+    reasonNote
+    policySnapshot
+    status
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteApprovalEventMutationVariables,
+  APITypes.DeleteApprovalEventMutation
+>;
+export const createDiscountReconciliationException = /* GraphQL */ `mutation CreateDiscountReconciliationException(
+  $input: CreateDiscountReconciliationExceptionInput!
+  $condition: ModelDiscountReconciliationExceptionConditionInput
+) {
+  createDiscountReconciliationException(input: $input, condition: $condition) {
+    id
+    tenantId
+    transactionId
+    discountApplicationId
+    exceptionType
+    severity
+    message
+    backendSnapshot
+    resolved
+    resolvedByEmployeeId
+    resolvedAt
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateDiscountReconciliationExceptionMutationVariables,
+  APITypes.CreateDiscountReconciliationExceptionMutation
+>;
+export const updateDiscountReconciliationException = /* GraphQL */ `mutation UpdateDiscountReconciliationException(
+  $input: UpdateDiscountReconciliationExceptionInput!
+  $condition: ModelDiscountReconciliationExceptionConditionInput
+) {
+  updateDiscountReconciliationException(input: $input, condition: $condition) {
+    id
+    tenantId
+    transactionId
+    discountApplicationId
+    exceptionType
+    severity
+    message
+    backendSnapshot
+    resolved
+    resolvedByEmployeeId
+    resolvedAt
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateDiscountReconciliationExceptionMutationVariables,
+  APITypes.UpdateDiscountReconciliationExceptionMutation
+>;
+export const deleteDiscountReconciliationException = /* GraphQL */ `mutation DeleteDiscountReconciliationException(
+  $input: DeleteDiscountReconciliationExceptionInput!
+  $condition: ModelDiscountReconciliationExceptionConditionInput
+) {
+  deleteDiscountReconciliationException(input: $input, condition: $condition) {
+    id
+    tenantId
+    transactionId
+    discountApplicationId
+    exceptionType
+    severity
+    message
+    backendSnapshot
+    resolved
+    resolvedByEmployeeId
+    resolvedAt
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteDiscountReconciliationExceptionMutationVariables,
+  APITypes.DeleteDiscountReconciliationExceptionMutation
 >;

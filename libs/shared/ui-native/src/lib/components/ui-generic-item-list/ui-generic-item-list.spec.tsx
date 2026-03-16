@@ -50,9 +50,15 @@ jest.mock('@rneui/themed', () => ({
 
 jest.mock('../ui-empty-state/ui-empty-state', () => ({
     __esModule: true,
-    default: () => {
+    default: ({ title, subtitle, actions }: { title?: string; subtitle?: string; actions?: Array<{ title: string }> }) => {
         const { Text } = require('react-native');
-        return <Text>empty-state</Text>;
+        return (
+            <>
+                <Text>{title || 'empty-state'}</Text>
+                {subtitle ? <Text>{subtitle}</Text> : null}
+                {actions?.[0] ? <Text>{actions[0].title}</Text> : null}
+            </>
+        );
     },
 }));
 
@@ -137,5 +143,43 @@ describe('UIGenericItemList integration', () => {
             type: 'items/filter',
             payload: 'milk',
         });
+    });
+
+    it('renders the shared empty state with configured copy', () => {
+        mockState.empty = true;
+        mockState.filtered = [];
+
+        const { getByText } = render(
+            <UIGenericItemList
+                formNavName="Product Form"
+                navigation={mockNavigation}
+                isEmptySelector={(state: typeof mockState) => state.empty}
+                loadingStatusSelector={(state: typeof mockState) => state.loading}
+                filteredListSelector={(state: typeof mockState) => state.filtered}
+                clearSelectionAction={mockClearAction}
+                filterAction={mockFilterAction}
+                fetchItemsAction={mockFetchAction}
+                emptyTitle="No products yet"
+                emptySubtitle="Add your first product to start building the catalog available to sales."
+                emptyActionText="Add product"
+                emptyActionIcon="plus-box-outline"
+                ItemComponent={({ item }: { item: { name: string } }) => {
+                    const { View, Text } = require('react-native');
+                    return (
+                        <View>
+                            <Text>{item.name}</Text>
+                        </View>
+                    );
+                }}
+            />
+        );
+
+        expect(getByText('No products yet')).toBeTruthy();
+        expect(
+            getByText(
+                'Add your first product to start building the catalog available to sales.'
+            )
+        ).toBeTruthy();
+        expect(getByText('Add product')).toBeTruthy();
     });
 });

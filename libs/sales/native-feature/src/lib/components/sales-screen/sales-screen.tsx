@@ -271,7 +271,7 @@ export function SalesScreen({
             Animated.timing(categoryOpacity, {
                 toValue: showCategories ? 1 : 0,
                 duration: 180,
-                useNativeDriver: true,
+                useNativeDriver: false,
             }),
         ]).start();
     }, [categoryOpacity, categoryWidth, showCategories]);
@@ -300,26 +300,29 @@ export function SalesScreen({
     return (
         <UIScreen padded>
             <View style={styles.salesLayout}>
-                <Animated.View
+                <View
                     style={[
-                        styles.categoriesCard,
-                        {
-                            width: categoryWidth,
-                            opacity: categoryOpacity,
-                            marginRight: categoryWidth.interpolate({
-                                inputRange: [0, 150],
-                                outputRange: [0, tokens.spacing.sm],
-                            }),
-                        },
+                        styles.categoriesCardWrap,
+                        showCategories ? styles.categoriesCardWrapVisible : null,
                     ]}
                 >
-                    {showCategories ? (
-                        <CategorySelection
-                            key="categorySelection"
-                            onSelected={onCategoryChange}
-                        />
-                    ) : null}
-                </Animated.View>
+                    <Animated.View
+                        style={[
+                            styles.categoriesCard,
+                            {
+                                width: categoryWidth,
+                                opacity: categoryOpacity,
+                            },
+                        ]}
+                    >
+                        {showCategories ? (
+                            <CategorySelection
+                                key="categorySelection"
+                                onSelected={onCategoryChange}
+                            />
+                        ) : null}
+                    </Animated.View>
+                </View>
                 <UICard style={styles.productsCard} padding="md" radius="lg">
                     <View style={styles.productsHeader}>
                         <View>
@@ -414,7 +417,7 @@ export function SalesScreen({
                 onBackdropPress={deselectProduct}
                 supportedOrientations={['landscape']}
                 presentationStyle="fullScreen"
-                overlayStyle={[styles.overlay, { maxWidth: 350 }]}
+                overlayStyle={[styles.overlay, { maxWidth: 560, width: '88%' }]}
             >
                 {product ? (
                     <ProductDetails
@@ -439,6 +442,12 @@ const useStyles = () => {
                 flex: 1,
                 flexDirection: 'row',
                 alignItems: 'stretch',
+            },
+            categoriesCardWrap: {
+                overflow: 'hidden',
+            },
+            categoriesCardWrapVisible: {
+                marginRight: tokens.spacing.sm,
             },
             categoriesCard: {
                 overflow: 'hidden',

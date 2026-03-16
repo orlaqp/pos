@@ -39,7 +39,8 @@ export interface ItemListProps<TState, TEntityType> {
 
     ItemComponent: React.ComponentType<ItemComponentProps<TEntityType>>;
     goBackEnable?: boolean;
-    emptyText?: string;
+    emptyTitle?: string;
+    emptySubtitle?: string;
     emptyActionText?: string;
     emptyAction?: () => void;
     emptyActionIcon?: string;
@@ -57,7 +58,8 @@ export function UIGenericItemList({
     filteredListSelector,
     ItemComponent,
     goBackEnable,
-    emptyText,
+    emptyTitle,
+    emptySubtitle,
     emptyActionText,
     emptyAction,
     emptyActionIcon,
@@ -105,17 +107,29 @@ export function UIGenericItemList({
         return (
             <View style={[styles.page, { paddingTop: 50 }]}>
                 <UIEmptyState
-                    text={
-                        emptyText ||
-                        'This is looking kind of empty here. Click below to fix that :-)'
+                    title={emptyTitle || 'Nothing here yet'}
+                    subtitle={
+                        emptySubtitle ||
+                        'Create the first record to start building this catalog section.'
                     }
-                    actionText={emptyActionText || 'Add your first!'}
-                    action={() =>
-                        emptyAction
-                            ? emptyAction()
-                            : navigation.navigate(formNavName)
-                    }
-                    icon={emptyActionIcon}
+                    actions={[
+                        {
+                            title: emptyActionText || 'Add item',
+                            onPress: () =>
+                                emptyAction
+                                    ? emptyAction()
+                                    : navigation.navigate(formNavName),
+                            type: 'solid',
+                            icon: emptyActionIcon
+                                ? {
+                                      name: emptyActionIcon,
+                                      type: 'material-community',
+                                      color: '#ffffff',
+                                      size: 18,
+                                  }
+                                : undefined,
+                        },
+                    ]}
                 />
             </View>
         );
@@ -183,6 +197,9 @@ export function UIGenericItemList({
                 {items && (
                     <FlatList
                         data={visibleItems}
+                        keyExtractor={(item, index) =>
+                            `${item?.id ?? item?.name ?? 'list-item'}-${index}`
+                        }
                         getItemLayout={(data, index) => (
                             {length: 100, offset: 100 * index, index}
                         )}
