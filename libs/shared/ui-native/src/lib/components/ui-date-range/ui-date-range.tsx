@@ -145,34 +145,35 @@ export function UIDateRange({
                             </Text>
                         </Pressable>
                     ))}
-                    {selectedPreset === 'CUSTOM' && (
-                        <View testID="ui-date-range-custom-panel">
-                            <View style={styles.customInputRow}>
-                                <Pressable
-                                    testID="ui-date-range-custom-start-picker"
-                                    onPress={() => setStartPickerOpen(true)}
-                                    style={[styles.pickButton, styles.pickButtonSpaced]}
-                                >
-                                    <Text style={styles.pickButtonText}>
-                                        {moment(customStartDate).format('MM-DD-YYYY')}
-                                    </Text>
-                                </Pressable>
-                                <Pressable
-                                    testID="ui-date-range-custom-end-picker"
-                                    onPress={() => setEndPickerOpen(true)}
-                                    style={[styles.pickButton, styles.pickButtonSpaced]}
-                                >
-                                    <Text style={styles.pickButtonText}>
-                                        {moment(customEndDate).format('MM-DD-YYYY')}
-                                    </Text>
-                                </Pressable>
-                            </View>
-                        </View>
-                    )}
                 </View>
-                <View style={styles.spacer} />
                 {!!rightAction && <View style={styles.rightActionWrap}>{rightAction}</View>}
             </View>
+            {selectedPreset === 'CUSTOM' && (
+                <View style={styles.customPanel} testID="ui-date-range-custom-panel">
+                    <View style={styles.customInputRow}>
+                        <Pressable
+                            testID="ui-date-range-custom-start-picker"
+                            onPress={() => setStartPickerOpen(true)}
+                            style={styles.pickButton}
+                        >
+                            <Text style={styles.pickButtonLabel}>Start</Text>
+                            <Text style={styles.pickButtonText}>
+                                {moment(customStartDate).format('MM-DD-YYYY')}
+                            </Text>
+                        </Pressable>
+                        <Pressable
+                            testID="ui-date-range-custom-end-picker"
+                            onPress={() => setEndPickerOpen(true)}
+                            style={[styles.pickButton, styles.pickButtonSpaced]}
+                        >
+                            <Text style={styles.pickButtonLabel}>End</Text>
+                            <Text style={styles.pickButtonText}>
+                                {moment(customEndDate).format('MM-DD-YYYY')}
+                            </Text>
+                        </Pressable>
+                    </View>
+                </View>
+            )}
             {showSummary && (
                 <View style={styles.summaryPill} testID="ui-date-range-summary">
                     <Text style={styles.summaryText}>{rangeLabel}</Text>
@@ -214,39 +215,56 @@ const useStyles = () => {
         ...sharedStyles,
         ...StyleSheet.create({
             container: {
-                alignItems: 'center',
+                alignItems: 'stretch',
                 paddingVertical: 12,
             },
             actionsRow: {
                 flexDirection: 'row',
                 alignItems: 'center',
+                flexWrap: 'wrap',
+                flexShrink: 1,
+                marginHorizontal: -4,
             },
             selectorRow: {
                 width: '100%',
                 flexDirection: 'row',
                 alignItems: 'center',
-                justifyContent: 'flex-start',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
             },
             rightActionWrap: {
-                marginLeft: 0,
+                marginTop: 8,
+                marginLeft: 'auto',
             },
-            spacer: {
-                flex: 1,
+            customPanel: {
+                marginTop: 12,
+                width: '100%',
             },
             customInputRow: {
                 flexDirection: 'row',
-                alignItems: 'center',
+                alignItems: 'stretch',
+                justifyContent: 'space-between',
             },
             pickButton: {
-                borderRadius: 6,
+                borderRadius: 10,
                 borderWidth: 1,
                 borderColor: '#3b82f6',
-                paddingHorizontal: 10,
-                paddingVertical: 6,
+                flex: 1,
+                minWidth: 0,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
                 backgroundColor: '#1f2937',
             },
             pickButtonSpaced: {
-                marginLeft: 6,
+                marginLeft: 10,
+            },
+            pickButtonLabel: {
+                color: '#7dd3fc',
+                fontSize: 10,
+                fontWeight: '700',
+                letterSpacing: 0.8,
+                marginBottom: 2,
+                textTransform: 'uppercase',
             },
             pickButtonText: {
                 color: '#93c5fd',
@@ -278,8 +296,9 @@ const useStyles = () => {
             },
             button: {
                 marginHorizontal: 4,
+                marginVertical: 4,
                 borderRadius: 8,
-                paddingHorizontal: 12,
+                paddingHorizontal: 10,
                 paddingVertical: 8,
                 borderWidth: 1,
             },

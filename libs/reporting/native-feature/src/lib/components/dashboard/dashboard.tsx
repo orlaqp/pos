@@ -77,6 +77,16 @@ export const sortDashboardSummary = (summary?: SalesSummary) => {
     return summary;
 };
 
+export const formatDashboardDateRange = (range: DateRange) => {
+    const start = range.startDate.format('MMM D, YYYY');
+    const end = range.endDate.format('MMM D, YYYY');
+    if (start === end) {
+        return start;
+    }
+
+    return `${start} - ${end}`;
+};
+
 export const loadDashboardSummary = async (range?: DateRange) => {
     const normalizedRange = normalizeDashboardRange(range);
     const summary = await getSalesSummaryForRange('PAID', normalizedRange, {
@@ -102,6 +112,7 @@ export function Dashboard(_props: DashboardProps) {
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
             : fallback;
+    const formattedRange = formatDashboardDateRange(dateRange);
 
     const updateDateRange = (range: DateRange) => {
         setDateRange(range);
@@ -214,19 +225,47 @@ export function Dashboard(_props: DashboardProps) {
             >
                 <View style={styles.container}>
                     <UIStack spacing="lg">
-                        <UICard tone="muted" radius="lg">
-                            <Text style={styles.title}>{t('DASHBOARD_Title', 'Dashboard')}</Text>
-                            <Text style={styles.subtitle}>
-                                {t(
-                                    'DASHBOARD_Subtitle',
-                                    'Sales performance and trends across the selected period.'
-                                )}
-                            </Text>
-                            <UIDateRange
-                                initialRange={dateRange}
-                                onRangeChange={updateDateRange}
-                            />
-                        </UICard>
+                        <View style={styles.heroCard}>
+                            <View style={styles.heroCopy}>
+                                <Text style={styles.eyebrow}>
+                                    {t('DASHBOARD_Overview', 'Overview')}
+                                </Text>
+                                <Text style={styles.title}>
+                                    {t('DASHBOARD_Title', 'Dashboard')}
+                                </Text>
+                                <Text style={styles.subtitle}>
+                                    {t(
+                                        'DASHBOARD_Subtitle',
+                                        'Sales performance and trends across the selected period.'
+                                    )}
+                                </Text>
+                                <View style={styles.heroMetaRow}>
+                                    <View style={styles.heroMetaPill}>
+                                        <Text style={styles.heroMetaLabel}>
+                                            {t('DASHBOARD_Status', 'Status')}
+                                        </Text>
+                                        <Text style={styles.heroMetaValue}>
+                                            {t('DASHBOARD_PaidSales', 'Paid sales')}
+                                        </Text>
+                                    </View>
+                                </View>
+                            </View>
+                            <View style={styles.heroRangePanel}>
+                                <View style={styles.rangeSummaryCard}>
+                                    <Text style={styles.rangeSummaryLabel}>
+                                        {t('DASHBOARD_SelectedRange', 'Selected range')}
+                                    </Text>
+                                    <Text style={styles.rangeSummaryValue}>
+                                        {formattedRange}
+                                    </Text>
+                                </View>
+                                <UIDateRange
+                                    initialRange={dateRange}
+                                    onRangeChange={updateDateRange}
+                                    showSummary={false}
+                                />
+                            </View>
+                        </View>
 
                         {loading && (
                             <UICard style={styles.centerBlock}>
@@ -268,34 +307,43 @@ export function Dashboard(_props: DashboardProps) {
                             <>
                                 <View style={styles.metricsRow}>
                                     <View style={styles.metricColumn}>
-                                        <Widget
-                                            backgroundColor={tokens.colors.accent}
-                                            icon="trending-up"
-                                            text={t('DASHBOARD_GrossIncome', 'Gross Income')}
-                                            value={`$ ${salesSummary.totalAmount.toFixed(
-                                                2
-                                            )}`}
-                                        />
+                                        <View style={styles.metricShell}>
+                                            <Widget
+                                                backgroundColor="#0E2233"
+                                                icon="trending-up"
+                                                text={t('DASHBOARD_GrossIncome', 'Gross Income')}
+                                                value={`$ ${salesSummary.totalAmount.toFixed(
+                                                    2
+                                                )}`}
+                                                primaryTextColor="#EAF4FF"
+                                            />
+                                        </View>
                                     </View>
                                     <View style={styles.metricColumnSpaced}>
-                                        <Widget
-                                            backgroundColor={tokens.colors.warning}
-                                            icon="sigma"
-                                            text={t('DASHBOARD_TotalSales', 'Total Sales')}
-                                            value={salesSummary.totalOrders.toString()}
-                                        />
+                                        <View style={styles.metricShell}>
+                                            <Widget
+                                                backgroundColor="#241A0F"
+                                                icon="sigma"
+                                                text={t('DASHBOARD_TotalSales', 'Total Sales')}
+                                                value={salesSummary.totalOrders.toString()}
+                                                primaryTextColor="#FFF4D7"
+                                            />
+                                        </View>
                                     </View>
                                     <View style={styles.metricColumnSpaced}>
-                                        <Widget
-                                            backgroundColor={tokens.colors.success}
-                                            icon="account-multiple-plus-outline"
-                                            text={t('DASHBOARD_NewCustomers', 'New Customers')}
-                                            value={t('COMMON_NotAvailableShort', 'N/A')}
-                                        />
+                                        <View style={styles.metricShell}>
+                                            <Widget
+                                                backgroundColor="#0E251B"
+                                                icon="account-multiple-plus-outline"
+                                                text={t('DASHBOARD_NewCustomers', 'New Customers')}
+                                                value={t('COMMON_NotAvailableShort', 'N/A')}
+                                                primaryTextColor="#E9FFF3"
+                                            />
+                                        </View>
                                     </View>
                                 </View>
 
-                                <UICard>
+                                <UICard style={styles.analyticsCard}>
                                     <View style={styles.insightsRow}>
                                         <View style={styles.insightsPrimary}>
                                             <PieChart
@@ -318,7 +366,7 @@ export function Dashboard(_props: DashboardProps) {
                                     </View>
                                 </UICard>
 
-                                <UICard>
+                                <UICard style={styles.chartCard}>
                                     <LineChartComponent
                                         header={t(
                                             'DASHBOARD_RevenueOverTime',
@@ -346,16 +394,94 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             width: '100%',
             maxWidth: 1240,
         },
+        heroCard: {
+            flexDirection: 'row',
+            alignItems: 'stretch',
+            paddingVertical: tokens.spacing.md,
+        },
         title: {
             color: tokens.colors.textPrimary,
-            fontSize: 28,
-            fontWeight: '700',
+            fontSize: 34,
+            lineHeight: 40,
+            fontWeight: '800',
         },
         subtitle: {
             color: tokens.colors.textSecondary,
-            marginTop: tokens.spacing.xs,
+            marginTop: tokens.spacing.sm,
+            fontSize: 16,
+            lineHeight: 24,
+        },
+        eyebrow: {
+            color: '#7DB8FF',
+            fontSize: 12,
+            fontWeight: '700',
+            letterSpacing: 1.4,
             marginBottom: tokens.spacing.sm,
-            fontSize: 15,
+            textTransform: 'uppercase',
+        },
+        heroCopy: {
+            flex: 0.9,
+            paddingRight: tokens.spacing.xl,
+        },
+        heroRangePanel: {
+            flex: 1.1,
+            backgroundColor: '#0B1018',
+            borderColor: '#314155',
+            borderRadius: 24,
+            borderWidth: 1,
+            marginLeft: tokens.spacing.lg,
+            paddingHorizontal: tokens.spacing.xl,
+            paddingVertical: tokens.spacing.lg,
+        },
+        rangeSummaryCard: {
+            backgroundColor: '#090D14',
+            borderColor: '#223044',
+            borderRadius: 18,
+            borderWidth: 1,
+            marginBottom: tokens.spacing.md,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.sm,
+        },
+        rangeSummaryLabel: {
+            color: '#7C8EA5',
+            fontSize: 11,
+            fontWeight: '700',
+            letterSpacing: 1,
+            marginBottom: 4,
+            textTransform: 'uppercase',
+        },
+        rangeSummaryValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 16,
+            fontWeight: '700',
+            lineHeight: 22,
+        },
+        heroMetaRow: {
+            flexDirection: 'row',
+            marginTop: tokens.spacing.lg,
+        },
+        heroMetaPill: {
+            backgroundColor: '#0A1320',
+            borderColor: '#243347',
+            borderRadius: 18,
+            borderWidth: 1,
+            minWidth: 170,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.sm,
+            alignSelf: 'flex-start',
+        },
+        heroMetaLabel: {
+            color: '#7C8EA5',
+            fontSize: 11,
+            fontWeight: '700',
+            letterSpacing: 1,
+            marginBottom: 4,
+            textTransform: 'uppercase',
+        },
+        heroMetaValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 16,
+            fontWeight: '700',
         },
         centerBlock: {
             minHeight: 130,
@@ -391,6 +517,19 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         metricColumnSpaced: {
             flex: 1,
             marginLeft: tokens.spacing.md,
+        },
+        metricShell: {
+            backgroundColor: '#0A0E14',
+            borderColor: '#202B3A',
+            borderRadius: 26,
+            borderWidth: 1,
+            padding: 6,
+        },
+        analyticsCard: {
+            overflow: 'hidden',
+        },
+        chartCard: {
+            overflow: 'hidden',
         },
         insightsRow: {
             flexDirection: 'row',
