@@ -31,6 +31,7 @@ interface PathDetails {
     title: string;
     path: string;
     icon: string;
+    accentColor: string;
     role: string;
     params?: object;
     validate?: () => Promise<string | null>;
@@ -180,6 +181,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
             title: 'Sales',
             path: 'Sales',
             icon: 'cart-outline',
+            accentColor: '#4db8ff',
             role: Role.Sales,
             params: { mode: 'order' },
             validate: async () => {
@@ -192,12 +194,14 @@ export const HomeScreen = (props: HomeScreenProps) => {
             title: 'Payments',
             path: 'Payments',
             icon: 'cash-register',
+            accentColor: '#58c472',
             role: Role.Payments,
         },
         {
             title: 'Back Office',
             path: 'BackOffice',
             icon: 'chart-box-outline',
+            accentColor: '#d8a24a',
             role: Role.Admin,
         },
     ], [dispatch]);
@@ -784,12 +788,17 @@ export const HomeScreen = (props: HomeScreenProps) => {
                                     testID={`home-nav-${p.path.toLowerCase()}`}
                                 >
                                     <View style={[styles.bigButton, sharedStyles.centered]}>
-                                        <View style={styles.routeIconWrap}>
+                                        <View
+                                            style={[
+                                                styles.routeIconWrap,
+                                                { borderColor: `${p.accentColor}55` },
+                                            ]}
+                                        >
                                             <Icon
                                                 name={p.icon}
                                                 type="material-community"
                                                 size={52}
-                                                color="#eef4ff"
+                                                color={p.accentColor}
                                             />
                                         </View>
                                         <Text style={styles.routeTitle}>{p.title}</Text>

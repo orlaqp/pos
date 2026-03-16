@@ -6,7 +6,8 @@ import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, useTheme } from '@rneui/themed';
 import React from 'react';
 
-import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, StyleSheet, Pressable } from 'react-native';
+import { EACH } from '@pos/unit-of-measures/data-access';
 
 /* eslint-disable-next-line */
 export interface CartLineProps {
@@ -16,6 +17,8 @@ export interface CartLineProps {
     lineTotal?: number;
     onSelect: (item: CartItem) => void;
     onRemove: (item: CartItem) => void;
+    onIncrement?: (item: CartItem) => void;
+    onDecrement?: (item: CartItem) => void;
 }
 
 export function CartLine({
@@ -25,15 +28,21 @@ export function CartLine({
     lineTotal,
     onRemove,
     onSelect,
+    onIncrement,
+    onDecrement,
 }: CartLineProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
     const localStyles = useStyles(tokens, theme.theme.colors.error);
     const requiresWeight = item.quantity === 0;
+    const isEach = item.product.unitOfMeasure?.toLowerCase() === EACH;
     const baseTotal = item.product.price * item.quantity;
     const discountedLine = lineDiscountTotal > 0;
     const displayLineTotal = lineTotal ?? baseTotal;
+    const quantityLabel = isEach
+        ? `${Math.round(item.quantity)} ${item.product.unitOfMeasure.toLowerCase()}`
+        : `${item.quantity.toFixed(2)} ${item.product.unitOfMeasure.toLowerCase()}`;
     
     const confirmDeletion = () => {
         Alert.alert(
@@ -48,15 +57,17 @@ export function CartLine({
 
 
     return (
-        <TouchableOpacity
+        <View
             style={[
                 localStyles.container,
                 requiresWeight && localStyles.containerError,
             ]}
-            onPress={() => onSelect(item)}
         >
             {requiresWeight ? <View style={localStyles.errorAccent} /> : null}
-            <View style={localStyles.content}>
+            <TouchableOpacity
+                style={localStyles.content}
+                onPress={() => onSelect(item)}
+            >
                 <Text style={styles.primaryText}>{item.product.name}</Text>
                 {requiresWeight ? (
                     <View style={localStyles.statusBadge}>
@@ -84,12 +95,13 @@ export function CartLine({
                             requiresWeight && localStyles.metaTextError,
                         ]}
                     >
-                        $ {item.product.price.toFixed(2)}x
-                        {`${item.quantity.toFixed(2)}${item.product.unitOfMeasure}`}
+                        ${item.product.price.toFixed(2)} x {quantityLabel}
                     </Text>
+                </View>
+                <View style={localStyles.totalRow}>
                     {discountedLine ? (
                         <Text style={localStyles.originalTotalText}>
-                            {'  '}(${baseTotal.toFixed(2)})
+                            ${baseTotal.toFixed(2)}
                         </Text>
                     ) : null}
                     <Text
@@ -99,13 +111,32 @@ export function CartLine({
                             requiresWeight && localStyles.totalTextError,
                         ]}
                     >
-                        {'  '}(${displayLineTotal.toFixed(2)})
+                        ${displayLineTotal.toFixed(2)}
                     </Text>
                 </View>
                 {!requiresWeight && discountedLine ? (
                     <Text style={localStyles.savedText}>Saved ${lineDiscountTotal.toFixed(2)}</Text>
                 ) : null}
-            </View>
+            </TouchableOpacity>
+            {isEach && !requiresWeight && onIncrement && onDecrement ? (
+                <View style={localStyles.stepperWrap}>
+                    <Pressable
+                        testID="cart-line-decrement"
+                        style={localStyles.stepperButtonMuted}
+                        onPress={() => onDecrement(item)}
+                    >
+                        <Text style={localStyles.stepperButtonMutedText}>-</Text>
+                    </Pressable>
+                    <Text style={localStyles.stepperValue}>{Math.round(item.quantity)}</Text>
+                    <Pressable
+                        testID="cart-line-increment"
+                        style={localStyles.stepperButtonAccent}
+                        onPress={() => onIncrement(item)}
+                    >
+                        <Text style={localStyles.stepperButtonAccentText}>+</Text>
+                    </Pressable>
+                </View>
+            ) : null}
             <Button
                 type="clear"
                 icon={{
@@ -116,7 +147,7 @@ export function CartLine({
                 onPress={confirmDeletion}
             />
             {item.product.isEBTEligible && <UIEbtRibbon />}
-        </TouchableOpacity>
+        </View>
     );
 }
 
@@ -149,6 +180,51 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
         content: {
             flex: 1,
             paddingRight: tokens.spacing.xs,
+        },
+        stepperWrap: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginLeft: tokens.spacing.sm,
+            marginRight: tokens.spacing.xs,
+            gap: tokens.spacing.xs,
+            alignSelf: 'center',
+        },
+        stepperButtonMuted: {
+            width: 28,
+            height: 28,
+            borderRadius: 999,
+            backgroundColor: tokens.colors.surface,
+            borderWidth: 1,
+            borderColor: `${tokens.colors.border}dd`,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        stepperButtonAccent: {
+            width: 28,
+            height: 28,
+            borderRadius: 999,
+            backgroundColor: tokens.colors.accent,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        stepperButtonMutedText: {
+            color: tokens.colors.textPrimary,
+            fontSize: 18,
+            fontWeight: '700',
+            lineHeight: 20,
+        },
+        stepperButtonAccentText: {
+            color: '#ffffff',
+            fontSize: 18,
+            fontWeight: '700',
+            lineHeight: 20,
+        },
+        stepperValue: {
+            minWidth: 18,
+            textAlign: 'center',
+            color: tokens.colors.textPrimary,
+            fontSize: 15,
+            fontWeight: '800',
         },
         statusBadge: {
             alignSelf: 'flex-start',
@@ -185,9 +261,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
             fontWeight: '800',
         },
         metaRow: {
-            flexDirection: 'row',
-            alignItems: 'flex-end',
-            marginTop: 2,
+            marginTop: 4,
         },
         metaText: {
             fontSize: 14,
@@ -196,8 +270,15 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
         metaTextError: {
             color: dangerColor,
         },
+        totalRow: {
+            flexDirection: 'row',
+            alignItems: 'baseline',
+            flexWrap: 'wrap',
+            columnGap: tokens.spacing.xs,
+            marginTop: 3,
+        },
         totalText: {
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: '800',
         },
         originalTotalText: {

@@ -64,6 +64,31 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
         dispatch(cartActions.removeProduct(item));
     };
 
+    const onIncrement = (item: CartItem) => {
+        dispatch(
+            cartActions.upsert({
+                identifier: item.identifier,
+                product: item.product,
+                quantity: item.quantity + 1,
+            })
+        );
+    };
+
+    const onDecrement = (item: CartItem) => {
+        if (item.quantity <= 1) {
+            dispatch(cartActions.removeProduct(item));
+            return;
+        }
+
+        dispatch(
+            cartActions.upsert({
+                identifier: item.identifier,
+                product: item.product,
+                quantity: item.quantity - 1,
+            })
+        );
+    };
+
     const paymentEntered = (payments: ICartPayment[]) => {
         setReceivePayment(false);
         onSubmit(cart, payments);
@@ -146,6 +171,8 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                             lineTotal={lineSummary?.lineTotalBeforeTax}
                             onSelect={onSelect}
                             onRemove={onRemove}
+                            onIncrement={onIncrement}
+                            onDecrement={onDecrement}
                         />
                         );
                     })}

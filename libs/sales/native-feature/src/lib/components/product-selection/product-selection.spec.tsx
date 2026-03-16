@@ -3,6 +3,7 @@ import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
 const mockOnSelected = jest.fn();
+const mockOnLongPress = jest.fn();
 
 jest.mock('@pos/shared/ui-native', () => ({
     UIEmptyState: ({ text }: { text: string }) => {
@@ -16,16 +17,22 @@ jest.mock('@pos/shared/ui-native', () => ({
     UIButton: ({
         item,
         onSelected,
+        onLongPress,
         children,
     }: {
         item: any;
         onSelected: (item: any) => void;
+        onLongPress?: (item: any) => void;
         children: React.ReactNode;
     }) => (
         (() => {
             const { Pressable } = require('react-native');
             return (
-                <Pressable testID={`product-btn-${item.id}`} onPress={() => onSelected(item)}>
+                <Pressable
+                    testID={`product-btn-${item.id}`}
+                    onPress={() => onSelected(item)}
+                    onLongPress={onLongPress ? () => onLongPress(item) : undefined}
+                >
                     {children}
                 </Pressable>
             );
@@ -42,7 +49,11 @@ describe('ProductSelection', () => {
 
     it('shows empty state and renders products', () => {
         const { getByText, rerender, getByTestId } = render(
-            <ProductSelection products={[]} onSelected={mockOnSelected} />
+            <ProductSelection
+                products={[]}
+                onSelected={mockOnSelected}
+                onLongPress={mockOnLongPress}
+            />
         );
 
         expect(
@@ -93,10 +104,18 @@ describe('ProductSelection', () => {
             },
         ] as any;
 
-        rerender(<ProductSelection products={products} onSelected={mockOnSelected} />);
+        rerender(
+            <ProductSelection
+                products={products}
+                onSelected={mockOnSelected}
+                onLongPress={mockOnLongPress}
+            />
+        );
         fireEvent.press(getByTestId('product-btn-p-1'));
+        fireEvent(getByTestId('product-btn-p-1'), 'longPress');
 
         expect(getByText('In stock: 1.23')).toBeTruthy();
         expect(mockOnSelected).toHaveBeenCalledWith(products[0]);
+        expect(mockOnLongPress).toHaveBeenCalledWith(products[0]);
     });
 });

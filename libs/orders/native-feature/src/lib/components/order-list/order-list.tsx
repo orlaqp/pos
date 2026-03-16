@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     OrderEntity,
     OrderService,
@@ -18,8 +18,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ButtonGroup, Dialog } from '@rneui/themed';
 import { OrderStatus } from '@pos/shared/api';
 import OrderVoidForm from '../order-void-form/order-void-form';
-import { eventsActions } from '@pos/shared/data-store';
-import uuid from 'react-native-uuid';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import i18next from 'i18next';
 
@@ -37,12 +35,11 @@ export function OrderList({ navigation }: OrderListProps) {
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
     const dispatch = useDispatch();
-    const searchRef = React.createRef<TextInput>();
+    const searchRef = useRef<TextInput>(null);
     const [filterText, setFilterText] = useState<string>();
     const [orderToVoid, setOrderToVoid] = useState<OrderEntity | undefined>();
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
     const allOrders = useSelector(selectAllOrders);
-    const [filteredOrders, setFilteredOrders] = useState<OrderEntity[]>();
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
@@ -56,32 +53,21 @@ export function OrderList({ navigation }: OrderListProps) {
         };
     }, [dispatch]);
 
-    useEffect(() => {
-        const searchResult = OrderService.search(allOrders, {
-            status: orderStatusList[selectedIndex],
-            filter: filterText,
-        });
-
-        dispatch(
-            eventsActions.add({
-                id: uuid.v4().toString(),
-                event: 'Order search',
-                data: JSON.stringify({
-                    filter: filterText,
-                    result: searchResult
-                }).substring(0, 350),
-                timestamp: (new Date()).toISOString()
-            })
-        );
-
-        setFilteredOrders((items) => [...searchResult]);
-    }, [dispatch, allOrders, selectedIndex, filterText]);
+    const filteredOrders = useMemo(
+        () =>
+            OrderService.search(allOrders, {
+                status: orderStatusList[selectedIndex],
+                filter: filterText,
+            }),
+        [allOrders, selectedIndex, filterText]
+    );
 
     useEffect(() => {
-        setTimeout(() => {
+        const timer = setTimeout(() => {
             searchRef.current?.focus();
         }, 50);
-    }, [filteredOrders, filterText, searchRef]);
+        return () => clearTimeout(timer);
+    }, []);
 
     const filter = (statusIndex: number, filter?: string) => {
         setSelectedIndex(statusIndex);
@@ -97,7 +83,7 @@ export function OrderList({ navigation }: OrderListProps) {
         status: selectedStatus,
     });
     const hasStatusOrders = statusOrders.length > 0;
-    const hasFilteredOrders = (filteredOrders?.length || 0) > 0;
+    const hasFilteredOrders = filteredOrders.length > 0;
 
     return (
         <UIScreen padded testID="order-list-screen">

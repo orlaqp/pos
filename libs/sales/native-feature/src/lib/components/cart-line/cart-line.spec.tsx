@@ -5,6 +5,8 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 const mockOnRemove = jest.fn();
 const mockOnSelect = jest.fn();
+const mockOnIncrement = jest.fn();
+const mockOnDecrement = jest.fn();
 
 jest.mock('@rneui/themed', () => ({
     useTheme: () => ({ theme: { colors: { grey2: '#999', error: '#f66' } } }),
@@ -51,13 +53,51 @@ describe('CartLine', () => {
         } as any;
 
         const { getByText, getByTestId } = render(
-            <CartLine item={item} onRemove={mockOnRemove} onSelect={mockOnSelect} />
+            <CartLine
+                item={item}
+                onRemove={mockOnRemove}
+                onSelect={mockOnSelect}
+                onIncrement={mockOnIncrement}
+                onDecrement={mockOnDecrement}
+            />
         );
 
         fireEvent.press(getByText('Apple'));
         expect(mockOnSelect).toHaveBeenCalledWith(item);
 
+        fireEvent.press(getByTestId('cart-line-increment'));
+        fireEvent.press(getByTestId('cart-line-decrement'));
+        expect(mockOnIncrement).toHaveBeenCalledWith(item);
+        expect(mockOnDecrement).toHaveBeenCalledWith(item);
+
         fireEvent.press(getByTestId('cart-line-remove'));
         expect(mockOnRemove).toHaveBeenCalledWith(item);
+    });
+
+    it('does not render inline stepper for weighted items', () => {
+        const item = {
+            identifier: 'i-2',
+            quantity: 1.5,
+            product: {
+                id: 'p-2',
+                name: 'Rice',
+                price: 4,
+                unitOfMeasure: 'LB',
+                isEBTEligible: false,
+            },
+        } as any;
+
+        const { queryByTestId } = render(
+            <CartLine
+                item={item}
+                onRemove={mockOnRemove}
+                onSelect={mockOnSelect}
+                onIncrement={mockOnIncrement}
+                onDecrement={mockOnDecrement}
+            />
+        );
+
+        expect(queryByTestId('cart-line-increment')).toBeNull();
+        expect(queryByTestId('cart-line-decrement')).toBeNull();
     });
 });

@@ -201,6 +201,37 @@ describe('cart.slice', () => {
         expect(state.footer.payments).toEqual(payments);
     });
 
+    it('ignores malformed applied discount summary when restoring cart from order payload', () => {
+        const state = cartReducer(
+            undefined,
+            cartActions.set({
+                id: 'order-2',
+                orderNo: '51-AAA-260313-0002',
+                subtotal: 10,
+                tax: 0,
+                total: 10,
+                status: 'OPEN',
+                employeeId: 'e-1',
+                employeeName: 'Cashier',
+                orderDate: '2026-03-13T10:00:00.000Z',
+                appliedDiscountSummary: '{"broken":',
+                lines: [
+                    {
+                        identifier: 'line-1',
+                        quantity: 1,
+                        productId: 'p-each',
+                        productName: 'Apple',
+                        price: 2.5,
+                        unitOfMeasure: 'EA',
+                        isEBTEligible: true,
+                    },
+                ],
+            } as any)
+        );
+
+        expect(state.appliedDiscountSummary).toBeUndefined();
+    });
+
     it('selectors return expected values', () => {
         const selected = { identifier: 'line-1', product: eachProduct, quantity: 1 };
         const state = {

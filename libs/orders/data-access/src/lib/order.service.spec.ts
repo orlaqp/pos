@@ -5,6 +5,48 @@ import {
   sumEbtPayment,
   validateEbtPayment,
 } from './ebt-allocation';
+import { OrderService } from './order.service';
+import { DataStore } from '@pos/shared/amplify';
+import { StationService } from '@pos/settings/data-access';
+import { stampTenant } from '@pos/auth/data-access';
+
+jest.mock('@pos/shared/amplify', () => ({
+  DataStore: {
+    save: jest.fn(async (value) => value),
+  },
+}));
+
+jest.mock('@pos/settings/data-access', () => ({
+  StationService: {
+    getNextOrderNumber: jest.fn(async () => '51-25-260316-0005'),
+  },
+}));
+
+jest.mock('@pos/auth/data-access', () => ({
+  stampTenant: jest.fn((value) => value),
+}));
+
+jest.mock('@pos/shared/models', () => {
+  const actual = jest.requireActual('@pos/shared/models');
+
+  class MockOrder {
+    constructor(init: Record<string, unknown>) {
+      Object.assign(this, init);
+    }
+  }
+
+  class MockOrderLine {
+    constructor(init: Record<string, unknown>) {
+      Object.assign(this, init);
+    }
+  }
+
+  return {
+    ...actual,
+    Order: MockOrder,
+    OrderLine: MockOrderLine,
+  };
+});
 
 describe('order.service EBT helpers', () => {
   const lines = [
@@ -137,5 +179,150 @@ describe('order.service EBT helpers', () => {
       expect(validation.ebtEligibleTotal).toBe(6.3);
       expect(allocations).toEqual(scenario.expectedAllocations);
     });
+  });
+});
+
+describe('OrderService', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('leaves line appliedDiscounts unset and relies on order summary', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+    const getNextOrderNumberMock = jest.mocked(StationService.getNextOrderNumber);
+    const stampTenantMock = jest.mocked(stampTenant);
+    getNextOrderNumberMock.mockResolvedValue('51-25-260316-0005');
+    stampTenantMock.mockImplementation((value) => value);
+
+    await OrderService.create({
+      by: {
+        id: 'employee-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+        email: 'orlaqp+pos@gmail.com',
+      } as any,
+      order: {
+        items: [
+          {
+            identifier: 'line-1',
+            quantity: 2,
+            product: {
+              id: 'product-1',
+              name: 'Rice',
+              price: 4.59,
+              categoryId: 'category-1',
+              unitOfMeasure: 'ea',
+              barcode: '123',
+              sku: 'RICE-1',
+              discountable: true,
+              isEBTEligible: true,
+            },
+          },
+        ],
+        footer: {
+          baseSubtotal: 9.18,
+          subtotal: 8.18,
+          lineDiscountTotal: 1,
+          orderDiscountTotal: 0,
+          tax: 0,
+          discount: 1,
+          savingsTotal: 1,
+          total: 8.18,
+          pricingSource: 'ONLINE_VALIDATED',
+          reconciliationStatus: 'NOT_REQUIRED',
+        },
+        promoCodes: [],
+        manualDiscounts: [],
+        priceOverrides: [],
+        approvalEvents: [],
+        appliedDiscountSummary: {
+          applications: [
+            {
+              discountApplicationId: 'application-1',
+              discountDefinitionId: 'definition-1',
+              applicationType: 'AUTOMATIC_DISCOUNT',
+              scope: 'LINE',
+              method: 'AMOUNT',
+              name: 'Line discount',
+              code: null,
+              stackMode: 'STACKABLE',
+              source: 'automatic',
+              value: 0.5,
+              originalAmount: 9.18,
+              discountAmount: 1,
+              finalAmount: 8.18,
+              quantityBasis: 2,
+              reasonCode: null,
+              reasonNote: null,
+              appliedByEmployeeId: null,
+              appliedByEmployeeName: null,
+              approvedByEmployeeId: null,
+              approvedByEmployeeName: null,
+              approvalRequired: false,
+              approvalStatus: 'NOT_REQUIRED',
+              approvalReference: null,
+              sourceSnapshot: null,
+              appliedAt: '2026-03-16T12:00:00.000Z',
+            },
+          ],
+          approvalEvents: [],
+          lineSummaries: [
+            {
+              lineId: 'line-1',
+              discounts: [
+                {
+                  discountApplicationId: 'application-1',
+                  discountDefinitionId: 'definition-1',
+                  applicationType: 'AUTOMATIC_DISCOUNT',
+                  scope: 'LINE',
+                  method: 'AMOUNT',
+                  name: 'Line discount',
+                  code: null,
+                  stackMode: 'STACKABLE',
+                  source: 'automatic',
+                  value: 0.5,
+                  originalAmount: 9.18,
+                  discountAmount: 1,
+                  finalAmount: 8.18,
+                  quantityBasis: 2,
+                  reasonCode: null,
+                  reasonNote: null,
+                  appliedByEmployeeId: null,
+                  appliedByEmployeeName: null,
+                  approvedByEmployeeId: null,
+                  approvedByEmployeeName: null,
+                  approvalRequired: false,
+                  approvalStatus: 'NOT_REQUIRED',
+                  approvalReference: null,
+                  sourceSnapshot: null,
+                  appliedAt: '2026-03-16T12:00:00.000Z',
+                },
+              ],
+              lineDiscountTotal: 1,
+              allocatedOrderDiscountTotal: 0,
+              lineTotalBeforeTax: 8.18,
+            },
+          ],
+          orderLevelAdjustments: [],
+          warnings: [],
+          pricingGeneratedAt: '2026-03-16T12:00:00.000Z',
+        },
+      },
+    });
+
+    expect(saveMock).toHaveBeenCalledTimes(1);
+    const savedOrder = saveMock.mock.calls[0][0] as any;
+    expect('appliedDiscounts' in savedOrder.lines[0]).toBe(false);
+    expect(typeof savedOrder.appliedDiscountSummary).toBe('string');
+    expect(JSON.parse(savedOrder.appliedDiscountSummary)).toEqual(
+      expect.objectContaining({
+        applications: [
+          expect.objectContaining({
+            discountApplicationId: 'application-1',
+            applicationType: 'AUTOMATIC_DISCOUNT',
+          }),
+        ],
+      })
+    );
   });
 });

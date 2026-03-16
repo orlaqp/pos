@@ -15,7 +15,7 @@ const mockProduct = {
     id: 'p-1',
     name: 'Apple',
     price: 2.5,
-    unitOfMeasure: 'EA',
+    unitOfMeasure: 'ea',
     quantity: 100,
     isActive: true,
     productCategoryId: 'c-1',
@@ -25,6 +25,13 @@ const mockLowInventoryProduct = {
     ...mockProduct,
     id: 'p-2',
     quantity: 0,
+} as any;
+
+const mockWeightedProduct = {
+    ...mockProduct,
+    id: 'p-3',
+    name: 'Rice',
+    unitOfMeasure: 'LB',
 } as any;
 
 let mockState: any;
@@ -160,7 +167,13 @@ jest.mock('../product-search/product-search', () => ({
 
 jest.mock('../product-selection/product-selection', () => ({
     __esModule: true,
-    default: ({ onSelected }: { onSelected: (item: any) => void }) =>
+    default: ({
+        onSelected,
+        onLongPress,
+    }: {
+        onSelected: (item: any) => void;
+        onLongPress?: (item: any) => void;
+    }) =>
         (() => {
             const { View, Pressable, Text } = require('react-native');
             return (
@@ -176,6 +189,18 @@ jest.mock('../product-selection/product-selection', () => ({
                         onPress={() => onSelected(mockLowInventoryProduct)}
                     >
                         <Text>Low Stock Product</Text>
+                    </Pressable>
+                    <Pressable
+                        testID="sales-product-select-weighted"
+                        onPress={() => onSelected(mockWeightedProduct)}
+                    >
+                        <Text>Weighted Product</Text>
+                    </Pressable>
+                    <Pressable
+                        testID="sales-product-long-press"
+                        onPress={() => onLongPress?.(mockProduct)}
+                    >
+                        <Text>Product Long Press</Text>
                     </Pressable>
                 </View>
             );
@@ -277,9 +302,25 @@ describe('SalesScreen', () => {
             />
         );
 
-    it('dispatches cart select when a product is selected', () => {
+    it('dispatches cart upsert when an EA product is selected', () => {
         const { getByTestId } = renderSalesScreen();
         fireEvent.press(getByTestId('sales-product-select'));
+        expect(mockDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({ type: 'cart/upsert' })
+        );
+    });
+
+    it('dispatches cart select when a weighted product is selected', () => {
+        const { getByTestId } = renderSalesScreen();
+        fireEvent.press(getByTestId('sales-product-select-weighted'));
+        expect(mockDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({ type: 'cart/select' })
+        );
+    });
+
+    it('opens the modal flow on long press for EA products', () => {
+        const { getByTestId } = renderSalesScreen();
+        fireEvent.press(getByTestId('sales-product-long-press'));
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/select' })
         );
@@ -417,7 +458,7 @@ describe('SalesScreen', () => {
         mockState.productsEntities = { 'p-1': mockProduct };
         renderSalesScreen();
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/select' })
+            expect.objectContaining({ type: 'cart/upsert' })
         );
     });
 

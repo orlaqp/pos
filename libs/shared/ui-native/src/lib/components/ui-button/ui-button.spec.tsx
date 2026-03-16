@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 
 import UIButton from './ui-button';
 
@@ -12,5 +12,21 @@ describe('UIButton', () => {
             />
         );
         expect(toJSON()).toBeTruthy();
+    });
+
+    it('supports long press callbacks', () => {
+        const onSelected = jest.fn();
+        const onLongPress = jest.fn();
+        const { getByText } = render(
+            <UIButton
+                item={{ id: '1', name: 'Button' }}
+                onSelected={onSelected}
+                onLongPress={onLongPress}
+            />
+        );
+
+        fireEvent(getByText('Button'), 'longPress');
+        expect(onLongPress).toHaveBeenCalledWith({ id: '1', name: 'Button' });
+        expect(onSelected).not.toHaveBeenCalled();
     });
 });

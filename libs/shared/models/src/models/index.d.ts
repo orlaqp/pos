@@ -461,6 +461,7 @@ export declare const Employee: (new (init: ModelInit<Employee, EmployeeMetaData>
 
 type EagerOrder = {
   readonly id: string;
+  readonly tenantId: string;
   readonly orderNo: string;
   readonly orderDate: string;
   readonly baseSubtotal?: number | null;
@@ -474,8 +475,8 @@ type EagerOrder = {
   readonly promoCodes?: (string | null)[] | null;
   readonly pricingVersion?: string | null;
   readonly pricingSnapshotHash?: string | null;
-  readonly pricingSource?: string | null;
-  readonly reconciliationStatus?: string | null;
+  readonly pricingSource?: PricingSource | keyof typeof PricingSource | null;
+  readonly reconciliationStatus?: ReconciliationStatus | keyof typeof ReconciliationStatus | null;
   readonly appliedDiscountSummary?: string | null;
   readonly status: OrderStatus | keyof typeof OrderStatus;
   readonly employeeId: string;
@@ -493,6 +494,7 @@ type EagerOrder = {
 
 type LazyOrder = {
   readonly id: string;
+  readonly tenantId: string;
   readonly orderNo: string;
   readonly orderDate: string;
   readonly baseSubtotal?: number | null;
@@ -506,8 +508,8 @@ type LazyOrder = {
   readonly promoCodes?: (string | null)[] | null;
   readonly pricingVersion?: string | null;
   readonly pricingSnapshotHash?: string | null;
-  readonly pricingSource?: string | null;
-  readonly reconciliationStatus?: string | null;
+  readonly pricingSource?: PricingSource | keyof typeof PricingSource | null;
+  readonly reconciliationStatus?: ReconciliationStatus | keyof typeof ReconciliationStatus | null;
   readonly appliedDiscountSummary?: string | null;
   readonly status: OrderStatus | keyof typeof OrderStatus;
   readonly employeeId: string;

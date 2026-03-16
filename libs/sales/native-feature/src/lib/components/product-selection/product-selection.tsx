@@ -21,11 +21,13 @@ import {
 export interface ProductSelectionProps {
     products: ProductEntity[];
     onSelected: (p: ButtonItemType) => void;
+    onLongPress?: (p: ButtonItemType) => void;
 }
 
 export function ProductSelection({
     products,
     onSelected,
+    onLongPress,
 }: ProductSelectionProps) {
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
@@ -90,6 +92,7 @@ export function ProductSelection({
                                     <UIButton
                                         item={p}
                                         onSelected={onSelected}
+                                        onLongPress={onLongPress}
                                         maxTextLength={14}
                                     >
                                         <View

@@ -60,6 +60,24 @@ type OrderEntityLike = {
     lines?: OrderLineLike[];
 };
 
+const parseAppliedDiscountSummary = (
+    value: AppliedDiscountSummary | string | null | undefined
+) => {
+    if (!value) return undefined;
+    if (typeof value === 'object') return value;
+
+    const trimmed = value.trim();
+    if (!trimmed || (trimmed[0] !== '{' && trimmed[0] !== '[')) {
+        return undefined;
+    }
+
+    try {
+        return JSON.parse(trimmed) as AppliedDiscountSummary;
+    } catch {
+        return undefined;
+    }
+};
+
 export const CART_FEATURE_KEY = 'cart';
 
 export const initialCartState: CartState = {
@@ -137,11 +155,9 @@ export const cartSlice = createSlice({
                 .filter((code): code is string => !!code)
                 .map((code) => ({ code }));
             state.approvalEvents = [];
-            state.appliedDiscountSummary = o.appliedDiscountSummary
-                ? typeof o.appliedDiscountSummary === 'string'
-                    ? JSON.parse(o.appliedDiscountSummary)
-                    : o.appliedDiscountSummary
-                : undefined;
+            state.appliedDiscountSummary = parseAppliedDiscountSummary(
+                o.appliedDiscountSummary
+            );
             state.payments = [];
             state.selected = initialCartState.selected;
         },

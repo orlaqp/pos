@@ -33,6 +33,19 @@ export const configureDataStore = () => {
 
     DataStore.configure({
         errorHandler: (error: unknown) => {
+            if (error && typeof error === 'object') {
+                const details = {
+                    message: (error as { message?: unknown }).message,
+                    errorType: (error as { errorType?: unknown }).errorType,
+                    recoverySuggestion: (error as { recoverySuggestion?: unknown }).recoverySuggestion,
+                    localModel: (error as { localModel?: unknown }).localModel,
+                    operation: (error as { operation?: unknown }).operation,
+                    model: (error as { model?: unknown }).model,
+                };
+                console.error('DataStore sync error', JSON.stringify(details, null, 2));
+                return;
+            }
+
             console.error('DataStore sync error', error);
         },
         syncExpressions: [

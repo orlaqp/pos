@@ -7,31 +7,93 @@ import { ordersActions } from './slices/orders.slice';
 
 import moment from 'moment';
 
-const LAST_X_DAYS = 30;
+const LAST_CLOSED_ORDER_DAYS = 3;
+
+const getRecentClosedSince = () =>
+    moment().subtract(LAST_CLOSED_ORDER_DAYS, 'days').toISOString();
+
+export const mergeSyncedOrders = (...groups: Order[][]) => {
+    const deduped = new Map<string, Order>();
+
+    groups.flat().forEach((order) => {
+        deduped.set(order.id, order);
+    });
+
+    return Array.from(deduped.values());
+};
 
 export const syncOrders = (dispatch: Dispatch) => {
     console.log('Syncing orders to the store');
-    DataStore
-        .query(Order, (o) => o.orderDate.gt(moment().subtract(LAST_X_DAYS, 'days').toISOString()))
-        .then((orders) => updateStoreOrders(dispatch, orders));
+    Promise.all([
+        DataStore.query(Order, (o) => o.status.eq('OPEN')),
+        DataStore.query(Order, (o) =>
+            o.and((order) => [
+                order.status.eq('PAID'),
+                order.orderDate.gt(getRecentClosedSince()),
+            ])
+        ),
+        DataStore.query(Order, (o) =>
+            o.and((order) => [
+                order.status.eq('REFUNDED'),
+                order.orderDate.gt(getRecentClosedSince()),
+            ])
+        ),
+    ]).then(([openOrders, paidOrders, refundedOrders]) =>
+        updateStoreOrders(
+            dispatch,
+            mergeSyncedOrders(openOrders, paidOrders, refundedOrders)
+        )
+    );
 };
 
 export const subscribeToOrderChanges = (dispatch: Dispatch) => {
-    // DataStore.observe(Order).subscribe(msg => {
-    //     console.log(msg.model, msg.opType, msg.element);
-    // });
-    
-    // return DataStore.observeQuery(Order, employee.roles.includes(Role.Payments)
-    //     ? (o) => o.orderDate('gt', moment().subtract(LAST_X_DAYS, 'days').toISOString())
-    //     : (o) => o.status('eq', 'OPEN').orderDate('gt', moment().subtract(LAST_X_DAYS, 'days').toISOString())
-    // )
-    return DataStore.observeQuery(Order, 
-        (o) => o.orderDate.gt(moment().subtract(LAST_X_DAYS, 'days').toISOString())
-    )
-    .subscribe(({ isSynced, items }) => {
-        console.log(`Order changes detected (isSynced: ${isSynced})`);
-        updateStoreOrders(dispatch, items);
+    let openOrders: Order[] = [];
+    let recentPaidOrders: Order[] = [];
+    let recentRefundedOrders: Order[] = [];
+
+    const publish = () =>
+        updateStoreOrders(
+            dispatch,
+            mergeSyncedOrders(openOrders, recentPaidOrders, recentRefundedOrders)
+        );
+
+    const openSub = DataStore.observeQuery(Order, (o) => o.status.eq('OPEN')).subscribe(
+        ({ isSynced, items }) => {
+            console.log(`Open order changes detected (isSynced: ${isSynced})`);
+            openOrders = items;
+            publish();
+        }
+    );
+
+    const recentPaidSub = DataStore.observeQuery(Order, (o) =>
+        o.and((order) => [
+            order.status.eq('PAID'),
+            order.orderDate.gt(getRecentClosedSince()),
+        ])
+    ).subscribe(({ isSynced, items }) => {
+        console.log(`Recent paid order changes detected (isSynced: ${isSynced})`);
+        recentPaidOrders = items;
+        publish();
     });
+
+    const recentRefundedSub = DataStore.observeQuery(Order, (o) =>
+        o.and((order) => [
+            order.status.eq('REFUNDED'),
+            order.orderDate.gt(getRecentClosedSince()),
+        ])
+    ).subscribe(({ isSynced, items }) => {
+        console.log(`Recent refunded order changes detected (isSynced: ${isSynced})`);
+        recentRefundedOrders = items;
+        publish();
+    });
+
+    return {
+        unsubscribe() {
+            openSub.unsubscribe();
+            recentPaidSub.unsubscribe();
+            recentRefundedSub.unsubscribe();
+        },
+    };
 };
 
 const updateStoreOrders = (dispatch: Dispatch, items: Order[]) => {

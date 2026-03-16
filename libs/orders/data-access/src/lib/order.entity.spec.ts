@@ -107,6 +107,45 @@ describe('OrderEntityMapper', () => {
         ]);
     });
 
+    it('does not crash on malformed applied discount summary values', () => {
+        const orderEntity = OrderEntityMapper.fromModel({
+            id: 'o-3',
+            orderNo: '51-TEST-0003',
+            subtotal: 12,
+            tax: 0,
+            total: 12,
+            status: 'PAID',
+            employeeId: 'e-1',
+            employeeName: 'Tester',
+            orderDate: '2026-03-12T00:00:00.000Z',
+            createdAt: '2026-03-12T00:00:00.000Z',
+            updatedAt: '2026-03-12T00:00:00.000Z',
+            appliedDiscountSummary: 'oops',
+            lines: [],
+            paymentInfo: null,
+            refundInfo: null,
+        });
+
+        expect(orderEntity.appliedDiscountSummary).toBeNull();
+    });
+
+    it('does not crash on malformed applied discounts in order lines', () => {
+        const line = OrderEntityMapper.fromLine({
+            identifier: 'line-3',
+            productId: 'p-3',
+            barcode: null,
+            sku: null,
+            productName: 'Apple',
+            quantity: 1,
+            price: 2.49,
+            tax: 0,
+            unitOfMeasure: 'EA',
+            appliedDiscounts: '{"broken":',
+        });
+
+        expect(line.appliedDiscounts).toEqual([]);
+    });
+
     it('rebuilds refunded cart even when incoming cart header is missing', async () => {
         const refundedCart = await OrderEntityMapper.fromRefundedCart(
             {

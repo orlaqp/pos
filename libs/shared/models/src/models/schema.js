@@ -123,6 +123,7 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
+                                "provider": "userPools",
                                 "allow": "owner",
                                 "ownerField": "tenantId",
                                 "identityClaim": "sub",
@@ -198,6 +199,7 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
+                                "provider": "userPools",
                                 "allow": "owner",
                                 "ownerField": "tenantId",
                                 "identityClaim": "sub",
@@ -308,6 +310,7 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
+                                "provider": "userPools",
                                 "allow": "owner",
                                 "ownerField": "tenantId",
                                 "identityClaim": "sub",
@@ -684,14 +687,18 @@ export const schema = {
                 "pricingSource": {
                     "name": "pricingSource",
                     "isArray": false,
-                    "type": "String",
+                    "type": {
+                        "enum": "PricingSource"
+                    },
                     "isRequired": false,
                     "attributes": []
                 },
                 "reconciliationStatus": {
                     "name": "reconciliationStatus",
                     "isArray": false,
-                    "type": "String",
+                    "type": {
+                        "enum": "ReconciliationStatus"
+                    },
                     "isRequired": false,
                     "attributes": []
                 },
@@ -849,6 +856,7 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
+                                "provider": "userPools",
                                 "allow": "owner",
                                 "ownerField": "tenantId",
                                 "identityClaim": "sub",

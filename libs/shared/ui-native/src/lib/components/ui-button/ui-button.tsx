@@ -17,12 +17,19 @@ export type ButtonItemType = Readonly<ButtonItem & Record<string, any>>;
 /* eslint-disable-next-line */
 export interface UIButtonProps {
     onSelected: (item: ButtonItemType) => void;
+    onLongPress?: (item: ButtonItemType) => void;
     item: ButtonItemType;
     maxTextLength?: number;
     children?: any; 
 }
 
-export function UIButton({ item, onSelected, maxTextLength, children }: UIButtonProps) {
+export function UIButton({
+    item,
+    onSelected,
+    onLongPress,
+    maxTextLength,
+    children,
+}: UIButtonProps) {
     const theme = useTheme();
     const colors = theme?.theme?.colors || { black: '#ffffff' };
     const styles = useSharedStyles();
@@ -32,6 +39,7 @@ export function UIButton({ item, onSelected, maxTextLength, children }: UIButton
         <TouchableOpacity
             key={item.id}
             onPress={() => onSelected(item)}
+            onLongPress={onLongPress ? () => onLongPress(item) : undefined}
             style={{ padding: 10 }}
         >
             <View style={[styles.centered]}>

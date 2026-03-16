@@ -47,6 +47,7 @@ import { selectStore } from '@pos/store-info/data-access';
 import { getGlobalSettings, subscribeToGlobalSettingsChanges } from '@pos/settings/data-access';
 import { Role } from '@pos/auth/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
+import { EACH } from '@pos/unit-of-measures/data-access';
 import {
     getActiveProducts,
     getAutoAddQuantity,
@@ -161,6 +162,42 @@ export function SalesScreen({
     };
 
     const onProductSelected = useCallback(
+        (p: ButtonItemType) => {
+            const product = p as ProductEntity;
+
+            if (
+                shouldBlockSelectionByInventory(
+                    globalSettings?.enforceSalesBasedOnInventory,
+                    product.quantity,
+                    MINIMUM_INVENTORY_FOR_SALE
+                )
+            ) {
+                Alert.alert(
+                    t('SALES_NotAvailableTitle', 'Not Available'),
+                    t(
+                        'SALES_NotAvailableMessage',
+                        'We do not have this product in inventory at the moment'
+                    )
+                );
+                return;
+            }
+
+            if (product.unitOfMeasure?.toLowerCase() === EACH) {
+                dispatch(cartActions.upsert(CartItemMapper.fromProduct(product, 1)));
+                return;
+            }
+
+            dispatch(
+                cartActions.select({
+                    product,
+                    quantity: getSelectedQuantity(product.unitOfMeasure),
+                })
+            );
+        },
+        [dispatch, globalSettings]
+    );
+
+    const onProductLongPress = useCallback(
         (p: ButtonItemType) => {
             const product = p as ProductEntity;
 
@@ -300,29 +337,25 @@ export function SalesScreen({
     return (
         <UIScreen padded>
             <View style={styles.salesLayout}>
-                <View
+                <Animated.View
                     style={[
                         styles.categoriesCardWrap,
-                        showCategories ? styles.categoriesCardWrapVisible : null,
+                        {
+                            width: categoryWidth,
+                            opacity: categoryOpacity,
+                            marginRight: showCategories ? tokens.spacing.sm : 0,
+                        },
                     ]}
                 >
-                    <Animated.View
-                        style={[
-                            styles.categoriesCard,
-                            {
-                                width: categoryWidth,
-                                opacity: categoryOpacity,
-                            },
-                        ]}
-                    >
+                    <View style={styles.categoriesCard}>
                         {showCategories ? (
                             <CategorySelection
                                 key="categorySelection"
                                 onSelected={onCategoryChange}
                             />
                         ) : null}
-                    </Animated.View>
-                </View>
+                    </View>
+                </Animated.View>
                 <UICard style={styles.productsCard} padding="md" radius="lg">
                     <View style={styles.productsHeader}>
                         <View>
@@ -361,6 +394,7 @@ export function SalesScreen({
                                 key="productSelection"
                                 products={filteredProducts}
                                 onSelected={onProductSelected}
+                                onLongPress={onProductLongPress}
                             />
                         </>
                     ) : (
@@ -445,11 +479,10 @@ const useStyles = () => {
             },
             categoriesCardWrap: {
                 overflow: 'hidden',
-            },
-            categoriesCardWrapVisible: {
-                marginRight: tokens.spacing.sm,
+                flexShrink: 0,
             },
             categoriesCard: {
+                flex: 1,
                 overflow: 'hidden',
             },
             productsCard: {

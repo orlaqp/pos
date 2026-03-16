@@ -116,6 +116,42 @@ export class OrderEntityMapper {
     return name.replace(/^(?:NON-EBT|EBT)\s+/i, '');
   }
 
+  private static parseAppliedDiscountSummary(
+    value: unknown
+  ): AppliedDiscountSummary | null {
+    if (!value) return null;
+    if (typeof value === 'object') return value as AppliedDiscountSummary;
+    if (typeof value !== 'string') return null;
+
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    if (trimmed[0] !== '{' && trimmed[0] !== '[') return null;
+
+    try {
+      return JSON.parse(trimmed) as AppliedDiscountSummary;
+    } catch {
+      return null;
+    }
+  }
+
+  private static parseAppliedDiscounts(
+    value: unknown
+  ): AppliedDiscountDetail[] {
+    if (!value) return [];
+    if (Array.isArray(value)) return value as AppliedDiscountDetail[];
+    if (typeof value !== 'string') return [];
+
+    const trimmed = value.trim();
+    if (!trimmed || (trimmed[0] !== '[' && trimmed[0] !== '{')) return [];
+
+    try {
+      const parsed = JSON.parse(trimmed);
+      return Array.isArray(parsed) ? (parsed as AppliedDiscountDetail[]) : [];
+    } catch {
+      return [];
+    }
+  }
+
   static fromModel(p: Order): OrderEntity {
     return {
       id: p.id,
@@ -137,9 +173,9 @@ export class OrderEntityMapper {
       pricingSource: (p.pricingSource as DiscountPricingSource) || 'OFFLINE_LOCAL',
       reconciliationStatus:
         (p.reconciliationStatus as DiscountReconciliationStatus) || 'PENDING',
-      appliedDiscountSummary: p.appliedDiscountSummary
-        ? JSON.parse(p.appliedDiscountSummary)
-        : null,
+      appliedDiscountSummary: OrderEntityMapper.parseAppliedDiscountSummary(
+        p.appliedDiscountSummary
+      ),
       lines: p.lines?.filter((i) => i !== null).map((i) => OrderEntityMapper.fromLine(i!)),
       paymentInfo: {
         employeeId: p.paymentInfo?.employeeId,
@@ -231,7 +267,7 @@ export class OrderEntityMapper {
       allocatedOrderDiscountTotal: l.allocatedOrderDiscountTotal ?? 0,
       lineTotalBeforeTax: l.lineTotalBeforeTax ?? l.price * l.quantity,
       lineTotalAfterTax: l.lineTotalAfterTax ?? l.price * l.quantity,
-      appliedDiscounts: l.appliedDiscounts ? JSON.parse(l.appliedDiscounts) : [],
+      appliedDiscounts: OrderEntityMapper.parseAppliedDiscounts(l.appliedDiscounts),
       unitOfMeasure: l.unitOfMeasure,
       categoryId: l.categoryId,
       discountable: l.discountable ?? true,

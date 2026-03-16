@@ -225,6 +225,7 @@ export function Navigation() {
                             name="Payments"
                             component={Orders}
                             options={({ navigation }) => ({
+                                headerShown: false,
                                 headerRight: () => renderSwitchEmployeeButton(navigation),
                             })}
                         />

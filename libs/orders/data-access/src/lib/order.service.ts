@@ -602,8 +602,7 @@ function buildOrderLines(
             ));
         const lineTotal = lineSummary?.lineTotalBeforeTax ?? getLineTotal(i.quantity, i.product.price);
         const allocation = allocations?.[identifier];
-
-        return new OrderLine({
+        const lineInit: ConstructorParameters<typeof OrderLine>[0] = {
             identifier,
             quantity: i.quantity,
             tax: 0,
@@ -617,7 +616,6 @@ function buildOrderLines(
             allocatedOrderDiscountTotal: lineSummary?.allocatedOrderDiscountTotal ?? 0,
             lineTotalBeforeTax: lineTotal,
             lineTotalAfterTax: lineTotal,
-            appliedDiscounts: JSON.stringify(pricedLine || lineDiscounts),
             productId: i.product.id!,
             categoryId: i.product.categoryId,
             barcode: i.product.barcode,
@@ -631,7 +629,9 @@ function buildOrderLines(
             isEBTEligible: allocation?.isEBTEligible ?? !!i.product.isEBTEligible,
             ebtPaidAmount: allocation?.ebtPaidAmount ?? 0,
             nonEbtPaidAmount: allocation?.nonEbtPaidAmount ?? lineTotal,
-        });
+        };
+
+        return new OrderLine(lineInit);
     });
 }
 
