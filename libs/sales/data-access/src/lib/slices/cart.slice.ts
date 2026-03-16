@@ -1,11 +1,17 @@
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import type { RootState } from '@pos/store';
+import { AppliedDiscountSummary, PricingEngine } from '@pos/discounts/domain';
 import {
     createSelector,
     createSlice,
     PayloadAction,
 } from '@reduxjs/toolkit';
-import { CartItem, CartPayment, CartState } from '../cart-entity';
+import {
+    CartItem,
+    CartPayment,
+    CartState,
+    CartPromoCode,
+} from '../cart-entity';
 import uuid from 'react-native-uuid';
 
 type OrderLineLike = {
@@ -13,8 +19,22 @@ type OrderLineLike = {
     identifier?: string;
     productId: string;
     productName: string;
+    basePrice?: number;
+    overridePrice?: number | null;
+    netUnitPrice?: number;
+    lineSubtotalBeforeOrderDiscount?: number;
+    lineDiscountTotal?: number;
+    allocatedOrderDiscountTotal?: number;
+    lineTotalBeforeTax?: number;
+    lineTotalAfterTax?: number;
+    appliedDiscounts?: import('@pos/discounts/domain').AppliedDiscountDetail[] | string | null;
     price: number;
     unitOfMeasure: string;
+    categoryId?: string | null;
+    discountable?: boolean | null;
+    minAllowedPrice?: number | null;
+    maxManualDiscountPercent?: number | null;
+    maxManualDiscountAmount?: number | null;
     isEBTEligible?: boolean | null;
 };
 
@@ -25,6 +45,15 @@ type OrderEntityLike = {
     status: string;
     employeeId: string;
     employeeName: string;
+    baseSubtotal?: number;
+    lineDiscountTotal?: number;
+    orderDiscountTotal?: number;
+    discountTotal?: number;
+    savingsTotal?: number;
+    pricingSource?: CartState['footer']['pricingSource'];
+    reconciliationStatus?: CartState['footer']['reconciliationStatus'];
+    promoCodes?: (string | null)[] | null;
+    appliedDiscountSummary?: AppliedDiscountSummary | string | null;
     subtotal: number;
     tax: number;
     total: number;
@@ -38,11 +67,21 @@ export const initialCartState: CartState = {
     header: undefined,
     items: [],
     footer: {
+        baseSubtotal: 0,
         discount: 0,
+        lineDiscountTotal: 0,
+        orderDiscountTotal: 0,
         subtotal: 0,
         tax: 0,
-        total: 0
+        savingsTotal: 0,
+        total: 0,
+        pricingSource: 'OFFLINE_LOCAL',
+        reconciliationStatus: 'PENDING',
     },
+    manualDiscounts: [],
+    priceOverrides: [],
+    promoCodes: [],
+    approvalEvents: [],
     selected: undefined,
 };
 
@@ -58,11 +97,17 @@ export const cartSlice = createSlice({
             state.id = action.payload.id;
             state.orderNo = action.payload.orderNo;
             state.footer = {
-                discount: 0,
+                baseSubtotal: o.baseSubtotal ?? o.subtotal,
+                discount: o.discountTotal ?? 0,
+                lineDiscountTotal: o.lineDiscountTotal ?? 0,
+                orderDiscountTotal: o.orderDiscountTotal ?? 0,
                 subtotal: o.subtotal,
                 tax: o.tax,
-                total: o.total
-            }
+                savingsTotal: o.savingsTotal ?? o.discountTotal ?? 0,
+                total: o.total,
+                pricingSource: o.pricingSource ?? 'OFFLINE_LOCAL',
+                reconciliationStatus: o.reconciliationStatus ?? 'PENDING',
+            };
             state.header = {
                 orderDate: o.orderDate!,
                 orderNumber: o.id,
@@ -76,11 +121,27 @@ export const cartSlice = createSlice({
                 product: {
                     id: i.productId,
                     name: i?.productName,
-                    price: i?.price,
+                    price: i?.basePrice ?? i?.price,
                     unitOfMeasure: i?.unitOfMeasure,
+                    categoryId: i?.categoryId,
                     isEBTEligible: i?.isEBTEligible ?? false,
+                    discountable: i?.discountable ?? true,
+                    minAllowedPrice: i?.minAllowedPrice,
+                    maxManualDiscountPercent: i?.maxManualDiscountPercent,
+                    maxManualDiscountAmount: i?.maxManualDiscountAmount,
                 }
-            }))
+            }));
+            state.manualDiscounts = [];
+            state.priceOverrides = [];
+            state.promoCodes = (o.promoCodes || [])
+                .filter((code): code is string => !!code)
+                .map((code) => ({ code }));
+            state.approvalEvents = [];
+            state.appliedDiscountSummary = o.appliedDiscountSummary
+                ? typeof o.appliedDiscountSummary === 'string'
+                    ? JSON.parse(o.appliedDiscountSummary)
+                    : o.appliedDiscountSummary
+                : undefined;
             state.payments = [];
             state.selected = initialCartState.selected;
         },
@@ -123,8 +184,107 @@ export const cartSlice = createSlice({
 
             updateTotals(state);
         },
+        applyManualDiscount: (
+            state: CartState,
+            action: PayloadAction<CartState['manualDiscounts'][number]>
+        ) => {
+            const request = action.payload;
+            if (request.scope === 'ORDER') {
+                state.manualDiscounts = [
+                    ...state.manualDiscounts.filter((discount) => discount.scope !== 'ORDER'),
+                    request,
+                ];
+            } else {
+                state.manualDiscounts = [
+                    ...state.manualDiscounts.filter(
+                        (discount) => !(discount.scope === 'LINE' && discount.lineId === request.lineId)
+                    ),
+                    request,
+                ];
+            }
+
+            updateTotals(state);
+        },
+        applyPriceOverride: (
+            state: CartState,
+            action: PayloadAction<CartState['priceOverrides'][number]>
+        ) => {
+            const request = action.payload;
+            state.priceOverrides = [
+                ...state.priceOverrides.filter((override) => override.lineId !== request.lineId),
+                request,
+            ];
+            state.manualDiscounts = state.manualDiscounts.filter(
+                (discount) => !(discount.scope === 'LINE' && discount.lineId === request.lineId)
+            );
+            updateTotals(state);
+        },
+        addPromoCode: (state: CartState, action: PayloadAction<CartPromoCode>) => {
+            const normalized = action.payload.code.trim().toUpperCase();
+            if (!normalized) return;
+            if (!state.promoCodes.some((promo) => promo.code.trim().toUpperCase() === normalized)) {
+                state.promoCodes.push({ code: normalized });
+            }
+            updateTotals(state);
+        },
+        removePromoCode: (state: CartState, action: PayloadAction<string>) => {
+            const normalized = action.payload.trim().toUpperCase();
+            state.promoCodes = state.promoCodes.filter(
+                (promo) => promo.code.trim().toUpperCase() !== normalized
+            );
+            updateTotals(state);
+        },
+        removePricingAdjustment: (
+            state: CartState,
+            action: PayloadAction<{ lineId?: string; scope?: 'LINE' | 'ORDER'; promoCode?: string }>
+        ) => {
+            const { lineId, scope, promoCode } = action.payload;
+
+            if (promoCode) {
+                state.promoCodes = state.promoCodes.filter(
+                    (promo) => promo.code.trim().toUpperCase() !== promoCode.trim().toUpperCase()
+                );
+            }
+
+            if (scope === 'ORDER') {
+                state.manualDiscounts = state.manualDiscounts.filter(
+                    (discount) => discount.scope !== 'ORDER'
+                );
+            }
+
+            if (lineId) {
+                state.manualDiscounts = state.manualDiscounts.filter(
+                    (discount) => !(discount.scope === 'LINE' && discount.lineId === lineId)
+                );
+                state.priceOverrides = state.priceOverrides.filter(
+                    (override) => override.lineId !== lineId
+                );
+            }
+
+            updateTotals(state);
+        },
+        setPolicy: (
+            state: CartState,
+            action: PayloadAction<CartState['policy'] | undefined>
+        ) => {
+            state.policy = action.payload;
+            updateTotals(state);
+        },
+        addApprovalEvent: (
+            state: CartState,
+            action: PayloadAction<CartState['approvalEvents'][number]>
+        ) => {
+            state.approvalEvents.push(action.payload);
+            updateTotals(state);
+        },
         removeProduct: (state: CartState, action: PayloadAction<CartItem>) => {
             state.items.splice(state.items.findIndex(i => i.identifier === action.payload.identifier), 1);
+            state.manualDiscounts = state.manualDiscounts.filter(
+                (discount) => !(discount.scope === 'LINE' && discount.lineId === action.payload.identifier)
+            );
+            state.priceOverrides = state.priceOverrides.filter(
+                (override) => override.lineId !== action.payload.identifier
+            );
             updateTotals(state);
         },
         addPayment: (state: CartState, action: PayloadAction<CartPayment[]>) => {
@@ -136,11 +296,22 @@ export const cartSlice = createSlice({
             state.header = undefined;
             state.items = [];
             state.footer = {
+                baseSubtotal: 0,
                 discount: 0,
+                lineDiscountTotal: 0,
+                orderDiscountTotal: 0,
                 subtotal: 0,
                 tax: 0,
-                total: 0
+                savingsTotal: 0,
+                total: 0,
+                pricingSource: 'OFFLINE_LOCAL',
+                reconciliationStatus: 'PENDING',
             };
+            state.manualDiscounts = [];
+            state.priceOverrides = [];
+            state.promoCodes = [];
+            state.approvalEvents = [];
+            state.appliedDiscountSummary = undefined;
             state.selected = undefined;
             state.payments = [];
         },
@@ -161,10 +332,41 @@ export const selectCart = getCartState;
 
 
 const updateTotals = (state: CartState) => {
-    const subtotal = state.items.reduce((prev, next) => {
-        return prev + (next.product.price * next.quantity);
-    }, 0);
+    const preview = PricingEngine.preview({
+        employee: {
+            employeeId: state.header?.employeeId || 'system',
+            employeeName: state.header?.employeeName || 'System',
+        },
+        policy: state.policy,
+        lines: state.items.map((item, index) => ({
+            lineId: item.identifier || `line-${index}`,
+            productId: item.product.id,
+            productName: item.product.name,
+            quantity: item.quantity,
+            baseUnitPrice: item.product.price,
+            unitOfMeasure: item.product.unitOfMeasure,
+            categoryId: item.product.categoryId,
+            discountable: item.product.discountable ?? true,
+            minAllowedPrice: item.product.minAllowedPrice,
+            maxManualDiscountPercent: item.product.maxManualDiscountPercent,
+            maxManualDiscountAmount: item.product.maxManualDiscountAmount,
+        })),
+        manualDiscounts: state.manualDiscounts,
+        priceOverrides: state.priceOverrides,
+        promoCodes: state.promoCodes,
+        approvalEvents: state.approvalEvents,
+        pricingSource: 'OFFLINE_LOCAL',
+    });
 
-    state.footer.subtotal = subtotal;
-    state.footer.total = subtotal;
+    state.footer.baseSubtotal = preview.order.baseSubtotal;
+    state.footer.subtotal = preview.order.subtotal;
+    state.footer.tax = preview.order.tax;
+    state.footer.discount = preview.order.discountTotal;
+    state.footer.lineDiscountTotal = preview.order.lineDiscountTotal;
+    state.footer.orderDiscountTotal = preview.order.orderDiscountTotal;
+    state.footer.savingsTotal = preview.order.savingsTotal;
+    state.footer.total = preview.order.total;
+    state.footer.pricingSource = preview.order.pricingSource;
+    state.footer.reconciliationStatus = preview.order.reconciliationStatus;
+    state.appliedDiscountSummary = preview.summary;
 }

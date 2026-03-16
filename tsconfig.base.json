@@ -33,6 +33,15 @@
             "@pos/categories/native-feature": [
                 "libs/categories/native-feature/src/index.ts"
             ],
+            "@pos/discounts/data-access": [
+                "libs/discounts/data-access/src/index.ts"
+            ],
+            "@pos/discounts/domain": [
+                "libs/discounts/domain/src/index.ts"
+            ],
+            "@pos/discounts/native-feature": [
+                "libs/discounts/native-feature/src/index.ts"
+            ],
             "@pos/employees/data-access": [
                 "libs/employees/data-access/src/index.ts"
             ],

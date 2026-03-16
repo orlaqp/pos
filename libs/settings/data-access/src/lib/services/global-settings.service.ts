@@ -17,11 +17,13 @@ export class GlobalSettingsService {
             return DataStore.save(
                 GlobalSettings.copyOf(settings, (updated) => {
                     updated.enforceSalesBasedOnInventory = newSettings.enforceSalesBasedOnInventory;
+                    updated.timezone = newSettings.timezone || settings.timezone || 'America/New_York';
                 })
             );
 
         return DataStore.save(new GlobalSettings(stampTenant({
-            enforceSalesBasedOnInventory: newSettings.enforceSalesBasedOnInventory || false
+            enforceSalesBasedOnInventory: newSettings.enforceSalesBasedOnInventory || false,
+            timezone: newSettings.timezone || 'America/New_York',
         }) as never));
     }
 

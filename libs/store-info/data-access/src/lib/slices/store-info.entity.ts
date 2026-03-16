@@ -12,6 +12,7 @@ export interface StoreInfoEntity {
     fax: string | null | undefined;
     email: string;
     disclaimer: string | null | undefined;
+    timezone?: string;
     createdAt?: string | null;
     updatedAt?: string | null;
 }
@@ -30,6 +31,7 @@ export class StoreInfoEntityMapper {
             phone: c.phone,
             fax: c.fax,
             disclaimer: c.disclaimer,
+            timezone: c.timezone,
             createdAt: c.createdAt,
             updatedAt: c.updatedAt
         }

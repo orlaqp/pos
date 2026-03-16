@@ -13,6 +13,53 @@ import {
 import { EmployeeEntity, EmployeeEntityMapper } from '../employee.entity';
 import { EmployeeService } from '../employee.service';
 import { DataStore } from '@pos/shared/amplify';
+import { Employee } from '@pos/shared/models';
+
+const waitForEmployeeSync = async (ms = 15000): Promise<EmployeeEntity[]> => {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let subscription: { unsubscribe: () => void } | undefined;
+    const unsubscribe = () => subscription?.unsubscribe();
+
+    subscription = DataStore.observeQuery(Employee).subscribe({
+      next: ({ isSynced, items }: { isSynced: boolean; items: Employee[] }) => {
+        if (!isSynced || settled) {
+          return;
+        }
+
+        settled = true;
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        unsubscribe();
+        resolve(items.map((item) => EmployeeEntityMapper.fromModel(item)));
+      },
+      error: (error: unknown) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        unsubscribe();
+        reject(error);
+      },
+    });
+
+    timeoutId = setTimeout(() => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      unsubscribe();
+      reject(new Error(`Employee sync timed out after ${ms}ms`));
+    }, ms);
+  });
+};
 
 export const EMPLOYEE_FEATURE_KEY = 'employees';
 
@@ -23,6 +70,7 @@ export interface EmployeesState extends EntityState<EmployeeEntity, string> {
   filterQuery?: string;
   filteredList?: EmployeeEntity[];
   loginEmployee?: EmployeeEntity;
+  initialSyncComplete: boolean;
 }
 
 export const employeesAdapter = createEntityAdapter<EmployeeEntity, string>({
@@ -42,33 +90,34 @@ export const fetchEmployees = createAsyncThunk(
     };
 
     try {
-      const employees = await EmployeeService.getAll();
-      return employees.map(x => EmployeeEntityMapper.fromModel(x));
+      return {
+        employees: await waitForEmployeeSync(),
+        initialSyncComplete: true,
+      };
     } catch (error) {
-      console.warn('Initial employee query failed, resetting DataStore and retrying once');
+      console.warn('Initial employee sync did not complete, falling back to local employee cache', error);
 
       try {
-        console.log('fetchEmployees recovery: clear');
-        await withTimeout('DataStore.clear()', DataStore.clear() as Promise<void>);
-        console.log('fetchEmployees recovery: restart query');
-
-        const employees = (await withTimeout(
-          'EmployeeService.getAll() retry',
+        const employees = await withTimeout(
+          'EmployeeService.getAll() fallback',
           EmployeeService.getAll()
-        )) as Awaited<ReturnType<typeof EmployeeService.getAll>>;
-        console.log('fetchEmployees recovery: success', employees.length);
-        return employees.map(x => EmployeeEntityMapper.fromModel(x));
-      } catch (retryError) {
+        );
+        console.log('fetchEmployees fallback: local cache result', employees.length);
+        return {
+          employees: employees.map(x => EmployeeEntityMapper.fromModel(x)),
+          initialSyncComplete: false,
+        };
+      } catch (fallbackError) {
         const message =
-          retryError instanceof Error
-            ? `${retryError.name}: ${retryError.message}`
-            : typeof retryError === 'string'
-              ? retryError
-              : JSON.stringify(retryError);
+          fallbackError instanceof Error
+            ? `${fallbackError.name}: ${fallbackError.message}`
+            : typeof fallbackError === 'string'
+              ? fallbackError
+              : JSON.stringify(fallbackError);
 
-        console.error('fetchEmployees failed', retryError);
-        if (retryError instanceof Error && retryError.stack) {
-          console.error('fetchEmployees stack', retryError.stack);
+        console.error('fetchEmployees failed', fallbackError);
+        if (fallbackError instanceof Error && fallbackError.stack) {
+          console.error('fetchEmployees stack', fallbackError.stack);
         }
         return thunkAPI.rejectWithValue(message);
       }
@@ -83,6 +132,7 @@ export const initialEmployeesState: EmployeesState =
     filterQuery: undefined,
     filteredList: undefined,
     loginEmployee: undefined,
+    initialSyncComplete: false,
   });
 
 export const employeesSlice = createSlice({
@@ -135,14 +185,16 @@ export const employeesSlice = createSlice({
       })
       .addCase(
         fetchEmployees.fulfilled,
-        (state: EmployeesState, action: PayloadAction<EmployeeEntity[] >) => {
-          employeesAdapter.setAll(state, action.payload);
+        (state: EmployeesState, action: PayloadAction<{ employees: EmployeeEntity[]; initialSyncComplete: boolean }>) => {
+          employeesAdapter.setAll(state, action.payload.employees);
           filterList(state, state.filterQuery);
           state.loadingStatus = 'loaded';
+          state.initialSyncComplete = action.payload.initialSyncComplete;
         }
       )
       .addCase(fetchEmployees.rejected, (state: EmployeesState, action) => {
         state.loadingStatus = 'error';
+        state.initialSyncComplete = false;
         state.error =
             typeof action.payload === 'string'
                 ? action.payload
@@ -192,6 +244,11 @@ export const selectFilteredList = createSelector(
 export const selectLoginEmployee = createSelector(
     getEmployeesState,
     (state: EmployeesState) => state.loginEmployee
+)
+
+export const selectInitialEmployeeSyncComplete = createSelector(
+    getEmployeesState,
+    (state: EmployeesState) => state.initialSyncComplete
 )
 
 

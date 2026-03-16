@@ -49,6 +49,8 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
     const ready = isCartReady(cart);
     const ebtEligibleTotal = getEbtEligibleTotal(cart);
     const invalidItemCount = cart.items.filter((item) => item.quantity === 0).length;
+    const orderLevelAdjustments = cart.appliedDiscountSummary?.orderLevelAdjustments || [];
+    const pricingWarnings = cart.appliedDiscountSummary?.warnings || [];
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
@@ -127,17 +129,55 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
         <View style={localStyles.root}>
             <View style={localStyles.linesWrap}>
                 <ScrollView contentContainerStyle={localStyles.linesContent}>
-                    {cart.items.map((i, idx) => (
+                    {cart.items.map((i, idx) => {
+                        const lineSummary = cart.appliedDiscountSummary?.lineSummaries.find(
+                            (summary) => summary.lineId === i.identifier
+                        );
+
+                        return (
                         <CartLine
                             key={idx}
                             item={i}
+                            appliedDiscounts={lineSummary?.discounts}
+                            lineDiscountTotal={
+                                (lineSummary?.lineDiscountTotal || 0) +
+                                (lineSummary?.allocatedOrderDiscountTotal || 0)
+                            }
+                            lineTotal={lineSummary?.lineTotalBeforeTax}
                             onSelect={onSelect}
                             onRemove={onRemove}
                         />
-                    ))}
+                        );
+                    })}
                 </ScrollView>
             </View>
             <View style={localStyles.actionsWrap}>
+                {cart.footer.discount > 0 ? (
+                    <View style={localStyles.summaryCard}>
+                        <Text style={localStyles.summaryTitle}>Discounts applied</Text>
+                        <Text style={localStyles.summaryValue}>
+                            Saved ${cart.footer.savingsTotal.toFixed(2)}
+                        </Text>
+                        {orderLevelAdjustments.map((adjustment) => (
+                            <Text
+                                key={adjustment.discountApplicationId}
+                                style={localStyles.summaryLine}
+                            >
+                                {adjustment.name}: -${adjustment.discountAmount.toFixed(2)}
+                            </Text>
+                        ))}
+                        {cart.promoCodes.length ? (
+                            <Text style={localStyles.summaryLine}>
+                                Promo codes: {cart.promoCodes.map((promo) => promo.code).join(', ')}
+                            </Text>
+                        ) : null}
+                        {pricingWarnings.map((warning) => (
+                            <Text key={warning} style={localStyles.warningInline}>
+                                {warning}
+                            </Text>
+                        ))}
+                    </View>
+                ) : null}
                 {!ready && invalidItemCount > 0 ? (
                     <Text style={localStyles.warningText}>
                         {invalidItemCount === 1
@@ -235,12 +275,43 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         actionsWrap: {
             marginTop: tokens.spacing.sm,
         },
+        summaryCard: {
+            borderRadius: tokens.radii.md,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            backgroundColor: tokens.colors.surfaceMuted,
+            padding: tokens.spacing.sm,
+            marginBottom: tokens.spacing.sm,
+        },
+        summaryTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 16,
+            fontWeight: '800',
+            marginBottom: 4,
+        },
+        summaryValue: {
+            color: tokens.colors.success,
+            fontSize: 18,
+            fontWeight: '800',
+            marginBottom: tokens.spacing.xs,
+        },
+        summaryLine: {
+            color: tokens.colors.textSecondary,
+            fontSize: 13,
+            lineHeight: 18,
+        },
         warningText: {
             color: tokens.colors.danger,
             fontSize: 13,
             fontWeight: '700',
             textAlign: 'center',
             marginBottom: tokens.spacing.xs,
+        },
+        warningInline: {
+            color: tokens.colors.warning,
+            fontSize: 12,
+            fontWeight: '700',
+            marginTop: tokens.spacing.xs,
         },
         primaryButtonContainer: {
             borderRadius: tokens.radii.md,

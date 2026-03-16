@@ -137,6 +137,7 @@ export function LoginScreen(props: LoginProps) {
 
                             <Button
                                 title="Continue"
+                                containerStyle={styles.primaryButtonContainer}
                                 buttonStyle={styles.primaryButton}
                                 onPress={formMethods.handleSubmit(login)}
                                 loading={loading}
@@ -239,8 +240,12 @@ const useStyles = () => {
         primaryButton: {
             borderRadius: 16,
             minHeight: 52,
-            marginTop: 16,
             backgroundColor: colors.primary,
+        },
+        primaryButtonContainer: {
+            width: '100%',
+            marginTop: 16,
+            alignSelf: 'stretch',
         },
         secondaryAction: {
             color: '#7eb6ff',

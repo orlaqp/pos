@@ -87,6 +87,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "timezone": {
+                    "name": "timezone",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -256,6 +263,20 @@ export const schema = {
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
+                    "attributes": []
+                },
+                "discountable": {
+                    "name": "discountable",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "discountPolicyMode": {
+                    "name": "discountPolicyMode",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
                     "attributes": []
                 },
                 "createdAt": {
@@ -493,6 +514,20 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "discountPolicyId": {
+                    "name": "discountPolicyId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "policyProfileKey": {
+                    "name": "policyProfileKey",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -568,11 +603,46 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "baseSubtotal": {
+                    "name": "baseSubtotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "subtotal": {
                     "name": "subtotal",
                     "isArray": false,
                     "type": "Float",
                     "isRequired": true,
+                    "attributes": []
+                },
+                "lineDiscountTotal": {
+                    "name": "lineDiscountTotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "orderDiscountTotal": {
+                    "name": "orderDiscountTotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "discountTotal": {
+                    "name": "discountTotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "savingsTotal": {
+                    "name": "savingsTotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
                     "attributes": []
                 },
                 "tax": {
@@ -587,6 +657,49 @@ export const schema = {
                     "isArray": false,
                     "type": "Float",
                     "isRequired": true,
+                    "attributes": []
+                },
+                "promoCodes": {
+                    "name": "promoCodes",
+                    "isArray": true,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": false
+                },
+                "pricingVersion": {
+                    "name": "pricingVersion",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "pricingSnapshotHash": {
+                    "name": "pricingSnapshotHash",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "pricingSource": {
+                    "name": "pricingSource",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "reconciliationStatus": {
+                    "name": "reconciliationStatus",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "appliedDiscountSummary": {
+                    "name": "appliedDiscountSummary",
+                    "isArray": false,
+                    "type": "AWSJSON",
+                    "isRequired": false,
                     "attributes": []
                 },
                 "status": {
@@ -905,6 +1018,34 @@ export const schema = {
                     "name": "isEBTEligible",
                     "isArray": false,
                     "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "discountable": {
+                    "name": "discountable",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "minAllowedPrice": {
+                    "name": "minAllowedPrice",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "maxManualDiscountPercent": {
+                    "name": "maxManualDiscountPercent",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "maxManualDiscountAmount": {
+                    "name": "maxManualDiscountAmount",
+                    "isArray": false,
+                    "type": "Float",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -1773,6 +1914,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "timezone": {
+                    "name": "timezone",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -1811,6 +1959,107 @@ export const schema = {
                                     "delete",
                                     "read"
                                 ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "DiscountDefinition": {
+            "name": "DiscountDefinition",
+            "fields": {
+                "id": { "name": "id", "isArray": false, "type": "ID", "isRequired": true, "attributes": [] },
+                "tenantId": { "name": "tenantId", "isArray": false, "type": "ID", "isRequired": true, "attributes": [] },
+                "name": { "name": "name", "isArray": false, "type": "String", "isRequired": true, "attributes": [] },
+                "code": { "name": "code", "isArray": false, "type": "String", "isRequired": false, "attributes": [] },
+                "description": { "name": "description", "isArray": false, "type": "String", "isRequired": false, "attributes": [] },
+                "status": { "name": "status", "isArray": false, "type": "String", "isRequired": true, "attributes": [] },
+                "type": { "name": "type", "isArray": false, "type": "String", "isRequired": true, "attributes": [] },
+                "method": { "name": "method", "isArray": false, "type": "String", "isRequired": true, "attributes": [] },
+                "scope": { "name": "scope", "isArray": false, "type": "String", "isRequired": true, "attributes": [] },
+                "value": { "name": "value", "isArray": false, "type": "Float", "isRequired": true, "attributes": [] },
+                "priority": { "name": "priority", "isArray": false, "type": "Int", "isRequired": false, "attributes": [] },
+                "stackMode": { "name": "stackMode", "isArray": false, "type": "String", "isRequired": true, "attributes": [] },
+                "approvalRequired": { "name": "approvalRequired", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "reasonRequired": { "name": "reasonRequired", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "startDate": { "name": "startDate", "isArray": false, "type": "AWSDateTime", "isRequired": false, "attributes": [] },
+                "endDate": { "name": "endDate", "isArray": false, "type": "AWSDateTime", "isRequired": false, "attributes": [] },
+                "daysOfWeek": { "name": "daysOfWeek", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": false },
+                "startTime": { "name": "startTime", "isArray": false, "type": "String", "isRequired": false, "attributes": [] },
+                "endTime": { "name": "endTime", "isArray": false, "type": "String", "isRequired": false, "attributes": [] },
+                "minSubtotal": { "name": "minSubtotal", "isArray": false, "type": "Float", "isRequired": false, "attributes": [] },
+                "minQuantity": { "name": "minQuantity", "isArray": false, "type": "Float", "isRequired": false, "attributes": [] },
+                "usageLimitTotal": { "name": "usageLimitTotal", "isArray": false, "type": "Int", "isRequired": false, "attributes": [] },
+                "usageCountTotal": { "name": "usageCountTotal", "isArray": false, "type": "Int", "isRequired": false, "attributes": [] },
+                "applicableProductIds": { "name": "applicableProductIds", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": false },
+                "applicableCategoryIds": { "name": "applicableCategoryIds", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": false },
+                "excludedProductIds": { "name": "excludedProductIds", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": false },
+                "excludedCategoryIds": { "name": "excludedCategoryIds", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": false },
+                "excludeAlreadyDiscountedItems": { "name": "excludeAlreadyDiscountedItems", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "appliesToAllProducts": { "name": "appliesToAllProducts", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "storeIds": { "name": "storeIds", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": false },
+                "stationIds": { "name": "stationIds", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": false },
+                "active": { "name": "active", "isArray": false, "type": "Boolean", "isRequired": true, "attributes": [] },
+                "createdAt": { "name": "createdAt", "isArray": false, "type": "AWSDateTime", "isRequired": false, "attributes": [], "isReadOnly": true },
+                "updatedAt": { "name": "updatedAt", "isArray": false, "type": "AWSDateTime", "isRequired": false, "attributes": [], "isReadOnly": true }
+            },
+            "syncable": true,
+            "pluralName": "DiscountDefinitions",
+            "attributes": [
+                { "type": "model", "properties": {} },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
+                                "operations": ["create", "update", "delete", "read"]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "EmployeeDiscountPolicy": {
+            "name": "EmployeeDiscountPolicy",
+            "fields": {
+                "id": { "name": "id", "isArray": false, "type": "ID", "isRequired": true, "attributes": [] },
+                "tenantId": { "name": "tenantId", "isArray": false, "type": "ID", "isRequired": true, "attributes": [] },
+                "employeeId": { "name": "employeeId", "isArray": false, "type": "ID", "isRequired": false, "attributes": [] },
+                "roleKey": { "name": "roleKey", "isArray": false, "type": "String", "isRequired": false, "attributes": [] },
+                "maxManualPercentDiscount": { "name": "maxManualPercentDiscount", "isArray": false, "type": "Float", "isRequired": false, "attributes": [] },
+                "maxManualAmountDiscount": { "name": "maxManualAmountDiscount", "isArray": false, "type": "Float", "isRequired": false, "attributes": [] },
+                "maxPriceOverrideAmount": { "name": "maxPriceOverrideAmount", "isArray": false, "type": "Float", "isRequired": false, "attributes": [] },
+                "maxPriceOverridePercentBelowBase": { "name": "maxPriceOverridePercentBelowBase", "isArray": false, "type": "Float", "isRequired": false, "attributes": [] },
+                "canApplyOrderDiscount": { "name": "canApplyOrderDiscount", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "canOverridePrice": { "name": "canOverridePrice", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "canApproveDiscounts": { "name": "canApproveDiscounts", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "canApprovePriceOverrides": { "name": "canApprovePriceOverrides", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "canUsePromoCodes": { "name": "canUsePromoCodes", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "requireReasonForManualDiscounts": { "name": "requireReasonForManualDiscounts", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "requireReasonForOverrides": { "name": "requireReasonForOverrides", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "requireApprovalForOrderDiscount": { "name": "requireApprovalForOrderDiscount", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "requireApprovalForAnyPriceOverride": { "name": "requireApprovalForAnyPriceOverride", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "allowExclusiveDiscountOverride": { "name": "allowExclusiveDiscountOverride", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
+                "active": { "name": "active", "isArray": false, "type": "Boolean", "isRequired": true, "attributes": [] },
+                "createdAt": { "name": "createdAt", "isArray": false, "type": "AWSDateTime", "isRequired": false, "attributes": [], "isReadOnly": true },
+                "updatedAt": { "name": "updatedAt", "isArray": false, "type": "AWSDateTime", "isRequired": false, "attributes": [], "isReadOnly": true }
+            },
+            "syncable": true,
+            "pluralName": "EmployeeDiscountPolicies",
+            "attributes": [
+                { "type": "model", "properties": {} },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "allow": "owner",
+                                "ownerField": "tenantId",
+                                "identityClaim": "sub",
+                                "operations": ["create", "update", "delete", "read"]
                             }
                         ]
                     }
@@ -1990,6 +2239,104 @@ export const schema = {
                     "isArray": false,
                     "type": "Float",
                     "isRequired": true,
+                    "attributes": []
+                },
+                "basePrice": {
+                    "name": "basePrice",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "overridePrice": {
+                    "name": "overridePrice",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "netUnitPrice": {
+                    "name": "netUnitPrice",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "lineSubtotalBeforeOrderDiscount": {
+                    "name": "lineSubtotalBeforeOrderDiscount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "lineDiscountTotal": {
+                    "name": "lineDiscountTotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "allocatedOrderDiscountTotal": {
+                    "name": "allocatedOrderDiscountTotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "lineTotalBeforeTax": {
+                    "name": "lineTotalBeforeTax",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "lineTotalAfterTax": {
+                    "name": "lineTotalAfterTax",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "appliedDiscounts": {
+                    "name": "appliedDiscounts",
+                    "isArray": false,
+                    "type": "AWSJSON",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "categoryId": {
+                    "name": "categoryId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "discountable": {
+                    "name": "discountable",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "minAllowedPrice": {
+                    "name": "minAllowedPrice",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "maxManualDiscountPercent": {
+                    "name": "maxManualDiscountPercent",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "maxManualDiscountAmount": {
+                    "name": "maxManualDiscountAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
                     "attributes": []
                 },
                 "isEBTEligible": {

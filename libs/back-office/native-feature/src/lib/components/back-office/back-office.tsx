@@ -21,6 +21,7 @@ import { useSelector } from 'react-redux';
 
 import { Brands } from '@pos/brands/native-feature';
 import { Categories } from '@pos/categories/native-feature';
+import { DiscountEditor, Discounts, PolicyEditor } from '@pos/discounts/native-feature';
 import { Employees } from '@pos/employees/native-feature';
 import { Products } from '@pos/products/native-feature';
 import { UnitOfMeasures } from '@pos/unit-of-measures/native-feature';
@@ -111,6 +112,13 @@ export function BackOffice({ navigation, route }: BackOfficeProps) {
                                 <Stack.Screen name="In Stock" component={InventoryList} />
                                 <Stack.Screen name="Counts" component={InventoryCounts} />
                                 <Stack.Screen name="Receives" component={InventoryReceives} />
+                                <Stack.Screen name="Discounts" component={Discounts} />
+                                <Stack.Screen name="Promo Codes" component={Discounts} />
+                                <Stack.Screen name="Policies" component={Discounts} />
+                                <Stack.Screen name="Exceptions" component={Discounts} />
+                                <Stack.Screen name="Discount Form" component={DiscountEditor} />
+                                <Stack.Screen name="Promo Code Form" component={DiscountEditor} />
+                                <Stack.Screen name="Policy Form" component={PolicyEditor} />
                                 <Stack.Screen name="Products" component={Products} />
                                 <Stack.Screen name="Brands" component={Brands} />
                                 <Stack.Screen name="U/M" component={UnitOfMeasures} />

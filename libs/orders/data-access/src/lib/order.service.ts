@@ -61,9 +61,22 @@ export class OrderService {
         const order = new Order(stampTenant({
             orderNo: await StationService.getNextOrderNumber(request.by),
             status: 'OPEN',
+            baseSubtotal: request.order.footer.baseSubtotal,
             subtotal: request.order.footer.subtotal,
             tax: 0,
             total: request.order.footer.total,
+            lineDiscountTotal: request.order.footer.lineDiscountTotal,
+            orderDiscountTotal: request.order.footer.orderDiscountTotal,
+            discountTotal: request.order.footer.discount,
+            savingsTotal: request.order.footer.savingsTotal,
+            promoCodes: request.order.promoCodes.map((promo) => promo.code),
+            pricingVersion: 'discounts-v1',
+            pricingSnapshotHash: buildPricingSnapshotHash(request.order),
+            pricingSource: request.order.footer.pricingSource,
+            reconciliationStatus: request.order.footer.reconciliationStatus,
+            appliedDiscountSummary: request.order.appliedDiscountSummary
+                ? JSON.stringify(request.order.appliedDiscountSummary)
+                : null,
             employeeId: request.by.id!,
             employeeName: `${request.by.firstName} ${request.by.lastName}`,
             lines: buildOrderLines(request.order),
@@ -104,7 +117,7 @@ export class OrderService {
                 identifier: item.identifier,
                 quantity: item.quantity,
                 price: item.product.price,
-                isEBTEligible: item.product.isEBTEligible,
+                isEBTEligible: item.product.isEBTEligible ?? false,
             })),
             request.payments
         );
@@ -122,7 +135,7 @@ export class OrderService {
                 identifier: item.identifier,
                 quantity: item.quantity,
                 price: item.product.price,
-                isEBTEligible: item.product.isEBTEligible,
+                isEBTEligible: item.product.isEBTEligible ?? false,
             })),
             request.payments
         );
@@ -252,6 +265,8 @@ export class OrderService {
             by: createdBy,// get original employee
             order: newCart
         }) // .upsertOrder(employee, newCart, OrderStatus.PAID);
+
+        return null;
     }
 
 
@@ -267,9 +282,22 @@ export class OrderService {
         }
 
         return Order.copyOf(existing, (o) => {
+            o.baseSubtotal = req.order.footer.baseSubtotal;
             o.subtotal = req.order.footer.subtotal;
             o.tax = 0;
             o.total = req.order.footer.total;
+            o.lineDiscountTotal = req.order.footer.lineDiscountTotal;
+            o.orderDiscountTotal = req.order.footer.orderDiscountTotal;
+            o.discountTotal = req.order.footer.discount;
+            o.savingsTotal = req.order.footer.savingsTotal;
+            o.promoCodes = req.order.promoCodes.map((promo) => promo.code);
+            o.pricingVersion = 'discounts-v1';
+            o.pricingSnapshotHash = buildPricingSnapshotHash(req.order);
+            o.pricingSource = req.order.footer.pricingSource;
+            o.reconciliationStatus = req.order.footer.reconciliationStatus;
+            o.appliedDiscountSummary = req.order.appliedDiscountSummary
+                ? JSON.stringify(req.order.appliedDiscountSummary)
+                : null;
             o.lines = buildOrderLines(req.order);
 
                 o.updatedBy = {
@@ -559,19 +587,47 @@ function buildOrderLines(
 ) {
     return order.items.map((i, index) => {
         const identifier = i.identifier || getLineKey(i.identifier, index);
-        const lineTotal = getLineTotal(i.quantity, i.product.price);
+        const lineSummary = order.appliedDiscountSummary?.lineSummaries.find(
+            (summary) => summary.lineId === identifier
+        );
+        const lineDiscounts = lineSummary?.discounts || [];
+        const basePrice = i.product.price;
+        const overrideApplication = lineDiscounts.find(
+            (discount) => discount.applicationType === 'PRICE_OVERRIDE'
+        );
+        const pricedLine = order.appliedDiscountSummary?.applications
+            .filter((application) => application.scope === 'LINE')
+            .filter((application) => lineDiscounts.some(
+                (discount) => discount.discountApplicationId === application.discountApplicationId
+            ));
+        const lineTotal = lineSummary?.lineTotalBeforeTax ?? getLineTotal(i.quantity, i.product.price);
         const allocation = allocations?.[identifier];
 
         return new OrderLine({
             identifier,
             quantity: i.quantity,
             tax: 0,
-            price: i.product.price,
+            price: basePrice,
+            basePrice,
+            overridePrice: overrideApplication?.value ?? null,
+            netUnitPrice: i.quantity ? lineTotal / i.quantity : basePrice,
+            lineSubtotalBeforeOrderDiscount:
+                roundMoney(lineTotal + (lineSummary?.allocatedOrderDiscountTotal ?? 0)),
+            lineDiscountTotal: lineSummary?.lineDiscountTotal ?? 0,
+            allocatedOrderDiscountTotal: lineSummary?.allocatedOrderDiscountTotal ?? 0,
+            lineTotalBeforeTax: lineTotal,
+            lineTotalAfterTax: lineTotal,
+            appliedDiscounts: JSON.stringify(pricedLine || lineDiscounts),
             productId: i.product.id!,
+            categoryId: i.product.categoryId,
             barcode: i.product.barcode,
             sku: i.product.sku,
             productName: i.product.name,
             unitOfMeasure: i.product.unitOfMeasure,
+            discountable: i.product.discountable ?? true,
+            minAllowedPrice: i.product.minAllowedPrice ?? null,
+            maxManualDiscountPercent: i.product.maxManualDiscountPercent ?? null,
+            maxManualDiscountAmount: i.product.maxManualDiscountAmount ?? null,
             isEBTEligible: allocation?.isEBTEligible ?? !!i.product.isEBTEligible,
             ebtPaidAmount: allocation?.ebtPaidAmount ?? 0,
             nonEbtPaidAmount: allocation?.nonEbtPaidAmount ?? lineTotal,
@@ -581,4 +637,25 @@ function buildOrderLines(
 
 function getLineKey(identifier: string | undefined, index: number) {
     return identifier || `line-${index}`;
+}
+
+function buildPricingSnapshotHash(order: Omit<CartState, 'id'>) {
+    const payload = JSON.stringify({
+        items: order.items,
+        footer: order.footer,
+        summary: order.appliedDiscountSummary,
+        promoCodes: order.promoCodes,
+    });
+
+    let hash = 0;
+    for (let index = 0; index < payload.length; index += 1) {
+        hash = (hash << 5) - hash + payload.charCodeAt(index);
+        hash |= 0;
+    }
+
+    return `pricing-${Math.abs(hash)}`;
+}
+
+function roundMoney(value: number) {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
 }

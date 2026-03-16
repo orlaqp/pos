@@ -74,6 +74,7 @@ export class ProductService {
         if (!product.id) {
             if (!validationRes) return false;
             product.isEBTEligible = product.isEBTEligible ?? false;
+            product.discountable = product.discountable ?? true;
 
             const entity = new Product(stampTenant(product) as never);
             const res = await DataStore.save(entity);
@@ -114,6 +115,10 @@ export class ProductService {
                 updated.productBrandId = product?.productBrandId;
                 updated.isActive = product.isActive;
                 updated.isEBTEligible = product.isEBTEligible ?? false;
+                updated.discountable = product.discountable ?? true;
+                updated.minAllowedPrice = product.minAllowedPrice;
+                updated.maxManualDiscountPercent = product.maxManualDiscountPercent;
+                updated.maxManualDiscountAmount = product.maxManualDiscountAmount;
             })
         );
 

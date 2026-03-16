@@ -9,7 +9,13 @@ import { stampTenant } from '@pos/auth/data-access';
 export class CategoryService {
     static async save(dispatch: Dispatch<any>, category: CategoryEntity) {
         if (!category.id) {
-            const cat = new Category(stampTenant(category) as never);
+            const cat = new Category(
+                stampTenant({
+                    ...category,
+                    discountable: category.discountable ?? true,
+                    discountPolicyMode: category.discountPolicyMode || 'DEFAULT',
+                }) as never
+            );
             await DataStore.save(cat);
             return dispatch(categoriesActions.add(category));
         }
@@ -27,6 +33,8 @@ export class CategoryService {
                 updated.description = category.description;
                 updated.name = category.name;
                 updated.picture = category.picture;
+                updated.discountable = category.discountable ?? true;
+                updated.discountPolicyMode = category.discountPolicyMode || 'DEFAULT';
             })
         );
         

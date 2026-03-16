@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider, Button, Text } from '@rneui/themed';
@@ -34,6 +35,7 @@ import { DataStore } from '@pos/shared/amplify';
 type BootstrapStatus = 'idle' | 'checking-session' | 'resolving-tenant' | 'preparing-business-data' | 'ready' | 'error';
 const appTheme = theme('dark');
 const appColors = designTokens.colors;
+const LAST_BOOTSTRAPPED_TENANT_KEY = 'last-bootstrapped-tenant-id-v1';
 
 const withTimeout = <T,>(
     label: string,
@@ -49,6 +51,30 @@ const withTimeout = <T,>(
             )
         ),
     ]);
+
+const getLastBootstrappedTenantId = async () => {
+    try {
+        return await AsyncStorage.getItem(LAST_BOOTSTRAPPED_TENANT_KEY);
+    } catch {
+        return null;
+    }
+};
+
+const setLastBootstrappedTenantId = async (tenantId: string) => {
+    try {
+        await AsyncStorage.setItem(LAST_BOOTSTRAPPED_TENANT_KEY, tenantId);
+    } catch {
+        // Best-effort cache marker; bootstrap should continue even if this fails.
+    }
+};
+
+const clearLastBootstrappedTenantId = async () => {
+    try {
+        await AsyncStorage.removeItem(LAST_BOOTSTRAPPED_TENANT_KEY);
+    } catch {
+        // Best-effort cache marker.
+    }
+};
 
 const StartupScreen = ({
     status,
@@ -122,6 +148,7 @@ const AppContent = () => {
                         dispatch(authActions.logoff());
                         dispatch(tenantSessionActions.clearTenantSession());
                         dispatch(employeesActions.logoffEmployee());
+                        void clearLastBootstrappedTenantId();
                         setBootstrapStatus('ready');
                         return;
                     }
@@ -135,6 +162,7 @@ const AppContent = () => {
                 dispatch(authActions.logoff());
                 dispatch(tenantSessionActions.clearTenantSession());
                 dispatch(employeesActions.logoffEmployee());
+                void clearLastBootstrappedTenantId();
                 setBootstrapStatus('ready');
                 return;
             }
@@ -153,10 +181,17 @@ const AppContent = () => {
             dispatch(tenantSessionActions.setBootstrapStatus('restoring'));
 
             await DataStore.stop();
-            await DataStore.clear();
+            const lastTenantId = await getLastBootstrappedTenantId();
+            const shouldClearDataStore = !!lastTenantId && lastTenantId !== user.tenantId;
+
+            if (shouldClearDataStore) {
+                await DataStore.clear();
+            }
+
             configureDataStore();
             await DataStore.start();
             await bootstrapTenantSession(user);
+            await setLastBootstrappedTenantId(user.tenantId);
 
             setBootstrapStatus('preparing-business-data');
             dispatch(tenantSessionActions.setBootstrapStatus('bootstrapping'));
@@ -167,9 +202,9 @@ const AppContent = () => {
             );
 
             await Promise.all([
-                dispatch(fetchStoreInfo()),
-                dispatch(fetchGlobalSettings()),
-                dispatch(fetchEmployees()),
+                dispatch(fetchStoreInfo()).unwrap(),
+                dispatch(fetchGlobalSettings()).unwrap(),
+                dispatch(fetchEmployees()).unwrap(),
             ]);
 
             dispatch(tenantSessionActions.setBootstrapStatus('ready'));

@@ -1,10 +1,14 @@
 
 import { Employee } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from '@pos/shared/amplify';
+import { API, DataStore } from '@pos/shared/amplify';
 import { EmployeeEntity } from './employee.entity';
 import { EmployeeEntityMapper } from './employee.entity';
 import { stampTenant } from '@pos/auth/data-access';
+import { listEmployees } from '@pos/shared/api';
+
+const normalizePin = (value: string | null | undefined) => String(value ?? '').trim();
+const normalizeEmail = (value: string | null | undefined) => String(value ?? '').trim().toLowerCase();
 
 export class EmployeeService {
     static async save(dispatch: Dispatch<any>, employee: EmployeeEntity) {
@@ -56,10 +60,85 @@ export class EmployeeService {
     }
 
     static async getEmployee(pin: string) {
+        const normalizedPin = normalizePin(pin);
+
+        if (!normalizedPin) {
+            return null;
+        }
+
         const emp = await DataStore.query(Employee, (e) =>
-            e.and((employee) => [employee.pin.eq(pin), employee.active.eq(true)])
+            e.and((employee) => [employee.pin.eq(normalizedPin), employee.active.eq(true)])
         );
-        return emp[0] ? EmployeeEntityMapper.fromModel(emp[0]): null;
+
+        if (emp[0]) {
+            return EmployeeEntityMapper.fromModel(emp[0]);
+        }
+
+        const allEmployees = await DataStore.query(Employee);
+        const fallbackMatch = allEmployees.find(
+            (employee) => employee.active && normalizePin(employee.pin) === normalizedPin
+        );
+
+        if (fallbackMatch) {
+            return EmployeeEntityMapper.fromModel(fallbackMatch);
+        }
+
+        const response = await API.graphql<{
+            listEmployees?: {
+                items?: Array<Employee | null> | null;
+            } | null;
+        }>({
+            query: listEmployees,
+            variables: {
+                limit: 100,
+            },
+            authMode: 'userPool',
+        });
+
+        const remoteMatch = response.data?.listEmployees?.items?.find(
+            (employee): employee is Employee =>
+                !!employee && employee.active && normalizePin(employee.pin) === normalizedPin
+        );
+
+        return remoteMatch ? EmployeeEntityMapper.fromModel(remoteMatch) : null;
+    }
+
+    static async getEmployeeByEmail(email: string) {
+        const normalizedEmail = normalizeEmail(email);
+
+        if (!normalizedEmail) {
+            return null;
+        }
+
+        const localMatch = (await DataStore.query(Employee)).find(
+            (employee) =>
+                employee.active && normalizeEmail(employee.email) === normalizedEmail
+        );
+
+        if (localMatch) {
+            return EmployeeEntityMapper.fromModel(localMatch);
+        }
+
+        const response = await API.graphql<{
+            listEmployees?: {
+                items?: Array<Employee | null> | null;
+            } | null;
+        }>({
+            query: listEmployees,
+            variables: {
+                limit: 100,
+            },
+            authMode: 'userPool',
+        });
+
+        const remoteMatch = response.data?.listEmployees?.items?.find(
+            (employee): employee is Employee =>
+                !!employee &&
+                employee.active &&
+                normalizeEmail(employee.email) === normalizedEmail
+        );
+
+        return remoteMatch ? EmployeeEntityMapper.fromModel(remoteMatch) : null;
     }
 
     static async getById(employeeId: string): Promise<(Omit<EmployeeEntity, "id"> & { id: string; }) | null> {

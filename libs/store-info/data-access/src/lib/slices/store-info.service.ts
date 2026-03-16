@@ -12,7 +12,12 @@ export class StoreInfoService {
 
     static async save(dispatch: Dispatch<any>, store: StoreInfoEntity) {
         if (!store.id) {
-            const model = new Store(stampTenant(store) as never);
+            const model = new Store(
+                stampTenant({
+                    ...store,
+                    timezone: store.timezone || 'America/New_York',
+                }) as never
+            );
             const res = await DataStore.save(model);
             
             store.id = res.id;
@@ -38,6 +43,7 @@ export class StoreInfoService {
                 updated.fax = store.fax;
                 updated.disclaimer = store.disclaimer;
                 updated.phone = store.phone;
+                updated.timezone = store.timezone || existing.timezone || 'America/New_York';
             })
         );
         

@@ -39,6 +39,19 @@ export const menuItems: SidebarItem[] = [
         group: 'Management',
     },
     {
+        id: '9',
+        title: 'Discounts',
+        icon: 'brightness-percent',
+        role: Role.Admin,
+        group: 'Management',
+        children: [
+            { id: '9-1', title: 'Discounts' },
+            { id: '9-2', title: 'Promo Codes' },
+            { id: '9-3', title: 'Policies' },
+            { id: '9-4', title: 'Exceptions' },
+        ],
+    },
+    {
         id: '5',
         title: 'Products',
         labelKey: 'SIDEBAR_Products',

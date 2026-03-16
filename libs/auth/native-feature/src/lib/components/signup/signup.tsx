@@ -200,7 +200,7 @@ export function SignUpScreen(props: SignupProps) {
                   </View>
                   <Button
                     title="Create workspace"
-                    containerStyle={styles.buttonSpacing}
+                    containerStyle={styles.primaryButtonContainer}
                     buttonStyle={styles.primaryButton}
                     onPress={formMethods.handleSubmit(onSubmit)}
                   />
@@ -355,13 +355,15 @@ const useStyles = () => {
     inputControl: {
       marginTop: 0,
     },
-    buttonSpacing: {
-      marginTop: 18,
-    },
     primaryButton: {
       borderRadius: 16,
       minHeight: 52,
       backgroundColor: colors.primary,
+    },
+    primaryButtonContainer: {
+      width: '100%',
+      marginTop: 18,
+      alignSelf: 'stretch',
     },
     secondaryButtonText: {
       color: '#7eb6ff',

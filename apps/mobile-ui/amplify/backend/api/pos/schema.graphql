@@ -17,6 +17,68 @@ type TenantUser @model @auth(rules: [{ allow: owner, ownerField: "userId", ident
   role: TenantUserRole!
 }
 
+enum CategoryDiscountPolicyMode {
+  DEFAULT
+  FORCE_INCLUDE
+  FORCE_EXCLUDE
+}
+
+enum DiscountDefinitionStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
+enum DiscountDefinitionType {
+  MANUAL
+  AUTOMATIC
+  PROMO_CODE
+}
+
+enum DiscountMethod {
+  PERCENT
+  AMOUNT
+  FINAL_PRICE
+}
+
+enum DiscountScope {
+  LINE
+  ORDER
+}
+
+enum DiscountStackMode {
+  EXCLUSIVE
+  STACKABLE
+  BEST_PRICE_ONLY
+}
+
+enum DiscountApplicationType {
+  MANUAL_LINE_DISCOUNT
+  MANUAL_ORDER_DISCOUNT
+  AUTOMATIC_DISCOUNT
+  PROMO_CODE
+  PRICE_OVERRIDE
+}
+
+enum DiscountApprovalStatus {
+  NOT_REQUIRED
+  APPROVED
+  REJECTED
+}
+
+enum PricingSource {
+  ONLINE_VALIDATED
+  OFFLINE_LOCAL
+}
+
+enum ReconciliationStatus {
+  NOT_REQUIRED
+  PENDING
+  RECONCILED
+  RECONCILED_WITH_EXCEPTION
+}
+
 type Store @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
   tenantId: ID!
@@ -30,6 +92,7 @@ type Store @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityC
   fax: String
   email: String!
   disclaimer: String
+  timezone: String!
 }
 
 type Brand @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
@@ -47,6 +110,8 @@ type Category @model @auth(rules: [{allow: owner, ownerField: "tenantId", identi
   code: String
   color: String
   picture: String
+  discountable: Boolean! @default(value: "true")
+  discountPolicyMode: CategoryDiscountPolicyMode! @default(value: "DEFAULT")
 }
 
 type Customer @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
@@ -73,6 +138,8 @@ type Employee @model @auth(rules: [{allow: owner, ownerField: "tenantId", identi
   pin: String!
   roles: [String]!
   active: Boolean!
+  discountPolicyId: ID
+  policyProfileKey: String
 }
 
 type PaymentInfo {
@@ -97,9 +164,20 @@ type Order @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityC
   tenantId: ID!
   orderNo: String! @index(name: "byOrderNo")
   orderDate: AWSDateTime! @index(name: "byOrderDate")
+  baseSubtotal: Float
   subtotal: Float!
+  lineDiscountTotal: Float
+  orderDiscountTotal: Float
+  discountTotal: Float
+  savingsTotal: Float
   tax: Float!
   total: Float!
+  promoCodes: [String]
+  pricingVersion: String
+  pricingSnapshotHash: String
+  pricingSource: PricingSource
+  reconciliationStatus: ReconciliationStatus
+  appliedDiscountSummary: AWSJSON
   status: OrderStatus! @index(name: "byStatusByOrderDate", sortKeyFields: ["orderDate"])
   employeeId: String!
   employeeName: String!
@@ -121,6 +199,20 @@ type OrderLine {
   quantity: Float!
   tax: Float!
   price: Float!
+  basePrice: Float
+  overridePrice: Float
+  netUnitPrice: Float
+  lineSubtotalBeforeOrderDiscount: Float
+  lineDiscountTotal: Float
+  allocatedOrderDiscountTotal: Float
+  lineTotalBeforeTax: Float
+  lineTotalAfterTax: Float
+  appliedDiscounts: AWSJSON
+  categoryId: String
+  discountable: Boolean
+  minAllowedPrice: Float
+  maxManualDiscountPercent: Float
+  maxManualDiscountAmount: Float
   isEBTEligible: Boolean
   ebtPaidAmount: Float
   nonEbtPaidAmount: Float
@@ -165,6 +257,10 @@ type Product @model @auth(rules: [{allow: owner, ownerField: "tenantId", identit
   Brand: Brand @hasOne
   isActive: Boolean!
   isEBTEligible: Boolean
+  discountable: Boolean! @default(value: "true")
+  minAllowedPrice: Float
+  maxManualDiscountPercent: Float
+  maxManualDiscountAmount: Float
 }
 
 type UnitOfMeasure @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
@@ -256,6 +352,147 @@ type GlobalSettings @model @auth(rules: [{allow: owner, ownerField: "tenantId", 
     id: ID!
     tenantId: ID!
     enforceSalesBasedOnInventory: Boolean! @default(value: "false")
+    timezone: String! @default(value: "America/New_York")
+}
+
+type DiscountDefinition @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    name: String!
+    code: String
+    description: String
+    status: DiscountDefinitionStatus!
+    type: DiscountDefinitionType!
+    method: DiscountMethod!
+    scope: DiscountScope!
+    value: Float!
+    priority: Int
+    stackMode: DiscountStackMode!
+    approvalRequired: Boolean
+    reasonRequired: Boolean
+    startDate: AWSDateTime
+    endDate: AWSDateTime
+    daysOfWeek: [String]
+    startTime: String
+    endTime: String
+    minSubtotal: Float
+    minQuantity: Float
+    usageLimitTotal: Int
+    usageCountTotal: Int
+    applicableProductIds: [String]
+    applicableCategoryIds: [String]
+    excludedProductIds: [String]
+    excludedCategoryIds: [String]
+    excludeAlreadyDiscountedItems: Boolean
+    appliesToAllProducts: Boolean
+    storeIds: [String]
+    stationIds: [String]
+    active: Boolean!
+}
+
+type DiscountReasonCode @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    code: String!
+    label: String!
+    description: String
+    active: Boolean!
+    requiresNote: Boolean
+    appliesTo: [String]
+}
+
+type EmployeeDiscountPolicy @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    employeeId: ID
+    roleKey: String
+    maxManualPercentDiscount: Float
+    maxManualAmountDiscount: Float
+    maxPriceOverrideAmount: Float
+    maxPriceOverridePercentBelowBase: Float
+    canApplyOrderDiscount: Boolean
+    canOverridePrice: Boolean
+    canApproveDiscounts: Boolean
+    canApprovePriceOverrides: Boolean
+    canUsePromoCodes: Boolean
+    requireReasonForManualDiscounts: Boolean
+    requireReasonForOverrides: Boolean
+    requireApprovalForOrderDiscount: Boolean
+    requireApprovalForAnyPriceOverride: Boolean
+    allowExclusiveDiscountOverride: Boolean
+    active: Boolean!
+}
+
+type DiscountPreset @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    name: String!
+    scope: DiscountScope!
+    method: DiscountMethod!
+    value: Float
+    promptForCustomValue: Boolean
+    active: Boolean!
+    sortOrder: Int
+}
+
+type DiscountApplication @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    transactionId: ID!
+    lineId: String
+    discountDefinitionId: ID
+    applicationType: DiscountApplicationType!
+    scope: DiscountScope!
+    method: DiscountMethod!
+    name: String!
+    code: String
+    stackMode: DiscountStackMode!
+    originalAmount: Float!
+    discountAmount: Float!
+    finalAmount: Float!
+    quantityBasis: Float
+    reasonCode: String
+    reasonNote: String
+    appliedByEmployeeId: ID
+    appliedByEmployeeName: String
+    approvedByEmployeeId: ID
+    approvedByEmployeeName: String
+    approvalRequired: Boolean
+    approvalStatus: DiscountApprovalStatus
+    approvalReference: String
+    sourceSnapshot: AWSJSON
+    appliedAt: AWSDateTime!
+    syncStatus: String
+}
+
+type ApprovalEvent @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    transactionId: ID!
+    lineId: String
+    approvalType: String!
+    requestingEmployeeId: ID!
+    approvingEmployeeId: ID!
+    requestedAction: String!
+    reasonCode: String
+    reasonNote: String
+    policySnapshot: AWSJSON
+    status: String!
+    syncStatus: String
+}
+
+type DiscountReconciliationException @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    transactionId: ID!
+    discountApplicationId: ID
+    exceptionType: String!
+    severity: String!
+    message: String!
+    backendSnapshot: AWSJSON
+    resolved: Boolean!
+    resolvedByEmployeeId: ID
+    resolvedAt: AWSDateTime
 }
 
 # Reporting

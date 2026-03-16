@@ -9,12 +9,23 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Role } from '@pos/auth/data-access';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { UIKeyPad, UIInput, UIAlert } from '@pos/shared/ui-native';
-import { employeesActions, EmployeeService, selectAllEmployees, selectLoginEmployee } from '@pos/employees/data-access';
+import {
+    employeesActions,
+    EmployeeService,
+    selectAllEmployees,
+    selectInitialEmployeeSyncComplete,
+    selectLoadingStatus as selectEmployeesLoadingStatus,
+    selectLoginEmployee,
+} from '@pos/employees/data-access';
 import { StationService } from '@pos/settings/data-access';
 import { cartActions } from '@pos/sales/data-access';
 import brandMark from '../../assets/branding/pos-icon-transparent-2048.png';
 import { RootState } from '@pos/store';
-import { selectStore, StoreInfoService } from '@pos/store-info/data-access';
+import {
+    selectInitialStoreSyncComplete,
+    selectStore,
+    StoreInfoService,
+} from '@pos/store-info/data-access';
 
 interface PathDetails {
     title: string;
@@ -111,7 +122,10 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const styles = useStyles();
     const employee = useSelector(selectLoginEmployee);
     const employees = useSelector(selectAllEmployees);
+    const initialEmployeeSyncComplete = useSelector(selectInitialEmployeeSyncComplete);
+    const employeesLoadingStatus = useSelector(selectEmployeesLoadingStatus);
     const store = useSelector(selectStore);
+    const initialStoreSyncComplete = useSelector(selectInitialStoreSyncComplete);
     const user = useSelector((state: RootState) => state.auth.user);
     const businessName = useSelector((state: RootState) => state.tenantSession.businessName);
     const [pin, setPin] = useState<string>('');
@@ -150,14 +164,17 @@ export const HomeScreen = (props: HomeScreenProps) => {
         },
     });
     const storeNeedsSetup =
-        !store ||
-        store.address === 'Update in settings' ||
-        store.city === 'Update in settings' ||
-        store.state === 'NA' ||
-        store.zipCode === '00000' ||
-        store.phone === '000-000-0000';
-    const needsInitialEmployee = employees.length === 0;
-    const needsSetupWizard = !employee && (needsInitialEmployee || storeNeedsSetup);
+        initialStoreSyncComplete &&
+        (!store ||
+            store.address === 'Update in settings' ||
+            store.city === 'Update in settings' ||
+            store.state === 'NA' ||
+            store.zipCode === '00000' ||
+            store.phone === '000-000-0000');
+    const employeesReady = employeesLoadingStatus === 'loaded';
+    const needsInitialEmployee =
+        employeesReady && initialEmployeeSyncComplete && employees.length === 0;
+    const needsSetupWizard = employeesReady && !employee && (needsInitialEmployee || storeNeedsSetup);
     const paths: PathDetails[] = useMemo(() => [
         {
             title: 'Sales',
@@ -700,6 +717,23 @@ export const HomeScreen = (props: HomeScreenProps) => {
                             </FormProvider>
                         )}
                     </Animated.View>
+                </View>
+            ) : !employee && !employeesReady ? (
+                <View style={styles.shell}>
+                    <View style={styles.hero}>
+                        <Image source={brandMark} style={styles.brandMark} resizeMode="contain" />
+                        <Text style={styles.businessLabel}>{businessName || 'Business workspace'}</Text>
+                        <Text style={styles.heroTitle}>Loading employee access</Text>
+                        <Text style={styles.heroSubtitle}>
+                            Restoring staff records for this tenant before showing the PIN screen or setup flow.
+                        </Text>
+                    </View>
+                    <View style={styles.keypadCard}>
+                        <Text style={styles.keypadTitle}>Preparing employee data</Text>
+                        <Text style={styles.keypadHint}>
+                            This only takes a moment on startup.
+                        </Text>
+                    </View>
                 </View>
             ) : !employee ? (
                 <View style={styles.shell}>

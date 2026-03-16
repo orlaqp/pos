@@ -58,24 +58,30 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                                 title={getSelected(value)?.name || title}
                                 onPress={toggleOverlay}
                                 buttonStyle={styles.button}
-                                type={value ? 'solid' : 'outline'}
-                                titleStyle={{
-                                    fontSize: 12,
-                                    paddingLeft: 15,
-                                    paddingRight: 15,
-                                }}
+                                type="outline"
+                                titleStyle={styles.buttonTitle}
                             />
                             <Overlay
                                 isVisible={visible}
                                 onBackdropPress={toggleOverlay}
                                 overlayStyle={styles.overlay}
+                                supportedOrientations={['landscape-left', 'landscape-right']}
+                                presentationStyle="fullScreen"
                             >
                                 <View style={styles.overlayContent}>
+                                    <View style={styles.overlayHeader}>
+                                        <Text style={styles.overlayEyebrow}>Select</Text>
+                                        <Text style={styles.overlayTitle}>{title}</Text>
+                                        <Text style={styles.overlaySubtitle}>
+                                            Choose one option to continue.
+                                        </Text>
+                                    </View>
                                     <FlatList
                                         data={options}
                                         keyExtractor={(item, index) =>
                                             `${item.id || item.name}-${index}`
                                         }
+                                        contentContainerStyle={styles.listContent}
                                         ListEmptyComponent={
                                             <Text style={styles.emptyText}>
                                                 No options available
@@ -83,15 +89,28 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                                         }
                                         renderItem={({ item }) => (
                                             <TouchableOpacity
-                                                style={styles.dataRow}
+                                                style={[
+                                                    styles.dataRow,
+                                                    item.id === value
+                                                        ? styles.dataRowSelected
+                                                        : undefined,
+                                                ]}
                                                 onPress={() => {
                                                     onChange(item.id);
                                                     select(item);
                                                 }}
                                             >
-                                                <Text style={styles.name}>
-                                                    {item.name}
-                                                </Text>
+                                                <View style={styles.optionCopy}>
+                                                    <Text style={styles.name}>
+                                                        {item.name}
+                                                    </Text>
+                                                    <Text style={styles.optionMeta}>
+                                                        {item.id || item.name}
+                                                    </Text>
+                                                </View>
+                                                {item.id === value ? (
+                                                    <Text style={styles.selectedTag}>Selected</Text>
+                                                ) : null}
                                             </TouchableOpacity>
                                         )}
                                     />
@@ -110,24 +129,30 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                     title={selected?.name || title}
                     onPress={toggleOverlay}
                     buttonStyle={styles.button}
-                    type={selected ? 'solid' : 'outline'}
-                    titleStyle={{
-                        fontSize: 12,
-                        paddingLeft: 15,
-                        paddingRight: 15,
-                    }}
+                    type="outline"
+                    titleStyle={styles.buttonTitle}
                 />
                 <Overlay
                     isVisible={visible}
                     onBackdropPress={toggleOverlay}
                     overlayStyle={styles.overlay}
+                    supportedOrientations={['landscape-left', 'landscape-right']}
+                    presentationStyle="fullScreen"
                 >
                     <View style={styles.overlayContent}>
+                        <View style={styles.overlayHeader}>
+                            <Text style={styles.overlayEyebrow}>Select</Text>
+                            <Text style={styles.overlayTitle}>{title}</Text>
+                            <Text style={styles.overlaySubtitle}>
+                                Choose one option to continue.
+                            </Text>
+                        </View>
                         <FlatList
                             data={options}
                             keyExtractor={(item, index) =>
                                 `${item.id || item.name}-${index}`
                             }
+                            contentContainerStyle={styles.listContent}
                             ListEmptyComponent={
                                 <Text style={styles.emptyText}>
                                     No options available
@@ -135,12 +160,25 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                             }
                             renderItem={({ item }) => (
                                 <TouchableOpacity
-                                    style={styles.dataRow}
+                                    style={[
+                                        styles.dataRow,
+                                        item.id === selected?.id
+                                            ? styles.dataRowSelected
+                                            : undefined,
+                                    ]}
                                     onPress={() => select(item)}
                                 >
-                                    <Text style={styles.name}>
-                                        {item.name}
-                                    </Text>
+                                    <View style={styles.optionCopy}>
+                                        <Text style={styles.name}>
+                                            {item.name}
+                                        </Text>
+                                        <Text style={styles.optionMeta}>
+                                            {item.id || item.name}
+                                        </Text>
+                                    </View>
+                                    {item.id === selected?.id ? (
+                                        <Text style={styles.selectedTag}>Selected</Text>
+                                    ) : null}
                                 </TouchableOpacity>
                             )}
                         />
@@ -157,6 +195,7 @@ const useStyles = () => {
         background: '#000000',
         grey2: '#8f9baa',
         grey1: '#ffffff',
+        primary: '#4aa3eb',
     };
     const sharedStyles = useSharedStyles();
 
@@ -164,31 +203,97 @@ const useStyles = () => {
         ...StyleSheet.create({
             overlay: {
                 backgroundColor: colors.background,
-                width: 420,
+                width: 460,
                 maxHeight: 520,
-                borderRadius: 8,
+                borderRadius: 20,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.08)',
+                padding: 0,
+                overflow: 'hidden',
             },
             overlayContent: {
                 minHeight: 120,
+                padding: 18,
+            },
+            overlayHeader: {
+                paddingBottom: 14,
+            },
+            overlayEyebrow: {
+                color: colors.primary,
+                fontSize: 11,
+                fontWeight: '700',
+                letterSpacing: 1.4,
+                marginBottom: 6,
+                textTransform: 'uppercase',
+            },
+            overlayTitle: {
+                color: colors.grey1,
+                fontSize: 22,
+                fontWeight: '700',
+            },
+            overlaySubtitle: {
+                color: colors.grey2,
+                fontSize: 14,
+                lineHeight: 20,
+                marginTop: 6,
+            },
+            listContent: {
+                paddingTop: 4,
+                paddingBottom: 2,
             },
             emptyText: {
                 color: colors.grey2,
                 textAlign: 'center',
-                paddingVertical: 20,
+                paddingVertical: 28,
             },
             button: {
                 margin: 10,
-                borderRadius: 6,
+                borderRadius: 10,
+                minHeight: 46,
+                borderColor: colors.primary,
+                borderWidth: 1,
+                backgroundColor: 'transparent',
+                paddingHorizontal: 14,
+            },
+            buttonTitle: {
+                color: colors.primary,
+                fontSize: 14,
+                fontWeight: '600',
+                paddingLeft: 15,
+                paddingRight: 15,
             },
             name: {
                 color: colors.grey1,
+                fontSize: 15,
+                fontWeight: '600',
+            },
+            optionCopy: {
+                flex: 1,
+                paddingRight: 12,
+            },
+            optionMeta: {
+                color: colors.grey2,
+                fontSize: 12,
+                marginTop: 2,
+            },
+            selectedTag: {
+                color: colors.primary,
+                fontSize: 12,
+                fontWeight: '700',
             },
             dataRow: {
                 ...sharedStyles.row,
-                ...sharedStyles.darkBackground,
-                padding: 10,
-                borderRadius: 5,
-                marginBottom: 5,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                borderRadius: 14,
+                marginBottom: 8,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.08)',
+                backgroundColor: 'rgba(255,255,255,0.02)',
+            },
+            dataRowSelected: {
+                borderColor: colors.primary,
+                backgroundColor: 'rgba(74,163,235,0.10)',
             },
         }),
     };

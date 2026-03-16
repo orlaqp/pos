@@ -137,6 +137,7 @@ const ensureDefaultStore = async (user: User) => {
                 email: user.email,
                 fax: '',
                 disclaimer: '',
+                timezone: 'America/New_York',
             }) as never
         )
     );
@@ -153,6 +154,7 @@ const ensureDefaultGlobalSettings = async () => {
         new GlobalSettings(
             stampTenant({
                 enforceSalesBasedOnInventory: false,
+                timezone: 'America/New_York',
             }) as never
         )
     );
