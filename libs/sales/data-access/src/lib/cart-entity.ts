@@ -1,5 +1,6 @@
 import {
     AppliedDiscountSummary,
+    DiscountDefinition,
     DiscountPricingSource,
     DiscountReconciliationStatus,
     EmployeeDiscountPolicy,
@@ -76,6 +77,12 @@ export interface CartFooter {
     payments?: CartPayment[];
 }
 
+export interface CartPricingContext {
+    timezone?: string | null;
+    storeId?: string | null;
+    stationId?: string | null;
+}
+
 export interface CartState {
     id?: string;
     orderNo?: string;
@@ -83,13 +90,16 @@ export interface CartState {
     items: CartItem[];
     payments?: CartPayment[];
     footer: CartFooter;
+    pricingContext?: CartPricingContext;
     policy?: EmployeeDiscountPolicy;
+    definitions: DiscountDefinition[];
     manualDiscounts: ManualDiscountRequest[];
     priceOverrides: PriceOverrideRequest[];
     promoCodes: CartPromoCode[];
     approvalEvents: PricingApprovalEvent[];
     appliedDiscountSummary?: AppliedDiscountSummary;
     selected?: CartItem;
+    activeProduct?: CartItem;
 }
 
 

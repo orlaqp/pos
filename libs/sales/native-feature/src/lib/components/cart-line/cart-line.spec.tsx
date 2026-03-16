@@ -100,4 +100,31 @@ describe('CartLine', () => {
         expect(queryByTestId('cart-line-increment')).toBeNull();
         expect(queryByTestId('cart-line-decrement')).toBeNull();
     });
+
+    it('does not render a selected label for the active line', () => {
+        const item = {
+            identifier: 'i-3',
+            quantity: 1,
+            product: {
+                id: 'p-3',
+                name: 'Oil',
+                price: 10,
+                unitOfMeasure: 'EA',
+                isEBTEligible: false,
+            },
+        } as any;
+
+        const { getByText } = render(
+            <CartLine
+                item={item}
+                selected
+                onRemove={mockOnRemove}
+                onSelect={mockOnSelect}
+                onIncrement={mockOnIncrement}
+                onDecrement={mockOnDecrement}
+            />
+        );
+
+        expect(() => getByText('Selected')).toThrow();
+    });
 });

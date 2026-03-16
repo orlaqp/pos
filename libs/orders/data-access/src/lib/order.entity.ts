@@ -103,6 +103,7 @@ export class OrderEntityMapper {
         pricingSource: 'OFFLINE_LOCAL',
         reconciliationStatus: 'PENDING',
       },
+      definitions: [],
       manualDiscounts: [],
       priceOverrides: [],
       promoCodes: [],

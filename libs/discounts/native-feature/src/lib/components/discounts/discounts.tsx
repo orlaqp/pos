@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Button } from '@rneui/themed';
 import {
@@ -32,52 +32,23 @@ import {
 import { StationService } from '@pos/settings/data-access';
 import { StoreInfoEntityMapper, StoreInfoService } from '@pos/store-info/data-access';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-
-const definitionTypeOptions = [
-  { id: 'MANUAL', name: 'Manual' },
-  { id: 'AUTOMATIC', name: 'Automatic' },
-  { id: 'PROMO_CODE', name: 'Promo code' },
-];
-
-const statusOptions = [
-  { id: 'DRAFT', name: 'Draft' },
-  { id: 'ACTIVE', name: 'Active' },
-  { id: 'INACTIVE', name: 'Inactive' },
-  { id: 'EXPIRED', name: 'Expired' },
-];
-
-const methodOptions = [
-  { id: 'PERCENT', name: 'Percent' },
-  { id: 'AMOUNT', name: 'Amount' },
-  { id: 'FINAL_PRICE', name: 'Final price' },
-];
-
-const scopeOptions = [
-  { id: 'LINE', name: 'Line' },
-  { id: 'ORDER', name: 'Order' },
-];
-
-const stackModeOptions = [
-  { id: 'STACKABLE', name: 'Stackable' },
-  { id: 'EXCLUSIVE', name: 'Exclusive' },
-  { id: 'BEST_PRICE_ONLY', name: 'Best price only' },
-];
-
-const roleOptions = [
-  { id: 'Admin', name: 'Admin' },
-  { id: 'Sales', name: 'Sales' },
-  { id: 'Payments', name: 'Payments' },
-];
-
-const dayOfWeekOptions = [
-  { id: 'MONDAY', name: 'Monday' },
-  { id: 'TUESDAY', name: 'Tuesday' },
-  { id: 'WEDNESDAY', name: 'Wednesday' },
-  { id: 'THURSDAY', name: 'Thursday' },
-  { id: 'FRIDAY', name: 'Friday' },
-  { id: 'SATURDAY', name: 'Saturday' },
-  { id: 'SUNDAY', name: 'Sunday' },
-];
+import {
+  buildDefinitionEntity,
+  buildPolicyEntity,
+  dayOfWeekOptions,
+  defaultDefinitionValues,
+  defaultPolicyValues,
+  definitionTypeOptions,
+  DefinitionFormValues,
+  mapDefinitionToForm,
+  mapPolicyToForm,
+  methodOptions,
+  PolicyFormValues,
+  roleOptions,
+  scopeOptions,
+  stackModeOptions,
+  statusOptions,
+} from './discounts.helpers';
 
 const sectionConfig = {
   Discounts: {
@@ -116,6 +87,58 @@ const sectionConfig = {
   },
 } as const;
 
+const formatMethodValue = (method?: string | null, value?: number | null) => {
+  if (value == null) return 'No value';
+  if (method === 'PERCENT') return `${value}% off`;
+  if (method === 'AMOUNT') return `$${value.toFixed(2)} off`;
+  if (method === 'FINAL_PRICE') return `Final price $${value.toFixed(2)}`;
+  return String(value);
+};
+
+const buildDefinitionMeta = (item: DiscountDefinitionEntity) => {
+  const details = [`${item.scope} • ${formatMethodValue(item.method, item.value)}`];
+  if (item.startDate || item.endDate) {
+    details.push('Scheduled');
+  }
+  if (item.excludedProductIds?.length || item.excludedCategoryIds?.length) {
+    details.push('Has exclusions');
+  }
+  if (item.stationIds?.length) {
+    details.push('Station scoped');
+  }
+
+  return details.join(' • ');
+};
+
+const buildPolicyMeta = (item: EmployeeDiscountPolicyEntity) => {
+  const details = [];
+  details.push(`Role ${item.roleKey || 'custom'}`);
+  details.push(item.canUsePromoCodes ? 'Promo codes on' : 'Promo codes off');
+  details.push(item.canApplyOrderDiscount ? 'Order discounts on' : 'Order discounts off');
+  if (item.requireApprovalForAnyPriceOverride) {
+    details.push('Override approval required');
+  }
+  return details.join(' • ');
+};
+
+const buildDefinitionPreview = (values: DefinitionFormValues) => {
+  const scope = values.scope === 'ORDER' ? 'entire order' : 'eligible cart lines';
+  const methodValue = formatMethodValue(values.method, values.value);
+  const trigger = values.type === 'PROMO_CODE'
+    ? `when promo code ${values.code.trim() || 'CODE'} is entered`
+    : values.type === 'AUTOMATIC'
+      ? 'automatically'
+      : 'manually';
+  const qualifiers = [];
+
+  if (values.minSubtotal) qualifiers.push(`subtotal reaches $${values.minSubtotal.toFixed(2)}`);
+  if (values.minQuantity) qualifiers.push(`quantity reaches ${values.minQuantity}`);
+  if (values.daysOfWeek.length || values.startTime || values.endTime) qualifiers.push('schedule restrictions are met');
+  if (values.excludedProductIds.length || values.excludedCategoryIds.length) qualifiers.push('configured exclusions stay blocked');
+
+  return `This discount will apply ${methodValue} to the ${scope} ${trigger}${qualifiers.length ? ` when ${qualifiers.join(' and ')}` : ''}.`;
+};
+
 type DiscountScreenName = keyof typeof sectionConfig;
 type NavigationShape = NativeStackNavigationProp<Record<string, object | undefined>>;
 type RouteShape = RouteProp<Record<string, object | undefined>, string>;
@@ -125,257 +148,6 @@ interface DiscountsProps {
   route: RouteShape;
 }
 
-interface DefinitionFormValues {
-  name: string;
-  code: string;
-  description: string;
-  status: string;
-  type: string;
-  method: string;
-  scope: string;
-  value: string;
-  priority: string;
-  stackMode: string;
-  approvalRequired: boolean;
-  reasonRequired: boolean;
-  startDate: string;
-  endDate: string;
-  daysOfWeek: string[];
-  startTime: string;
-  endTime: string;
-  minSubtotal: string;
-  minQuantity: string;
-  usageLimitTotal: string;
-  applicableProductIds: string[];
-  applicableCategoryIds: string[];
-  excludedProductIds: string[];
-  excludedCategoryIds: string[];
-  storeIds: string[];
-  stationIds: string[];
-  excludeAlreadyDiscountedItems: boolean;
-  appliesToAllProducts: boolean;
-  active: boolean;
-}
-
-interface PolicyFormValues {
-  roleKey: string;
-  employeeId: string;
-  maxManualPercentDiscount: string;
-  maxManualAmountDiscount: string;
-  maxPriceOverrideAmount: string;
-  maxPriceOverridePercentBelowBase: string;
-  canApplyOrderDiscount: boolean;
-  canOverridePrice: boolean;
-  canApproveDiscounts: boolean;
-  canApprovePriceOverrides: boolean;
-  canUsePromoCodes: boolean;
-  requireReasonForManualDiscounts: boolean;
-  requireReasonForOverrides: boolean;
-  requireApprovalForOrderDiscount: boolean;
-  requireApprovalForAnyPriceOverride: boolean;
-  allowExclusiveDiscountOverride: boolean;
-  active: boolean;
-}
-
-const defaultDefinitionValues = (promoMode: boolean): DefinitionFormValues => ({
-  name: '',
-  code: '',
-  description: '',
-  status: 'ACTIVE',
-  type: promoMode ? 'PROMO_CODE' : 'MANUAL',
-  method: 'PERCENT',
-  scope: 'LINE',
-  value: '0',
-  priority: '100',
-  stackMode: 'STACKABLE',
-  approvalRequired: false,
-  reasonRequired: true,
-  startDate: '',
-  endDate: '',
-  daysOfWeek: [],
-  startTime: '',
-  endTime: '',
-  minSubtotal: '',
-  minQuantity: '',
-  usageLimitTotal: '',
-  applicableProductIds: [],
-  applicableCategoryIds: [],
-  excludedProductIds: [],
-  excludedCategoryIds: [],
-  storeIds: [],
-  stationIds: [],
-  excludeAlreadyDiscountedItems: false,
-  appliesToAllProducts: true,
-  active: true,
-});
-
-const defaultPolicyValues: PolicyFormValues = {
-  roleKey: 'Sales',
-  employeeId: '',
-  maxManualPercentDiscount: '10',
-  maxManualAmountDiscount: '10',
-  maxPriceOverrideAmount: '10',
-  maxPriceOverridePercentBelowBase: '15',
-  canApplyOrderDiscount: false,
-  canOverridePrice: true,
-  canApproveDiscounts: false,
-  canApprovePriceOverrides: false,
-  canUsePromoCodes: true,
-  requireReasonForManualDiscounts: true,
-  requireReasonForOverrides: true,
-  requireApprovalForOrderDiscount: false,
-  requireApprovalForAnyPriceOverride: false,
-  allowExclusiveDiscountOverride: false,
-  active: true,
-};
-
-function parseOptionalNumber(value: string): number | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  const parsed = Number(trimmed);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function parseRequiredNumber(value: string, fallback = 0): number {
-  const parsed = parseOptionalNumber(value);
-  return parsed == null ? fallback : parsed;
-}
-
-function parseStringList(value: string): string[] | null {
-  const items = value
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
-  return items.length ? items : null;
-}
-
-function toCsv(values?: string[] | null): string {
-  return values?.join(', ') || '';
-}
-
-function mapDefinitionToForm(entity: DiscountDefinitionEntity, promoMode: boolean): DefinitionFormValues {
-  return {
-    name: entity.name,
-    code: entity.code || '',
-    description: entity.description || '',
-    status: entity.status,
-    type: promoMode ? 'PROMO_CODE' : entity.type,
-    method: entity.method,
-    scope: entity.scope,
-    value: String(entity.value ?? 0),
-    priority: entity.priority == null ? '100' : String(entity.priority),
-    stackMode: entity.stackMode,
-    approvalRequired: entity.approvalRequired ?? false,
-    reasonRequired: entity.reasonRequired ?? false,
-    startDate: entity.startDate || '',
-    endDate: entity.endDate || '',
-    daysOfWeek: entity.daysOfWeek?.filter((item): item is string => !!item) || [],
-    startTime: entity.startTime || '',
-    endTime: entity.endTime || '',
-    minSubtotal: entity.minSubtotal == null ? '' : String(entity.minSubtotal),
-    minQuantity: entity.minQuantity == null ? '' : String(entity.minQuantity),
-    usageLimitTotal: entity.usageLimitTotal == null ? '' : String(entity.usageLimitTotal),
-    applicableProductIds: entity.applicableProductIds?.filter((item): item is string => !!item) || [],
-    applicableCategoryIds: entity.applicableCategoryIds?.filter((item): item is string => !!item) || [],
-    excludedProductIds: entity.excludedProductIds?.filter((item): item is string => !!item) || [],
-    excludedCategoryIds: entity.excludedCategoryIds?.filter((item): item is string => !!item) || [],
-    storeIds: entity.storeIds?.filter((item): item is string => !!item) || [],
-    stationIds: entity.stationIds?.filter((item): item is string => !!item) || [],
-    excludeAlreadyDiscountedItems: entity.excludeAlreadyDiscountedItems ?? false,
-    appliesToAllProducts: entity.appliesToAllProducts ?? true,
-    active: entity.active,
-  };
-}
-
-function mapPolicyToForm(entity: EmployeeDiscountPolicyEntity): PolicyFormValues {
-  return {
-    roleKey: entity.roleKey || 'Sales',
-    employeeId: entity.employeeId || '',
-    maxManualPercentDiscount:
-      entity.maxManualPercentDiscount == null ? '' : String(entity.maxManualPercentDiscount),
-    maxManualAmountDiscount:
-      entity.maxManualAmountDiscount == null ? '' : String(entity.maxManualAmountDiscount),
-    maxPriceOverrideAmount:
-      entity.maxPriceOverrideAmount == null ? '' : String(entity.maxPriceOverrideAmount),
-    maxPriceOverridePercentBelowBase:
-      entity.maxPriceOverridePercentBelowBase == null
-        ? ''
-        : String(entity.maxPriceOverridePercentBelowBase),
-    canApplyOrderDiscount: entity.canApplyOrderDiscount ?? false,
-    canOverridePrice: entity.canOverridePrice ?? false,
-    canApproveDiscounts: entity.canApproveDiscounts ?? false,
-    canApprovePriceOverrides: entity.canApprovePriceOverrides ?? false,
-    canUsePromoCodes: entity.canUsePromoCodes ?? false,
-    requireReasonForManualDiscounts: entity.requireReasonForManualDiscounts ?? false,
-    requireReasonForOverrides: entity.requireReasonForOverrides ?? false,
-    requireApprovalForOrderDiscount: entity.requireApprovalForOrderDiscount ?? false,
-    requireApprovalForAnyPriceOverride: entity.requireApprovalForAnyPriceOverride ?? false,
-    allowExclusiveDiscountOverride: entity.allowExclusiveDiscountOverride ?? false,
-    active: entity.active,
-  };
-}
-
-function buildDefinitionEntity(
-  values: DefinitionFormValues,
-  existingId: string | undefined,
-  promoMode: boolean
-): DiscountDefinitionEntity {
-  return {
-    id: existingId,
-    name: values.name.trim(),
-    code: promoMode ? values.code.trim().toUpperCase() || null : values.code.trim() || null,
-    description: values.description.trim() || null,
-    status: values.status,
-    type: promoMode ? 'PROMO_CODE' : values.type,
-    method: values.method,
-    scope: values.scope,
-    value: parseRequiredNumber(values.value),
-    priority: parseOptionalNumber(values.priority),
-    stackMode: values.stackMode,
-    approvalRequired: values.approvalRequired,
-    reasonRequired: values.reasonRequired,
-    startDate: values.startDate.trim() || null,
-    endDate: values.endDate.trim() || null,
-    daysOfWeek: values.daysOfWeek.length ? values.daysOfWeek : null,
-    startTime: values.startTime.trim() || null,
-    endTime: values.endTime.trim() || null,
-    minSubtotal: parseOptionalNumber(values.minSubtotal),
-    minQuantity: parseOptionalNumber(values.minQuantity),
-    usageLimitTotal: parseOptionalNumber(values.usageLimitTotal),
-    applicableProductIds: values.applicableProductIds.length ? values.applicableProductIds : null,
-    applicableCategoryIds: values.applicableCategoryIds.length ? values.applicableCategoryIds : null,
-    excludedProductIds: values.excludedProductIds.length ? values.excludedProductIds : null,
-    excludedCategoryIds: values.excludedCategoryIds.length ? values.excludedCategoryIds : null,
-    storeIds: values.storeIds.length ? values.storeIds : null,
-    stationIds: values.stationIds.length ? values.stationIds : null,
-    excludeAlreadyDiscountedItems: values.excludeAlreadyDiscountedItems,
-    appliesToAllProducts: values.appliesToAllProducts,
-    active: values.active,
-  };
-}
-
-function buildPolicyEntity(values: PolicyFormValues, existingId: string | undefined): EmployeeDiscountPolicyEntity {
-  return {
-    id: existingId,
-    roleKey: values.roleKey || null,
-    employeeId: values.employeeId.trim() || null,
-    maxManualPercentDiscount: parseOptionalNumber(values.maxManualPercentDiscount),
-    maxManualAmountDiscount: parseOptionalNumber(values.maxManualAmountDiscount),
-    maxPriceOverrideAmount: parseOptionalNumber(values.maxPriceOverrideAmount),
-    maxPriceOverridePercentBelowBase: parseOptionalNumber(values.maxPriceOverridePercentBelowBase),
-    canApplyOrderDiscount: values.canApplyOrderDiscount,
-    canOverridePrice: values.canOverridePrice,
-    canApproveDiscounts: values.canApproveDiscounts,
-    canApprovePriceOverrides: values.canApprovePriceOverrides,
-    canUsePromoCodes: values.canUsePromoCodes,
-    requireReasonForManualDiscounts: values.requireReasonForManualDiscounts,
-    requireReasonForOverrides: values.requireReasonForOverrides,
-    requireApprovalForOrderDiscount: values.requireApprovalForOrderDiscount,
-    requireApprovalForAnyPriceOverride: values.requireApprovalForAnyPriceOverride,
-    allowExclusiveDiscountOverride: values.allowExclusiveDiscountOverride,
-    active: values.active,
-  };
-}
 
 export function Discounts({ navigation, route }: DiscountsProps) {
   const key = (route.name in sectionConfig ? route.name : 'Discounts') as DiscountScreenName;
@@ -488,10 +260,28 @@ export function Discounts({ navigation, route }: DiscountsProps) {
                             <Text style={styles.listTitle}>
                               {'name' in item ? item.name : item.roleKey || item.employeeId || 'Policy'}
                             </Text>
+                            <View style={styles.metaChipRow}>
+                              {'type' in item ? (
+                                <>
+                                  <View style={styles.metaChip}>
+                                    <Text style={styles.metaChipText}>{item.type}</Text>
+                                  </View>
+                                  <View style={styles.metaChip}>
+                                    <Text style={styles.metaChipText}>{item.status}</Text>
+                                  </View>
+                                </>
+                              ) : (
+                                <View style={styles.metaChip}>
+                                  <Text style={styles.metaChipText}>
+                                    {item.employeeId ? 'Employee override' : 'Role policy'}
+                                  </Text>
+                                </View>
+                              )}
+                            </View>
                             <Text style={styles.listMeta}>
                               {'type' in item
-                                ? `${item.type} • ${item.scope} • ${item.method}`
-                                : `Role ${item.roleKey || 'custom'} • order ${item.canApplyOrderDiscount ? 'allowed' : 'blocked'}`}
+                                ? buildDefinitionMeta(item)
+                                : buildPolicyMeta(item)}
                             </Text>
                           </View>
                           <View style={styles.listAside}>
@@ -532,6 +322,7 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
   const [productOptions, setProductOptions] = useState<{ id?: string; name: string }[]>([]);
   const [storeOptions, setStoreOptions] = useState<{ id?: string; name: string }[]>([]);
   const [stationOptions, setStationOptions] = useState<{ id?: string; name: string }[]>([]);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const form = useForm<DefinitionFormValues>({
     mode: 'onChange',
@@ -650,6 +441,7 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
     () => (promoMode ? methodOptions.slice(0, 2) : methodOptions),
     [promoMode]
   );
+  const definitionPreview = buildDefinitionPreview(form.watch());
 
   return (
     <UIScreen>
@@ -709,10 +501,47 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
                       <UIInput name="code" label="Promo code" placeholder="SPRING10" rules={{ required: 'Promo code is required' }} />
                     ) : null}
                     <UINumericInput name="value" label="Value" allowDecimals keyboardType="decimal-pad" placeholder="0" />
+                    <View style={styles.previewCard}>
+                      <Text style={styles.previewTitle}>This discount will…</Text>
+                      <Text style={styles.previewBody}>{definitionPreview}</Text>
+                    </View>
                   </UICard>
 
                   <UICard style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Schedule and thresholds</Text>
+                    <Text style={styles.sectionTitle}>Eligibility</Text>
+                    <View style={styles.formGrid}>
+                      <View style={styles.formColumn}>
+                        <UINumericInput name="minSubtotal" label="Min subtotal" allowDecimals keyboardType="decimal-pad" placeholder="Optional" />
+                      </View>
+                      <View style={styles.formColumn}>
+                        <UINumericInput name="minQuantity" label="Min quantity" allowDecimals keyboardType="decimal-pad" placeholder="Optional" />
+                      </View>
+                    </View>
+                    {promoMode ? (
+                      <UINumericInput name="usageLimitTotal" label="Usage limit" keyboardType="number-pad" placeholder="Optional" />
+                    ) : null}
+                    <View style={styles.formColumnWide}>
+                      <Text style={styles.fieldLabel}>Applicable categories</Text>
+                      <UIOverlayMultiSelect
+                        name="applicableCategoryIds"
+                        title="Select applicable categories"
+                        emptyLabel="Choose categories"
+                        list={categoryOptions}
+                      />
+                    </View>
+                    <View style={styles.formColumnWide}>
+                      <Text style={styles.fieldLabel}>Applicable products</Text>
+                      <UIOverlayMultiSelect
+                        name="applicableProductIds"
+                        title="Select applicable products"
+                        emptyLabel="Choose products"
+                        list={productOptions}
+                      />
+                    </View>
+                  </UICard>
+
+                  <UICard style={styles.sectionCard}>
+                    <Text style={styles.sectionTitle}>Schedule</Text>
                     <View style={styles.formGrid}>
                       <View style={styles.formColumn}>
                         <UIDateTimeField
@@ -753,87 +582,6 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
                         />
                       </View>
                     </View>
-                    <View style={styles.formColumnWide}>
-                      <Text style={styles.fieldLabel}>Days of week</Text>
-                      <UIOverlayMultiSelect
-                        name="daysOfWeek"
-                        title="Select days of week"
-                        emptyLabel="Choose days"
-                        list={dayOfWeekOptions}
-                      />
-                    </View>
-                    <View style={styles.formGrid}>
-                      <View style={styles.formColumn}>
-                        <UINumericInput name="minSubtotal" label="Min subtotal" allowDecimals keyboardType="decimal-pad" placeholder="Optional" />
-                      </View>
-                      <View style={styles.formColumn}>
-                        <UINumericInput name="minQuantity" label="Min quantity" allowDecimals keyboardType="decimal-pad" placeholder="Optional" />
-                      </View>
-                    </View>
-                    {promoMode ? (
-                      <UINumericInput name="usageLimitTotal" label="Usage limit" keyboardType="number-pad" placeholder="Optional" />
-                    ) : null}
-                  </UICard>
-
-                  <UICard style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Eligibility</Text>
-                    <View style={styles.formColumnWide}>
-                      <Text style={styles.fieldLabel}>Applicable categories</Text>
-                      <UIOverlayMultiSelect
-                        name="applicableCategoryIds"
-                        title="Select applicable categories"
-                        emptyLabel="Choose categories"
-                        list={categoryOptions}
-                      />
-                    </View>
-                    <View style={styles.formColumnWide}>
-                      <Text style={styles.fieldLabel}>Applicable products</Text>
-                      <UIOverlayMultiSelect
-                        name="applicableProductIds"
-                        title="Select applicable products"
-                        emptyLabel="Choose products"
-                        list={productOptions}
-                      />
-                    </View>
-                    <View style={styles.formColumnWide}>
-                      <Text style={styles.fieldLabel}>Excluded categories</Text>
-                      <UIOverlayMultiSelect
-                        name="excludedCategoryIds"
-                        title="Select excluded categories"
-                        emptyLabel="Choose categories"
-                        list={categoryOptions}
-                      />
-                    </View>
-                    <View style={styles.formColumnWide}>
-                      <Text style={styles.fieldLabel}>Excluded products</Text>
-                      <UIOverlayMultiSelect
-                        name="excludedProductIds"
-                        title="Select excluded products"
-                        emptyLabel="Choose products"
-                        list={productOptions}
-                      />
-                    </View>
-                    <View style={styles.formGrid}>
-                      <View style={styles.formColumn}>
-                        <Text style={styles.fieldLabel}>Stores</Text>
-                        <UIOverlayMultiSelect
-                          name="storeIds"
-                          title="Select stores"
-                          emptyLabel="Choose stores"
-                          list={storeOptions}
-                          disabled
-                        />
-                      </View>
-                      <View style={styles.formColumn}>
-                        <Text style={styles.fieldLabel}>Stations</Text>
-                        <UIOverlayMultiSelect
-                          name="stationIds"
-                          title="Select stations"
-                          emptyLabel="Choose stations"
-                          list={stationOptions}
-                        />
-                      </View>
-                    </View>
                   </UICard>
 
                   <UICard style={styles.sectionCard}>
@@ -850,6 +598,66 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
                       <Text style={styles.toggleLabel}>Reason required</Text>
                       <UISwitch name="reasonRequired" />
                     </View>
+                    <Pressable
+                      style={styles.advancedToggle}
+                      onPress={() => setShowAdvanced((current) => !current)}
+                    >
+                      <Text style={styles.advancedToggleText}>
+                        {showAdvanced ? 'Hide advanced rules' : 'Show advanced rules'}
+                      </Text>
+                    </Pressable>
+                    {showAdvanced ? (
+                      <>
+                        <View style={styles.formColumnWide}>
+                          <Text style={styles.fieldLabel}>Days of week</Text>
+                          <UIOverlayMultiSelect
+                            name="daysOfWeek"
+                            title="Select days of week"
+                            emptyLabel="Choose days"
+                            list={dayOfWeekOptions}
+                          />
+                        </View>
+                        <View style={styles.formColumnWide}>
+                          <Text style={styles.fieldLabel}>Excluded categories</Text>
+                          <UIOverlayMultiSelect
+                            name="excludedCategoryIds"
+                            title="Select excluded categories"
+                            emptyLabel="Choose categories"
+                            list={categoryOptions}
+                          />
+                        </View>
+                        <View style={styles.formColumnWide}>
+                          <Text style={styles.fieldLabel}>Excluded products</Text>
+                          <UIOverlayMultiSelect
+                            name="excludedProductIds"
+                            title="Select excluded products"
+                            emptyLabel="Choose products"
+                            list={productOptions}
+                          />
+                        </View>
+                        <View style={styles.formGrid}>
+                          <View style={styles.formColumn}>
+                            <Text style={styles.fieldLabel}>Stores</Text>
+                            <UIOverlayMultiSelect
+                              name="storeIds"
+                              title="Select stores"
+                              emptyLabel="Choose stores"
+                              list={storeOptions}
+                              disabled
+                            />
+                          </View>
+                          <View style={styles.formColumn}>
+                            <Text style={styles.fieldLabel}>Stations</Text>
+                            <UIOverlayMultiSelect
+                              name="stationIds"
+                              title="Select stations"
+                              emptyLabel="Choose stations"
+                              list={stationOptions}
+                            />
+                          </View>
+                        </View>
+                      </>
+                    ) : null}
                     <View style={styles.toggleRow}>
                       <Text style={styles.toggleLabel}>Exclude already discounted items</Text>
                       <UISwitch name="excludeAlreadyDiscountedItems" />
@@ -1079,16 +887,48 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     listCopy: { flex: 1, paddingRight: tokens.spacing.md },
     listAside: { alignItems: 'flex-end', gap: tokens.spacing.xs },
     listTitle: { color: tokens.colors.textPrimary, fontSize: 18, fontWeight: '700' },
+    metaChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.spacing.xs, marginTop: tokens.spacing.xs },
+    metaChip: {
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderWidth: 1,
+      borderColor: `${tokens.colors.accent}44`,
+      backgroundColor: `${tokens.colors.accent}18`,
+      alignSelf: 'flex-start',
+    },
+    metaChipText: { color: tokens.colors.accent, fontSize: 11, fontWeight: '800' },
     listMeta: { color: tokens.colors.textSecondary, fontSize: 14, marginTop: 4 },
     editHint: { color: tokens.colors.accent, fontSize: 13, fontWeight: '700' },
     inactivePill: { borderRadius: 999, backgroundColor: '#3f1d1d', paddingHorizontal: 10, paddingVertical: 6 },
     inactivePillText: { color: '#fca5a5', fontSize: 12, fontWeight: '800' },
     sectionCard: { marginBottom: tokens.spacing.lg },
     sectionTitle: { color: tokens.colors.textPrimary, fontSize: 19, fontWeight: '700', marginBottom: tokens.spacing.sm },
+    previewCard: {
+      marginTop: tokens.spacing.md,
+      borderRadius: tokens.radii.md,
+      borderWidth: 1,
+      borderColor: tokens.colors.border,
+      backgroundColor: tokens.colors.surfaceMuted,
+      padding: tokens.spacing.sm,
+    },
+    previewTitle: { color: tokens.colors.textPrimary, fontSize: 14, fontWeight: '800', marginBottom: 4 },
+    previewBody: { color: tokens.colors.textSecondary, fontSize: 13, lineHeight: 18 },
     fieldLabel: { color: tokens.colors.textSecondary, fontSize: 13, fontWeight: '700', marginTop: tokens.spacing.xs },
     formGrid: { flexDirection: 'row', gap: tokens.spacing.md },
     formColumn: { flex: 1 },
     formColumnWide: { width: '100%' },
+    advancedToggle: {
+      marginVertical: tokens.spacing.sm,
+      borderRadius: tokens.radii.sm,
+      borderWidth: 1,
+      borderColor: `${tokens.colors.accent}44`,
+      backgroundColor: `${tokens.colors.accent}12`,
+      paddingVertical: tokens.spacing.sm,
+      paddingHorizontal: tokens.spacing.sm,
+      alignItems: 'center',
+    },
+    advancedToggleText: { color: tokens.colors.accent, fontSize: 13, fontWeight: '800' },
     toggleRow: {
       flexDirection: 'row',
       alignItems: 'center',

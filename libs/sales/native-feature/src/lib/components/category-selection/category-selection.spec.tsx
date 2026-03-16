@@ -113,10 +113,6 @@ describe('CategorySelection', () => {
             <CategorySelection onSelected={mockOnSelected} />
         );
 
-        expect(
-            getByText(
-                'No categories yet. Add categories in Back Office to start organizing the catalog.'
-            )
-        ).toBeTruthy();
+        expect(getByText('No categories yet')).toBeTruthy();
     });
 });

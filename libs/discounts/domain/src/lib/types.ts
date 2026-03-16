@@ -194,6 +194,8 @@ export interface PromoCodeRequest {
 export interface PricingCartInput {
   now?: string;
   timezone?: string | null;
+  storeId?: string | null;
+  stationId?: string | null;
   employee: PricingEmployeeContext;
   policy?: EmployeeDiscountPolicy | null;
   lines: PricingCartLineInput[];

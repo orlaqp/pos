@@ -8,11 +8,19 @@ const mockOnSubmit = jest.fn();
 
 let mockCartState: any;
 let mockEmployeeState: any;
+let mockStoreState: any;
+let mockStationState: any;
+const mockStationQuery = jest.fn().mockResolvedValue([]);
 
 jest.mock('react-redux', () => ({
     useDispatch: () => mockDispatch,
     useSelector: (selector: (state: any) => unknown) =>
-        selector({ cart: mockCartState, employee: mockEmployeeState }),
+        selector({
+            cart: mockCartState,
+            employee: mockEmployeeState,
+            store: mockStoreState,
+            station: mockStationState,
+        }),
 }));
 
 jest.mock('@pos/sales/data-access', () => ({
@@ -22,12 +30,55 @@ jest.mock('@pos/sales/data-access', () => ({
             type: 'cart/removeProduct',
             payload: item,
         }),
+        upsert: (item: unknown) => ({ type: 'cart/upsert', payload: item }),
+        addPromoCode: (promo: unknown) => ({ type: 'cart/addPromoCode', payload: promo }),
+        removePromoCode: (code: string) => ({ type: 'cart/removePromoCode', payload: code }),
+        applyManualDiscount: (request: unknown) => ({
+            type: 'cart/applyManualDiscount',
+            payload: request,
+        }),
+        applyPriceOverride: (request: unknown) => ({
+            type: 'cart/applyPriceOverride',
+            payload: request,
+        }),
+        removePricingAdjustment: (payload: unknown) => ({
+            type: 'cart/removePricingAdjustment',
+            payload,
+        }),
+        setDefinitions: (definitions: unknown) => ({
+            type: 'cart/setDefinitions',
+            payload: definitions,
+        }),
+        setPolicy: (policy: unknown) => ({ type: 'cart/setPolicy', payload: policy }),
+        setPricingContext: (payload: unknown) => ({ type: 'cart/setPricingContext', payload }),
     },
     selectCart: (state: any) => state.cart,
 }));
 
 jest.mock('@pos/employees/data-access', () => ({
     selectLoginEmployee: (state: any) => state.employee,
+}));
+
+jest.mock('@pos/store-info/data-access', () => ({
+    selectStore: (state: any) => state.store,
+}));
+
+jest.mock('@pos/settings/data-access', () => ({
+    selectStation: (state: any) => state.station,
+}));
+
+jest.mock('@pos/shared/amplify', () => ({
+    DataStore: {
+        query: (...args: unknown[]) => mockStationQuery(...args),
+    },
+}));
+
+jest.mock('@pos/shared/models', () => ({
+    Station: function Station() {},
+}));
+
+jest.mock('react-native-device-info', () => ({
+    getUniqueIdSync: () => 'device-1',
 }));
 
 jest.mock('@pos/auth/data-access', () => ({
@@ -42,6 +93,14 @@ jest.mock('@pos/shared/ui-native', () => ({
     UIEmptyState: ({ text }: { text: string }) => {
         const { Text } = require('react-native');
         return <Text>{text}</Text>;
+    },
+}));
+
+jest.mock('@pos/discounts/data-access', () => ({
+    DiscountService: {
+        listDefinitions: jest.fn().mockResolvedValue([]),
+        listPolicies: jest.fn().mockResolvedValue([]),
+        resolvePolicyForEmployee: jest.fn(),
     },
 }));
 
@@ -112,10 +171,14 @@ jest.mock('../cart-line/cart-line', () => ({
         item,
         onSelect,
         onRemove,
+        onIncrement,
+        onDecrement,
     }: {
         item: { product: { name: string } };
         onSelect: (item: any) => void;
         onRemove: (item: any) => void;
+        onIncrement?: (item: any) => void;
+        onDecrement?: (item: any) => void;
     }) =>
         (() => {
             const { View, Text, Pressable } = require('react-native');
@@ -127,6 +190,12 @@ jest.mock('../cart-line/cart-line', () => ({
                     </Pressable>
                     <Pressable testID="cart-line-remove" onPress={() => onRemove(item)}>
                         <Text>Remove</Text>
+                    </Pressable>
+                    <Pressable testID="cart-line-increment" onPress={() => onIncrement?.(item)}>
+                        <Text>Increment</Text>
+                    </Pressable>
+                    <Pressable testID="cart-line-decrement" onPress={() => onDecrement?.(item)}>
+                        <Text>Decrement</Text>
                     </Pressable>
                 </View>
             );
@@ -170,9 +239,27 @@ describe('Cart', () => {
                     },
                 },
             ],
-            footer: { total: 5, subtotal: 5, tax: 0, discount: 0 },
+            footer: {
+                total: 5,
+                subtotal: 5,
+                baseSubtotal: 5,
+                tax: 0,
+                discount: 0,
+                savingsTotal: 0,
+                lineDiscountTotal: 0,
+                orderDiscountTotal: 0,
+                pricingSource: 'OFFLINE_LOCAL',
+                reconciliationStatus: 'PENDING',
+            },
+            definitions: [],
+            promoCodes: [],
+            manualDiscounts: [],
+            priceOverrides: [],
+            approvalEvents: [],
         };
         mockEmployeeState = { roles: ['Checks'] };
+        mockStoreState = { id: 'store-1', timezone: 'America/New_York' };
+        mockStationState = { stationNumber: '25' };
     });
 
     afterEach(() => {
@@ -202,17 +289,53 @@ describe('Cart', () => {
         const { getByTestId } = renderCart('order');
         fireEvent.press(getByTestId('cart-line-select'));
         fireEvent.press(getByTestId('cart-line-remove'));
+        fireEvent.press(getByTestId('cart-line-increment'));
+        fireEvent.press(getByTestId('cart-line-decrement'));
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/select' })
         );
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/removeProduct' })
         );
+        expect(mockDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({ type: 'cart/upsert' })
+        );
     });
 
-    it('submits directly in order mode', () => {
-        const { getByText } = renderCart('order');
+    it('deselects a cart line when the selected row is tapped again', () => {
+        mockCartState.selected = mockCartState.items[0];
+        const { getByTestId } = renderCart('order');
+
+        fireEvent.press(getByTestId('cart-line-select'));
+
+        expect(mockDispatch).toHaveBeenCalledWith({
+            type: 'cart/select',
+            payload: undefined,
+        });
+    });
+
+    it('opens order summary instead of submitting directly in order mode', () => {
+        const { getByText, getAllByText } = renderCart('order');
         fireEvent.press(getByText(/Print Order/));
+        expect(getByText('Order summary')).toBeTruthy();
+        expect(getAllByText('Apple').length).toBeGreaterThan(1);
+        expect(mockOnSubmit).not.toHaveBeenCalled();
+    });
+
+    it('closes order summary without submitting', () => {
+        const { getByText, queryByText } = renderCart('order');
+        fireEvent.press(getByText(/Print Order/));
+        fireEvent.press(getByText('Back to cart'));
+
+        expect(queryByText('Order summary')).toBeFalsy();
+        expect(mockOnSubmit).not.toHaveBeenCalled();
+    });
+
+    it('submits from order summary print action', () => {
+        const { getByText, getByTestId } = renderCart('order');
+        fireEvent.press(getByText(/Print Order/));
+        fireEvent.press(getByTestId('order-summary-print-button'));
+
         expect(mockOnSubmit).toHaveBeenCalledWith(mockCartState);
     });
 
@@ -232,6 +355,20 @@ describe('Cart', () => {
         expect(queryByText('CartPayment')).toBeTruthy();
         fireEvent.press(getByTestId('cart-payment-backdrop'));
         expect(queryByText('CartPayment')).toBeFalsy();
+    });
+
+    it('opens the promo dialog and dispatches a promo code', () => {
+        const { getByText, getByPlaceholderText } = renderCart('order');
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Promo'));
+        fireEvent.changeText(getByPlaceholderText('SPRING10'), 'save5');
+        fireEvent.press(getByText('Apply'));
+        expect(mockDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'cart/addPromoCode',
+                payload: { code: 'SAVE5' },
+            })
+        );
     });
 
     it('blocks submit when product inventory is insufficient', () => {

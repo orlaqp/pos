@@ -1,4 +1,5 @@
 import every from 'lodash/every';
+import { AppliedDiscountDetail } from '@pos/discounts/domain';
 import { CartItem, CartState } from '@pos/sales/data-access';
 import { ProductEntity } from '@pos/products/data-access';
 
@@ -7,6 +8,30 @@ type ProductSummary = {
     totalQuantity: number;
     delta: number;
 };
+
+export interface OrderSummaryLine {
+    id: string;
+    name: string;
+    quantity: number;
+    unitLabel: string;
+    unitPrice: number;
+    originalTotal: number;
+    finalTotal: number;
+    savings: number;
+    discounts: AppliedDiscountDetail[];
+}
+
+export interface OrderSummaryViewModel {
+    lines: OrderSummaryLine[];
+    promoCodes: string[];
+    warnings: string[];
+    subtotal: number;
+    discountTotal: number;
+    tax: number;
+    total: number;
+    savingsTotal: number;
+    ebtEligibleTotal: number;
+}
 
 export const getEbtEligibleTotal = (cart: CartState): number =>
     cart.items.reduce((acc, item) => {
@@ -41,4 +66,40 @@ export const getUnavailableProductMessages = (
     return Object.keys(summary)
         .filter((x) => summary[x].delta < 0)
         .map((x) => `${summary[x].product?.name || x} -> ${summary[x].delta}`);
+};
+
+export const buildOrderSummary = (cart: CartState): OrderSummaryViewModel => {
+    const lineSummaries = cart.appliedDiscountSummary?.lineSummaries || [];
+
+    return {
+        lines: cart.items.map((item) => {
+            const lineId = item.identifier || item.product.id;
+            const lineSummary = lineSummaries.find((summary) => summary.lineId === lineId);
+            const originalTotal = item.product.price * item.quantity;
+            const finalTotal = lineSummary?.lineTotalBeforeTax ?? originalTotal;
+            const savings =
+                (lineSummary?.lineDiscountTotal || 0) +
+                (lineSummary?.allocatedOrderDiscountTotal || 0);
+
+            return {
+                id: lineId,
+                name: item.product.name,
+                quantity: item.quantity,
+                unitLabel: item.product.unitOfMeasure.toLowerCase(),
+                unitPrice: item.product.price,
+                originalTotal,
+                finalTotal,
+                savings,
+                discounts: lineSummary?.discounts || [],
+            };
+        }),
+        promoCodes: cart.promoCodes.map((promo) => promo.code),
+        warnings: cart.appliedDiscountSummary?.warnings || [],
+        subtotal: cart.footer.subtotal,
+        discountTotal: cart.footer.discount,
+        tax: cart.footer.tax,
+        total: cart.footer.total,
+        savingsTotal: cart.footer.savingsTotal,
+        ebtEligibleTotal: getEbtEligibleTotal(cart),
+    };
 };

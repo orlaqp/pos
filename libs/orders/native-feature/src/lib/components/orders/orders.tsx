@@ -5,11 +5,14 @@ import OrderList from '../order-list/order-list';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StackNavigation } from '@pos/shared/ui-native';
 import { SalesScreen } from '@pos/sales/native-feature';
+import { useNavigation } from '@react-navigation/native';
+import { Button } from '@rneui/themed';
 import i18next from 'i18next';
 
 const Stack = createNativeStackNavigator();
 
 export function Orders() {
+  const rootNavigation = useNavigation<any>();
   const t = (key: string, fallback: string) =>
     i18next.isInitialized && i18next.exists(key)
       ? String(i18next.t(key))
@@ -20,7 +23,23 @@ export function Orders() {
         <Stack.Screen
           name="Order List"
           component={OrderList}
-          options={{ headerShown: false, title: t('ORDERS_ScreenTitle', 'Order List') }}
+          options={{
+            headerShown: true,
+            title: t('ORDERS_ScreenTitle', 'Payments'),
+            headerLeft: () => (
+              <Button
+                type="clear"
+                title={t('ORDERS_HomeTitle', 'Home')}
+                onPress={() => {
+                  if (rootNavigation?.canGoBack?.()) {
+                    rootNavigation.goBack();
+                    return;
+                  }
+                  rootNavigation?.navigate?.('Home');
+                }}
+              />
+            ),
+          }}
         />
         <Stack.Screen
           name="Sales"

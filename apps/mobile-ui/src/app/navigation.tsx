@@ -65,6 +65,7 @@ export function Navigation() {
     const store = useSelector(selectStore);
 
     const [showOtherOrders, setShowOtherOrders] = useState<boolean>(false);
+    const [showSalesActions, setShowSalesActions] = useState<boolean>(false);
 
     const print = () => {
         printReceipt(store, defaultPrinter, cart);
@@ -152,6 +153,64 @@ export function Navigation() {
                     onClose={() => setShowOtherOrders(false)}
                 />
             </Dialog>
+            <Dialog
+                isVisible={showSalesActions}
+                onBackdropPress={() => setShowSalesActions(false)}
+                supportedOrientations={['landscape']}
+                presentationStyle="fullScreen"
+                overlayStyle={[
+                    styles.overlay,
+                    {
+                        width: 280,
+                        maxWidth: '90%',
+                        borderRadius: 20,
+                        padding: 18,
+                    },
+                ]}
+            >
+                <Button
+                    testID="nav-actions-open-orders"
+                    type="clear"
+                    title="Open Orders"
+                    onPress={() => {
+                        setShowSalesActions(false);
+                        setShowOtherOrders(true);
+                    }}
+                    buttonStyle={{ justifyContent: 'flex-start' }}
+                    titleStyle={{ width: '100%', textAlign: 'left' }}
+                />
+                <Button
+                    testID="nav-actions-print"
+                    type="clear"
+                    title="Print"
+                    onPress={() => {
+                        setShowSalesActions(false);
+                        print();
+                    }}
+                    disabled={cart.items?.length === 0}
+                    buttonStyle={{ justifyContent: 'flex-start' }}
+                    titleStyle={{ width: '100%', textAlign: 'left' }}
+                />
+                <Button
+                    testID="nav-actions-reset"
+                    type="clear"
+                    title="Reset"
+                    onPress={() => {
+                        setShowSalesActions(false);
+                        confirmResetCart();
+                    }}
+                    disabled={cart.items?.length === 0}
+                    buttonStyle={{ justifyContent: 'flex-start' }}
+                    titleStyle={{
+                        width: '100%',
+                        textAlign: 'left',
+                        color:
+                            cart.items?.length === 0
+                                ? theme.theme.colors.disabled
+                                : theme.theme.colors.error,
+                    }}
+                />
+            </Dialog>
             <Stack.Navigator
                 id="root-navigation"
                 screenOptions={{
@@ -193,29 +252,18 @@ export function Navigation() {
                                     <>
                                         {renderSwitchEmployeeButton(navigation)}
                                         <Button
-                                            testID="nav-open-orders-button"
+                                            testID="nav-sales-actions-button"
                                             type="clear"
-                                            title="Open Orders"
                                             style={{ marginRight: 20 }}
-                                            onPress={() => setShowOtherOrders(true)}
-                                        />
-                                        <Button
-                                            type="clear"
-                                            title="Print"
-                                            style={{ marginRight: 20 }}
-                                            onPress={print}
-                                            disabled={cart.items?.length === 0}
-                                            // icon={{
-                                            //     name: 'printer-outline',
-                                            //     type: 'material-community',
-                                            //     color: cart.items?.length === 0 ? theme.theme.colors.disabled : theme.theme.colors.primary
-                                            // }}
-                                        />
-                                        <Button
-                                            type="clear"
-                                            title="Reset"
-                                            onPress={confirmResetCart}
-                                            disabled={cart.items?.length === 0}
+                                            title="Actions"
+                                            onPress={() => setShowSalesActions(true)}
+                                            icon={{
+                                                name: 'chevron-down',
+                                                type: 'material-community',
+                                                color: theme.theme.colors.primary,
+                                                size: 18,
+                                            }}
+                                            iconRight
                                         />
                                     </>
                                 ),

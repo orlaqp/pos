@@ -1,5 +1,5 @@
 import { stampTenant } from '@pos/auth/data-access';
-import { DataStore } from '@pos/shared/amplify';
+import { API, DataStore } from '@pos/shared/amplify';
 import { DiscountDefinition, EmployeeDiscountPolicy } from '@pos/shared/models';
 import {
   DiscountDefinitionEntity,
@@ -7,18 +7,228 @@ import {
   EmployeeDiscountPolicyEntity,
 } from './discount.entity';
 
+type DiscountPolicyEmployee = {
+  id?: string;
+  roles?: Array<string | null>;
+};
+
+const listDiscountDefinitionsQuery = /* GraphQL */ `
+  query ListDiscountDefinitions($filter: ModelDiscountDefinitionFilterInput, $limit: Int, $nextToken: String) {
+    listDiscountDefinitions(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        tenantId
+        name
+        code
+        description
+        status
+        type
+        method
+        scope
+        value
+        priority
+        stackMode
+        approvalRequired
+        reasonRequired
+        startDate
+        endDate
+        daysOfWeek
+        startTime
+        endTime
+        minSubtotal
+        minQuantity
+        usageLimitTotal
+        usageCountTotal
+        applicableProductIds
+        applicableCategoryIds
+        excludedProductIds
+        excludedCategoryIds
+        excludeAlreadyDiscountedItems
+        appliesToAllProducts
+        storeIds
+        stationIds
+        active
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+const listEmployeeDiscountPoliciesQuery = /* GraphQL */ `
+  query ListEmployeeDiscountPolicies($filter: ModelEmployeeDiscountPolicyFilterInput, $limit: Int, $nextToken: String) {
+    listEmployeeDiscountPolicies(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        tenantId
+        employeeId
+        roleKey
+        maxManualPercentDiscount
+        maxManualAmountDiscount
+        maxPriceOverrideAmount
+        maxPriceOverridePercentBelowBase
+        canApplyOrderDiscount
+        canOverridePrice
+        canApproveDiscounts
+        canApprovePriceOverrides
+        canUsePromoCodes
+        requireReasonForManualDiscounts
+        requireReasonForOverrides
+        requireApprovalForOrderDiscount
+        requireApprovalForAnyPriceOverride
+        allowExclusiveDiscountOverride
+        active
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+const sortDefinitions = (items: DiscountDefinitionEntity[]) =>
+  items.sort((a, b) => a.name.localeCompare(b.name));
+
+const sortPolicies = (items: EmployeeDiscountPolicyEntity[]) =>
+  items.sort((a, b) => (a.roleKey || a.employeeId || '').localeCompare(b.roleKey || b.employeeId || ''));
+
+const mapRemoteDefinition = (item: any): DiscountDefinitionEntity => ({
+  id: item.id,
+  name: item.name,
+  code: item.code,
+  description: item.description,
+  status: item.status,
+  type: item.type,
+  method: item.method,
+  scope: item.scope,
+  value: item.value,
+  priority: item.priority,
+  stackMode: item.stackMode,
+  approvalRequired: item.approvalRequired ?? false,
+  reasonRequired: item.reasonRequired ?? false,
+  startDate: item.startDate,
+  endDate: item.endDate,
+  daysOfWeek: item.daysOfWeek ?? null,
+  startTime: item.startTime,
+  endTime: item.endTime,
+  minSubtotal: item.minSubtotal,
+  minQuantity: item.minQuantity,
+  usageLimitTotal: item.usageLimitTotal,
+  usageCountTotal: item.usageCountTotal,
+  applicableProductIds: item.applicableProductIds ?? null,
+  applicableCategoryIds: item.applicableCategoryIds ?? null,
+  excludedProductIds: item.excludedProductIds ?? null,
+  excludedCategoryIds: item.excludedCategoryIds ?? null,
+  excludeAlreadyDiscountedItems: item.excludeAlreadyDiscountedItems ?? false,
+  appliesToAllProducts: item.appliesToAllProducts ?? false,
+  storeIds: item.storeIds ?? null,
+  stationIds: item.stationIds ?? null,
+  active: item.active,
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
+});
+
+const mapRemotePolicy = (item: any): EmployeeDiscountPolicyEntity => ({
+  id: item.id,
+  employeeId: item.employeeId,
+  roleKey: item.roleKey,
+  maxManualPercentDiscount: item.maxManualPercentDiscount,
+  maxManualAmountDiscount: item.maxManualAmountDiscount,
+  maxPriceOverrideAmount: item.maxPriceOverrideAmount,
+  maxPriceOverridePercentBelowBase: item.maxPriceOverridePercentBelowBase,
+  canApplyOrderDiscount: item.canApplyOrderDiscount,
+  canOverridePrice: item.canOverridePrice,
+  canApproveDiscounts: item.canApproveDiscounts,
+  canApprovePriceOverrides: item.canApprovePriceOverrides,
+  canUsePromoCodes: item.canUsePromoCodes,
+  requireReasonForManualDiscounts: item.requireReasonForManualDiscounts,
+  requireReasonForOverrides: item.requireReasonForOverrides,
+  requireApprovalForOrderDiscount: item.requireApprovalForOrderDiscount,
+  requireApprovalForAnyPriceOverride: item.requireApprovalForAnyPriceOverride,
+  allowExclusiveDiscountOverride: item.allowExclusiveDiscountOverride,
+  active: item.active,
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
+});
+
 export class DiscountService {
+  static resolvePolicyForEmployee(
+    employee: DiscountPolicyEmployee | null | undefined,
+    policies: EmployeeDiscountPolicyEntity[]
+  ) {
+    if (!employee || !policies.length) {
+      return undefined;
+    }
+
+    const activePolicies = policies.filter((policy) => policy.active !== false);
+    const exactPolicy = activePolicies.find(
+      (policy) => !!policy.employeeId && policy.employeeId === employee.id
+    );
+
+    if (exactPolicy) {
+      return exactPolicy;
+    }
+
+    const employeeRoles = (employee.roles || []).filter(
+      (role): role is string => typeof role === 'string' && role.trim().length > 0
+    );
+
+    return activePolicies.find(
+      (policy) => !!policy.roleKey && employeeRoles.includes(policy.roleKey)
+    );
+  }
+
   static async getDefinition(id: string) {
     const item = await DataStore.query(DiscountDefinition, id);
-    return item ? DiscountEntityMapper.fromDefinition(item) : null;
+    if (item) {
+      return DiscountEntityMapper.fromDefinition(item);
+    }
+
+    const response = await API.graphql<{
+      listDiscountDefinitions?: {
+        items?: Array<any | null> | null;
+      } | null;
+    }>({
+      query: listDiscountDefinitionsQuery,
+      variables: { limit: 200 },
+      authMode: 'userPool',
+    });
+
+    const remoteItem = response.data?.listDiscountDefinitions?.items?.find(
+      (definition) => !!definition && definition.id === id
+    );
+
+    return remoteItem ? mapRemoteDefinition(remoteItem) : null;
   }
 
   static async listDefinitions(type?: 'MANUAL' | 'AUTOMATIC' | 'PROMO_CODE') {
     const items = await DataStore.query(DiscountDefinition);
-    return items
+    const localItems = items
       .filter((item) => (type ? item.type === type : true))
       .map((item) => DiscountEntityMapper.fromDefinition(item))
       .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (localItems.length) {
+      return localItems;
+    }
+
+    const response = await API.graphql<{
+      listDiscountDefinitions?: {
+        items?: Array<any | null> | null;
+      } | null;
+    }>({
+      query: listDiscountDefinitionsQuery,
+      variables: { limit: 200 },
+      authMode: 'userPool',
+    });
+
+    const remoteItems = (response.data?.listDiscountDefinitions?.items || [])
+      .filter((item): item is any => !!item)
+      .filter((item) => (type ? item.type === type : true))
+      .map(mapRemoteDefinition);
+
+    return sortDefinitions(remoteItems);
   }
 
   static async saveDefinition(entity: DiscountDefinitionEntity) {
@@ -87,14 +297,52 @@ export class DiscountService {
 
   static async listPolicies() {
     const items = await DataStore.query(EmployeeDiscountPolicy);
-    return items
+    const localItems = items
       .map((item) => DiscountEntityMapper.fromPolicy(item))
       .sort((a, b) => (a.roleKey || a.employeeId || '').localeCompare(b.roleKey || b.employeeId || ''));
+
+    if (localItems.length) {
+      return localItems;
+    }
+
+    const response = await API.graphql<{
+      listEmployeeDiscountPolicies?: {
+        items?: Array<any | null> | null;
+      } | null;
+    }>({
+      query: listEmployeeDiscountPoliciesQuery,
+      variables: { limit: 200 },
+      authMode: 'userPool',
+    });
+
+    const remoteItems = (response.data?.listEmployeeDiscountPolicies?.items || [])
+      .filter((item): item is any => !!item)
+      .map(mapRemotePolicy);
+
+    return sortPolicies(remoteItems);
   }
 
   static async getPolicy(id: string) {
     const item = await DataStore.query(EmployeeDiscountPolicy, id);
-    return item ? DiscountEntityMapper.fromPolicy(item) : null;
+    if (item) {
+      return DiscountEntityMapper.fromPolicy(item);
+    }
+
+    const response = await API.graphql<{
+      listEmployeeDiscountPolicies?: {
+        items?: Array<any | null> | null;
+      } | null;
+    }>({
+      query: listEmployeeDiscountPoliciesQuery,
+      variables: { limit: 200 },
+      authMode: 'userPool',
+    });
+
+    const remoteItem = response.data?.listEmployeeDiscountPolicies?.items?.find(
+      (policy) => !!policy && policy.id === id
+    );
+
+    return remoteItem ? mapRemotePolicy(remoteItem) : null;
   }
 
   static async savePolicy(entity: EmployeeDiscountPolicyEntity) {

@@ -110,8 +110,77 @@ function isDefinitionActive(definition: DiscountDefinition, at: string): boolean
   return true;
 }
 
+function normalizeWeekday(day: string): string {
+  return day.trim().slice(0, 3).toUpperCase();
+}
+
+function getScopedDateParts(at: string, timezone?: string | null) {
+  const date = new Date(at);
+  const scopedTimezone = timezone || 'UTC';
+
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    timeZone: scopedTimezone,
+  }).format(date);
+
+  const time = new Intl.DateTimeFormat('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: scopedTimezone,
+  }).format(date);
+
+  return {
+    weekday: normalizeWeekday(weekday),
+    time,
+  };
+}
+
+function isTimeWithinWindow(current: string, start?: string | null, end?: string | null) {
+  if (!start && !end) return true;
+  if (start && !end) return current >= start;
+  if (!start && end) return current <= end;
+  if (!start || !end) return true;
+  if (start <= end) {
+    return current >= start && current <= end;
+  }
+
+  return current >= start || current <= end;
+}
+
+function isDefinitionContextEligible(definition: DiscountDefinition, input: PricingCartInput, at: string) {
+  if (!isDefinitionActive(definition, at)) return false;
+
+  const { weekday, time } = getScopedDateParts(at, input.timezone);
+  if (definition.daysOfWeek?.length) {
+    const allowedDays = definition.daysOfWeek.map(normalizeWeekday);
+    if (!allowedDays.includes(weekday)) {
+      return false;
+    }
+  }
+
+  if (!isTimeWithinWindow(time, definition.startTime, definition.endTime)) {
+    return false;
+  }
+
+  if (definition.storeIds?.length) {
+    if (!input.storeId || !definition.storeIds.includes(input.storeId)) {
+      return false;
+    }
+  }
+
+  if (definition.stationIds?.length) {
+    if (!input.stationId || !definition.stationIds.includes(input.stationId)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function lineEligibleForDefinition(
   definition: DiscountDefinition,
+  input: PricingCartInput,
   line: PricingCartInput['lines'][number],
   lineBaseAmount: number,
   currentSubtotal: number,
@@ -120,7 +189,7 @@ function lineEligibleForDefinition(
 ): boolean {
   if (line.discountable === false) return false;
   if (definition.scope !== 'LINE') return false;
-  if (!isDefinitionActive(definition, at)) return false;
+  if (!isDefinitionContextEligible(definition, input, at)) return false;
   if (definition.minSubtotal != null && currentSubtotal < definition.minSubtotal) return false;
   if (definition.minQuantity != null && line.quantity < definition.minQuantity) return false;
   if (definition.excludeAlreadyDiscountedItems && hasExistingLineDiscount) return false;
@@ -329,7 +398,17 @@ export class PricingEngine {
             return;
           }
 
-          if (!lineEligibleForDefinition(definition, line, lineSubtotalBeforeOrderDiscount, baseSubtotal, !!lineApplications.length, at)) {
+          if (
+            !lineEligibleForDefinition(
+              definition,
+              input,
+              line,
+              lineSubtotalBeforeOrderDiscount,
+              baseSubtotal,
+              !!lineApplications.length || autoCandidates.length > 0,
+              at
+            )
+          ) {
             return;
           }
 
@@ -449,7 +528,7 @@ export class PricingEngine {
 
     definitions.forEach((definition) => {
       if (definition.scope !== 'ORDER') return;
-      if (!isDefinitionActive(definition, at)) return;
+      if (!isDefinitionContextEligible(definition, input, at)) return;
       if (definition.type === 'PROMO_CODE' && !promoCodes.includes(normalizeCode(definition.code || ''))) {
         return;
       }

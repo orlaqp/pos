@@ -97,6 +97,7 @@ jest.mock('@pos/sales/data-access', () => ({
     MINIMUM_INVENTORY_FOR_SALE: 1,
     cartActions: {
         select: (payload: unknown) => ({ type: 'cart/select', payload }),
+        setActiveProduct: (payload: unknown) => ({ type: 'cart/setActiveProduct', payload }),
         upsert: (payload: unknown) => ({ type: 'cart/upsert', payload }),
         reset: () => ({ type: 'cart/reset' }),
     },
@@ -314,7 +315,7 @@ describe('SalesScreen', () => {
         const { getByTestId } = renderSalesScreen();
         fireEvent.press(getByTestId('sales-product-select-weighted'));
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/select' })
+            expect.objectContaining({ type: 'cart/setActiveProduct' })
         );
     });
 
@@ -322,7 +323,7 @@ describe('SalesScreen', () => {
         const { getByTestId } = renderSalesScreen();
         fireEvent.press(getByTestId('sales-product-long-press'));
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/select' })
+            expect.objectContaining({ type: 'cart/setActiveProduct' })
         );
     });
 
@@ -391,13 +392,10 @@ describe('SalesScreen', () => {
         );
     });
 
-    it('submits order mode cart and resets cart on confirmation', () => {
+    it('submits order mode cart directly and resets cart', () => {
         const { getByTestId } = renderSalesScreen('order');
 
         fireEvent.press(getByTestId('sales-cart-submit-order'));
-
-        const buttons = (Alert.alert as jest.Mock).mock.calls[0][2];
-        buttons[1].onPress();
 
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'orders/upsert' })
@@ -405,6 +403,7 @@ describe('SalesScreen', () => {
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/reset' })
         );
+        expect(Alert.alert).not.toHaveBeenCalled();
     });
 
     it('validates payment mode requires payments', () => {
@@ -450,7 +449,7 @@ describe('SalesScreen', () => {
             expect.objectContaining({ type: 'cart/upsert' })
         );
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/select', payload: undefined })
+            expect.objectContaining({ type: 'cart/setActiveProduct', payload: undefined })
         );
     });
 

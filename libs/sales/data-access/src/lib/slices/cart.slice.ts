@@ -96,11 +96,14 @@ export const initialCartState: CartState = {
         pricingSource: 'OFFLINE_LOCAL',
         reconciliationStatus: 'PENDING',
     },
+    pricingContext: undefined,
+    definitions: [],
     manualDiscounts: [],
     priceOverrides: [],
     promoCodes: [],
     approvalEvents: [],
     selected: undefined,
+    activeProduct: undefined,
 };
 
 export const cartSlice = createSlice({
@@ -160,9 +163,13 @@ export const cartSlice = createSlice({
             );
             state.payments = [];
             state.selected = initialCartState.selected;
+            state.activeProduct = initialCartState.activeProduct;
         },
         select: (state: CartState, action: PayloadAction<CartItem | undefined>) => {
             state.selected = action.payload;
+        },
+        setActiveProduct: (state: CartState, action: PayloadAction<CartItem | undefined>) => {
+            state.activeProduct = action.payload;
         },
         upsert: (state: CartState, action: PayloadAction<CartItem>) => {
             const sameCartItem = state.items.find(i => action.payload.identifier && i.identifier === action.payload.identifier);
@@ -286,6 +293,20 @@ export const cartSlice = createSlice({
             state.policy = action.payload;
             updateTotals(state);
         },
+        setDefinitions: (
+            state: CartState,
+            action: PayloadAction<CartState['definitions']>
+        ) => {
+            state.definitions = action.payload;
+            updateTotals(state);
+        },
+        setPricingContext: (
+            state: CartState,
+            action: PayloadAction<CartState['pricingContext']>
+        ) => {
+            state.pricingContext = action.payload;
+            updateTotals(state);
+        },
         addApprovalEvent: (
             state: CartState,
             action: PayloadAction<CartState['approvalEvents'][number]>
@@ -323,12 +344,15 @@ export const cartSlice = createSlice({
                 pricingSource: 'OFFLINE_LOCAL',
                 reconciliationStatus: 'PENDING',
             };
+            state.pricingContext = state.pricingContext;
+            state.definitions = state.definitions || [];
             state.manualDiscounts = [];
             state.priceOverrides = [];
             state.promoCodes = [];
             state.approvalEvents = [];
             state.appliedDiscountSummary = undefined;
             state.selected = undefined;
+            state.activeProduct = undefined;
             state.payments = [];
         },
     },
@@ -341,7 +365,7 @@ export const getCartState = (rootState: RootState): CartState =>
 
 export const selectActiveProduct = createSelector(
     getCartState,
-    (state: CartState) => state.selected
+    (state: CartState) => state.activeProduct
 );
 
 export const selectCart = getCartState;
@@ -349,11 +373,15 @@ export const selectCart = getCartState;
 
 const updateTotals = (state: CartState) => {
     const preview = PricingEngine.preview({
+        timezone: state.pricingContext?.timezone,
+        storeId: state.pricingContext?.storeId,
+        stationId: state.pricingContext?.stationId,
         employee: {
             employeeId: state.header?.employeeId || 'system',
             employeeName: state.header?.employeeName || 'System',
         },
         policy: state.policy,
+        definitions: state.definitions,
         lines: state.items.map((item, index) => ({
             lineId: item.identifier || `line-${index}`,
             productId: item.product.id,

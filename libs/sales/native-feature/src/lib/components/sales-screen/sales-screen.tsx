@@ -111,7 +111,9 @@ export function SalesScreen({
     const categoryWidth = useRef(new Animated.Value(showCategories ? 150 : 0)).current;
     const categoryOpacity = useRef(new Animated.Value(showCategories ? 1 : 0)).current;
     const contentOpacity = useRef(new Animated.Value(1)).current;
-    const deselectProduct = () => dispatch(cartActions.select(undefined));
+    const deselectProduct = () => dispatch(cartActions.setActiveProduct(undefined));
+    const shouldReturnToOrderList = () =>
+        navigation.getState?.()?.routeNames?.includes('Order List');
 
     const upsertCart = (item: CartItem) => {
         dispatch(cartActions.upsert(item));
@@ -188,7 +190,7 @@ export function SalesScreen({
             }
 
             dispatch(
-                cartActions.select({
+                cartActions.setActiveProduct({
                     product,
                     quantity: getSelectedQuantity(product.unitOfMeasure),
                 })
@@ -219,7 +221,7 @@ export function SalesScreen({
             }
 
             dispatch(
-                cartActions.select({
+                cartActions.setActiveProduct({
                     product,
                     quantity: getSelectedQuantity(product.unitOfMeasure),
                 })
@@ -229,19 +231,20 @@ export function SalesScreen({
     );
 
     const onCartSubmit = (cart: CartState, payments?: CartPayment[]) => {
+        if (route.params.mode === 'order') {
+            dispatch(upsertOrder({ cart, defaultPrinter, storeInfo }));
+            dispatch(cartActions.reset());
+            return;
+        }
+
         Alert.alert(
             t('SALES_ConfirmTitle', 'Are you sure?'),
             t('SALES_ConfirmMessage', 'Press yes to confirm'),
             [
-            { text: t('SALES_No', 'No') },
-            {
-                text: t('SALES_Yes', 'Yes'),
-                onPress: () => {
-                    if (route.params.mode === 'order') {
-                        dispatch(
-                            upsertOrder({ cart, defaultPrinter, storeInfo })
-                        );
-                    } else {
+                { text: t('SALES_No', 'No') },
+                {
+                    text: t('SALES_Yes', 'Yes'),
+                    onPress: () => {
                         if (!payments) {
                             Alert.alert(
                                 t(
@@ -251,15 +254,17 @@ export function SalesScreen({
                             );
                             return;
                         }
-                        
+
                         dispatch(payOrder({ cart, payments, defaultPrinter, storeInfo }));
-                        navigation.goBack();
-                    }
-                    dispatch(cartActions.reset());
-                    return;
+                        if (shouldReturnToOrderList()) {
+                            navigation.navigate('Order List' as never);
+                        } else {
+                            navigation.goBack();
+                        }
+                        dispatch(cartActions.reset());
+                    },
                 },
-            },
-        ]
+            ]
         );
     };
 
@@ -442,9 +447,15 @@ export function SalesScreen({
                     )}
                     </Animated.View>
                 </UICard>
-                <UICard style={styles.cartCard} padding="md" radius="lg" tone="muted">
-                    <Cart key='cart' mode={route.params.mode} onSubmit={onCartSubmit} searchRef={searchRef} products={allProducts} />
-                </UICard>
+                <View style={styles.cartPanel}>
+                    <Cart
+                        key="cart"
+                        mode={route.params.mode}
+                        onSubmit={onCartSubmit}
+                        searchRef={searchRef}
+                        products={allProducts}
+                    />
+                </View>
             </View>
             <Dialog
                 isVisible={!!product}
@@ -565,7 +576,7 @@ const useStyles = () => {
                 fontWeight: '700',
                 marginLeft: 8,
             },
-            cartCard: {
+            cartPanel: {
                 width: 330,
                 minWidth: 300,
             },

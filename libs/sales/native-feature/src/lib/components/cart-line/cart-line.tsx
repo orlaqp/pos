@@ -6,12 +6,13 @@ import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, useTheme } from '@rneui/themed';
 import React from 'react';
 
-import { View, Text, TouchableOpacity, Alert, StyleSheet, Pressable } from 'react-native';
+import { View, Text, Alert, StyleSheet, Pressable } from 'react-native';
 import { EACH } from '@pos/unit-of-measures/data-access';
 
 /* eslint-disable-next-line */
 export interface CartLineProps {
     item: CartItem;
+    selected?: boolean;
     appliedDiscounts?: AppliedDiscountDetail[];
     lineDiscountTotal?: number;
     lineTotal?: number;
@@ -23,6 +24,7 @@ export interface CartLineProps {
 
 export function CartLine({
     item,
+    selected = false,
     appliedDiscounts = [],
     lineDiscountTotal = 0,
     lineTotal,
@@ -57,97 +59,116 @@ export function CartLine({
 
 
     return (
-        <View
+        <Pressable
             style={[
                 localStyles.container,
+                selected && localStyles.containerSelected,
                 requiresWeight && localStyles.containerError,
             ]}
+            onPress={() => onSelect(item)}
         >
-            {requiresWeight ? <View style={localStyles.errorAccent} /> : null}
-            <TouchableOpacity
-                style={localStyles.content}
-                onPress={() => onSelect(item)}
-            >
-                <Text style={styles.primaryText}>{item.product.name}</Text>
-                {requiresWeight ? (
-                    <View style={localStyles.statusBadge}>
-                        <Text style={localStyles.statusBadgeText}>Needs weight</Text>
-                    </View>
-                ) : null}
-                {!requiresWeight && appliedDiscounts.length ? (
-                    <View style={localStyles.badgesRow}>
-                        {appliedDiscounts.map((discount) => (
-                            <View key={discount.discountApplicationId} style={localStyles.discountBadge}>
-                                <Text style={localStyles.discountBadgeText}>
-                                    {discount.applicationType === 'PRICE_OVERRIDE'
-                                        ? 'Override'
-                                        : discount.code || discount.name}
-                                </Text>
-                            </View>
-                        ))}
-                    </View>
-                ) : null}
-                <View style={localStyles.metaRow}>
-                    <Text
-                        style={[
-                            styles.secondaryText,
-                            localStyles.metaText,
-                            requiresWeight && localStyles.metaTextError,
-                        ]}
-                    >
-                        ${item.product.price.toFixed(2)} x {quantityLabel}
-                    </Text>
-                </View>
-                <View style={localStyles.totalRow}>
-                    {discountedLine ? (
-                        <Text style={localStyles.originalTotalText}>
-                            ${baseTotal.toFixed(2)}
-                        </Text>
-                    ) : null}
-                    <Text
-                        style={[
-                            styles.primaryText,
-                            localStyles.totalText,
-                            requiresWeight && localStyles.totalTextError,
-                        ]}
-                    >
-                        ${displayLineTotal.toFixed(2)}
-                    </Text>
-                </View>
-                {!requiresWeight && discountedLine ? (
-                    <Text style={localStyles.savedText}>Saved ${lineDiscountTotal.toFixed(2)}</Text>
-                ) : null}
-            </TouchableOpacity>
-            {isEach && !requiresWeight && onIncrement && onDecrement ? (
-                <View style={localStyles.stepperWrap}>
-                    <Pressable
-                        testID="cart-line-decrement"
-                        style={localStyles.stepperButtonMuted}
-                        onPress={() => onDecrement(item)}
-                    >
-                        <Text style={localStyles.stepperButtonMutedText}>-</Text>
-                    </Pressable>
-                    <Text style={localStyles.stepperValue}>{Math.round(item.quantity)}</Text>
-                    <Pressable
-                        testID="cart-line-increment"
-                        style={localStyles.stepperButtonAccent}
-                        onPress={() => onIncrement(item)}
-                    >
-                        <Text style={localStyles.stepperButtonAccentText}>+</Text>
-                    </Pressable>
-                </View>
+            {selected && !requiresWeight ? (
+                <View style={localStyles.selectedAccent} />
             ) : null}
-            <Button
-                type="clear"
-                icon={{
-                    name: 'trash-can',
-                    type: 'material-community',
-                    color: theme.theme.colors.grey2,
-                }}
-                onPress={confirmDeletion}
-            />
+            {requiresWeight ? <View style={localStyles.errorAccent} /> : null}
+            <View style={localStyles.mainWrap}>
+                <View style={localStyles.content}>
+                    <Text
+                        style={localStyles.nameText}
+                        numberOfLines={2}
+                    >
+                        {item.product.name}
+                    </Text>
+                    {requiresWeight ? (
+                        <View style={localStyles.statusBadge}>
+                            <Text style={localStyles.statusBadgeText}>Needs weight</Text>
+                        </View>
+                    ) : null}
+                    {!requiresWeight && appliedDiscounts.length ? (
+                        <View style={localStyles.badgesRow}>
+                            {appliedDiscounts.map((discount) => (
+                                <View key={discount.discountApplicationId} style={localStyles.discountBadge}>
+                                    <Text
+                                        style={localStyles.discountBadgeText}
+                                        numberOfLines={2}
+                                    >
+                                        {discount.applicationType === 'PRICE_OVERRIDE'
+                                            ? 'Override'
+                                            : discount.code || discount.name}
+                                    </Text>
+                                </View>
+                            ))}
+                        </View>
+                    ) : null}
+                    <View style={localStyles.metaRow}>
+                        <Text
+                            style={[
+                                styles.secondaryText,
+                                localStyles.metaText,
+                                requiresWeight && localStyles.metaTextError,
+                            ]}
+                            numberOfLines={1}
+                        >
+                            ${item.product.price.toFixed(2)} x {quantityLabel}
+                        </Text>
+                    </View>
+                </View>
+                <View style={localStyles.asideColumn}>
+                    <View style={localStyles.controlsRow}>
+                        {isEach && !requiresWeight && onIncrement && onDecrement ? (
+                            <View style={localStyles.stepperWrap}>
+                                <Pressable
+                                    testID="cart-line-decrement"
+                                    style={localStyles.stepperButtonMuted}
+                                    onPress={() => onDecrement(item)}
+                                >
+                                    <Text style={localStyles.stepperButtonMutedText}>-</Text>
+                                </Pressable>
+                                <Text style={localStyles.stepperValue}>{Math.round(item.quantity)}</Text>
+                                <Pressable
+                                    testID="cart-line-increment"
+                                    style={localStyles.stepperButtonAccent}
+                                    onPress={() => onIncrement(item)}
+                                >
+                                    <Text style={localStyles.stepperButtonAccentText}>+</Text>
+                                </Pressable>
+                            </View>
+                        ) : null}
+                        <Button
+                            type="clear"
+                            icon={{
+                                name: 'trash-can',
+                                type: 'material-community',
+                                color: theme.theme.colors.grey2,
+                            }}
+                            onPress={confirmDeletion}
+                        />
+                    </View>
+                    <View style={localStyles.valueColumn}>
+                        <View style={localStyles.totalRow}>
+                            {discountedLine ? (
+                                <Text style={localStyles.originalTotalText}>
+                                    ${baseTotal.toFixed(2)}
+                                </Text>
+                            ) : null}
+                            <Text
+                                style={[
+                                    styles.primaryText,
+                                    localStyles.totalText,
+                                    requiresWeight && localStyles.totalTextError,
+                                ]}
+                            >
+                                ${displayLineTotal.toFixed(2)}
+                            </Text>
+                        </View>
+                        {!requiresWeight && discountedLine ? (
+                            <Text style={localStyles.savedText}>Saved ${lineDiscountTotal.toFixed(2)}</Text>
+                        ) : null}
+                    </View>
+                </View>
+            </View>
             {item.product.isEBTEligible && <UIEbtRibbon />}
-        </View>
+        </Pressable>
     );
 }
 
@@ -166,9 +187,32 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
             position: 'relative',
             overflow: 'hidden',
         },
+        mainWrap: {
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            minWidth: 0,
+        },
+        containerSelected: {
+            backgroundColor: `${tokens.colors.accent}24`,
+            borderColor: `${tokens.colors.accent}cc`,
+            borderWidth: 2,
+            shadowColor: tokens.colors.accent,
+            shadowOpacity: 0.2,
+            shadowRadius: 14,
+            shadowOffset: { width: 0, height: 4 },
+        },
         containerError: {
             borderColor: `${dangerColor}cc`,
             backgroundColor: `${dangerColor}14`,
+        },
+        selectedAccent: {
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 6,
+            backgroundColor: tokens.colors.accent,
         },
         errorAccent: {
             width: 4,
@@ -179,12 +223,35 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
         },
         content: {
             flex: 1,
-            paddingRight: tokens.spacing.xs,
+            minWidth: 0,
+            paddingRight: tokens.spacing.sm,
+        },
+        nameText: {
+            color: tokens.colors.textPrimary,
+            fontSize: 16,
+            fontWeight: '700',
+            lineHeight: 20,
+        },
+        asideColumn: {
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            marginLeft: tokens.spacing.sm,
+            minWidth: 118,
+        },
+        valueColumn: {
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            minWidth: 118,
+            marginTop: tokens.spacing.xs,
+        },
+        controlsRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
         },
         stepperWrap: {
             flexDirection: 'row',
             alignItems: 'center',
-            marginLeft: tokens.spacing.sm,
             marginRight: tokens.spacing.xs,
             gap: tokens.spacing.xs,
             alignSelf: 'center',
@@ -248,17 +315,19 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
             gap: tokens.spacing.xs,
         },
         discountBadge: {
-            borderRadius: 999,
+            borderRadius: 14,
             backgroundColor: `${tokens.colors.accent}22`,
             borderWidth: 1,
             borderColor: `${tokens.colors.accent}44`,
             paddingHorizontal: tokens.spacing.xs,
             paddingVertical: 3,
+            maxWidth: '100%',
         },
         discountBadgeText: {
             color: tokens.colors.accent,
             fontSize: 11,
             fontWeight: '800',
+            lineHeight: 14,
         },
         metaRow: {
             marginTop: 4,
@@ -273,6 +342,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
         totalRow: {
             flexDirection: 'row',
             alignItems: 'baseline',
+            justifyContent: 'flex-end',
             flexWrap: 'wrap',
             columnGap: tokens.spacing.xs,
             marginTop: 3,
@@ -280,11 +350,13 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
         totalText: {
             fontSize: 18,
             fontWeight: '800',
+            textAlign: 'right',
         },
         originalTotalText: {
             color: tokens.colors.textSecondary,
             fontSize: 13,
             textDecorationLine: 'line-through',
+            textAlign: 'right',
         },
         totalTextError: {
             color: dangerColor,
@@ -294,6 +366,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
             fontSize: 12,
             fontWeight: '700',
             marginTop: tokens.spacing.xs,
+            textAlign: 'right',
         },
     });
 

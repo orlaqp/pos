@@ -3,6 +3,8 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import { DiscountEditor, Discounts, PolicyEditor } from './discounts';
 
+const { Alert } = jest.requireMock('react-native');
+
 const mockListDefinitions = jest.fn();
 const mockListPolicies = jest.fn();
 const mockGetDefinition = jest.fn();
@@ -235,6 +237,34 @@ describe('Discounts screen', () => {
     fireEvent.press(getByTestId('discounts-list-item-disc-1'));
     expect(navigation.navigate).toHaveBeenCalledWith('Discount Form', { id: 'disc-1' });
   });
+
+  it('renders policies list and navigates to the policy form', async () => {
+    mockListPolicies.mockResolvedValueOnce([
+      {
+        id: 'policy-1',
+        roleKey: 'Sales',
+        canApplyOrderDiscount: true,
+        active: false,
+      },
+    ]);
+
+    const { getByText, getByTestId } = render(
+      <Discounts navigation={navigation} route={{ name: 'Policies' } as any} />
+    );
+
+    await waitFor(() => expect(getByText('Sales')).toBeTruthy());
+    fireEvent.press(getByTestId('discounts-list-item-policy-1'));
+    expect(navigation.navigate).toHaveBeenCalledWith('Policy Form', { id: 'policy-1' });
+  });
+
+  it('renders the static exceptions state', () => {
+    const { getByText } = render(
+      <Discounts navigation={navigation} route={{ name: 'Exceptions' } as any} />
+    );
+
+    expect(getByText('EXCEPTIONS')).toBeTruthy();
+    expect(getByText('No exceptions')).toBeTruthy();
+  });
 });
 
 describe('DiscountEditor', () => {
@@ -268,6 +298,93 @@ describe('DiscountEditor', () => {
     await waitFor(() => expect(mockSaveDefinition).toHaveBeenCalled());
     expect(navigation.goBack).toHaveBeenCalled();
   });
+
+  it('loads an existing discount and updates it', async () => {
+    mockGetDefinition.mockResolvedValueOnce({
+      id: 'disc-1',
+      name: 'Existing discount',
+      code: null,
+      description: null,
+      status: 'ACTIVE',
+      type: 'MANUAL',
+      method: 'PERCENT',
+      scope: 'LINE',
+      value: 10,
+      priority: 100,
+      stackMode: 'STACKABLE',
+      approvalRequired: false,
+      reasonRequired: true,
+      startDate: null,
+      endDate: null,
+      daysOfWeek: null,
+      startTime: null,
+      endTime: null,
+      minSubtotal: null,
+      minQuantity: null,
+      usageLimitTotal: null,
+      applicableProductIds: null,
+      applicableCategoryIds: null,
+      excludedProductIds: null,
+      excludedCategoryIds: null,
+      storeIds: null,
+      stationIds: null,
+      excludeAlreadyDiscountedItems: false,
+      appliesToAllProducts: true,
+      active: true,
+    });
+    mockSaveDefinition.mockResolvedValueOnce(undefined);
+
+    const { getByDisplayValue, getByTestId } = render(
+      <DiscountEditor
+        navigation={navigation}
+        route={{ name: 'Discount Form', params: { id: 'disc-1' } } as any}
+      />
+    );
+
+    await waitFor(() => expect(getByDisplayValue('Existing discount')).toBeTruthy());
+    fireEvent.press(getByTestId('ui-actions-submit'));
+
+    await waitFor(() =>
+      expect(mockSaveDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'disc-1', name: 'Existing discount' })
+      )
+    );
+  });
+
+  it('alerts when a promo code form is submitted without a code', async () => {
+    const { getByPlaceholderText, getByTestId } = render(
+      <DiscountEditor navigation={navigation} route={{ name: 'Promo Code Form', params: {} } as any} />
+    );
+
+    fireEvent.changeText(getByPlaceholderText('Name'), 'Promo only');
+    fireEvent.press(getByTestId('ui-actions-submit'));
+
+    await waitFor(() => expect(Alert.alert).toHaveBeenCalledWith('Promo code is required'));
+    expect(mockSaveDefinition).not.toHaveBeenCalled();
+  });
+
+  it('alerts when the definition is missing during edit load', async () => {
+    mockGetDefinition.mockResolvedValueOnce(null);
+
+    render(
+      <DiscountEditor
+        navigation={navigation}
+        route={{ name: 'Discount Form', params: { id: 'missing' } } as any}
+      />
+    );
+
+    await waitFor(() => expect(Alert.alert).toHaveBeenCalledWith('Discount not found'));
+    expect(navigation.goBack).toHaveBeenCalled();
+  });
+
+  it('uses the cancel action to navigate back', async () => {
+    const { getByTestId } = render(
+      <DiscountEditor navigation={navigation} route={{ name: 'Discount Form', params: {} } as any} />
+    );
+
+    fireEvent.press(getByTestId('ui-actions-cancel'));
+    expect(navigation.goBack).toHaveBeenCalled();
+  });
 });
 
 describe('PolicyEditor', () => {
@@ -291,6 +408,69 @@ describe('PolicyEditor', () => {
     fireEvent.press(getByTestId('ui-actions-submit'));
 
     await waitFor(() => expect(mockSavePolicy).toHaveBeenCalled());
+    expect(navigation.goBack).toHaveBeenCalled();
+  });
+
+  it('loads an existing policy and updates it', async () => {
+    mockGetPolicy.mockResolvedValueOnce({
+      id: 'policy-1',
+      roleKey: 'Admin',
+      employeeId: null,
+      maxManualPercentDiscount: 25,
+      maxManualAmountDiscount: 15,
+      maxPriceOverrideAmount: 10,
+      maxPriceOverridePercentBelowBase: 20,
+      canApplyOrderDiscount: true,
+      canOverridePrice: true,
+      canApproveDiscounts: true,
+      canApprovePriceOverrides: true,
+      canUsePromoCodes: true,
+      requireReasonForManualDiscounts: true,
+      requireReasonForOverrides: true,
+      requireApprovalForOrderDiscount: false,
+      requireApprovalForAnyPriceOverride: false,
+      allowExclusiveDiscountOverride: false,
+      active: true,
+    });
+    mockSavePolicy.mockResolvedValueOnce(undefined);
+
+    const { getByDisplayValue, getByTestId } = render(
+      <PolicyEditor
+        navigation={navigation}
+        route={{ name: 'Policy Form', params: { id: 'policy-1' } } as any}
+      />
+    );
+
+    await waitFor(() => expect(getByDisplayValue('25')).toBeTruthy());
+    fireEvent.press(getByTestId('ui-actions-submit'));
+
+    await waitFor(() =>
+      expect(mockSavePolicy).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'policy-1', roleKey: 'Admin' })
+      )
+    );
+  });
+
+  it('alerts when the policy is missing during edit load', async () => {
+    mockGetPolicy.mockResolvedValueOnce(null);
+
+    render(
+      <PolicyEditor
+        navigation={navigation}
+        route={{ name: 'Policy Form', params: { id: 'missing' } } as any}
+      />
+    );
+
+    await waitFor(() => expect(Alert.alert).toHaveBeenCalledWith('Policy not found'));
+    expect(navigation.goBack).toHaveBeenCalled();
+  });
+
+  it('uses the cancel action to navigate back', () => {
+    const { getByTestId } = render(
+      <PolicyEditor navigation={navigation} route={{ name: 'Policy Form', params: {} } as any} />
+    );
+
+    fireEvent.press(getByTestId('ui-actions-cancel'));
     expect(navigation.goBack).toHaveBeenCalled();
   });
 });

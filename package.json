@@ -25,7 +25,9 @@
         "update-amplify": "cd apps/mobile-ui && amplify push && amplify codegen models && cd ../.. && yarn update-codegen",
         "update-amplify-local": "cd apps/mobile-ui && amplify codegen statements && amplify codegen types && amplify codegen models && cd ../.. && yarn update-codegen",
         "migrate:develop-to-ebtdev": "ts-node --project tools/tsconfig.tools.json tools/migrate-amplify-to-tenant.ts",
-        "migrate:develop-assets-to-ebtdev": "ts-node --project tools/tsconfig.tools.json tools/migrate-amplify-assets.ts"
+        "migrate:develop-assets-to-ebtdev": "ts-node --project tools/tsconfig.tools.json tools/migrate-amplify-assets.ts",
+        "seed:tenant-discounts": "ts-node --project tools/tsconfig.tools.json tools/seed-tenant-discounts.ts",
+        "coverage:discounts-sales": "node tools/run-discount-sales-coverage.js"
     },
     "resolutions": {
         "@babel/core": "7.29.0",
