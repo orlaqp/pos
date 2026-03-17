@@ -8,7 +8,7 @@ import {
 } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import moment from 'moment';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as RNFS from 'react-native-fs';
 import { Icon } from '@rneui/themed';
 import i18next from 'i18next';
@@ -21,6 +21,7 @@ import {
     Pressable,
     StyleSheet,
     Text,
+    TextInput,
     View,
 } from 'react-native';
 import { Share } from 'react-native';
@@ -32,6 +33,13 @@ export interface ReportHeader {
     width: number;
     align?: 'auto' | 'left' | 'right' | 'center' | 'justify' | undefined;
     sum?: boolean;
+}
+
+type SortDirection = 'asc' | 'desc';
+
+interface SortState {
+    field: string;
+    direction: SortDirection;
 }
 
 /* eslint-disable-next-line */
@@ -54,6 +62,65 @@ const formatCellValue = (
 
     if (value === undefined || value === null) return '-';
     return String(value);
+};
+
+const getCellAlignment = (header: ReportHeader) => {
+    if (header.align && header.align !== 'auto') return header.align;
+    if (
+        header.format === 'money' ||
+        header.format === 'integer' ||
+        header.format === 'float'
+    ) {
+        return 'right';
+    }
+
+    return 'left';
+};
+
+const getComparableValue = (value: unknown, format?: ReportHeader['format']) => {
+    if (value === undefined || value === null) return '';
+    if (format === 'money' || format === 'integer' || format === 'float') {
+        return Number(value || 0);
+    }
+    return String(value).toLowerCase();
+};
+
+export const filterReportItems = (
+    items: Record<string, unknown>[],
+    headers: ReportHeader[],
+    query: string
+) => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return items;
+
+    return items.filter((item) =>
+        headers.some((header) => {
+            const rawValue = item[header.field];
+            const formatted = formatCellValue(rawValue, header.format).toLowerCase();
+            return formatted.includes(normalized);
+        })
+    );
+};
+
+export const sortReportItems = (
+    items: Record<string, unknown>[],
+    headers: ReportHeader[],
+    sortState: SortState | null
+) => {
+    if (!sortState) return items;
+    const header = headers.find((candidate) => candidate.field === sortState.field);
+    if (!header) return items;
+
+    const direction = sortState.direction === 'asc' ? 1 : -1;
+
+    return [...items].sort((left, right) => {
+        const leftValue = getComparableValue(left[header.field], header.format);
+        const rightValue = getComparableValue(right[header.field], header.format);
+
+        if (leftValue < rightValue) return -1 * direction;
+        if (leftValue > rightValue) return 1 * direction;
+        return 0;
+    });
 };
 
 const getRowKey = (item: Record<string, unknown>, index: number) =>
@@ -112,6 +179,9 @@ export function ReportViewer({
     const [loading, setLoading] = useState<boolean>(true);
     const [totals, setTotals] = useState<Record<string, number>>();
     const [items, setItems] = useState<any[]>([]);
+    const [query, setQuery] = useState('');
+    const [debouncedQuery, setDebouncedQuery] = useState('');
+    const [sortState, setSortState] = useState<SortState | null>(null);
     const emptyOpacity = useRef(new Animated.Value(0)).current;
     const emptyTranslateY = useRef(new Animated.Value(12)).current;
     const t = (key: string, fallback: string) =>
@@ -125,6 +195,35 @@ export function ReportViewer({
     const selectedRangeLabel = `${dateRange.startDate.format('MM-DD-YYYY')}  ->  ${dateRange.endDate.format(
         'MM-DD-YYYY'
     )}`;
+    const filteredItems = useMemo(
+        () => filterReportItems(items, headers, debouncedQuery),
+        [debouncedQuery, headers, items]
+    );
+    const visibleItems = useMemo(
+        () => sortReportItems(filteredItems, headers, sortState),
+        [filteredItems, headers, sortState]
+    );
+
+    const toggleSort = (field: string) => {
+        setSortState((current) => {
+            if (!current || current.field !== field) {
+                return { field, direction: 'asc' };
+            }
+
+            return {
+                field,
+                direction: current.direction === 'asc' ? 'desc' : 'asc',
+            };
+        });
+    };
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setDebouncedQuery(query);
+        }, 325);
+
+        return () => clearTimeout(timeout);
+    }, [query]);
 
     const exportToCsv = async () => {
         try {
@@ -181,13 +280,13 @@ export function ReportViewer({
     }, [getData, dateRange]);
 
     useEffect(() => {
-        if (!items.length) {
+        if (!visibleItems.length) {
             setTotals(undefined);
             return;
         }
 
         const totals: Record<string, number> = {};
-        items.reduce((total, item) => {
+        visibleItems.reduce((total, item) => {
             headers.forEach((h) => {
                 if (h.sum) {
                     total[h.field] = (total[h.field] || 0) + Number(item[h.field] || 0);
@@ -198,10 +297,10 @@ export function ReportViewer({
         }, totals);
 
         setTotals(totals);
-    }, [headers, items]);
+    }, [headers, visibleItems]);
 
     useEffect(() => {
-        if (loading || items.length) return;
+        if (loading || visibleItems.length) return;
 
         emptyOpacity.setValue(0);
         emptyTranslateY.setValue(12);
@@ -217,7 +316,7 @@ export function ReportViewer({
                 useNativeDriver: true,
             }),
         ]).start();
-    }, [emptyOpacity, emptyTranslateY, items.length, loading]);
+    }, [emptyOpacity, emptyTranslateY, loading, visibleItems.length]);
 
     return (
         <UIScreen padded>
@@ -249,6 +348,35 @@ export function ReportViewer({
                                     </Pressable>
                                 }
                             />
+                            <View style={styles.toolbarRow}>
+                                <View style={styles.searchWrap}>
+                                    <Icon
+                                        name="magnify"
+                                        type="material-community"
+                                        size={15}
+                                        color={tokens.colors.textMuted}
+                                    />
+                                    <TextInput
+                                        value={query}
+                                        onChangeText={setQuery}
+                                        placeholder={t('REPORT_Search', 'Filter rows')}
+                                        placeholderTextColor={tokens.colors.textMuted}
+                                        style={styles.searchInput}
+                                    />
+                                </View>
+                                {!!sortState && (
+                                    <Pressable style={styles.sortChip} onPress={() => setSortState(null)}>
+                                        <Text style={styles.sortChipText}>
+                                            {headers.find((header) => header.field === sortState.field)?.label}
+                                            {' • '}
+                                            {sortState.direction === 'asc'
+                                                ? t('REPORT_SortAsc', 'Asc')
+                                                : t('REPORT_SortDesc', 'Desc')}
+                                        </Text>
+                                        <Text style={styles.sortChipClose}>×</Text>
+                                    </Pressable>
+                                )}
+                            </View>
                         </UICard>
 
                         <View style={styles.reportCardWrap}>
@@ -267,7 +395,7 @@ export function ReportViewer({
                                     </View>
                                 )}
 
-                                {!loading && !items.length && (
+                                {!loading && !visibleItems.length && (
                                     <Animated.View
                                         style={[
                                             styles.emptyStateWrap,
@@ -278,34 +406,56 @@ export function ReportViewer({
                                         ]}
                                     >
                                         <Text style={styles.emptyStateTitle}>
-                                            {t(
-                                                'REPORT_NoSalesForRange',
-                                                'No data found for this date range'
-                                            )}
+                                            {debouncedQuery.trim()
+                                                ? t('REPORT_NoFilteredResults', 'No rows match this filter')
+                                                : t(
+                                                      'REPORT_NoSalesForRange',
+                                                      'No data found for this date range'
+                                                  )}
                                         </Text>
                                         <Text style={styles.emptyStateSubtitle}>
-                                            {t(
-                                                'REPORT_NoSalesForRangeSubtitle',
-                                                'Completed sales matching the selected filters will appear here.'
-                                            )}
+                                            {debouncedQuery.trim()
+                                                ? t(
+                                                      'REPORT_NoFilteredResultsSubtitle',
+                                                      'Try a different search term or clear the filter.'
+                                                  )
+                                                : t(
+                                                      'REPORT_NoSalesForRangeSubtitle',
+                                                      'Completed sales matching the selected filters will appear here.'
+                                                  )}
                                         </Text>
                                     </Animated.View>
                                 )}
 
-                                {!loading && !!items.length && (
+                                {!loading && !!visibleItems.length && (
                                     <>
                                         <View style={styles.tableHeaderRow}>
                                             {headers.map((h) => (
                                                 <View key={h.field} style={[styles.colCell, { flex: h.width }]}>
-                                                    <Text style={[styles.colHeader, { textAlign: h.align }]}>
-                                                        {h.label}
-                                                    </Text>
+                                                    <Pressable
+                                                        style={styles.headerPressable}
+                                                        onPress={() => toggleSort(h.field)}
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.colHeader,
+                                                                { textAlign: getCellAlignment(h) },
+                                                            ]}
+                                                        >
+                                                            {h.label}
+                                                        </Text>
+                                                        {sortState?.field === h.field && (
+                                                            <Text style={styles.sortIndicator}>
+                                                                {sortState.direction === 'asc' ? '↑' : '↓'}
+                                                            </Text>
+                                                        )}
+                                                    </Pressable>
                                                 </View>
                                             ))}
                                         </View>
 
                                         <FlatList
-                                            data={items}
+                                            data={visibleItems}
                                             keyExtractor={(item, index) =>
                                                 getRowKey(item as Record<string, unknown>, index)
                                             }
@@ -313,7 +463,14 @@ export function ReportViewer({
                                                 <View style={styles.dataRow}>
                                                     {headers.map((h) => (
                                                         <View key={h.field} style={[styles.colCell, { flex: h.width }]}>
-                                                            <Text style={[styles.colValue, { textAlign: h.align }]}>
+                                                            <Text
+                                                                style={[
+                                                                    styles.colValue,
+                                                                    {
+                                                                        textAlign: getCellAlignment(h),
+                                                                    },
+                                                                ]}
+                                                            >
                                                                 {formatCellValue(item[h.field], h.format)}
                                                             </Text>
                                                         </View>
@@ -329,7 +486,7 @@ export function ReportViewer({
                                                         <Text
                                                             style={[
                                                                 styles.totalValue,
-                                                                { textAlign: h.align },
+                                                                { textAlign: getCellAlignment(h) },
                                                             ]}
                                                         >
                                                             {h.sum
@@ -391,6 +548,53 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             letterSpacing: 0.3,
             textTransform: 'uppercase',
         },
+        toolbarRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginTop: tokens.spacing.sm,
+            width: '100%',
+        },
+        searchWrap: {
+            flex: 1,
+            minHeight: 44,
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderRadius: tokens.radii.md,
+            borderWidth: 1,
+            borderColor: `${tokens.colors.border}ee`,
+            backgroundColor: '#0C1118',
+            paddingHorizontal: tokens.spacing.md,
+        },
+        searchInput: {
+            flex: 1,
+            color: tokens.colors.textPrimary,
+            marginLeft: tokens.spacing.sm,
+            fontSize: 15,
+            paddingVertical: tokens.spacing.sm,
+        },
+        sortChip: {
+            marginLeft: tokens.spacing.sm,
+            borderRadius: tokens.radii.md,
+            backgroundColor: '#101D2D',
+            borderWidth: 1,
+            borderColor: `${tokens.colors.accent}66`,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.sm,
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        sortChipText: {
+            color: tokens.colors.accent,
+            fontSize: 13,
+            fontWeight: '700',
+        },
+        sortChipClose: {
+            color: '#D7E8FF',
+            fontSize: 16,
+            fontWeight: '700',
+            marginLeft: tokens.spacing.xs,
+            lineHeight: 16,
+        },
         tableHeaderRow: {
             flexDirection: 'row',
             paddingTop: tokens.spacing.md,
@@ -426,12 +630,22 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         colCell: {
             paddingHorizontal: tokens.spacing.sm,
         },
+        headerPressable: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
         colHeader: {
             color: tokens.colors.textMuted,
             fontSize: 14,
             fontWeight: '700',
             textTransform: 'uppercase',
             letterSpacing: 0.4,
+        },
+        sortIndicator: {
+            color: tokens.colors.accent,
+            fontSize: 12,
+            fontWeight: '800',
+            marginLeft: tokens.spacing.xs,
         },
         dataRow: {
             flexDirection: 'row',

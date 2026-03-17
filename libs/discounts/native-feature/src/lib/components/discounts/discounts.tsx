@@ -123,18 +123,29 @@ const buildPolicyMeta = (item: EmployeeDiscountPolicyEntity) => {
 
 const buildDefinitionPreview = (values: DefinitionFormValues) => {
   const scope = values.scope === 'ORDER' ? 'entire order' : 'eligible cart lines';
-  const methodValue = formatMethodValue(values.method, values.value);
+  const numericValue = Number(values.value || 0);
+  const minSubtotal = Number(values.minSubtotal || 0);
   const trigger = values.type === 'PROMO_CODE'
     ? `when promo code ${values.code.trim() || 'CODE'} is entered`
     : values.type === 'AUTOMATIC'
       ? 'automatically'
       : 'manually';
-  const qualifiers = [];
+  const qualifiers: string[] = [];
+  const methodValue = formatMethodValue(
+    values.method,
+    Number.isFinite(numericValue) ? numericValue : null
+  );
 
-  if (values.minSubtotal) qualifiers.push(`subtotal reaches $${values.minSubtotal.toFixed(2)}`);
+  if (values.minSubtotal && Number.isFinite(minSubtotal)) {
+    qualifiers.push(`subtotal reaches $${minSubtotal.toFixed(2)}`);
+  }
   if (values.minQuantity) qualifiers.push(`quantity reaches ${values.minQuantity}`);
-  if (values.daysOfWeek.length || values.startTime || values.endTime) qualifiers.push('schedule restrictions are met');
-  if (values.excludedProductIds.length || values.excludedCategoryIds.length) qualifiers.push('configured exclusions stay blocked');
+  if ((values.daysOfWeek || []).length || values.startTime || values.endTime) {
+    qualifiers.push('schedule restrictions are met');
+  }
+  if ((values.excludedProductIds || []).length || (values.excludedCategoryIds || []).length) {
+    qualifiers.push('configured exclusions stay blocked');
+  }
 
   return `This discount will apply ${methodValue} to the ${scope} ${trigger}${qualifiers.length ? ` when ${qualifiers.join(' and ')}` : ''}.`;
 };

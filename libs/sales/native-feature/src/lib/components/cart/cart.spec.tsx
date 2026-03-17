@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { Alert, Pressable, Text, View } from 'react-native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockDispatch = jest.fn();
 const mockOnSubmit = jest.fn();
@@ -56,6 +56,9 @@ jest.mock('@pos/sales/data-access', () => ({
 }));
 
 jest.mock('@pos/employees/data-access', () => ({
+    EmployeeService: {
+        getEmployee: jest.fn(),
+    },
     selectLoginEmployee: (state: any) => state.employee,
 }));
 
@@ -219,6 +222,8 @@ jest.mock('../cart-payment/cart-payment', () => ({
 }));
 
 const { Cart } = require('./cart');
+const { EmployeeService } = require('@pos/employees/data-access');
+const { DiscountService } = require('@pos/discounts/data-access');
 
 describe('Cart', () => {
     beforeEach(() => {
@@ -260,6 +265,8 @@ describe('Cart', () => {
         mockEmployeeState = { roles: ['Checks'] };
         mockStoreState = { id: 'store-1', timezone: 'America/New_York' };
         mockStationState = { stationNumber: '25' };
+        EmployeeService.getEmployee.mockResolvedValue(null);
+        DiscountService.resolvePolicyForEmployee.mockReturnValue(undefined);
     });
 
     afterEach(() => {
@@ -386,5 +393,102 @@ describe('Cart', () => {
             expect.stringContaining('p-1')
         );
         expect(mockOnSubmit).not.toHaveBeenCalled();
+    });
+
+    it('applies a manual amount discount without requiring a percent value', async () => {
+        mockCartState.selected = mockCartState.items[0];
+        const { getByText, getByPlaceholderText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Manual'));
+        fireEvent.press(getByText('Amount'));
+        fireEvent.changeText(getByPlaceholderText('5.00'), '4.25');
+        fireEvent.press(getByText('Apply'));
+
+        await waitFor(() => {
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'cart/applyManualDiscount',
+                    payload: expect.objectContaining({
+                        method: 'AMOUNT',
+                        value: 4.25,
+                    }),
+                })
+            );
+        });
+    });
+
+    it('resolves manual discount approval from an approver pin', async () => {
+        mockCartState.selected = mockCartState.items[0];
+        mockCartState.policy = {
+            maxManualPercentDiscount: 5,
+        };
+        EmployeeService.getEmployee.mockResolvedValue({
+            id: 'approver-1',
+            firstName: 'Ava',
+            lastName: 'Manager',
+            code: 'MGR',
+            roles: ['Manager'],
+            active: true,
+        });
+        DiscountService.resolvePolicyForEmployee.mockReturnValue({
+            canApproveDiscounts: true,
+        });
+
+        const { getByText, getByPlaceholderText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Manual'));
+        fireEvent.changeText(getByPlaceholderText('10'), '10');
+        fireEvent.changeText(getByPlaceholderText('Approver PIN'), '4321');
+        fireEvent.press(getByText('Apply'));
+
+        await waitFor(() => {
+            expect(EmployeeService.getEmployee).toHaveBeenCalledWith('4321');
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'cart/applyManualDiscount',
+                    payload: expect.objectContaining({
+                        approval: expect.objectContaining({
+                            approverEmployeeId: 'approver-1',
+                            approverEmployeeName: 'Ava Manager',
+                        }),
+                    }),
+                })
+            );
+        });
+    });
+
+    it('blocks approval when the approver pin does not have discount access', async () => {
+        mockCartState.selected = mockCartState.items[0];
+        mockCartState.policy = {
+            maxManualPercentDiscount: 5,
+        };
+        EmployeeService.getEmployee.mockResolvedValue({
+            id: 'cashier-1',
+            firstName: 'Chris',
+            lastName: 'Cashier',
+            code: 'CSR',
+            roles: ['Cashier'],
+            active: true,
+        });
+        DiscountService.resolvePolicyForEmployee.mockReturnValue({
+            canApproveDiscounts: false,
+        });
+
+        const { getByText, getByPlaceholderText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Manual'));
+        fireEvent.changeText(getByPlaceholderText('10'), '10');
+        fireEvent.changeText(getByPlaceholderText('Approver PIN'), '5555');
+        fireEvent.press(getByText('Apply'));
+
+        await waitFor(() => {
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Approval failed',
+                'This employee cannot approve discounts.'
+            );
+        });
     });
 });

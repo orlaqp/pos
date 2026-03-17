@@ -74,6 +74,10 @@ Copy scripts used by codegen:
 4. Verify compile + tests for touched projects.
 5. Run targeted flows in `mobile-ui` if behavior changed.
 
+## Maintenance rules
+- Cart UI must stay decomposed. New cart overlays, discount dialogs, order summary panels, and action clusters should be implemented as separate component files under `libs/sales/native-feature/src/lib/components/cart/` instead of being added inline to `cart.tsx`.
+- When a workspace-specific implementation rule matters for future Codex work, record it here under `.codex` so it remains local to this repository.
+
 ## High-risk areas
 - DataStore synchronization behavior in `libs/*/data-access/src/lib/data-store-sync.ts`
 - Order lifecycle logic in `libs/orders/data-access/src/lib/order.service.ts`

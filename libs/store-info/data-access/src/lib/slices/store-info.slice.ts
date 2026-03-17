@@ -4,7 +4,11 @@ import {
     createSlice,
     PayloadAction,
 } from '@reduxjs/toolkit';
-import { StoreInfoEntity, StoreInfoEntityMapper } from './store-info.entity';
+import {
+    selectPreferredStore,
+    StoreInfoEntity,
+    StoreInfoEntityMapper,
+} from './store-info.entity';
 import DeviceInfo from 'react-native-device-info';
 import { StoreInfoService } from './store-info.service';
 import { DataStore } from '@pos/shared/amplify';
@@ -41,7 +45,8 @@ const waitForStoreSync = async (ms = 15000): Promise<StoreInfoEntity | undefined
                     clearTimeout(timeoutId);
                 }
                 unsubscribe();
-                resolve(items.length ? StoreInfoEntityMapper.fromModel(items[0]) : undefined);
+                const preferredStore = selectPreferredStore(items);
+                resolve(preferredStore ? StoreInfoEntityMapper.fromModel(preferredStore) : undefined);
             },
             error: (error: unknown) => {
                 if (settled) {
@@ -93,9 +98,12 @@ export const fetchStoreInfo = createAsyncThunk(
                     'StoreInfoService.getStore() fallback',
                     StoreInfoService.getStore()
                 );
+                const preferredStore = selectPreferredStore(stores);
 
                 return {
-                    store: stores.length ? StoreInfoEntityMapper.fromModel(stores[0]) : undefined,
+                    store: preferredStore
+                        ? StoreInfoEntityMapper.fromModel(preferredStore)
+                        : undefined,
                     initialSyncComplete: false,
                 };
             } catch (fallbackError) {

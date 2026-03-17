@@ -17,6 +17,10 @@ import {
   storeInfoActions,
   storeInfoReducer,
 } from './store-info.slice';
+import {
+  isStoreInfoIncomplete,
+  selectPreferredStore,
+} from './store-info.entity';
 import { DataStore } from '@pos/shared/amplify';
 
 const observeQueryMock = DataStore.observeQuery as jest.Mock;
@@ -86,5 +90,52 @@ describe('storeInfo reducer', () => {
       store: expect.objectContaining({ id: 'store-1', name: 'Main Store' }),
       initialSyncComplete: true,
     });
+  });
+
+  it('prefers a completed store record over a placeholder record', () => {
+    const selected = selectPreferredStore([
+      {
+        id: 'placeholder-store',
+        address: 'Update in settings',
+        city: 'Update in settings',
+        state: 'NA',
+        zipCode: '00000',
+        phone: '000-000-0000',
+        updatedAt: '2026-03-14T00:00:00.000Z',
+      } as any,
+      {
+        id: 'configured-store',
+        address: '145 Market Street',
+        city: 'Brooklyn',
+        state: 'NY',
+        zipCode: '11201',
+        phone: '718-555-0110',
+        updatedAt: '2026-03-13T00:00:00.000Z',
+      } as any,
+    ]);
+
+    expect(selected).toEqual(expect.objectContaining({ id: 'configured-store' }));
+  });
+
+  it('marks placeholder store records as incomplete', () => {
+    expect(
+      isStoreInfoIncomplete({
+        address: 'Update in settings',
+        city: 'Update in settings',
+        state: 'NA',
+        zipCode: '00000',
+        phone: '000-000-0000',
+      } as any)
+    ).toBe(true);
+
+    expect(
+      isStoreInfoIncomplete({
+        address: '145 Market Street',
+        city: 'Brooklyn',
+        state: 'NY',
+        zipCode: '11201',
+        phone: '718-555-0110',
+      } as any)
+    ).toBe(false);
   });
 });

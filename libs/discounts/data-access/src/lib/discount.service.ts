@@ -1,6 +1,7 @@
 import { stampTenant } from '@pos/auth/data-access';
 import { API, DataStore } from '@pos/shared/amplify';
 import { DiscountDefinition, EmployeeDiscountPolicy } from '@pos/shared/models';
+import uuid from 'react-native-uuid';
 import {
   DiscountDefinitionEntity,
   DiscountEntityMapper,
@@ -237,6 +238,7 @@ export class DiscountService {
         new DiscountDefinition(
           stampTenant({
             ...entity,
+            id: uuid.v4().toString(),
             active: entity.active ?? true,
             approvalRequired: entity.approvalRequired ?? false,
             reasonRequired: entity.reasonRequired ?? false,
@@ -351,6 +353,7 @@ export class DiscountService {
         new EmployeeDiscountPolicy(
           stampTenant({
             ...entity,
+            id: uuid.v4().toString(),
             active: entity.active ?? true,
           }) as never
         )

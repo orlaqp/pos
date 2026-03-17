@@ -238,6 +238,16 @@ describe('Discounts screen', () => {
     expect(navigation.navigate).toHaveBeenCalledWith('Discount Form', { id: 'disc-1' });
   });
 
+  it('renders the discount editor for a new definition without crashing', async () => {
+    const screen = render(
+      <DiscountEditor navigation={navigation} route={{ name: 'Discount Form', params: undefined } as any} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('This discount will apply 0% off to the eligible cart lines manually.')).toBeTruthy();
+    });
+  });
+
   it('renders policies list and navigates to the policy form', async () => {
     mockListPolicies.mockResolvedValueOnce([
       {

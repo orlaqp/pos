@@ -22,6 +22,7 @@ import { cartActions } from '@pos/sales/data-access';
 import brandMark from '../../assets/branding/pos-icon-transparent-2048.png';
 import { RootState } from '@pos/store';
 import {
+    isStoreInfoIncomplete,
     selectInitialStoreSyncComplete,
     selectStore,
     StoreInfoService,
@@ -164,14 +165,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
             country: store?.country || 'US',
         },
     });
-    const storeNeedsSetup =
-        initialStoreSyncComplete &&
-        (!store ||
-            store.address === 'Update in settings' ||
-            store.city === 'Update in settings' ||
-            store.state === 'NA' ||
-            store.zipCode === '00000' ||
-            store.phone === '000-000-0000');
+    const storeNeedsSetup = initialStoreSyncComplete && isStoreInfoIncomplete(store);
     const employeesReady = employeesLoadingStatus === 'loaded';
     const needsInitialEmployee =
         employeesReady && initialEmployeeSyncComplete && employees.length === 0;

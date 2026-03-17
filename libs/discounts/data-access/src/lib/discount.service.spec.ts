@@ -12,6 +12,10 @@ jest.mock('@pos/auth/data-access', () => ({
   stampTenant: jest.fn((value) => ({ ...value, tenantId: 'tenant-1' })),
 }));
 
+jest.mock('react-native-uuid', () => ({
+  v4: jest.fn(() => 'generated-uuid'),
+}));
+
 jest.mock('@pos/shared/models', () => ({
   DiscountDefinition: Object.assign(function DiscountDefinition(this: any, input: any) {
     Object.assign(this, input);
@@ -72,6 +76,11 @@ describe('DiscountService', () => {
     });
 
     expect(stampTenant).toHaveBeenCalled();
+    expect(stampTenant).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'generated-uuid',
+      })
+    );
     expect(saveMock).toHaveBeenCalledTimes(1);
   });
 
@@ -263,6 +272,11 @@ describe('DiscountService', () => {
     });
 
     expect(stampTenant).toHaveBeenCalled();
+    expect(stampTenant).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'generated-uuid',
+      })
+    );
     expect(saveMock).toHaveBeenCalledTimes(1);
   });
 
