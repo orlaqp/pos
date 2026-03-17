@@ -29,7 +29,21 @@ import { PrinterList } from '@pos/printings/native-feature';
 import { StationForm, StoreInfoForm } from '@pos/store-info/native-feature';
 import { LogList, Settings } from '@pos/settings/native-feature';
 import { InventoryCounts, InventoryList, InventoryReceives } from '@pos/inventory/native-feature';
-import { Dashboard, EndOfDay, Sales, SalesByEmployee, SalesByProduct } from '@pos/reporting/native-feature';
+import {
+    CategoryPerformance,
+    Dashboard,
+    DiscountReport,
+    EbtSummary,
+    EndOfDay,
+    HourlySales,
+    LowSalesItems,
+    OpenOrdersAging,
+    PaymentSummary,
+    RefundReport,
+    Sales,
+    SalesByEmployee,
+    SalesByProduct,
+} from '@pos/reporting/native-feature';
 
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { AuthGlyph } from '@pos/auth/native-feature';
@@ -109,6 +123,29 @@ export function BackOffice({ navigation, route }: BackOfficeProps) {
                                 <Stack.Screen name="By Employee" component={SalesByEmployee} />
                                 <Stack.Screen name="By Product" component={SalesByProduct} />
                                 <Stack.Screen name="End of Day" component={EndOfDay} />
+                                <Stack.Screen
+                                    name="Category Performance"
+                                    component={CategoryPerformance}
+                                />
+                                <Stack.Screen
+                                    name="Payment Summary"
+                                    component={PaymentSummary}
+                                />
+                                <Stack.Screen
+                                    name="Discount Report"
+                                    component={DiscountReport}
+                                />
+                                <Stack.Screen name="Refund Report" component={RefundReport} />
+                                <Stack.Screen name="Hourly Sales" component={HourlySales} />
+                                <Stack.Screen name="EBT Summary" component={EbtSummary} />
+                                <Stack.Screen
+                                    name="Open Orders Aging"
+                                    component={OpenOrdersAging}
+                                />
+                                <Stack.Screen
+                                    name="Low / No Sales Items"
+                                    component={LowSalesItems}
+                                />
                                 <Stack.Screen name="In Stock" component={InventoryList} />
                                 <Stack.Screen name="Counts" component={InventoryCounts} />
                                 <Stack.Screen name="Receives" component={InventoryReceives} />

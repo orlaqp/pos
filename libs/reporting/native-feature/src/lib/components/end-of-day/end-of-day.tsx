@@ -193,7 +193,7 @@ export function EndOfDay(props: EndOfDayProps) {
             : fallback;
 
     const [date, setDate] = useState(new Date());
-    const [drOpen, setDrOpen] = useState(true);
+    const [drOpen, setDrOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [orders, setOrders] = useState<Order[]>([]);
     const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);

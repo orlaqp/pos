@@ -44,6 +44,7 @@ export function Widget({
                 borderRadius: 5,
                 height: height || 130,
                 flexDirection: 'column',
+                justifyContent: 'space-between',
                 padding: 20,
             }}
         >
@@ -57,16 +58,30 @@ export function Widget({
                 />
                 }
             </View>
-            <View style={{ alignSelf: 'center', marginLeft: 10 }}>
-                <Text style={{ fontSize: primaryTextSize || 28, color: primaryColor }}>
+            <View style={{ alignSelf: 'stretch' }}>
+                <Text
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.7}
+                    numberOfLines={2}
+                    style={{
+                        fontSize: primaryTextSize || 28,
+                        color: primaryColor,
+                        textAlign: 'center',
+                    }}
+                >
                     {value}
                 </Text>
             </View>
-            <View style={{ alignSelf: 'center', marginLeft: 10 }}>
+            <View style={{ alignSelf: 'stretch' }}>
                 <Text
+                    numberOfLines={1}
                     style={[
                         styles.secondaryText,
-                        { fontSize: secondaryTextSize || 14, color: `${primaryColor}aa` },
+                        {
+                            fontSize: secondaryTextSize || 14,
+                            color: `${primaryColor}aa`,
+                            textAlign: 'center',
+                        },
                     ]}
                 >
                     {text}

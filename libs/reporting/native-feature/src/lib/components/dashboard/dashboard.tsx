@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { SalesSummary } from '@pos/shared/models';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Order, PaymentType, SalesSummary } from '@pos/shared/models';
 import {
     DateRange,
     UICard,
@@ -18,15 +18,27 @@ import PieChart from '../pie-chart/pie-chart';
 import Widget from '../widget/widget';
 
 import {
+    getSalesForRange,
     getLocalSalesSummaryForRange,
     getSalesSummaryForRange,
 } from '@pos/reporting/data-access';
 import { sortDescListBy } from '@pos/shared/utils';
 import { EACH } from '@pos/unit-of-measures/data-access';
 import i18next from 'i18next';
+import { useSelector } from 'react-redux';
+import { selectAllCategories } from '@pos/categories/data-access';
 
 /* eslint-disable-next-line */
 export interface DashboardProps {}
+
+interface DashboardSupplemental {
+    topCategories: { name: string; value: string }[];
+    paymentMix: { name: string; value: number }[];
+    paymentMixBreakdown: { name: string; value: string }[];
+    paymentMixPercentages: { name: string; amount: string; percent: string; ratio: number }[];
+    totalDiscounts: number;
+    discountedOrders: number;
+}
 
 export const hasSalesData = (summary?: SalesSummary) =>
     !!summary && summary.totalAmount > 0;
@@ -52,6 +64,109 @@ export const buildTopEmployeeItems = (summary?: SalesSummary) =>
               name: e?.employeeName,
               value: `$${e?.amount.toFixed(2)}`,
           }));
+
+export const getDashboardAverageTicket = (summary?: SalesSummary) => {
+    const totalAmount = Number(summary?.totalAmount || 0);
+    const totalOrders =
+        Number(summary?.totalOrders || 0) ||
+        Number(
+            (summary?.employees || []).reduce(
+                (sum, employee) => sum + Number(employee?.orders || 0),
+                0
+            )
+        );
+    if (!totalOrders) {
+        return 0;
+    }
+
+    return totalAmount / totalOrders;
+};
+
+export const getDashboardItemsSold = (summary?: SalesSummary) =>
+    Number(
+        (summary?.products || []).reduce(
+            (sum, item) =>
+                sum + (Number(item?.amount || 0) > 0 ? Number(item?.quantity || 0) : 0),
+            0
+        )
+    );
+
+export const buildDashboardSupplemental = (
+    orders: Order[],
+    categoriesById: Record<string, string>
+): DashboardSupplemental => {
+    const categoryTotals: Record<string, number> = {};
+    const paymentTotals: Record<string, number> = {
+        [PaymentType.CASH]: 0,
+        [PaymentType.CC]: 0,
+        [PaymentType.CHECK]: 0,
+        [PaymentType.EBT]: 0,
+    };
+
+    let totalDiscounts = 0;
+    let discountedOrders = 0;
+
+    orders.forEach((order) => {
+        const discountTotal = Number(order.discountTotal || 0);
+        if (discountTotal > 0) {
+            totalDiscounts += discountTotal;
+            discountedOrders += 1;
+        }
+
+        (order.paymentInfo?.payments || []).forEach((payment) => {
+            const type = String(payment?.type || '').toUpperCase();
+            if (!type) return;
+            paymentTotals[type] = (paymentTotals[type] || 0) + Number(payment?.amount || 0);
+        });
+
+        (order.lines || []).forEach((line) => {
+            const categoryId = line?.categoryId;
+            if (!categoryId) return;
+            const amount = Number(line?.price || 0) * Number(line?.quantity || 0);
+            categoryTotals[categoryId] = (categoryTotals[categoryId] || 0) + amount;
+        });
+    });
+
+    const topCategories = Object.entries(categoryTotals)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([categoryId, amount]) => ({
+            name: categoriesById[categoryId] || 'Unknown',
+            value: `$${amount.toFixed(2)}`,
+        }));
+
+    const paymentMix = [
+        { name: 'Cards', value: paymentTotals[PaymentType.CC] || 0 },
+        { name: 'Cash', value: paymentTotals[PaymentType.CASH] || 0 },
+        { name: 'EBT', value: paymentTotals[PaymentType.EBT] || 0 },
+        { name: 'Checks', value: paymentTotals[PaymentType.CHECK] || 0 },
+    ]
+        .filter((item) => item.value > 0)
+        .sort((a, b) => b.value - a.value);
+
+    const paymentMixBreakdown = paymentMix.map((item) => ({
+        name: item.name,
+        value: `$${item.value.toFixed(2)}`,
+    }));
+    const paymentMixTotal = paymentMix.reduce((sum, item) => sum + item.value, 0);
+    const paymentMixPercentages = paymentMix.map((item) => ({
+        name: item.name,
+        amount: `$${item.value.toFixed(2)}`,
+        percent: paymentMixTotal
+            ? `${Math.round((item.value / paymentMixTotal) * 100)}%`
+            : '0%',
+        ratio: paymentMixTotal ? item.value / paymentMixTotal : 0,
+    }));
+
+    return {
+        topCategories,
+        paymentMix,
+        paymentMixBreakdown,
+        paymentMixPercentages,
+        totalDiscounts,
+        discountedOrders,
+    };
+};
 
 export const buildRevenueOverTime = (summary?: SalesSummary) =>
     summary?.dates?.map((i) => ({
@@ -106,13 +221,22 @@ export function Dashboard(_props: DashboardProps) {
         endDate: moment().endOf('day'),
     });
     const [salesSummary, setSalesSummary] = useState<SalesSummary>();
+    const [supplemental, setSupplemental] = useState<DashboardSupplemental>();
     const emptyOpacity = useRef(new Animated.Value(0)).current;
     const emptyTranslateY = useRef(new Animated.Value(12)).current;
+    const categories = useSelector(selectAllCategories);
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
             : fallback;
     const formattedRange = formatDashboardDateRange(dateRange);
+    const categoriesById = useMemo(
+        () =>
+            Object.fromEntries(
+                (categories || []).map((category) => [category.id, category.name || 'Unknown'])
+            ),
+        [categories]
+    );
 
     const updateDateRange = (range: DateRange) => {
         setDateRange(range);
@@ -123,6 +247,7 @@ export function Dashboard(_props: DashboardProps) {
         let interactionHandle: { cancel?: () => void } | undefined;
         let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
         setLoading(true);
+        setSupplemental(undefined);
 
         interactionHandle = InteractionManager.runAfterInteractions(() => {
             (async () => {
@@ -142,6 +267,24 @@ export function Dashboard(_props: DashboardProps) {
                     if (hasSalesData(summary)) {
                         setSalesSummary(summary);
                         setLoading(false);
+                        setTimeout(async () => {
+                            try {
+                                const orders =
+                                    (await getSalesForRange(
+                                        'PAID',
+                                        normalizeDashboardRange(dateRange)
+                                    )) || [];
+                                if (!cancelled) {
+                                    setSupplemental(
+                                        buildDashboardSupplemental(orders, categoriesById)
+                                    );
+                                }
+                            } catch {
+                                if (!cancelled) {
+                                    setSupplemental(undefined);
+                                }
+                            }
+                        }, 120);
                         return;
                     }
 
@@ -154,10 +297,19 @@ export function Dashboard(_props: DashboardProps) {
                             );
                             if (!cancelled) {
                                 setSalesSummary(sortDashboardSummary(localSummary));
+                                const orders =
+                                    (await getSalesForRange(
+                                        'PAID',
+                                        normalizeDashboardRange(dateRange)
+                                    )) || [];
+                                setSupplemental(
+                                    buildDashboardSupplemental(orders, categoriesById)
+                                );
                             }
                         } catch {
                             if (!cancelled) {
                                 setSalesSummary(undefined);
+                                setSupplemental(undefined);
                             }
                         } finally {
                             if (!cancelled) {
@@ -174,10 +326,19 @@ export function Dashboard(_props: DashboardProps) {
                             );
                             if (!cancelled) {
                                 setSalesSummary(sortDashboardSummary(localSummary));
+                                const orders =
+                                    (await getSalesForRange(
+                                        'PAID',
+                                        normalizeDashboardRange(dateRange)
+                                    )) || [];
+                                setSupplemental(
+                                    buildDashboardSupplemental(orders, categoriesById)
+                                );
                             }
                         } catch {
                             if (!cancelled) {
                                 setSalesSummary(undefined);
+                                setSupplemental(undefined);
                             }
                         } finally {
                             if (!cancelled) {
@@ -196,7 +357,7 @@ export function Dashboard(_props: DashboardProps) {
                 clearTimeout(fallbackTimer);
             }
         };
-    }, [dateRange]);
+    }, [categoriesById, dateRange]);
 
     useEffect(() => {
         if (loading || hasSalesData(salesSummary)) return;
@@ -324,7 +485,7 @@ export function Dashboard(_props: DashboardProps) {
                                             <Widget
                                                 backgroundColor="#241A0F"
                                                 icon="sigma"
-                                                text={t('DASHBOARD_TotalSales', 'Total Sales')}
+                                                text={t('DASHBOARD_Orders', 'Orders')}
                                                 value={salesSummary.totalOrders.toString()}
                                                 primaryTextColor="#FFF4D7"
                                             />
@@ -333,11 +494,32 @@ export function Dashboard(_props: DashboardProps) {
                                     <View style={styles.metricColumnSpaced}>
                                         <View style={styles.metricShell}>
                                             <Widget
-                                                backgroundColor="#0E251B"
-                                                icon="account-multiple-plus-outline"
-                                                text={t('DASHBOARD_NewCustomers', 'New Customers')}
-                                                value={t('COMMON_NotAvailableShort', 'N/A')}
+                                                backgroundColor="#11201A"
+                                                icon="calculator-variant-outline"
+                                                text={t(
+                                                    'DASHBOARD_AverageTicket',
+                                                    'Average Ticket'
+                                                )}
+                                                value={`$ ${getDashboardAverageTicket(
+                                                    salesSummary
+                                                ).toFixed(2)}`}
                                                 primaryTextColor="#E9FFF3"
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={styles.metricColumnSpaced}>
+                                        <View style={styles.metricShell}>
+                                            <Widget
+                                                backgroundColor="#22132A"
+                                                icon="package-variant-closed"
+                                                text={t(
+                                                    'DASHBOARD_ItemsSold',
+                                                    'Items Sold'
+                                                )}
+                                                value={getDashboardItemsSold(
+                                                    salesSummary
+                                                ).toLocaleString()}
+                                                primaryTextColor="#F5E9FF"
                                             />
                                         </View>
                                     </View>
@@ -365,6 +547,124 @@ export function Dashboard(_props: DashboardProps) {
                                         </View>
                                     </View>
                                 </UICard>
+
+                                <View style={styles.secondaryInsightsRow}>
+                                    <View style={styles.metricColumn}>
+                                        <UICard style={styles.analyticsCard}>
+                                            <ListWidget
+                                                header={t(
+                                                    'DASHBOARD_TopCategories',
+                                                    'Top 5 Categories'
+                                                )}
+                                                items={supplemental?.topCategories || []}
+                                            />
+                                        </UICard>
+                                    </View>
+                                    <View style={styles.metricColumnSpaced}>
+                                        <UICard style={styles.analyticsCard}>
+                                            <View style={styles.paymentMixList}>
+                                                <Text style={styles.paymentMixHeader}>
+                                                    {t(
+                                                        'DASHBOARD_PaymentMix',
+                                                        'How Customers Paid'
+                                                    )}
+                                                </Text>
+                                                <Text style={styles.paymentMixSubheader}>
+                                                    {t(
+                                                        'DASHBOARD_PaymentMixHelp',
+                                                        'A breakdown of completed payments for the selected range.'
+                                                    )}
+                                                </Text>
+                                                {(
+                                                    supplemental?.paymentMixPercentages || []
+                                                ).map((item) => (
+                                                    <View
+                                                        key={item.name}
+                                                        style={styles.paymentMixListRow}
+                                                    >
+                                                        <View
+                                                            style={
+                                                                styles.paymentMixListHeaderRow
+                                                            }
+                                                        >
+                                                            <Text
+                                                                style={
+                                                                    styles.paymentMixListLabel
+                                                                }
+                                                            >
+                                                                {item.name}
+                                                            </Text>
+                                                            <View
+                                                                style={
+                                                                    styles.paymentMixListValues
+                                                                }
+                                                            >
+                                                                <Text
+                                                                    style={
+                                                                        styles.paymentMixListAmount
+                                                                    }
+                                                                >
+                                                                    {item.amount}
+                                                                </Text>
+                                                                <Text
+                                                                    style={
+                                                                        styles.paymentMixListPercent
+                                                                    }
+                                                                >
+                                                                    {item.percent}
+                                                                </Text>
+                                                            </View>
+                                                        </View>
+                                                        <View
+                                                            style={
+                                                                styles.paymentMixBarTrack
+                                                            }
+                                                        >
+                                                            <View
+                                                                style={[
+                                                                    styles.paymentMixBarFill,
+                                                                    {
+                                                                        width: `${Math.max(
+                                                                            item.ratio * 100,
+                                                                            item.ratio > 0
+                                                                                ? 8
+                                                                                : 0
+                                                                        )}%`,
+                                                                    },
+                                                                ]}
+                                                            />
+                                                        </View>
+                                                    </View>
+                                                ))}
+                                            </View>
+                                        </UICard>
+                                    </View>
+                                    <View style={styles.metricColumnSpaced}>
+                                        <View style={styles.discountInsightsShell}>
+                                            <Text style={styles.discountInsightsEyebrow}>
+                                                {t('DASHBOARD_Discounts', 'Discounts')}
+                                            </Text>
+                                            <Text style={styles.discountInsightsValue}>
+                                                ${Number(supplemental?.totalDiscounts || 0).toFixed(2)}
+                                            </Text>
+                                            <Text style={styles.discountInsightsLabel}>
+                                                {t(
+                                                    'DASHBOARD_TotalDiscountsGiven',
+                                                    'Total discounts given'
+                                                )}
+                                            </Text>
+                                            <View style={styles.discountInsightsDivider} />
+                                            <Text style={styles.discountInsightsMeta}>
+                                                {`${Number(
+                                                    supplemental?.discountedOrders || 0
+                                                )} ${t(
+                                                    'DASHBOARD_DiscountedOrders',
+                                                    'discounted orders'
+                                                )}`}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </View>
 
                                 <UICard style={styles.chartCard}>
                                     <LineChartComponent
@@ -509,7 +809,15 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         metricsRow: {
             flexDirection: 'row',
-            marginTop: tokens.spacing.xs,
+            marginTop: tokens.spacing.md,
+            marginBottom: tokens.spacing.lg,
+            alignItems: 'stretch',
+        },
+        secondaryInsightsRow: {
+            flexDirection: 'row',
+            marginTop: tokens.spacing.lg,
+            marginBottom: tokens.spacing.lg,
+            alignItems: 'stretch',
         },
         metricColumn: {
             flex: 1,
@@ -523,13 +831,111 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             borderColor: '#202B3A',
             borderRadius: 26,
             borderWidth: 1,
-            padding: 6,
+            padding: 8,
         },
         analyticsCard: {
             overflow: 'hidden',
+            minHeight: 220,
         },
         chartCard: {
             overflow: 'hidden',
+        },
+        paymentMixList: {
+            minHeight: 220,
+            paddingHorizontal: tokens.spacing.sm,
+            paddingVertical: tokens.spacing.sm,
+        },
+        paymentMixHeader: {
+            color: tokens.colors.textPrimary,
+            fontSize: 18,
+            fontWeight: '700',
+            marginBottom: tokens.spacing.xs,
+        },
+        paymentMixSubheader: {
+            color: tokens.colors.textSecondary,
+            fontSize: 14,
+            lineHeight: 20,
+            marginBottom: tokens.spacing.md,
+        },
+        paymentMixListRow: {
+            marginBottom: tokens.spacing.md,
+        },
+        paymentMixListHeaderRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 8,
+        },
+        paymentMixListLabel: {
+            color: tokens.colors.textPrimary,
+            fontSize: 16,
+            fontWeight: '700',
+        },
+        paymentMixListValues: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        paymentMixListAmount: {
+            color: '#DDE7F3',
+            fontSize: 15,
+            fontWeight: '700',
+            marginRight: 10,
+        },
+        paymentMixListPercent: {
+            color: '#8AA1BD',
+            fontSize: 13,
+            fontWeight: '700',
+            minWidth: 40,
+            textAlign: 'right',
+        },
+        paymentMixBarTrack: {
+            height: 10,
+            backgroundColor: '#1A2029',
+            borderRadius: 999,
+            overflow: 'hidden',
+        },
+        paymentMixBarFill: {
+            height: '100%',
+            backgroundColor: '#4DA3FF',
+            borderRadius: 999,
+        },
+        discountInsightsShell: {
+            backgroundColor: '#120F19',
+            borderColor: '#2D2740',
+            borderRadius: 26,
+            borderWidth: 1,
+            minHeight: 220,
+            paddingHorizontal: tokens.spacing.xl,
+            paddingVertical: tokens.spacing.lg,
+        },
+        discountInsightsEyebrow: {
+            color: '#BCA6FF',
+            fontSize: 12,
+            fontWeight: '700',
+            letterSpacing: 1.2,
+            marginBottom: tokens.spacing.md,
+            textTransform: 'uppercase',
+        },
+        discountInsightsValue: {
+            color: '#F7F2FF',
+            fontSize: 34,
+            fontWeight: '800',
+            marginBottom: tokens.spacing.xs,
+        },
+        discountInsightsLabel: {
+            color: '#B4AACF',
+            fontSize: 15,
+            lineHeight: 22,
+        },
+        discountInsightsDivider: {
+            height: 1,
+            backgroundColor: '#2D2740',
+            marginVertical: tokens.spacing.lg,
+        },
+        discountInsightsMeta: {
+            color: '#D9D0F4',
+            fontSize: 16,
+            fontWeight: '700',
         },
         insightsRow: {
             flexDirection: 'row',

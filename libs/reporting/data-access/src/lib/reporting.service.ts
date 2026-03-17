@@ -198,13 +198,23 @@ export const getSalesCustom = /* GraphQL */ `
         identifier
         productId
         productName
+        categoryId
         unitOfMeasure
         barcode
         sku
         quantity
         tax
         price
+        lineTotalBeforeTax
+        lineTotalAfterTax
+        lineDiscountTotal
+        allocatedOrderDiscountTotal
+        isEBTEligible
+        ebtPaidAmount
+        nonEbtPaidAmount
       }
+      discountTotal
+      appliedDiscountSummary
       paymentInfo {
         employeeId
         employeeName

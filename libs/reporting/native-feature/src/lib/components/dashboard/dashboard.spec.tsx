@@ -51,10 +51,13 @@ jest.mock('../line-chart/line-chart', () => ({
 }));
 
 import {
+    buildDashboardSupplemental,
     buildRevenueOverTime,
     buildTopEmployeeItems,
     buildTopProductItems,
     Dashboard,
+    getDashboardAverageTicket,
+    getDashboardItemsSold,
     hasSalesData,
     normalizeDashboardRange,
     sortDashboardSummary,
@@ -105,6 +108,7 @@ describe('Dashboard', () => {
     it('builds dashboard helper data consistently', () => {
         const summary: any = {
             totalAmount: 15.5,
+            totalOrders: 1,
             products: [
                 { productName: 'Apples', unitOfMeasure: 'EA', quantity: 2, amount: 10 },
                 { productName: 'Flour', unitOfMeasure: 'LB', quantity: 2.345, amount: 5.5 },
@@ -126,12 +130,54 @@ describe('Dashboard', () => {
         expect(buildRevenueOverTime(summary)).toEqual([
             { label: '03-12', values: [15.5] },
         ]);
+        expect(getDashboardAverageTicket(summary)).toBe(15.5);
+        expect(getDashboardItemsSold(summary)).toBeCloseTo(4.345);
+
+        const supplemental = buildDashboardSupplemental(
+            [
+                {
+                    discountTotal: 1.25,
+                    paymentInfo: {
+                        payments: [
+                            { type: 'CC', amount: 10 },
+                            { type: 'CASH', amount: 5.5 },
+                        ],
+                    },
+                    lines: [
+                        { categoryId: 'c1', price: 2.5, quantity: 2 },
+                        { categoryId: 'c2', price: 5.5, quantity: 1 },
+                    ],
+                },
+            ] as any,
+            { c1: 'Produce', c2: 'Baking' }
+        );
+
+        expect(supplemental.totalDiscounts).toBe(1.25);
+        expect(supplemental.discountedOrders).toBe(1);
+        expect(supplemental.topCategories).toEqual([
+            { name: 'Baking', value: '$5.50' },
+            { name: 'Produce', value: '$5.00' },
+        ]);
+        expect(supplemental.paymentMix).toEqual([
+            { name: 'Cards', value: 10 },
+            { name: 'Cash', value: 5.5 },
+        ]);
+        expect(supplemental.paymentMixBreakdown).toEqual([
+            { name: 'Cards', value: '$10.00' },
+            { name: 'Cash', value: '$5.50' },
+        ]);
+        expect(supplemental.paymentMixPercentages).toEqual([
+            { name: 'Cards', amount: '$10.00', percent: '65%', ratio: 10 / 15.5 },
+            { name: 'Cash', amount: '$5.50', percent: '35%', ratio: 5.5 / 15.5 },
+        ]);
     });
 
     it('returns empty helper outputs for missing summary sections', () => {
         expect(buildTopProductItems(undefined)).toEqual([]);
         expect(buildTopEmployeeItems(undefined)).toEqual([]);
         expect(buildRevenueOverTime(undefined)).toBeUndefined();
+        expect(getDashboardAverageTicket(undefined)).toBe(0);
+        expect(getDashboardItemsSold(undefined)).toBe(0);
     });
 
 });
