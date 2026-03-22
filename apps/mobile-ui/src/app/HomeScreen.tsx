@@ -1,14 +1,11 @@
-import { getThemeColors, useSharedStyles } from '@pos/theme/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useTheme, Text, Button, Icon, Input } from '@rneui/themed';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Alert, ScrollView, Animated } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Text } from '@rneui/themed';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { View, Alert, ScrollView, Animated, Image } from 'react-native';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { Role } from '@pos/auth/data-access';
-import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { UIKeyPad, UIInput, UIAlert } from '@pos/shared/ui-native';
+import { useForm } from 'react-hook-form';
 import {
     employeesActions,
     EmployeeService,
@@ -27,6 +24,19 @@ import {
     selectStore,
     StoreInfoService,
 } from '@pos/store-info/data-access';
+import { useHomeScreenStyles } from './HomeScreen.styles';
+import { HomeSetupWizard } from './home-setup-wizard';
+import { HomePinLogin } from './home-pin-login';
+import { HomeRouteGrid } from './home-route-grid';
+import {
+    clearPinLockState,
+    formatLockCountdown,
+    MAX_PIN_ATTEMPTS,
+    PIN_LOCK_DURATION_MS,
+    PinLockState,
+    readPinLockState,
+    writePinLockState,
+} from './use-pin-lock';
 
 interface PathDetails {
     title: string;
@@ -60,47 +70,17 @@ type StoreSetupModel = {
     country: string;
 };
 
-type PinLockState = {
-    failedAttempts: number;
-    lockedUntil: number | null;
-};
-
-const PIN_LOCK_STORAGE_KEY = 'pin-lock-state-v1';
-const MAX_PIN_ATTEMPTS = 3;
-const PIN_LOCK_DURATION_MS = 5 * 60 * 1000;
-
-const readPinLockState = async (): Promise<PinLockState> => {
-    try {
-        const raw = await AsyncStorage.getItem(PIN_LOCK_STORAGE_KEY);
-        if (!raw) {
-            return { failedAttempts: 0, lockedUntil: null };
-        }
-
-        const parsed = JSON.parse(raw) as Partial<PinLockState>;
-        return {
-            failedAttempts:
-                typeof parsed.failedAttempts === 'number' ? parsed.failedAttempts : 0,
-            lockedUntil:
-                typeof parsed.lockedUntil === 'number' ? parsed.lockedUntil : null,
-        };
-    } catch {
-        return { failedAttempts: 0, lockedUntil: null };
-    }
-};
-
-const writePinLockState = async (state: PinLockState) => {
-    await AsyncStorage.setItem(PIN_LOCK_STORAGE_KEY, JSON.stringify(state));
-};
-
-const clearPinLockState = async () => {
-    await AsyncStorage.removeItem(PIN_LOCK_STORAGE_KEY);
-};
-
-const formatLockCountdown = (remainingMs: number) => {
-    const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+type PendingOwnerEmployee = {
+    code: string;
+    firstName: string;
+    lastName: string | null;
+    middleName: null;
+    dob: null;
+    phone: string | null;
+    email: string | null;
+    pin: string;
+    roles: Role[];
+    active: boolean;
 };
 
 const getOwnerNameParts = (name?: string) => {
@@ -118,10 +98,7 @@ const getOwnerNameParts = (name?: string) => {
 
 export const HomeScreen = (props: HomeScreenProps) => {
     const dispatch = useDispatch();
-    const theme = useTheme();
-    const colors = getThemeColors(theme);
-    const sharedStyles = useSharedStyles();
-    const styles = useStyles();
+    const styles = useHomeScreenStyles();
     const employee = useSelector(selectLoginEmployee);
     const employees = useSelector(selectAllEmployees);
     const initialEmployeeSyncComplete = useSelector(selectInitialEmployeeSyncComplete);
@@ -141,7 +118,8 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const [setupError, setSetupError] = useState<string | null>(null);
     const [setupSaving, setSetupSaving] = useState(false);
     const [setupStep, setSetupStep] = useState<'employee' | 'store'>('employee');
-    const [pendingOwnerEmployee, setPendingOwnerEmployee] = useState<any>(null);
+    const [pendingOwnerEmployee, setPendingOwnerEmployee] =
+        useState<PendingOwnerEmployee | null>(null);
     const setupForm = useForm<FirstEmployeeSetupModel>({
         mode: 'onChange',
         defaultValues: {
@@ -259,7 +237,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
         setPinResetToken((current) => current + 1);
     };
 
-    const recordFailedPinAttempt = async (message: string) => {
+    const recordFailedPinAttempt = useCallback(async (message: string) => {
         const nextFailedAttempts = pinLockState.failedAttempts + 1;
         const shouldLock = nextFailedAttempts >= MAX_PIN_ATTEMPTS;
         const nextState: PinLockState = shouldLock
@@ -286,7 +264,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
         }
 
         Alert.alert(message);
-    };
+    }, [pinLockState.failedAttempts]);
 
     useEffect(() => {
         if (pin.length !== 4) return;
@@ -313,7 +291,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     'Unable to validate PIN at the moment. Please try again.'
                 );
             });
-    }, [dispatch, isPinLocked, pin, pinLockState.failedAttempts]);
+    }, [dispatch, isPinLocked, pin, recordFailedPinAttempt]);
 
     useEffect(() => {
         resetPinEntry();
@@ -502,220 +480,27 @@ export const HomeScreen = (props: HomeScreenProps) => {
 
     return (
         <ScrollView
-            style={[sharedStyles.page, styles.container]}
+            style={[styles.page, styles.container]}
             contentContainerStyle={styles.containerContent}
             keyboardShouldPersistTaps="handled"
             contentInsetAdjustmentBehavior="automatic"
         >
             {needsSetupWizard ? (
-                <View style={styles.shell}>
-                    <View style={styles.hero}>
-                        <Image source={brandMark} style={styles.brandMark} resizeMode="contain" />
-                        <Text style={styles.businessLabel}>{businessName || 'Business workspace'}</Text>
-                        <Text style={styles.heroTitle}>
-                            {setupStep === 'employee'
-                                ? 'Finish owner setup'
-                                : 'Add store details'}
-                        </Text>
-                        <Text style={styles.heroSubtitle}>
-                            {setupStep === 'employee'
-                                ? 'Create the initial owner employee and PIN before shared-device access begins.'
-                                : 'Finish the business setup with the primary store information used across receipts, settings, and reporting.'}
-                        </Text>
-                        <View style={styles.wizardSteps}>
-                            <View style={styles.wizardStepRow}>
-                                <View
-                                    style={[
-                                        styles.wizardStepDot,
-                                        setupStep === 'employee' ? styles.wizardStepDotActive : undefined,
-                                        !needsInitialEmployee ? styles.wizardStepDotComplete : undefined,
-                                    ]}
-                                />
-                                <Text style={styles.wizardStepText}>Owner employee</Text>
-                            </View>
-                            <View style={styles.wizardStepRow}>
-                                <View
-                                    style={[
-                                        styles.wizardStepDot,
-                                        setupStep === 'store' ? styles.wizardStepDotActive : undefined,
-                                    ]}
-                                />
-                                <Text style={styles.wizardStepText}>Store details</Text>
-                            </View>
-                        </View>
-                    </View>
-                    <Animated.View
-                        style={[
-                            styles.keypadCard,
-                            setupStep === 'store' ? styles.wizardCardWide : undefined,
-                            {
-                                opacity: setupContentOpacity,
-                                transform: [{ translateY: setupContentTranslateY }],
-                            },
-                        ]}
-                    >
-                        <Text style={styles.keypadTitle}>
-                            {setupStep === 'employee'
-                                ? 'Create owner employee'
-                                : 'Store details'}
-                        </Text>
-                        <Text style={styles.keypadHint}>
-                            {setupStep === 'employee'
-                                ? 'This one-time setup creates the first PIN-based employee for the tenant.'
-                                : 'These values replace the default placeholders created during bootstrap.'}
-                        </Text>
-                        {setupError ? <UIAlert message={setupError} type="error" /> : null}
-                        {setupStep === 'employee' ? (
-                            <FormProvider {...setupForm}>
-                                <>
-                                    <UIInput
-                                        name="name"
-                                        placeholder="Owner display name"
-                                        textAlign="left"
-                                        rules={{ required: 'Owner display name is required' }}
-                                    />
-                                    <UIInput
-                                        name="phone"
-                                        placeholder="Owner phone"
-                                        textAlign="left"
-                                        keyboardType="default"
-                                        autoCorrect={false}
-                                    />
-                                    <UIInput
-                                        name="pin"
-                                        placeholder="4-digit PIN"
-                                        textAlign="left"
-                                        keyboardType="number-pad"
-                                        secureTextEntry={true}
-                                        rules={{ required: 'PIN is required' }}
-                                    />
-                                    <UIInput
-                                        name="confirmPin"
-                                        placeholder="Confirm 4-digit PIN"
-                                        textAlign="left"
-                                        keyboardType="number-pad"
-                                        secureTextEntry={true}
-                                        rules={{ required: 'PIN confirmation is required' }}
-                                    />
-                                    <Button
-                                        title="Continue"
-                                        buttonStyle={styles.setupButton}
-                                        loading={setupSaving}
-                                        onPress={setupForm.handleSubmit(createOwnerEmployee)}
-                                    />
-                                </>
-                            </FormProvider>
-                        ) : (
-                            <FormProvider {...storeSetupForm}>
-                                <>
-                                    <View style={styles.formRow}>
-                                        <View style={styles.formColumn}>
-                                            <UIInput
-                                                name="name"
-                                                placeholder="Store name"
-                                                textAlign="left"
-                                                rules={{ required: 'Store name is required' }}
-                                            />
-                                        </View>
-                                        <View style={styles.formColumn}>
-                                            <UIInput
-                                                name="phone"
-                                                placeholder="Store phone"
-                                                textAlign="left"
-                                                keyboardType="default"
-                                                autoCorrect={false}
-                                                rules={{ required: 'Store phone is required' }}
-                                            />
-                                        </View>
-                                    </View>
-                                    <View style={styles.formRow}>
-                                        <View style={styles.formColumn}>
-                                            <UIInput
-                                                name="email"
-                                                placeholder="Store email"
-                                                textAlign="left"
-                                                keyboardType="email-address"
-                                                autoCapitalize="none"
-                                                rules={{ required: 'Store email is required' }}
-                                            />
-                                        </View>
-                                        <View style={styles.formColumn}>
-                                            <UIInput
-                                                name="country"
-                                                placeholder="Country"
-                                                textAlign="left"
-                                                autoCapitalize="characters"
-                                                rules={{ required: 'Country is required' }}
-                                            />
-                                        </View>
-                                    </View>
-                                    <Controller
-                                        control={storeSetupForm.control}
-                                        name="streetAddress"
-                                        defaultValue=""
-                                        rules={{ required: 'Address is required' }}
-                                        render={({
-                                            field: { onChange, onBlur, value },
-                                            fieldState: { error },
-                                        }) => (
-                                            <Input
-                                                placeholder="Street address"
-                                                value={typeof value === 'string' ? value : ''}
-                                                onChangeText={onChange}
-                                                onBlur={onBlur}
-                                                autoCorrect={false}
-                                                autoCapitalize="words"
-                                                errorMessage={error?.message}
-                                                containerStyle={styles.fullWidthInputContainer}
-                                                inputContainerStyle={styles.fullWidthInputField}
-                                                inputStyle={styles.fullWidthInputText}
-                                            />
-                                        )}
-                                    />
-                                    <View style={styles.formRow}>
-                                        <View style={styles.formColumn}>
-                                            <UIInput
-                                                name="city"
-                                                placeholder="City"
-                                                textAlign="left"
-                                                rules={{ required: 'City is required' }}
-                                            />
-                                        </View>
-                                        <View style={styles.formColumn}>
-                                            <UIInput
-                                                name="state"
-                                                placeholder="State"
-                                                textAlign="left"
-                                                autoCapitalize="characters"
-                                                rules={{ required: 'State is required' }}
-                                            />
-                                        </View>
-                                    </View>
-                                    <View style={styles.formRow}>
-                                        <View style={styles.formColumn}>
-                                            <UIInput
-                                                name="zipCode"
-                                                placeholder="ZIP code"
-                                                textAlign="left"
-                                                keyboardType="number-pad"
-                                                rules={{ required: 'ZIP code is required' }}
-                                            />
-                                        </View>
-                                        <View style={styles.formColumn}>
-                                            <View style={styles.formSpacer} />
-                                        </View>
-                                    </View>
-                                    <Button
-                                        title="Finish setup"
-                                        buttonStyle={styles.setupButton}
-                                        loading={setupSaving}
-                                        onPress={storeSetupForm.handleSubmit(saveStoreDetails)}
-                                    />
-                                </>
-                            </FormProvider>
-                        )}
-                    </Animated.View>
-                </View>
+                <HomeSetupWizard
+                    brandMark={brandMark}
+                    businessName={businessName}
+                    setupStep={setupStep}
+                    needsInitialEmployee={needsInitialEmployee}
+                    setupContentOpacity={setupContentOpacity}
+                    setupContentTranslateY={setupContentTranslateY}
+                    setupError={setupError}
+                    setupSaving={setupSaving}
+                    setupForm={setupForm}
+                    storeSetupForm={storeSetupForm}
+                    styles={styles}
+                    onCreateOwnerEmployee={createOwnerEmployee}
+                    onSaveStoreDetails={saveStoreDetails}
+                />
             ) : !employee && !employeesReady ? (
                 <View style={styles.shell}>
                     <View style={styles.hero}>
@@ -734,253 +519,27 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     </View>
                 </View>
             ) : !employee ? (
-                <View style={styles.shell}>
-                    <View style={styles.hero}>
-                        <Image source={brandMark} style={styles.brandMark} resizeMode="contain" />
-                        <Text style={styles.businessLabel}>{businessName || 'Business workspace'}</Text>
-                        <Text style={styles.heroTitle}>Employee PIN</Text>
-                        <Text style={styles.heroSubtitle}>
-                            Admin session is active for {user?.email || 'this device'}. Enter a staff PIN to continue into the operational app.
-                        </Text>
-                    </View>
-                    <View style={styles.keypadCard}>
-                        <Text style={styles.keypadTitle}>Shared device access</Text>
-                        <Text style={styles.keypadHint}>PIN is required every time the app is reopened.</Text>
-                        {pinLockMessage ? <UIAlert message={pinLockMessage} type="error" /> : null}
-                        {pinAttemptsMessage ? (
-                            <UIAlert message={pinAttemptsMessage} type="warning" />
-                        ) : null}
-                        <UIKeyPad
-                            initialValue={pin}
-                            onChange={onPinUpdated}
-                            invalidAttempt={invalidPinAttempt}
-                            resetToken={pinResetToken}
-                            disabled={isPinLocked}
-                        />
-                    </View>
-                </View>
+                <HomePinLogin
+                    brandMark={brandMark}
+                    businessName={businessName}
+                    userEmail={user?.email}
+                    pin={pin}
+                    pinLockMessage={pinLockMessage}
+                    pinAttemptsMessage={pinAttemptsMessage}
+                    invalidPinAttempt={invalidPinAttempt}
+                    pinResetToken={pinResetToken}
+                    isPinLocked={isPinLocked}
+                    styles={styles}
+                    onPinUpdated={onPinUpdated}
+                />
             ) : (
-                <View style={styles.routeGrid}>
-                    {visiblePaths.map((p, index) => {
-                        const animation = routeAnimations[index];
-                        const animatedStyle = {
-                            opacity: animation,
-                            transform: [
-                                {
-                                    scale: animation.interpolate({
-                                        inputRange: [0, 1],
-                                        outputRange: [0.92, 1],
-                                    }),
-                                },
-                            ],
-                        };
-
-                        return (
-                            <Animated.View key={p.title} style={animatedStyle}>
-                                <TouchableOpacity
-                                    onPress={() => goto(p)}
-                                    testID={`home-nav-${p.path.toLowerCase()}`}
-                                >
-                                    <View style={[styles.bigButton, sharedStyles.centered]}>
-                                        <View
-                                            style={[
-                                                styles.routeIconWrap,
-                                                { borderColor: `${p.accentColor}55` },
-                                            ]}
-                                        >
-                                            <Icon
-                                                name={p.icon}
-                                                type="material-community"
-                                                size={52}
-                                                color={p.accentColor}
-                                            />
-                                        </View>
-                                        <Text style={styles.routeTitle}>{p.title}</Text>
-                                    </View>
-                                </TouchableOpacity>
-                            </Animated.View>
-                        );
-                    })}
-                </View>
+                <HomeRouteGrid
+                    paths={visiblePaths}
+                    routeAnimations={routeAnimations}
+                    styles={styles}
+                    onGoTo={goto}
+                />
             )}
         </ScrollView>
     );
-};
-
-const useStyles = () => {
-    const theme = useTheme();
-    const colors = getThemeColors(theme);
-    const sharedStyles = useSharedStyles();
-
-    return StyleSheet.create({
-        ...sharedStyles,
-        container: {
-            flex: 1,
-            paddingHorizontal: 24,
-            backgroundColor: '#05070b',
-        },
-        containerContent: {
-            flexGrow: 1,
-            justifyContent: 'center',
-            paddingVertical: 32,
-        },
-        shell: {
-            flexDirection: 'row',
-            gap: 18,
-            alignItems: 'stretch',
-        },
-        hero: {
-            flex: 1,
-            backgroundColor: '#10141b',
-            borderRadius: 28,
-            padding: 28,
-            justifyContent: 'center',
-            borderWidth: 1,
-            borderColor: 'rgba(255, 255, 255, 0.08)',
-        },
-        businessLabel: {
-            color: '#7eb6ff',
-            textTransform: 'uppercase',
-            letterSpacing: 2,
-            marginBottom: 12,
-            fontSize: 12,
-            fontWeight: '700',
-        },
-        heroTitle: {
-            color: '#f3f7ff',
-            fontSize: 38,
-            fontWeight: '700',
-            marginBottom: 12,
-        },
-        heroSubtitle: {
-            color: '#a3adba',
-            fontSize: 16,
-            lineHeight: 24,
-            maxWidth: 420,
-        },
-        keypadCard: {
-            width: 360,
-            backgroundColor: '#10141b',
-            borderRadius: 28,
-            padding: 24,
-            justifyContent: 'center',
-            borderWidth: 1,
-            borderColor: 'rgba(255, 255, 255, 0.08)',
-            shadowColor: '#000',
-            shadowOpacity: 0.24,
-            shadowRadius: 18,
-            shadowOffset: { width: 0, height: 10 },
-        },
-        wizardCardWide: {
-            width: 640,
-        },
-        keypadTitle: {
-            color: '#f4f8ff',
-            fontSize: 26,
-            fontWeight: '700',
-            marginBottom: 8,
-            textAlign: 'center',
-        },
-        keypadHint: {
-            color: '#a3adba',
-            textAlign: 'center',
-            marginBottom: 20,
-            lineHeight: 20,
-        },
-        setupButton: {
-            borderRadius: 16,
-            minHeight: 52,
-            marginTop: 12,
-            backgroundColor: colors.primary,
-        },
-        formRow: {
-            flexDirection: 'row',
-            gap: 14,
-        },
-        formColumn: {
-            flex: 1,
-        },
-        fullWidthInputContainer: {
-            width: '100%',
-            paddingHorizontal: 0,
-            marginTop: 10,
-        },
-        fullWidthInputField: {
-            ...sharedStyles.inputContainerStyle,
-            borderBottomWidth: 0,
-        },
-        fullWidthInputText: {
-            ...sharedStyles.inputStyle,
-            textAlign: 'left',
-        },
-        formSpacer: {
-            minHeight: 1,
-        },
-        wizardSteps: {
-            marginTop: 20,
-            gap: 12,
-        },
-        wizardStepRow: {
-            flexDirection: 'row',
-            alignItems: 'center',
-        },
-        wizardStepDot: {
-            width: 12,
-            height: 12,
-            borderRadius: 6,
-            marginRight: 10,
-            backgroundColor: 'rgba(255,255,255,0.16)',
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.2)',
-        },
-        wizardStepDotActive: {
-            backgroundColor: colors.primary,
-            borderColor: colors.primary,
-        },
-        wizardStepDotComplete: {
-            backgroundColor: '#34c759',
-            borderColor: '#34c759',
-        },
-        wizardStepText: {
-            color: '#c7d0dc',
-            fontSize: 15,
-        },
-        brandMark: {
-            width: 110,
-            height: 110,
-            marginBottom: 18,
-            opacity: 0.98,
-        },
-        routeGrid: {
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
-        bigButton: {
-            backgroundColor: '#10141b',
-            borderRadius: 24,
-            margin: 15,
-            padding: 24,
-            minWidth: 220,
-            minHeight: 220,
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.08)',
-        },
-        routeIconWrap: {
-            width: 104,
-            height: 104,
-            borderRadius: 26,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 16,
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.08)',
-        },
-        routeTitle: {
-            color: '#f3f7ff',
-            fontSize: 22,
-            fontWeight: '700',
-            textAlign: 'center',
-        },
-    });
 };

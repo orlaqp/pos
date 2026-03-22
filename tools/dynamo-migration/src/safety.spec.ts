@@ -39,6 +39,15 @@ const targetEnv: ResolvedEnvironment = {
 };
 
 describe('safety', () => {
+  it('accepts prod as a valid target env', () => {
+    expect(() =>
+      assertAllowedEnvironments({
+        ...baseOptions,
+        targetEnv: 'prod',
+      })
+    ).not.toThrow();
+  });
+
   it('rejects same source and target env', () => {
     expect(() =>
       assertAllowedEnvironments({
@@ -56,6 +65,15 @@ describe('safety', () => {
         targetEnv: 'develop',
       })
     ).toThrow('Target environment cannot be develop');
+  });
+
+  it('rejects unsupported target env', () => {
+    expect(() =>
+      assertAllowedEnvironments({
+        ...baseOptions,
+        targetEnv: 'staging',
+      })
+    ).toThrow('Target environment must be one of: ebtdev, prod');
   });
 
   it('rejects identical physical tables', () => {

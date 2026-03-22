@@ -2,7 +2,7 @@ import type { CloudFormationClient } from '@aws-sdk/client-cloudformation';
 import type { S3Client } from '@aws-sdk/client-s3';
 
 export const SOURCE_ENV = 'develop';
-export const TARGET_ENV = 'ebtdev';
+export const TARGET_ENVS = ['ebtdev', 'prod'] as const;
 export const DEFAULT_PARALLEL_OBJECTS = 16;
 export const DEFAULT_PREFIXES = ['public/products/', 'public/categories/'] as const;
 

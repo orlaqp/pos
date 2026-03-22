@@ -4,7 +4,7 @@ import type {
 import type { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 
 export const SOURCE_ENV = 'develop';
-export const TARGET_ENV = 'ebtdev';
+export const TARGET_ENVS = ['ebtdev', 'prod'] as const;
 
 export const LEGACY_MODEL_NAMES = [
   'Store',

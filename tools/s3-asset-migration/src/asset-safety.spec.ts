@@ -31,6 +31,12 @@ const targetEnv: StorageEnvironment = {
 };
 
 describe('asset safety', () => {
+  it('accepts prod as a valid target env', () => {
+    expect(() =>
+      assertAllowedAssetEnvironments({ ...baseOptions, targetEnv: 'prod' })
+    ).not.toThrow();
+  });
+
   it('rejects same env', () => {
     expect(() =>
       assertAllowedAssetEnvironments({ ...baseOptions, targetEnv: 'develop' })
@@ -41,6 +47,12 @@ describe('asset safety', () => {
     expect(() =>
       assertAllowedAssetEnvironments({ ...baseOptions, targetEnv: 'develop', sourceEnv: 'dev' })
     ).toThrow('Target environment cannot be develop');
+  });
+
+  it('rejects unsupported target env', () => {
+    expect(() =>
+      assertAllowedAssetEnvironments({ ...baseOptions, targetEnv: 'staging' })
+    ).toThrow('Target environment must be one of: ebtdev, prod');
   });
 
   it('rejects shared bucket', () => {

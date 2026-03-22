@@ -30,12 +30,26 @@ import {
     tenantSessionActions,
 } from '@pos/auth/data-access';
 import { configureDataStore } from '@pos/shared/data-store';
-import { DataStore } from '@pos/shared/amplify';
+import { Auth, DataStore } from '@pos/shared/amplify';
 
 type BootstrapStatus = 'idle' | 'checking-session' | 'resolving-tenant' | 'preparing-business-data' | 'ready' | 'error';
 const appTheme = theme('dark');
 const appColors = designTokens.colors;
 const LAST_BOOTSTRAPPED_TENANT_KEY = 'last-bootstrapped-tenant-id-v1';
+const isUnauthorizedError = (error: unknown) => {
+    const message =
+        error instanceof Error
+            ? error.message
+            : typeof error === 'string'
+              ? error
+              : JSON.stringify(error);
+
+    return message.includes('Unauthorized');
+};
+
+const logBootstrapStageError = (stage: string, error: unknown) => {
+    console.error(`App bootstrap failed during ${stage}`, error);
+};
 
 const withTimeout = <T,>(
     label: string,
@@ -79,10 +93,12 @@ const clearLastBootstrappedTenantId = async () => {
 const StartupScreen = ({
     status,
     onRetry,
+    onSignOut,
     errorMessage,
 }: {
     status: Exclude<BootstrapStatus, 'ready'>;
     onRetry: () => void;
+    onSignOut: () => void;
     errorMessage?: string;
 }) => {
     const styles = useStartupStyles();
@@ -106,7 +122,20 @@ const StartupScreen = ({
                     {errorMessage ? (
                         <Text style={styles.errorDetail}>{errorMessage}</Text>
                     ) : null}
-                    <Button title="Retry" onPress={onRetry} buttonStyle={styles.retryButton} />
+                    <View style={styles.errorActions}>
+                        <Button
+                            title="Retry"
+                            onPress={onRetry}
+                            buttonStyle={styles.retryButton}
+                        />
+                        <Button
+                            title="Sign Out"
+                            type="outline"
+                            onPress={onSignOut}
+                            buttonStyle={styles.signOutButton}
+                            titleStyle={styles.signOutButtonTitle}
+                        />
+                    </View>
                 </>
             ) : (
                 <>
@@ -126,6 +155,19 @@ const AppContent = () => {
     const tenantSession = useSelector((state: RootState) => state.tenantSession);
     const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('idle');
     const [bootstrapError, setBootstrapError] = useState<string>();
+
+    const resetSessionState = useCallback(async () => {
+        try {
+            await DataStore.stop();
+            await DataStore.clear();
+        } finally {
+            clearCurrentTenantContext();
+            dispatch(authActions.logoff());
+            dispatch(tenantSessionActions.clearTenantSession());
+            dispatch(employeesActions.logoffEmployee());
+            await clearLastBootstrappedTenantId();
+        }
+    }, [dispatch]);
 
     const startBootstrap = useCallback(async () => {
         if (process.env.NODE_ENV === 'test') {
@@ -189,23 +231,54 @@ const AppContent = () => {
             }
 
             configureDataStore();
-            await DataStore.start();
-            await bootstrapTenantSession(user);
+            try {
+                await bootstrapTenantSession(user);
+            } catch (error) {
+                logBootstrapStageError('bootstrapTenantSession()', error);
+                if (!isUnauthorizedError(error)) {
+                    throw error;
+                }
+            }
+
+            try {
+                await DataStore.start();
+            } catch (error) {
+                logBootstrapStageError('DataStore.start()', error);
+                if (!isUnauthorizedError(error)) {
+                    throw error;
+                }
+            }
             await setLastBootstrappedTenantId(user.tenantId);
 
             setBootstrapStatus('preparing-business-data');
             dispatch(tenantSessionActions.setBootstrapStatus('bootstrapping'));
 
-            await withTimeout(
-                'fetchStationInfo()',
-                dispatch(fetchStationInfo()).unwrap()
-            );
+            try {
+                await withTimeout(
+                    'fetchStationInfo()',
+                    dispatch(fetchStationInfo()).unwrap()
+                );
+            } catch (error) {
+                logBootstrapStageError('fetchStationInfo()', error);
+            }
 
-            await Promise.all([
+            const businessDataResults = await Promise.allSettled([
                 dispatch(fetchStoreInfo()).unwrap(),
                 dispatch(fetchGlobalSettings()).unwrap(),
                 dispatch(fetchEmployees()).unwrap(),
             ]);
+
+            const stageLabels = [
+                'fetchStoreInfo()',
+                'fetchGlobalSettings()',
+                'fetchEmployees()',
+            ];
+
+            businessDataResults.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    logBootstrapStageError(stageLabels[index], result.reason);
+                }
+            });
 
             dispatch(tenantSessionActions.setBootstrapStatus('ready'));
             setBootstrapStatus('ready');
@@ -224,6 +297,19 @@ const AppContent = () => {
             setBootstrapStatus('error');
         }
     }, [authUser, dispatch]);
+
+    const signOutFromStartup = useCallback(async () => {
+        setBootstrapError(undefined);
+
+        try {
+            await Auth.signOut();
+        } catch (error) {
+            console.error('Startup sign out failed', error);
+        } finally {
+            await resetSessionState();
+            setBootstrapStatus('ready');
+        }
+    }, [resetSessionState]);
 
     useEffect(() => {
         startBootstrap();
@@ -252,6 +338,7 @@ const AppContent = () => {
                             : bootstrapStatus
                 }
                 onRetry={startBootstrap}
+                onSignOut={signOutFromStartup}
                 errorMessage={visibleBootstrapError}
             />
         );
@@ -317,5 +404,17 @@ const useStartupStyles = () =>
         retryButton: {
             borderRadius: 14,
             paddingHorizontal: 24,
+        },
+        errorActions: {
+            flexDirection: 'row',
+            gap: 12,
+        },
+        signOutButton: {
+            borderRadius: 14,
+            paddingHorizontal: 24,
+            borderColor: 'rgba(255,255,255,0.25)',
+        },
+        signOutButtonTitle: {
+            color: appColors.textPrimary,
         },
     });

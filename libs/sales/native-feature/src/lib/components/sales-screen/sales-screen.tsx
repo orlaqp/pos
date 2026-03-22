@@ -1,19 +1,15 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import i18next from 'i18next';
 
-import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-import { Button, Dialog } from '@rneui/themed';
 
-import { Animated, View, StyleSheet, Alert, Text, TextInput } from 'react-native';
+import { Animated, View, Alert, TextInput } from 'react-native';
 
 import {
     CategoryEntity,
     syncCategories,
     subscribeToCategoryChanges,
 } from '@pos/categories/data-access';
-import CategorySelection from '../category-selection/category-selection';
-import ProductSelection from '../product-selection/product-selection';
 import { useSelector } from 'react-redux';
 import {
     cartActions,
@@ -24,7 +20,6 @@ import {
     MINIMUM_INVENTORY_FOR_SALE,
     selectActiveProduct,
 } from '@pos/sales/data-access';
-import ProductDetails from '../product-details/product-details';
 import Cart from '../cart/cart';
 import {
     ProductEntity,
@@ -34,9 +29,8 @@ import {
     syncProducts,
     subscribeToProductChanges,
 } from '@pos/products/data-access';
-import { ProductSearch } from '../product-search/product-search';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ButtonItemType, UICard, UIScreen } from '@pos/shared/ui-native';
+import { ButtonItemType, UIScreen } from '@pos/shared/ui-native';
 import { RootState, useAppDispatch } from '@pos/store';
 import { getDefaultPrinter } from '@pos/printings/data-access';
 import {
@@ -58,6 +52,9 @@ import {
     shouldBlockSelectionByInventory,
     shouldSetFilteredProducts,
 } from './sales-screen.logic';
+import { useSalesScreenStyles } from './sales-screen.styles';
+import { SalesCatalogPane } from './sales-catalog-pane';
+import { SalesProductDialog } from './sales-product-dialog';
 
 export interface NavigationParamList {
     [key: string]: object | undefined;
@@ -83,7 +80,7 @@ export function SalesScreen({
     navigation,
     route,
 }: NativeStackScreenProps<NavigationParamList, 'Sales'>) {
-    const styles = useStyles();
+    const styles = useSalesScreenStyles();
     const tokens = useDesignTokens();
     const dispatch = useAppDispatch();
     const searchRef = React.useRef<TextInput>(null);
@@ -102,15 +99,15 @@ export function SalesScreen({
         []
     );
     const [showCategories, setShowCategories] = useState(true);
+    const [categoryWidth] = useState(() => new Animated.Value(150));
+    const [categoryOpacity] = useState(() => new Animated.Value(1));
+    const [contentOpacity] = useState(() => new Animated.Value(1));
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
             : fallback;
     const hasCatalogProducts = getActiveProducts(allProducts).length > 0;
     const canManageCatalog = !!employee?.roles?.includes(Role.Admin);
-    const categoryWidth = useRef(new Animated.Value(showCategories ? 150 : 0)).current;
-    const categoryOpacity = useRef(new Animated.Value(showCategories ? 1 : 0)).current;
-    const contentOpacity = useRef(new Animated.Value(1)).current;
     const deselectProduct = () => dispatch(cartActions.setActiveProduct(undefined));
     const shouldReturnToOrderList = () =>
         navigation.getState?.()?.routeNames?.includes('Order List');
@@ -298,6 +295,9 @@ export function SalesScreen({
 
     useEffect(() => {
         const nextProducts = getActiveProducts(allProducts);
+        // Keep the filtered view aligned with source catalog updates without
+        // overwriting active search/category selections when the list is unchanged.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFilteredProducts((current) =>
             isSameProductList(current, nextProducts) ? current : nextProducts
         );
@@ -342,111 +342,24 @@ export function SalesScreen({
     return (
         <UIScreen padded>
             <View style={styles.salesLayout}>
-                <Animated.View
-                    style={[
-                        styles.categoriesCardWrap,
-                        {
-                            width: categoryWidth,
-                            opacity: categoryOpacity,
-                            marginRight: showCategories ? tokens.spacing.sm : 0,
-                        },
-                    ]}
-                >
-                    <View style={styles.categoriesCard}>
-                        {showCategories ? (
-                            <CategorySelection
-                                key="categorySelection"
-                                onSelected={onCategoryChange}
-                            />
-                        ) : null}
-                    </View>
-                </Animated.View>
-                <UICard style={styles.productsCard} padding="md" radius="lg">
-                    <View style={styles.productsHeader}>
-                        <View>
-                            <Text style={styles.sectionTitle}>Products</Text>
-                            <Text style={styles.sectionSubtitle}>
-                                {showCategories
-                                    ? 'Browse by category or search the catalog.'
-                                    : 'Search the catalog or show categories again.'}
-                            </Text>
-                        </View>
-                        <Button
-                            testID="sales-toggle-categories"
-                            type="clear"
-                            title={showCategories ? 'Hide categories' : 'Show categories'}
-                            onPress={() => setShowCategories((current) => !current)}
-                            icon={{
-                                name: showCategories ? 'dock-right' : 'dock-left',
-                                type: 'material-community',
-                                color: tokens.colors.accent,
-                                size: 18,
-                            }}
-                            titleStyle={styles.toggleTitle}
-                            buttonStyle={styles.toggleButton}
-                        />
-                    </View>
-
-                    <Animated.View style={{ flex: 1, opacity: contentOpacity }}>
-                    {hasCatalogProducts ? (
-                        <>
-                            <ProductSearch
-                                key="productSearch"
-                                ref={searchRef}
-                                onFilterChange={onFilterChange}
-                            />
-                            <ProductSelection
-                                key="productSelection"
-                                products={filteredProducts}
-                                onSelected={onProductSelected}
-                                onLongPress={onProductLongPress}
-                            />
-                        </>
-                    ) : (
-                        <View style={styles.emptyCatalogWrap}>
-                            <Text style={styles.emptyTitle}>No products yet</Text>
-                            <Text style={styles.emptySubtitle}>
-                                Add your first category or product in Back Office before using sales search.
-                            </Text>
-                            {canManageCatalog ? (
-                                <View style={styles.emptyActions}>
-                                    <Button
-                                        testID="sales-empty-add-category"
-                                        title="Add category"
-                                        onPress={() =>
-                                            openBackOfficeForm('Categories', 'Category Form')
-                                        }
-                                        buttonStyle={styles.primaryAction}
-                                        titleStyle={styles.primaryActionTitle}
-                                        icon={{
-                                            name: 'shape-outline',
-                                            type: 'material-community',
-                                            color: '#ffffff',
-                                            size: 18,
-                                        }}
-                                    />
-                                    <Button
-                                        testID="sales-empty-add-product"
-                                        title="Add product"
-                                        type="outline"
-                                        onPress={() =>
-                                            openBackOfficeForm('Products', 'Product Form')
-                                        }
-                                        buttonStyle={styles.secondaryAction}
-                                        titleStyle={styles.secondaryActionTitle}
-                                        icon={{
-                                            name: 'plus-box-outline',
-                                            type: 'material-community',
-                                            color: tokens.colors.accent,
-                                            size: 18,
-                                        }}
-                                    />
-                                </View>
-                            ) : null}
-                        </View>
-                    )}
-                    </Animated.View>
-                </UICard>
+                <SalesCatalogPane
+                    styles={styles}
+                    accentColor={tokens.colors.accent}
+                    showCategories={showCategories}
+                    hasCatalogProducts={hasCatalogProducts}
+                    canManageCatalog={canManageCatalog}
+                    filteredProducts={filteredProducts}
+                    categoryWidth={categoryWidth}
+                    categoryOpacity={categoryOpacity}
+                    contentOpacity={contentOpacity}
+                    searchRef={searchRef}
+                    onCategoryChange={onCategoryChange}
+                    onToggleCategories={() => setShowCategories((current) => !current)}
+                    onFilterChange={onFilterChange}
+                    onProductSelected={onProductSelected}
+                    onProductLongPress={onProductLongPress}
+                    onOpenBackOfficeForm={openBackOfficeForm}
+                />
                 <View style={styles.cartPanel}>
                     <Cart
                         key="cart"
@@ -457,131 +370,15 @@ export function SalesScreen({
                     />
                 </View>
             </View>
-            <Dialog
-                isVisible={!!product}
-                onBackdropPress={deselectProduct}
-                supportedOrientations={['landscape']}
-                presentationStyle="fullScreen"
+            <SalesProductDialog
+                product={product}
                 overlayStyle={[styles.overlay, { maxWidth: 560, width: '88%' }]}
-            >
-                {product ? (
-                    <ProductDetails
-                        item={product}
-                        upsertCart={upsertCart}
-                        enforceSalesBasedOnInventory={globalSettings?.enforceSalesBasedOnInventory}
-                    />
-                ) : null}
-            </Dialog>
+                enforceSalesBasedOnInventory={globalSettings?.enforceSalesBasedOnInventory}
+                onClose={deselectProduct}
+                onUpsertCart={upsertCart}
+            />
         </UIScreen>
     );
 }
-
-const useStyles = () => {
-    const sharedStyles = useSharedStyles();
-    const tokens = useDesignTokens();
-
-    return {
-        ...sharedStyles,
-        ...StyleSheet.create({
-            salesLayout: {
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'stretch',
-            },
-            categoriesCardWrap: {
-                overflow: 'hidden',
-                flexShrink: 0,
-            },
-            categoriesCard: {
-                flex: 1,
-                overflow: 'hidden',
-            },
-            productsCard: {
-                flex: 1,
-                minWidth: 0,
-                marginRight: tokens.spacing.sm,
-            },
-            productsHeader: {
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                marginBottom: tokens.spacing.sm,
-            },
-            sectionTitle: {
-                color: tokens.colors.textPrimary,
-                fontSize: 20,
-                fontWeight: '700',
-                marginBottom: 4,
-            },
-            sectionSubtitle: {
-                color: tokens.colors.textSecondary,
-                fontSize: 13,
-                maxWidth: 360,
-            },
-            toggleButton: {
-                borderRadius: tokens.radii.xl,
-                paddingHorizontal: tokens.spacing.sm,
-                minHeight: 36,
-            },
-            toggleTitle: {
-                color: tokens.colors.accent,
-                fontSize: 13,
-                fontWeight: '700',
-                marginLeft: 6,
-            },
-            emptyCatalogWrap: {
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingHorizontal: tokens.spacing.xl,
-                paddingBottom: tokens.spacing.lg,
-            },
-            emptyTitle: {
-                color: tokens.colors.textPrimary,
-                fontSize: 24,
-                fontWeight: '700',
-                marginBottom: tokens.spacing.xs,
-            },
-            emptySubtitle: {
-                color: tokens.colors.textSecondary,
-                fontSize: 15,
-                lineHeight: 22,
-                textAlign: 'center',
-                maxWidth: 420,
-                marginBottom: tokens.spacing.lg,
-            },
-            emptyActions: {
-                flexDirection: 'row',
-                gap: tokens.spacing.sm,
-            },
-            primaryAction: {
-                backgroundColor: tokens.colors.accent,
-                borderRadius: tokens.radii.xl,
-                paddingHorizontal: tokens.spacing.md,
-                minHeight: 46,
-            },
-            primaryActionTitle: {
-                color: '#ffffff',
-                fontWeight: '700',
-                marginLeft: 8,
-            },
-            secondaryAction: {
-                borderRadius: tokens.radii.xl,
-                borderColor: tokens.colors.accent,
-                paddingHorizontal: tokens.spacing.md,
-                minHeight: 46,
-            },
-            secondaryActionTitle: {
-                color: tokens.colors.accent,
-                fontWeight: '700',
-                marginLeft: 8,
-            },
-            cartPanel: {
-                width: 330,
-                minWidth: 300,
-            },
-        }),
-    };
-};
 
 export default SalesScreen;

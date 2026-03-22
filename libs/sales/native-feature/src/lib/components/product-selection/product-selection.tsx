@@ -13,7 +13,6 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import {
     chunkProducts,
-    getNextRowsToShow,
     getProductCardState,
 } from './product-selection.logic';
 
@@ -33,7 +32,6 @@ export function ProductSelection({
     const tokens = useDesignTokens();
     const localStyles = useStyles(tokens);
     const [rows, setRows] = useState<ProductEntity[][]>();
-    const [rowsToShow, setRowsToShow] = useState<number>(6);
 
     const productBackgroundColor = (product: ProductEntity) => {
         const state = getProductCardState(product);
@@ -64,9 +62,7 @@ export function ProductSelection({
             <View style={localStyles.listWrap}>
                 <FlatList
                     testID="product-selection-list"
-                    data={rows?.slice(0, rowsToShow)}
-                    // onEndReachedThreshold={0.2}
-                    onEndReached={() => setRowsToShow(getNextRowsToShow(rowsToShow))}
+                    data={rows}
                     contentContainerStyle={localStyles.listContent}
                     renderItem={(info) => (
                         <View

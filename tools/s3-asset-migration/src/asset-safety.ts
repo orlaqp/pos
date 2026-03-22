@@ -1,4 +1,4 @@
-import { SOURCE_ENV, TARGET_ENV, type AssetMigrationOptions, type StorageEnvironment } from './asset-types';
+import { SOURCE_ENV, TARGET_ENVS, type AssetMigrationOptions, type StorageEnvironment } from './asset-types';
 
 export const assertAllowedAssetEnvironments = (options: AssetMigrationOptions) => {
   if (options.sourceEnv === options.targetEnv) {
@@ -13,8 +13,8 @@ export const assertAllowedAssetEnvironments = (options: AssetMigrationOptions) =
     throw new Error(`Source environment must be "${SOURCE_ENV}"`);
   }
 
-  if (options.targetEnv !== TARGET_ENV) {
-    throw new Error(`Target environment must be "${TARGET_ENV}"`);
+  if (!TARGET_ENVS.includes(options.targetEnv as (typeof TARGET_ENVS)[number])) {
+    throw new Error(`Target environment must be one of: ${TARGET_ENVS.join(', ')}`);
   }
 };
 
