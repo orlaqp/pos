@@ -1,3 +1,4 @@
+/* eslint-disable @nx/enforce-module-boundaries */
 import {
   buildEbtAllocations,
   getEbtEligibleTotal,
@@ -5,7 +6,7 @@ import {
   sumEbtPayment,
   validateEbtPayment,
 } from './ebt-allocation';
-import { OrderService } from './order.service';
+import { getInventoryQuantityDelta, OrderService } from './order.service';
 import { DataStore } from '@pos/shared/amplify';
 import { StationService } from '@pos/settings/data-access';
 import { stampTenant } from '@pos/auth/data-access';
@@ -43,10 +44,25 @@ jest.mock('@pos/shared/models', () => {
     }
   }
 
+  class MockProduct {
+    constructor(init: Record<string, unknown>) {
+      Object.assign(this, init);
+    }
+  }
+
+  (MockProduct as any).copyOf = (existing: Record<string, unknown>, mutator: (draft: Record<string, unknown>) => void) => {
+    const draft = {
+      ...existing,
+    };
+    mutator(draft);
+    return draft;
+  };
+
   return {
     ...actual,
     Order: MockOrder,
     OrderLine: MockOrderLine,
+    Product: MockProduct,
   };
 });
 
@@ -187,6 +203,63 @@ describe('order.service EBT helpers', () => {
 describe('OrderService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('returns the saved paid order from closeOrder and updates inventory for sync propagation', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+    const updatedOrder = {
+      id: 'order-1',
+      status: 'PAID',
+      lines: [],
+      paymentInfo: { payments: [] },
+    } as any;
+    const savedOrder = {
+      ...updatedOrder,
+      _version: 4,
+      updatedAt: '2026-03-24T12:00:00.000Z',
+    } as any;
+
+    jest
+      .spyOn(OrderService as any, 'getUpdatedOrder')
+      .mockResolvedValue(updatedOrder);
+    saveMock.mockResolvedValue(savedOrder);
+    const updateInventorySpy = jest
+      .spyOn(OrderService as any, 'updateInventory')
+      .mockResolvedValue(undefined);
+
+    const result = await OrderService.closeOrder({
+      id: 'order-1',
+      by: {
+        id: 'employee-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+      } as any,
+      order: {
+        items: [
+          {
+            identifier: 'line-1',
+            quantity: 1,
+            product: {
+              price: 4.59,
+              isEBTEligible: true,
+            },
+          },
+        ],
+      } as any,
+      payments: [{ type: 'cash', amount: 4.59 }],
+    });
+
+    expect(saveMock).toHaveBeenCalledWith(updatedOrder);
+    expect(updateInventorySpy).toHaveBeenCalledWith(savedOrder);
+    expect(result).toBe(savedOrder);
+  });
+
+  it('uses a negative quantity delta for paid orders', () => {
+    expect(getInventoryQuantityDelta('PAID', 3)).toBe(-3);
+  });
+
+  it('uses a positive quantity delta for refunded orders', () => {
+    expect(getInventoryQuantityDelta('REFUNDED', 3)).toBe(3);
   });
 
   it('leaves line appliedDiscounts unset and relies on order summary', async () => {

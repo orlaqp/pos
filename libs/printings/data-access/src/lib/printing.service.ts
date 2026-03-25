@@ -10,6 +10,10 @@ import { PrinterEntity } from './slices/printer.entity';
 import { Alert } from 'react-native';
 import { CutType } from 'react-native-star-io10/src/StarXpandCommand/Printer/CutType';
 import { Alignment } from 'react-native-star-io10/src/StarXpandCommand/Printer/Alignment';
+import {
+    isE2EPrinterSpyEnabled,
+    recordE2EPrintJob,
+} from '@pos/shared/utils';
 
 type ReceiptStoreInfo = {
     name?: string;
@@ -40,6 +44,7 @@ type ReceiptOrderEntity = {
     id?: string;
     status?: 'OPEN' | 'PAID' | 'REFUNDED' | string;
     orderNo?: string;
+    copyType?: 'CUSTOMER' | 'MERCHANT';
     paymentInfo?: {
         payments?: Array<{
             type: string;
@@ -111,17 +116,48 @@ export const printReceipt = async (
         return;
     }
 
-    // TODO: Restore printing service
-    // return;
+    await printSingleReceipt(store, printerInfo, cart, order);
+};
 
-    // return print(printerInfo, (builder) => buildData(builder));
+const printSingleReceipt = async (
+    store: ReceiptStoreInfo,
+    printerInfo: PrinterEntity,
+    cart: ReceiptCartState,
+    order?: ReceiptOrderEntity
+) => {
+    const date = new Date();
+    const receiptLines = buildReceiptLines(cart, order);
+    const totalPaymentsText = order?.paymentInfo?.payments
+        ?.map((p) => `${p.type}: $ ${p.amount.toFixed(2)}`)
+        .join('\n') || '';
+    const copyLabel = getReceiptCopyLabel(order);
+    const headerText =
+        `${store.name}\n` +
+        `${store.address}\n${store.city}, ${store.state} ${store.zipCode}\nP: ${store.phone}\nF: ${store.fax}\n${store.email}\n\n` +
+        `Date:${date.toLocaleString()}\n\n`;
+    const totalText =
+        `Total     ${cart.footer.total.toFixed(2).padStart(12, ' ')}\n` +
+        '--------------------------------\n';
+    const footerText = order?.id
+        ? `${totalPaymentsText}\n\n${store.disclaimer}\n${copyLabel}\n${order?.orderNo}\n`
+        : '*** NOT A RECEIPT ***\n';
 
-    print(printerInfo, (builder) => {
-        const date = new Date();
-        const receiptLines = buildReceiptLines(cart, order);
-        const totalPaymentsText = order?.paymentInfo?.payments
-            ?.map((p) => `${p.type}: $ ${p.amount.toFixed(2)}`)
-            .join('\\n') || '';
+    if (isE2EPrinterSpyEnabled()) {
+        recordE2EPrintJob({
+            timestamp: date.toISOString(),
+            printerIdentifier: printerInfo.identifier,
+            orderId: order?.id,
+            orderNo: order?.orderNo,
+            copyType: order?.copyType,
+            copyLabel,
+            total: cart.footer.total,
+            paymentSummaryText: totalPaymentsText,
+            receiptText: `${headerText}${receiptLines}${totalText}${footerText}`,
+        });
+        return;
+    }
+
+    await print(printerInfo, (builder) => {
 
         const printerBuilder = new StarXpandCommand.PrinterBuilder()
             .styleInternationalCharacter(
@@ -170,7 +206,7 @@ export const printReceipt = async (
                         .actionPrintText(` ${store.disclaimer} \n`)
                 )
                 .actionFeedLine(1)
-                .actionPrintText(order.status === 'OPEN' ? '** Customer Copy **' : '** Merchant Copy **')
+                .actionPrintText(copyLabel)
                 .actionFeedLine(1)
                 .actionPrintQRCode(
                     new StarXpandCommand.Printer.QRCodeParameter(
@@ -202,28 +238,21 @@ export const print = async (
     printerInfo: PrinterEntity,
     dataBuilder: (builder: StarXpandCommand.StarXpandCommandBuilder) => void
 ): Promise<void> => {
-    // Specify your printer connection settings.
     const settings = new StarConnectionSettings();
     settings.interfaceType = InterfaceType.Lan;
-    settings.identifier = printerInfo.identifier; // '0011621BF5B2';
+    settings.identifier = printerInfo.identifier;
+
     const printer = new StarPrinter(settings);
 
     try {
-        // Connect to the printer.
         await printer.open();
-
-        // create printing data. (Please refer to 'Create Printing data')
         const builder = new StarXpandCommand.StarXpandCommandBuilder();
         dataBuilder(builder);
         const commands = await builder.getCommands();
-
-        // Print.
         await printer.print(commands);
     } catch (error) {
-        // Error.
         console.log(error);
     } finally {
-        // Disconnect from the printer and dispose object.
         await printer.close();
         await printer.dispose();
     }
@@ -235,15 +264,24 @@ const formatQty = (quantity: number) =>
 const formatLine = (qty: number, name: string, amount: number) =>
     `${formatQty(qty).padEnd(5, ' ')}  ${name.substring(0, 15).padEnd(15, ' ')}  ${amount.toFixed(2).padStart(7, ' ')}`;
 
+export const getReceiptCopyLabel = (order?: ReceiptOrderEntity) =>
+    order?.copyType === 'CUSTOMER'
+        ? '** Customer Copy **'
+        : order?.copyType === 'MERCHANT'
+        ? '** Merchant Copy **'
+        : order?.status === 'OPEN'
+        ? '** Customer Copy **'
+        : '** Merchant Copy **';
+
 const buildClassicLines = (cart: ReceiptCartState) => {
     return (
-        'Qty    Description        Total\\n' +
-        '-------------------------------\\n' +
+        'Qty    Description        Total\n' +
+        '-------------------------------\n' +
         cart.items
             .map((i) => formatLine(i.quantity, i.product.name, i.product.price * i.quantity))
-            .join('\\n') +
-        '\\n\\n' +
-        '--------------------------------\\n'
+            .join('\n') +
+        '\n\n' +
+        '--------------------------------\n'
     );
 };
 
@@ -259,9 +297,9 @@ const buildEbtLines = (order: ReceiptOrderEntity) => {
     );
 
     return (
-        'EBT Items\\n' +
-        'Qty    Description        Total\\n' +
-        '-------------------------------\\n' +
+        'EBT Items\n' +
+        'Qty    Description        Total\n' +
+        '-------------------------------\n' +
         (ebtLines.length
             ? ebtLines
                   .map((line) => {
@@ -275,12 +313,12 @@ const buildEbtLines = (order: ReceiptOrderEntity) => {
                           line?.ebtPaidAmount || 0
                       );
                   })
-                  .join('\\n')
+                  .join('\n')
             : 'No EBT-paid items') +
-        `\\nEBT Paid Total: $ ${ebtTotal.toFixed(2)}\\n\\n` +
-        'Non-EBT Items\\n' +
-        'Qty    Description        Total\\n' +
-        '-------------------------------\\n' +
+        `\nEBT Paid Total: $ ${ebtTotal.toFixed(2)}\n\n` +
+        'Non-EBT Items\n' +
+        'Qty    Description        Total\n' +
+        '-------------------------------\n' +
         (nonEbtLines.length
             ? nonEbtLines
                   .map((line) => {
@@ -294,14 +332,14 @@ const buildEbtLines = (order: ReceiptOrderEntity) => {
                           line?.nonEbtPaidAmount || 0
                       );
                   })
-                  .join('\\n')
+                  .join('\n')
             : 'No non-EBT-paid items') +
-        `\\nNon-EBT Paid Total: $ ${nonEbtTotal.toFixed(2)}\\n\\n` +
-        '--------------------------------\\n'
+        `\nNon-EBT Paid Total: $ ${nonEbtTotal.toFixed(2)}\n\n` +
+        '--------------------------------\n'
     );
 };
 
-const buildReceiptLines = (cart: ReceiptCartState, order?: ReceiptOrderEntity) => {
+export const buildReceiptLines = (cart: ReceiptCartState, order?: ReceiptOrderEntity) => {
     const hasEbtPayment = !!order?.paymentInfo?.payments?.some(
         (payment) => payment.type?.toUpperCase() === 'EBT'
     );

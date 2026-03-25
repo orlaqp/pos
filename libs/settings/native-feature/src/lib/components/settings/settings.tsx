@@ -11,6 +11,7 @@ import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, Switch, useTheme } from '@rneui/themed';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@pos/store';
 
@@ -23,6 +24,8 @@ export function Settings(_props: SettingsProps) {
     const styles = useStyles(tokens);
     const dispatch = useAppDispatch();
     const settings = useSelector(selectSettings);
+    const appVersion = DeviceInfo.getVersion();
+    const buildNumber = DeviceInfo.getBuildNumber();
 
     const updateThemeMode = (dark: boolean) => {
         theme.updateTheme({
@@ -172,6 +175,26 @@ export function Settings(_props: SettingsProps) {
                                 />
                             </UIStack>
                         </UICard>
+
+                        <UICard tone="muted">
+                            <UIStack spacing="sm">
+                                <Text style={styles.sectionTitle}>App Info</Text>
+                                <UIStack
+                                    direction="horizontal"
+                                    justify="space-between"
+                                    align="center"
+                                    style={styles.settingRow}
+                                >
+                                    <Text style={styles.settingLabel}>Version</Text>
+                                    <Text
+                                        style={styles.settingValue}
+                                        testID="settings-app-version"
+                                    >
+                                        {appVersion} ({buildNumber})
+                                    </Text>
+                                </UIStack>
+                            </UIStack>
+                        </UICard>
                     </UIStack>
                 </View>
             </UIStack>
@@ -233,6 +256,11 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         settingLabel: {
             color: tokens.colors.textPrimary,
             fontSize: 16,
+            fontWeight: '600',
+        },
+        settingValue: {
+            color: tokens.colors.textSecondary,
+            fontSize: 15,
             fontWeight: '600',
         },
         warningText: {

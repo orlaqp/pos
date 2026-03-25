@@ -25,6 +25,8 @@ export const UIInput: any = React.forwardRef<any, Props>((props, ref) => {
     const [focused, setFocused] = useState(false);
 
     const inputProps = restOfProps as InputProps;
+    const nativeInputTestId =
+        typeof inputProps.testID === 'string' ? inputProps.testID : undefined;
     inputProps.leftIcon = lIcon
         ? {
               name: lIcon,
@@ -65,6 +67,13 @@ export const UIInput: any = React.forwardRef<any, Props>((props, ref) => {
                 <Input
                     ref={fieldRef as any}
                     {...inputProps}
+                    inputProps={{
+                        ...inputProps.inputProps,
+                        testID:
+                            inputProps.inputProps?.testID || nativeInputTestId,
+                        nativeID:
+                            inputProps.inputProps?.nativeID || nativeInputTestId,
+                    }}
                     textAlign={textAlign || 'left'}
                     placeholder={props.placeholder}
                     value={

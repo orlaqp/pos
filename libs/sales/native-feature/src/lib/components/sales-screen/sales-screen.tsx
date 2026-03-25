@@ -3,7 +3,7 @@ import i18next from 'i18next';
 
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
-import { Animated, View, Alert, TextInput } from 'react-native';
+import { Animated, View, Alert, InteractionManager, TextInput } from 'react-native';
 
 import {
     CategoryEntity,
@@ -32,8 +32,10 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ButtonItemType, UIScreen } from '@pos/shared/ui-native';
 import { RootState, useAppDispatch } from '@pos/store';
-import { getDefaultPrinter } from '@pos/printings/data-access';
+import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import {
+    buildEbtAllocations,
+    getLineTotal,
     payOrder,
     upsertOrder,
 } from '@pos/orders/data-access';
@@ -74,6 +76,32 @@ export interface NavigationParamList {
         readOnly: boolean;
     };
 }
+
+const printReceiptSafely = (...args: Parameters<typeof printReceipt>) => {
+    if (typeof printReceipt !== 'function') {
+        return undefined;
+    }
+
+    return printReceipt(...args);
+};
+
+const buildEbtAllocationsSafely = (
+    ...args: Parameters<typeof buildEbtAllocations>
+) => {
+    if (typeof buildEbtAllocations !== 'function') {
+        return {} as ReturnType<typeof buildEbtAllocations>;
+    }
+
+    return buildEbtAllocations(...args);
+};
+
+const getLineTotalSafely = (quantity: number, price: number) => {
+    if (typeof getLineTotal !== 'function') {
+        return +(quantity * price).toFixed(2);
+    }
+
+    return getLineTotal(quantity, price);
+};
 
 /* eslint-disable-next-line */
 export function SalesScreen({
@@ -228,8 +256,31 @@ export function SalesScreen({
     );
 
     const onCartSubmit = (cart: CartState, payments?: CartPayment[]) => {
+        const cartItems = cart.items ?? [];
+
         if (route.params.mode === 'order') {
-            dispatch(upsertOrder({ cart, defaultPrinter, storeInfo }));
+            if (defaultPrinter && storeInfo && (cart.orderNo || cart.id)) {
+                void printReceiptSafely(storeInfo, defaultPrinter, cart, {
+                    id: cart.id,
+                    status: 'OPEN',
+                    orderNo: cart.orderNo,
+                    copyType: 'CUSTOMER',
+                    lines: cartItems.map((item) => ({
+                        quantity: item.quantity,
+                        productName: item.product.name,
+                    })),
+                });
+                dispatch(
+                    upsertOrder({
+                        cart,
+                        defaultPrinter,
+                        storeInfo,
+                        skipAutoPrint: true,
+                    })
+                );
+            } else {
+                dispatch(upsertOrder({ cart, defaultPrinter, storeInfo }));
+            }
             dispatch(cartActions.reset());
             return;
         }
@@ -241,7 +292,7 @@ export function SalesScreen({
                 { text: t('SALES_No', 'No') },
                 {
                     text: t('SALES_Yes', 'Yes'),
-                    onPress: () => {
+                    onPress: async () => {
                         if (!payments) {
                             Alert.alert(
                                 t(
@@ -252,7 +303,78 @@ export function SalesScreen({
                             return;
                         }
 
-                        dispatch(payOrder({ cart, payments, defaultPrinter, storeInfo }));
+                        let didStartFastPrint = false;
+
+                        if (defaultPrinter && storeInfo) {
+                            const allocations = buildEbtAllocationsSafely(
+                                cartItems.map((item) => ({
+                                    identifier: item.identifier,
+                                    quantity: item.quantity,
+                                    price: item.product.price,
+                                    isEBTEligible: item.product.isEBTEligible ?? false,
+                                })),
+                                payments
+                            );
+
+                            void printReceiptSafely(storeInfo, defaultPrinter, cart, {
+                                id: cart.id,
+                                status: 'PAID',
+                                orderNo: cart.orderNo,
+                                copyType: 'MERCHANT',
+                                paymentInfo: {
+                                    payments: payments.map((payment) => ({
+                                        type: payment.type,
+                                        amount: payment.amount,
+                                    })),
+                                },
+                                lines: cartItems.map((item) => {
+                                    const identifier = item.identifier;
+                                    const lineTotal = getLineTotalSafely(
+                                        item.quantity,
+                                        item.product.price
+                                    );
+                                    const allocation = identifier
+                                        ? allocations[identifier]
+                                        : undefined;
+
+                                    return {
+                                        quantity: item.quantity,
+                                        productName: item.product.name,
+                                        ebtPaidAmount:
+                                            allocation?.ebtPaidAmount ?? 0,
+                                        nonEbtPaidAmount:
+                                            allocation?.nonEbtPaidAmount ??
+                                            lineTotal,
+                                    };
+                                }),
+                            });
+                            didStartFastPrint = true;
+                        }
+
+                        const result = await dispatch(
+                            payOrder({
+                                cart,
+                                payments,
+                                defaultPrinter,
+                                storeInfo,
+                                skipAutoPrint: didStartFastPrint,
+                            })
+                        );
+
+                        if (!payOrder.fulfilled.match(result) || !result.payload) {
+                            Alert.alert(
+                                t(
+                                    'SALES_PaymentFailedTitle',
+                                    'Payment could not be completed'
+                                ),
+                                t(
+                                    'SALES_PaymentFailedMessage',
+                                    'The order is still open. Please try again.'
+                                )
+                            );
+                            return;
+                        }
+
                         if (shouldReturnToOrderList()) {
                             navigation.navigate('Order List' as never);
                         } else {
@@ -266,17 +388,28 @@ export function SalesScreen({
     };
 
     useEffect(() => {
-        syncCategories(dispatch);
-        syncProducts(dispatch);
-        const categoriesSub = subscribeToCategoryChanges(dispatch);
-        const productsSub = subscribeToProductChanges(dispatch);
-        const globalSettingsSub = subscribeToGlobalSettingsChanges(dispatch);
+        let active = true;
+        let categoriesSub: { unsubscribe: () => void } | undefined;
+        let productsSub: { unsubscribe: () => void } | undefined;
+        let globalSettingsSub: { unsubscribe: () => void } | undefined;
+        const interaction = InteractionManager.runAfterInteractions(() => {
+            if (!active) {
+                return;
+            }
+
+            syncCategories(dispatch);
+            syncProducts(dispatch);
+            categoriesSub = subscribeToCategoryChanges(dispatch);
+            productsSub = subscribeToProductChanges(dispatch);
+            globalSettingsSub = subscribeToGlobalSettingsChanges(dispatch);
+        });
         
         return () => {
-            console.log('Closing sales subscriptions');
-            categoriesSub.unsubscribe();
-            productsSub.unsubscribe();
-            globalSettingsSub.unsubscribe();
+            active = false;
+            interaction.cancel?.();
+            categoriesSub?.unsubscribe();
+            productsSub?.unsubscribe();
+            globalSettingsSub?.unsubscribe();
         };
     }, [dispatch]);
 

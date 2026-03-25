@@ -8,7 +8,7 @@ const mockSearch = jest.fn();
 const mockSubscribeUnsubscribe = jest.fn();
 const mockSearchInputValue = { current: '' };
 
-const mockOrders = [
+let mockOrders = [
     {
         id: 'open-1',
         orderNo: '51-OPEN-0001',
@@ -161,6 +161,7 @@ jest.mock('@pos/shared/api', () => ({
 
 jest.mock('@pos/orders/data-access', () => ({
     selectAllOrders: () => mockOrders,
+    syncOrders: jest.fn(),
     subscribeToOrderChanges: () => ({
         unsubscribe: mockSubscribeUnsubscribe,
     }),
@@ -209,6 +210,32 @@ describe('OrderList integration', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockSearchInputValue.current = '';
+        mockOrders = [
+            {
+                id: 'open-1',
+                orderNo: '51-OPEN-0001',
+                subtotal: 20,
+                tax: 0,
+                total: 20,
+                status: 'OPEN',
+                employeeId: 'emp-1',
+                employeeName: 'Cashier',
+                orderDate: '2026-03-12T12:00:00.000Z',
+                lines: [],
+            },
+            {
+                id: 'paid-1',
+                orderNo: '51-PAID-0001',
+                subtotal: 35,
+                tax: 0,
+                total: 35,
+                status: 'PAID',
+                employeeId: 'emp-2',
+                employeeName: 'Cashier',
+                orderDate: '2026-03-12T13:00:00.000Z',
+                lines: [],
+            },
+        ];
         mockSearch.mockImplementation(
             (orders: typeof mockOrders, options: { status: string; filter?: string }) =>
                 orders.filter((order) => {
@@ -252,6 +279,57 @@ describe('OrderList integration', () => {
 
         expect(getByText('51-PAID-0001')).toBeTruthy();
         expect(queryByText('51-OPEN-0001')).toBeNull();
+    });
+
+    it('removes a closed order from OPEN and shows it in PAID after the refreshed order set arrives', () => {
+        const view = render(<OrderList />);
+        act(() => {
+            jest.runOnlyPendingTimers();
+        });
+
+        expect(view.getByText('51-OPEN-0001')).toBeTruthy();
+
+        mockOrders = [
+            {
+                id: 'open-1',
+                orderNo: '51-OPEN-0001',
+                subtotal: 20,
+                tax: 0,
+                total: 20,
+                status: 'PAID',
+                employeeId: 'emp-1',
+                employeeName: 'Cashier',
+                orderDate: '2026-03-12T12:00:00.000Z',
+                lines: [],
+            },
+            {
+                id: 'paid-1',
+                orderNo: '51-PAID-0001',
+                subtotal: 35,
+                tax: 0,
+                total: 35,
+                status: 'PAID',
+                employeeId: 'emp-2',
+                employeeName: 'Cashier',
+                orderDate: '2026-03-12T13:00:00.000Z',
+                lines: [],
+            },
+        ];
+
+        view.rerender(<OrderList />);
+        act(() => {
+            jest.runOnlyPendingTimers();
+        });
+
+        expect(view.queryByText('51-OPEN-0001')).toBeNull();
+
+        fireEvent.press(view.getByTestId('status-PAID'));
+        act(() => {
+            jest.runOnlyPendingTimers();
+        });
+
+        expect(view.getByText('51-OPEN-0001')).toBeTruthy();
+        expect(view.getByText('51-PAID-0001')).toBeTruthy();
     });
 
     it('shows empty state when search has no results', () => {

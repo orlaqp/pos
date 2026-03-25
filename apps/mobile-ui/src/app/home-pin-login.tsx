@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, ImageSourcePropType, View } from 'react-native';
+import { Image, ImageSourcePropType, Pressable, View } from 'react-native';
 import { Text } from '@rneui/themed';
 import { UIAlert, UIKeyPad } from '@pos/shared/ui-native';
 import { HomeScreenStyles } from './HomeScreen.styles';
@@ -16,6 +16,7 @@ interface HomePinLoginProps {
     isPinLocked: boolean;
     styles: HomeScreenStyles;
     onPinUpdated: (nextPin: string) => string;
+    onE2EManagerLogin?: () => void;
 }
 
 export function HomePinLogin({
@@ -30,9 +31,17 @@ export function HomePinLogin({
     isPinLocked,
     styles,
     onPinUpdated,
+    onE2EManagerLogin,
 }: HomePinLoginProps) {
     return (
-        <View style={styles.shell}>
+        <View style={styles.shell} testID="home-pin-login-screen">
+            {typeof __DEV__ !== 'undefined' && __DEV__ && onE2EManagerLogin ? (
+                <Pressable
+                    testID="e2e-manager-login-button"
+                    onPress={onE2EManagerLogin}
+                    style={styles.e2eShortcut}
+                />
+            ) : null}
             <View style={styles.hero}>
                 <Image source={brandMark} style={styles.brandMark} resizeMode="contain" />
                 <Text style={styles.businessLabel}>{businessName || 'Business workspace'}</Text>

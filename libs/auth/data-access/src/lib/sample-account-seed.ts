@@ -49,6 +49,20 @@ export type SampleAccountSeedSummary = {
   };
 };
 
+const tenantScopedModels = [
+  Order,
+  Customer,
+  DiscountDefinition,
+  EmployeeDiscountPolicy,
+  Employee,
+  Product,
+  Category,
+  Brand,
+  UnitOfMeasure,
+  Store,
+  GlobalSettings,
+] as const;
+
 const defaultOptions: Required<SampleAccountSeedOptions> = {
   includeOrders: true,
 };
@@ -751,4 +765,28 @@ export const seedSampleAccountData = async (
       orders: dataset.orders.length,
     },
   };
+};
+
+const hasTenantId = (value: unknown): value is { tenantId?: string | null } =>
+  !!value && typeof value === 'object' && 'tenantId' in (value as Record<string, unknown>);
+
+export const clearSampleAccountData = async (user: User) => {
+  const { tenantId } = user;
+
+  for (const Model of tenantScopedModels) {
+    const items = await DataStore.query(Model as never);
+    const tenantItems = items.filter((item) => hasTenantId(item) && item.tenantId === tenantId);
+
+    for (const item of tenantItems) {
+      await DataStore.delete(item as never);
+    }
+  }
+};
+
+export const resetSampleAccountData = async (
+  user: User,
+  options: SampleAccountSeedOptions = {}
+) => {
+  await clearSampleAccountData(user);
+  return seedSampleAccountData(user, options);
 };

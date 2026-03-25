@@ -14,7 +14,7 @@ import {
     selectLoadingStatus as selectEmployeesLoadingStatus,
     selectLoginEmployee,
 } from '@pos/employees/data-access';
-import { StationService } from '@pos/settings/data-access';
+import { selectStation } from '@pos/settings/data-access';
 import { cartActions } from '@pos/sales/data-access';
 import brandMark from '../../assets/branding/pos-icon-transparent-2048.png';
 import { RootState } from '@pos/store';
@@ -37,6 +37,7 @@ import {
     readPinLockState,
     writePinLockState,
 } from './use-pin-lock';
+import { E2E_MANAGER_PIN, isE2EEnabled } from '@pos/shared/utils';
 
 interface PathDetails {
     title: string;
@@ -107,6 +108,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const initialStoreSyncComplete = useSelector(selectInitialStoreSyncComplete);
     const user = useSelector((state: RootState) => state.auth.user);
     const businessName = useSelector((state: RootState) => state.tenantSession.businessName);
+    const station = useSelector(selectStation);
     const [pin, setPin] = useState<string>('');
     const [invalidPinAttempt, setInvalidPinAttempt] = useState(0);
     const [pinResetToken, setPinResetToken] = useState(0);
@@ -117,6 +119,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const [lockNow, setLockNow] = useState<number>(Date.now());
     const [setupError, setSetupError] = useState<string | null>(null);
     const [setupSaving, setSetupSaving] = useState(false);
+    const [pendingRoutePath, setPendingRoutePath] = useState<string | null>(null);
     const [setupStep, setSetupStep] = useState<'employee' | 'store'>('employee');
     const [pendingOwnerEmployee, setPendingOwnerEmployee] =
         useState<PendingOwnerEmployee | null>(null);
@@ -158,8 +161,9 @@ export const HomeScreen = (props: HomeScreenProps) => {
             params: { mode: 'order' },
             validate: async () => {
                 dispatch(cartActions.reset());
-                const res = await StationService.isStationNumberSet();
-                return res ? null : 'Please make sure station number is set before making sales';
+                return station?.stationNumber
+                    ? null
+                    : 'Please make sure station number is set before making sales';
             }
         },
         {
@@ -176,7 +180,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
             accentColor: '#d8a24a',
             role: Role.Admin,
         },
-    ], [dispatch]);
+    ], [dispatch, station?.stationNumber]);
     const visiblePaths = useMemo(
         () => paths.filter((p) => employee?.roles?.includes(p.role)),
         [employee?.roles, paths]
@@ -206,16 +210,30 @@ export const HomeScreen = (props: HomeScreenProps) => {
             : null;
 
     const goto = (details: PathDetails) => {
+        if (pendingRoutePath) {
+            return;
+        }
+
+        setPendingRoutePath(details.path);
+
         if (!details.validate) {
-            return props.navigation.navigate(details.path, details.params);
+            props.navigation.navigate(details.path, details.params);
+            setPendingRoutePath(null);
+            return;
         }
 
         details.validate().then((msg) => {
             if (!msg) {
-                return props.navigation.navigate(details.path, details.params);
+                props.navigation.navigate(details.path, details.params);
+                setPendingRoutePath(null);
+                return;
             }
 
+            setPendingRoutePath(null);
             Alert.alert(msg);
+        }).catch(() => {
+            setPendingRoutePath(null);
+            Alert.alert('Unable to open this screen right now. Please try again.');
         });
     };
 
@@ -231,6 +249,23 @@ export const HomeScreen = (props: HomeScreenProps) => {
 
         return pin;
     };
+
+    const loginWithE2EManager = useCallback(async () => {
+        try {
+            const emp = await EmployeeService.getEmployee(E2E_MANAGER_PIN);
+            if (!emp) {
+                return;
+            }
+
+            dispatch(employeesActions.loginEmployee(emp));
+            setInvalidPinAttempt(0);
+            setPinLockState({ failedAttempts: 0, lockedUntil: null });
+            await clearPinLockState();
+            resetPinEntry();
+        } catch (error) {
+            console.error('E2E manager login failed', error);
+        }
+    }, [dispatch]);
 
     const resetPinEntry = () => {
         setPin('');
@@ -292,6 +327,19 @@ export const HomeScreen = (props: HomeScreenProps) => {
                 );
             });
     }, [dispatch, isPinLocked, pin, recordFailedPinAttempt]);
+
+    useEffect(() => {
+        if (
+            !isE2EEnabled() ||
+            !employeesReady ||
+            !!employee ||
+            needsSetupWizard
+        ) {
+            return;
+        }
+
+        void loginWithE2EManager();
+    }, [employee, employeesReady, loginWithE2EManager, needsSetupWizard]);
 
     useEffect(() => {
         resetPinEntry();
@@ -480,6 +528,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
 
     return (
         <ScrollView
+            testID="home-screen"
             style={[styles.page, styles.container]}
             contentContainerStyle={styles.containerContent}
             keyboardShouldPersistTaps="handled"
@@ -531,14 +580,18 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     isPinLocked={isPinLocked}
                     styles={styles}
                     onPinUpdated={onPinUpdated}
+                    onE2EManagerLogin={loginWithE2EManager}
                 />
             ) : (
-                <HomeRouteGrid
-                    paths={visiblePaths}
-                    routeAnimations={routeAnimations}
-                    styles={styles}
-                    onGoTo={goto}
-                />
+                <View testID="home-ready-shell">
+                    <HomeRouteGrid
+                        paths={visiblePaths}
+                        routeAnimations={routeAnimations}
+                        styles={styles}
+                        onGoTo={goto}
+                        pendingPath={pendingRoutePath}
+                    />
+                </View>
             )}
         </ScrollView>
     );

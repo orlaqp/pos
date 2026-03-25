@@ -23,6 +23,7 @@ export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((pr
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
             <View style={{ flex: 1 }}>
                 <UISearchInput
+                    testID="sales-product-search-input"
                     ref={ref}
                     autoFocus={true}
                     clearTextOnFocus={true}

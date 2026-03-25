@@ -106,7 +106,8 @@ export function OrderList({ navigation }: OrderListProps) {
                         </View>
                         {hasStatusOrders && (
                             <View style={styles.searchColumn}>
-                                <UISearchInput
+                            <UISearchInput
+                                    testID="order-list-search-input"
                                     ref={searchRef}
                                     debounceTime={300}
                                     onSubmit={(text) => filter(selectedIndex, text)}

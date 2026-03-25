@@ -15,6 +15,7 @@ interface HomeRouteGridProps {
     routeAnimations: Animated.Value[];
     styles: HomeScreenStyles;
     onGoTo: (details: PathDetails) => void;
+    pendingPath?: string | null;
 }
 
 export function HomeRouteGrid({
@@ -22,6 +23,7 @@ export function HomeRouteGrid({
     routeAnimations,
     styles,
     onGoTo,
+    pendingPath,
 }: HomeRouteGridProps) {
     return (
         <View style={styles.routeGrid}>
@@ -42,10 +44,17 @@ export function HomeRouteGrid({
                 return (
                     <Animated.View key={path.title} style={animatedStyle}>
                         <TouchableOpacity
+                            disabled={!!pendingPath}
                             onPress={() => onGoTo(path)}
                             testID={`home-nav-${path.path.toLowerCase()}`}
                         >
-                            <View style={[styles.bigButton, styles.centered]}>
+                            <View
+                                style={[
+                                    styles.bigButton,
+                                    styles.centered,
+                                    pendingPath === path.path && { opacity: 0.7 },
+                                ]}
+                            >
                                 <View
                                     style={[
                                         styles.routeIconWrap,

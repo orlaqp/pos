@@ -22,6 +22,7 @@ export interface CreateOrderRequest {
     storeInfo?: StoreInfoEntity;
     defaultPrinter?: PrinterEntity;
     cart: CartState;
+    skipAutoPrint?: boolean;
 }
 
 export interface PayOrderRequest extends CreateOrderRequest {
@@ -151,14 +152,20 @@ export const ordersSlice = createSlice({
                     state: OrdersState,
                     action: PayloadAction<SubmitOrderResponse>
                 ) => {
-                    ordersAdapter.addOne(state, action.payload.order);
+                    ordersAdapter.upsertOne(state, action.payload.order);
+                    filterList(state, state.filterQuery);
                     state.submitStatus = 'saved';
-                    printReceipt(
-                        normalizeReceiptStoreInfo(action.payload.storeInfo),
-                        action.payload.defaultPrinter!,
-                        action.payload.cart,
-                        normalizeReceiptOrder(action.payload.order)
-                    );
+                    if (!action.payload.skipAutoPrint) {
+                        printReceipt(
+                            normalizeReceiptStoreInfo(action.payload.storeInfo),
+                            action.payload.defaultPrinter!,
+                            action.payload.cart,
+                            {
+                                ...normalizeReceiptOrder(action.payload.order),
+                                copyType: 'CUSTOMER',
+                            }
+                        );
+                    }
                 }
             )
             .addCase(upsertOrder.rejected, (state: OrdersState, action) => {
@@ -177,15 +184,25 @@ export const ordersSlice = createSlice({
                         id: action.payload.order.id,
                         changes: action.payload.order,
                     });
+                    filterList(state, state.filterQuery);
                     state.submitStatus = 'saved';
-                    printReceipt(
-                        normalizeReceiptStoreInfo(action.payload.storeInfo),
-                        action.payload.defaultPrinter!,
-                        action.payload.cart,
-                        normalizeReceiptOrder(action.payload.order)
-                    );
+                    if (!action.payload.skipAutoPrint) {
+                        printReceipt(
+                            normalizeReceiptStoreInfo(action.payload.storeInfo),
+                            action.payload.defaultPrinter!,
+                            action.payload.cart,
+                            {
+                                ...normalizeReceiptOrder(action.payload.order),
+                                copyType: 'MERCHANT',
+                            }
+                        );
+                    }
                 }
-            );
+            )
+            .addCase(payOrder.rejected, (state: OrdersState, action) => {
+                state.submitStatus = 'error';
+                state.error = action.error.message;
+            });
     },
 });
 

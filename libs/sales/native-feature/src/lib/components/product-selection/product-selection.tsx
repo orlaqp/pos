@@ -95,6 +95,7 @@ export function ProductSelection({
                                             style={localStyles.productMeta}
                                         >
                                             <Text
+                                                testID={p.id ? `sales-product-stock-${p.id}` : undefined}
                                                 style={[
                                                     styles.labelText,
                                                     localStyles.stockText,

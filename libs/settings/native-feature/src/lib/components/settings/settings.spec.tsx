@@ -19,6 +19,8 @@ const mockUpdateGlobalSettings = jest.fn((payload) => ({
     type: 'gllbalSettings/update/pending',
     payload,
 }));
+const mockGetVersion = jest.fn(() => '2.0');
+const mockGetBuildNumber = jest.fn(() => '1');
 
 const mockSettingsState = {
     darkTheme: false,
@@ -37,6 +39,11 @@ jest.mock('react-redux', () => ({
 
 jest.mock('@pos/store', () => ({
     useAppDispatch: () => mockDispatch,
+}));
+
+jest.mock('react-native-device-info', () => ({
+    getVersion: () => mockGetVersion(),
+    getBuildNumber: () => mockGetBuildNumber(),
 }));
 
 jest.mock('@pos/theme/native/design-tokens', () => ({
@@ -164,6 +171,8 @@ describe('Settings', () => {
         expect(getByText('English')).toBeTruthy();
         expect(getByText('Español')).toBeTruthy();
         expect(getByText('Reset Data')).toBeTruthy();
+        expect(getByText('App Info')).toBeTruthy();
+        expect(getByTestId('settings-app-version')).toHaveTextContent('2.0 (1)');
     });
 
     it('dispatches theme action and updates theme mode when dark theme changes', () => {

@@ -18,3 +18,4 @@ export {
 export * from './lib/order.entity';
 export * from './lib/order.service';
 export * from './lib/data-store-sync';
+export * from './lib/ebt-allocation';

@@ -459,7 +459,7 @@ export class OrderService {
         //     );
         // });
 
-        Promise.all(promises);
+        await Promise.all(promises);
     }
 
     static search(items: OrderEntity[], options: FilterRequest) {
@@ -567,19 +567,25 @@ async function updateProductQuantity(
     if (!p) return;
 
     const updatedProduct = Product.copyOf(p, (updated) => {
-        switch (status) {
-            case 'PAID':
-                updated.quantity = -1 * quantity;
-                break;
-            case 'REFUNDED':
-                updated.quantity = quantity;
-                break;
-            default:
-                break;
-        }
+        // Product quantity is handled as a signed delta by the custom AppSync resolver.
+        updated.quantity = getInventoryQuantityDelta(status, quantity);
     });
 
     return DataStore.save(updatedProduct);
+}
+
+export function getInventoryQuantityDelta(
+    status: OrderStatus | keyof typeof OrderStatus,
+    quantityDelta: number
+) {
+    switch (status) {
+        case 'PAID':
+            return -1 * quantityDelta;
+        case 'REFUNDED':
+            return quantityDelta;
+        default:
+            return 0;
+    }
 }
 
 function buildOrderLines(

@@ -1,9 +1,9 @@
 import { ProductEntity } from '@pos/products/data-access';
 import { useSharedStyles } from '@pos/theme/native';
-import { Dialog } from '@rneui/themed';
+import { Button } from '@rneui/themed';
 import React from 'react';
 
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, Pressable } from 'react-native';
 import CompactProductItem from '../compact-product-item/compact-product-item';
 
 /* eslint-disable-next-line */
@@ -16,19 +16,66 @@ export interface CompactProductListProps {
 
 export function CompactProductList({ products, onAdd, onClose, visible }: CompactProductListProps) {
     const styles = useSharedStyles();
+
+    if (!visible) {
+        return null;
+    }
     
     return (
-        <Dialog
-            isVisible={visible}
-            onBackdropPress={onClose}
-            overlayStyle={[styles.overlay, { width: 700 }]}
+        <View
+            pointerEvents="box-none"
+            style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                bottom: 0,
+                left: 0,
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 1000,
+            }}
         >
-            <View>
-                <View style={{ marginBottom: 20 }}>
-                    <Text style={styles.secondaryText}>Products found: </Text>
+            <Pressable
+                testID="compact-product-list-backdrop"
+                onPress={onClose}
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    left: 0,
+                    backgroundColor: 'rgba(15, 23, 42, 0.55)',
+                }}
+            />
+            <View
+                style={[
+                    styles.overlay,
+                    {
+                        width: 700,
+                        maxHeight: '75%',
+                    },
+                ]}
+            >
+                <View
+                    style={{
+                        marginBottom: 20,
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Text style={styles.secondaryText}>Products found:</Text>
+                    <Button
+                        type="clear"
+                        title="Close"
+                        onPress={onClose}
+                        testID="compact-product-list-close"
+                    />
                 </View>
                 <FlatList
                     data={products}
+                    keyExtractor={(item) => item.id}
+                    keyboardShouldPersistTaps="handled"
                     renderItem={({ item }) => (
                         <CompactProductItem
                             product={item}
@@ -37,7 +84,7 @@ export function CompactProductList({ products, onAdd, onClose, visible }: Compac
                     )}
                 />
             </View>
-        </Dialog>
+        </View>
     );
 }
 

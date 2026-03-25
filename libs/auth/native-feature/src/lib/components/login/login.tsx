@@ -1,11 +1,16 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Animated, View, StyleSheet, useWindowDimensions } from 'react-native';
+import { Animated, Pressable, View, StyleSheet, useWindowDimensions } from 'react-native';
 import { useTheme, Button, Text } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { FormProvider, useForm } from 'react-hook-form';
 import { UIInput, UIAlert } from '@pos/shared/ui-native';
+import {
+    E2E_OWNER_EMAIL,
+    E2E_OWNER_PASSWORD,
+    activateE2EMode,
+} from '@pos/shared/utils';
 import { useSelector } from 'react-redux';
 import { signIn } from '@pos/auth/data-access';
 import { RootState, useAppDispatch } from '@pos/store';
@@ -30,10 +35,10 @@ type SignInModel = {
 export function LoginScreen(props: LoginProps) {
     const styles = useStyles();
     const { width } = useWindowDimensions();
-    const heroOpacity = useRef(new Animated.Value(0)).current;
-    const heroTranslateY = useRef(new Animated.Value(18)).current;
-    const formOpacity = useRef(new Animated.Value(0)).current;
-    const formTranslateY = useRef(new Animated.Value(24)).current;
+    const [heroOpacity] = useState(() => new Animated.Value(0));
+    const [heroTranslateY] = useState(() => new Animated.Value(18));
+    const [formOpacity] = useState(() => new Animated.Value(0));
+    const [formTranslateY] = useState(() => new Animated.Value(24));
     const dispatch = useAppDispatch();
     const error = useSelector((state: RootState) => state.auth.error);
     const loading = useSelector(
@@ -50,6 +55,20 @@ export function LoginScreen(props: LoginProps) {
 
     const login = async (model: SignInModel) => {
         await dispatch(signIn({ email: model.email.trim(), password: model.password }));
+    };
+
+    const loginWithE2EAccount = async () => {
+        activateE2EMode({
+            seedTenant: true,
+            cleanupOnExit: true,
+            printerSpy: true,
+        });
+        await dispatch(
+            signIn({
+                email: E2E_OWNER_EMAIL,
+                password: E2E_OWNER_PASSWORD,
+            })
+        );
     };
 
     const isWide = width >= 980;
@@ -86,7 +105,14 @@ export function LoginScreen(props: LoginProps) {
 
     return (
         <FormProvider {...formMethods}>
-            <View style={styles.container}>
+            <View style={styles.container} testID="owner-login-screen">
+                {typeof __DEV__ !== 'undefined' && __DEV__ ? (
+                    <Pressable
+                        testID="e2e-owner-login-button"
+                        onPress={loginWithE2EAccount}
+                        style={styles.e2eShortcut}
+                    />
+                ) : null}
                 <View style={[styles.shell, isWide ? styles.shellWide : styles.shellStacked]}>
                     <Animated.View
                         style={[
@@ -115,6 +141,7 @@ export function LoginScreen(props: LoginProps) {
                             {error ? <UIAlert message={error} type="error" /> : null}
                             <UIInput
                                 name="email"
+                                testID="login-email-input"
                                 autoCapitalize="none"
                                 placeholder="owner@business.com"
                                 keyboardType="email-address"
@@ -129,6 +156,7 @@ export function LoginScreen(props: LoginProps) {
                             />
                             <UIInput
                                 name="password"
+                                testID="login-password-input"
                                 placeholder="Password"
                                 secureTextEntry={true}
                                 textAlign="left"
@@ -136,6 +164,7 @@ export function LoginScreen(props: LoginProps) {
                             />
 
                             <Button
+                                testID="login-submit-button"
                                 title="Continue"
                                 containerStyle={styles.primaryButtonContainer}
                                 buttonStyle={styles.primaryButton}
@@ -143,6 +172,7 @@ export function LoginScreen(props: LoginProps) {
                                 loading={loading}
                             />
                             <Button
+                                testID="login-signup-button"
                                 title="Create business account"
                                 type="clear"
                                 titleStyle={styles.secondaryAction}
@@ -167,6 +197,17 @@ const useStyles = () => {
             paddingHorizontal: 24,
             paddingVertical: 32,
             justifyContent: 'center',
+        },
+        e2eShortcut: {
+            position: 'absolute',
+            top: 48,
+            right: 12,
+            width: 96,
+            height: 24,
+            zIndex: 10,
+            opacity: 0.18,
+            backgroundColor: 'rgba(255,255,255,0.08)',
+            borderRadius: 6,
         },
         shell: {
             width: '100%',

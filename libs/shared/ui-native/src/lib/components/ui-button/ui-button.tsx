@@ -38,6 +38,7 @@ export function UIButton({
     return (
         <TouchableOpacity
             key={item.id}
+            testID={item.id ? `ui-button-${item.id}` : undefined}
             onPress={() => onSelected(item)}
             onLongPress={onLongPress ? () => onLongPress(item) : undefined}
             style={{ padding: 10 }}

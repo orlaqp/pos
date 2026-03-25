@@ -24,6 +24,17 @@ export const useHomeScreenStyles = () => {
             gap: 18,
             alignItems: 'stretch',
         },
+        e2eShortcut: {
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            width: 96,
+            height: 24,
+            zIndex: 10,
+            opacity: 0.18,
+            backgroundColor: 'rgba(255,255,255,0.08)',
+            borderRadius: 6,
+        },
         hero: {
             flex: 1,
             backgroundColor: '#10141b',

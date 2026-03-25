@@ -31,11 +31,13 @@ import {
 } from '@pos/auth/data-access';
 import { configureDataStore } from '@pos/shared/data-store';
 import { Auth, DataStore } from '@pos/shared/amplify';
+import { E2EControlPanel } from './e2e-control-panel';
 
 type BootstrapStatus = 'idle' | 'checking-session' | 'resolving-tenant' | 'preparing-business-data' | 'ready' | 'error';
 const appTheme = theme('dark');
 const appColors = designTokens.colors;
 const LAST_BOOTSTRAPPED_TENANT_KEY = 'last-bootstrapped-tenant-id-v1';
+
 const isUnauthorizedError = (error: unknown) => {
     const message =
         error instanceof Error
@@ -111,11 +113,11 @@ const StartupScreen = ({
     };
 
     return (
-        <View style={styles.container}>
+        <View style={styles.container} testID="app-startup-screen">
             <Image source={brandMark} style={styles.logo} resizeMode="contain" />
             {isError ? (
                 <>
-                    <Text h3 style={styles.title}>Startup failed</Text>
+                    <Text h3 style={styles.title} testID="app-startup-title">Startup failed</Text>
                     <Text style={styles.message}>
                         The app could not restore the business workspace. Retry the startup sequence.
                     </Text>
@@ -139,8 +141,11 @@ const StartupScreen = ({
                 </>
             ) : (
                 <>
-                    <Text h3 style={styles.title}>Preparing POS</Text>
+                    <Text h3 style={styles.title} testID="app-startup-title">Preparing POS</Text>
                     <UISpinner size="large" message={messageByStatus[status]} />
+                    <Text testID="app-startup-status" style={styles.message}>
+                        {messageByStatus[status]}
+                    </Text>
                 </>
             )}
         </View>
@@ -359,6 +364,7 @@ export const App = () => {
                     <ThemeProvider theme={appTheme}>
                         <SafeAreaProvider>
                             <AppContent />
+                            <E2EControlPanel />
                         </SafeAreaProvider>
                     </ThemeProvider>
                 </Provider>

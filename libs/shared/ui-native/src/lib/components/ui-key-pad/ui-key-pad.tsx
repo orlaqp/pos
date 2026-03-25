@@ -24,17 +24,9 @@ export function UIKeyPad({
     disabled = false,
 }: UIKeyPadProps) {
     const styles = useStyles();
-    const [numbers, setNumbers] = useState<string>(initialValue || '');
-    const shakeX = React.useRef(new Animated.Value(0)).current;
-    const displayScale = React.useRef(new Animated.Value(1)).current;
-
-    useEffect(() => {
-        setNumbers(initialValue || '');
-    }, [initialValue]);
-
-    useEffect(() => {
-        setNumbers('');
-    }, [resetToken]);
+    const [shakeX] = useState(() => new Animated.Value(0));
+    const [displayScale] = useState(() => new Animated.Value(1));
+    const numbers = initialValue || '';
 
     useEffect(() => {
         Animated.sequence([
@@ -49,7 +41,7 @@ export function UIKeyPad({
                 useNativeDriver: true,
             }),
         ]).start();
-    }, [displayScale, numbers.length]);
+    }, [displayScale, numbers.length, resetToken]);
 
     useEffect(() => {
         if (!invalidAttempt) return;
@@ -69,8 +61,9 @@ export function UIKeyPad({
     );
 
     const commitValue = (nextValue: string) => {
-        const resolvedValue = onChange ? onChange(nextValue) : nextValue;
-        setNumbers(resolvedValue);
+        if (onChange) {
+            onChange(nextValue);
+        }
     };
 
     const onPress = (val: number | 'back') => {
@@ -88,7 +81,9 @@ export function UIKeyPad({
         <Animated.View style={[styles.container, { transform: [{ translateX: shakeX }] }]}>
             <Animated.View style={[styles.display, { transform: [{ scale: displayScale }] }]}>
                 <Text style={styles.displayLabel}>Enter PIN</Text>
-                <Text style={styles.displayValue}>{maskedValue || '• • • •'}</Text>
+                <Text testID="ui-keypad-display" style={styles.displayValue}>
+                    {maskedValue || '• • • •'}
+                </Text>
             </Animated.View>
             {padMatrix.map((row, rowIndex) => (
                 <View key={`row-${rowIndex}`} style={styles.row}>
@@ -101,6 +96,7 @@ export function UIKeyPad({
                         return (
                             <Pressable
                                 key={`${item}`}
+                                testID={`ui-keypad-key-${isBackspace ? 'back' : item}`}
                                 onPress={() => onPress(item)}
                                 style={({ pressed }) => [
                                     styles.key,

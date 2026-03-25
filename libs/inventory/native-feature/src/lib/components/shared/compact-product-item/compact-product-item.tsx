@@ -17,6 +17,14 @@ const toTestKey = (value: string) =>
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
+const formatQuantity = (value: unknown) => {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+        return '0.00';
+    }
+
+    return value.toFixed(2);
+};
+
 export function CompactProductItem({ product, onAdd }: SearchItemProps) {
     const styles = useSharedStyles();
     const productKey = toTestKey(product.name);
@@ -33,7 +41,7 @@ export function CompactProductItem({ product, onAdd }: SearchItemProps) {
             </View>
         
             <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{product.quantity.toFixed(2)}</Text>
+                <Text style={styles.name}>{formatQuantity(product.quantity)}</Text>
             </View>
 
             <View

@@ -113,7 +113,10 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
             store,
             defaultPrinter,
             OrderEntityMapper.asCartState(item),
-            item
+            {
+                ...item,
+                copyType: 'CUSTOMER',
+            }
         );
     };
 
@@ -150,7 +153,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
             : undefined;
 
     return (
-        <View style={[styles.dataRow, local.row]}>
+        <View testID={`order-item-${item.id}`} style={[styles.dataRow, local.row]}>
             {busy && <ActivityIndicator size="small" />}
             <View style={[local.statusRail, { backgroundColor: statusColor }]} />
             <View style={local.infoBlock}>
@@ -255,6 +258,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                         />
                         }
                         <Button
+                        testID="order-item-print-button"
                             type="clear"
                             title={t('ORDERITEM_Print', 'Print')}
                             icon={{
