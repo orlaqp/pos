@@ -60,7 +60,7 @@ const mockWeightedProduct = {
 } as any;
 
 let mockState: any;
-let interactionCallback: (() => void) | null = null;
+let interactionCallbacks: Array<() => void> = [];
 let mockInteractionCancel: jest.Mock;
 
 jest.mock('react-redux', () => ({
@@ -311,12 +311,12 @@ describe('SalesScreen', () => {
     beforeEach(() => {
         jest.useFakeTimers();
         jest.clearAllMocks();
-        interactionCallback = null;
+        interactionCallbacks = [];
         mockInteractionCancel = jest.fn();
         jest
             .spyOn(InteractionManager, 'runAfterInteractions')
             .mockImplementation((callback: () => void) => {
-                interactionCallback = callback;
+                interactionCallbacks.push(callback);
                 return { cancel: mockInteractionCancel } as any;
             });
         mockSearch.mockResolvedValue({
@@ -392,7 +392,7 @@ describe('SalesScreen', () => {
         expect(mockSyncProducts).not.toHaveBeenCalled();
 
         act(() => {
-            interactionCallback?.();
+            interactionCallbacks.forEach((callback) => callback());
         });
 
         expect(mockSyncCategories).toHaveBeenCalledWith(mockDispatch);
@@ -690,7 +690,7 @@ describe('SalesScreen', () => {
         const view = renderSalesScreen();
 
         act(() => {
-            interactionCallback?.();
+            interactionCallbacks.forEach((callback) => callback());
         });
 
         view.unmount();

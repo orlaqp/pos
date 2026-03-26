@@ -190,7 +190,6 @@ export function SalesScreen({
         }
 
         setIsSearchActive(true);
-        searchRef.current?.focus();
         const res = await ProductService.search(allProducts, { text, onlyActive: true });
 
         if (shouldSetFilteredProducts(text, res.allNumbers)) {
@@ -210,6 +209,10 @@ export function SalesScreen({
                         getAutoAddQuantity(p, res.quantity)
                     )
                 )
+            );
+            setIsSearchActive(false);
+            setFilteredProducts(
+                getBrowseModeProducts(allProducts, browseMode, activeCategory)
             );
         }
 
@@ -616,10 +619,12 @@ export function SalesScreen({
     useEffect(() => {
         if (!hasCatalogProducts) return;
 
-        setTimeout(() => {
+        const interaction = InteractionManager.runAfterInteractions(() => {
             searchRef.current?.focus();
-        }, 25);
-    }, [hasCatalogProducts, filteredProducts, searchRef])
+        });
+
+        return () => interaction.cancel?.();
+    }, [hasCatalogProducts]);
 
     useEffect(() => {
         if (isSearchActive) {
