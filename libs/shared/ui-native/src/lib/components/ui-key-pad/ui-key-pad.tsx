@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
 const padMatrix: Array<Array<number | 'back' | null>> = [
@@ -55,11 +55,6 @@ export function UIKeyPad({
         ]).start();
     }, [invalidAttempt, shakeX]);
 
-    const maskedValue = useMemo(
-        () => `${numbers}`.split('').map(() => '•').join(' '),
-        [numbers]
-    );
-
     const commitValue = (nextValue: string) => {
         if (onChange) {
             onChange(nextValue);
@@ -81,9 +76,23 @@ export function UIKeyPad({
         <Animated.View style={[styles.container, { transform: [{ translateX: shakeX }] }]}>
             <Animated.View style={[styles.display, { transform: [{ scale: displayScale }] }]}>
                 <Text style={styles.displayLabel}>Enter PIN</Text>
-                <Text testID="ui-keypad-display" style={styles.displayValue}>
-                    {maskedValue || '• • • •'}
-                </Text>
+                <View testID="ui-keypad-display" style={styles.pinSlots}>
+                    {Array.from({ length: 4 }, (_, index) => {
+                        const isFilled = index < numbers.length;
+                        return (
+                            <View
+                                key={`pin-slot-${index}`}
+                                testID={`ui-keypad-slot-${index}-${isFilled ? 'filled' : 'empty'}`}
+                                style={[
+                                    styles.pinSlot,
+                                    isFilled ? styles.pinSlotFilled : styles.pinSlotEmpty,
+                                ]}
+                            >
+                                {isFilled ? <View style={styles.pinSlotCore} /> : null}
+                            </View>
+                        );
+                    })}
+                </View>
             </Animated.View>
             {padMatrix.map((row, rowIndex) => (
                 <View key={`row-${rowIndex}`} style={styles.row}>
@@ -149,12 +158,36 @@ const useStyles = () =>
             marginBottom: 8,
             textAlign: 'center',
         },
-        displayValue: {
-            color: '#f4f8ff',
-            fontSize: 28,
-            fontWeight: '700',
-            textAlign: 'center',
-            letterSpacing: 6,
+        pinSlots: {
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 14,
+            minHeight: 40,
+        },
+        pinSlot: {
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        pinSlotEmpty: {
+            width: 10,
+            height: 10,
+            borderRadius: 5,
+            backgroundColor: 'rgba(255,255,255,0.24)',
+        },
+        pinSlotFilled: {
+            width: 28,
+            height: 28,
+            borderRadius: 14,
+            borderWidth: 2,
+            borderColor: '#2ce35f',
+            backgroundColor: 'rgba(44, 227, 95, 0.12)',
+        },
+        pinSlotCore: {
+            width: 14,
+            height: 14,
+            borderRadius: 7,
+            backgroundColor: '#2ce35f',
         },
         row: {
             flexDirection: 'row',

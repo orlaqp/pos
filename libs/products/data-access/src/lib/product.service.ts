@@ -209,41 +209,6 @@ export class ProductService {
     ): ProductSearchResponse {
         const normalizedText = (text || '').replace(/[\r\n\t]/g, '').trim();
 
- console.log('Total products: ' +products.length);
-
-//  console.log(
-//   products.find((p) => p.id === 'f8ca9af9-70dd-4dc4-943d-b648ed65163c')
-// );
-
-//  console.log(
-//   'Cantimpalo product in local array',
-//   products
-//     .filter((p) => p.name?.toLowerCase().includes('cantimpalo'))
-//     .map((p) => ({
-//       id: p.id,
-//       name: p.name,
-//       plu: p.plu,
-//       barcode: p.barcode,
-//       sku: p.sku,
-//       isActive: p.isActive,
-//     }))
-// );
-
-//         console.log(
-//   'PLU candidates',
-//   products
-//     .filter((p) => p.plu || p.barcode || p.sku)
-//     .map((p) => ({
-//       name: p.name,
-//       plu: p.plu,
-//       barcode: p.barcode,
-//       sku: p.sku,
-//       isActive: p.isActive,
-//     }))
-//     .filter((p) => p.plu === '6165' || p.barcode === '6165' || p.sku === '6165')
-// );
-
-
         if (categoryId)
             return {
                 items: products.filter(

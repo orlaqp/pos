@@ -4,6 +4,12 @@ jest.mock('@pos/shared/amplify', () => ({
   },
 }));
 
+jest.mock('./store-info.service', () => ({
+  StoreInfoService: {
+    getStore: jest.fn(),
+  },
+}));
+
 jest.mock('react-native-device-info', () => ({
   __esModule: true,
   default: {
@@ -22,8 +28,10 @@ import {
   selectPreferredStore,
 } from './store-info.entity';
 import { DataStore } from '@pos/shared/amplify';
+import { StoreInfoService } from './store-info.service';
 
 const observeQueryMock = DataStore.observeQuery as jest.Mock;
+const getStoreMock = StoreInfoService.getStore as jest.Mock;
 
 describe('storeInfo reducer', () => {
   beforeEach(() => {
@@ -66,18 +74,10 @@ describe('storeInfo reducer', () => {
     expect(state.store).toEqual(expect.objectContaining({ id: 'store-2' }));
   });
 
-  it('waits for synced store info before fulfilling fetchStoreInfo', async () => {
-    observeQueryMock.mockImplementation(() => ({
-      subscribe: ({ next }: { next: (value: unknown) => void }) => {
-        next({ isSynced: false, items: [] });
-        next({
-          isSynced: true,
-          items: [{ id: 'store-1', name: 'Main Store' }],
-        });
-
-        return { unsubscribe: jest.fn() };
-      },
-    }));
+  it('fulfills fetchStoreInfo from the local store cache immediately', async () => {
+    getStoreMock.mockResolvedValue([
+      { id: 'store-1', name: 'Main Store' },
+    ]);
 
     const action = await fetchStoreInfo()(
       jest.fn(),

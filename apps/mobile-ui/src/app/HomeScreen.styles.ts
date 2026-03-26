@@ -172,15 +172,8 @@ export const useHomeScreenStyles = () => {
             borderWidth: 1,
             borderColor: 'rgba(255,255,255,0.08)',
         },
-        routeIconWrap: {
-            width: 104,
-            height: 104,
-            borderRadius: 26,
-            alignItems: 'center',
-            justifyContent: 'center',
+        routeIcon: {
             marginBottom: 16,
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.08)',
         },
         routeTitle: {
             color: '#f3f7ff',

@@ -156,6 +156,99 @@ describe('orders reducer', () => {
         );
     });
 
+    it('optimistically removes a paid order from the OPEN filtered list and can restore it on failure', () => {
+        let state = ordersReducer(
+            undefined,
+            ordersActions.setAll([
+                { id: 'o1', status: 'OPEN', orderNo: 'N1' } as any,
+                { id: 'o2', status: 'OPEN', orderNo: 'N2' } as any,
+            ])
+        );
+
+        state = ordersReducer(
+            state,
+            ordersActions.optimisticMarkPaid({
+                id: 'o1',
+                payments: [{ type: 'cash', amount: 5 }] as any,
+                employeeId: 'employee-1',
+                employeeName: 'Cashier',
+            })
+        );
+
+        expect(state.entities.o1).toEqual(
+            expect.objectContaining({
+                id: 'o1',
+                status: 'PAID',
+                paymentInfo: expect.objectContaining({
+                    employeeId: 'employee-1',
+                    employeeName: 'Cashier',
+                }),
+            })
+        );
+        expect(state.filteredList).toEqual([
+            expect.objectContaining({ id: 'o2', status: 'OPEN' }),
+        ]);
+
+        state = ordersReducer(
+            state,
+            ordersActions.optimisticRestoreOpen({
+                id: 'o1',
+            })
+        );
+
+        expect(state.entities.o1).toEqual(
+            expect.objectContaining({
+                id: 'o1',
+                status: 'OPEN',
+                paymentInfo: null,
+            })
+        );
+        expect(state.filteredList).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ id: 'o1', status: 'OPEN' }),
+                expect.objectContaining({ id: 'o2', status: 'OPEN' }),
+            ])
+        );
+    });
+
+    it('keeps an optimistically paid order out of OPEN even if a stale sync snapshot still says OPEN', () => {
+        let state = ordersReducer(
+            undefined,
+            ordersActions.setAll([
+                { id: 'o1', status: 'OPEN', orderNo: 'N1' } as any,
+                { id: 'o2', status: 'OPEN', orderNo: 'N2' } as any,
+            ])
+        );
+
+        state = ordersReducer(
+            state,
+            ordersActions.optimisticMarkPaid({
+                id: 'o1',
+                payments: [{ type: 'cash', amount: 5 }] as any,
+                employeeId: 'employee-1',
+                employeeName: 'Cashier',
+            })
+        );
+
+        state = ordersReducer(
+            state,
+            ordersActions.setAll([
+                { id: 'o1', status: 'OPEN', orderNo: 'N1' } as any,
+                { id: 'o2', status: 'OPEN', orderNo: 'N2' } as any,
+            ])
+        );
+
+        expect(state.entities.o1).toEqual(
+            expect.objectContaining({
+                id: 'o1',
+                status: 'PAID',
+            })
+        );
+        expect(state.filteredList).toEqual([
+            expect.objectContaining({ id: 'o2', status: 'OPEN' }),
+        ]);
+    });
+
     it('sets submit error on rejected pay without mutating order status', () => {
         const baseState = ordersReducer(
             undefined,

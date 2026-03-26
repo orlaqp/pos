@@ -205,7 +205,7 @@ describe('OrderService', () => {
     jest.clearAllMocks();
   });
 
-  it('returns the saved paid order from closeOrder and updates inventory for sync propagation', async () => {
+  it('returns the saved paid order from closeOrder after inventory updates complete', async () => {
     const saveMock = jest.mocked(DataStore.save);
     const updatedOrder = {
       id: 'order-1',
@@ -225,7 +225,7 @@ describe('OrderService', () => {
     saveMock.mockResolvedValue(savedOrder);
     const updateInventorySpy = jest
       .spyOn(OrderService as any, 'updateInventory')
-      .mockResolvedValue(undefined);
+      .mockResolvedValueOnce(undefined);
 
     const result = await OrderService.closeOrder({
       id: 'order-1',

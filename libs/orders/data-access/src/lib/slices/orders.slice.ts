@@ -41,6 +41,7 @@ export interface OrdersState extends EntityState<OrderEntity, string> {
     selected?: OrderEntity;
     filterQuery: FilterRequest;
     filteredList?: OrderEntity[];
+    pendingStatusOverrides: Record<string, OrderStatus | keyof typeof OrderStatus | undefined>;
 }
 
 export const ordersAdapter = createEntityAdapter<OrderEntity, string>({
@@ -114,6 +115,7 @@ export const initialOrdersState: OrdersState = ordersAdapter.getInitialState({
     selected: undefined,
     filterQuery: { status: OrderStatus.OPEN },
     filteredList: undefined,
+    pendingStatusOverrides: {},
 });
 
 export const ordersSlice = createSlice({
@@ -121,7 +123,10 @@ export const ordersSlice = createSlice({
     initialState: initialOrdersState,
     reducers: {
         setAll: (state: OrdersState, action: PayloadAction<OrderEntity[]>) => {
-            ordersAdapter.setAll(state, action.payload);
+            ordersAdapter.setAll(
+                state,
+                action.payload.map((order) => applyPendingOverride(order, state.pendingStatusOverrides))
+            );
             filterList(state, state.filterQuery);
             state.loadingStatus = 'loaded';
         },
@@ -139,6 +144,48 @@ export const ordersSlice = createSlice({
         submitError: (state: OrdersState, action: PayloadAction<string>) => {
             state.submitStatus = 'error';
             state.submitError = action.payload;
+        },
+        optimisticMarkPaid: (
+            state: OrdersState,
+            action: PayloadAction<{
+                id: string;
+                payments: CartPayment[];
+                employeeId?: string;
+                employeeName?: string;
+            }>
+        ) => {
+            state.pendingStatusOverrides[action.payload.id] = 'PAID';
+            ordersAdapter.updateOne(state, {
+                id: action.payload.id,
+                changes: {
+                    status: 'PAID',
+                    paymentInfo: {
+                        employeeId: action.payload.employeeId,
+                        employeeName: action.payload.employeeName,
+                        payments: action.payload.payments.map((payment) => ({
+                            type: payment.type.toUpperCase() as OrderEntity['paymentInfo']['payments'][number]['type'],
+                            amount: payment.amount,
+                        })),
+                    },
+                },
+            });
+            filterList(state, state.filterQuery);
+        },
+        optimisticRestoreOpen: (
+            state: OrdersState,
+            action: PayloadAction<{
+                id: string;
+            }>
+        ) => {
+            delete state.pendingStatusOverrides[action.payload.id];
+            ordersAdapter.updateOne(state, {
+                id: action.payload.id,
+                changes: {
+                    status: 'OPEN',
+                    paymentInfo: null,
+                },
+            });
+            filterList(state, state.filterQuery);
         },
     },
     extraReducers: (builder) => {
@@ -180,6 +227,7 @@ export const ordersSlice = createSlice({
                 ) => {
                     if (!action.payload) return;
 
+                    delete state.pendingStatusOverrides[action.payload.order.id];
                     ordersAdapter.updateOne(state, {
                         id: action.payload.order.id,
                         changes: action.payload.order,
@@ -200,6 +248,10 @@ export const ordersSlice = createSlice({
                 }
             )
             .addCase(payOrder.rejected, (state: OrdersState, action) => {
+                const orderId = action.meta.arg?.cart?.id;
+                if (orderId) {
+                    delete state.pendingStatusOverrides[orderId];
+                }
                 state.submitStatus = 'error';
                 state.error = action.error.message;
             });
@@ -270,6 +322,21 @@ function normalizeReceiptStoreInfo(storeInfo?: StoreInfoEntity) {
         fax: storeInfo?.fax ?? undefined,
         email: storeInfo?.email ?? undefined,
         disclaimer: storeInfo?.disclaimer ?? undefined,
+    };
+}
+
+function applyPendingOverride(
+    order: OrderEntity,
+    pendingOverrides: OrdersState['pendingStatusOverrides']
+) {
+    const pendingStatus = pendingOverrides[order.id];
+    if (!pendingStatus) {
+        return order;
+    }
+
+    return {
+        ...order,
+        status: pendingStatus,
     };
 }
 

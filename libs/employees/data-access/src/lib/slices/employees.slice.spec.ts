@@ -5,6 +5,12 @@ jest.mock('@pos/shared/amplify', () => ({
   },
 }));
 
+jest.mock('../employee.service', () => ({
+  EmployeeService: {
+    getAll: jest.fn(),
+  },
+}));
+
 import {
   employeesAdapter,
   employeesActions,
@@ -12,8 +18,10 @@ import {
   fetchEmployees,
 } from './employees.slice';
 import { DataStore } from '@pos/shared/amplify';
+import { EmployeeService } from '../employee.service';
 
 const observeQueryMock = DataStore.observeQuery as jest.Mock;
+const getAllEmployeesMock = EmployeeService.getAll as jest.Mock;
 
 describe('employees reducer', () => {
   beforeEach(() => {
@@ -67,28 +75,15 @@ describe('employees reducer', () => {
     expect(state.loginEmployee).toEqual(employee);
   });
 
-  it('waits for synced employees before fulfilling fetchEmployees', async () => {
-    observeQueryMock.mockImplementation(() => ({
-      subscribe: ({ next }: { next: (value: unknown) => void }) => {
-        next({
-          isSynced: false,
-          items: [],
-        });
-        next({
-          isSynced: true,
-          items: [
-            {
-              id: 'emp-1',
-              firstName: 'Orlando',
-              lastName: 'Quero',
-              active: true,
-            },
-          ],
-        });
-
-        return { unsubscribe: jest.fn() };
+  it('fulfills fetchEmployees from the local employee cache immediately', async () => {
+    getAllEmployeesMock.mockResolvedValue([
+      {
+        id: 'emp-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+        active: true,
       },
-    }));
+    ]);
 
     const action = await fetchEmployees()(
       jest.fn(),

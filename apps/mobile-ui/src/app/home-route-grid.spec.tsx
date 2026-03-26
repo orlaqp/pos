@@ -16,7 +16,7 @@ describe('HomeRouteGrid', () => {
         routeGrid: {},
         bigButton: {},
         centered: {},
-        routeIconWrap: {},
+        routeIcon: {},
         routeTitle: {},
     } as any;
 

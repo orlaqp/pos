@@ -8,6 +8,8 @@ import { useDispatch, useSelector } from 'react-redux';
 
 export interface CategorySelectionProps {
     onSelected: (c?: CategoryEntity) => void;
+    onShowAll?: () => void;
+    showAllSelected?: boolean;
 }
 
 interface CategoryTileProps {
@@ -43,7 +45,11 @@ const CategoryTile = React.memo(function CategoryTile({
     );
 });
 
-export function CategorySelection({ onSelected }: CategorySelectionProps) {
+export function CategorySelection({
+    onSelected,
+    onShowAll,
+    showAllSelected = false,
+}: CategorySelectionProps) {
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
     const categories = useSelector(selectAllCategories);
@@ -83,6 +89,30 @@ export function CategorySelection({ onSelected }: CategorySelectionProps) {
                     />
                 </View>
             ) : null}
+            {categories.length ? (
+                <Pressable
+                    testID="sales-category-all"
+                    onPress={() => {
+                        dispatch(categoriesActions.clearSelection());
+                        onShowAll?.();
+                    }}
+                    style={[
+                        styles.itemCard,
+                        styles.allCard,
+                        showAllSelected && styles.itemCardSelected,
+                    ]}
+                >
+                    <Text
+                        numberOfLines={2}
+                        style={[
+                            styles.itemLabel,
+                            showAllSelected && styles.itemLabelSelected,
+                        ]}
+                    >
+                        All Products
+                    </Text>
+                </Pressable>
+            ) : null}
             <FlatList
                 data={categories}
                 keyExtractor={(item) => item.id || item.name}
@@ -119,6 +149,11 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             paddingHorizontal: tokens.spacing.xs,
             marginBottom: tokens.spacing.xs,
             alignItems: 'center',
+        },
+        allCard: {
+            minHeight: 72,
+            justifyContent: 'center',
+            marginBottom: tokens.spacing.sm,
         },
         itemCardSelected: {
             backgroundColor: `${tokens.colors.accent}22`,

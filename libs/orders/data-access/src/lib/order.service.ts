@@ -87,8 +87,6 @@ export class OrderService {
             orderDate: moment().toISOString(),
         }) as never);
 
-        console.log('[create]: order to be stored', order);
-        
         return await DataStore.save(order);
     }
 
@@ -104,9 +102,6 @@ export class OrderService {
         const updatedOrder = await OrderService.getUpdatedOrder(request);
         
         if (!updatedOrder) return null;
-
-        console.log('[update]: order to be updated', updatedOrder);
-        
 
         return await DataStore.save(updatedOrder);
     }
@@ -157,13 +152,16 @@ export class OrderService {
             };
         });
 
-        console.log('[closeOrder]: order to be closed', updatedOrder);
-        
-
         if (!updatedOrder) return null;
 
         const closedOrder = await DataStore.save(updatedOrder);
-        await OrderService.updateInventory(closedOrder);
+        await OrderService.updateInventory(closedOrder).catch((error) => {
+            console.error('Order inventory update failed', error);
+            Alert.alert(
+                'Inventory update failed',
+                'The order was saved, but inventory could not be updated right away.'
+            );
+        });
 
         return closedOrder;
     }

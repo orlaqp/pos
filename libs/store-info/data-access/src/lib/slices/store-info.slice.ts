@@ -11,8 +11,6 @@ import {
 } from './store-info.entity';
 import DeviceInfo from 'react-native-device-info';
 import { StoreInfoService } from './store-info.service';
-import { DataStore } from '@pos/shared/amplify';
-import { Store } from '@pos/shared/models';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
 
@@ -27,92 +25,23 @@ export interface StoreInfoState {
     initialSyncComplete: boolean;
 }
 
-const waitForStoreSync = async (ms = 15000): Promise<StoreInfoEntity | undefined> => {
-    return new Promise((resolve, reject) => {
-        let settled = false;
-        let timeoutId: ReturnType<typeof setTimeout> | undefined;
-        let subscription: { unsubscribe: () => void } | undefined;
-        const unsubscribe = () => subscription?.unsubscribe();
-
-        subscription = DataStore.observeQuery(Store).subscribe({
-            next: ({ isSynced, items }: { isSynced: boolean; items: Store[] }) => {
-                if (!isSynced || settled) {
-                    return;
-                }
-
-                settled = true;
-                if (timeoutId) {
-                    clearTimeout(timeoutId);
-                }
-                unsubscribe();
-                const preferredStore = selectPreferredStore(items);
-                resolve(preferredStore ? StoreInfoEntityMapper.fromModel(preferredStore) : undefined);
-            },
-            error: (error: unknown) => {
-                if (settled) {
-                    return;
-                }
-
-                settled = true;
-                if (timeoutId) {
-                    clearTimeout(timeoutId);
-                }
-                unsubscribe();
-                reject(error);
-            },
-        });
-
-        timeoutId = setTimeout(() => {
-            if (settled) {
-                return;
-            }
-
-            settled = true;
-            unsubscribe();
-            reject(new Error(`Store sync timed out after ${ms}ms`));
-        }, ms);
-    });
-};
-
 export const fetchStoreInfo = createAsyncThunk(
     'storeInfo/fetchStatus',
     async (_, thunkAPI) => {
-        const withTimeout = async <T>(label: string, promise: Promise<T>, ms = 10000) =>
-            Promise.race([
-                promise,
-                new Promise<T>((_, reject) =>
-                    setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
-                ),
-            ]);
-
         try {
+            const stores = await StoreInfoService.getStore();
+            const preferredStore = selectPreferredStore(stores);
+
             return {
-                store: await waitForStoreSync(),
+                store: preferredStore
+                    ? StoreInfoEntityMapper.fromModel(preferredStore)
+                    : undefined,
                 initialSyncComplete: true,
             };
         } catch (error) {
-            console.warn('Initial store sync did not complete, falling back to local store cache', error);
-
-            try {
-                const stores = await withTimeout(
-                    'StoreInfoService.getStore() fallback',
-                    StoreInfoService.getStore()
-                );
-                const preferredStore = selectPreferredStore(stores);
-
-                return {
-                    store: preferredStore
-                        ? StoreInfoEntityMapper.fromModel(preferredStore)
-                        : undefined,
-                    initialSyncComplete: false,
-                };
-            } catch (fallbackError) {
-                return thunkAPI.rejectWithValue(
-                    fallbackError instanceof Error
-                        ? fallbackError.message
-                        : String(fallbackError)
-                );
-            }
+            return thunkAPI.rejectWithValue(
+                error instanceof Error ? error.message : String(error)
+            );
         }
     }
 );

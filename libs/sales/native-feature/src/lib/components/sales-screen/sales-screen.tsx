@@ -25,17 +25,17 @@ import {
     ProductEntity,
     ProductService,
     selectAllProducts,
-    selectProductsEntities,
     syncProducts,
     subscribeToProductChanges,
 } from '@pos/products/data-access';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ButtonItemType, UIScreen } from '@pos/shared/ui-native';
-import { RootState, useAppDispatch } from '@pos/store';
+import { useAppDispatch } from '@pos/store';
 import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import {
     buildEbtAllocations,
     getLineTotal,
+    ordersActions,
     payOrder,
     upsertOrder,
 } from '@pos/orders/data-access';
@@ -47,10 +47,9 @@ import { EACH } from '@pos/unit-of-measures/data-access';
 import {
     getActiveProducts,
     getAutoAddQuantity,
-    getCategoryFilteredProducts,
+    getBrowseModeProducts,
     getSelectedQuantity,
     isSameProductList,
-    getSingleProductFromDictionary,
     shouldBlockSelectionByInventory,
     shouldSetFilteredProducts,
 } from './sales-screen.logic';
@@ -103,6 +102,18 @@ const getLineTotalSafely = (quantity: number, price: number) => {
     return getLineTotal(quantity, price);
 };
 
+const getErrorMessage = (reason: unknown) => {
+    if (reason instanceof Error && reason.message) {
+        return reason.message;
+    }
+
+    if (typeof reason === 'string' && reason.trim()) {
+        return reason;
+    }
+
+    return undefined;
+};
+
 /* eslint-disable-next-line */
 export function SalesScreen({
     navigation,
@@ -113,10 +124,6 @@ export function SalesScreen({
     const dispatch = useAppDispatch();
     const searchRef = React.useRef<TextInput>(null);
     const product = useSelector(selectActiveProduct);
-    const products = useSelector<
-        RootState,
-        Record<string, ProductEntity | undefined> | undefined
-    >(selectProductsEntities);
     const storeInfo = useSelector(selectStore);
     const defaultPrinter = useSelector(getDefaultPrinter);
     const allProducts = useSelector(selectAllProducts);
@@ -126,6 +133,9 @@ export function SalesScreen({
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
         []
     );
+    const [browseMode, setBrowseMode] = useState<'idle' | 'all' | 'category'>('idle');
+    const [activeCategory, setActiveCategory] = useState<CategoryEntity | undefined>();
+    const [isSearchActive, setIsSearchActive] = useState(false);
     const [showCategories, setShowCategories] = useState(true);
     const [categoryWidth] = useState(() => new Animated.Value(150));
     const [categoryOpacity] = useState(() => new Animated.Value(1));
@@ -146,11 +156,16 @@ export function SalesScreen({
     };
 
     const onCategoryChange = async (c?: CategoryEntity) => {
+        setIsSearchActive(false);
+        setActiveCategory(c);
+
         if (!c?.id) {
-            setFilteredProducts(getCategoryFilteredProducts(allProducts, c));
+            setBrowseMode('idle');
+            setFilteredProducts([]);
             return;
         }
 
+        setBrowseMode('category');
         const res = await ProductService.search(allProducts, {
             categoryId: c.id,
             onlyActive: true
@@ -158,12 +173,23 @@ export function SalesScreen({
         setFilteredProducts(res.items);
     };
 
+    const onShowAllProducts = useCallback(() => {
+        setIsSearchActive(false);
+        setActiveCategory(undefined);
+        setBrowseMode('all');
+        setFilteredProducts(getActiveProducts(allProducts));
+    }, [allProducts]);
+
     const onFilterChange = async (text: string) => {
         if (!text?.trim()) {
-            setFilteredProducts(getActiveProducts(allProducts));
+            setIsSearchActive(false);
+            setFilteredProducts(
+                getBrowseModeProducts(allProducts, browseMode, activeCategory)
+            );
             return '';
         }
 
+        setIsSearchActive(true);
         searchRef.current?.focus();
         const res = await ProductService.search(allProducts, { text, onlyActive: true });
 
@@ -262,28 +288,105 @@ export function SalesScreen({
         const cartItems = cart.items ?? [];
 
         if (route.params.mode === 'order') {
-            if (defaultPrinter && storeInfo && (cart.orderNo || cart.id)) {
-                void printReceiptSafely(storeInfo, defaultPrinter, cart, {
-                    id: cart.id,
-                    status: 'OPEN',
-                    orderNo: cart.orderNo,
-                    copyType: 'CUSTOMER',
-                    lines: cartItems.map((item) => ({
-                        quantity: item.quantity,
-                        productName: item.product.name,
-                    })),
+            const shouldFastPrint =
+                !!defaultPrinter && !!storeInfo && !!(cart.orderNo || cart.id);
+
+            if (!defaultPrinter || !storeInfo) {
+                Alert.alert(
+                    t('SALES_PrintRequirementsTitle', 'Printing unavailable'),
+                    t(
+                        'SALES_PrintRequirementsMessage',
+                        'Store and printer should be available in order to print.'
+                    )
+                );
+            }
+
+            if (shouldFastPrint) {
+                Promise.resolve(
+                    printReceiptSafely(storeInfo, defaultPrinter, cart, {
+                        id: cart.id,
+                        status: 'OPEN',
+                        orderNo: cart.orderNo,
+                        copyType: 'CUSTOMER',
+                        lines: cartItems.map((item) => ({
+                            quantity: item.quantity,
+                            productName: item.product.name,
+                        })),
+                    })
+                ).catch((error) => {
+                    console.error(
+                        'Customer receipt print failed',
+                        getErrorMessage(error) ?? error
+                    );
+                    Alert.alert(
+                        t('SALES_PrintFailedTitle', 'Receipt could not be printed'),
+                        t(
+                            'SALES_OrderSavedPrintFailedMessage',
+                            'The order was saved, but the receipt could not be printed.'
+                        )
+                    );
                 });
+            }
+
+            Promise.resolve(
                 dispatch(
                     upsertOrder({
                         cart,
                         defaultPrinter,
                         storeInfo,
-                        skipAutoPrint: true,
+                        skipAutoPrint: shouldFastPrint || !defaultPrinter || !storeInfo,
                     })
-                );
-            } else {
-                dispatch(upsertOrder({ cart, defaultPrinter, storeInfo }));
-            }
+                )
+            )
+                .then((result) => {
+                    if (
+                        !upsertOrder.fulfilled.match(result)
+                    ) {
+                        Alert.alert(
+                            t(
+                                'SALES_OrderSaveFailedTitle',
+                                'Order could not be saved'
+                            ),
+                            shouldFastPrint
+                                ? `${t(
+                                      'SALES_OrderSaveFailedMessage',
+                                      'The order was not saved. Please try again.'
+                                  )} ${t(
+                                      'SALES_PrintAlreadyStartedMessage',
+                                      'The receipt may have already been printed.'
+                                  )}`
+                                : t(
+                                      'SALES_OrderSaveFailedMessage',
+                                      'The order was not saved. Please try again.'
+                                  )
+                        );
+                    }
+                })
+                .catch((error) => {
+                    console.error(
+                        'Order save failed',
+                        getErrorMessage(error) ?? error
+                    );
+                    Alert.alert(
+                        t(
+                            'SALES_OrderSaveFailedTitle',
+                            'Order could not be saved'
+                        ),
+                        shouldFastPrint
+                            ? `${t(
+                                  'SALES_OrderSaveFailedMessage',
+                                  'The order was not saved. Please try again.'
+                              )} ${t(
+                                  'SALES_PrintAlreadyStartedMessage',
+                                  'The receipt may have already been printed.'
+                              )}`
+                            : t(
+                                  'SALES_OrderSaveFailedMessage',
+                                  'The order was not saved. Please try again.'
+                              )
+                    );
+                });
+
             dispatch(cartActions.reset());
             return;
         }
@@ -306,22 +409,42 @@ export function SalesScreen({
                             return;
                         }
 
-                        let didStartFastPrint = false;
+                        const shouldFastPrint = !!defaultPrinter && !!storeInfo;
+                        if (cart.id) {
+                            dispatch(
+                                ordersActions.optimisticMarkPaid({
+                                    id: cart.id,
+                                    payments,
+                                    employeeId: employee?.id,
+                                    employeeName: employee
+                                        ? `${employee.firstName} ${employee.lastName}`
+                                        : undefined,
+                                })
+                            );
+                        }
+                        if (!defaultPrinter || !storeInfo) {
+                            Alert.alert(
+                                t('SALES_PrintRequirementsTitle', 'Printing unavailable'),
+                                t(
+                                    'SALES_PrintRequirementsMessage',
+                                    'Store and printer should be available in order to print.'
+                                )
+                            );
+                        }
+                        const allocations = buildEbtAllocationsSafely(
+                            cartItems.map((item) => ({
+                                identifier: item.identifier,
+                                quantity: item.quantity,
+                                price: item.product.price,
+                                isEBTEligible:
+                                    item.product.isEBTEligible ?? false,
+                            })),
+                            payments
+                        );
 
-                        if (defaultPrinter && storeInfo) {
-                            try {
-                                const allocations = buildEbtAllocationsSafely(
-                                    cartItems.map((item) => ({
-                                        identifier: item.identifier,
-                                        quantity: item.quantity,
-                                        price: item.product.price,
-                                        isEBTEligible:
-                                            item.product.isEBTEligible ?? false,
-                                    })),
-                                    payments
-                                );
-
-                                await printReceiptSafely(
+                        if (shouldFastPrint) {
+                            Promise.resolve(
+                                printReceiptSafely(
                                     storeInfo,
                                     defaultPrinter,
                                     cart,
@@ -357,40 +480,100 @@ export function SalesScreen({
                                             };
                                         }),
                                     }
-                                );
-                                didStartFastPrint = true;
-                            } catch (error) {
+                                )
+                            ).catch((error) => {
                                 console.error(
                                     'Fast merchant print failed',
-                                    error
+                                    getErrorMessage(error) ?? error
                                 );
-                                didStartFastPrint = false;
-                            }
+                                Alert.alert(
+                                    t(
+                                        'SALES_PrintFailedTitle',
+                                        'Receipt could not be printed'
+                                    ),
+                                    t(
+                                        'SALES_PaymentSavedPrintFailedMessage',
+                                        'The payment was saved, but the receipt could not be printed.'
+                                    )
+                                );
+                            });
                         }
 
-                        const result = await dispatch(
-                            payOrder({
-                                cart,
-                                payments,
-                                defaultPrinter,
-                                storeInfo,
-                                skipAutoPrint: didStartFastPrint,
+                        Promise.resolve(
+                            dispatch(
+                                payOrder({
+                                    cart,
+                                    payments,
+                                    defaultPrinter,
+                                    storeInfo,
+                                    skipAutoPrint:
+                                        shouldFastPrint || !defaultPrinter || !storeInfo,
+                                })
+                            )
+                        )
+                            .then((result) => {
+                                if (
+                                    !payOrder.fulfilled.match(result) ||
+                                    !result.payload
+                                ) {
+                                    if (cart.id) {
+                                        dispatch(
+                                            ordersActions.optimisticRestoreOpen({
+                                                id: cart.id,
+                                            })
+                                        );
+                                    }
+                                    Alert.alert(
+                                        t(
+                                            'SALES_PaymentFailedTitle',
+                                            'Payment could not be completed'
+                                        ),
+                                        shouldFastPrint
+                                            ? `${t(
+                                                  'SALES_PaymentFailedMessage',
+                                                  'The order is still open. Please try again.'
+                                              )} ${t(
+                                                  'SALES_PrintAlreadyStartedMessage',
+                                                  'The receipt may have already been printed.'
+                                              )}`
+                                            : t(
+                                                  'SALES_PaymentFailedMessage',
+                                                  'The order is still open. Please try again.'
+                                              )
+                                    );
+                                }
                             })
-                        );
-
-                        if (!payOrder.fulfilled.match(result) || !result.payload) {
-                            Alert.alert(
-                                t(
-                                    'SALES_PaymentFailedTitle',
-                                    'Payment could not be completed'
-                                ),
-                                t(
-                                    'SALES_PaymentFailedMessage',
-                                    'The order is still open. Please try again.'
-                                )
-                            );
-                            return;
-                        }
+                            .catch((error) => {
+                                if (cart.id) {
+                                    dispatch(
+                                        ordersActions.optimisticRestoreOpen({
+                                            id: cart.id,
+                                        })
+                                    );
+                                }
+                                console.error(
+                                    'payOrder dispatch failed',
+                                    getErrorMessage(error) ?? error
+                                );
+                                Alert.alert(
+                                    t(
+                                        'SALES_PaymentFailedTitle',
+                                        'Payment could not be completed'
+                                    ),
+                                    shouldFastPrint
+                                        ? `${t(
+                                              'SALES_PaymentFailedMessage',
+                                              'The order is still open. Please try again.'
+                                          )} ${t(
+                                              'SALES_PrintAlreadyStartedMessage',
+                                              'The receipt may have already been printed.'
+                                          )}`
+                                        : t(
+                                              'SALES_PaymentFailedMessage',
+                                              'The order is still open. Please try again.'
+                                          )
+                                );
+                            });
 
                         if (shouldReturnToOrderList()) {
                             navigation.navigate('Order List' as never);
@@ -431,27 +614,30 @@ export function SalesScreen({
     }, [dispatch]);
 
     useEffect(() => {
-        const selectedProduct = getSingleProductFromDictionary(products);
-        if (selectedProduct) onProductSelected(selectedProduct);
-    }, [onProductSelected, products]);
-
-    useEffect(() => {
         if (!hasCatalogProducts) return;
 
         setTimeout(() => {
             searchRef.current?.focus();
         }, 25);
-    }, [hasCatalogProducts, onProductSelected, filteredProducts, allProducts, products, searchRef])
+    }, [hasCatalogProducts, filteredProducts, searchRef])
 
     useEffect(() => {
-        const nextProducts = getActiveProducts(allProducts);
+        if (isSearchActive) {
+            return;
+        }
+
+        const nextProducts = getBrowseModeProducts(
+            allProducts,
+            browseMode,
+            activeCategory
+        );
         // Keep the filtered view aligned with source catalog updates without
-        // overwriting active search/category selections when the list is unchanged.
+        // overwriting active search selections when the list is unchanged.
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setFilteredProducts((current) =>
             isSameProductList(current, nextProducts) ? current : nextProducts
         );
-    }, [allProducts]);
+    }, [activeCategory, allProducts, browseMode, isSearchActive]);
 
     useEffect(() => {
         Animated.parallel([
@@ -504,6 +690,8 @@ export function SalesScreen({
                     contentOpacity={contentOpacity}
                     searchRef={searchRef}
                     onCategoryChange={onCategoryChange}
+                    onShowAllProducts={onShowAllProducts}
+                    showAllProducts={browseMode === 'all'}
                     onToggleCategories={() => setShowCategories((current) => !current)}
                     onFilterChange={onFilterChange}
                     onProductSelected={onProductSelected}

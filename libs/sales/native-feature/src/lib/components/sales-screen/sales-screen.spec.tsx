@@ -13,10 +13,17 @@ const mockCategoriesUnsubscribe = jest.fn();
 const mockProductsUnsubscribe = jest.fn();
 const mockSettingsUnsubscribe = jest.fn();
 const mockPrintReceipt = jest.fn();
-const mockUpsertOrder = jest.fn((payload: unknown) => ({
-    type: 'orders/upsert',
-    payload,
-}));
+const mockUpsertOrder = Object.assign(
+    jest.fn((payload: unknown) => ({
+        type: 'orders/upsert',
+        payload,
+    })),
+    {
+        fulfilled: {
+            match: (action: { type?: string }) => action.type === 'orders/upsert/fulfilled',
+        },
+    }
+);
 const mockPayOrder = Object.assign(
     jest.fn((payload: unknown) => ({
         type: 'orders/pay',
@@ -126,7 +133,17 @@ jest.mock('@pos/printings/data-access', () => ({
 jest.mock('@pos/orders/data-access', () => ({
     buildEbtAllocations: jest.fn(() => ({})),
     getLineTotal: jest.fn((quantity: number, price: number) => +(quantity * price).toFixed(2)),
-    upsertOrder: (...args: unknown[]) => mockUpsertOrder(...args),
+    ordersActions: {
+        optimisticMarkPaid: (payload: unknown) => ({
+            type: 'orders/optimisticMarkPaid',
+            payload,
+        }),
+        optimisticRestoreOpen: (payload: unknown) => ({
+            type: 'orders/optimisticRestoreOpen',
+            payload,
+        }),
+    },
+    upsertOrder: mockUpsertOrder,
     payOrder: mockPayOrder,
 }));
 
@@ -160,6 +177,7 @@ jest.mock('./sales-catalog-pane', () => ({
         hasCatalogProducts,
         filteredProducts,
         onCategoryChange,
+        onShowAllProducts,
         onFilterChange,
         onProductSelected,
         onProductLongPress,
@@ -175,6 +193,9 @@ jest.mock('./sales-catalog-pane', () => ({
                 </Pressable>
                 <Pressable testID="sales-category-select" onPress={() => onCategoryChange({ id: 'c-1' })}>
                     <Text>Select Category</Text>
+                </Pressable>
+                <Pressable testID="sales-category-all" onPress={onShowAllProducts}>
+                    <Text>All Products</Text>
                 </Pressable>
                 <Pressable testID="sales-search-submit" onPress={() => onFilterChange('apple')}>
                     <Text>Search</Text>
@@ -304,6 +325,15 @@ describe('SalesScreen', () => {
             quantity: undefined,
         });
         mockDispatch.mockImplementation((action: any) => {
+            if (action?.type === 'orders/upsert') {
+                return Promise.resolve({
+                    type: 'orders/upsert/fulfilled',
+                    payload: {
+                        order: { id: 'cart-1', status: 'OPEN' },
+                    },
+                });
+            }
+
             if (action?.type === 'orders/pay') {
                 return Promise.resolve({
                     type: 'orders/pay/fulfilled',
@@ -357,7 +387,7 @@ describe('SalesScreen', () => {
     it('renders from cached state before background sync starts', () => {
         const { getByTestId } = renderSalesScreen();
 
-        expect(getByTestId('sales-catalog-count').props.children).toBe(2);
+        expect(getByTestId('sales-catalog-count').props.children).toBe(0);
         expect(mockSyncCategories).not.toHaveBeenCalled();
         expect(mockSyncProducts).not.toHaveBeenCalled();
 
@@ -435,10 +465,10 @@ describe('SalesScreen', () => {
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/upsert' })
         );
-        expect(getByTestId('sales-catalog-count').props.children).toBe(2);
+        expect(getByTestId('sales-catalog-count').props.children).toBe(0);
     });
 
-    it('handles category changes with and without selected category', async () => {
+    it('handles category changes with and without selected category and supports all products', async () => {
         mockSearch.mockResolvedValue({
             items: [mockProduct],
             allNumbers: false,
@@ -449,10 +479,17 @@ describe('SalesScreen', () => {
             fireEvent.press(getByTestId('sales-category-clear'));
             await Promise.resolve();
         });
+        expect(getByTestId('sales-catalog-count').props.children).toBe(0);
         await act(async () => {
             fireEvent.press(getByTestId('sales-category-select'));
             await Promise.resolve();
         });
+        expect(getByTestId('sales-catalog-count').props.children).toBe(2);
+        await act(async () => {
+            fireEvent.press(getByTestId('sales-category-all'));
+            await Promise.resolve();
+        });
+        expect(getByTestId('sales-catalog-count').props.children).toBe(2);
 
         expect(mockSearch).toHaveBeenCalledWith(
             mockState.allProducts,
@@ -460,10 +497,13 @@ describe('SalesScreen', () => {
         );
     });
 
-    it('submits order mode through the saved-order path and resets cart', () => {
+    it('submits order mode through parallel print/save and resets cart after save success', async () => {
         const { getByTestId } = renderSalesScreen('order');
 
-        fireEvent.press(getByTestId('sales-cart-submit-order'));
+        await act(async () => {
+            fireEvent.press(getByTestId('sales-cart-submit-order'));
+            await Promise.resolve();
+        });
 
         expect(mockUpsertOrder).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -485,6 +525,31 @@ describe('SalesScreen', () => {
         expect(Alert.alert).not.toHaveBeenCalled();
     });
 
+    it('shows an alert when order save fails even if the UI already reset the cart', async () => {
+        mockDispatch.mockImplementation((action: any) => {
+            if (action?.type === 'orders/upsert') {
+                return Promise.resolve({ type: 'orders/upsert/rejected' });
+            }
+
+            return action;
+        });
+
+        const { getByTestId } = renderSalesScreen('order');
+
+        await act(async () => {
+            fireEvent.press(getByTestId('sales-cart-submit-order'));
+            await Promise.resolve();
+        });
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Order could not be saved',
+            'The order was not saved. Please try again. The receipt may have already been printed.'
+        );
+        expect(mockDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({ type: 'cart/reset' })
+        );
+    });
+
     it('validates payment mode requires payments', () => {
         const { getByTestId } = renderSalesScreen('payment');
 
@@ -498,7 +563,31 @@ describe('SalesScreen', () => {
         expect(mockGoBack).not.toHaveBeenCalled();
     });
 
-    it('submits payment mode, waits for success, navigates back to orders, and resets cart', async () => {
+    it('shows printer requirements immediately and skips fallback printing when no printer is selected', async () => {
+        mockState.printer = undefined;
+
+        const { getByTestId } = renderSalesScreen('payment');
+
+        fireEvent.press(getByTestId('sales-cart-submit-payment'));
+        const buttons = (Alert.alert as jest.Mock).mock.calls[0][2];
+
+        await act(async () => {
+            await buttons[1].onPress();
+        });
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Printing unavailable',
+            'Store and printer should be available in order to print.'
+        );
+        expect(mockPayOrder).toHaveBeenCalledWith(
+            expect.objectContaining({
+                skipAutoPrint: true,
+            })
+        );
+        expect(mockPrintReceipt).not.toHaveBeenCalled();
+    });
+
+    it('submits payment mode with parallel print/save, navigates back to orders, and resets cart', async () => {
         const { getByTestId } = renderSalesScreen('payment');
 
         fireEvent.press(getByTestId('sales-cart-submit-payment'));
@@ -529,7 +618,25 @@ describe('SalesScreen', () => {
         );
     });
 
-    it('stays on the payment screen when payOrder does not fulfill with a payload', async () => {
+    it('shows a print failure alert when payment saves but printing fails', async () => {
+        mockPrintReceipt.mockRejectedValueOnce(new Error('printer offline'));
+
+        const { getByTestId } = renderSalesScreen('payment');
+        fireEvent.press(getByTestId('sales-cart-submit-payment'));
+        const buttons = (Alert.alert as jest.Mock).mock.calls[0][2];
+
+        await act(async () => {
+            await buttons[1].onPress();
+        });
+
+        expect(Alert.alert).toHaveBeenLastCalledWith(
+            'Receipt could not be printed',
+            'The payment was saved, but the receipt could not be printed.'
+        );
+        expect(mockNavigate).toHaveBeenCalledWith('Order List');
+    });
+
+    it('shows an alert when payOrder does not fulfill with a payload even if the UI already navigated away', async () => {
         mockDispatch.mockImplementation((action: any) => {
             if (action?.type === 'orders/pay') {
                 return Promise.resolve({ type: 'orders/pay/rejected' });
@@ -548,10 +655,9 @@ describe('SalesScreen', () => {
 
         expect(Alert.alert).toHaveBeenLastCalledWith(
             'Payment could not be completed',
-            'The order is still open. Please try again.'
+            'The order is still open. Please try again. The receipt may have already been printed.'
         );
-        expect(mockNavigate).not.toHaveBeenCalled();
-        expect(mockGoBack).not.toHaveBeenCalled();
+        expect(mockNavigate).toHaveBeenCalledWith('Order List');
     });
 
     it('dispatches cart upsert and deselect from product details dialog', () => {
@@ -572,10 +678,10 @@ describe('SalesScreen', () => {
         );
     });
 
-    it('auto-selects a single product from the products dictionary', () => {
+    it('does not auto-select products from the catalog entity dictionary', () => {
         mockState.productsEntities = { 'p-1': mockProduct };
         renderSalesScreen();
-        expect(mockDispatch).toHaveBeenCalledWith(
+        expect(mockDispatch).not.toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/upsert' })
         );
     });

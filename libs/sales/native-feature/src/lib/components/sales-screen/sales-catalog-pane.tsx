@@ -21,6 +21,8 @@ interface SalesCatalogPaneProps {
     contentOpacity: Animated.Value;
     searchRef: React.RefObject<TextInput>;
     onCategoryChange: (category?: CategoryEntity) => void;
+    onShowAllProducts: () => void;
+    showAllProducts: boolean;
     onToggleCategories: () => void;
     onFilterChange: (text: string) => Promise<string | void>;
     onProductSelected: (product: ButtonItemType) => void;
@@ -40,6 +42,8 @@ export function SalesCatalogPane({
     contentOpacity,
     searchRef,
     onCategoryChange,
+    onShowAllProducts,
+    showAllProducts,
     onToggleCategories,
     onFilterChange,
     onProductSelected,
@@ -60,7 +64,12 @@ export function SalesCatalogPane({
             >
                 <View style={styles.categoriesCard}>
                     {showCategories ? (
-                        <CategorySelection key="categorySelection" onSelected={onCategoryChange} />
+                        <CategorySelection
+                            key="categorySelection"
+                            onSelected={onCategoryChange}
+                            onShowAll={onShowAllProducts}
+                            showAllSelected={showAllProducts}
+                        />
                     ) : null}
                 </View>
             </Animated.View>
@@ -70,7 +79,7 @@ export function SalesCatalogPane({
                         <Text style={styles.sectionTitle}>Products</Text>
                         <Text style={styles.sectionSubtitle}>
                             {showCategories
-                                ? 'Browse by category or search the catalog.'
+                                ? 'Choose a category, tap All Products, or search the catalog.'
                                 : 'Search the catalog or show categories again.'}
                         </Text>
                     </View>

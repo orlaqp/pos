@@ -12,55 +12,6 @@ import {
 } from '@reduxjs/toolkit';
 import { EmployeeEntity, EmployeeEntityMapper } from '../employee.entity';
 import { EmployeeService } from '../employee.service';
-import { DataStore } from '@pos/shared/amplify';
-import { Employee } from '@pos/shared/models';
-
-const waitForEmployeeSync = async (ms = 15000): Promise<EmployeeEntity[]> => {
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    let subscription: { unsubscribe: () => void } | undefined;
-    const unsubscribe = () => subscription?.unsubscribe();
-
-    subscription = DataStore.observeQuery(Employee).subscribe({
-      next: ({ isSynced, items }: { isSynced: boolean; items: Employee[] }) => {
-        if (!isSynced || settled) {
-          return;
-        }
-
-        settled = true;
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-        unsubscribe();
-        resolve(items.map((item) => EmployeeEntityMapper.fromModel(item)));
-      },
-      error: (error: unknown) => {
-        if (settled) {
-          return;
-        }
-
-        settled = true;
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-        unsubscribe();
-        reject(error);
-      },
-    });
-
-    timeoutId = setTimeout(() => {
-      if (settled) {
-        return;
-      }
-
-      settled = true;
-      unsubscribe();
-      reject(new Error(`Employee sync timed out after ${ms}ms`));
-    }, ms);
-  });
-};
-
 export const EMPLOYEE_FEATURE_KEY = 'employees';
 
 export interface EmployeesState extends EntityState<EmployeeEntity, string> {
@@ -80,47 +31,21 @@ export const employeesAdapter = createEntityAdapter<EmployeeEntity, string>({
 export const fetchEmployees = createAsyncThunk(
   'employees/fetchStatus',
   async (_, thunkAPI) => {
-    const withTimeout = async <T>(label: string, promise: Promise<T>, ms = 10000) => {
-      return Promise.race([
-        promise,
-        new Promise<T>((_, reject) =>
-          setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
-        ),
-      ]);
-    };
-
     try {
+      const employees = await EmployeeService.getAll();
       return {
-        employees: await waitForEmployeeSync(),
+        employees: employees.map(x => EmployeeEntityMapper.fromModel(x)),
         initialSyncComplete: true,
       };
     } catch (error) {
-      console.warn('Initial employee sync did not complete, falling back to local employee cache', error);
+      const message =
+        error instanceof Error
+          ? `${error.name}: ${error.message}`
+          : typeof error === 'string'
+            ? error
+            : JSON.stringify(error);
 
-      try {
-        const employees = await withTimeout(
-          'EmployeeService.getAll() fallback',
-          EmployeeService.getAll()
-        );
-        console.log('fetchEmployees fallback: local cache result', employees.length);
-        return {
-          employees: employees.map(x => EmployeeEntityMapper.fromModel(x)),
-          initialSyncComplete: false,
-        };
-      } catch (fallbackError) {
-        const message =
-          fallbackError instanceof Error
-            ? `${fallbackError.name}: ${fallbackError.message}`
-            : typeof fallbackError === 'string'
-              ? fallbackError
-              : JSON.stringify(fallbackError);
-
-        console.error('fetchEmployees failed', fallbackError);
-        if (fallbackError instanceof Error && fallbackError.stack) {
-          console.error('fetchEmployees stack', fallbackError.stack);
-        }
-        return thunkAPI.rejectWithValue(message);
-      }
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );

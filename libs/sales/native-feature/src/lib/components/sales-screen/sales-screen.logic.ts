@@ -22,6 +22,22 @@ export const shouldSetFilteredProducts = (
     allNumbers: boolean
 ): boolean => !allNumbers || (allNumbers && searchText.length < 4);
 
+export const getBrowseModeProducts = (
+    allProducts: ProductEntity[],
+    browseMode: 'idle' | 'all' | 'category',
+    activeCategory?: CategoryEntity
+): ProductEntity[] => {
+    if (browseMode === 'all') {
+        return getActiveProducts(allProducts);
+    }
+
+    if (browseMode === 'category') {
+        return getCategoryFilteredProducts(allProducts, activeCategory);
+    }
+
+    return [];
+};
+
 export const getAutoAddQuantity = (
     product: ProductEntity,
     quantity?: number

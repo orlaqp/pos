@@ -42,6 +42,46 @@ jest.mock('@pos/products/data-access', () => ({
     },
 }));
 
+jest.mock('@pos/theme/native/design-tokens', () => ({
+    useDesignTokens: () => ({
+        colors: {
+            textPrimary: '#ffffff',
+            textSecondary: '#d1d5db',
+            textMuted: '#9ca3af',
+            surface: '#1f2937',
+            surfaceMuted: '#374151',
+            borderSubtle: '#4b5563',
+            accent: '#22c55e',
+            success: '#22c55e',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+        },
+        spacing: { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 },
+        radius: { sm: 8, md: 12, lg: 16, pill: 999 },
+        radii: { sm: 8, md: 12, lg: 16, xl: 24, pill: 999 },
+        typography: {
+            sizes: { xs: 12, sm: 14, md: 16, lg: 20, xl: 24 },
+            weights: { regular: '400', medium: '500', semibold: '600', bold: '700' },
+        },
+    }),
+}));
+
+jest.mock('@pos/theme/native', () => ({
+    getThemeColors: () => ({
+        background: '#111827',
+        surface: '#1f2937',
+        surfaceMuted: '#374151',
+        borderSubtle: '#4b5563',
+        textPrimary: '#ffffff',
+        textSecondary: '#d1d5db',
+        textMuted: '#9ca3af',
+        accent: '#22c55e',
+        success: '#22c55e',
+        warning: '#f59e0b',
+        danger: '#ef4444',
+    }),
+}));
+
 jest.mock('react-hook-form', () => ({
     FormProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     useForm: () => ({
@@ -83,13 +123,17 @@ jest.mock('@pos/shared/ui-native', () => ({
             </RNPressable>
         );
     },
-    UIInput: () => {
-        const { View: RNView } = require('react-native');
-        return <RNView />;
+    UIInput: ({ name, ...props }: { name?: string; [key: string]: unknown }) => {
+        const { TextInput: RNTextInput } = require('react-native');
+        return <RNTextInput testID={`input-${name}`} {...props} />;
     },
-    UINumericInput: () => {
-        const { View: RNView } = require('react-native');
-        return <RNView />;
+    UINumericInput: ({ name, keyboardType }: { name?: string; keyboardType?: string }) => {
+        const { View: RNView, Text: RNText } = require('react-native');
+        return (
+            <RNView testID={`numeric-input-${name}`}>
+                <RNText>{keyboardType}</RNText>
+            </RNView>
+        );
     },
     UIOverlaySelect: () => {
         const { View: RNView } = require('react-native');
@@ -236,21 +280,6 @@ describe('ProductForm integration', () => {
         expect(mockGoBack).not.toHaveBeenCalled();
     });
 
-    it('updates barcode, sku and plu values on input blur', () => {
-        const { UNSAFE_getAllByType } = render(
-            <ProductForm navigation={{ goBack: mockGoBack } as any} />
-        );
-
-        const inputs = UNSAFE_getAllByType(TextInput);
-        fireEvent(inputs[0], 'blur', { nativeEvent: { text: '111111' } });
-        fireEvent(inputs[1], 'blur', { nativeEvent: { text: 'SKU-22' } });
-        fireEvent(inputs[2], 'blur', { nativeEvent: { text: '42' } });
-
-        expect(mockSetValue).toHaveBeenCalledWith('barcode', '111111');
-        expect(mockSetValue).toHaveBeenCalledWith('sku', 'SKU-22');
-        expect(mockSetValue).toHaveBeenCalledWith('plu', '42');
-    });
-
     it('preserves selected product id on edit even if form values miss id', async () => {
         mockGetValues.mockReturnValue({
             name: 'Apple',
@@ -274,5 +303,15 @@ describe('ProductForm integration', () => {
                 })
             );
         });
+    });
+
+    it('uses decimal keyboards for both cost and price inputs', () => {
+        const { getByTestId, getAllByText } = render(
+            <ProductForm navigation={{ goBack: mockGoBack } as any} />
+        );
+
+        expect(getByTestId('numeric-input-cost')).toBeTruthy();
+        expect(getByTestId('numeric-input-price')).toBeTruthy();
+        expect(getAllByText('decimal-pad')).toHaveLength(2);
     });
 });

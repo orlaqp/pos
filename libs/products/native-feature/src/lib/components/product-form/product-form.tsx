@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Alert, ScrollView, StyleSheet, View, Text } from 'react-native';
 import {
@@ -251,7 +251,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                         </View>
                                         <View style={styles.columnLast}>
                                             <UINumericInput
-                                                keyboardType="number-pad"
+                                                keyboardType="decimal-pad"
                                                 name="price"
                                                 label="Price"
                                                 allowDecimals

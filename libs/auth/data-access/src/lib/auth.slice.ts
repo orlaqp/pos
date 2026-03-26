@@ -85,8 +85,7 @@ export const signIn = createAsyncThunk(
                 }
             }
 
-            const currentUser = await Auth.currentAuthenticatedUser();
-            return toUser(currentUser || signInResponse);
+            return toUser(signInResponse);
         } catch (error) {
             const message = buildMessage(error);
 

@@ -55,19 +55,13 @@ export function HomeRouteGrid({
                                     pendingPath === path.path && { opacity: 0.7 },
                                 ]}
                             >
-                                <View
-                                    style={[
-                                        styles.routeIconWrap,
-                                        { borderColor: `${path.accentColor}55` },
-                                    ]}
-                                >
-                                    <Icon
-                                        name={path.icon}
-                                        type="material-community"
-                                        size={52}
-                                        color={path.accentColor}
-                                    />
-                                </View>
+                                <Icon
+                                    name={path.icon}
+                                    type="material-community"
+                                    size={52}
+                                    color={path.accentColor}
+                                    containerStyle={styles.routeIcon}
+                                />
                                 <Text style={styles.routeTitle}>{path.title}</Text>
                             </View>
                         </TouchableOpacity>

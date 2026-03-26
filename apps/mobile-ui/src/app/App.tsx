@@ -236,14 +236,9 @@ const AppContent = () => {
             }
 
             configureDataStore();
-            try {
-                await bootstrapTenantSession(user);
-            } catch (error) {
+            void bootstrapTenantSession(user).catch((error) => {
                 logBootstrapStageError('bootstrapTenantSession()', error);
-                if (!isUnauthorizedError(error)) {
-                    throw error;
-                }
-            }
+            });
 
             try {
                 await DataStore.start();
