@@ -145,6 +145,21 @@ describe('UIGenericItemList integration', () => {
         });
     });
 
+    it('dispatches filter action when search editing ends', () => {
+        const { getByTestId } = renderList();
+
+        fireEvent.changeText(getByTestId('ui-generic-item-list-search-input'), '6165');
+        fireEvent(getByTestId('ui-generic-item-list-search-input'), 'endEditing', {
+            nativeEvent: { text: '6165' },
+        });
+
+        expect(mockFilterAction).toHaveBeenCalledWith('6165');
+        expect(mockDispatch).toHaveBeenCalledWith({
+            type: 'items/filter',
+            payload: '6165',
+        });
+    });
+
     it('renders the shared empty state with configured copy', () => {
         mockState.empty = true;
         mockState.filtered = [];

@@ -421,6 +421,7 @@ describe('SalesScreen', () => {
             fireEvent.press(getByTestId('sales-search-submit'));
             await Promise.resolve();
         });
+        expect(getByTestId('sales-catalog-count').props.children).toBe(1);
         await act(async () => {
             fireEvent.press(getByTestId('sales-search-barcode'));
             await Promise.resolve();
@@ -434,6 +435,7 @@ describe('SalesScreen', () => {
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/upsert' })
         );
+        expect(getByTestId('sales-catalog-count').props.children).toBe(2);
     });
 
     it('handles category changes with and without selected category', async () => {

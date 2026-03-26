@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import UIEmptyState from '../ui-empty-state/ui-empty-state';
 import UISpinner from '../ui-spinner/ui-spinner';
 import { useSharedStyles } from '@pos/theme/native';
@@ -72,9 +72,9 @@ export function UIGenericItemList({
     const isEmpty = useSelector(isEmptySelector);
     const loadingStatus = useSelector(loadingStatusSelector);
     const items = useSelector(filteredListSelector);
-    const [visibleItems, setVisibleItems] = useState<any[]>();
     const [lastIndex, setLastIndex] = useState<number>(10);
     const [query, setQuery] = useState<string>('');
+    const visibleItems = useMemo(() => items?.slice(0, lastIndex), [items, lastIndex]);
 
     const createNew = () => {
         dispatch(clearSelectionAction());
@@ -85,17 +85,17 @@ export function UIGenericItemList({
         dispatch(filterAction(query));
     };
 
+    const submitQuery = (value?: string) => {
+        const nextQuery = value ?? query;
+        setQuery(nextQuery);
+        filterList(nextQuery);
+    };
+
     useEffect(() => {
         if (fetchItemsAction && loadingStatus === 'not loaded')
             dispatch(fetchItemsAction());
     }, [loadingStatus, dispatch, fetchItemsAction]);
 
-    useEffect(() => {
-        if (!items) setVisibleItems(undefined);
-        setVisibleItems(items?.slice(0, lastIndex));
-    }, [items, lastIndex]);
-
-    
     if (loadingStatus === 'loading' || loadingStatus === 'not loaded')
         return (
             <View style={[styles.page, { paddingTop: 50 }]}>
@@ -165,10 +165,9 @@ export function UIGenericItemList({
                             returnKeyType="search"
                             onChangeText={(value) => setQuery(value)}
                             onSubmitEditing={(e) => {
-                                const value = e.nativeEvent.text ?? query;
-                                setQuery(value);
-                                filterList(value);
+                                submitQuery(e.nativeEvent.text);
                             }}
+                            onEndEditing={(e) => submitQuery(e.nativeEvent.text)}
                         />
                     </View>
                     <TouchableOpacity

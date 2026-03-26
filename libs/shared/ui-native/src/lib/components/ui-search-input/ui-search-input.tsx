@@ -1,10 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Input, useTheme } from '@rneui/themed';
 import { TextInput } from 'react-native';
 // import debounce from 'lodash/debounce';
 type UiSearchInputProps = React.ComponentProps<typeof TextInput> & {
-    onSubmit: (text: string) => void;
+    onSubmit: (text: string) => void | Promise<unknown>;
     onClear?: () => void;
     debounceTime?: number;
 };
@@ -17,33 +17,40 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
             grey2: '#8f9baa',
             grey1: '#ffffff',
         };
-        const { value, onChange, debounceTime, onSubmit, onClear, ...restOfProps } =
+        const {
+            value,
+            onChangeText,
+            onSubmit,
+            onClear,
+            ...restOfProps
+        } =
             props;
-        const [text, setText] = useState<string | undefined>(value);
+        const [text, setText] = useState<string>(typeof value === 'string' ? value : '');
+        const currentText = typeof value === 'string' ? value : text;
 
-        // const debouncedOnChange = useCallback(
-        //     debounce(async (text) => {
-        //         if (!onTextChanged) return;
-                
-        //         const res = await onTextChanged(text);
-        //         console.log('On change text response: ', res);
-                
-        //         setText(res);
-        //     }, debounceTime || 0),
-        //     []
-        // );
+        const handleChangeText = (nextText: string) => {
+            setText(nextText);
+            onChangeText?.(nextText);
+        };
+
+        const handleSubmit = (submittedText?: string) => {
+            const nextText = submittedText ?? currentText;
+            setText(nextText);
+            void onSubmit(nextText);
+        };
 
         const clearText = () => {
             setText('');
-            if (onSubmit) onSubmit('');
+            onChangeText?.('');
+            void onSubmit('');
             if (onClear) onClear();
-        }
+        };
 
         return (
             <Input
                 ref={ref as any}
                 {...restOfProps}
-                // value={text}
+                value={currentText}
                 autoComplete='off'
                 autoCorrect={false}
                 autoCapitalize='none'
@@ -63,7 +70,8 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
                 multiline={false}
                 renderErrorMessage={false}
                 clearButtonMode='always'
-                onSubmitEditing={(e) => onSubmit(e.nativeEvent.text)}
+                onChangeText={handleChangeText}
+                onSubmitEditing={(e) => handleSubmit(e.nativeEvent.text)}
             />
         );
     }

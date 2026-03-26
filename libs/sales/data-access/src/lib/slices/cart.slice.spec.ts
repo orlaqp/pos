@@ -108,6 +108,49 @@ describe('cart.slice', () => {
         expect(state.footer.total).toBe(7.5);
     });
 
+    it('merges lowercase ea quantities on repeated add', () => {
+        const base = {
+            ...initialCartState,
+            items: [
+                {
+                    identifier: 'line-1',
+                    product: { ...eachProduct, unitOfMeasure: 'ea' } as any,
+                    quantity: 1,
+                },
+            ],
+        };
+        const state = cartReducer(
+            base as any,
+            cartActions.upsert({
+                product: { ...eachProduct, unitOfMeasure: 'ea' } as any,
+                quantity: 2,
+            } as any)
+        );
+
+        expect(state.items).toHaveLength(1);
+        expect(state.items[0].quantity).toBe(3);
+    });
+
+    it('keeps separate lines for non-EA items with the same product id', () => {
+        const base = {
+            ...initialCartState,
+            items: [
+                { identifier: 'line-1', product: weightProduct as any, quantity: 1.2 },
+            ],
+        };
+        const state = cartReducer(
+            base as any,
+            cartActions.upsert({
+                product: { ...weightProduct, unitOfMeasure: 'kg' } as any,
+                quantity: 2.5,
+            } as any)
+        );
+
+        expect(state.items).toHaveLength(2);
+        expect(state.items[0].quantity).toBe(1.2);
+        expect(state.items[1].quantity).toBe(2.5);
+    });
+
     it('for non-EACH product: inserts new line when quantity is zero', () => {
         const base = {
             ...initialCartState,

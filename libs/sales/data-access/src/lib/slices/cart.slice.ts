@@ -172,14 +172,21 @@ export const cartSlice = createSlice({
             state.activeProduct = action.payload;
         },
         upsert: (state: CartState, action: PayloadAction<CartItem>) => {
-            const sameCartItem = state.items.find(i => action.payload.identifier && i.identifier === action.payload.identifier);
+            const normalizedUnitOfMeasure =
+                action.payload.product.unitOfMeasure?.trim().toUpperCase() || '';
+            const isEachUnit = normalizedUnitOfMeasure === 'EA';
+            const sameCartItem = state.items.find(
+                (i) =>
+                    !!action.payload.identifier &&
+                    i.identifier === action.payload.identifier
+            );
             const addItem = (state: CartState, item: CartItem) => {
                 state.items?.push({
                     identifier: uuid.v4().toString(),
-                    product: action.payload.product,
-                    quantity: action.payload.quantity
+                    product: item.product,
+                    quantity: item.quantity
                 });
-            }
+            };
 
             if (sameCartItem) {
                 sameCartItem.quantity = action.payload.quantity;
@@ -191,7 +198,7 @@ export const cartSlice = createSlice({
 
             if (!sameProducts.length) {
                 addItem(state, action.payload);
-            } else if (action.payload.product.unitOfMeasure === 'EA') {
+            } else if (isEachUnit) {
                 sameProducts[0].quantity += action.payload.quantity;
             } else if (action.payload.quantity === 0) {
                 addItem(state, action.payload);
@@ -344,7 +351,6 @@ export const cartSlice = createSlice({
                 pricingSource: 'OFFLINE_LOCAL',
                 reconciliationStatus: 'PENDING',
             };
-            state.pricingContext = state.pricingContext;
             state.definitions = state.definitions || [];
             state.manualDiscounts = [];
             state.priceOverrides = [];

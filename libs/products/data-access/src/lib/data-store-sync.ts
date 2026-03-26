@@ -15,7 +15,26 @@ export const syncProducts = (dispatch: Dispatch) => {
 
 export const subscribeToProductChanges = (dispatch: Dispatch) => {
     return DataStore.observeQuery(Product).subscribe(({ isSynced, items }) => {
-        console.log(`Product changes detected (isSynced: ${isSynced})`);
+        console.log(
+            `[products-sync] observeQuery update: count=${items.length}, isSynced=${isSynced}`
+        );
+        const productsWithPlu = items.filter((product) => !!product.plu).length;
+        const activeProducts = items.filter((product) => product.isActive).length;
+        const cantimpaloMatches = items
+            .filter((product) => product.name?.toLowerCase().includes('cantimpalo'))
+            .map((product) => ({
+                id: product.id,
+                name: product.name,
+                plu: product.plu,
+                barcode: product.barcode,
+                isActive: product.isActive,
+            }));
+
+        console.log(
+            `[products-sync] details: active=${activeProducts}, withPlu=${productsWithPlu}, cantimpalo=${JSON.stringify(
+                cantimpaloMatches
+            )}`
+        );
         updateStore(dispatch, items);
     });
 };

@@ -159,7 +159,10 @@ export function SalesScreen({
     };
 
     const onFilterChange = async (text: string) => {
-        if (!text) return;
+        if (!text?.trim()) {
+            setFilteredProducts(getActiveProducts(allProducts));
+            return '';
+        }
 
         searchRef.current?.focus();
         const res = await ProductService.search(allProducts, { text, onlyActive: true });
@@ -306,49 +309,63 @@ export function SalesScreen({
                         let didStartFastPrint = false;
 
                         if (defaultPrinter && storeInfo) {
-                            const allocations = buildEbtAllocationsSafely(
-                                cartItems.map((item) => ({
-                                    identifier: item.identifier,
-                                    quantity: item.quantity,
-                                    price: item.product.price,
-                                    isEBTEligible: item.product.isEBTEligible ?? false,
-                                })),
-                                payments
-                            );
-
-                            void printReceiptSafely(storeInfo, defaultPrinter, cart, {
-                                id: cart.id,
-                                status: 'PAID',
-                                orderNo: cart.orderNo,
-                                copyType: 'MERCHANT',
-                                paymentInfo: {
-                                    payments: payments.map((payment) => ({
-                                        type: payment.type,
-                                        amount: payment.amount,
-                                    })),
-                                },
-                                lines: cartItems.map((item) => {
-                                    const identifier = item.identifier;
-                                    const lineTotal = getLineTotalSafely(
-                                        item.quantity,
-                                        item.product.price
-                                    );
-                                    const allocation = identifier
-                                        ? allocations[identifier]
-                                        : undefined;
-
-                                    return {
+                            try {
+                                const allocations = buildEbtAllocationsSafely(
+                                    cartItems.map((item) => ({
+                                        identifier: item.identifier,
                                         quantity: item.quantity,
-                                        productName: item.product.name,
-                                        ebtPaidAmount:
-                                            allocation?.ebtPaidAmount ?? 0,
-                                        nonEbtPaidAmount:
-                                            allocation?.nonEbtPaidAmount ??
-                                            lineTotal,
-                                    };
-                                }),
-                            });
-                            didStartFastPrint = true;
+                                        price: item.product.price,
+                                        isEBTEligible:
+                                            item.product.isEBTEligible ?? false,
+                                    })),
+                                    payments
+                                );
+
+                                await printReceiptSafely(
+                                    storeInfo,
+                                    defaultPrinter,
+                                    cart,
+                                    {
+                                        id: cart.id,
+                                        status: 'PAID',
+                                        orderNo: cart.orderNo,
+                                        copyType: 'MERCHANT',
+                                        paymentInfo: {
+                                            payments: payments.map((payment) => ({
+                                                type: payment.type,
+                                                amount: payment.amount,
+                                            })),
+                                        },
+                                        lines: cartItems.map((item) => {
+                                            const identifier = item.identifier;
+                                            const lineTotal = getLineTotalSafely(
+                                                item.quantity,
+                                                item.product.price
+                                            );
+                                            const allocation = identifier
+                                                ? allocations[identifier]
+                                                : undefined;
+
+                                            return {
+                                                quantity: item.quantity,
+                                                productName: item.product.name,
+                                                ebtPaidAmount:
+                                                    allocation?.ebtPaidAmount ?? 0,
+                                                nonEbtPaidAmount:
+                                                    allocation?.nonEbtPaidAmount ??
+                                                    lineTotal,
+                                            };
+                                        }),
+                                    }
+                                );
+                                didStartFastPrint = true;
+                            } catch (error) {
+                                console.error(
+                                    'Fast merchant print failed',
+                                    error
+                                );
+                                didStartFastPrint = false;
+                            }
                         }
 
                         const result = await dispatch(

@@ -20,6 +20,55 @@ export interface ProductSearchResponse {
 }
 
 export class ProductService {
+    private static findWeightedBarcodeMatch(
+        products: ProductEntity[],
+        code: string,
+        onlyActive: boolean
+    ): ProductSearchResponse | null {
+        if (!/^\d+$/.test(code) || code.length <= 11) {
+            return null;
+        }
+
+        const plu = code.substring(2, 6);
+        const prod = products.find((p) => {
+            return onlyActive ? p.isActive && p.plu === plu : p.plu === plu;
+        });
+
+        if (!prod) {
+            return null;
+        }
+
+        const totalPrice = +code.substring(7, 11);
+        const quantity = totalPrice / 100 / prod.price;
+
+        return {
+            items: [prod],
+            allNumbers: true,
+            price: totalPrice,
+            quantity,
+        };
+    }
+
+    private static findWeightedBarcodeMatchInCandidate(
+        products: ProductEntity[],
+        code: string,
+        onlyActive: boolean
+    ): ProductSearchResponse | null {
+        for (let start = 0; start <= code.length - 12; start += 1) {
+            const weightedMatch = ProductService.findWeightedBarcodeMatch(
+                products,
+                code.slice(start),
+                onlyActive
+            );
+
+            if (weightedMatch) {
+                return weightedMatch;
+            }
+        }
+
+        return null;
+    }
+
     private static matchesBarcodeOrSku(
         product: ProductEntity,
         code: string
@@ -28,6 +77,13 @@ export class ProductService {
             (!!product.barcode && product.barcode === code) ||
             (!!product.sku && product.sku === code)
         );
+    }
+
+    private static matchesBarcodeSkuOrPlu(
+        product: ProductEntity,
+        code: string
+    ): boolean {
+        return ProductService.matchesBarcodeOrSku(product, code) || (!!product.plu && product.plu === code);
     }
 
     private static findByBarcodeOrSku(
@@ -153,6 +209,41 @@ export class ProductService {
     ): ProductSearchResponse {
         const normalizedText = (text || '').replace(/[\r\n\t]/g, '').trim();
 
+ console.log('Total products: ' +products.length);
+
+//  console.log(
+//   products.find((p) => p.id === 'f8ca9af9-70dd-4dc4-943d-b648ed65163c')
+// );
+
+//  console.log(
+//   'Cantimpalo product in local array',
+//   products
+//     .filter((p) => p.name?.toLowerCase().includes('cantimpalo'))
+//     .map((p) => ({
+//       id: p.id,
+//       name: p.name,
+//       plu: p.plu,
+//       barcode: p.barcode,
+//       sku: p.sku,
+//       isActive: p.isActive,
+//     }))
+// );
+
+//         console.log(
+//   'PLU candidates',
+//   products
+//     .filter((p) => p.plu || p.barcode || p.sku)
+//     .map((p) => ({
+//       name: p.name,
+//       plu: p.plu,
+//       barcode: p.barcode,
+//       sku: p.sku,
+//       isActive: p.isActive,
+//     }))
+//     .filter((p) => p.plu === '6165' || p.barcode === '6165' || p.sku === '6165')
+// );
+
+
         if (categoryId)
             return {
                 items: products.filter(
@@ -175,29 +266,14 @@ export class ProductService {
         const allNumbers = !!normalizedText.match(/^\d+$/);
         // ex: 206110115089
         if (allNumbers && normalizedText.length > 11) {
-            // Toledo code
-            // const plu = text.substring(2, 6);
-            // DLP-300
-            const plu = normalizedText.substring(2, 6);
-            const prod = products.find((p) => {
-                return onlyActive
-                    ? p.isActive && p.plu === plu
-                    : p.plu === plu;
-            });
+            const weightedMatch = ProductService.findWeightedBarcodeMatch(
+                products,
+                normalizedText,
+                onlyActive
+            );
 
-            if (prod) {
-                // Toledo code
-                // const totalPrice = +text.substring(7, 11);
-                // DLP-300
-                const totalPrice = +normalizedText.substring(7, 11);
-                const quantity = totalPrice / 100 / prod.price; 
-
-                return {
-                    items: [prod],
-                    allNumbers: true,
-                    price: totalPrice,
-                    quantity
-                };
+            if (weightedMatch) {
+                return weightedMatch;
             }
         }
 
@@ -205,8 +281,8 @@ export class ProductService {
             const items = products.filter(
                 (p) => {
                     return onlyActive 
-                        ? p.isActive && ((p.barcode && p.barcode === normalizedText) || (p.sku && p.sku === normalizedText))
-                        : (p.barcode && p.barcode === normalizedText) || (p.sku && p.sku === normalizedText);
+                        ? p.isActive && ProductService.matchesBarcodeSkuOrPlu(p, normalizedText)
+                        : ProductService.matchesBarcodeSkuOrPlu(p, normalizedText);
                 }
             );
 
@@ -226,6 +302,16 @@ export class ProductService {
         );
 
         for (const code of numericCandidates) {
+            const weightedMatch = ProductService.findWeightedBarcodeMatchInCandidate(
+                products,
+                code,
+                onlyActive
+            );
+
+            if (weightedMatch) {
+                return weightedMatch;
+            }
+
             const exactItems = ProductService.findByBarcodeOrSku(
                 products,
                 code,
@@ -261,10 +347,12 @@ export class ProductService {
                     ?  p.isActive && (p.name.toLowerCase().indexOf(lower) !== -1 ||
                         (p.barcode && p.barcode?.toLowerCase().indexOf(lower) !== -1) ||
                         (p.sku && p.sku?.toLowerCase().indexOf(lower) !== -1) ||
+                        (p.plu && p.plu?.toLowerCase().indexOf(lower) !== -1) ||
                         (p.description && p.description?.toLowerCase().indexOf(lower) !== -1))
                     : p.name.toLowerCase().indexOf(lower) !== -1 ||
                         (p.barcode && p.barcode?.toLowerCase().indexOf(lower) !== -1) ||
                         (p.sku && p.sku?.toLowerCase().indexOf(lower) !== -1) ||
+                        (p.plu && p.plu?.toLowerCase().indexOf(lower) !== -1) ||
                         (p.description && p.description?.toLowerCase().indexOf(lower) !== -1);
             }
                 
