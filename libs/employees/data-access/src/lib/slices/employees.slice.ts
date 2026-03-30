@@ -32,9 +32,20 @@ export const fetchEmployees = createAsyncThunk(
   'employees/fetchStatus',
   async (_, thunkAPI) => {
     try {
+      const state = thunkAPI.getState() as RootState;
       const employees = await EmployeeService.getAll();
+      const ownerEmail = state.auth.user?.email;
+      const recoveredOwner =
+        employees.length === 0 && ownerEmail
+          ? await EmployeeService.getEmployeeByEmail(ownerEmail)
+          : null;
+
       return {
-        employees: employees.map(x => EmployeeEntityMapper.fromModel(x)),
+        employees: (
+          recoveredOwner
+            ? [recoveredOwner]
+            : employees.map(x => EmployeeEntityMapper.fromModel(x))
+        ),
         initialSyncComplete: true,
       };
     } catch (error) {

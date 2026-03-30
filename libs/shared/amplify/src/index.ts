@@ -135,7 +135,9 @@ export const Auth = {
         });
     },
     async signOut() {
-        return signOut();
+        return signOut({
+            global: true,
+        });
     },
     async currentAuthenticatedUser() {
         try {

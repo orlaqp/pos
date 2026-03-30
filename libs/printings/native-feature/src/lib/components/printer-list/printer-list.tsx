@@ -40,7 +40,13 @@ export const createSetDefaultPrinterHandler = (
         dispatch: any,
         printer: PrinterEntity
     ) => Promise<any> = PrinterService.setDefaultPrinter
-) => async () => await setDefaultPrinter(dispatch, printer);
+) => async () => {
+    try {
+        await setDefaultPrinter(dispatch, printer);
+    } catch {
+        Alert.alert('There was an error setting the default printer');
+    }
+};
 
 export const discoverPrintersSafely = async (
     discover: () => Promise<any[] | undefined>,

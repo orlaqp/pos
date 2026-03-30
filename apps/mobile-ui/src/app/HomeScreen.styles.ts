@@ -93,11 +93,30 @@ export const useHomeScreenStyles = () => {
             marginBottom: 20,
             lineHeight: 20,
         },
+        pinLogoffButton: {
+            marginTop: 18,
+            paddingVertical: 12,
+            alignItems: 'center',
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.14)',
+            backgroundColor: 'rgba(255,255,255,0.03)',
+        },
+        pinLogoffButtonText: {
+            color: '#cfd7e3',
+            fontSize: 15,
+            fontWeight: '600',
+        },
         setupButton: {
             borderRadius: 16,
             minHeight: 52,
             marginTop: 12,
             backgroundColor: colors.primary,
+        },
+        setupLogoffButtonText: {
+            color: '#cfd7e3',
+            fontSize: 15,
+            fontWeight: '600',
         },
         formRow: {
             flexDirection: 'row',

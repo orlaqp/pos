@@ -17,6 +17,7 @@ interface HomePinLoginProps {
     styles: HomeScreenStyles;
     onPinUpdated: (nextPin: string) => string;
     onE2EManagerLogin?: () => void;
+    onLogoff?: () => void;
 }
 
 export function HomePinLogin({
@@ -32,6 +33,7 @@ export function HomePinLogin({
     styles,
     onPinUpdated,
     onE2EManagerLogin,
+    onLogoff,
 }: HomePinLoginProps) {
     return (
         <View style={styles.shell} testID="home-pin-login-screen">
@@ -67,6 +69,15 @@ export function HomePinLogin({
                     resetToken={pinResetToken}
                     disabled={isPinLocked}
                 />
+                {onLogoff ? (
+                    <Pressable
+                        testID="home-pin-logoff-button"
+                        onPress={onLogoff}
+                        style={styles.pinLogoffButton}
+                    >
+                        <Text style={styles.pinLogoffButtonText}>Log off business</Text>
+                    </Pressable>
+                ) : null}
             </View>
         </View>
     );

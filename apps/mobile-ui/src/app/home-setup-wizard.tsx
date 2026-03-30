@@ -37,6 +37,7 @@ interface HomeSetupWizardProps {
     styles: HomeScreenStyles;
     onCreateOwnerEmployee: (model: FirstEmployeeSetupModel) => void;
     onSaveStoreDetails: (model: StoreSetupModel) => void;
+    onLogoff?: () => void;
 }
 
 export function HomeSetupWizard({
@@ -53,6 +54,7 @@ export function HomeSetupWizard({
     styles,
     onCreateOwnerEmployee,
     onSaveStoreDetails,
+    onLogoff,
 }: HomeSetupWizardProps) {
     return (
         <View style={styles.shell}>
@@ -146,6 +148,14 @@ export function HomeSetupWizard({
                                 loading={setupSaving}
                                 onPress={setupForm.handleSubmit(onCreateOwnerEmployee)}
                             />
+                            {onLogoff ? (
+                                <Button
+                                    title="Log off business"
+                                    type="clear"
+                                    titleStyle={styles.setupLogoffButtonText}
+                                    onPress={onLogoff}
+                                />
+                            ) : null}
                         </>
                     </FormProvider>
                 ) : (
@@ -254,6 +264,14 @@ export function HomeSetupWizard({
                                 loading={setupSaving}
                                 onPress={storeSetupForm.handleSubmit(onSaveStoreDetails)}
                             />
+                            {onLogoff ? (
+                                <Button
+                                    title="Log off business"
+                                    type="clear"
+                                    titleStyle={styles.setupLogoffButtonText}
+                                    onPress={onLogoff}
+                                />
+                            ) : null}
                         </>
                     </FormProvider>
                 )}

@@ -60,6 +60,22 @@ describe('PrinterList', () => {
         expect(setDefault).toHaveBeenCalledWith(dispatch, printer);
     });
 
+    it('alerts when setting the default printer fails', async () => {
+        const dispatch = jest.fn();
+        const setDefault = jest.fn(() => Promise.reject(new Error('failed')));
+        const printer: any = { identifier: 'tcp:10.0.0.20' };
+        const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
+
+        const handler = createSetDefaultPrinterHandler(dispatch, printer, setDefault);
+        await handler();
+
+        expect(alertSpy).toHaveBeenCalledWith(
+            'There was an error setting the default printer'
+        );
+
+        alertSpy.mockRestore();
+    });
+
     it('discovers and maps printers in one async helper', async () => {
         const discover = jest.fn(async () => [
             {

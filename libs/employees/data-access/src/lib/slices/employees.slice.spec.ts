@@ -1,3 +1,4 @@
+/* eslint-disable import/first */
 jest.mock('@pos/shared/amplify', () => ({
   DataStore: {
     clear: jest.fn(),
@@ -8,6 +9,7 @@ jest.mock('@pos/shared/amplify', () => ({
 jest.mock('../employee.service', () => ({
   EmployeeService: {
     getAll: jest.fn(),
+    getEmployeeByEmail: jest.fn(),
   },
 }));
 
@@ -20,8 +22,8 @@ import {
 import { DataStore } from '@pos/shared/amplify';
 import { EmployeeService } from '../employee.service';
 
-const observeQueryMock = DataStore.observeQuery as jest.Mock;
 const getAllEmployeesMock = EmployeeService.getAll as jest.Mock;
+const getEmployeeByEmailMock = EmployeeService.getEmployeeByEmail as jest.Mock;
 
 describe('employees reducer', () => {
   beforeEach(() => {
@@ -87,7 +89,14 @@ describe('employees reducer', () => {
 
     const action = await fetchEmployees()(
       jest.fn(),
-      jest.fn(),
+      () =>
+        ({
+          auth: {
+            user: {
+              email: 'owner@example.com',
+            },
+          },
+        } as any),
       undefined
     );
 
@@ -103,5 +112,44 @@ describe('employees reducer', () => {
       initialSyncComplete: true,
     });
     expect(action.meta.requestStatus).toBe('fulfilled');
+  });
+
+  it('falls back to the signed-in owner email when the employee list is empty', async () => {
+    getAllEmployeesMock.mockResolvedValue([]);
+    getEmployeeByEmailMock.mockResolvedValue({
+      id: 'owner-1',
+      firstName: 'Casa',
+      lastName: 'Martinez',
+      email: 'martinez.casa@yahoo.com',
+      active: true,
+      pin: '1234',
+      code: 'OWNER',
+      roles: ['Admin'],
+    });
+
+    const action = await fetchEmployees()(
+      jest.fn(),
+      () =>
+        ({
+          auth: {
+            user: {
+              email: 'martinez.casa@yahoo.com',
+            },
+          },
+        } as any),
+      undefined
+    );
+
+    expect(getEmployeeByEmailMock).toHaveBeenCalledWith('martinez.casa@yahoo.com');
+    expect(action.type).toBe('employees/fetchStatus/fulfilled');
+    expect(action.payload).toEqual({
+      employees: [
+        expect.objectContaining({
+          id: 'owner-1',
+          email: 'martinez.casa@yahoo.com',
+        }),
+      ],
+      initialSyncComplete: true,
+    });
   });
 });

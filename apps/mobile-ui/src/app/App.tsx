@@ -33,6 +33,11 @@ import {
 import { configureDataStore } from '@pos/shared/data-store';
 import { Auth, DataStore } from '@pos/shared/amplify';
 import { E2EControlPanel } from './e2e-control-panel';
+import {
+    clearManualSignOut,
+    markManualSignOut,
+    readManualSignOut,
+} from './session-signout';
 
 type BootstrapStatus = 'idle' | 'checking-session' | 'resolving-tenant' | 'preparing-business-data' | 'ready' | 'error';
 const appTheme = theme('dark');
@@ -165,6 +170,7 @@ const AppContent = () => {
 
     const resetSessionState = useCallback(async () => {
         try {
+            await markManualSignOut();
             await DataStore.stop();
             await DataStore.clear();
         } finally {
@@ -196,6 +202,17 @@ const AppContent = () => {
             let user = authUser;
 
             if (!user) {
+                const manuallySignedOut = await readManualSignOut();
+
+                if (manuallySignedOut) {
+                    clearCurrentTenantContext();
+                    dispatch(authActions.logoff());
+                    dispatch(tenantSessionActions.clearTenantSession());
+                    dispatch(employeesActions.logoffEmployee());
+                    setBootstrapStatus('ready');
+                    return;
+                }
+
                 try {
                     user = await dispatch(restoreSession()).unwrap();
                 } catch (error) {
@@ -222,6 +239,8 @@ const AppContent = () => {
                 setBootstrapStatus('ready');
                 return;
             }
+
+            await clearManualSignOut();
 
             setBootstrapStatus('resolving-tenant');
             logSyncDebug('app-bootstrap', 'tenant:resolved', {

@@ -9,6 +9,62 @@ import { listEmployees } from '@pos/shared/api';
 
 const normalizePin = (value: string | null | undefined) => String(value ?? '').trim();
 const normalizeEmail = (value: string | null | undefined) => String(value ?? '').trim().toLowerCase();
+const isDeletedFlag = (value: unknown) => value === true || value === 'true';
+const isActiveRemoteEmployee = (employee: Employee | null | undefined): employee is Employee =>
+    !!employee && !isDeletedFlag(employee._deleted);
+
+const fetchRemoteEmployees = async (variables: Record<string, unknown>) => {
+    const response = await API.graphql<{
+        listEmployees?: {
+            items?: Array<Employee | null> | null;
+            nextToken?: string | null;
+        } | null;
+    }>({
+        query: listEmployees,
+        variables,
+        authMode: 'userPool',
+    });
+
+    return response.data?.listEmployees ?? null;
+};
+
+const fetchAllRemoteEmployees = async () => {
+    const employees: Employee[] = [];
+    let nextToken: string | null | undefined = undefined;
+    let page = 0;
+
+    do {
+        page += 1;
+        const result = await fetchRemoteEmployees({
+            limit: 100,
+            ...(nextToken ? { nextToken } : {}),
+        });
+
+        console.log('[employees] remote list page', {
+            page,
+            itemCount: result?.items?.length ?? 0,
+            nextToken: result?.nextToken ?? null,
+        });
+        console.log(
+            '[employees] remote list sample',
+            (result?.items ?? []).slice(0, 5).map((employee) => ({
+                id: employee?.id ?? null,
+                email: employee?.email ?? null,
+                active: employee?.active ?? null,
+                deleted: employee?._deleted ?? null,
+                lastChangedAt: employee?._lastChangedAt ?? null,
+                updatedAt: employee?.updatedAt ?? null,
+            }))
+        );
+        employees.push(...(result?.items?.filter(isActiveRemoteEmployee) ?? []));
+        nextToken = result?.nextToken;
+    } while (nextToken);
+
+    console.log('[employees] remote list total', {
+        itemCount: employees.length,
+    });
+    return employees;
+};
 
 export class EmployeeService {
     static async save(dispatch: Dispatch<any>, employee: EmployeeEntity) {
@@ -48,7 +104,16 @@ export class EmployeeService {
     }
 
     static getAll() {
-        return DataStore.query(Employee);
+        return DataStore.query(Employee).then(async (employees) => {
+            console.log('[employees] local query total', {
+                itemCount: employees.length,
+            });
+            if (employees.length > 0) {
+                return employees;
+            }
+
+            return fetchAllRemoteEmployees();
+        });
     }
 
     static async delete(id: string) {
@@ -83,21 +148,19 @@ export class EmployeeService {
             return EmployeeEntityMapper.fromModel(fallbackMatch);
         }
 
-        const response = await API.graphql<{
-            listEmployees?: {
-                items?: Array<Employee | null> | null;
-            } | null;
-        }>({
-            query: listEmployees,
-            variables: {
-                limit: 100,
+        const result = await fetchRemoteEmployees({
+            filter: {
+                active: { eq: true },
+                pin: { eq: normalizedPin },
             },
-            authMode: 'userPool',
+            limit: 20,
         });
 
-        const remoteMatch = response.data?.listEmployees?.items?.find(
+        const remoteMatch = result?.items?.find(
             (employee): employee is Employee =>
-                !!employee && employee.active && normalizePin(employee.pin) === normalizedPin
+                isActiveRemoteEmployee(employee) &&
+                employee.active &&
+                normalizePin(employee.pin) === normalizedPin
         );
 
         return remoteMatch ? EmployeeEntityMapper.fromModel(remoteMatch) : null;
@@ -119,21 +182,17 @@ export class EmployeeService {
             return EmployeeEntityMapper.fromModel(localMatch);
         }
 
-        const response = await API.graphql<{
-            listEmployees?: {
-                items?: Array<Employee | null> | null;
-            } | null;
-        }>({
-            query: listEmployees,
-            variables: {
-                limit: 100,
+        const result = await fetchRemoteEmployees({
+            filter: {
+                active: { eq: true },
+                email: { eq: normalizedEmail },
             },
-            authMode: 'userPool',
+            limit: 20,
         });
 
-        const remoteMatch = response.data?.listEmployees?.items?.find(
+        const remoteMatch = result?.items?.find(
             (employee): employee is Employee =>
-                !!employee &&
+                isActiveRemoteEmployee(employee) &&
                 employee.active &&
                 normalizeEmail(employee.email) === normalizedEmail
         );

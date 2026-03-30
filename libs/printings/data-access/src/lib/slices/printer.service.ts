@@ -8,7 +8,7 @@ import { stampTenant } from '@pos/auth/data-access';
 
 export class PrinterService {
     static async setDefaultPrinter(dispatch: Dispatch, printer: PrinterEntity) {
-        const defaultPrinter = await this.getDefaultPrinter();
+        const defaultPrinter = await PrinterService.getDefaultPrinter();
 
         if (!defaultPrinter) {
             const entity = new Printer(stampTenant(printer) as never);

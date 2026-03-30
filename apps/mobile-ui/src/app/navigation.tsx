@@ -22,6 +22,7 @@ import {
     tenantSessionActions,
 } from '@pos/auth/data-access';
 import { DataStore } from '@pos/shared/amplify';
+import { markManualSignOut } from './session-signout';
 
 /* eslint-disable-next-line */
 export interface NavigationParamList {
@@ -117,6 +118,7 @@ export function Navigation() {
                 text: 'Yes',
                 onPress: async () => {
                     try {
+                        await markManualSignOut();
                         await Auth.signOut();
                         await DataStore.stop();
                         await DataStore.clear();

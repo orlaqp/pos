@@ -1,13 +1,51 @@
 import { storeInfoActions } from './store-info.slice';
-import { StoreInfoEntity } from './store-info.entity';
+import {
+    isStoreInfoIncomplete,
+    selectPreferredStore,
+    StoreInfoEntity,
+} from './store-info.entity';
 import { Store } from '@pos/shared/models'
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from '@pos/shared/amplify'
+import { API, DataStore } from '@pos/shared/amplify'
 import { stampTenant } from '@pos/auth/data-access';
+import { listStores } from '@pos/shared/api';
+
+const isDeletedFlag = (value: unknown) => value === true || value === 'true';
+const isRemoteStore = (store: Store | null | undefined): store is Store =>
+    !!store && !isDeletedFlag(store._deleted);
 
 export class StoreInfoService {
-    static getStore() {
-        return DataStore.query(Store);
+    static async getStore() {
+        const localStores = await DataStore.query(Store);
+        const preferredLocalStore = selectPreferredStore(localStores);
+
+        if (localStores.length > 0 && preferredLocalStore && !isStoreInfoIncomplete(preferredLocalStore)) {
+            return localStores;
+        }
+
+        const response = await API.graphql<{
+            listStores?: {
+                items?: Array<Store | null> | null;
+            } | null;
+        }>({
+            query: listStores,
+            variables: {
+                limit: 100,
+            },
+            authMode: 'userPool',
+        });
+
+        const remoteStores = response.data?.listStores?.items?.filter(isRemoteStore) ?? [];
+
+        if (remoteStores.length === 0) {
+            return localStores;
+        }
+
+        const localIds = new Set(localStores.map((store) => store.id));
+        return [
+            ...localStores,
+            ...remoteStores.filter((store) => !localIds.has(store.id)),
+        ];
     }
 
     static async save(dispatch: Dispatch<any>, store: StoreInfoEntity) {
@@ -28,7 +66,9 @@ export class StoreInfoService {
         const existing = await DataStore.query(Store, store.id);
 
         if (!existing) {
-            return console.log(`It seems that brand: ${store.id} has been removed`);
+            throw new Error(
+                'Store information is not available locally yet. Please try again in a moment.'
+            );
         }
 
         await DataStore.save(

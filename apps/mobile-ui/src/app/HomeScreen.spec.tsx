@@ -56,19 +56,28 @@ jest.mock('@rneui/themed', () => ({
 }));
 
 jest.mock('@pos/auth/data-access', () => ({
+    authActions: {
+        logoff: () => ({ type: 'auth/logoff' }),
+    },
+    clearCurrentTenantContext: jest.fn(),
     Role: {
         Sales: 'Sales',
         Payments: 'Payments',
         Admin: 'Admin',
+    },
+    tenantSessionActions: {
+        clearTenantSession: () => ({ type: 'tenantSession/clearTenantSession' }),
     },
 }));
 
 jest.mock('@pos/employees/data-access', () => ({
     employeesActions: {
         loginEmployee: (payload: unknown) => ({ type: 'employees/loginEmployee', payload }),
+        setAll: (payload: unknown) => ({ type: 'employees/setAll', payload }),
     },
     EmployeeService: {
         getEmployee: jest.fn(),
+        getAll: jest.fn(async () => []),
         save: jest.fn(),
     },
     selectAllEmployees: (state: any) => state.employees.all,
@@ -90,10 +99,28 @@ jest.mock('@pos/sales/data-access', () => ({
 
 jest.mock('@pos/store-info/data-access', () => ({
     isStoreInfoIncomplete: jest.fn(() => false),
+    selectPreferredStore: (stores: any[]) => stores[0],
     selectInitialStoreSyncComplete: (state: any) => state.storeInfo.initialStoreSyncComplete,
     selectStore: (state: any) => state.storeInfo.store,
+    storeInfoActions: {
+        set: (payload: unknown) => ({ type: 'storeInfo/set', payload }),
+    },
+    StoreInfoEntityMapper: {
+        fromModel: (value: unknown) => value,
+    },
     StoreInfoService: {
+        getStore: jest.fn(async () => []),
         save: jest.fn(),
+    },
+}));
+
+jest.mock('@pos/shared/amplify', () => ({
+    Auth: {
+        signOut: jest.fn(),
+    },
+    DataStore: {
+        stop: jest.fn(),
+        clear: jest.fn(),
     },
 }));
 
@@ -111,6 +138,9 @@ jest.mock('./HomeScreen.styles', () => ({
         keypadCard: {},
         keypadTitle: {},
         keypadHint: {},
+        pinLogoffButton: {},
+        pinLogoffButtonText: {},
+        setupLogoffButtonText: {},
         routeGrid: {},
         bigButton: {},
         centered: {},
@@ -120,11 +150,29 @@ jest.mock('./HomeScreen.styles', () => ({
 }));
 
 jest.mock('./home-setup-wizard', () => ({
-    HomeSetupWizard: () => null,
+    HomeSetupWizard: ({ onLogoff }: { onLogoff?: () => void }) => {
+        const { View, Pressable, Text } = require('react-native');
+        return (
+            <View testID="home-setup-wizard">
+                <Pressable testID="home-setup-logoff-button" onPress={onLogoff}>
+                    <Text>Log off business</Text>
+                </Pressable>
+            </View>
+        );
+    },
 }));
 
 jest.mock('./home-pin-login', () => ({
-    HomePinLogin: () => null,
+    HomePinLogin: ({ onLogoff }: { onLogoff?: () => void }) => {
+        const { Pressable, Text, View } = require('react-native');
+        return (
+            <View testID="home-pin-login">
+                <Pressable testID="home-pin-logoff-button" onPress={onLogoff}>
+                    <Text>Log off business</Text>
+                </Pressable>
+            </View>
+        );
+    },
 }));
 
 jest.mock('./use-pin-lock', () => ({
@@ -185,5 +233,100 @@ describe('HomeScreen', () => {
             'Please make sure station number is set before making sales'
         );
         expect(navigation.navigate).not.toHaveBeenCalled();
+    });
+
+    it('shows a confirmation before logging off from the PIN screen', async () => {
+        mockState.employees.loginEmployee = undefined;
+        mockState.employees.all = [{ id: 'employee-1' }];
+        const navigation = {
+            navigate: jest.fn(),
+        } as any;
+
+        const { getByTestId } = render(<HomeScreen navigation={navigation} />);
+
+        await act(async () => {
+            fireEvent.press(getByTestId('home-pin-logoff-button'));
+        });
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Log off business?',
+            'This will sign out the admin session on this device.',
+            expect.any(Array)
+        );
+    });
+
+    it('verifies existing employees before showing setup again', async () => {
+        const { EmployeeService } = require('@pos/employees/data-access');
+
+        mockState.employees.loginEmployee = undefined;
+        mockState.employees.all = [];
+        mockState.employees.initialEmployeeSyncComplete = true;
+        mockState.employees.loadingStatus = 'loaded';
+        EmployeeService.getAll.mockResolvedValueOnce([
+            {
+                id: 'owner-1',
+                code: 'OWNER',
+                firstName: 'Casa',
+                lastName: 'Martinez',
+                middleName: null,
+                dob: null,
+                phone: null,
+                email: 'martinez.casa@yahoo.com',
+                pin: '1234',
+                roles: ['Admin'],
+                active: true,
+            },
+        ]);
+
+        const navigation = {
+            navigate: jest.fn(),
+        } as any;
+
+        render(<HomeScreen navigation={navigation} />);
+
+        await act(async () => {
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+
+        expect(mockDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'employees/setAll',
+                payload: [
+                    expect.objectContaining({
+                        id: 'owner-1',
+                        email: 'martinez.casa@yahoo.com',
+                    }),
+                ],
+            })
+        );
+    });
+
+    it('shows a confirmation before logging off from the setup wizard', async () => {
+        const { isStoreInfoIncomplete } = require('@pos/store-info/data-access');
+
+        mockState.employees.loginEmployee = undefined;
+        mockState.employees.all = [];
+        mockState.employees.initialEmployeeSyncComplete = true;
+        mockState.employees.loadingStatus = 'loaded';
+        isStoreInfoIncomplete.mockReturnValue(true);
+
+        const navigation = {
+            navigate: jest.fn(),
+        } as any;
+
+        const { findByTestId } = render(<HomeScreen navigation={navigation} />);
+
+        const logoffButton = await findByTestId('home-setup-logoff-button');
+
+        await act(async () => {
+            fireEvent.press(logoffButton);
+        });
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Log off business?',
+            'This will sign out the admin session on this device.',
+            expect.any(Array)
+        );
     });
 });

@@ -4,7 +4,12 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { View, Alert, ScrollView, Animated, Image } from 'react-native';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { Role } from '@pos/auth/data-access';
+import {
+    authActions,
+    clearCurrentTenantContext,
+    Role,
+    tenantSessionActions,
+} from '@pos/auth/data-access';
 import { useForm } from 'react-hook-form';
 import {
     employeesActions,
@@ -21,7 +26,10 @@ import { RootState } from '@pos/store';
 import {
     isStoreInfoIncomplete,
     selectInitialStoreSyncComplete,
+    selectPreferredStore,
     selectStore,
+    storeInfoActions,
+    StoreInfoEntityMapper,
     StoreInfoService,
 } from '@pos/store-info/data-access';
 import { useHomeScreenStyles } from './HomeScreen.styles';
@@ -38,6 +46,8 @@ import {
     writePinLockState,
 } from './use-pin-lock';
 import { E2E_MANAGER_PIN, isE2EEnabled } from '@pos/shared/utils';
+import { Auth, DataStore } from '@pos/shared/amplify';
+import { markManualSignOut } from './session-signout';
 
 interface PathDetails {
     title: string;
@@ -119,6 +129,9 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const [lockNow, setLockNow] = useState<number>(Date.now());
     const [setupError, setSetupError] = useState<string | null>(null);
     const [setupSaving, setSetupSaving] = useState(false);
+    const [setupVerificationStatus, setSetupVerificationStatus] = useState<
+        'idle' | 'verifying' | 'verified'
+    >('idle');
     const [pendingRoutePath, setPendingRoutePath] = useState<string | null>(null);
     const [setupStep, setSetupStep] = useState<'employee' | 'store'>('employee');
     const [pendingOwnerEmployee, setPendingOwnerEmployee] =
@@ -150,7 +163,35 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const employeesReady = employeesLoadingStatus === 'loaded';
     const needsInitialEmployee =
         employeesReady && initialEmployeeSyncComplete && employees.length === 0;
-    const needsSetupWizard = employeesReady && !employee && (needsInitialEmployee || storeNeedsSetup);
+    const needsSetupWizard =
+        setupVerificationStatus === 'verified' &&
+        employeesReady &&
+        !employee &&
+        (needsInitialEmployee || storeNeedsSetup);
+
+    useEffect(() => {
+        console.log('[home-setup] state', {
+            employeesReady,
+            initialEmployeeSyncComplete,
+            employeeCount: employees.length,
+            storeId: store?.id ?? null,
+            storeNeedsSetup,
+            setupVerificationStatus,
+            needsInitialEmployee,
+            needsSetupWizard,
+            userEmail: user?.email ?? null,
+        });
+    }, [
+        employees.length,
+        employeesReady,
+        initialEmployeeSyncComplete,
+        needsInitialEmployee,
+        needsSetupWizard,
+        setupVerificationStatus,
+        store?.id,
+        storeNeedsSetup,
+        user?.email,
+    ]);
     const paths: PathDetails[] = useMemo(() => [
         {
             title: 'Sales',
@@ -265,6 +306,28 @@ export const HomeScreen = (props: HomeScreenProps) => {
         } catch (error) {
             console.error('E2E manager login failed', error);
         }
+    }, [dispatch]);
+
+    const confirmLogoff = useCallback(() => {
+        Alert.alert('Log off business?', 'This will sign out the admin session on this device.', [
+            { text: 'Cancel' },
+            {
+                text: 'Log off',
+                onPress: async () => {
+                    try {
+                        await markManualSignOut();
+                        await Auth.signOut();
+                        await DataStore.stop();
+                        await DataStore.clear();
+                    } finally {
+                        clearCurrentTenantContext();
+                        dispatch(authActions.logoff());
+                        dispatch(tenantSessionActions.clearTenantSession());
+                        dispatch(employeesActions.logoffEmployee());
+                    }
+                },
+            },
+        ]);
     }, [dispatch]);
 
     const resetPinEntry = () => {
@@ -383,6 +446,95 @@ export const HomeScreen = (props: HomeScreenProps) => {
     }, [isPinLocked, lockedUntil]);
 
     useEffect(() => {
+        if (
+            !employeesReady ||
+            !initialEmployeeSyncComplete ||
+            !initialStoreSyncComplete ||
+            !!employee ||
+            (!needsInitialEmployee && !storeNeedsSetup)
+        ) {
+            setSetupVerificationStatus('verified');
+            return;
+        }
+
+        let active = true;
+        setSetupVerificationStatus('verifying');
+
+        void (async () => {
+            try {
+                if (needsInitialEmployee) {
+                    const recoveredEmployees = await EmployeeService.getAll();
+                    if (!active) {
+                        return;
+                    }
+
+                    console.log('[home-setup] employee recovery', {
+                        recoveredCount: recoveredEmployees.length,
+                    });
+
+                    if (recoveredEmployees.length > 0) {
+                        dispatch(
+                            employeesActions.setAll(
+                                recoveredEmployees.map((x) => ({
+                                    id: x.id,
+                                    code: x.code,
+                                    firstName: x.firstName,
+                                    lastName: x.lastName,
+                                    middleName: x.middleName,
+                                    dob: x.dob,
+                                    phone: x.phone,
+                                    email: x.email,
+                                    pin: x.pin,
+                                    roles: x.roles,
+                                    active: x.active,
+                                    createdAt: x.createdAt,
+                                    updatedAt: x.updatedAt,
+                                }))
+                            )
+                        );
+                    }
+                }
+
+                if (storeNeedsSetup) {
+                    const recoveredStores = await StoreInfoService.getStore();
+                    if (!active) {
+                        return;
+                    }
+
+                    const preferredStore = selectPreferredStore(recoveredStores);
+                    console.log('[home-setup] store recovery', {
+                        recoveredCount: recoveredStores.length,
+                        preferredStoreId: preferredStore?.id ?? null,
+                    });
+                    if (preferredStore && !isStoreInfoIncomplete(preferredStore)) {
+                        dispatch(
+                            storeInfoActions.set(StoreInfoEntityMapper.fromModel(preferredStore))
+                        );
+                    }
+                }
+            } catch (error) {
+                console.error('Setup verification failed', error);
+            } finally {
+                if (active) {
+                    setSetupVerificationStatus('verified');
+                }
+            }
+        })();
+
+        return () => {
+            active = false;
+        };
+    }, [
+        dispatch,
+        employee,
+        employeesReady,
+        initialEmployeeSyncComplete,
+        initialStoreSyncComplete,
+        needsInitialEmployee,
+        storeNeedsSetup,
+    ]);
+
+    useEffect(() => {
         if (needsInitialEmployee) {
             setSetupStep('employee');
             return;
@@ -498,8 +650,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
         setSetupError(null);
 
         try {
-            await StoreInfoService.save(dispatch, {
-                id: store?.id,
+            const storePayload = {
                 name: model.name.trim(),
                 phone: model.phone.trim(),
                 email: model.email.trim(),
@@ -510,6 +661,11 @@ export const HomeScreen = (props: HomeScreenProps) => {
                 country: model.country.trim(),
                 fax: store?.fax || '',
                 disclaimer: store?.disclaimer || '',
+            };
+
+            await StoreInfoService.save(dispatch, {
+                ...(store?.id ? { id: store.id } : {}),
+                ...storePayload,
             });
 
             if (pendingOwnerEmployee) {
@@ -549,19 +705,30 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     styles={styles}
                     onCreateOwnerEmployee={createOwnerEmployee}
                     onSaveStoreDetails={saveStoreDetails}
+                    onLogoff={confirmLogoff}
                 />
-            ) : !employee && !employeesReady ? (
+            ) : !employee && (!employeesReady || setupVerificationStatus === 'verifying') ? (
                 <View style={styles.shell}>
                     <View style={styles.hero}>
                         <Image source={brandMark} style={styles.brandMark} resizeMode="contain" />
                         <Text style={styles.businessLabel}>{businessName || 'Business workspace'}</Text>
-                        <Text style={styles.heroTitle}>Loading employee access</Text>
+                        <Text style={styles.heroTitle}>
+                            {setupVerificationStatus === 'verifying'
+                                ? 'Checking business setup'
+                                : 'Loading employee access'}
+                        </Text>
                         <Text style={styles.heroSubtitle}>
-                            Restoring staff records for this tenant before showing the PIN screen or setup flow.
+                            {setupVerificationStatus === 'verifying'
+                                ? 'Verifying existing owner and store records before opening setup.'
+                                : 'Restoring staff records for this tenant before showing the PIN screen or setup flow.'}
                         </Text>
                     </View>
                     <View style={styles.keypadCard}>
-                        <Text style={styles.keypadTitle}>Preparing employee data</Text>
+                        <Text style={styles.keypadTitle}>
+                            {setupVerificationStatus === 'verifying'
+                                ? 'Verifying setup'
+                                : 'Preparing employee data'}
+                        </Text>
                         <Text style={styles.keypadHint}>
                             This only takes a moment on startup.
                         </Text>
@@ -581,6 +748,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     styles={styles}
                     onPinUpdated={onPinUpdated}
                     onE2EManagerLogin={loginWithE2EManager}
+                    onLogoff={confirmLogoff}
                 />
             ) : (
                 <View testID="home-ready-shell">

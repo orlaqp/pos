@@ -1,3 +1,4 @@
+/* eslint-disable import/first */
 jest.mock('@pos/shared/amplify', () => ({
   API: {
     graphql: jest.fn(),
@@ -105,7 +106,11 @@ describe('EmployeeService.getEmployee', () => {
       expect.objectContaining({
         authMode: 'userPool',
         variables: {
-          limit: 100,
+          filter: {
+            active: { eq: true },
+            pin: { eq: '1234' },
+          },
+          limit: 20,
         },
       })
     );
@@ -189,5 +194,142 @@ describe('EmployeeService.getEmployeeByEmail', () => {
         email: 'orlaqp+pos@gmail.com',
       })
     );
+    expect(graphqlMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        authMode: 'userPool',
+        variables: {
+          filter: {
+            active: { eq: true },
+            email: { eq: 'orlaqp+pos@gmail.com' },
+          },
+          limit: 20,
+        },
+      })
+    );
+  });
+});
+
+describe('EmployeeService.getAll', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns local employees when the cache is already hydrated', async () => {
+    queryMock.mockResolvedValueOnce([
+      {
+        id: 'emp-1',
+        firstName: 'Local',
+        lastName: 'Employee',
+        active: true,
+      },
+    ]);
+
+    const employees = await EmployeeService.getAll();
+
+    expect(employees).toEqual([
+      expect.objectContaining({
+        id: 'emp-1',
+        firstName: 'Local',
+      }),
+    ]);
+    expect(graphqlMock).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the backend employee list when the local cache is empty', async () => {
+    queryMock.mockResolvedValueOnce([]);
+    graphqlMock
+      .mockResolvedValueOnce({
+      data: {
+        listEmployees: {
+          items: [
+            {
+              id: 'emp-1',
+              firstName: 'Remote',
+              lastName: 'Employee',
+              active: true,
+              _deleted: false,
+            },
+          ],
+          nextToken: 'page-2',
+        },
+      },
+    })
+      .mockResolvedValueOnce({
+      data: {
+        listEmployees: {
+          items: [
+            {
+              id: 'emp-2',
+              firstName: 'Second',
+              lastName: 'Employee',
+              active: true,
+              _deleted: false,
+            },
+          ],
+          nextToken: null,
+        },
+      },
+    });
+
+    const employees = await EmployeeService.getAll();
+
+    expect(employees).toEqual([
+      expect.objectContaining({
+        id: 'emp-1',
+        firstName: 'Remote',
+      }),
+      expect.objectContaining({
+        id: 'emp-2',
+        firstName: 'Second',
+      }),
+    ]);
+    expect(graphqlMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        authMode: 'userPool',
+        variables: {
+          limit: 100,
+        },
+      })
+    );
+    expect(graphqlMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        authMode: 'userPool',
+        variables: {
+          limit: 100,
+          nextToken: 'page-2',
+        },
+      })
+    );
+  });
+
+  it('treats string false tombstone flags as active remote employees', async () => {
+    queryMock.mockResolvedValueOnce([]);
+    graphqlMock.mockResolvedValueOnce({
+      data: {
+        listEmployees: {
+          items: [
+            {
+              id: 'emp-1',
+              firstName: 'Remote',
+              lastName: 'Employee',
+              active: true,
+              _deleted: 'false',
+            },
+          ],
+          nextToken: null,
+        },
+      },
+    });
+
+    const employees = await EmployeeService.getAll();
+
+    expect(employees).toEqual([
+      expect.objectContaining({
+        id: 'emp-1',
+        firstName: 'Remote',
+      }),
+    ]);
   });
 });
