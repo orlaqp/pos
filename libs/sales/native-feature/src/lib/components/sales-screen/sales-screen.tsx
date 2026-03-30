@@ -7,7 +7,6 @@ import { Animated, View, Alert, InteractionManager, TextInput } from 'react-nati
 
 import {
     CategoryEntity,
-    syncCategories,
     subscribeToCategoryChanges,
 } from '@pos/categories/data-access';
 import { useSelector } from 'react-redux';
@@ -25,7 +24,6 @@ import {
     ProductEntity,
     ProductService,
     selectAllProducts,
-    syncProducts,
     subscribeToProductChanges,
 } from '@pos/products/data-access';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -40,11 +38,16 @@ import {
     upsertOrder,
 } from '@pos/orders/data-access';
 import { selectStore } from '@pos/store-info/data-access';
-import { getGlobalSettings, subscribeToGlobalSettingsChanges } from '@pos/settings/data-access';
+import {
+    getGlobalSettings,
+    selectStation,
+    stationActions,
+    StationService,
+    subscribeToGlobalSettingsChanges,
+} from '@pos/settings/data-access';
 import { Role } from '@pos/auth/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { EACH } from '@pos/unit-of-measures/data-access';
-import { StationService } from '@pos/settings/data-access';
 import uuid from 'react-native-uuid';
 import {
     getActiveProducts,
@@ -131,6 +134,7 @@ export function SalesScreen({
     const allProducts = useSelector(selectAllProducts);
     const globalSettings = useSelector(getGlobalSettings);
     const employee = useSelector(selectLoginEmployee);
+    const station = useSelector(selectStation);
 
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
         []
@@ -167,15 +171,29 @@ export function SalesScreen({
                 return cart;
             }
 
+            let orderNo = cart.orderNo;
+            if (!orderNo && station?.stationNumber) {
+                const reservation = StationService.reserveNextOrderNumber(
+                    station,
+                    employee
+                );
+                orderNo = reservation.orderNo;
+                dispatch(stationActions.set(reservation.config));
+                void StationService.saveConfig(reservation.config).catch((error) => {
+                    console.error(
+                        'Unable to persist reserved station order number',
+                        getErrorMessage(error) ?? error
+                    );
+                });
+            }
+
             return {
                 ...cart,
                 id: cart.id ?? String(uuid.v4()),
-                orderNo:
-                    cart.orderNo ??
-                    (await StationService.getNextOrderNumber(employee)),
+                orderNo: orderNo ?? (await StationService.getNextOrderNumber(employee)),
             };
         },
-        [employee]
+        [dispatch, employee, station]
     );
 
     const onCategoryChange = async (c?: CategoryEntity) => {
@@ -625,8 +643,6 @@ export function SalesScreen({
                 return;
             }
 
-            syncCategories(dispatch);
-            syncProducts(dispatch);
             categoriesSub = subscribeToCategoryChanges(dispatch);
             productsSub = subscribeToProductChanges(dispatch);
             globalSettingsSub = subscribeToGlobalSettingsChanges(dispatch);

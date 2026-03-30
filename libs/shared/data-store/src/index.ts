@@ -9,4 +9,9 @@ export const initializeDataStore = (dispatch: Dispatch) => {
     subscribeEvents(dispatch);
 };
 
-export { configureDataStore } from './config';
+export {
+    configureDataStore,
+    enableInventorySync,
+    isInventorySyncEnabled,
+    resetInventorySyncForTests,
+} from './config';

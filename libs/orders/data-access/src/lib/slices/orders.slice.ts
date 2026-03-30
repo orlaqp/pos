@@ -61,23 +61,26 @@ export const upsertOrder = createAsyncThunk(
     async (request: CreateOrderRequest, thunkAPI) => {
         const employee = (thunkAPI.getState() as RootState).employees
             .loginEmployee!;
+        const shouldAttemptUpdate =
+            !!request.cart.id && !!request.cart.header?.orderNumber;
 
-        let o: Order;
-        if (!request.cart.id) {
-            o = await OrderService.create({
-                by: employee as any,
-                order: request.cart,
-            });
-        } else {
+        let o: Order | null;
+        if (shouldAttemptUpdate) {
             const updatedOrder = await OrderService.update({
                 id: request.cart.id,
                 by: employee as any,
                 order: request.cart,
             });
-            if (!updatedOrder) {
-                throw new Error('Order update returned empty result');
-            }
             o = updatedOrder;
+        } else {
+            o = null;
+        }
+
+        if (!o) {
+            o = await OrderService.create({
+                by: employee as any,
+                order: request.cart,
+            });
         }
 
         return {

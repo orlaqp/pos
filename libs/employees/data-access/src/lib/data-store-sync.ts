@@ -4,22 +4,40 @@ import { Employee } from '@pos/shared/models';
 import { employeesActions } from './slices/employees.slice';
 import { EmployeeEntityMapper } from './employee.entity';
 import { sortListBy } from '@pos/shared/utils';
+import { logSyncDebug, startSyncMeasure, trackSyncSubscription } from '@pos/shared/utils';
 
 export const syncEmployees = (dispatch: Dispatch) => {
-    console.log('Syncing employees to the store');
-    DataStore.query(Employee).then((employees) => updateStore(dispatch, employees));
-};
-
-export const subscribeToEmployeeChanges = (dispatch: Dispatch) => {
-    return DataStore.observeQuery(Employee).subscribe(({ isSynced, items }) => {
-        if (isSynced) {
-            console.log('Employee changes detected');
-            updateStore(dispatch, items);
-        }
+    const finish = startSyncMeasure('employees', 'syncEmployees');
+    DataStore.query(Employee).then((employees) => {
+        finish({ itemCount: employees.length });
+        updateStore(dispatch, employees);
     });
 };
 
+export const subscribeToEmployeeChanges = (dispatch: Dispatch) => {
+    const release = trackSyncSubscription('employees.observeQuery');
+    const subscription = DataStore.observeQuery(Employee).subscribe(({ isSynced, items }) => {
+        if (isSynced) {
+            logSyncDebug('employees.observeQuery', 'update', {
+                isSynced,
+                itemCount: items.length,
+            });
+            updateStore(dispatch, items);
+        }
+    });
+
+    return {
+        unsubscribe() {
+            subscription.unsubscribe();
+            release();
+        },
+    };
+};
+
 const updateStore = (dispatch: Dispatch, items: Employee[]) => {
+    logSyncDebug('employees', 'updateStore', {
+        itemCount: items.length,
+    });
     sortListBy(items, 'firstName');
     dispatch(
         employeesActions.setAll(items.map((b) => EmployeeEntityMapper.fromModel(b)))

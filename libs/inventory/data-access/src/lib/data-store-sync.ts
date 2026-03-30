@@ -8,70 +8,122 @@ import { inventoryReceiveActions } from './receive/inventory-receive.slice';
 import { InventoryReceiveMapper } from './receive/inventory-receive.entity';
 import { InventoryCountLineMapper } from './count/inventory-count-line.entity';
 import { InventoryReceiveLineMapper } from './receive/inventory-receive-line.entity';
-import { sortDescListBy } from '@pos/shared/utils';
+import {
+    logSyncDebug,
+    sortDescListBy,
+    startSyncMeasure,
+    trackSyncSubscription,
+} from '@pos/shared/utils';
 
 export const syncInventoryCounts = (dispatch: Dispatch) => {
-    console.log('Syncing inventory counts to the store');
-    DataStore.query(InventoryCount).then((counts) =>
-        updateInventoryCountStore(dispatch, counts)
-    );
+    const finish = startSyncMeasure('inventory.counts', 'sync');
+    DataStore.query(InventoryCount).then((counts) => {
+        finish({ itemCount: counts.length });
+        updateInventoryCountStore(dispatch, counts);
+    });
 };
 
 export const syncInventoryCountLines = (dispatch: Dispatch) => {
-    console.log('Syncing inventory count lines to the store');
-    DataStore.query(InventoryCountLine).then((lines) =>
-        updateInventoryLineCountStore(dispatch, lines)
-    );
+    const finish = startSyncMeasure('inventory.countLines', 'sync');
+    DataStore.query(InventoryCountLine).then((lines) => {
+        finish({ itemCount: lines.length });
+        updateInventoryLineCountStore(dispatch, lines);
+    });
 };
 
 export const syncInventoryReceives = (dispatch: Dispatch) => {
-    console.log('Syncing inventory receives to the store');
-    DataStore.query(InventoryReceive).then((receives) =>
-        updateInventoryReceiveStore(dispatch, receives)
-    );
+    const finish = startSyncMeasure('inventory.receives', 'sync');
+    DataStore.query(InventoryReceive).then((receives) => {
+        finish({ itemCount: receives.length });
+        updateInventoryReceiveStore(dispatch, receives);
+    });
 };
 
 export const syncInventoryReceiveLines = (dispatch: Dispatch) => {
-    console.log('Syncing inventory receive lines to the store');
-    DataStore.query(InventoryReceiveLine).then((lines) =>
-        updateInventoryReceiveLineStore(dispatch, lines)
-    );
+    const finish = startSyncMeasure('inventory.receiveLines', 'sync');
+    DataStore.query(InventoryReceiveLine).then((lines) => {
+        finish({ itemCount: lines.length });
+        updateInventoryReceiveLineStore(dispatch, lines);
+    });
 };
 
 export const subscribeToInventoryCountChanges = (dispatch: Dispatch) => {
-    return DataStore.observeQuery(InventoryCount).subscribe(({ isSynced, items }) => {
-        console.log('Inventory count changes detected');
+    const release = trackSyncSubscription('inventory.counts.observeQuery');
+    const subscription = DataStore.observeQuery(InventoryCount).subscribe(({ isSynced, items }) => {
+        logSyncDebug('inventory.counts.observeQuery', 'update', {
+            isSynced,
+            itemCount: items.length,
+        });
         if (!isSynced) return;
         updateInventoryCountStore(dispatch, items);
     });
-}
+    return {
+        unsubscribe() {
+            subscription.unsubscribe();
+            release();
+        },
+    };
+};
 
 
 export const subscribeToInventoryCountLineChanges = (dispatch: Dispatch) => {
-    return DataStore.observeQuery(InventoryCountLine).subscribe(({ isSynced, items }) => {
-        console.log('Inventory count line changes detected');
+    const release = trackSyncSubscription('inventory.countLines.observeQuery');
+    const subscription = DataStore.observeQuery(InventoryCountLine).subscribe(({ isSynced, items }) => {
+        logSyncDebug('inventory.countLines.observeQuery', 'update', {
+            isSynced,
+            itemCount: items.length,
+        });
         if (!isSynced) return;
         updateInventoryLineCountStore(dispatch, items);
     });
-}
+    return {
+        unsubscribe() {
+            subscription.unsubscribe();
+            release();
+        },
+    };
+};
 
 export const subscribeToInventoryReceiveChanges = (dispatch: Dispatch) => {
-    return DataStore.observeQuery(InventoryReceive).subscribe(({ isSynced, items }) => {
-        console.log('Inventory receive changes detected');
+    const release = trackSyncSubscription('inventory.receives.observeQuery');
+    const subscription = DataStore.observeQuery(InventoryReceive).subscribe(({ isSynced, items }) => {
+        logSyncDebug('inventory.receives.observeQuery', 'update', {
+            isSynced,
+            itemCount: items.length,
+        });
         if (!isSynced) return;
         updateInventoryReceiveStore(dispatch, items);
     });
-}
+    return {
+        unsubscribe() {
+            subscription.unsubscribe();
+            release();
+        },
+    };
+};
 
 export const subscribeToInventoryReceiveLineChanges = (dispatch: Dispatch) => {
-    return DataStore.observeQuery(InventoryReceiveLine).subscribe(({ isSynced, items }) => {
-        console.log('Inventory receive line changes detected');
+    const release = trackSyncSubscription('inventory.receiveLines.observeQuery');
+    const subscription = DataStore.observeQuery(InventoryReceiveLine).subscribe(({ isSynced, items }) => {
+        logSyncDebug('inventory.receiveLines.observeQuery', 'update', {
+            isSynced,
+            itemCount: items.length,
+        });
         if (!isSynced) return;
         updateInventoryReceiveLineStore(dispatch, items);
     });
-}
+    return {
+        unsubscribe() {
+            subscription.unsubscribe();
+            release();
+        },
+    };
+};
 
 const updateInventoryCountStore = (dispatch: Dispatch, items: InventoryCount[]) => {
+    logSyncDebug('inventory.counts', 'updateStore', {
+        itemCount: items.length,
+    });
     sortDescListBy(items, 'createdAt');
     const thirtyDaysBefore = moment().subtract(30, 'days').toISOString();
     
@@ -85,6 +137,9 @@ const updateInventoryCountStore = (dispatch: Dispatch, items: InventoryCount[]) 
 };
 
 const updateInventoryLineCountStore = (dispatch: Dispatch, items: InventoryCountLine[]) => {
+    logSyncDebug('inventory.countLines', 'updateStore', {
+        itemCount: items.length,
+    });
     sortDescListBy(items, 'createdAt');
     const thirtyDaysBefore = moment().subtract(30, 'days').toISOString();
 
@@ -99,6 +154,9 @@ const updateInventoryLineCountStore = (dispatch: Dispatch, items: InventoryCount
 
 
 const updateInventoryReceiveStore = (dispatch: Dispatch, items: InventoryReceive[]) => {
+    logSyncDebug('inventory.receives', 'updateStore', {
+        itemCount: items.length,
+    });
     sortDescListBy(items, 'createdAt');
     const thirtyDaysBefore = moment().subtract(30, 'days').toISOString();
 
@@ -112,6 +170,9 @@ const updateInventoryReceiveStore = (dispatch: Dispatch, items: InventoryReceive
 };
 
 const updateInventoryReceiveLineStore = (dispatch: Dispatch, items: InventoryReceiveLine[]) => {
+    logSyncDebug('inventory.receiveLines', 'updateStore', {
+        itemCount: items.length,
+    });
     sortDescListBy(items, 'createdAt');
     const thirtyDaysBefore = moment().subtract(30, 'days').toISOString();
 

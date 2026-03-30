@@ -1,9 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-    OrderEntity,
     OrderService,
     selectOpenOrders,
-    syncOrders,
     subscribeToOrderChanges,
 } from '@pos/orders/data-access';
 import { UICard, UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
@@ -26,16 +24,14 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [filterText, setFilterText] = useState<string>();
     const openOrders = useSelector(selectOpenOrders);
-    const [filteredList, setFilteredList] = useState<OrderEntity[]>(openOrders);
-    const emptyOpacity = useRef(new Animated.Value(0)).current;
-    const emptyTranslateY = useRef(new Animated.Value(12)).current;
+    const [emptyOpacity] = useState(() => new Animated.Value(0));
+    const [emptyTranslateY] = useState(() => new Animated.Value(12));
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
             : fallback;
 
     useEffect(() => {
-        syncOrders(dispatch);
         const ordersSub = subscribeToOrderChanges(dispatch);
         return () => {
             console.log('Closing orders subscription');
@@ -43,19 +39,16 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
         };
     }, [dispatch]);
 
-    useEffect(() => {
+    const filteredList = useMemo(() => {
         const normalizedFilter = (filterText || '').trim();
         if (!normalizedFilter) {
-            setFilteredList(openOrders);
-            return;
+            return openOrders;
         }
 
-        setFilteredList(
-            OrderService.search(openOrders, {
-                status: OrderStatus.OPEN,
-                filter: normalizedFilter,
-            })
-        );
+        return OrderService.search(openOrders, {
+            status: OrderStatus.OPEN,
+            filter: normalizedFilter,
+        });
     }, [filterText, openOrders]);
 
     useEffect(() => {

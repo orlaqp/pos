@@ -4,6 +4,7 @@ import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from '@pos/shared/amplify';
 import { OrderEntityMapper } from './order.entity';
 import { ordersActions } from './slices/orders.slice';
+import { logSyncDebug, startSyncMeasure, trackSyncSubscription } from '@pos/shared/utils';
 
 import moment from 'moment';
 
@@ -23,7 +24,7 @@ export const mergeSyncedOrders = (...groups: Order[][]) => {
 };
 
 export const syncOrders = (dispatch: Dispatch) => {
-    console.log('Syncing orders to the store');
+    const finish = startSyncMeasure('orders', 'syncOrders');
     Promise.all([
         DataStore.query(Order, (o) => o.status.eq('OPEN')),
         DataStore.query(Order, (o) =>
@@ -38,12 +39,17 @@ export const syncOrders = (dispatch: Dispatch) => {
                 order.orderDate.gt(getRecentClosedSince()),
             ])
         ),
-    ]).then(([openOrders, paidOrders, refundedOrders]) =>
+    ]).then(([openOrders, paidOrders, refundedOrders]) => {
+        finish({
+            openCount: openOrders.length,
+            recentPaidCount: paidOrders.length,
+            recentRefundedCount: refundedOrders.length,
+        });
         updateStoreOrders(
             dispatch,
             mergeSyncedOrders(openOrders, paidOrders, refundedOrders)
-        )
-    );
+        );
+    });
 };
 
 export const subscribeToOrderChanges = (dispatch: Dispatch) => {
@@ -57,9 +63,14 @@ export const subscribeToOrderChanges = (dispatch: Dispatch) => {
             mergeSyncedOrders(openOrders, recentPaidOrders, recentRefundedOrders)
         );
 
+    const release = trackSyncSubscription('orders.observeQuery');
+
     const openSub = DataStore.observeQuery(Order, (o) => o.status.eq('OPEN')).subscribe(
         ({ isSynced, items }) => {
-            console.log(`Open order changes detected (isSynced: ${isSynced})`);
+            logSyncDebug('orders.observeQuery', 'open:update', {
+                isSynced,
+                itemCount: items.length,
+            });
             openOrders = items;
             publish();
         }
@@ -71,7 +82,10 @@ export const subscribeToOrderChanges = (dispatch: Dispatch) => {
             order.orderDate.gt(getRecentClosedSince()),
         ])
     ).subscribe(({ isSynced, items }) => {
-        console.log(`Recent paid order changes detected (isSynced: ${isSynced})`);
+        logSyncDebug('orders.observeQuery', 'paid:update', {
+            isSynced,
+            itemCount: items.length,
+        });
         recentPaidOrders = items;
         publish();
     });
@@ -82,7 +96,10 @@ export const subscribeToOrderChanges = (dispatch: Dispatch) => {
             order.orderDate.gt(getRecentClosedSince()),
         ])
     ).subscribe(({ isSynced, items }) => {
-        console.log(`Recent refunded order changes detected (isSynced: ${isSynced})`);
+        logSyncDebug('orders.observeQuery', 'refunded:update', {
+            isSynced,
+            itemCount: items.length,
+        });
         recentRefundedOrders = items;
         publish();
     });
@@ -92,13 +109,16 @@ export const subscribeToOrderChanges = (dispatch: Dispatch) => {
             openSub.unsubscribe();
             recentPaidSub.unsubscribe();
             recentRefundedSub.unsubscribe();
+            release();
         },
     };
 };
 
 const updateStoreOrders = (dispatch: Dispatch, items: Order[]) => {
-    console.log('sending orders to the store');
-    
+    logSyncDebug('orders', 'updateStoreOrders', {
+        totalCount: items.length,
+    });
+
     sortByCreatedAt(items);
     dispatch(
         ordersActions.setAll(

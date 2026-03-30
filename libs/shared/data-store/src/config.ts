@@ -9,6 +9,17 @@ import { getCurrentTenantId } from '@pos/auth/data-access';
 import { DataStore, syncExpression } from '@pos/shared/amplify';
 import moment from 'moment';
 
+let inventorySyncEnabled = false;
+let inventorySyncPromise: Promise<void> | null = null;
+
+const getInventorySyncCutoff = () => {
+    if (inventorySyncEnabled) {
+        return moment().subtract(15, 'days').toISOString();
+    }
+
+    return moment().add(1, 'day').toISOString();
+};
+
 export const configureDataStore = () => {
     console.log('Configuring data store sync expressions');
 
@@ -18,7 +29,9 @@ export const configureDataStore = () => {
         return;
     }
 
-    const isoDate = moment().subtract(90, 'days').toISOString();
+    const closedOrderSyncWindowDays = 3;
+    const inventoryIsoDate = getInventorySyncCutoff();
+    const orderIsoDate = moment().subtract(closedOrderSyncWindowDays, 'days').toISOString();
 
     DataStore.configure({
         errorHandler: (error: unknown) => {
@@ -40,24 +53,61 @@ export const configureDataStore = () => {
         syncExpressions: [
             syncExpression(
                 InventoryCount,
-                () => (x: any) => x.createdAt.gt(isoDate)
+                () => (x: any) => x.createdAt.gt(inventoryIsoDate)
             ),
             syncExpression(
                 InventoryCountLine,
-                () => (x: any) => x.createdAt.gt(isoDate)
+                () => (x: any) => x.createdAt.gt(inventoryIsoDate)
             ),
             syncExpression(
                 InventoryReceive,
-                () => (x: any) => x.createdAt.gt(isoDate)
+                () => (x: any) => x.createdAt.gt(inventoryIsoDate)
             ),
             syncExpression(
                 InventoryReceiveLine,
-                () => (x: any) => x.createdAt.gt(isoDate)
+                () => (x: any) => x.createdAt.gt(inventoryIsoDate)
             ),
             syncExpression(
                 Order,
-                () => (x: any) => x.orderDate.gt(isoDate)
+                () => (x: any) =>
+                    x.or((order: any) => [
+                        order.status.eq('OPEN'),
+                        order.orderDate.gt(orderIsoDate),
+                    ])
             ),
         ],
     });
+};
+
+export const isInventorySyncEnabled = () => inventorySyncEnabled;
+
+export const enableInventorySync = async () => {
+    if (inventorySyncEnabled) {
+        return;
+    }
+
+    if (inventorySyncPromise) {
+        return inventorySyncPromise;
+    }
+
+    inventorySyncPromise = (async () => {
+        inventorySyncEnabled = true;
+        await DataStore.stop();
+        configureDataStore();
+        await DataStore.start();
+    })();
+
+    try {
+        await inventorySyncPromise;
+    } catch (error) {
+        inventorySyncEnabled = false;
+        throw error;
+    } finally {
+        inventorySyncPromise = null;
+    }
+};
+
+export const resetInventorySyncForTests = () => {
+    inventorySyncEnabled = false;
+    inventorySyncPromise = null;
 };

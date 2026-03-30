@@ -3,7 +3,6 @@ import {
     OrderEntity,
     OrderService,
     selectAllOrders,
-    syncOrders,
     subscribeToOrderChanges,
 } from '@pos/orders/data-access';
 import {
@@ -46,7 +45,6 @@ export function OrderList({ navigation }: OrderListProps) {
             : fallback;
     
     useEffect(() => {
-        syncOrders(dispatch);
         const ordersSub = subscribeToOrderChanges(dispatch);
         return () => {
             ordersSub?.unsubscribe();

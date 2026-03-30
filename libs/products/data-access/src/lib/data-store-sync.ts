@@ -4,25 +4,42 @@ import { Dispatch } from '@reduxjs/toolkit';
 import { Product } from '@pos/shared/models';
 import { ProductEntityMapper } from './product.entity';
 import { sortListBy } from '@pos/shared/utils';
+import { logSyncDebug, startSyncMeasure, trackSyncSubscription } from '@pos/shared/utils';
 
 export const syncProducts = (dispatch: Dispatch) => {
-    console.log('Syncing products to the store');
-    DataStore.query(Product).then((products) =>
-        updateStore(dispatch, products)
-    );
+    const finish = startSyncMeasure('products', 'syncProducts');
+    DataStore.query(Product).then((products) => {
+        finish({ itemCount: products.length });
+        updateStore(dispatch, products);
+    });
 };
 
 
 export const subscribeToProductChanges = (dispatch: Dispatch) => {
-    return DataStore.observeQuery(Product).subscribe(({ isSynced, items }) => {
+    const release = trackSyncSubscription('products.observeQuery');
+    const subscription = DataStore.observeQuery(Product).subscribe(({ isSynced, items }) => {
         if (!isSynced) {
             return;
         }
+        logSyncDebug('products.observeQuery', 'update', {
+            isSynced,
+            itemCount: items.length,
+        });
         updateStore(dispatch, items);
     });
+
+    return {
+        unsubscribe() {
+            subscription.unsubscribe();
+            release();
+        },
+    };
 };
 
 const updateStore = (dispatch: Dispatch, items: Product[]) => {
+    logSyncDebug('products', 'updateStore', {
+        itemCount: items.length,
+    });
     sortListBy(items, 'name');
     dispatch(productsActions.setAll(
         items.map((p) => ProductEntityMapper.fromProduct(p))

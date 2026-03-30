@@ -23,7 +23,7 @@ export class StationService {
     static async saveStationNo(stationNumber: string) {
         const config = await StationService.getConfig();
         config.stationNumber = stationNumber;
-        StationService.save(config);
+        StationService.saveConfig(config);
     }
 
     static async isStationNumberSet() {
@@ -33,7 +33,23 @@ export class StationService {
 
     static async getNextOrderNumber(employee: EmployeeEntity) {
         const config = await StationService.getConfig();
+        const { orderNo, config: nextConfig } = StationService.reserveNextOrderNumber(
+            config,
+            employee
+        );
 
+        await StationService.saveConfig(nextConfig);
+
+        return orderNo;
+    }
+
+    static reserveNextOrderNumber(
+        config: StationConfig,
+        employee: EmployeeEntity
+    ) {
+        const nextConfig: StationConfig = {
+            ...config,
+        };
         if (!config.stationNumber) {
             Alert.alert(
                 'Error',
@@ -45,22 +61,25 @@ export class StationService {
         const orderDateString = today.format('YYMMDD');
 
         if (
-            !config.currentDate ||
-            !config.orderNumber ||
-            config.currentDate !== orderDateString
+            !nextConfig.currentDate ||
+            !nextConfig.orderNumber ||
+            nextConfig.currentDate !== orderDateString
         ) {
-            config.currentDate = orderDateString;
-            config.orderNumber = 0;
+            nextConfig.currentDate = orderDateString;
+            nextConfig.orderNumber = 0;
         }
 
-        config.orderNumber += 1;
+        nextConfig.orderNumber += 1;
 
-        await StationService.save(config);
-
-        return `${config.stationNumber}-${employee.code}-${orderDateString}-${config.orderNumber.toString().padStart(4, '0')}`;
+        return {
+            orderNo: `${nextConfig.stationNumber}-${employee.code}-${orderDateString}-${nextConfig.orderNumber
+                .toString()
+                .padStart(4, '0')}`,
+            config: nextConfig,
+        };
     }
 
-    private static save(info: StationConfig) {
+    static saveConfig(info: StationConfig) {
         return AsyncStorage.setItem(
             STATION_CONFIG,
             JSON.stringify(info)

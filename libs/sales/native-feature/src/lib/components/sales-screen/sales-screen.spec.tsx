@@ -14,6 +14,15 @@ const mockProductsUnsubscribe = jest.fn();
 const mockSettingsUnsubscribe = jest.fn();
 const mockPrintReceipt = jest.fn();
 const mockGetNextOrderNumber = jest.fn(async () => '51-EMP-260326-0001');
+const mockReserveNextOrderNumber = jest.fn(() => ({
+    orderNo: '51-EMP-260326-0001',
+    config: {
+        stationNumber: '51',
+        currentDate: '260326',
+        orderNumber: 1,
+    },
+}));
+const mockSaveStationConfig = jest.fn(async () => undefined);
 const mockUpsertOrder = Object.assign(
     jest.fn((payload: unknown) => ({
         type: 'orders/upsert',
@@ -117,11 +126,17 @@ jest.mock('@pos/products/data-access', () => ({
 
 jest.mock('@pos/settings/data-access', () => ({
     getGlobalSettings: (state: any) => state.settings,
+    selectStation: (state: any) => state.station,
+    stationActions: {
+        set: (payload: unknown) => ({ type: 'station/set', payload }),
+    },
     subscribeToGlobalSettingsChanges: () => ({
         unsubscribe: mockSettingsUnsubscribe,
     }),
     StationService: {
         getNextOrderNumber: (...args: unknown[]) => mockGetNextOrderNumber(...args),
+        reserveNextOrderNumber: (...args: unknown[]) => mockReserveNextOrderNumber(...args),
+        saveConfig: (...args: unknown[]) => mockSaveStationConfig(...args),
     },
 }));
 
@@ -362,11 +377,17 @@ describe('SalesScreen', () => {
             },
             employee: {
                 id: 'e-1',
+                code: 'EMP',
                 roles: ['Admin'],
             },
             store: { id: 's-1' },
             printer: { id: 'printer-1' },
             settings: { enforceSalesBasedOnInventory: false },
+            station: {
+                stationNumber: '51',
+                currentDate: '260326',
+                orderNumber: 0,
+            },
         };
         jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     });
@@ -398,13 +419,15 @@ describe('SalesScreen', () => {
         expect(getByTestId('sales-catalog-count').props.children).toBe(0);
         expect(mockSyncCategories).not.toHaveBeenCalled();
         expect(mockSyncProducts).not.toHaveBeenCalled();
+        expect(mockCategoriesUnsubscribe).not.toHaveBeenCalled();
+        expect(mockProductsUnsubscribe).not.toHaveBeenCalled();
 
         act(() => {
             interactionCallbacks.forEach((callback) => callback());
         });
 
-        expect(mockSyncCategories).toHaveBeenCalledWith(mockDispatch);
-        expect(mockSyncProducts).toHaveBeenCalledWith(mockDispatch);
+        expect(mockSyncCategories).not.toHaveBeenCalled();
+        expect(mockSyncProducts).not.toHaveBeenCalled();
     });
 
     it('dispatches cart upsert when an EA product is selected', () => {
@@ -514,7 +537,26 @@ describe('SalesScreen', () => {
             await Promise.resolve();
         });
 
-        expect(mockGetNextOrderNumber).toHaveBeenCalledWith(mockState.employee);
+        expect(mockReserveNextOrderNumber).toHaveBeenCalledWith(
+            mockState.station,
+            mockState.employee
+        );
+        expect(mockGetNextOrderNumber).not.toHaveBeenCalled();
+        expect(mockSaveStationConfig).toHaveBeenCalledWith({
+            stationNumber: '51',
+            currentDate: '260326',
+            orderNumber: 1,
+        });
+        expect(mockDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'station/set',
+                payload: {
+                    stationNumber: '51',
+                    currentDate: '260326',
+                    orderNumber: 1,
+                },
+            })
+        );
         expect(mockUpsertOrder).toHaveBeenCalledWith(
             expect.objectContaining({
                 cart: expect.objectContaining({

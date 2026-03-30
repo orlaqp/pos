@@ -1,5 +1,6 @@
 /* eslint-disable @nx/enforce-module-boundaries */
 import { printReceipt } from '@pos/printings/data-access';
+import { OrderService } from '../order.service';
 import {
     initialOrdersState,
     ordersActions,
@@ -19,9 +20,133 @@ jest.mock('@pos/printings/data-access', () => ({
     printReceipt: jest.fn(),
 }));
 
+jest.mock('../order.service', () => ({
+    OrderService: {
+        create: jest.fn(),
+        update: jest.fn(),
+        search: jest.fn((items: any[], options: { status: string; filter?: string }) =>
+            items.filter((item) => {
+                const statusMatch = item.status === options.status;
+                const filterMatch = !options.filter || item.orderNo?.includes(options.filter);
+                return statusMatch && filterMatch;
+            })
+        ),
+    },
+}));
+
 describe('orders reducer', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+    });
+
+    it('creates directly when a preallocated order id belongs to a new cart', async () => {
+        const createMock = jest.mocked(OrderService.create);
+        const updateMock = jest.mocked(OrderService.update);
+        const dispatch = jest.fn();
+        const getState = () =>
+            ({
+                employees: {
+                    loginEmployee: {
+                        id: 'employee-1',
+                        firstName: 'Test',
+                        lastName: 'Cashier',
+                    },
+                },
+            }) as any;
+
+        createMock.mockResolvedValueOnce({
+            id: 'generated-cart-id',
+            orderNo: '51-EMP-260330-0001',
+            status: 'OPEN',
+        } as any);
+
+        const result = await upsertOrder(
+            {
+                cart: {
+                    id: 'generated-cart-id',
+                    orderNo: '51-EMP-260330-0001',
+                } as any,
+            },
+            { requestId: 'request-id' } as any
+        )(dispatch, getState, undefined);
+
+        expect(updateMock).not.toHaveBeenCalled();
+        expect(createMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                order: expect.objectContaining({
+                    id: 'generated-cart-id',
+                    orderNo: '51-EMP-260330-0001',
+                }),
+            })
+        );
+        expect(result.type).toBe('order/save/fulfilled');
+        expect(result.payload).toEqual(
+            expect.objectContaining({
+                order: expect.objectContaining({
+                    id: 'generated-cart-id',
+                    orderNo: '51-EMP-260330-0001',
+                }),
+            })
+        );
+    });
+
+    it('falls back to create when an existing-looking cart id cannot be updated', async () => {
+        const createMock = jest.mocked(OrderService.create);
+        const updateMock = jest.mocked(OrderService.update);
+        const dispatch = jest.fn();
+        const getState = () =>
+            ({
+                employees: {
+                    loginEmployee: {
+                        id: 'employee-1',
+                        firstName: 'Test',
+                        lastName: 'Cashier',
+                    },
+                },
+            }) as any;
+
+        updateMock.mockResolvedValueOnce(null);
+        createMock.mockResolvedValueOnce({
+            id: 'persisted-order-id',
+            orderNo: '51-EMP-260330-0002',
+            status: 'OPEN',
+        } as any);
+
+        const result = await upsertOrder(
+            {
+                cart: {
+                    id: 'persisted-order-id',
+                    orderNo: '51-EMP-260330-0002',
+                    header: {
+                        orderNumber: 'persisted-order-id',
+                        orderDate: '2026-03-30T00:00:00.000Z',
+                        employeeId: 'employee-1',
+                        employeeName: 'Test Cashier',
+                        status: 'OPEN',
+                    },
+                } as any,
+            },
+            { requestId: 'request-id' } as any
+        )(dispatch, getState, undefined);
+
+        expect(updateMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: 'persisted-order-id',
+                order: expect.objectContaining({
+                    id: 'persisted-order-id',
+                    orderNo: '51-EMP-260330-0002',
+                }),
+            })
+        );
+        expect(createMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                order: expect.objectContaining({
+                    id: 'persisted-order-id',
+                    orderNo: '51-EMP-260330-0002',
+                }),
+            })
+        );
+        expect(result.type).toBe('order/save/fulfilled');
     });
 
     it('returns initial state', () => {

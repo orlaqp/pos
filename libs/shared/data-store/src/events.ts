@@ -2,14 +2,17 @@ import { Dispatch } from '@reduxjs/toolkit';
 import { Hub } from '@pos/shared/amplify';
 import { ModelSyncedEvent } from './definitions';
 import { eventsActions } from './lib/events.slice';
-import { syncModelsWithStore } from './sync';
 import uuid from 'react-native-uuid';
+import { logSyncDebug } from '@pos/shared/utils';
 
 // Create listener
 export const subscribeEvents = (dispatch: Dispatch) =>
     Hub.listen('datastore', async (hubData) => {
         const { event, data } = hubData.payload;
-        console.log(`${hubData.source} - ${event} - data: ${JSON.stringify(data)}`);
+        logSyncDebug('hub', event, {
+            source: hubData.source,
+            data,
+        });
 
         dispatch(
             eventsActions.add({
@@ -25,10 +28,12 @@ export const subscribeEvents = (dispatch: Dispatch) =>
             //     syncModelsWithStore(dispatch, (data as ModelSyncedEvent).model.name);
             //     break;
             case 'modelSynced':
-                syncModelsWithStore(
-                    dispatch,
-                    (data as ModelSyncedEvent).model.name
-                );
+                logSyncDebug('hub', 'modelSynced:dispatch', {
+                    model: (data as ModelSyncedEvent).model.name,
+                    isFullSync: (data as ModelSyncedEvent & { isFullSync?: boolean }).isFullSync,
+                    isDeltaSync: (data as ModelSyncedEvent & { isDeltaSync?: boolean }).isDeltaSync,
+                    counts: (data as ModelSyncedEvent & { counts?: unknown }).counts,
+                });
                 break;
             case 'outboxMutationFailed':
                 console.error(
@@ -40,8 +45,8 @@ export const subscribeEvents = (dispatch: Dispatch) =>
         }
 
         if (event === 'networkStatus') {
-            console.log(
-                `User has a network connection: ${(data as { active?: boolean } | undefined)?.active}`
-            );
+            logSyncDebug('hub', 'networkStatus', {
+                active: (data as { active?: boolean } | undefined)?.active,
+            });
         }
     });

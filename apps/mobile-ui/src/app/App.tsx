@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -8,6 +8,7 @@ import { ThemeProvider, Button, Text } from '@rneui/themed';
 import { designTokens, theme } from '@pos/theme/native';
 import { Provider, useSelector } from 'react-redux';
 import { store, RootState, useAppDispatch } from '@pos/store';
+import { logSyncDebug, startSyncMeasure } from '@pos/shared/utils';
 import Navigation from './navigation';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppErrorBoundary } from './app-error-boundary';
@@ -160,6 +161,7 @@ const AppContent = () => {
     const tenantSession = useSelector((state: RootState) => state.tenantSession);
     const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('idle');
     const [bootstrapError, setBootstrapError] = useState<string>();
+    const bootstrapInFlightRef = useRef<Promise<void> | null>(null);
 
     const resetSessionState = useCallback(async () => {
         try {
@@ -175,6 +177,12 @@ const AppContent = () => {
     }, [dispatch]);
 
     const startBootstrap = useCallback(async () => {
+        if (bootstrapInFlightRef.current) {
+            logSyncDebug('app-bootstrap', 'startup:skip-inflight');
+            return bootstrapInFlightRef.current;
+        }
+
+        const bootstrapPromise = (async () => {
         if (process.env.NODE_ENV === 'test') {
             setBootstrapStatus('ready');
             return;
@@ -182,6 +190,7 @@ const AppContent = () => {
 
         setBootstrapError(undefined);
         setBootstrapStatus('checking-session');
+        const finishBootstrap = startSyncMeasure('app-bootstrap', 'startup');
 
         try {
             let user = authUser;
@@ -215,6 +224,10 @@ const AppContent = () => {
             }
 
             setBootstrapStatus('resolving-tenant');
+            logSyncDebug('app-bootstrap', 'tenant:resolved', {
+                tenantId: user.tenantId,
+                businessName: user.businessName,
+            });
             dispatch(
                 tenantSessionActions.setTenantSession({
                     tenantId: user.tenantId,
@@ -227,21 +240,34 @@ const AppContent = () => {
             });
             dispatch(tenantSessionActions.setBootstrapStatus('restoring'));
 
+            const finishStop = startSyncMeasure('app-bootstrap', 'datastore.stop');
             await DataStore.stop();
+            finishStop();
             const lastTenantId = await getLastBootstrappedTenantId();
             const shouldClearDataStore = !!lastTenantId && lastTenantId !== user.tenantId;
+            logSyncDebug('app-bootstrap', 'tenant-cache:state', {
+                lastTenantId,
+                currentTenantId: user.tenantId,
+                shouldClearDataStore,
+            });
 
             if (shouldClearDataStore) {
+                const finishClear = startSyncMeasure('app-bootstrap', 'datastore.clear');
                 await DataStore.clear();
+                finishClear();
             }
 
+            const finishConfigure = startSyncMeasure('app-bootstrap', 'datastore.configure');
             configureDataStore();
+            finishConfigure();
             void bootstrapTenantSession(user).catch((error) => {
                 logBootstrapStageError('bootstrapTenantSession()', error);
             });
 
             try {
+                const finishStart = startSyncMeasure('app-bootstrap', 'datastore.start');
                 await DataStore.start();
+                finishStart();
             } catch (error) {
                 logBootstrapStageError('DataStore.start()', error);
                 if (!isUnauthorizedError(error)) {
@@ -254,19 +280,27 @@ const AppContent = () => {
             dispatch(tenantSessionActions.setBootstrapStatus('bootstrapping'));
 
             try {
+                const finishStation = startSyncMeasure('app-bootstrap', 'fetchStationInfo');
                 await withTimeout(
                     'fetchStationInfo()',
                     dispatch(fetchStationInfo()).unwrap()
                 );
+                finishStation();
             } catch (error) {
                 logBootstrapStageError('fetchStationInfo()', error);
             }
 
+            const finishBusinessData = startSyncMeasure('app-bootstrap', 'business-data.fetches');
             const businessDataResults = await Promise.allSettled([
                 dispatch(fetchStoreInfo()).unwrap(),
                 dispatch(fetchGlobalSettings()).unwrap(),
                 dispatch(fetchEmployees()).unwrap(),
             ]);
+            finishBusinessData({
+                storeInfo: businessDataResults[0].status,
+                globalSettings: businessDataResults[1].status,
+                employees: businessDataResults[2].status,
+            });
 
             const stageLabels = [
                 'fetchStoreInfo()',
@@ -282,6 +316,9 @@ const AppContent = () => {
 
             dispatch(tenantSessionActions.setBootstrapStatus('ready'));
             setBootstrapStatus('ready');
+            finishBootstrap({
+                result: 'ready',
+            });
         } catch (error) {
             console.error('App bootstrap failed', error);
             const message =
@@ -295,7 +332,21 @@ const AppContent = () => {
             dispatch(tenantSessionActions.setTenantSessionError(message));
             setBootstrapError(message);
             setBootstrapStatus('error');
+            finishBootstrap({
+                result: 'error',
+                message,
+            });
         }
+        })();
+
+        bootstrapInFlightRef.current = bootstrapPromise;
+        bootstrapPromise.finally(() => {
+            if (bootstrapInFlightRef.current === bootstrapPromise) {
+                bootstrapInFlightRef.current = null;
+            }
+        });
+
+        return bootstrapPromise;
     }, [authUser, dispatch]);
 
     const signOutFromStartup = useCallback(async () => {
