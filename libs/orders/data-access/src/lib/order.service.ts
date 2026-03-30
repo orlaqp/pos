@@ -9,7 +9,6 @@ import moment from 'moment';
 import { EmployeeEntity, EmployeeService } from '@pos/employees/data-access';
 import { StationService } from '@pos/settings/data-access';
 import { isOrderNumber, sortDescListBy, sortListBy } from '@pos/shared/utils';
-import uuid from 'react-native-uuid';
 import {
     buildEbtAllocations,
     getLineTotal,
@@ -59,7 +58,10 @@ export class OrderService {
      */
     static async create(request: CreateOrderRequest) {
         const order = new Order(stampTenant({
-            orderNo: await StationService.getNextOrderNumber(request.by),
+            id: request.order.id,
+            orderNo:
+                request.order.orderNo ??
+                (await StationService.getNextOrderNumber(request.by)),
             status: 'OPEN',
             baseSubtotal: request.order.footer.baseSubtotal,
             subtotal: request.order.footer.subtotal,
@@ -431,8 +433,6 @@ export class OrderService {
     }
 
     static async updateInventory(order: Order) {
-        const promises: Promise<unknown>[] = [];
-
         // sum product quantities so we update only once
         const summary: Record<string, number> = {};
 
@@ -443,21 +443,28 @@ export class OrderService {
             return s;
         }, summary)
 
-        Object.keys(summary).forEach((key) => {
-            promises.push(
-                updateProductQuantity(order.status, key, summary[key])
+        const failures: string[] = [];
+
+        for (const [productId, quantity] of Object.entries(summary)) {
+            try {
+                // Amplify v6/DataStore has been more reliable here when we
+                // apply inventory deltas deterministically instead of
+                // fan-out saving several product mutations at once.
+                await updateProductQuantity(order.status, productId, quantity);
+            } catch (error) {
+                console.error(
+                    `Inventory update failed for product ${productId}`,
+                    error
+                );
+                failures.push(productId);
+            }
+        }
+
+        if (failures.length) {
+            throw new Error(
+                `Inventory update failed for products: ${failures.join(', ')}`
             );
-        });
-
-        // order.lines.forEach((l) => {
-        //     if (!l) return;
-
-        //     promises.push(
-        //         updateProductQuantity(order.status, l.productId, l.quantity)
-        //     );
-        // });
-
-        await Promise.all(promises);
+        }
     }
 
     static search(items: OrderEntity[], options: FilterRequest) {
@@ -562,7 +569,9 @@ async function updateProductQuantity(
 ) {
     const p = await DataStore.query(Product, id);
 
-    if (!p) return;
+    if (!p) {
+        throw new Error(`Product ${id} not found locally for inventory update`);
+    }
 
     const updatedProduct = Product.copyOf(p, (updated) => {
         // Product quantity is handled as a signed delta by the custom AppSync resolver.

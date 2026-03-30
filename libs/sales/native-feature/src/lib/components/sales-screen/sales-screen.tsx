@@ -44,6 +44,8 @@ import { getGlobalSettings, subscribeToGlobalSettingsChanges } from '@pos/settin
 import { Role } from '@pos/auth/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { EACH } from '@pos/unit-of-measures/data-access';
+import { StationService } from '@pos/settings/data-access';
+import uuid from 'react-native-uuid';
 import {
     getActiveProducts,
     getAutoAddQuantity,
@@ -154,6 +156,27 @@ export function SalesScreen({
         dispatch(cartActions.upsert(item));
         deselectProduct();
     };
+
+    const preparePrintableOrderCart = useCallback(
+        async (cart: CartState) => {
+            if (cart.id && cart.orderNo) {
+                return cart;
+            }
+
+            if (!employee) {
+                return cart;
+            }
+
+            return {
+                ...cart,
+                id: cart.id ?? String(uuid.v4()),
+                orderNo:
+                    cart.orderNo ??
+                    (await StationService.getNextOrderNumber(employee)),
+            };
+        },
+        [employee]
+    );
 
     const onCategoryChange = async (c?: CategoryEntity) => {
         setIsSearchActive(false);
@@ -291,60 +314,86 @@ export function SalesScreen({
         const cartItems = cart.items ?? [];
 
         if (route.params.mode === 'order') {
-            const shouldFastPrint =
-                !!defaultPrinter && !!storeInfo && !!(cart.orderNo || cart.id);
+            void preparePrintableOrderCart(cart).then((cartForOrder) => {
+                const shouldFastPrint = !!defaultPrinter && !!storeInfo;
 
-            if (!defaultPrinter || !storeInfo) {
-                Alert.alert(
-                    t('SALES_PrintRequirementsTitle', 'Printing unavailable'),
-                    t(
-                        'SALES_PrintRequirementsMessage',
-                        'Store and printer should be available in order to print.'
-                    )
-                );
-            }
-
-            if (shouldFastPrint) {
-                Promise.resolve(
-                    printReceiptSafely(storeInfo, defaultPrinter, cart, {
-                        id: cart.id,
-                        status: 'OPEN',
-                        orderNo: cart.orderNo,
-                        copyType: 'CUSTOMER',
-                        lines: cartItems.map((item) => ({
-                            quantity: item.quantity,
-                            productName: item.product.name,
-                        })),
-                    })
-                ).catch((error) => {
-                    console.error(
-                        'Customer receipt print failed',
-                        getErrorMessage(error) ?? error
-                    );
+                if (!defaultPrinter || !storeInfo) {
                     Alert.alert(
-                        t('SALES_PrintFailedTitle', 'Receipt could not be printed'),
+                        t('SALES_PrintRequirementsTitle', 'Printing unavailable'),
                         t(
-                            'SALES_OrderSavedPrintFailedMessage',
-                            'The order was saved, but the receipt could not be printed.'
+                            'SALES_PrintRequirementsMessage',
+                            'Store and printer should be available in order to print.'
                         )
                     );
-                });
-            }
+                }
 
-            Promise.resolve(
-                dispatch(
-                    upsertOrder({
-                        cart,
-                        defaultPrinter,
-                        storeInfo,
-                        skipAutoPrint: shouldFastPrint || !defaultPrinter || !storeInfo,
-                    })
+                if (shouldFastPrint) {
+                    Promise.resolve(
+                        printReceiptSafely(storeInfo, defaultPrinter, cartForOrder, {
+                            id: cartForOrder.id,
+                            status: 'OPEN',
+                            orderNo: cartForOrder.orderNo,
+                            copyType: 'CUSTOMER',
+                            lines: cartItems.map((item) => ({
+                                quantity: item.quantity,
+                                productName: item.product.name,
+                            })),
+                        })
+                    ).catch((error) => {
+                        console.error(
+                            'Customer receipt print failed',
+                            getErrorMessage(error) ?? error
+                        );
+                        Alert.alert(
+                            t('SALES_PrintFailedTitle', 'Receipt could not be printed'),
+                            t(
+                                'SALES_OrderSavedPrintFailedMessage',
+                                'The order was saved, but the receipt could not be printed.'
+                            )
+                        );
+                    });
+                }
+
+                Promise.resolve(
+                    dispatch(
+                        upsertOrder({
+                            cart: cartForOrder,
+                            defaultPrinter,
+                            storeInfo,
+                            skipAutoPrint:
+                                shouldFastPrint || !defaultPrinter || !storeInfo,
+                        })
+                    )
                 )
-            )
-                .then((result) => {
-                    if (
-                        !upsertOrder.fulfilled.match(result)
-                    ) {
+                    .then((result) => {
+                        if (
+                            !upsertOrder.fulfilled.match(result)
+                        ) {
+                            Alert.alert(
+                                t(
+                                    'SALES_OrderSaveFailedTitle',
+                                    'Order could not be saved'
+                                ),
+                                shouldFastPrint
+                                    ? `${t(
+                                          'SALES_OrderSaveFailedMessage',
+                                          'The order was not saved. Please try again.'
+                                      )} ${t(
+                                          'SALES_PrintAlreadyStartedMessage',
+                                          'The receipt may have already been printed.'
+                                      )}`
+                                    : t(
+                                          'SALES_OrderSaveFailedMessage',
+                                          'The order was not saved. Please try again.'
+                                      )
+                            );
+                        }
+                    })
+                    .catch((error) => {
+                        console.error(
+                            'Order save failed',
+                            getErrorMessage(error) ?? error
+                        );
                         Alert.alert(
                             t(
                                 'SALES_OrderSaveFailedTitle',
@@ -363,32 +412,8 @@ export function SalesScreen({
                                       'The order was not saved. Please try again.'
                                   )
                         );
-                    }
-                })
-                .catch((error) => {
-                    console.error(
-                        'Order save failed',
-                        getErrorMessage(error) ?? error
-                    );
-                    Alert.alert(
-                        t(
-                            'SALES_OrderSaveFailedTitle',
-                            'Order could not be saved'
-                        ),
-                        shouldFastPrint
-                            ? `${t(
-                                  'SALES_OrderSaveFailedMessage',
-                                  'The order was not saved. Please try again.'
-                              )} ${t(
-                                  'SALES_PrintAlreadyStartedMessage',
-                                  'The receipt may have already been printed.'
-                              )}`
-                            : t(
-                                  'SALES_OrderSaveFailedMessage',
-                                  'The order was not saved. Please try again.'
-                              )
-                    );
-                });
+                    });
+            });
 
             dispatch(cartActions.reset());
             return;

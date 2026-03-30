@@ -13,6 +13,7 @@ const mockCategoriesUnsubscribe = jest.fn();
 const mockProductsUnsubscribe = jest.fn();
 const mockSettingsUnsubscribe = jest.fn();
 const mockPrintReceipt = jest.fn();
+const mockGetNextOrderNumber = jest.fn(async () => '51-EMP-260326-0001');
 const mockUpsertOrder = Object.assign(
     jest.fn((payload: unknown) => ({
         type: 'orders/upsert',
@@ -119,6 +120,13 @@ jest.mock('@pos/settings/data-access', () => ({
     subscribeToGlobalSettingsChanges: () => ({
         unsubscribe: mockSettingsUnsubscribe,
     }),
+    StationService: {
+        getNextOrderNumber: (...args: unknown[]) => mockGetNextOrderNumber(...args),
+    },
+}));
+
+jest.mock('react-native-uuid', () => ({
+    v4: jest.fn(() => 'generated-cart-id'),
 }));
 
 jest.mock('@pos/store-info/data-access', () => ({
@@ -503,11 +511,16 @@ describe('SalesScreen', () => {
         await act(async () => {
             fireEvent.press(getByTestId('sales-cart-submit-order'));
             await Promise.resolve();
+            await Promise.resolve();
         });
 
+        expect(mockGetNextOrderNumber).toHaveBeenCalledWith(mockState.employee);
         expect(mockUpsertOrder).toHaveBeenCalledWith(
             expect.objectContaining({
-                cart: { id: 'cart-1' },
+                cart: expect.objectContaining({
+                    id: 'cart-1',
+                    orderNo: '51-EMP-260326-0001',
+                }),
                 defaultPrinter: mockState.printer,
                 storeInfo: mockState.store,
             })
@@ -516,8 +529,14 @@ describe('SalesScreen', () => {
         expect(mockPrintReceipt).toHaveBeenCalledWith(
             mockState.store,
             mockState.printer,
-            { id: 'cart-1' },
-            expect.objectContaining({ copyType: 'CUSTOMER' })
+            expect.objectContaining({
+                id: 'cart-1',
+                orderNo: '51-EMP-260326-0001',
+            }),
+            expect.objectContaining({
+                copyType: 'CUSTOMER',
+                orderNo: '51-EMP-260326-0001',
+            })
         );
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/reset' })
@@ -538,6 +557,7 @@ describe('SalesScreen', () => {
 
         await act(async () => {
             fireEvent.press(getByTestId('sales-cart-submit-order'));
+            await Promise.resolve();
             await Promise.resolve();
         });
 

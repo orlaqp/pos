@@ -262,6 +262,128 @@ describe('OrderService', () => {
     expect(getInventoryQuantityDelta('REFUNDED', 3)).toBe(3);
   });
 
+  it('reuses a preallocated cart id and order number when creating an order', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+    const getNextOrderNumberMock = jest.mocked(StationService.getNextOrderNumber);
+
+    await OrderService.create({
+      by: {
+        id: 'employee-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+      } as any,
+      order: {
+        id: 'generated-cart-id',
+        orderNo: '51-25-260316-0099',
+        items: [],
+        footer: {
+          baseSubtotal: 0,
+          subtotal: 0,
+          total: 0,
+          lineDiscountTotal: 0,
+          orderDiscountTotal: 0,
+          discount: 0,
+          savingsTotal: 0,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+        },
+        promoCodes: [],
+        appliedDiscountSummary: undefined,
+      } as any,
+    });
+
+    expect(getNextOrderNumberMock).not.toHaveBeenCalled();
+    expect(saveMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'generated-cart-id',
+        orderNo: '51-25-260316-0099',
+      })
+    );
+  });
+
+  it('updates inventory for every unique product in a paid order', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const saveMock = jest.mocked(DataStore.save);
+
+    queryMock.mockImplementation(async (_model: any, idOrPredicate: any) => {
+      if (idOrPredicate === 'product-1') {
+        return {
+          id: 'product-1',
+          quantity: 10,
+        } as any;
+      }
+
+      if (idOrPredicate === 'product-2') {
+        return {
+          id: 'product-2',
+          quantity: 20,
+        } as any;
+      }
+
+      return null as any;
+    });
+
+    await OrderService.updateInventory({
+      status: 'PAID',
+      lines: [
+        { productId: 'product-1', quantity: 1 },
+        { productId: 'product-2', quantity: 2 },
+      ],
+    } as any);
+
+    expect(queryMock).toHaveBeenCalledWith(expect.anything(), 'product-1');
+    expect(queryMock).toHaveBeenCalledWith(expect.anything(), 'product-2');
+    expect(saveMock).toHaveBeenCalledTimes(2);
+    expect(saveMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        id: 'product-1',
+        quantity: -1,
+      })
+    );
+    expect(saveMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        id: 'product-2',
+        quantity: -2,
+      })
+    );
+  });
+
+  it('fails inventory updates loudly when a product is missing locally', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const saveMock = jest.mocked(DataStore.save);
+
+    queryMock.mockImplementation(async (_model: any, idOrPredicate: any) => {
+      if (idOrPredicate === 'product-1') {
+        return {
+          id: 'product-1',
+          quantity: 10,
+        } as any;
+      }
+
+      return null as any;
+    });
+
+    await expect(
+      OrderService.updateInventory({
+        status: 'PAID',
+        lines: [
+          { productId: 'product-1', quantity: 1 },
+          { productId: 'product-2', quantity: 2 },
+        ],
+      } as any)
+    ).rejects.toThrow('Inventory update failed for products: product-2');
+
+    expect(saveMock).toHaveBeenCalledTimes(1);
+    expect(saveMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'product-1',
+        quantity: -1,
+      })
+    );
+  });
+
   it('leaves line appliedDiscounts unset and relies on order summary', async () => {
     const saveMock = jest.mocked(DataStore.save);
     const getNextOrderNumberMock = jest.mocked(StationService.getNextOrderNumber);
