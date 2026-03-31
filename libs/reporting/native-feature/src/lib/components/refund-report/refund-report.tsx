@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     buildRefundInsights,
     buildRefundReportRows,
@@ -58,8 +58,8 @@ export function RefundReport() {
     });
     const [loading, setLoading] = useState(true);
     const [rows, setRows] = useState<RefundRow[]>([]);
-    const emptyOpacity = useRef(new Animated.Value(0)).current;
-    const emptyTranslateY = useRef(new Animated.Value(12)).current;
+    const [emptyOpacity] = useState(() => new Animated.Value(0));
+    const [emptyTranslateY] = useState(() => new Animated.Value(12));
 
     const headers: ReportHeader[] = useMemo(
         () => [
@@ -80,6 +80,7 @@ export function RefundReport() {
 
     useEffect(() => {
         let cancelled = false;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLoading(true);
         const task = InteractionManager.runAfterInteractions(() => {
             getOrdersForStatuses({
@@ -224,18 +225,25 @@ export function RefundReport() {
 
                         {!loading && !!rows.length && (
                             <>
+                                <View style={styles.sectionIntro}>
+                                    <Text style={styles.sectionEyebrow}>Refund Overview</Text>
+                                    <Text style={styles.sectionLead}>
+                                        A quick view of refund volume, average value, and the team members
+                                        processing the most refunds.
+                                    </Text>
+                                </View>
                                 <View style={styles.kpiRow}>
-                                    <View style={styles.kpiCard}>
+                                    <View style={[styles.kpiCard, styles.kpiCardPrimary]}>
                                         <Text style={styles.kpiLabel}>Refund Total</Text>
                                         <Text style={styles.kpiValue}>
                                             ${insights.totalAmount.toFixed(2)}
                                         </Text>
                                     </View>
-                                    <View style={styles.kpiCardSpaced}>
+                                    <View style={[styles.kpiCardSpaced, styles.kpiCardSecondary]}>
                                         <Text style={styles.kpiLabel}>Refund Count</Text>
                                         <Text style={styles.kpiValue}>{insights.totalOrders}</Text>
                                     </View>
-                                    <View style={styles.kpiCardSpaced}>
+                                    <View style={[styles.kpiCardSpaced, styles.kpiCardTertiary]}>
                                         <Text style={styles.kpiLabel}>Average Refund</Text>
                                         <Text style={styles.kpiValue}>
                                             ${insights.averageAmount.toFixed(2)}
@@ -244,22 +252,28 @@ export function RefundReport() {
                                 </View>
 
                                 <View style={styles.insightRow}>
-                                    <UICard style={styles.insightCard}>
+                                    <UICard style={[styles.insightCard, styles.insightCardEmphasis]}>
+                                        <Text style={styles.insightEyebrow}>Team</Text>
                                         <Text style={styles.insightTitle}>Top Refunding Employees</Text>
                                         {insights.topEmployees.map((item) => (
                                             <View key={item.name} style={styles.rankedRow}>
                                                 <Text style={styles.rankedLabel}>{item.name}</Text>
-                                                <Text style={styles.rankedValue}>{item.value}</Text>
+                                                <View style={styles.rankedValueBadge}>
+                                                    <Text style={styles.rankedValue}>{item.value}</Text>
+                                                </View>
                                             </View>
                                         ))}
                                     </UICard>
-                                    <UICard style={styles.insightCardSpaced}>
+                                    <UICard style={[styles.insightCardSpaced, styles.insightCardMuted]}>
+                                        <Text style={styles.insightEyebrow}>Trends</Text>
                                         <Text style={styles.insightTitle}>Top Refund Reasons</Text>
-                                        {!!insights.reasons.length ? (
+                                        {insights.reasons.length ? (
                                             insights.reasons.map((item) => (
                                                 <View key={item.name} style={styles.rankedRow}>
                                                     <Text style={styles.rankedLabel}>{item.name}</Text>
-                                                    <Text style={styles.rankedValue}>{item.value}</Text>
+                                                    <View style={styles.reasonCountBadge}>
+                                                        <Text style={styles.reasonCountText}>{item.value}</Text>
+                                                    </View>
                                                 </View>
                                             ))
                                         ) : (
@@ -270,8 +284,16 @@ export function RefundReport() {
                                     </UICard>
                                 </View>
 
-                                <UICard>
-                                    <Text style={styles.tableTitle}>Recent Refund Activity</Text>
+                                <UICard style={styles.tableCard}>
+                                    <View style={styles.tableHeaderWrap}>
+                                        <View>
+                                            <Text style={styles.tableEyebrow}>Activity</Text>
+                                            <Text style={styles.tableTitle}>Recent Refund Activity</Text>
+                                        </View>
+                                        <View style={styles.tableBadge}>
+                                            <Text style={styles.tableBadgeText}>{rows.length} refunds</Text>
+                                        </View>
+                                    </View>
                                     <View style={styles.tableHeader}>
                                         <Text style={[styles.tableHeaderCell, styles.dateCell]}>Date</Text>
                                         <Text style={[styles.tableHeaderCell, styles.orderCell]}>
@@ -310,6 +332,7 @@ export function RefundReport() {
                                                     style={[
                                                         styles.tableValue,
                                                         styles.amountCell,
+                                                        styles.tableAmount,
                                                         styles.textRight,
                                                     ]}
                                                 >
@@ -368,38 +391,62 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             minHeight: 180,
             justifyContent: 'center',
         },
+        sectionIntro: {
+            marginBottom: tokens.spacing.sm,
+        },
+        sectionEyebrow: {
+            color: tokens.colors.accent,
+            fontSize: 12,
+            fontWeight: '800',
+            letterSpacing: 1.1,
+            marginBottom: tokens.spacing.xs,
+            textTransform: 'uppercase',
+        },
+        sectionLead: {
+            color: tokens.colors.textSecondary,
+            fontSize: 15,
+            lineHeight: 22,
+            maxWidth: 760,
+        },
         kpiRow: {
             flexDirection: 'row',
         },
         kpiCard: {
-            backgroundColor: '#101720',
-            borderColor: '#243245',
-            borderRadius: 22,
+            borderRadius: 24,
             borderWidth: 1,
             flex: 1,
-            paddingHorizontal: tokens.spacing.lg,
-            paddingVertical: tokens.spacing.lg,
+            overflow: 'hidden',
+            paddingHorizontal: tokens.spacing.xl,
+            paddingVertical: tokens.spacing.xl,
+        },
+        kpiCardPrimary: {
+            backgroundColor: '#101B2A',
+            borderColor: '#274365',
+        },
+        kpiCardSecondary: {
+            backgroundColor: '#17152A',
+            borderColor: '#39306B',
+        },
+        kpiCardTertiary: {
+            backgroundColor: '#1C1620',
+            borderColor: '#5C374B',
         },
         kpiCardSpaced: {
-            backgroundColor: '#101720',
-            borderColor: '#243245',
             borderRadius: 22,
-            borderWidth: 1,
             flex: 1,
             marginLeft: tokens.spacing.md,
-            paddingHorizontal: tokens.spacing.lg,
-            paddingVertical: tokens.spacing.lg,
         },
         kpiLabel: {
-            color: tokens.colors.textSecondary,
-            fontSize: 13,
+            color: '#B7C6DA',
+            fontSize: 12,
             fontWeight: '700',
             marginBottom: tokens.spacing.sm,
+            opacity: 0.92,
             textTransform: 'uppercase',
         },
         kpiValue: {
             color: tokens.colors.textPrimary,
-            fontSize: 30,
+            fontSize: 32,
             fontWeight: '800',
         },
         insightRow: {
@@ -408,17 +455,35 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         insightCard: {
             flex: 1,
             minHeight: 220,
+            paddingVertical: tokens.spacing.md,
         },
         insightCardSpaced: {
             flex: 1,
             marginLeft: tokens.spacing.md,
             minHeight: 220,
+            paddingVertical: tokens.spacing.md,
+        },
+        insightCardEmphasis: {
+            borderColor: '#28425F',
+            borderWidth: 1,
+        },
+        insightCardMuted: {
+            borderColor: '#2A3340',
+            borderWidth: 1,
+        },
+        insightEyebrow: {
+            color: tokens.colors.accent,
+            fontSize: 12,
+            fontWeight: '800',
+            letterSpacing: 1,
+            marginBottom: tokens.spacing.xs,
+            textTransform: 'uppercase',
         },
         insightTitle: {
             color: tokens.colors.textPrimary,
             fontSize: 18,
             fontWeight: '700',
-            marginBottom: tokens.spacing.md,
+            marginBottom: tokens.spacing.lg,
         },
         rankedRow: {
             alignItems: 'center',
@@ -433,26 +498,84 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontWeight: '600',
             marginRight: tokens.spacing.md,
         },
+        rankedValueBadge: {
+            backgroundColor: '#16263A',
+            borderColor: '#2E4D73',
+            borderRadius: 999,
+            borderWidth: 1,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.xs,
+        },
         rankedValue: {
             color: tokens.colors.textPrimary,
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: '700',
+        },
+        reasonCountBadge: {
+            alignItems: 'center',
+            backgroundColor: '#1B222C',
+            borderColor: '#33414F',
+            borderRadius: 999,
+            borderWidth: 1,
+            minWidth: 40,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.xs,
+        },
+        reasonCountText: {
+            color: tokens.colors.textPrimary,
+            fontSize: 14,
+            fontWeight: '800',
         },
         emptyInline: {
             color: tokens.colors.textSecondary,
             fontSize: 15,
             lineHeight: 22,
         },
+        tableCard: {
+            borderColor: '#26313E',
+            borderRadius: 24,
+            borderWidth: 1,
+            paddingVertical: tokens.spacing.md,
+        },
+        tableHeaderWrap: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginBottom: tokens.spacing.lg,
+        },
+        tableEyebrow: {
+            color: tokens.colors.accent,
+            fontSize: 12,
+            fontWeight: '800',
+            letterSpacing: 1,
+            marginBottom: tokens.spacing.xs,
+            textTransform: 'uppercase',
+        },
         tableTitle: {
             color: tokens.colors.textPrimary,
             fontSize: 18,
             fontWeight: '700',
-            marginBottom: tokens.spacing.md,
+        },
+        tableBadge: {
+            backgroundColor: '#16222F',
+            borderColor: '#2C445B',
+            borderRadius: 999,
+            borderWidth: 1,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.xs,
+        },
+        tableBadgeText: {
+            color: tokens.colors.textPrimary,
+            fontSize: 13,
+            fontWeight: '700',
         },
         tableHeader: {
+            backgroundColor: '#121A24',
+            borderRadius: 16,
             flexDirection: 'row',
             marginBottom: tokens.spacing.sm,
-            paddingBottom: tokens.spacing.sm,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.sm,
         },
         tableHeaderCell: {
             color: tokens.colors.textSecondary,
@@ -462,13 +585,20 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         tableRow: {
             alignItems: 'center',
+            backgroundColor: 'rgba(255,255,255,0.01)',
+            borderRadius: 14,
             flexDirection: 'row',
+            paddingHorizontal: tokens.spacing.md,
             paddingVertical: tokens.spacing.md,
         },
         tableValue: {
             color: tokens.colors.textPrimary,
             fontSize: 15,
             lineHeight: 22,
+        },
+        tableAmount: {
+            color: '#F1A9A0',
+            fontWeight: '800',
         },
         dateCell: {
             flex: 1.1,
@@ -489,8 +619,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             textAlign: 'right',
         },
         separator: {
-            backgroundColor: '#1A2432',
-            height: 1,
+            height: tokens.spacing.sm,
         },
     });
 

@@ -2,7 +2,7 @@ import {
     buildLowSalesItemRows,
     getOrdersForStatuses,
 } from '@pos/reporting/data-access';
-import { selectAllProducts } from '@pos/products/data-access';
+import { ProductService, selectAllProducts } from '@pos/products/data-access';
 import { OrderStatus } from '@pos/shared/models';
 import { DateRange } from '@pos/shared/ui-native';
 import React from 'react';
@@ -39,12 +39,16 @@ export function LowSalesItems() {
     ];
 
     const getData = async (range: DateRange) => {
-        const orders = await getOrdersForStatuses({
-            statuses: [OrderStatus.PAID],
-            range: normalizeReportRange(range),
-        });
+        const normalizedRange = normalizeReportRange(range);
+        const [orders, loadedProducts] = await Promise.all([
+            getOrdersForStatuses({
+                statuses: [OrderStatus.PAID],
+                range: normalizedRange,
+            }),
+            products?.length ? Promise.resolve(products) : ProductService.getAll(),
+        ]);
 
-        return buildLowSalesItemRows(orders, products as any);
+        return buildLowSalesItemRows(orders, loadedProducts as any);
     };
 
     return (
