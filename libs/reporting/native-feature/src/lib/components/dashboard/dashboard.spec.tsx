@@ -4,14 +4,13 @@ import { render } from '@testing-library/react-native';
 import moment from 'moment';
 import * as mockReactNative from 'react-native';
 
-const mockGetSalesSummaryForRange = jest.fn();
-const mockGetLocalSalesSummaryForRange = jest.fn();
+const mockGetSalesForRange = jest.fn();
 
 jest.mock('@pos/reporting/data-access', () => ({
-    getSalesSummaryForRange: (...args: unknown[]) =>
-        mockGetSalesSummaryForRange(...args),
-    getLocalSalesSummaryForRange: (...args: unknown[]) =>
-        mockGetLocalSalesSummaryForRange(...args),
+    buildSalesSummaryFromOrders: jest.requireActual(
+        '@pos/reporting/data-access'
+    ).buildSalesSummaryFromOrders,
+    getSalesForRange: (...args: unknown[]) => mockGetSalesForRange(...args),
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
@@ -66,11 +65,11 @@ import {
 describe('Dashboard', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        mockGetLocalSalesSummaryForRange.mockResolvedValue(undefined);
+        mockGetSalesForRange.mockResolvedValue([]);
     });
 
     it('renders loading state', () => {
-        mockGetSalesSummaryForRange.mockReturnValue(new Promise(() => undefined));
+        mockGetSalesForRange.mockReturnValue(new Promise(() => undefined));
         const { getByText } = render(<Dashboard />);
         expect(getByText('Loading...')).toBeTruthy();
     });

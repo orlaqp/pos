@@ -8,14 +8,10 @@ import {
 } from './reporting.service';
 
 const mockGraphql = jest.fn();
-const mockDataStoreQuery = jest.fn();
 
 jest.mock('@pos/shared/amplify', () => ({
     API: {
         graphql: (...args: unknown[]) => mockGraphql(...args),
-    },
-    DataStore: {
-        query: (...args: unknown[]) => mockDataStoreQuery(...args),
     },
 }));
 
@@ -79,96 +75,58 @@ describe('reporting.service', () => {
         );
     });
 
-    it('falls back to local DataStore when remote summary is empty', async () => {
+    it('returns the remote summary payload as-is', async () => {
         mockGraphql.mockResolvedValue({
             data: {
-                getSalesSummary: { totalAmount: 0, totalOrders: 0 },
+                getSalesSummary: { totalAmount: 20, totalOrders: 1 },
             },
         });
-        mockDataStoreQuery.mockResolvedValue([
-            {
-                id: 'o1',
-                status: 'PAID',
-                employeeId: 'e1',
-                employeeName: 'Cashier A',
-                total: 20,
-                orderDate: '2026-03-15T10:00:00.000Z',
-                lines: [],
-            },
-        ]);
 
         const summary = await getSalesSummaryForRange(OrderStatus.PAID, range);
-        expect(mockDataStoreQuery).toHaveBeenCalled();
         expect(summary?.totalAmount).toBe(20);
         expect(summary?.totalOrders).toBe(1);
     });
 
-    it('uses updatedAt as paid event date when filtering local fallback', async () => {
+    it('returns an empty remote summary payload when backend sends one', async () => {
         mockGraphql.mockResolvedValue({
             data: {
                 getSalesSummary: { totalAmount: 0, totalOrders: 0 },
             },
         });
-        mockDataStoreQuery.mockResolvedValue([
-            {
-                id: 'o-outside',
-                status: 'PAID',
-                employeeId: 'e1',
-                employeeName: 'Cashier A',
-                total: 10,
-                orderDate: '2026-02-20T10:00:00.000Z',
-                updatedAt: '2026-03-15T18:00:00.000Z',
-                lines: [],
-            },
-        ]);
 
         const summary = await getSalesSummaryForRange(OrderStatus.PAID, range);
-        expect(summary?.totalOrders).toBe(1);
-        expect(summary?.totalAmount).toBe(10);
-    });
-
-    it('skips local fallback when disabled', async () => {
-        mockGraphql.mockResolvedValue({
-            data: {
-                getSalesSummary: { totalAmount: 0, totalOrders: 0 },
-            },
-        });
-
-        const summary = await getSalesSummaryForRange(OrderStatus.PAID, range, {
-            fallbackToLocal: false,
-        });
-
-        expect(mockDataStoreQuery).not.toHaveBeenCalled();
         expect(summary).toEqual({ totalAmount: 0, totalOrders: 0 });
     });
 
-    it('falls back to local DataStore when remote sales query fails', async () => {
-        mockGraphql.mockRejectedValue(new Error('network'));
-        mockDataStoreQuery.mockResolvedValue([
-            {
-                id: 'o1',
-                status: 'PAID',
-                employeeId: 'e1',
-                employeeName: 'Cashier A',
-                total: 20,
-                orderDate: '2026-03-15T10:00:00.000Z',
-                lines: [],
+    it('returns remote sales rows directly', async () => {
+        mockGraphql.mockResolvedValue({
+            data: {
+                getSales: [
+                    {
+                        id: 'o1',
+                        status: 'PAID',
+                    },
+                ],
             },
-        ]);
+        });
 
         const result = await getSalesForRange(OrderStatus.PAID, range);
         expect(Array.isArray(result)).toBe(true);
         expect(result).toHaveLength(1);
     });
 
-    it('returns undefined on remote failure when local fallback is disabled', async () => {
+    it('returns an empty list when remote sales query fails', async () => {
         mockGraphql.mockRejectedValue(new Error('network'));
 
-        const summary = await getSalesSummaryForRange(OrderStatus.PAID, range, {
-            fallbackToLocal: false,
-        });
+        const result = await getSalesForRange(OrderStatus.PAID, range);
+        expect(Array.isArray(result)).toBe(true);
+        expect(result).toHaveLength(0);
+    });
 
-        expect(mockDataStoreQuery).not.toHaveBeenCalled();
+    it('returns undefined on remote summary failure', async () => {
+        mockGraphql.mockRejectedValue(new Error('network'));
+
+        const summary = await getSalesSummaryForRange(OrderStatus.PAID, range);
         expect(summary).toBeUndefined();
     });
 });

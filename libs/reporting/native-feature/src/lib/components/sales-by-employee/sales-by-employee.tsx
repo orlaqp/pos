@@ -1,4 +1,6 @@
-import { getSalesSummaryForRange } from '@pos/reporting/data-access';
+import {
+    getSalesSummaryForRange,
+} from '@pos/reporting/data-access';
 import { DateRange } from '@pos/shared/ui-native';
 import { sortDescListBy } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
@@ -6,7 +8,7 @@ import { SalesSummary } from '@pos/shared/models';
 import React from 'react';
 import i18next from 'i18next';
 
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import ReportViewer, { ReportHeader } from '../report-viewer/report-viewer';
 
 /* eslint-disable-next-line */

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Order, PaymentType, SalesSummary } from '@pos/shared/models';
 import {
     DateRange,
@@ -19,7 +19,6 @@ import Widget from '../widget/widget';
 
 import {
     getSalesForRange,
-    getLocalSalesSummaryForRange,
     getSalesSummaryForRange,
 } from '@pos/reporting/data-access';
 import { sortDescListBy } from '@pos/shared/utils';
@@ -204,13 +203,9 @@ export const formatDashboardDateRange = (range: DateRange) => {
 
 export const loadDashboardSummary = async (range?: DateRange) => {
     const normalizedRange = normalizeDashboardRange(range);
-    const summary = await getSalesSummaryForRange('PAID', normalizedRange, {
-        fallbackToLocal: false,
-    });
+    const summary = await getSalesSummaryForRange('PAID', normalizedRange);
     return sortDashboardSummary(summary);
 };
-
-const DASHBOARD_LOAD_TIMEOUT_MS = 5000;
 
 export function Dashboard(_props: DashboardProps) {
     const tokens = useDesignTokens();
@@ -222,8 +217,8 @@ export function Dashboard(_props: DashboardProps) {
     });
     const [salesSummary, setSalesSummary] = useState<SalesSummary>();
     const [supplemental, setSupplemental] = useState<DashboardSupplemental>();
-    const emptyOpacity = useRef(new Animated.Value(0)).current;
-    const emptyTranslateY = useRef(new Animated.Value(12)).current;
+    const [emptyOpacity] = useState(() => new Animated.Value(0));
+    const [emptyTranslateY] = useState(() => new Animated.Value(12));
     const categories = useSelector(selectAllCategories);
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
@@ -244,108 +239,43 @@ export function Dashboard(_props: DashboardProps) {
 
     useEffect(() => {
         let cancelled = false;
-        let interactionHandle: { cancel?: () => void } | undefined;
-        let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLoading(true);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSupplemental(undefined);
 
-        interactionHandle = InteractionManager.runAfterInteractions(() => {
+        const interactionHandle = InteractionManager.runAfterInteractions(() => {
             (async () => {
                 try {
-                    const timeoutSummary = new Promise<undefined>((resolve) => {
-                        setTimeout(() => resolve(undefined), DASHBOARD_LOAD_TIMEOUT_MS);
-                    });
-                    const summary = await Promise.race([
-                        loadDashboardSummary(dateRange),
-                        timeoutSummary,
-                    ]);
+                    const normalizedRange = normalizeDashboardRange(dateRange);
+                    const summary = await loadDashboardSummary(normalizedRange);
 
                     if (cancelled) {
                         return;
                     }
 
-                    if (hasSalesData(summary)) {
-                        setSalesSummary(summary);
-                        setLoading(false);
-                        setTimeout(async () => {
-                            try {
-                                const orders =
-                                    (await getSalesForRange(
-                                        'PAID',
-                                        normalizeDashboardRange(dateRange)
-                                    )) || [];
-                                if (!cancelled) {
-                                    setSupplemental(
-                                        buildDashboardSupplemental(orders, categoriesById)
-                                    );
-                                }
-                            } catch {
-                                if (!cancelled) {
-                                    setSupplemental(undefined);
-                                }
-                            }
-                        }, 120);
-                        return;
-                    }
+                    setSalesSummary(summary);
+                    setLoading(false);
 
-                    // Defer the heavier local fallback until after the initial screen is interactive.
-                    fallbackTimer = setTimeout(async () => {
-                        try {
-                            const localSummary = await getLocalSalesSummaryForRange(
-                                'PAID',
-                                normalizeDashboardRange(dateRange)
-                            );
+                    getSalesForRange('PAID', normalizedRange)
+                        .then((orders) => {
                             if (!cancelled) {
-                                setSalesSummary(sortDashboardSummary(localSummary));
-                                const orders =
-                                    (await getSalesForRange(
-                                        'PAID',
-                                        normalizeDashboardRange(dateRange)
-                                    )) || [];
                                 setSupplemental(
-                                    buildDashboardSupplemental(orders, categoriesById)
+                                    buildDashboardSupplemental(orders || [], categoriesById)
                                 );
                             }
-                        } catch {
+                        })
+                        .catch(() => {
                             if (!cancelled) {
-                                setSalesSummary(undefined);
                                 setSupplemental(undefined);
                             }
-                        } finally {
-                            if (!cancelled) {
-                                setLoading(false);
-                            }
-                        }
-                    }, 120);
+                        });
                 } catch {
-                    fallbackTimer = setTimeout(async () => {
-                        try {
-                            const localSummary = await getLocalSalesSummaryForRange(
-                                'PAID',
-                                normalizeDashboardRange(dateRange)
-                            );
-                            if (!cancelled) {
-                                setSalesSummary(sortDashboardSummary(localSummary));
-                                const orders =
-                                    (await getSalesForRange(
-                                        'PAID',
-                                        normalizeDashboardRange(dateRange)
-                                    )) || [];
-                                setSupplemental(
-                                    buildDashboardSupplemental(orders, categoriesById)
-                                );
-                            }
-                        } catch {
-                            if (!cancelled) {
-                                setSalesSummary(undefined);
-                                setSupplemental(undefined);
-                            }
-                        } finally {
-                            if (!cancelled) {
-                                setLoading(false);
-                            }
-                        }
-                    }, 120);
+                    if (!cancelled) {
+                        setSalesSummary(undefined);
+                        setSupplemental(undefined);
+                        setLoading(false);
+                    }
                 }
             })();
         });
@@ -353,9 +283,6 @@ export function Dashboard(_props: DashboardProps) {
         return () => {
             cancelled = true;
             interactionHandle?.cancel?.();
-            if (fallbackTimer) {
-                clearTimeout(fallbackTimer);
-            }
         };
     }, [categoriesById, dateRange]);
 

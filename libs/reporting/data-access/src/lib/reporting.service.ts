@@ -2,27 +2,12 @@ import { GraphQLResult } from '@aws-amplify/api-graphql';
 import { getSalesSummary } from '@pos/shared/api';
 import { Order, OrderStatus, SalesSummary } from '@pos/shared/models';
 import { DateRange } from '@pos/shared/ui-native';
-import { API, DataStore } from '@pos/shared/amplify';
+import { API } from '@pos/shared/amplify';
 
 const toIsoRange = (range: DateRange) => ({
     from: range?.startDate.toISOString(),
     to: range?.endDate.toISOString(),
 });
-
-const isWithinIsoRange = (value: string | null | undefined, from: string, to: string) =>
-    !!value && value >= from && value <= to;
-
-const getOrderEventIso = (
-    order: Pick<Order, 'orderDate' | 'updatedAt'>,
-    status: OrderStatus | keyof typeof OrderStatus
-) => {
-    // For paid sales views, use payment-time approximation (updatedAt).
-    if (status === 'PAID') {
-        return order.updatedAt || order.orderDate;
-    }
-
-    return order.orderDate || order.updatedAt;
-};
 
 export const hasSummaryData = (summary?: SalesSummary) =>
     !!summary && ((summary.totalAmount || 0) > 0 || (summary.totalOrders || 0) > 0);
@@ -39,7 +24,10 @@ export const buildSalesSummaryFromOrders = (
         const employeeId = order.employeeId || 'unknown';
         const employeeName = order.employeeName || 'Unknown';
         const total = Number(order.total || 0);
-        const eventIso = getOrderEventIso(order, status) || '';
+        const eventIso =
+            status === 'PAID'
+                ? order.updatedAt || order.orderDate || ''
+                : order.orderDate || order.updatedAt || '';
         const datePart = eventIso.substring(0, 10);
 
         if (datePart) {
@@ -94,38 +82,11 @@ export const buildSalesSummaryFromOrders = (
     };
 };
 
-const getLocalPaidOrdersForRange = async (
-    status: OrderStatus | keyof typeof OrderStatus,
-    range: DateRange
-) => {
-    const normalizedStatus = status as OrderStatus;
-    const { from, to } = toIsoRange(range);
-    const orders = await DataStore.query(Order, (o) => o.status.eq(normalizedStatus));
-
-    return orders.filter((order) =>
-        isWithinIsoRange(getOrderEventIso(order, normalizedStatus), from, to)
-    );
-};
-
-export const getLocalSalesSummaryForRange = async (
-    status: OrderStatus | keyof typeof OrderStatus,
-    range: DateRange
-) => {
-    const localOrders = await getLocalPaidOrdersForRange(status, range);
-    if (!localOrders.length) {
-        return undefined;
-    }
-
-    return buildSalesSummaryFromOrders(localOrders, status);
-};
-
 export const getSalesSummaryForRange = (
     status: OrderStatus | keyof typeof OrderStatus,
-    range: DateRange,
-    options?: { fallbackToLocal?: boolean }
+    range: DateRange
 ) => {
     const { from, to } = toIsoRange(range);
-    const fallbackToLocal = options?.fallbackToLocal !== false;
     const promise = API.graphql<{ getSalesSummary: SalesSummary }>({
         query: getSalesSummary,
         variables: {
@@ -136,24 +97,15 @@ export const getSalesSummaryForRange = (
     }) as Promise<GraphQLResult<{ getSalesSummary: SalesSummary }>>;
 
     return promise
-        .then(async (r) => {
-            const summary = r.data?.getSalesSummary;
-            if (hasSummaryData(summary)) {
-                return summary;
-            }
-
-            if (!fallbackToLocal) {
-                return summary;
-            }
-
-            return (await getLocalSalesSummaryForRange(status, range)) || summary;
-        })
-        .catch(async () => {
-            if (!fallbackToLocal) {
-                return undefined;
-            }
-
-            return getLocalSalesSummaryForRange(status, range);
+        .then((r) => r.data?.getSalesSummary)
+        .catch(async (error) => {
+            console.error('getSalesSummaryForRange failed', {
+                status,
+                from,
+                to,
+                error,
+            });
+            return undefined;
         });
 };
 
@@ -172,14 +124,16 @@ export const getSalesForRange = (
     }) as Promise<GraphQLResult<{ getSales: Order[] }>>;
 
     return promise
-        .then(async (r) => {
-            const remoteOrders = r.data?.getSales || [];
-            if (remoteOrders.length) {
-                return remoteOrders;
-            }
-            return getLocalPaidOrdersForRange(status, range);
-        })
-        .catch(async () => getLocalPaidOrdersForRange(status, range));
+        .then((r) => r.data?.getSales || [])
+        .catch(async (error) => {
+            console.error('getSalesForRange failed', {
+                status,
+                from,
+                to,
+                error,
+            });
+            return [];
+        });
 };
 
 export const getSalesCustom = /* GraphQL */ `
@@ -188,6 +142,7 @@ export const getSalesCustom = /* GraphQL */ `
       id
       orderNo
       orderDate
+      updatedAt
       subtotal
       tax
       total
@@ -195,20 +150,13 @@ export const getSalesCustom = /* GraphQL */ `
       employeeId
       employeeName
       lines {
-        identifier
         productId
         productName
         categoryId
         unitOfMeasure
-        barcode
-        sku
         quantity
-        tax
         price
         lineTotalBeforeTax
-        lineTotalAfterTax
-        lineDiscountTotal
-        allocatedOrderDiscountTotal
         isEBTEligible
         ebtPaidAmount
         nonEbtPaidAmount
@@ -228,34 +176,6 @@ export const getSalesCustom = /* GraphQL */ `
         employeeName
         comments
       }
-      createdBy {
-        id
-        name
-      }
-      updatedBy {
-        id
-        name
-      }
-      Customer {
-        id
-        firstName
-        lastName
-        middleName
-        dob
-        phone
-        email
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      orderCustomerId
     }
   }
 `;
