@@ -25,24 +25,24 @@ const parsePositiveInteger = (
   return parsed;
 };
 
+const normalizePrefix = (prefix: string): AssetPrefix =>
+  prefix.endsWith('/') ? prefix : `${prefix}/`;
+
 const parsePrefixes = (value: string | undefined): AssetPrefix[] => {
   if (!value) {
     return [...DEFAULT_PREFIXES];
   }
 
-  const allowed = new Set<string>(DEFAULT_PREFIXES);
   const prefixes = value
     .split(',')
     .map((prefix) => prefix.trim())
     .filter(Boolean);
 
-  for (const prefix of prefixes) {
-    if (!allowed.has(prefix)) {
-      throw new Error(`Unsupported prefix "${prefix}"`);
-    }
+  if (prefixes.length === 0) {
+    throw new Error('--prefixes must include at least one prefix');
   }
 
-  return prefixes as AssetPrefix[];
+  return Array.from(new Set(prefixes.map(normalizePrefix)));
 };
 
 export const parseAssetArgs = (argv: string[]): AssetMigrationOptions => {
@@ -69,6 +69,8 @@ export const parseAssetArgs = (argv: string[]): AssetMigrationOptions => {
   const targetEnv = args.get('target-env');
   const sourceProfile = args.get('source-profile');
   const targetProfile = args.get('target-profile');
+  const sourceTenantId = args.get('source-tenant-id');
+  const targetTenantId = args.get('target-tenant-id') ?? args.get('tenant-id');
 
   if (!sourceEnv || !targetEnv || !sourceProfile || !targetProfile) {
     throw new Error(
@@ -83,6 +85,9 @@ export const parseAssetArgs = (argv: string[]): AssetMigrationOptions => {
     targetEnv,
     sourceProfile,
     targetProfile,
+    sourceTenantId,
+    targetTenantId,
+    ignoreMissingSourceAssets: parseBooleanFlag(args.get('ignore-missing-source-assets')),
     apply,
     dryRun: !apply,
     parallelObjects: parsePositiveInteger(

@@ -53,6 +53,7 @@ describe('configureDataStore', () => {
         expect(mockConfigure).toHaveBeenCalledTimes(1);
         const options = mockConfigure.mock.calls[0][0];
 
+        expect(typeof options.conflictHandler).toBe('function');
         expect(options.syncExpressions).toHaveLength(5);
         expect(mockSyncExpression.mock.calls.map(([model]: [unknown]) => model)).toEqual([
             models.InventoryCount,
@@ -65,6 +66,33 @@ describe('configureDataStore', () => {
         expect(mockAdd).toHaveBeenCalledWith(1, 'day');
         expect(mockSubtract).toHaveBeenCalledTimes(1);
         expect(mockSubtract).toHaveBeenNthCalledWith(1, 3, 'days');
+    });
+
+    it('rehydrates tenantId during conflict resolution when local model is missing it', async () => {
+        configureDataStore();
+
+        const options = mockConfigure.mock.calls[0][0];
+        class MockProduct {
+            tenantId?: string;
+            _version?: number;
+            constructor(init: Record<string, unknown>) {
+                Object.assign(this, init);
+            }
+        }
+
+        const resolved = await options.conflictHandler({
+            modelConstructor: MockProduct,
+            localModel: { id: 'prod-1', name: 'Test Product' },
+            remoteModel: { id: 'prod-1', tenantId: 'tenant-remote', _version: 11 },
+        });
+
+        expect(resolved).toBeInstanceOf(MockProduct);
+        expect(resolved).toMatchObject({
+            id: 'prod-1',
+            name: 'Test Product',
+            tenantId: 'tenant-remote',
+            _version: 11,
+        });
     });
 
     it('reconfigures and restarts DataStore when inventory sync is enabled on demand', async () => {

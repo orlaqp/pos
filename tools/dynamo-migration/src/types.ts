@@ -26,8 +26,6 @@ export const LEGACY_MODEL_NAMES = [
 ] as const;
 
 export const TARGET_ONLY_MODEL_NAMES = [
-  'Tenant',
-  'TenantUser',
   'DiscountDefinition',
   'DiscountReasonCode',
   'EmployeeDiscountPolicy',
@@ -37,9 +35,13 @@ export const TARGET_ONLY_MODEL_NAMES = [
   'DiscountReconciliationException',
 ] as const;
 
+export const ACCOUNT_MODEL_NAMES = ['Tenant', 'TenantUser'] as const;
+
 export type LegacyModelName = (typeof LEGACY_MODEL_NAMES)[number];
 export type TargetOnlyModelName = (typeof TARGET_ONLY_MODEL_NAMES)[number];
-export type ModelName = LegacyModelName | TargetOnlyModelName;
+export type AccountModelName = (typeof ACCOUNT_MODEL_NAMES)[number];
+export type MigratableModelName = LegacyModelName | TargetOnlyModelName;
+export type ModelName = MigratableModelName | AccountModelName;
 
 export type EnvConfig = {
   envName: string;
@@ -69,8 +71,10 @@ export type MigrationOptions = {
   targetProfile: string;
   tenantId: string;
   dryRun: boolean;
-  models?: LegacyModelName[];
+  models?: MigratableModelName[];
   parallelModels: number;
+  years?: number;
+  days?: number;
 };
 
 export type Logger = {
@@ -117,7 +121,7 @@ export type TransformSkip = {
 export type TransformResult = TransformSuccess | TransformSkip;
 
 export type ModelMigrationSpec = {
-  modelName: LegacyModelName;
+  modelName: MigratableModelName;
   transform: (
     item: Record<string, unknown>,
     tenantId: string
@@ -153,6 +157,10 @@ export type MigrationReport = {
     targetProfile: string;
     targetTables: string[];
     dryRun: boolean;
+    tenantId: string;
+    selectedModels: MigratableModelName[] | null;
+    overwrite: boolean;
+    operationalHistory: string;
   };
   models: ModelReport[];
   failures: FailureRecord[];

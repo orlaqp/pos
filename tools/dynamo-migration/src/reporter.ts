@@ -19,6 +19,14 @@ export const createInitialReport = (
       .map((table) => `${table.modelName}:${table.physicalTableName}`)
       .sort(),
     dryRun: options.dryRun,
+    tenantId: options.tenantId,
+    selectedModels: (options.models?.length ? options.models : undefined) ?? null,
+    overwrite: true,
+    operationalHistory: options.days
+      ? `last ${options.days} day(s)`
+      : options.years
+        ? `last ${options.years} year(s)`
+        : 'full',
   },
   models: [],
   failures: [],
@@ -47,6 +55,14 @@ export const logPreflight = (logger: Logger, report: MigrationReport) => {
   logger.info(`Target stack: ${report.preflight.targetStack}`);
   logger.info(`Target profile: ${report.preflight.targetProfile}`);
   logger.info(`Target tables: ${report.preflight.targetTables.join(', ')}`);
+  logger.info(`Target tenant id: ${report.preflight.tenantId}`);
+  logger.info(
+    `Selected models: ${
+      report.preflight.selectedModels?.join(', ') || 'default production cutover set'
+    }`
+  );
+  logger.info(`Operational history: ${report.preflight.operationalHistory}`);
   logger.info('SOURCE IS READ-ONLY; NO WRITES TO DEVELOP WILL OCCUR');
   logger.info(report.preflight.dryRun ? 'Dry run: enabled' : 'Dry run: disabled');
+  logger.info('Overwrite mode: enabled');
 };

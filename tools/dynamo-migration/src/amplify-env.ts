@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
 import {
+  ACCOUNT_MODEL_NAMES,
   LEGACY_MODEL_NAMES,
   TARGET_ONLY_MODEL_NAMES,
   type EnvConfig,
@@ -16,7 +17,11 @@ const TEAM_PROVIDER_PATH = resolve(
   'apps/mobile-ui/amplify/team-provider-info.json'
 );
 
-const ALL_MODEL_NAMES = [...LEGACY_MODEL_NAMES, ...TARGET_ONLY_MODEL_NAMES] as ModelName[];
+const ALL_MODEL_NAMES = [
+  ...LEGACY_MODEL_NAMES,
+  ...TARGET_ONLY_MODEL_NAMES,
+  ...ACCOUNT_MODEL_NAMES,
+] as ModelName[];
 
 type TeamProviderInfo = Record<
   string,

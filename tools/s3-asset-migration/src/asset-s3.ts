@@ -1,5 +1,6 @@
 import {
   CopyObjectCommand,
+  HeadObjectCommand,
   ListObjectsV2Command,
   type ListObjectsV2CommandInput,
   type S3Client,
@@ -59,6 +60,20 @@ export class AssetSourceReader {
 
     return objects;
   }
+
+  async statObject(bucketName: string, key: string): Promise<ListedObject> {
+    const response = await this.client.send(
+      new HeadObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+      })
+    );
+
+    return {
+      key,
+      size: response.ContentLength ?? 0,
+    };
+  }
 }
 
 export class AssetTargetWriter {
@@ -68,14 +83,14 @@ export class AssetTargetWriter {
     private readonly targetEnv: StorageEnvironment
   ) {}
 
-  async copyObject(key: string): Promise<void> {
+  async copyObject(sourceKey: string, targetKey: string = sourceKey): Promise<void> {
     assertWriteTargetBucket(this.targetEnv.bucketName, this.sourceEnv, this.targetEnv);
 
     await this.client.send(
       new CopyObjectCommand({
         Bucket: this.targetEnv.bucketName,
-        Key: key,
-        CopySource: encodeCopySource(this.sourceEnv.bucketName, key),
+        Key: targetKey,
+        CopySource: encodeCopySource(this.sourceEnv.bucketName, sourceKey),
         MetadataDirective: 'COPY',
       })
     );

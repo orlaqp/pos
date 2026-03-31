@@ -18,6 +18,7 @@ import {
 import { RootState } from '@pos/store';
 import { Category } from '@pos/shared/models';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { requireCurrentTenantId } from '@pos/auth/data-access';
 
 export interface CategoryFormParams {
     [name: string]: object | undefined;
@@ -32,6 +33,7 @@ export interface CategoryFormProps {
 export function CategoryForm({ navigation }: CategoryFormProps) {
     const category = useSelector((state: RootState) => state.categories.selected);
     const dispatch = useDispatch();
+    const tenantId = requireCurrentTenantId();
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
     const [busy, setBusy] = useState<boolean>(false);
@@ -107,7 +109,7 @@ export function CategoryForm({ navigation }: CategoryFormProps) {
                                 <Text style={styles.sectionTitle}>Catalog</Text>
                                 <View style={styles.uploadWrap}>
                                     <UiFileUpload
-                                        prefix="categories"
+                                        prefix={`${tenantId}/categories`}
                                         imageKey={form.getValues().picture}
                                         onAssetUploaded={updatePicture}
                                         onAssetRemoved={updatePicture}

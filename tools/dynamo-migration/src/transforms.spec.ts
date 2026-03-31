@@ -6,8 +6,14 @@ describe('transforms', () => {
     const tenantId = 'tenant-123';
 
     const store = specs[0].transform({ id: 'store-1', name: 'Main' }, tenantId);
-    const category = specs[1].transform({ id: 'cat-1', name: 'Beer' }, tenantId);
-    const product = specs[2].transform({ id: 'prod-1', name: 'IPA' }, tenantId);
+    const category = specs[1].transform(
+      { id: 'cat-1', name: 'Beer', picture: 'categories/beer.jpg' },
+      tenantId
+    );
+    const product = specs[2].transform(
+      { id: 'prod-1', name: 'IPA', picture: 'products/ipa.jpg' },
+      tenantId
+    );
     const settings = specs[3].transform({ id: 'gs-1' }, tenantId);
 
     expect(store).toEqual({
@@ -23,6 +29,7 @@ describe('transforms', () => {
       item: expect.objectContaining({
         id: 'cat-1',
         tenantId,
+        picture: `${tenantId}/categories/beer.jpg`,
         discountable: true,
         discountPolicyMode: 'DEFAULT',
       }),
@@ -32,6 +39,7 @@ describe('transforms', () => {
       item: expect.objectContaining({
         id: 'prod-1',
         tenantId,
+        picture: `${tenantId}/products/ipa.jpg`,
         discountable: true,
       }),
     });

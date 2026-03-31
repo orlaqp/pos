@@ -10,11 +10,13 @@ import { DynamoTargetWriter } from './target-writer';
 import { createModelSpecs } from './transforms';
 import {
   LEGACY_MODEL_NAMES,
+  TARGET_ONLY_MODEL_NAMES,
   type Dependencies,
-  type LegacyModelName,
   type Logger,
   type MigrationOptions,
   type MigrationReport,
+  type LegacyModelName,
+  type MigratableModelName,
 } from './types';
 
 const defaultLogger: Logger = {
@@ -23,12 +25,17 @@ const defaultLogger: Logger = {
 };
 
 const HEARTBEAT_INTERVAL_MS = 15_000;
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-const RECENT_TRANSACTION_MODELS: ReadonlySet<string> = new Set([
+const OPERATIONAL_MODELS: ReadonlySet<string> = new Set([
   'Order',
   'InventoryCount',
+  'InventoryCountLine',
   'InventoryReceive',
+  'InventoryReceiveLine',
 ] as const);
+const CUTOVER_MODEL_NAMES: MigratableModelName[] = [
+  ...LEGACY_MODEL_NAMES,
+  ...TARGET_ONLY_MODEL_NAMES,
+];
 const PARENT_DEPENDENCIES: Partial<Record<LegacyModelName, LegacyModelName[]>> = {
   InventoryCountLine: ['InventoryCount'],
   InventoryReceiveLine: ['InventoryReceive'],
@@ -56,8 +63,29 @@ const formatDuration = (startedAt: number) => {
   return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
 };
 
-const getRecentCutoffIso = () =>
-  new Date(Date.now() - THIRTY_DAYS_MS).toISOString();
+const getOperationalCutoffIso = (
+  years: number | undefined,
+  days: number | undefined
+) => {
+  if (days !== undefined) {
+    return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  }
+
+  if (years === undefined) {
+    return null;
+  }
+
+  const now = new Date();
+  return new Date(
+    now.getFullYear() - years,
+    now.getMonth(),
+    now.getDate(),
+    now.getHours(),
+    now.getMinutes(),
+    now.getSeconds(),
+    now.getMilliseconds()
+  ).toISOString();
+};
 
 const getString = (item: Record<string, unknown>, key: string) => {
   const value = item[key];
@@ -70,9 +98,13 @@ const isOnOrAfterIso = (value: string | null, cutoffIso: string) =>
 const filterSourceItems = (
   modelName: LegacyModelName,
   sourceItems: Record<string, unknown>[],
-  cutoffIso: string,
+  cutoffIso: string | null,
   retentionState: ParentRetentionState
 ) => {
+  if (cutoffIso === null) {
+    return sourceItems;
+  }
+
   if (modelName === 'Order') {
     return sourceItems.filter((item) =>
       isOnOrAfterIso(getString(item, 'createdAt') ?? getString(item, 'orderDate'), cutoffIso)
@@ -209,9 +241,9 @@ export const runMigration = async (
     targetEnv
   );
   const selectedModels =
-    options.models && options.models.length > 0 ? options.models : [...LEGACY_MODEL_NAMES];
-  const specs = createModelSpecs(selectedModels as LegacyModelName[]);
-  const recentCutoffIso = getRecentCutoffIso();
+    options.models && options.models.length > 0 ? options.models : [...CUTOVER_MODEL_NAMES];
+  const specs = createModelSpecs(selectedModels);
+  const operationalCutoffIso = getOperationalCutoffIso(options.years, options.days);
   const retentionState: ParentRetentionState = {
     InventoryCount: new Set<string>(),
     InventoryReceive: new Set<string>(),
@@ -240,10 +272,12 @@ export const runMigration = async (
     `Selected models: ${specs.map((spec) => spec.modelName).join(', ')}`
   );
   dependencies.logger.info(
-    `Recent transaction cutoff: ${recentCutoffIso} (applies to Order, InventoryCount, InventoryReceive, and dependent line tables)`
+    `Operational history window: ${
+      operationalCutoffIso ? `records on/after ${operationalCutoffIso}` : 'full history'
+    }`
   );
 
-  const completedModels = new Set<LegacyModelName>();
+  const completedModels = new Set<MigratableModelName>();
   const pendingSpecs = specs.map((spec, index) => ({ spec, index }));
 
   while (pendingSpecs.length > 0) {
@@ -294,15 +328,17 @@ export const runMigration = async (
         });
         modelReport.scanned = sourceItems.length;
         const filteredItems = filterSourceItems(
-          spec.modelName,
+          spec.modelName as LegacyModelName,
           sourceItems,
-          recentCutoffIso,
+          operationalCutoffIso,
           retentionState
         );
         modelReport.filtered = filteredItems.length;
-        if (RECENT_TRANSACTION_MODELS.has(spec.modelName)) {
+        if (OPERATIONAL_MODELS.has(spec.modelName)) {
           dependencies.logger.info(
-            `[${spec.modelName}] retained ${filteredItems.length} of ${sourceItems.length} records after cutoff ${recentCutoffIso}`
+            `[${spec.modelName}] retained ${filteredItems.length} of ${sourceItems.length} records ${
+              operationalCutoffIso ? `after cutoff ${operationalCutoffIso}` : 'with full history'
+            }`
           );
         } else if (
           spec.modelName === 'InventoryCountLine' ||

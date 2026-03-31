@@ -20,6 +20,29 @@ const getInventorySyncCutoff = () => {
     return moment().add(1, 'day').toISOString();
 };
 
+const withTenantConflictResolution = (
+    conflict: {
+        modelConstructor: new (init: Record<string, unknown>) => unknown;
+        localModel: Record<string, unknown>;
+        remoteModel: Record<string, unknown>;
+    },
+    tenantId: string
+) => {
+    const merged = {
+        ...conflict.localModel,
+        _version: conflict.remoteModel?._version,
+    } as Record<string, unknown>;
+
+    if (!merged.tenantId) {
+        merged.tenantId =
+            conflict.remoteModel?.tenantId ||
+            conflict.localModel?.tenantId ||
+            tenantId;
+    }
+
+    return new conflict.modelConstructor(merged);
+};
+
 export const configureDataStore = () => {
     console.log('Configuring data store sync expressions');
 
@@ -34,6 +57,11 @@ export const configureDataStore = () => {
     const orderIsoDate = moment().subtract(closedOrderSyncWindowDays, 'days').toISOString();
 
     DataStore.configure({
+        conflictHandler: async (conflict: {
+            modelConstructor: new (init: Record<string, unknown>) => unknown;
+            localModel: Record<string, unknown>;
+            remoteModel: Record<string, unknown>;
+        }) => withTenantConflictResolution(conflict, tenantId),
         errorHandler: (error: unknown) => {
             if (error && typeof error === 'object') {
                 const details = {

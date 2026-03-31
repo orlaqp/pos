@@ -20,6 +20,7 @@ import { RootState, useAppDispatch } from '@pos/store';
 import { Product } from '@pos/shared/models';
 import { selectAllBrands } from '@pos/brands/data-access';
 import { selectAllUnitOfMeasures } from '@pos/unit-of-measures/data-access';
+import { requireCurrentTenantId } from '@pos/auth/data-access';
 import { useTheme } from '@rneui/themed';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { getThemeColors } from '@pos/theme/native';
@@ -38,6 +39,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
     const brands = useSelector(selectAllBrands);
     const ums = useSelector(selectAllUnitOfMeasures);
     const dispatch = useAppDispatch();
+    const tenantId = requireCurrentTenantId();
 
     const theme = useTheme();
     const tokens = useDesignTokens();
@@ -171,7 +173,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 <View style={styles.catalogRow}>
                                     <View style={styles.imageColumn}>
                                         <UiFileUpload
-                                            prefix="products"
+                                            prefix={`${tenantId}/products`}
                                             imageKey={form.getValues().picture}
                                             onAssetUploaded={updatePicture}
                                             onAssetRemoved={updatePicture}

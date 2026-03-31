@@ -257,6 +257,7 @@ describe('runMigration', () => {
       {
         ...baseOptions,
         models: ['InventoryCount', 'InventoryCountLine'],
+        years: 1,
       },
       {
         sourceCf: {} as never,
@@ -296,6 +297,152 @@ describe('runMigration', () => {
           written: 1,
         }),
       ])
+    );
+  });
+
+  it('migrates full operational history when years is omitted', async () => {
+    mockedResolveEnvironment
+      .mockReset()
+      .mockResolvedValueOnce({
+        ...sourceEnv,
+        tables: {
+          Order: {
+            modelName: 'Order',
+            logicalResourceId: 'Order',
+            physicalTableName: 'Order-source',
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        ...targetEnv,
+        tables: {
+          Order: {
+            modelName: 'Order',
+            logicalResourceId: 'Order',
+            physicalTableName: 'Order-target',
+          },
+        },
+      });
+
+    const writeItem = jest.fn().mockResolvedValue(undefined);
+    mockedSourceReader.mockImplementation(
+      () =>
+        ({
+          scanTable: jest.fn().mockResolvedValue([
+            { id: 'old-order', createdAt: '2020-01-01T00:00:00.000Z' },
+            { id: 'recent-order', createdAt: new Date().toISOString() },
+          ]),
+        }) as never
+    );
+    mockedTargetWriter.mockImplementation(
+      () =>
+        ({
+          writeItem,
+        }) as never
+    );
+
+    const report = await runMigration(
+      {
+        ...baseOptions,
+        models: ['Order'],
+      },
+      {
+        sourceCf: {} as never,
+        targetCf: {} as never,
+        sourceDynamo: {} as never,
+        targetDynamo: {} as never,
+        logger: {
+          info: jest.fn(),
+          error: jest.fn(),
+        },
+      }
+    );
+
+    expect(writeItem).toHaveBeenCalledTimes(2);
+    expect(report.models[0]).toEqual(
+      expect.objectContaining({
+        modelName: 'Order',
+        scanned: 2,
+        filtered: 2,
+        written: 2,
+      })
+    );
+  });
+
+  it('filters operational history by days when requested', async () => {
+    mockedResolveEnvironment
+      .mockReset()
+      .mockResolvedValueOnce({
+        ...sourceEnv,
+        tables: {
+          Order: {
+            modelName: 'Order',
+            logicalResourceId: 'Order',
+            physicalTableName: 'Order-source',
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        ...targetEnv,
+        tables: {
+          Order: {
+            modelName: 'Order',
+            logicalResourceId: 'Order',
+            physicalTableName: 'Order-target',
+          },
+        },
+      });
+
+    const writeItem = jest.fn().mockResolvedValue(undefined);
+    const now = Date.now();
+    const withinOneDay = new Date(now - 6 * 60 * 60 * 1000).toISOString();
+    const olderThanOneDay = new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString();
+    mockedSourceReader.mockImplementation(
+      () =>
+        ({
+          scanTable: jest.fn().mockResolvedValue([
+            { id: 'older-order', createdAt: olderThanOneDay },
+            { id: 'today-order', createdAt: withinOneDay },
+          ]),
+        }) as never
+    );
+    mockedTargetWriter.mockImplementation(
+      () =>
+        ({
+          writeItem,
+        }) as never
+    );
+
+    const report = await runMigration(
+      {
+        ...baseOptions,
+        models: ['Order'],
+        days: 1,
+      },
+      {
+        sourceCf: {} as never,
+        targetCf: {} as never,
+        sourceDynamo: {} as never,
+        targetDynamo: {} as never,
+        logger: {
+          info: jest.fn(),
+          error: jest.fn(),
+        },
+      }
+    );
+
+    expect(writeItem).toHaveBeenCalledTimes(1);
+    expect(writeItem).toHaveBeenCalledWith(
+      'Order-target',
+      expect.objectContaining({ id: 'today-order', tenantId: 'tenant-9' })
+    );
+    expect(report.models[0]).toEqual(
+      expect.objectContaining({
+        modelName: 'Order',
+        scanned: 2,
+        filtered: 1,
+        written: 1,
+      })
     );
   });
 });

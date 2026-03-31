@@ -8,6 +8,7 @@ const baseOptions: MigrationOptions = {
   targetProfile: 'dst',
   tenantId: 'tenant-1',
   dryRun: true,
+  parallelModels: 1,
 };
 
 const sourceEnv: ResolvedEnvironment = {

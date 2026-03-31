@@ -1,4 +1,4 @@
-import type { LegacyModelName, ModelMigrationSpec, TransformResult } from './types';
+import type { MigratableModelName, ModelMigrationSpec, TransformResult } from './types';
 
 const ensureRecordId = (item: Record<string, unknown>): string | null => {
   const id = item.id;
@@ -12,6 +12,27 @@ const withTenant = (
   ...item,
   tenantId,
 });
+
+const rewriteTenantScopedAssetPath = (
+  value: unknown,
+  tenantId: string,
+  kind: 'products' | 'categories'
+) => {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return value;
+  }
+
+  const normalized = value.trim().replace(/^\/+/, '').replace(/^(public|protected|private)\//, '');
+  const matcher = new RegExp(`(?:^|/)${kind}/(.+)$`);
+  const match = normalized.match(matcher);
+  const suffix = match?.[1] || normalized.split('/').pop();
+
+  if (!suffix) {
+    return value;
+  }
+
+  return `${tenantId}/${kind}/${suffix}`;
+};
 
 const transformGlobalSettings = (
   item: Record<string, unknown>,
@@ -59,6 +80,7 @@ const transformCategory = (
   status: 'ok',
   item: {
     ...withTenant(item, tenantId),
+    picture: rewriteTenantScopedAssetPath(item.picture, tenantId, 'categories'),
     discountable:
       typeof item.discountable === 'boolean' ? item.discountable : true,
     discountPolicyMode:
@@ -76,6 +98,7 @@ const transformProduct = (
   status: 'ok',
   item: {
     ...withTenant(item, tenantId),
+    picture: rewriteTenantScopedAssetPath(item.picture, tenantId, 'products'),
     discountable:
       typeof item.discountable === 'boolean' ? item.discountable : true,
   },
@@ -100,7 +123,7 @@ const transformDefault = (
   };
 };
 
-const overrides: Partial<Record<LegacyModelName, ModelMigrationSpec['transform']>> = {
+const overrides: Partial<Record<MigratableModelName, ModelMigrationSpec['transform']>> = {
   Store: transformStore,
   Category: transformCategory,
   Product: transformProduct,
@@ -108,7 +131,7 @@ const overrides: Partial<Record<LegacyModelName, ModelMigrationSpec['transform']
 };
 
 export const createModelSpecs = (
-  modelNames: LegacyModelName[]
+  modelNames: MigratableModelName[]
 ): ModelMigrationSpec[] =>
   modelNames.map((modelName) => ({
     modelName,

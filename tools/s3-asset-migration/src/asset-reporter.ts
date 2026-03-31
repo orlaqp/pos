@@ -21,10 +21,14 @@ export const createInitialAssetReport = (
     targetStack: target.stackName,
     targetProfile: options.targetProfile,
     targetBucket: target.bucketName,
+    sourceTenantId: options.sourceTenantId ?? null,
+    targetTenantId: options.targetTenantId ?? null,
     prefixes: options.prefixes,
     dryRun: options.dryRun,
     parallelObjects: options.parallelObjects,
     overwrite: true,
+    ignoreMissingSourceAssets: options.ignoreMissingSourceAssets ?? false,
+    selectionMode: options.sourceTenantId ? 'tenant-record-keys' : 'source-record-keys',
   },
   prefixes: [],
   failures: [],
@@ -48,11 +52,23 @@ export const logAssetPreflight = (logger: Logger, report: AssetMigrationReport) 
   logger.info(`Target stack: ${report.preflight.targetStack}`);
   logger.info(`Target profile: ${report.preflight.targetProfile}`);
   logger.info(`Target bucket: ${report.preflight.targetBucket}`);
+  logger.info(
+    `Target tenant id: ${report.preflight.targetTenantId ?? 'not provided'}`
+  );
+  logger.info(
+    `Source tenant id: ${
+      report.preflight.sourceTenantId ?? 'not provided'
+    }`
+  );
+  logger.info(`Selection mode: ${report.preflight.selectionMode}`);
   logger.info(`Prefixes: ${report.preflight.prefixes.join(', ')}`);
   logger.info(`Parallel object workers: ${report.preflight.parallelObjects}`);
   logger.info('SOURCE IS READ-ONLY; NO WRITES TO DEVELOP WILL OCCUR');
   logger.info(report.preflight.dryRun ? 'Dry run: enabled' : 'Dry run: disabled (--apply)');
   logger.info('Overwrite mode: enabled');
+  logger.info(
+    `Ignore missing source assets: ${report.preflight.ignoreMissingSourceAssets ? 'enabled' : 'disabled'}`
+  );
 };
 
 export const logAssetReport = (logger: Logger, report: AssetMigrationReport) => {
