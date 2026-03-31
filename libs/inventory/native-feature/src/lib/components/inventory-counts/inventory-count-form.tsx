@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Alert, FlatList, StyleSheet, TextInput, View, Text } from 'react-native';
 import { getThemeColors, useSharedStyles } from '@pos/theme/native';
@@ -113,7 +113,7 @@ export function InventoryCountForm({
     const [lines, setLines] = useState<InventoryCountLineDTO[]>(
         inventoryCount ? inventoryCount.lines.map(l => ({...l})) : []
     );
-    const ref = React.createRef<TextInput>();
+    const ref = useRef<TextInput>(null);
     const products = useSelector(selectAllProducts);
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
         []
@@ -456,6 +456,7 @@ export function InventoryCountForm({
                                     value={filter}
                                     placeholder="Search for products ..."
                                     debounceTime={700}
+                                    onChangeText={setFilter}
                                     onSubmit={searchSubmit}
                                     onClear={() => ref.current?.focus()}
                                 />

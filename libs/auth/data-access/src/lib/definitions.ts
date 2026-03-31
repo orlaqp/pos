@@ -7,6 +7,7 @@ export const Role = {
     Admin: 'Admin',
     Payments: 'Payments',
     Sales: 'Sales',
+    Discounts: 'Discounts',
     Checks: 'Receive Check Payment',
     VoidOrder: 'Void Sales',
     RemoveSale: 'Remove Sales',

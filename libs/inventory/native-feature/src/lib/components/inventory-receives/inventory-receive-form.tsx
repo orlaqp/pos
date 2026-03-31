@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Alert, FlatList, StyleSheet, TextInput, View, Text } from 'react-native';
 import { getThemeColors, useSharedStyles } from '@pos/theme/native';
@@ -86,7 +86,7 @@ export function InventoryReceiveForm({
     const [lines, setLines] = useState<InventoryReceiveLineDTO[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>([]);
     
-    const ref = React.createRef<TextInput>();
+    const ref = useRef<TextInput>(null);
 
     useEffect(() => {
         if (!inventoryReceive) {
@@ -233,6 +233,7 @@ export function InventoryReceiveForm({
                             value={filter}
                             placeholder="Search for products ..."
                             debounceTime={700}
+                            onChangeText={setFilter}
                             onSubmit={searchSubmit}
                             onClear={() => ref.current?.focus()}
                         />

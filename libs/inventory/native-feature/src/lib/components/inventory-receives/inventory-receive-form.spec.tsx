@@ -345,6 +345,29 @@ describe('InventoryReceiveForm integration', () => {
         });
     });
 
+    it('allows searching again after adding a product line', async () => {
+        mockProductSearch.mockReturnValue({
+            items: [
+                {
+                    id: 'p-1',
+                    name: 'Apple',
+                    unitOfMeasure: 'EA',
+                    quantity: 10,
+                },
+            ],
+            allNumbers: false,
+        });
+        const { getByTestId } = render(
+            <InventoryReceiveForm route={route} navigation={navigation} />
+        );
+
+        fireEvent.press(getByTestId('inventory-receive-search-submit'));
+        fireEvent.press(getByTestId('inventory-receive-add-product'));
+        fireEvent.changeText(getByTestId('inventory-receive-search-input'), 'b');
+
+        expect(getByTestId('inventory-receive-search-input').props.value).toBe('b');
+    });
+
     it('prevents duplicate save while busy', async () => {
         let resolveSave: (() => void) | null = null;
         mockInventoryReceiveSave.mockImplementationOnce(

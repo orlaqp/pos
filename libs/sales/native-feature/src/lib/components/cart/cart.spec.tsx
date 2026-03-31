@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert } from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockDispatch = jest.fn();
@@ -77,7 +77,7 @@ jest.mock('@pos/shared/amplify', () => ({
 }));
 
 jest.mock('@pos/shared/models', () => ({
-    Station: function Station() {},
+    Station: jest.fn(),
 }));
 
 jest.mock('react-native-device-info', () => ({
@@ -85,7 +85,10 @@ jest.mock('react-native-device-info', () => ({
 }));
 
 jest.mock('@pos/auth/data-access', () => ({
-    Role: { Checks: 'Checks' },
+    Role: {
+        Checks: 'Receive Check Payment',
+        Discounts: 'Discounts',
+    },
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
@@ -262,7 +265,7 @@ describe('Cart', () => {
             priceOverrides: [],
             approvalEvents: [],
         };
-        mockEmployeeState = { roles: ['Checks'] };
+        mockEmployeeState = { roles: ['Receive Check Payment', 'Discounts'] };
         mockStoreState = { id: 'store-1', timezone: 'America/New_York' };
         mockStationState = { stationNumber: '25' };
         EmployeeService.getEmployee.mockResolvedValue(null);
@@ -376,6 +379,22 @@ describe('Cart', () => {
                 payload: { code: 'SAVE5' },
             })
         );
+    });
+
+    it('hides the discount card when the logged-in employee does not have the discounts role', () => {
+        mockEmployeeState = { roles: ['Receive Check Payment'] };
+
+        const { queryByText } = renderCart('order');
+
+        expect(queryByText('Discounts')).toBeFalsy();
+        expect(queryByText('Show actions')).toBeFalsy();
+    });
+
+    it('shows the discount card when the logged-in employee has the discounts role', () => {
+        const { getByText } = renderCart('order');
+
+        expect(getByText('Discounts')).toBeTruthy();
+        expect(getByText('Show actions')).toBeTruthy();
     });
 
     it('blocks submit when product inventory is insufficient', () => {

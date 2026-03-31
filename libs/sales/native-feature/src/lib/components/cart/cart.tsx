@@ -5,7 +5,6 @@ import {
     CartState,
     selectCart,
 } from '@pos/sales/data-access';
-import { UICard } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, Dialog } from '@rneui/themed';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -134,6 +133,8 @@ const formatEmployeeName = (employee: {
     return displayName || employee.code?.trim() || 'Approver';
 };
 
+const DISCOUNT_CONTROLS_ENABLED = true;
+
 const baseAmountForDisplay = (
     scope: ManualDraft['scope'],
     cart: CartState,
@@ -190,6 +191,8 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
     const canUsePromoCodes = cart.policy?.canUsePromoCodes !== false;
     const canApplyOrderDiscount = cart.policy?.canApplyOrderDiscount !== false;
     const canOverridePrice = cart.policy?.canOverridePrice !== false;
+    const canViewDiscountControls =
+        DISCOUNT_CONTROLS_ENABLED && (employee?.roles || []).includes(Role.Discounts);
     const selectedLineHasManualAdjustment =
         !!selectedItem?.identifier &&
         (cart.manualDiscounts.some(
@@ -626,40 +629,42 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
             </View>
 
             <View style={localStyles.actionsWrap}>
-                <CartDiscountActions
-                    styles={localStyles}
-                    selectedItemName={selectedItem?.product.name}
-                    discountsLoading={discountsLoading}
-                    actionsExpanded={actionsExpanded}
-                    hasDiscountSummary={hasDiscountSummary}
-                    savingsTotal={cart.footer.savingsTotal}
-                    orderLevelAdjustments={orderLevelAdjustments}
-                    promoCodes={cart.promoCodes}
-                    pricingWarnings={pricingWarnings}
-                    discountError={discountError}
-                    disabledActionReason={disabledActionReason}
-                    selectedLineHasManualAdjustment={selectedLineHasManualAdjustment}
-                    hasOrderManualAdjustment={hasOrderManualAdjustment}
-                    onToggleExpanded={() => setActionsExpanded((current) => !current)}
-                    onOpenPromo={openPromoDialog}
-                    onOpenManual={openManualDiscountDialog}
-                    onOpenOverride={openOverrideDialog}
-                    onRemovePromo={(code) => dispatch(cartActions.removePromoCode(code))}
-                    onClearLinePricing={() =>
-                        dispatch(
-                            cartActions.removePricingAdjustment({
-                                lineId: selectedItem?.identifier,
-                            })
-                        )
-                    }
-                    onClearOrderDiscount={() =>
-                        dispatch(
-                            cartActions.removePricingAdjustment({
-                                scope: 'ORDER',
-                            })
-                        )
-                    }
-                />
+                {canViewDiscountControls && (
+                    <CartDiscountActions
+                        styles={localStyles}
+                        selectedItemName={selectedItem?.product.name}
+                        discountsLoading={discountsLoading}
+                        actionsExpanded={actionsExpanded}
+                        hasDiscountSummary={hasDiscountSummary}
+                        savingsTotal={cart.footer.savingsTotal}
+                        orderLevelAdjustments={orderLevelAdjustments}
+                        promoCodes={cart.promoCodes}
+                        pricingWarnings={pricingWarnings}
+                        discountError={discountError}
+                        disabledActionReason={disabledActionReason}
+                        selectedLineHasManualAdjustment={selectedLineHasManualAdjustment}
+                        hasOrderManualAdjustment={hasOrderManualAdjustment}
+                        onToggleExpanded={() => setActionsExpanded((current) => !current)}
+                        onOpenPromo={openPromoDialog}
+                        onOpenManual={openManualDiscountDialog}
+                        onOpenOverride={openOverrideDialog}
+                        onRemovePromo={(code) => dispatch(cartActions.removePromoCode(code))}
+                        onClearLinePricing={() =>
+                            dispatch(
+                                cartActions.removePricingAdjustment({
+                                    lineId: selectedItem?.identifier,
+                                })
+                            )
+                        }
+                        onClearOrderDiscount={() =>
+                            dispatch(
+                                cartActions.removePricingAdjustment({
+                                    scope: 'ORDER',
+                                })
+                            )
+                        }
+                    />
+                )}
 
                 {!ready && invalidItemCount > 0 ? (
                     <Text style={localStyles.warningText}>
@@ -725,42 +730,46 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                 />
             </Dialog>
 
-            <CartPromoDialog
-                visible={promoVisible}
-                styles={localStyles}
-                overlayStyle={[styles.overlay, localStyles.compactDialog]}
-                promoCodeInput={promoCodeInput}
-                placeholderTextColor={tokens.colors.textSecondary}
-                onChangePromoCode={setPromoCodeInput}
-                onClose={() => setPromoVisible(false)}
-                onSubmit={submitPromoCode}
-            />
+            {canViewDiscountControls && (
+                <>
+                    <CartPromoDialog
+                        visible={promoVisible}
+                        styles={localStyles}
+                        overlayStyle={[styles.overlay, localStyles.compactDialog]}
+                        promoCodeInput={promoCodeInput}
+                        placeholderTextColor={tokens.colors.textSecondary}
+                        onChangePromoCode={setPromoCodeInput}
+                        onClose={() => setPromoVisible(false)}
+                        onSubmit={submitPromoCode}
+                    />
 
-            <CartManualDiscountDialog
-                visible={manualVisible}
-                styles={localStyles}
-                overlayStyle={[styles.overlay, localStyles.mediumDialog]}
-                draft={manualDraft}
-                approvalTargetName={approvalTargetName}
-                baseAmount={baseAmountForDisplay(manualDraft.scope, cart, selectedLineTotal)}
-                placeholderTextColor={tokens.colors.textSecondary}
-                onClose={() => setManualVisible(false)}
-                onSubmit={submitManualDiscount}
-                onChange={(updater) => setManualDraft(updater)}
-            />
+                    <CartManualDiscountDialog
+                        visible={manualVisible}
+                        styles={localStyles}
+                        overlayStyle={[styles.overlay, localStyles.mediumDialog]}
+                        draft={manualDraft}
+                        approvalTargetName={approvalTargetName}
+                        baseAmount={baseAmountForDisplay(manualDraft.scope, cart, selectedLineTotal)}
+                        placeholderTextColor={tokens.colors.textSecondary}
+                        onClose={() => setManualVisible(false)}
+                        onSubmit={submitManualDiscount}
+                        onChange={(updater) => setManualDraft(updater)}
+                    />
 
-            <CartPriceOverrideDialog
-                visible={overrideVisible}
-                styles={localStyles}
-                overlayStyle={[styles.overlay, localStyles.mediumDialog]}
-                draft={overrideDraft}
-                selectedItemName={selectedItem?.product.name}
-                basePrice={selectedItem?.product.price || 0}
-                placeholderTextColor={tokens.colors.textSecondary}
-                onClose={() => setOverrideVisible(false)}
-                onSubmit={submitOverride}
-                onChange={(updater) => setOverrideDraft(updater)}
-            />
+                    <CartPriceOverrideDialog
+                        visible={overrideVisible}
+                        styles={localStyles}
+                        overlayStyle={[styles.overlay, localStyles.mediumDialog]}
+                        draft={overrideDraft}
+                        selectedItemName={selectedItem?.product.name}
+                        basePrice={selectedItem?.product.price || 0}
+                        placeholderTextColor={tokens.colors.textSecondary}
+                        onClose={() => setOverrideVisible(false)}
+                        onSubmit={submitOverride}
+                        onChange={(updater) => setOverrideDraft(updater)}
+                    />
+                </>
+            )}
         </View>
     );
 }

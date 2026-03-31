@@ -114,6 +114,7 @@ describe('employees reducer', () => {
     expect(action.meta.requestStatus).toBe('fulfilled');
   });
 
+
   it('falls back to the signed-in owner email when the employee list is empty', async () => {
     getAllEmployeesMock.mockResolvedValue([]);
     getEmployeeByEmailMock.mockResolvedValue({

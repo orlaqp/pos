@@ -2,7 +2,7 @@ import { Employee } from '@pos/shared/models';
 
 export type EmployeeEntity = {
     id?: string;
-    
+
     code: string;
     firstName: string;
     lastName: string | null | undefined;
@@ -13,7 +13,6 @@ export type EmployeeEntity = {
     pin: string;
     roles: (string | null)[];
     active: boolean;
-
     createdAt?: string | null | undefined;
     updatedAt?: string | null | undefined;
 };
@@ -38,5 +37,3 @@ export class EmployeeEntityMapper {
         };
     }
 }
-
-
