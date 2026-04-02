@@ -28,14 +28,7 @@ import {
 import { fetchStoreInfo } from '@pos/store-info/data-access';
 import { fetchDefaultPrinter } from '@pos/printings/data-access';
 import { subscribeToProductChanges, syncProducts } from '@pos/products/data-access';
-import { cartActions, selectCart } from '@pos/sales/data-access';
-import {
-    ordersActions,
-    readPendingOrderJournal,
-    reconcilePendingOrderJournal,
-    selectAllOrders,
-    selectHasPendingUnsyncedOrders,
-} from '@pos/orders/data-access';
+import { selectCart } from '@pos/sales/data-access';
 import brandMark from '../../assets/branding/pos-icon-transparent-2048.png';
 import {
     authActions,
@@ -51,17 +44,14 @@ import {
     User,
 } from '@pos/auth/data-access';
 import { configureDataStore } from '@pos/shared/data-store';
-import {
-    selectLastOutboxMutationFailedAt,
-    selectOutboxEmpty,
-} from '@pos/shared/data-store';
-import { Auth, DataStore } from '@pos/shared/amplify';
+import { API, Auth, DataStore } from '@pos/shared/amplify';
 import { E2EControlPanel } from './e2e-control-panel';
 import {
     clearManualSignOut,
     markManualSignOut,
     readManualSignOut,
 } from './session-signout';
+import { listEmployees } from '@pos/shared/api';
 
 type BootstrapStatus = 'idle' | 'checking-session' | 'resolving-tenant' | 'preparing-business-data' | 'ready' | 'error';
 type SessionRecoveryState =
@@ -88,6 +78,46 @@ const isUnauthorizedError = (error: unknown) => {
 
 const logBootstrapStageError = (stage: string, error: unknown) => {
     console.error(`App bootstrap failed during ${stage}`, error);
+};
+
+const logRemoteEmployeesForTenant = async (tenantId: string) => {
+    const response = await API.graphql<{
+        listEmployees?: {
+            items?: Array<{
+                id?: string | null;
+                tenantId?: string | null;
+                email?: string | null;
+                active?: boolean | null;
+                _deleted?: boolean | null;
+                _lastChangedAt?: number | null;
+            } | null> | null;
+            nextToken?: string | null;
+        } | null;
+    }>({
+        query: listEmployees,
+        variables: {
+            filter: {
+                tenantId: { eq: tenantId },
+            },
+            limit: 100,
+        },
+        authMode: 'userPool',
+    });
+
+    const items = response.data?.listEmployees?.items ?? [];
+    logSyncDebug('app-bootstrap', 'employees:remote-visible-to-user', {
+        tenantId,
+        itemCount: items.length,
+        nextToken: response.data?.listEmployees?.nextToken ?? null,
+        sample: items.slice(0, 10).map((employee) => ({
+            id: employee?.id ?? null,
+            tenantId: employee?.tenantId ?? null,
+            email: employee?.email ?? null,
+            active: employee?.active ?? null,
+            deleted: employee?._deleted ?? null,
+            lastChangedAt: employee?._lastChangedAt ?? null,
+        })),
+    });
 };
 
 const withTimeout = <T,>(
@@ -196,10 +226,6 @@ const AppContent = () => {
     const authRestoreStatus = useSelector(selectAuthRestoreStatus);
     const tenantSession = useSelector((state: RootState) => state.tenantSession);
     const cart = useSelector(selectCart);
-    const orders = useSelector(selectAllOrders);
-    const hasPendingUnsyncedOrders = useSelector(selectHasPendingUnsyncedOrders);
-    const outboxEmpty = useSelector(selectOutboxEmpty);
-    const lastOutboxMutationFailedAt = useSelector(selectLastOutboxMutationFailedAt);
     const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('idle');
     const [bootstrapError, setBootstrapError] = useState<string>();
     const [sessionRecoveryState, setSessionRecoveryState] =
@@ -209,9 +235,6 @@ const AppContent = () => {
     const sessionValidationInFlightRef = useRef<Promise<void> | null>(null);
     const silentReauthInFlightRef = useRef<Promise<User | null> | null>(null);
     const lastForegroundSessionCheckAtRef = useRef(0);
-    const didAttemptPendingOrderRecoveryRef = useRef(false);
-    const pendingJournalSignatureRef = useRef<string>('');
-    const clearedPendingOrderIdsSignatureRef = useRef<string>('');
     const hasActiveSale = (cart.items?.length || 0) > 0;
 
     const resetSessionState = useCallback(async (options?: { manual?: boolean; destructive?: boolean }) => {
@@ -222,7 +245,7 @@ const AppContent = () => {
                 await clearManualSignOut();
             }
             await DataStore.stop();
-            if ((options?.destructive ?? false) && !hasPendingUnsyncedOrders) {
+            if (options?.destructive ?? false) {
                 await DataStore.clear();
             }
         } finally {
@@ -232,7 +255,7 @@ const AppContent = () => {
             dispatch(employeesActions.logoffEmployee());
             await clearLastBootstrappedTenantId();
         }
-    }, [dispatch, hasPendingUnsyncedOrders]);
+    }, [dispatch]);
 
     const attemptSilentReauth = useCallback(async () => {
         if (silentReauthInFlightRef.current) {
@@ -426,8 +449,7 @@ const AppContent = () => {
             const lastTenantId = await getLastBootstrappedTenantId();
             const shouldClearDataStore =
                 !!lastTenantId &&
-                lastTenantId !== user.tenantId &&
-                !hasPendingUnsyncedOrders;
+                lastTenantId !== user.tenantId;
             logSyncDebug('app-bootstrap', 'tenant-cache:state', {
                 lastTenantId,
                 currentTenantId: user.tenantId,
@@ -471,6 +493,12 @@ const AppContent = () => {
                 finishStation();
             } catch (error) {
                 logBootstrapStageError('fetchStationInfo()', error);
+            }
+
+            try {
+                await logRemoteEmployeesForTenant(user.tenantId);
+            } catch (error) {
+                logBootstrapStageError('logRemoteEmployeesForTenant()', error);
             }
 
             const finishEmployees = startSyncMeasure('app-bootstrap', 'fetchEmployees');
@@ -549,7 +577,7 @@ const AppContent = () => {
         });
 
         return bootstrapPromise;
-    }, [attemptSilentReauth, authUser, dispatch, hasPendingUnsyncedOrders]);
+    }, [attemptSilentReauth, authUser, dispatch]);
 
     const signOutFromStartup = useCallback(async () => {
         setBootstrapError(undefined);
@@ -568,130 +596,6 @@ const AppContent = () => {
     useEffect(() => {
         startBootstrap();
     }, [startBootstrap]);
-
-    useEffect(() => {
-        if (bootstrapStatus !== 'ready') {
-            return;
-        }
-
-        let cancelled = false;
-
-        const hydratePendingOrders = async () => {
-            const entries = await readPendingOrderJournal();
-            if (cancelled) {
-                return;
-            }
-
-            dispatch(ordersActions.hydratePendingOrders(entries));
-        };
-
-        void hydratePendingOrders();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [bootstrapStatus, dispatch]);
-
-    useEffect(() => {
-        if (
-            bootstrapStatus !== 'ready' ||
-            didAttemptPendingOrderRecoveryRef.current ||
-            hasActiveSale
-        ) {
-            return;
-        }
-
-        let cancelled = false;
-
-        const restorePendingCartIfNeeded = async () => {
-            const entries = await readPendingOrderJournal();
-            if (cancelled || entries.length === 0) {
-                return;
-            }
-
-            const missingLocalEntry = entries.find(
-                (entry) => !orders.some((order) => order.id === entry.orderId)
-            );
-
-            if (!missingLocalEntry) {
-                didAttemptPendingOrderRecoveryRef.current = true;
-                return;
-            }
-
-            dispatch(cartActions.restoreSnapshot(missingLocalEntry.cart));
-            dispatch(ordersActions.hydratePendingOrders(entries));
-            didAttemptPendingOrderRecoveryRef.current = true;
-
-            Alert.alert(
-                'Recovered pending sale',
-                'A locally saved order was not fully reconciled. The sale has been restored on this device so it can be completed or retried safely.'
-            );
-        };
-
-        void restorePendingCartIfNeeded();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [bootstrapStatus, dispatch, hasActiveSale, orders]);
-
-    useEffect(() => {
-        if (bootstrapStatus !== 'ready') {
-            return;
-        }
-
-        let cancelled = false;
-
-        const reconcilePendingOrders = async () => {
-            const { entries, removedOrderIds } = await reconcilePendingOrderJournal({
-                knownOrderIds: orders.map((order) => order.id),
-                outboxEmpty,
-            });
-
-            if (cancelled) {
-                return;
-            }
-
-            const nextJournalSignature = JSON.stringify(
-                entries.map((entry) => ({
-                    orderId: entry.orderId,
-                    syncState: entry.syncState,
-                    lastError: entry.lastError ?? null,
-                }))
-            );
-            if (nextJournalSignature !== pendingJournalSignatureRef.current) {
-                pendingJournalSignatureRef.current = nextJournalSignature;
-                dispatch(ordersActions.hydratePendingOrders(entries));
-            }
-
-            const removedOrderIdsSignature = removedOrderIds.join('|');
-            if (
-                removedOrderIds.length > 0 &&
-                removedOrderIdsSignature !== clearedPendingOrderIdsSignatureRef.current
-            ) {
-                clearedPendingOrderIdsSignatureRef.current = removedOrderIdsSignature;
-                dispatch(ordersActions.clearPendingOrderTracking(removedOrderIds));
-            }
-        };
-
-        void reconcilePendingOrders();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [bootstrapStatus, dispatch, orders, outboxEmpty]);
-
-    useEffect(() => {
-        if (!lastOutboxMutationFailedAt) {
-            return;
-        }
-
-        dispatch(
-            ordersActions.markAllPendingOrdersSyncFailed(
-                'Sync failed. Orders remain on this device and will retry when auth/network recovers.'
-            )
-        );
-    }, [dispatch, lastOutboxMutationFailedAt]);
 
     useEffect(() => {
         if (!authUser || !tenantSession.currentTenantId || bootstrapStatus !== 'ready') {

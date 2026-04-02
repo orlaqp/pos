@@ -9,7 +9,15 @@ import { logSyncDebug, startSyncMeasure, trackSyncSubscription } from '@pos/shar
 export const syncEmployees = (dispatch: Dispatch) => {
     const finish = startSyncMeasure('employees', 'syncEmployees');
     DataStore.query(Employee).then((employees) => {
-        finish({ itemCount: employees.length });
+        finish({
+            itemCount: employees.length,
+            sample: employees.slice(0, 5).map((employee) => ({
+                id: employee.id,
+                tenantId: employee.tenantId,
+                email: employee.email,
+                active: employee.active,
+            })),
+        });
         updateStore(dispatch, employees);
     });
 };
@@ -37,6 +45,12 @@ export const subscribeToEmployeeChanges = (dispatch: Dispatch) => {
 const updateStore = (dispatch: Dispatch, items: Employee[]) => {
     logSyncDebug('employees', 'updateStore', {
         itemCount: items.length,
+        sample: items.slice(0, 5).map((employee) => ({
+            id: employee.id,
+            tenantId: employee.tenantId,
+            email: employee.email,
+            active: employee.active,
+        })),
     });
     sortListBy(items, 'firstName');
     dispatch(

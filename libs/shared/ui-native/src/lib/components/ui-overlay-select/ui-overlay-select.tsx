@@ -57,10 +57,16 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                             <Button
                                 title={getSelected(value)?.name || title}
                                 onPress={toggleOverlay}
-                                buttonStyle={styles.button}
+                                buttonStyle={[
+                                    styles.button,
+                                    error ? styles.buttonError : undefined,
+                                ]}
                                 type="outline"
                                 titleStyle={styles.buttonTitle}
                             />
+                            {error?.message ? (
+                                <Text style={styles.errorText}>{error.message}</Text>
+                            ) : null}
                             <Overlay
                                 isVisible={visible}
                                 onBackdropPress={toggleOverlay}
@@ -255,12 +261,22 @@ const useStyles = () => {
                 backgroundColor: 'transparent',
                 paddingHorizontal: 14,
             },
+            buttonError: {
+                borderColor: '#ef4444',
+            },
             buttonTitle: {
                 color: colors.primary,
                 fontSize: 14,
                 fontWeight: '600',
                 paddingLeft: 15,
                 paddingRight: 15,
+            },
+            errorText: {
+                color: '#ef4444',
+                fontSize: 12,
+                marginHorizontal: 12,
+                marginTop: -4,
+                marginBottom: 8,
             },
             name: {
                 color: colors.grey1,

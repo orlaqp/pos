@@ -7,9 +7,13 @@ import { SalesScreen } from '@pos/sales/native-feature';
 import { useSelector } from 'react-redux';
 import { RootState, useAppDispatch } from '@pos/store';
 import { BackOffice } from '@pos/back-office/native-feature';
-import { CompactOrderList, Orders } from '@pos/orders/native-feature';
+import {
+    CompactOrderList,
+    OrderJournalList,
+    Orders,
+} from '@pos/orders/native-feature';
 import { Button, Dialog, useTheme } from '@rneui/themed';
-import { Alert } from 'react-native';
+import { Alert, View } from 'react-native';
 import { cartActions, selectCart } from '@pos/sales/data-access';
 import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import { selectStore } from '@pos/store-info/data-access';
@@ -21,9 +25,6 @@ import {
     clearCurrentTenantContext,
     tenantSessionActions,
 } from '@pos/auth/data-access';
-import {
-    selectPendingUnsyncedOrderCount,
-} from '@pos/orders/data-access';
 import { DataStore } from '@pos/shared/amplify';
 import { markManualSignOut } from './session-signout';
 
@@ -63,13 +64,16 @@ export function Navigation() {
     const businessName = useSelector(
         (state: RootState) => state.tenantSession.businessName
     );
+    const currentTenantId = useSelector(
+        (state: RootState) => state.tenantSession.currentTenantId
+    );
     const dispatch = useAppDispatch();
     const cart = useSelector(selectCart);
     const defaultPrinter = useSelector(getDefaultPrinter);
     const store = useSelector(selectStore);
-    const pendingUnsyncedOrderCount = useSelector(selectPendingUnsyncedOrderCount);
 
     const [showOtherOrders, setShowOtherOrders] = useState<boolean>(false);
+    const [showOrderJournal, setShowOrderJournal] = useState<boolean>(false);
     const [showSalesActions, setShowSalesActions] = useState<boolean>(false);
 
     const print = () => {
@@ -110,7 +114,8 @@ export function Navigation() {
             <Button
                 type="clear"
                 title="Switch Employee"
-                style={{ marginRight: 20 }}
+                testID="nav-switch-employee-button"
+                containerStyle={{ marginRight: 12 }}
                 onPress={() => confirmSwitchEmployee(navigation)}
             />
         ) : null;
@@ -121,13 +126,6 @@ export function Navigation() {
             {
                 text: 'Yes',
                 onPress: async () => {
-                    if (pendingUnsyncedOrderCount > 0) {
-                        Alert.alert(
-                            'Pending orders are still on this device',
-                            `${pendingUnsyncedOrderCount} order${pendingUnsyncedOrderCount === 1 ? '' : 's'} still need to sync. Sign in again on this device to let them finish syncing.`
-                        );
-                    }
-
                     try {
                         await markManualSignOut();
                         await Auth.signOut('local');
@@ -160,10 +158,12 @@ export function Navigation() {
                     },
                 ]}
             >
-                <CompactOrderList
-                    onSelect={() => setShowOtherOrders(false)}
-                    onClose={() => setShowOtherOrders(false)}
-                />
+                {showOtherOrders ? (
+                    <CompactOrderList
+                        onSelect={() => setShowOtherOrders(false)}
+                        onClose={() => setShowOtherOrders(false)}
+                    />
+                ) : null}
             </Dialog>
             <Dialog
                 isVisible={showSalesActions}
@@ -180,6 +180,17 @@ export function Navigation() {
                     },
                 ]}
             >
+                <Button
+                    testID="nav-actions-order-journal"
+                    type="clear"
+                    title="Order Journal"
+                    onPress={() => {
+                        setShowSalesActions(false);
+                        setShowOrderJournal(true);
+                    }}
+                    buttonStyle={{ justifyContent: 'flex-start' }}
+                    titleStyle={{ width: '100%', textAlign: 'left' }}
+                />
                 <Button
                     testID="nav-actions-open-orders"
                     type="clear"
@@ -223,6 +234,28 @@ export function Navigation() {
                     }}
                 />
             </Dialog>
+            <Dialog
+                isVisible={showOrderJournal}
+                onBackdropPress={() => setShowOrderJournal(false)}
+                supportedOrientations={['landscape']}
+                presentationStyle="fullScreen"
+                overlayStyle={[
+                    styles.overlay,
+                    {
+                        width: 820,
+                        maxWidth: '95%',
+                        borderRadius: 16,
+                        padding: 20,
+                    },
+                ]}
+            >
+                {showOrderJournal ? (
+                    <OrderJournalList
+                        tenantId={currentTenantId}
+                        onClose={() => setShowOrderJournal(false)}
+                    />
+                ) : null}
+            </Dialog>
             <Stack.Navigator
                 id="root-navigation"
                 screenOptions={{
@@ -243,15 +276,21 @@ export function Navigation() {
                                 headerShown: true,
                                 headerTitle: 'Home',
                                 headerRight: () => (
-                                    <>
+                                    <View
+                                        style={{
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                        }}
+                                    >
                                         {renderSwitchEmployeeButton(navigation)}
                                         <Button
                                             type="clear"
                                             title="Logoff"
-                                            style={{ marginRight: 20 }}
+                                            testID="nav-home-logoff-button"
+                                            containerStyle={{ marginRight: 8 }}
                                             onPress={confirmLogoff}
                                         />
-                                    </>
+                                    </View>
                                 )
                             })}
                         />
@@ -261,12 +300,17 @@ export function Navigation() {
                             options={({ navigation }) => ({
                                 headerTitle: employee ? `${employee.firstName} ${employee.lastName}` : user.name,
                                 headerRight: () => (
-                                    <>
+                                    <View
+                                        style={{
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                        }}
+                                    >
                                         {renderSwitchEmployeeButton(navigation)}
                                         <Button
                                             testID="nav-sales-actions-button"
                                             type="clear"
-                                            style={{ marginRight: 20 }}
+                                            containerStyle={{ marginRight: 8 }}
                                             title="Actions"
                                             onPress={() => setShowSalesActions(true)}
                                             icon={{
@@ -277,7 +321,7 @@ export function Navigation() {
                                             }}
                                             iconRight
                                         />
-                                    </>
+                                    </View>
                                 ),
                             })}
                         />

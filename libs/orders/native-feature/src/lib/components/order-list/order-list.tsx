@@ -19,6 +19,7 @@ import { OrderStatus } from '@pos/shared/api';
 import OrderVoidForm from '../order-void-form/order-void-form';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import i18next from 'i18next';
+import { logSyncDebug } from '@pos/shared/utils';
 
 export interface OrderListProps {
     navigation?: NativeStackNavigationProp<any>;
@@ -82,6 +83,30 @@ export function OrderList({ navigation }: OrderListProps) {
     });
     const hasStatusOrders = statusOrders.length > 0;
     const hasFilteredOrders = filteredOrders.length > 0;
+
+    useEffect(() => {
+        logSyncDebug('orders.screen', 'tab:view', {
+            selectedStatus,
+            allOrdersCount: allOrders.length,
+            statusOrdersCount: statusOrders.length,
+            filteredOrdersCount: filteredOrders.length,
+            filterText: filterText ?? '',
+            statusSample: statusOrders.slice(0, 5).map((order) => ({
+                id: order.id,
+                orderNo: order.orderNo,
+                status: order.status,
+                orderDate: order.orderDate,
+                updatedAt: order.updatedAt,
+            })),
+            filteredSample: filteredOrders.slice(0, 5).map((order) => ({
+                id: order.id,
+                orderNo: order.orderNo,
+                status: order.status,
+                orderDate: order.orderDate,
+                updatedAt: order.updatedAt,
+            })),
+        });
+    }, [allOrders, filteredOrders, filterText, selectedStatus, statusOrders]);
 
     return (
         <UIScreen padded testID="order-list-screen">

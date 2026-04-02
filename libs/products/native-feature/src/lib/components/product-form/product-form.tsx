@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Alert, ScrollView, StyleSheet, View, Text } from 'react-native';
 import {
@@ -47,32 +47,6 @@ export function ProductForm({ navigation }: ProductFormProps) {
     const styles = useStyles(tokens, colors);
     const [busy, setBusy] = useState<boolean>(false);
 
-    const updatePicture = (key: string) => {
-        form.setValue('picture', key);
-    };
-
-    const save = async () => {
-        setBusy(true);
-        const formValues: ProductEntity = form.getValues();
-        // Keep identity stable in edit mode; some form interactions can omit hidden id.
-        if (!formValues.id && product?.id) {
-            formValues.id = product.id;
-        }
-        formValues.cost = formValues.cost ? +formValues.cost : null;
-        formValues.price = +formValues.price;
-        
-        if (!formValues.id) {
-            delete formValues.id;
-        }
-
-        const res = await ProductService.save(dispatch, formValues);
-
-        setBusy(false);
-
-        if (!res) return;
-        navigation.goBack();
-    };
-
     const form = useForm<ProductEntity>({
         mode: 'onChange',
         defaultValues: {
@@ -86,17 +60,87 @@ export function ProductForm({ navigation }: ProductFormProps) {
             sku: product?.sku,
             plu: product?.plu,
             quantity: product?.quantity || 0,
-            unitOfMeasure: product?.unitOfMeasure,
-            trackStock: true,
+            unitOfMeasure:
+                product?.unitOfMeasure || (ums.length === 1 ? ums[0]?.name : undefined),
+            trackStock: product?.trackStock ?? true,
             reorderPoint: product?.reorderPoint,
             reorderQuantity: product?.reorderQuantity,
             picture: product?.picture,
             productCategoryId: product?.productCategoryId,
             productBrandId: product?.productBrandId,
-            isActive: product?.isActive,
+            isActive: product?.isActive ?? true,
             isEBTEligible: product?.isEBTEligible ?? false,
         },
     });
+
+    const updatePicture = (key: string) => {
+        form.setValue('picture', key);
+    };
+
+    useEffect(() => {
+        if (product?.id) {
+            return;
+        }
+
+        const selectedUnit = form.getValues('unitOfMeasure');
+        if (!selectedUnit && ums.length === 1 && ums[0]?.name) {
+            form.setValue('unitOfMeasure', ums[0].name, {
+                shouldValidate: true,
+            });
+        }
+    }, [form, product?.id, ums]);
+
+    const save = async () => {
+        setBusy(true);
+        try {
+            const formValues: ProductEntity = form.getValues();
+            if (!formValues.id && product?.id) {
+                formValues.id = product.id;
+            }
+            formValues.cost = formValues.cost ? +formValues.cost : null;
+            formValues.price = +formValues.price;
+
+            if (!formValues.id) {
+                delete formValues.id;
+            }
+
+            const res = await ProductService.save(dispatch, formValues);
+            if (!res) {
+                return;
+            }
+
+            navigation.goBack();
+        } catch (error) {
+            const message =
+                error instanceof Error ? error.message : String(error);
+            console.error('Unable to save product', error);
+            Alert.alert(
+                'Unable to save product',
+                message || 'The product could not be saved.'
+            );
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const handleInvalidSubmit = (
+        errors: Partial<Record<keyof ProductEntity, { message?: string }>>
+    ) => {
+        const fieldLabels: Partial<Record<keyof ProductEntity, string>> = {
+            name: 'Name',
+            price: 'Price',
+            unitOfMeasure: 'Unit of Measure',
+        };
+        const fields = Object.keys(errors)
+            .map((fieldName) => fieldLabels[fieldName as keyof ProductEntity])
+            .filter((field): field is string => !!field);
+
+        const message = fields.length
+            ? `Complete the required field${fields.length === 1 ? '' : 's'}: ${fields.join(', ')}.`
+            : 'Complete the required fields before saving this product.';
+
+        Alert.alert('Missing information', message);
+    };
 
     const confirmCancel = () => {
         Alert.alert(
@@ -304,7 +348,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                         <UICard tone="muted" style={styles.actionBarCard}>
                             <UIActions
                                 busy={busy}
-                                submitAction={form.handleSubmit(save)}
+                                submitAction={form.handleSubmit(save, handleInvalidSubmit)}
                                 cancelAction={confirmCancel}
                             />
                         </UICard>

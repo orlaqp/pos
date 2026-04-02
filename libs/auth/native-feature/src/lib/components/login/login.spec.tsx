@@ -23,7 +23,7 @@ jest.mock('@pos/store', () => ({
 jest.mock('@pos/auth/data-access', () => ({
     signIn: jest.fn((payload: unknown) => payload),
     clearRememberedAdminCredentials: jest.fn(),
-    getRememberedAdminCredentialStatus: jest.fn(async () => ({ enabled: false })),
+    getRememberedAdminCredentials: jest.fn(async () => null),
     saveRememberedAdminCredentials: jest.fn(),
 }));
 

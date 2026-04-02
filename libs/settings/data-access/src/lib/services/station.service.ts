@@ -2,7 +2,6 @@
 import { EmployeeEntity } from '@pos/employees/data-access';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
-import { Alert } from 'react-native';
 
 const STATION_CONFIG = 'stationConfig';
 
@@ -15,9 +14,16 @@ export interface StationConfig {
 export class StationService {
     static async getConfig(): Promise<StationConfig> {
         const stationConfigString = await AsyncStorage.getItem(STATION_CONFIG);
-        return stationConfigString
-            ? JSON.parse(stationConfigString)
-            : {};
+        if (!stationConfigString) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(stationConfigString);
+        } catch (error) {
+            console.error('Invalid station config payload', error);
+            return {};
+        }
     }
 
     static async saveStationNo(stationNumber: string) {
@@ -51,9 +57,14 @@ export class StationService {
             ...config,
         };
         if (!config.stationNumber) {
-            Alert.alert(
-                'Error',
+            throw new Error(
                 'You cannot make sales before configuring the station code'
+            );
+        }
+
+        if (!employee.code?.trim()) {
+            throw new Error(
+                'You cannot make sales until the employee code is available'
             );
         }
 

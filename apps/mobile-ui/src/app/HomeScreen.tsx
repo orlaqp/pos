@@ -12,7 +12,6 @@ import {
     Role,
     tenantSessionActions,
 } from '@pos/auth/data-access';
-import { selectPendingUnsyncedOrderCount } from '@pos/orders/data-access';
 import { useForm } from 'react-hook-form';
 import {
     employeesActions,
@@ -45,7 +44,7 @@ import {
     readPinLockState,
     writePinLockState,
 } from './use-pin-lock';
-import { E2E_MANAGER_PIN, isE2EEnabled } from '@pos/shared/utils';
+import { E2E_MANAGER_PIN } from '@pos/shared/utils';
 import { Auth, DataStore } from '@pos/shared/amplify';
 import { markManualSignOut } from './session-signout';
 
@@ -119,7 +118,6 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const user = useSelector((state: RootState) => state.auth.user);
     const businessName = useSelector((state: RootState) => state.tenantSession.businessName);
     const station = useSelector(selectStation);
-    const pendingUnsyncedOrderCount = useSelector(selectPendingUnsyncedOrderCount);
     const [pin, setPin] = useState<string>('');
     const [invalidPinAttempt, setInvalidPinAttempt] = useState(0);
     const [pinResetToken, setPinResetToken] = useState(0);
@@ -166,8 +164,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const needsInitialEmployee =
         !accessSyncInProgress &&
         !employee &&
-        employees.length === 0 &&
-        !store?.id;
+        employees.length === 0;
     const needsSetupWizard =
         !accessSyncInProgress &&
         !employee &&
@@ -307,13 +304,6 @@ export const HomeScreen = (props: HomeScreenProps) => {
             {
                 text: 'Log off',
                 onPress: async () => {
-                    if (pendingUnsyncedOrderCount > 0) {
-                        Alert.alert(
-                            'Pending orders are still on this device',
-                            `${pendingUnsyncedOrderCount} order${pendingUnsyncedOrderCount === 1 ? '' : 's'} still need to sync. Sign in again on this device to let them finish syncing.`
-                        );
-                    }
-
                     try {
                         await markManualSignOut();
                         await Auth.signOut('local');
@@ -327,7 +317,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
                 },
             },
         ]);
-    }, [dispatch, pendingUnsyncedOrderCount]);
+    }, [dispatch]);
 
     const refreshSavedLoginStatus = useCallback(async () => {
         const status = await getRememberedAdminCredentialStatus();
@@ -414,19 +404,6 @@ export const HomeScreen = (props: HomeScreenProps) => {
                 );
             });
     }, [clearPinGuard, dispatch, isPinLocked, pin, recordFailedPinAttempt]);
-
-    useEffect(() => {
-        if (
-            !isE2EEnabled() ||
-            accessSyncInProgress ||
-            !!employee ||
-            needsSetupWizard
-        ) {
-            return;
-        }
-
-        void loginWithE2EManager();
-    }, [accessSyncInProgress, employee, loginWithE2EManager, needsSetupWizard]);
 
     useEffect(() => {
         resetPinEntry();
@@ -566,8 +543,15 @@ export const HomeScreen = (props: HomeScreenProps) => {
             };
 
             await EmployeeService.save(dispatch, newEmployee);
-            setPendingOwnerEmployee(newEmployee);
-            setSetupStep('store');
+
+            if (storeNeedsSetup) {
+                setPendingOwnerEmployee(newEmployee);
+                setSetupStep('store');
+            } else {
+                dispatch(employeesActions.loginEmployee(newEmployee));
+                setPendingOwnerEmployee(null);
+            }
+
             setupForm.reset({
                 name: model.name,
                 phone: model.phone,
@@ -679,11 +663,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     onE2EManagerLogin={loginWithE2EManager}
                     onLogoff={confirmLogoff}
                     savedLoginStatusLabel={savedLoginStatusLabel}
-                    pendingOrderStatusLabel={
-                        pendingUnsyncedOrderCount > 0
-                            ? `${pendingUnsyncedOrderCount} order${pendingUnsyncedOrderCount === 1 ? '' : 's'} waiting to sync on this device.`
-                            : 'Order sync is healthy on this device.'
-                    }
+                    pendingOrderStatusLabel="Order journal entries stay on this device until you retry them manually."
                     onRemoveSavedLogin={removeSavedLogin}
                 />
             ) : (

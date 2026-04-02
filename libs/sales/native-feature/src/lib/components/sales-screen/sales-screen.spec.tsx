@@ -48,9 +48,6 @@ const mockPayOrder = Object.assign(
     }
 );
 const mockUpsertPendingOrderJournalEntry = jest.fn(async (entry: any) => [entry]);
-const mockMarkPendingOrderJournalEntry = jest.fn(async (orderId: string, updates: any) => [
-    { orderId, syncState: updates.syncState, lastError: updates.lastError },
-]);
 
 const mockProduct = {
     id: 'p-1',
@@ -164,8 +161,6 @@ jest.mock('@pos/orders/data-access', () => ({
     getLineTotal: jest.fn((quantity: number, price: number) => +(quantity * price).toFixed(2)),
     upsertPendingOrderJournalEntry: (...args: unknown[]) =>
         mockUpsertPendingOrderJournalEntry(...args),
-    markPendingOrderJournalEntry: (...args: unknown[]) =>
-        mockMarkPendingOrderJournalEntry(...args),
     ordersActions: {
         optimisticMarkPaid: (payload: unknown) => ({
             type: 'orders/optimisticMarkPaid',
@@ -173,14 +168,6 @@ jest.mock('@pos/orders/data-access', () => ({
         }),
         optimisticRestoreOpen: (payload: unknown) => ({
             type: 'orders/optimisticRestoreOpen',
-            payload,
-        }),
-        hydratePendingOrders: (payload: unknown) => ({
-            type: 'orders/hydratePendingOrders',
-            payload,
-        }),
-        markPendingOrderSyncState: (payload: unknown) => ({
-            type: 'orders/markPendingOrderSyncState',
             payload,
         }),
     },
@@ -590,7 +577,7 @@ describe('SalesScreen', () => {
         );
     });
 
-    it('submits order mode through parallel print/save and resets cart after save success', async () => {
+    it('submits order mode, persists the journal entry, and resets cart after save success', async () => {
         const { getByTestId } = renderSalesScreen('order');
 
         await act(async () => {
@@ -629,19 +616,8 @@ describe('SalesScreen', () => {
                 storeInfo: mockState.store,
             })
         );
-        expect(mockUpsertOrder.mock.calls[0][0]?.skipAutoPrint).toBe(true);
-        expect(mockPrintReceipt).toHaveBeenCalledWith(
-            mockState.store,
-            mockState.printer,
-            expect.objectContaining({
-                id: 'cart-1',
-                orderNo: '51-EMP-260326-0001',
-            }),
-            expect.objectContaining({
-                copyType: 'CUSTOMER',
-                orderNo: '51-EMP-260326-0001',
-            })
-        );
+        expect(mockUpsertOrder.mock.calls[0][0]?.skipAutoPrint).toBe(false);
+        expect(mockPrintReceipt).not.toHaveBeenCalled();
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/reset' })
         );
@@ -667,7 +643,7 @@ describe('SalesScreen', () => {
 
         expect(Alert.alert).toHaveBeenCalledWith(
             'Order could not be saved',
-            'The order was not saved. Please try again. The receipt may have already been printed.'
+            'The order was not saved. Please try again.'
         );
         expect(mockDispatch).not.toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/reset' })
@@ -687,7 +663,7 @@ describe('SalesScreen', () => {
         expect(mockGoBack).not.toHaveBeenCalled();
     });
 
-    it('shows printer requirements immediately and skips fallback printing when no printer is selected', async () => {
+    it('skips auto-print when no printer is selected', async () => {
         mockState.printer = undefined;
 
         const { getByTestId } = renderSalesScreen('payment');
@@ -699,10 +675,6 @@ describe('SalesScreen', () => {
             await buttons[1].onPress();
         });
 
-        expect(Alert.alert).toHaveBeenCalledWith(
-            'Printing unavailable',
-            'Store and printer should be available in order to print.'
-        );
         expect(mockPayOrder).toHaveBeenCalledWith(
             expect.objectContaining({
                 skipAutoPrint: true,
@@ -711,7 +683,7 @@ describe('SalesScreen', () => {
         expect(mockPrintReceipt).not.toHaveBeenCalled();
     });
 
-    it('submits payment mode with parallel print/save, navigates back to orders, and resets cart', async () => {
+    it('submits payment mode, navigates back to orders, and resets cart', async () => {
         const { getByTestId } = renderSalesScreen('payment');
 
         fireEvent.press(getByTestId('sales-cart-submit-payment'));
@@ -729,35 +701,29 @@ describe('SalesScreen', () => {
                 storeInfo: mockState.store,
             })
         );
-        expect(mockPayOrder.mock.calls[0][0]?.skipAutoPrint).toBe(true);
-        expect(mockPrintReceipt).toHaveBeenCalledWith(
-            mockState.store,
-            mockState.printer,
-            { id: 'cart-1' },
-            expect.objectContaining({ copyType: 'MERCHANT' })
-        );
+        expect(mockPayOrder.mock.calls[0][0]?.skipAutoPrint).toBe(false);
+        expect(mockPrintReceipt).not.toHaveBeenCalled();
         expect(mockNavigate).toHaveBeenCalledWith('Order List');
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/reset' })
         );
     });
 
-    it('shows a print failure alert when payment saves but printing fails', async () => {
-        mockPrintReceipt.mockRejectedValueOnce(new Error('printer offline'));
+    it('blocks order submission when tenant context is missing', async () => {
+        mockState.tenantSession = {};
 
-        const { getByTestId } = renderSalesScreen('payment');
-        fireEvent.press(getByTestId('sales-cart-submit-payment'));
-        const buttons = (Alert.alert as jest.Mock).mock.calls[0][2];
+        const { getByTestId } = renderSalesScreen('order');
 
         await act(async () => {
-            await buttons[1].onPress();
+            fireEvent.press(getByTestId('sales-cart-submit-order'));
+            await Promise.resolve();
         });
 
-        expect(Alert.alert).toHaveBeenLastCalledWith(
-            'Receipt could not be printed',
-            'The payment was saved, but the receipt could not be printed.'
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Tenant not ready',
+            'Tenant context is not ready yet. Please try again in a moment.'
         );
-        expect(mockNavigate).toHaveBeenCalledWith('Order List');
+        expect(mockUpsertOrder).not.toHaveBeenCalled();
     });
 
     it('shows an alert when payOrder does not fulfill with a payload even if the UI already navigated away', async () => {
@@ -779,7 +745,7 @@ describe('SalesScreen', () => {
 
         expect(Alert.alert).toHaveBeenLastCalledWith(
             'Payment could not be completed',
-            'The order is still open. Please try again. The receipt may have already been printed.'
+            'The order is still open. Please try again.'
         );
         expect(mockNavigate).not.toHaveBeenCalledWith('Order List');
     });

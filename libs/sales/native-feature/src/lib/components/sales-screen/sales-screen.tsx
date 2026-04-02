@@ -29,12 +29,9 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ButtonItemType, UIScreen } from '@pos/shared/ui-native';
 import { RootState, useAppDispatch } from '@pos/store';
-import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
+import { getDefaultPrinter } from '@pos/printings/data-access';
 import {
-    buildEbtAllocations,
-    markPendingOrderJournalEntry,
     PendingOrderJournalEntry,
-    getLineTotal,
     ordersActions,
     payOrder,
     upsertPendingOrderJournalEntry,
@@ -84,32 +81,6 @@ export interface NavigationParamList {
     };
 }
 
-const printReceiptSafely = (...args: Parameters<typeof printReceipt>) => {
-    if (typeof printReceipt !== 'function') {
-        return undefined;
-    }
-
-    return printReceipt(...args);
-};
-
-const buildEbtAllocationsSafely = (
-    ...args: Parameters<typeof buildEbtAllocations>
-) => {
-    if (typeof buildEbtAllocations !== 'function') {
-        return {} as ReturnType<typeof buildEbtAllocations>;
-    }
-
-    return buildEbtAllocations(...args);
-};
-
-const getLineTotalSafely = (quantity: number, price: number) => {
-    if (typeof getLineTotal !== 'function') {
-        return +(quantity * price).toFixed(2);
-    }
-
-    return getLineTotal(quantity, price);
-};
-
 const getErrorMessage = (reason: unknown) => {
     if (reason instanceof Error && reason.message) {
         return reason.message;
@@ -120,6 +91,10 @@ const getErrorMessage = (reason: unknown) => {
     }
 
     return undefined;
+};
+
+const logSaleFlow = (step: string, details?: Record<string, unknown>) => {
+    console.info('[sales-flow]', step, details ?? {});
 };
 
 /* eslint-disable-next-line */
@@ -138,7 +113,11 @@ export function SalesScreen({
     const globalSettings = useSelector(getGlobalSettings);
     const employee = useSelector(selectLoginEmployee);
     const tenantId = useSelector(
-        (state: RootState) => state.tenantSession?.tenantId as string | undefined
+        (state: RootState) =>
+            (state.tenantSession?.currentTenantId ??
+                (state.tenantSession as { tenantId?: string } | undefined)?.tenantId) as
+                | string
+                | undefined
     );
     const station = useSelector(selectStation);
 
@@ -172,6 +151,49 @@ export function SalesScreen({
     }, [dispatch]);
     const shouldReturnToOrderList = () =>
         navigation.getState?.()?.routeNames?.includes('Order List');
+    const ensureCheckoutContext = useCallback(
+        (mode: 'order' | 'payment', cart: CartState) => {
+            if (!tenantId) {
+                Alert.alert(
+                    t('SALES_TenantUnavailableTitle', 'Tenant not ready'),
+                    t(
+                        'SALES_TenantUnavailableMessage',
+                        'Tenant context is not ready yet. Please try again in a moment.'
+                    )
+                );
+                return false;
+            }
+
+            if (!employee?.id) {
+                Alert.alert(
+                    t('SALES_EmployeeUnavailableTitle', 'Employee required'),
+                    t(
+                        'SALES_EmployeeUnavailableMessage',
+                        'Sign in as an employee before creating sales.'
+                    )
+                );
+                return false;
+            }
+
+            if (
+                mode === 'order' &&
+                !cart.orderNo &&
+                !station?.stationNumber?.trim()
+            ) {
+                Alert.alert(
+                    t('SALES_StationUnavailableTitle', 'Station setup required'),
+                    t(
+                        'SALES_StationUnavailableMessage',
+                        'Configure the station code before creating sales.'
+                    )
+                );
+                return false;
+            }
+
+            return true;
+        },
+        [employee?.id, station?.stationNumber, t, tenantId]
+    );
 
     const upsertCart = useCallback((item: CartItem) => {
         dispatch(cartActions.upsert(item));
@@ -186,7 +208,7 @@ export function SalesScreen({
             }
 
             if (!employee) {
-                return cart;
+                throw new Error('Employee context is not available');
             }
 
             let orderNo = cart.orderNo;
@@ -351,172 +373,95 @@ export function SalesScreen({
         const cartItems = cart.items ?? [];
 
         if (route.params.mode === 'order') {
-            void preparePrintableOrderCart(cart).then((cartForOrder) => {
-                const journalEntry: PendingOrderJournalEntry = {
-                    orderId: cartForOrder.id!,
-                    orderNo: cartForOrder.orderNo,
-                    tenantId,
-                    statusTarget: 'OPEN',
-                    cart: cartForOrder,
-                    employee: employee
-                        ? {
-                              id: employee.id,
-                              name: `${employee.firstName} ${employee.lastName}`,
-                          }
-                        : undefined,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    syncState: 'local_only',
-                };
-                const shouldFastPrint = !!defaultPrinter && !!storeInfo;
+            if (!ensureCheckoutContext('order', cart)) {
+                logSaleFlow('checkout-blocked', {
+                    mode: 'order',
+                    hasTenantId: !!tenantId,
+                    hasEmployeeId: !!employee?.id,
+                    hasStationNumber: !!station?.stationNumber,
+                });
+                return;
+            }
 
-                if (!defaultPrinter || !storeInfo) {
-                    Alert.alert(
-                        t('SALES_PrintRequirementsTitle', 'Printing unavailable'),
-                        t(
-                            'SALES_PrintRequirementsMessage',
-                            'Store and printer should be available in order to print.'
-                        )
-                    );
-                }
-
-                if (shouldFastPrint) {
-                    Promise.resolve(
-                        printReceiptSafely(storeInfo, defaultPrinter, cartForOrder, {
-                            id: cartForOrder.id,
-                            status: 'OPEN',
-                            orderNo: cartForOrder.orderNo,
-                            copyType: 'CUSTOMER',
-                            lines: cartItems.map((item) => ({
-                                quantity: item.quantity,
-                                productName: item.product.name,
-                            })),
-                        })
-                    ).catch((error) => {
-                        console.error(
-                            'Customer receipt print failed',
-                            getErrorMessage(error) ?? error
-                        );
-                        Alert.alert(
-                            t('SALES_PrintFailedTitle', 'Receipt could not be printed'),
-                            t(
-                                'SALES_OrderSavedPrintFailedMessage',
-                                'The order was saved, but the receipt could not be printed.'
-                            )
-                        );
+            void (async () => {
+                try {
+                    logSaleFlow('order-submit-start', {
+                        cartItemCount: cartItems.length,
+                        hasPrinter: !!defaultPrinter,
+                        hasStoreInfo: !!storeInfo,
                     });
-                }
 
-                Promise.resolve(
-                    upsertPendingOrderJournalEntry(journalEntry)
-                )
-                    .then((entries) => {
-                        dispatch(ordersActions.hydratePendingOrders(entries));
-                        return dispatch(
-                            upsertOrder({
-                                cart: cartForOrder,
-                                defaultPrinter,
-                                storeInfo,
-                                skipAutoPrint:
-                                    shouldFastPrint || !defaultPrinter || !storeInfo,
-                            })
-                        );
-                    })
-                    .then((result) => {
-                        if (
-                            !upsertOrder.fulfilled.match(result)
-                        ) {
-                            dispatch(
-                                ordersActions.markPendingOrderSyncState({
-                                    orderId: cartForOrder.id!,
-                                    syncState: 'sync_failed',
-                                    error: t(
-                                        'SALES_OrderSaveFailedMessage',
-                                        'The order was not saved. Please try again.'
-                                    ),
-                                })
-                            );
-                            void markPendingOrderJournalEntry(cartForOrder.id!, {
-                                syncState: 'sync_failed',
-                                lastError: t(
-                                    'SALES_OrderSaveFailedMessage',
-                                    'The order was not saved. Please try again.'
-                                ),
-                            }).then((entries) =>
-                                dispatch(ordersActions.hydratePendingOrders(entries))
-                            );
-                            Alert.alert(
-                                t(
-                                    'SALES_OrderSaveFailedTitle',
-                                    'Order could not be saved'
-                                ),
-                                shouldFastPrint
-                                    ? `${t(
-                                          'SALES_OrderSaveFailedMessage',
-                                          'The order was not saved. Please try again.'
-                                      )} ${t(
-                                          'SALES_PrintAlreadyStartedMessage',
-                                          'The receipt may have already been printed.'
-                                      )}`
-                                    : t(
-                                          'SALES_OrderSaveFailedMessage',
-                                          'The order was not saved. Please try again.'
-                                      )
-                            );
-                            return;
-                        }
+                    const cartForOrder = await preparePrintableOrderCart(cart);
+                    const journalEntry: PendingOrderJournalEntry = {
+                        orderId: cartForOrder.id!,
+                        orderNo: cartForOrder.orderNo,
+                        tenantId,
+                        statusTarget: 'OPEN',
+                        cart: cartForOrder,
+                        employee: employee
+                            ? {
+                                  id: employee.id,
+                                  name: `${employee.firstName} ${employee.lastName}`,
+                              }
+                            : undefined,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        syncState: 'local_only',
+                    };
 
-                        dispatch(
-                            ordersActions.markPendingOrderSyncState({
-                                orderId: result.payload.order.id,
-                                syncState: 'sync_pending',
-                            })
-                        );
-                        void markPendingOrderJournalEntry(result.payload.order.id, {
-                            syncState: 'sync_pending',
-                        }).then((entries) =>
-                            dispatch(ordersActions.hydratePendingOrders(entries))
-                        );
-                        dispatch(cartActions.reset());
-                    })
-                    .catch((error) => {
-                        console.error(
-                            'Order save failed',
-                            getErrorMessage(error) ?? error
-                        );
-                        dispatch(
-                            ordersActions.markPendingOrderSyncState({
-                                orderId: cartForOrder.id!,
-                                syncState: 'sync_failed',
-                                error: getErrorMessage(error) ?? String(error),
-                            })
-                        );
-                        void markPendingOrderJournalEntry(cartForOrder.id!, {
-                            syncState: 'sync_failed',
-                            lastError: getErrorMessage(error) ?? String(error),
-                        }).then((entries) =>
-                            dispatch(ordersActions.hydratePendingOrders(entries))
+                    await upsertPendingOrderJournalEntry(journalEntry);
+                    logSaleFlow('order-journal-upserted', {
+                        orderId: journalEntry.orderId,
+                        entryCount: 1,
+                    });
+
+                    const result = await dispatch(
+                        upsertOrder({
+                            cart: cartForOrder,
+                            defaultPrinter,
+                            storeInfo,
+                            skipAutoPrint: !defaultPrinter || !storeInfo,
+                        })
+                    );
+
+                    if (!upsertOrder.fulfilled.match(result)) {
+                        const message = t(
+                            'SALES_OrderSaveFailedMessage',
+                            'The order was not saved. Please try again.'
                         );
                         Alert.alert(
                             t(
                                 'SALES_OrderSaveFailedTitle',
                                 'Order could not be saved'
                             ),
-                            shouldFastPrint
-                                ? `${t(
-                                      'SALES_OrderSaveFailedMessage',
-                                      'The order was not saved. Please try again.'
-                                  )} ${t(
-                                      'SALES_PrintAlreadyStartedMessage',
-                                      'The receipt may have already been printed.'
-                                  )}`
-                                : t(
-                                      'SALES_OrderSaveFailedMessage',
-                                      'The order was not saved. Please try again.'
-                                  )
+                            message
                         );
+                        return;
+                    }
+
+                    logSaleFlow('order-submit-succeeded', {
+                        orderId: result.payload.order.id,
                     });
-            });
+                    dispatch(cartActions.reset());
+                } catch (error) {
+                    const message =
+                        getErrorMessage(error) ??
+                        t(
+                            'SALES_OrderSaveFailedMessage',
+                            'The order was not saved. Please try again.'
+                        );
+                    logSaleFlow('order-submit-failed', {
+                        message,
+                    });
+                    Alert.alert(
+                        t(
+                            'SALES_OrderSaveFailedTitle',
+                            'Order could not be saved'
+                        ),
+                        message
+                    );
+                }
+            })();
             return;
         }
 
@@ -538,12 +483,27 @@ export function SalesScreen({
                             return;
                         }
 
-                        const shouldFastPrint = !!defaultPrinter && !!storeInfo;
                         const orderId = cart.id ?? String(uuid.v4());
                         const cartForPayment: CartState = {
                             ...cart,
                             id: orderId,
                         };
+                        if (!ensureCheckoutContext('payment', cartForPayment)) {
+                            logSaleFlow('checkout-blocked', {
+                                mode: 'payment',
+                                hasTenantId: !!tenantId,
+                                hasEmployeeId: !!employee?.id,
+                                orderId,
+                            });
+                            return;
+                        }
+
+                        logSaleFlow('payment-submit-start', {
+                            orderId,
+                            cartItemCount: cartItems.length,
+                            hasPrinter: !!defaultPrinter,
+                            hasStoreInfo: !!storeInfo,
+                        });
                         const journalEntry: PendingOrderJournalEntry = {
                             orderId,
                             orderNo: cart.orderNo,
@@ -573,96 +533,21 @@ export function SalesScreen({
                                 })
                             );
                         }
-                        if (!defaultPrinter || !storeInfo) {
-                            Alert.alert(
-                                t('SALES_PrintRequirementsTitle', 'Printing unavailable'),
-                                t(
-                                    'SALES_PrintRequirementsMessage',
-                                    'Store and printer should be available in order to print.'
-                                )
-                            );
-                        }
-                        const allocations = buildEbtAllocationsSafely(
-                            cartItems.map((item) => ({
-                                identifier: item.identifier,
-                                quantity: item.quantity,
-                                price: item.product.price,
-                                isEBTEligible:
-                                    item.product.isEBTEligible ?? false,
-                            })),
-                            payments
-                        );
-
-                        if (shouldFastPrint) {
-                            Promise.resolve(
-                                printReceiptSafely(
-                                    storeInfo,
-                                    defaultPrinter,
-                                    cart,
-                                    {
-                                        id: cart.id,
-                                        status: 'PAID',
-                                        orderNo: cart.orderNo,
-                                        copyType: 'MERCHANT',
-                                        paymentInfo: {
-                                            payments: payments.map((payment) => ({
-                                                type: payment.type,
-                                                amount: payment.amount,
-                                            })),
-                                        },
-                                        lines: cartItems.map((item) => {
-                                            const identifier = item.identifier;
-                                            const lineTotal = getLineTotalSafely(
-                                                item.quantity,
-                                                item.product.price
-                                            );
-                                            const allocation = identifier
-                                                ? allocations[identifier]
-                                                : undefined;
-
-                                            return {
-                                                quantity: item.quantity,
-                                                productName: item.product.name,
-                                                ebtPaidAmount:
-                                                    allocation?.ebtPaidAmount ?? 0,
-                                                nonEbtPaidAmount:
-                                                    allocation?.nonEbtPaidAmount ??
-                                                    lineTotal,
-                                            };
-                                        }),
-                                    }
-                                )
-                            ).catch((error) => {
-                                console.error(
-                                    'Fast merchant print failed',
-                                    getErrorMessage(error) ?? error
-                                );
-                                Alert.alert(
-                                    t(
-                                        'SALES_PrintFailedTitle',
-                                        'Receipt could not be printed'
-                                    ),
-                                    t(
-                                        'SALES_PaymentSavedPrintFailedMessage',
-                                        'The payment was saved, but the receipt could not be printed.'
-                                    )
-                                );
-                            });
-                        }
-
                         Promise.resolve(
                             upsertPendingOrderJournalEntry(journalEntry)
                         )
-                            .then((entries) => {
-                                dispatch(ordersActions.hydratePendingOrders(entries));
+                            .then(() => {
+                                logSaleFlow('payment-journal-upserted', {
+                                    orderId: journalEntry.orderId,
+                                    entryCount: 1,
+                                });
                                 return dispatch(
                                     payOrder({
                                         cart: cartForPayment,
                                         payments,
                                         defaultPrinter,
                                         storeInfo,
-                                        skipAutoPrint:
-                                            shouldFastPrint || !defaultPrinter || !storeInfo,
+                                        skipAutoPrint: !defaultPrinter || !storeInfo,
                                     })
                                 );
                             })
@@ -683,55 +568,17 @@ export function SalesScreen({
                                             'SALES_PaymentFailedTitle',
                                             'Payment could not be completed'
                                         ),
-                                        shouldFastPrint
-                                            ? `${t(
-                                                  'SALES_PaymentFailedMessage',
-                                                  'The order is still open. Please try again.'
-                                              )} ${t(
-                                                  'SALES_PrintAlreadyStartedMessage',
-                                                  'The receipt may have already been printed.'
-                                              )}`
-                                            : t(
-                                                  'SALES_PaymentFailedMessage',
-                                                  'The order is still open. Please try again.'
-                                              )
-                                    );
-                                    void markPendingOrderJournalEntry(orderId, {
-                                        syncState: 'sync_failed',
-                                        lastError: t(
+                                        t(
                                             'SALES_PaymentFailedMessage',
                                             'The order is still open. Please try again.'
-                                        ),
-                                    }).then((entries) =>
-                                        dispatch(ordersActions.hydratePendingOrders(entries))
-                                    );
-                                    dispatch(
-                                        ordersActions.markPendingOrderSyncState({
-                                            orderId,
-                                            syncState: 'sync_failed',
-                                            error: t(
-                                                'SALES_PaymentFailedMessage',
-                                                'The order is still open. Please try again.'
-                                            ),
-                                        })
+                                        )
                                     );
                                     return;
                                 }
 
-                                dispatch(
-                                    ordersActions.markPendingOrderSyncState({
-                                        orderId: result.payload.order.id,
-                                        syncState: 'sync_pending',
-                                    })
-                                );
-                                void markPendingOrderJournalEntry(
-                                    result.payload.order.id,
-                                    {
-                                        syncState: 'sync_pending',
-                                    }
-                                ).then((entries) =>
-                                    dispatch(ordersActions.hydratePendingOrders(entries))
-                                );
+                                logSaleFlow('payment-submit-succeeded', {
+                                    orderId: result.payload.order.id,
+                                });
 
                                 if (shouldReturnToOrderList()) {
                                     navigation.navigate('Order List' as never);
@@ -757,31 +604,10 @@ export function SalesScreen({
                                         'SALES_PaymentFailedTitle',
                                         'Payment could not be completed'
                                     ),
-                                    shouldFastPrint
-                                        ? `${t(
-                                              'SALES_PaymentFailedMessage',
-                                              'The order is still open. Please try again.'
-                                          )} ${t(
-                                              'SALES_PrintAlreadyStartedMessage',
-                                              'The receipt may have already been printed.'
-                                          )}`
-                                        : t(
-                                              'SALES_PaymentFailedMessage',
-                                              'The order is still open. Please try again.'
-                                          )
-                                );
-                                void markPendingOrderJournalEntry(orderId, {
-                                    syncState: 'sync_failed',
-                                    lastError: getErrorMessage(error) ?? String(error),
-                                }).then((entries) =>
-                                    dispatch(ordersActions.hydratePendingOrders(entries))
-                                );
-                                dispatch(
-                                    ordersActions.markPendingOrderSyncState({
-                                        orderId,
-                                        syncState: 'sync_failed',
-                                        error: getErrorMessage(error) ?? String(error),
-                                    })
+                                    t(
+                                        'SALES_PaymentFailedMessage',
+                                        'The order is still open. Please try again.'
+                                    )
                                 );
                             });
                     },

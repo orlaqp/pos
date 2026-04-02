@@ -31,9 +31,25 @@ type LegacyStorageDownloadResult = {
     Body: Blob;
 };
 
+type DataStoreLifecycleState =
+    | 'stopped'
+    | 'starting'
+    | 'started'
+    | 'stopping';
+
 const getApiClient = () => require('aws-amplify/api').generateClient();
 const getDataStoreModule = () => require('@aws-amplify/datastore');
 const getHubModule = () => require('aws-amplify/utils');
+let dataStoreLifecycleState: DataStoreLifecycleState = 'stopped';
+
+const setDataStoreLifecycleState = (state: DataStoreLifecycleState) => {
+    dataStoreLifecycleState = state;
+};
+
+const canSubscribeToDataStore = () =>
+    dataStoreLifecycleState === 'started' ||
+    dataStoreLifecycleState === 'stopped';
+
 const resolveDataStore = () => {
     const module = getDataStoreModule();
     const resolved =
@@ -64,6 +80,101 @@ const getErrorMessage = (error: unknown) => {
 
     return String(error);
 };
+
+const DATASTORE_OBSERVE_RETRY_DELAY_MS = 250;
+
+const isRetryableDataStoreObserveError = (error: unknown) => {
+    const message = getErrorMessage(error);
+
+    return (
+        message.includes('while DataStore was "Stopping"') ||
+        message.includes('BackgroundManagerNotOpenError')
+    );
+};
+
+const notifyObserverError = (observerArgs: unknown[], error: unknown) => {
+    const [observer, onError] = observerArgs;
+
+    if (
+        observer &&
+        typeof observer === 'object' &&
+        'error' in observer &&
+        typeof (observer as { error?: unknown }).error === 'function'
+    ) {
+        (observer as { error: (reason: unknown) => void }).error(error);
+        return;
+    }
+
+    if (typeof onError === 'function') {
+        onError(error);
+        return;
+    }
+
+    console.error('[DataStore.observe] unhandled subscription setup error', error);
+};
+
+const createRetryableObserveMethod =
+    (methodName: 'observe' | 'observeQuery') =>
+    (...args: unknown[]) => ({
+        subscribe: (...observerArgs: unknown[]) => {
+            let cancelled = false;
+            let activeSubscription:
+                | {
+                      unsubscribe: () => void;
+                  }
+                | undefined;
+            let retryTimer: ReturnType<typeof setTimeout> | undefined;
+
+            const connect = () => {
+                if (cancelled) {
+                    return;
+                }
+
+                if (!canSubscribeToDataStore()) {
+                    retryTimer = setTimeout(
+                        connect,
+                        DATASTORE_OBSERVE_RETRY_DELAY_MS
+                    );
+                    return;
+                }
+
+                try {
+                    const observable = resolveDataStore()[methodName](...args) as {
+                        subscribe: (
+                            ...subscriptionArgs: unknown[]
+                        ) => { unsubscribe: () => void };
+                    };
+                    activeSubscription = observable.subscribe(...observerArgs);
+                } catch (error) {
+                    if (isRetryableDataStoreObserveError(error)) {
+                        console.warn(
+                            `[DataStore.${methodName}] delayed while lifecycle is settling`,
+                            getErrorMessage(error)
+                        );
+                        retryTimer = setTimeout(
+                            connect,
+                            DATASTORE_OBSERVE_RETRY_DELAY_MS
+                        );
+                        return;
+                    }
+
+                    notifyObserverError(observerArgs, error);
+                }
+            };
+
+            connect();
+
+            return {
+                unsubscribe() {
+                    cancelled = true;
+                    if (retryTimer) {
+                        clearTimeout(retryTimer);
+                    }
+                    activeSubscription?.unsubscribe();
+                },
+            };
+        },
+    });
 
 const normalizeAuthError = (error: unknown) => {
     if (
@@ -224,11 +335,37 @@ export const DataStore = {
     query: (...args: unknown[]) => resolveDataStore().query(...args),
     save: (...args: unknown[]) => resolveDataStore().save(...args),
     delete: (...args: unknown[]) => resolveDataStore().delete(...args),
-    observe: (...args: unknown[]) => resolveDataStore().observe(...args),
-    observeQuery: (...args: unknown[]) => resolveDataStore().observeQuery(...args),
-    start: (...args: unknown[]) => resolveDataStore().start(...args),
-    stop: (...args: unknown[]) => resolveDataStore().stop(...args),
-    clear: (...args: unknown[]) => resolveDataStore().clear(...args),
+    observe: createRetryableObserveMethod('observe'),
+    observeQuery: createRetryableObserveMethod('observeQuery'),
+    async start(...args: unknown[]) {
+        setDataStoreLifecycleState('starting');
+        try {
+            const result = await resolveDataStore().start(...args);
+            setDataStoreLifecycleState('started');
+            return result;
+        } catch (error) {
+            setDataStoreLifecycleState('stopped');
+            throw error;
+        }
+    },
+    async stop(...args: unknown[]) {
+        setDataStoreLifecycleState('stopping');
+        try {
+            const result = await resolveDataStore().stop(...args);
+            setDataStoreLifecycleState('stopped');
+            return result;
+        } catch (error) {
+            setDataStoreLifecycleState('stopped');
+            throw error;
+        }
+    },
+    async clear(...args: unknown[]) {
+        try {
+            return await resolveDataStore().clear(...args);
+        } finally {
+            setDataStoreLifecycleState('stopped');
+        }
+    },
     configure: (...args: unknown[]) => resolveDataStore().configure(...args),
 };
 

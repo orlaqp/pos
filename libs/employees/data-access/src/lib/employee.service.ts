@@ -6,6 +6,7 @@ import { EmployeeEntity } from './employee.entity';
 import { EmployeeEntityMapper } from './employee.entity';
 import { getCurrentTenantId, stampTenant } from '@pos/auth/data-access';
 import { listEmployees } from '@pos/shared/api';
+import { logSyncDebug } from '@pos/shared/utils';
 
 const normalizePin = (value: string | null | undefined) => String(value ?? '').trim();
 const normalizeEmail = (value: string | null | undefined) => String(value ?? '').trim().toLowerCase();
@@ -97,12 +98,47 @@ export class EmployeeService {
     static async getSyncedLocalEmployees(timeoutMs = 15000) {
         return new Promise<Employee[]>((resolve, reject) => {
             const timeout = setTimeout(() => {
+                void DataStore.query(Employee)
+                    .then((employees) => {
+                        logSyncDebug('employees', 'observeQuery:timeout-local-snapshot', {
+                            itemCount: employees.length,
+                            tenantId: getCurrentTenantId() ?? null,
+                            sample: employees.slice(0, 5).map((employee) => ({
+                                id: employee.id,
+                                tenantId: employee.tenantId,
+                                email: employee.email,
+                                active: employee.active,
+                            })),
+                        });
+                    })
+                    .catch((error) => {
+                        logSyncDebug('employees', 'observeQuery:timeout-local-snapshot-error', {
+                            message:
+                                error instanceof Error ? error.message : String(error),
+                        });
+                    });
                 subscription.unsubscribe();
                 reject(new Error(`Employee DataStore sync timed out after ${timeoutMs}ms`));
             }, timeoutMs);
 
+            logSyncDebug('employees', 'observeQuery:wait-for-sync', {
+                tenantId: getCurrentTenantId() ?? null,
+                timeoutMs,
+            });
             const subscription = DataStore.observeQuery(Employee).subscribe({
                 next: ({ isSynced, items }) => {
+                    logSyncDebug('employees', 'observeQuery:next', {
+                        tenantId: getCurrentTenantId() ?? null,
+                        isSynced,
+                        itemCount: items.length,
+                        sample: items.slice(0, 5).map((employee) => ({
+                            id: employee.id,
+                            tenantId: employee.tenantId,
+                            email: employee.email,
+                            active: employee.active,
+                        })),
+                    });
+
                     if (!isSynced) {
                         return;
                     }

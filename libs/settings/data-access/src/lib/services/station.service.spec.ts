@@ -61,4 +61,24 @@ describe('StationService', () => {
       })
     );
   });
+
+  it('returns an empty config when station storage is corrupted', async () => {
+    jest.mocked(AsyncStorage.getItem).mockResolvedValue('not-json');
+
+    await expect(StationService.getConfig()).resolves.toEqual({});
+  });
+
+  it('throws when trying to reserve an order number without a station code', () => {
+    expect(() =>
+      StationService.reserveNextOrderNumber(
+        {
+          currentDate: '260330',
+          orderNumber: 41,
+        },
+        {
+          code: 'EMP',
+        } as any
+      )
+    ).toThrow('You cannot make sales before configuring the station code');
+  });
 });

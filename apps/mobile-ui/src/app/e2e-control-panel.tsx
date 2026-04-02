@@ -27,6 +27,8 @@ import {
     setE2ESeedStatus,
     subscribeToE2EState,
 } from '@pos/shared/utils';
+import { DataStore } from '@pos/shared/amplify';
+import { configureDataStore } from '@pos/shared/data-store';
 
 const E2E_STATION_NUMBER = '01';
 
@@ -115,6 +117,28 @@ export function E2EControlPanel() {
         }
     };
 
+    const runResetLocalSync = async () => {
+        if (!user) {
+            setE2ESeedStatus('missing-auth-user');
+            return;
+        }
+
+        setE2ESeedStatus('resetting-local-sync');
+
+        try {
+            await DataStore.stop();
+            await DataStore.clear();
+            configureDataStore();
+            await DataStore.start();
+            await refreshBusinessState();
+            setE2ESeedStatus('local-sync-reset');
+        } catch (error) {
+            setE2ESeedStatus(
+                error instanceof Error ? error.message : String(error)
+            );
+        }
+    };
+
     return (
         <View pointerEvents="box-none" style={styles.root}>
             <View style={styles.panel} testID="e2e-panel">
@@ -123,6 +147,13 @@ export function E2EControlPanel() {
                 </Pressable>
                 <Pressable testID="e2e-cleanup-data" onPress={runCleanup} style={styles.hitArea}>
                     <Text style={styles.hiddenLabel}>Cleanup E2E</Text>
+                </Pressable>
+                <Pressable
+                    testID="e2e-reset-local-sync"
+                    onPress={runResetLocalSync}
+                    style={styles.debugHitArea}
+                >
+                    <Text style={styles.debugLabel}>Reset Sync</Text>
                 </Pressable>
                 <Text testID="e2e-seed-status" style={styles.hiddenLabel}>
                     {e2eState.seedStatus}
@@ -159,6 +190,20 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: 'rgba(255, 255, 255, 0.08)',
         borderRadius: 6,
+    },
+    debugHitArea: {
+        width: 112,
+        height: 24,
+        marginBottom: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(59, 130, 246, 0.45)',
+        borderRadius: 6,
+    },
+    debugLabel: {
+        fontSize: 10,
+        fontWeight: '600',
+        color: '#f8fbff',
     },
     hiddenLabel: {
         fontSize: 6,

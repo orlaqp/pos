@@ -750,7 +750,7 @@ export function Cart({
                 <CartPayment
                     total={cart.footer.total}
                     ebtEligibleTotal={ebtEligibleTotal}
-                    canReceiveChecks={employee?.roles.includes(Role.Checks) || false}
+                    canReceiveChecks={employee?.roles?.includes(Role.Checks) || false}
                     onPaymentEntered={paymentEntered}
                 />
             </Dialog>

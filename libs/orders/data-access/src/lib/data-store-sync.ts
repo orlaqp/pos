@@ -13,6 +13,16 @@ const LAST_CLOSED_ORDER_DAYS = 3;
 const getRecentClosedSince = () =>
     moment().subtract(LAST_CLOSED_ORDER_DAYS, 'days').toISOString();
 
+const summarizeOrders = (items: Order[]) =>
+    items.slice(0, 5).map((order) => ({
+        id: order.id,
+        orderNo: order.orderNo,
+        status: order.status,
+        orderDate: order.orderDate,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+    }));
+
 export const mergeSyncedOrders = (...groups: Order[][]) => {
     const deduped = new Map<string, Order>();
 
@@ -44,6 +54,8 @@ export const syncOrders = (dispatch: Dispatch) => {
             openCount: openOrders.length,
             recentPaidCount: paidOrders.length,
             recentRefundedCount: refundedOrders.length,
+            paidSample: summarizeOrders(paidOrders),
+            refundedSample: summarizeOrders(refundedOrders),
         });
         updateStoreOrders(
             dispatch,
@@ -85,6 +97,8 @@ export const subscribeToOrderChanges = (dispatch: Dispatch) => {
         logSyncDebug('orders.observeQuery', 'paid:update', {
             isSynced,
             itemCount: items.length,
+            recentClosedSince: getRecentClosedSince(),
+            sample: summarizeOrders(items),
         });
         recentPaidOrders = items;
         publish();
@@ -99,6 +113,8 @@ export const subscribeToOrderChanges = (dispatch: Dispatch) => {
         logSyncDebug('orders.observeQuery', 'refunded:update', {
             isSynced,
             itemCount: items.length,
+            recentClosedSince: getRecentClosedSince(),
+            sample: summarizeOrders(items),
         });
         recentRefundedOrders = items;
         publish();
@@ -115,8 +131,14 @@ export const subscribeToOrderChanges = (dispatch: Dispatch) => {
 };
 
 const updateStoreOrders = (dispatch: Dispatch, items: Order[]) => {
+    const paidOrders = items.filter((order) => order.status === 'PAID');
+    const refundedOrders = items.filter((order) => order.status === 'REFUNDED');
     logSyncDebug('orders', 'updateStoreOrders', {
         totalCount: items.length,
+        paidCount: paidOrders.length,
+        refundedCount: refundedOrders.length,
+        paidSample: summarizeOrders(paidOrders),
+        refundedSample: summarizeOrders(refundedOrders),
     });
 
     sortByCreatedAt(items);

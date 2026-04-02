@@ -10,6 +10,7 @@ const mockProductSave = jest.fn(() => Promise.resolve({ id: 'saved-1' }));
 const mockSetValue = jest.fn();
 const mockHandleSubmit = jest.fn((fn: () => void) => fn);
 const mockGetValues = jest.fn();
+const mockFormStateErrors = jest.fn(() => ({}));
 
 let mockProduct: any;
 
@@ -88,6 +89,7 @@ jest.mock('react-hook-form', () => ({
         getValues: () => mockGetValues(),
         setValue: (...args: unknown[]) => mockSetValue(...args),
         handleSubmit: (...args: unknown[]) => mockHandleSubmit(...args),
+        formState: { errors: mockFormStateErrors() },
         watch: (name: string) => {
             const values = mockGetValues();
             return values?.[name];
@@ -177,6 +179,8 @@ const { ProductForm } = require('./product-form');
 describe('ProductForm integration', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        mockHandleSubmit.mockImplementation((onValid: () => void) => onValid);
+        mockFormStateErrors.mockReturnValue({});
         mockProduct = {
             id: 'prod-1',
             name: 'Apple',
@@ -313,5 +317,46 @@ describe('ProductForm integration', () => {
         expect(getByTestId('numeric-input-cost')).toBeTruthy();
         expect(getByTestId('numeric-input-price')).toBeTruthy();
         expect(getAllByText('decimal-pad')).toHaveLength(2);
+    });
+
+    it('shows a validation alert when required fields are missing', async () => {
+        mockProduct = undefined;
+        mockHandleSubmit.mockImplementation(
+            (_onValid: () => void, onInvalid: (errors: Record<string, unknown>) => void) =>
+                () => onInvalid({ unitOfMeasure: { message: 'Unit of Measure is required' } })
+        );
+
+        const { getByTestId } = render(
+            <ProductForm navigation={{ goBack: mockGoBack } as any} />
+        );
+
+        fireEvent.press(getByTestId('product-save'));
+
+        await waitFor(() => {
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Missing information',
+                'Complete the required field: Unit of Measure.'
+            );
+        });
+        expect(mockProductSave).not.toHaveBeenCalled();
+        expect(mockGoBack).not.toHaveBeenCalled();
+    });
+
+    it('shows an alert when product save throws', async () => {
+        mockProductSave.mockRejectedValueOnce(new Error('Save failed'));
+
+        const { getByTestId } = render(
+            <ProductForm navigation={{ goBack: mockGoBack } as any} />
+        );
+
+        fireEvent.press(getByTestId('product-save'));
+
+        await waitFor(() => {
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Unable to save product',
+                'Save failed'
+            );
+        });
+        expect(mockGoBack).not.toHaveBeenCalled();
     });
 });

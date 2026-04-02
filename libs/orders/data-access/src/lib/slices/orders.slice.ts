@@ -53,6 +53,9 @@ export interface OrdersState extends EntityState<OrderEntity, string> {
 export const ordersAdapter = createEntityAdapter<OrderEntity, string>({
     selectId: (order) => order.id,
 });
+const ordersEntitySelectors = ordersAdapter.getSelectors<OrdersState>(
+    (ordersState) => ordersState
+);
 
 // export const fetchOpenOrders = createAsyncThunk(
 //     'orders/fetchStatus',
@@ -330,13 +333,10 @@ export const getOrdersState = (rootState: RootState): OrdersState =>
 
 export const selectAllOrders = createSelector(
     getOrdersState,
-    (state) => ordersAdapter.getSelectors<OrdersState>((ordersState) => ordersState).selectAll(state)
+    ordersEntitySelectors.selectAll
 );
 export const selectOpenOrders = createSelector(getOrdersState, (state) =>
-    ordersAdapter
-        .getSelectors()
-        .selectAll(state)
-        .filter((o) => o.status === 'OPEN')
+    ordersEntitySelectors.selectAll(state).filter((o) => o.status === 'OPEN')
 );
 
 export const selectOrderLines = (id: string) =>
@@ -344,7 +344,7 @@ export const selectOrderLines = (id: string) =>
 
 export const selectOrdersEntities = createSelector(
     getOrdersState,
-    (state) => ordersAdapter.getSelectors<OrdersState>((ordersState) => ordersState).selectEntities(state)
+    ordersEntitySelectors.selectEntities
 );
 
 export const selectLoadingStatus = createSelector(

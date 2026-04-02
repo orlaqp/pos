@@ -38,15 +38,16 @@ export const UINumericInput = React.forwardRef<any, Props>(
             : inputProps.rightIcon;
 
         const mergedRules = {
-            // ...rules,
-            pattern: {
-                value: allowDecimals
-                    ? /^(?:0\.(?:0[0-9]|[0-9]\d?)|[0-9]\d*(?:\.\d{1,2})?)(?:e[+-]?\d+)?$/
-                    : /^([0-9]+)$/,
-                message: allowDecimals
-                    ? 'Only numbers are allowed here'
-                    : 'Only integers are allowed here',
-            },
+            ...rules,
+            pattern:
+                rules?.pattern || {
+                    value: allowDecimals
+                        ? /^(?:0\.(?:0[0-9]|[0-9]\d?)|[0-9]\d*(?:\.\d{1,2})?)(?:e[+-]?\d+)?$/
+                        : /^([0-9]+)$/,
+                    message: allowDecimals
+                        ? 'Only numbers are allowed here'
+                        : 'Only integers are allowed here',
+                },
         };
 
         // const validate = (value: string) => {

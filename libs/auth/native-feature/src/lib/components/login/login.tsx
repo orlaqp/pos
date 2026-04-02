@@ -14,7 +14,7 @@ import {
 import { useSelector } from 'react-redux';
 import {
     clearRememberedAdminCredentials,
-    getRememberedAdminCredentialStatus,
+    getRememberedAdminCredentials,
     saveRememberedAdminCredentials,
     signIn,
 } from '@pos/auth/data-access';
@@ -132,9 +132,9 @@ export function LoginScreen(props: LoginProps) {
     useEffect(() => {
         let active = true;
 
-        getRememberedAdminCredentialStatus()
-            .then((status) => {
-                if (!active || !status.enabled) {
+        getRememberedAdminCredentials()
+            .then((remembered) => {
+                if (!active || !remembered) {
                     return;
                 }
 
@@ -143,15 +143,29 @@ export function LoginScreen(props: LoginProps) {
                     shouldTouch: false,
                 });
 
-                if (!initialEmail && status.username) {
-                    formMethods.setValue('email', status.username, {
+                const rememberedEmail = remembered.username.trim();
+                const effectiveEmail = initialEmail || rememberedEmail;
+
+                if (!initialEmail && rememberedEmail) {
+                    formMethods.setValue('email', rememberedEmail, {
+                        shouldDirty: false,
+                        shouldTouch: false,
+                    });
+                }
+
+                if (
+                    remembered.password &&
+                    effectiveEmail &&
+                    effectiveEmail.trim().toLowerCase() === rememberedEmail.toLowerCase()
+                ) {
+                    formMethods.setValue('password', remembered.password, {
                         shouldDirty: false,
                         shouldTouch: false,
                     });
                 }
             })
             .catch((storageError) => {
-                console.error('Unable to read remembered login status', storageError);
+                console.error('Unable to read remembered login credentials', storageError);
             });
 
         return () => {
