@@ -20,33 +20,66 @@ export interface ProductSearchResponse {
 }
 
 export class ProductService {
+    private static normalizePlu(plu?: string | null) {
+        if (!plu) {
+            return '';
+        }
+
+        return plu.replace(/^0+/, '') || '0';
+    }
+
+    private static getWeightedBarcodeCandidates(code: string) {
+        const candidates: Array<{ plu: string; totalPrice: number }> = [];
+
+        if (!/^\d+$/.test(code) || code.length <= 11) {
+            return candidates;
+        }
+
+        if (code.length >= 12) {
+            candidates.push({
+                plu: ProductService.normalizePlu(code.substring(2, 6)),
+                totalPrice: +code.substring(7, 11),
+            });
+        }
+
+        if (code.length >= 13 && code.startsWith('02')) {
+            candidates.push({
+                plu: ProductService.normalizePlu(code.substring(2, 7)),
+                totalPrice: +code.substring(7, 12),
+            });
+        }
+
+        return candidates;
+    }
+
     private static findWeightedBarcodeMatch(
         products: ProductEntity[],
         code: string,
         onlyActive: boolean
     ): ProductSearchResponse | null {
-        if (!/^\d+$/.test(code) || code.length <= 11) {
-            return null;
+        const candidates = ProductService.getWeightedBarcodeCandidates(code);
+
+        for (const candidate of candidates) {
+            const prod = products.find((p) => {
+                const matches = ProductService.normalizePlu(p.plu) === candidate.plu;
+                return onlyActive ? p.isActive && matches : matches;
+            });
+
+            if (!prod) {
+                continue;
+            }
+
+            const quantity = candidate.totalPrice / 100 / prod.price;
+
+            return {
+                items: [prod],
+                allNumbers: true,
+                price: candidate.totalPrice,
+                quantity,
+            };
         }
 
-        const plu = code.substring(2, 6);
-        const prod = products.find((p) => {
-            return onlyActive ? p.isActive && p.plu === plu : p.plu === plu;
-        });
-
-        if (!prod) {
-            return null;
-        }
-
-        const totalPrice = +code.substring(7, 11);
-        const quantity = totalPrice / 100 / prod.price;
-
-        return {
-            items: [prod],
-            allNumbers: true,
-            price: totalPrice,
-            quantity,
-        };
+        return null;
     }
 
     private static findWeightedBarcodeMatchInCandidate(

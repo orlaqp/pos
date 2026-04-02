@@ -13,6 +13,8 @@ const mockCategoriesUnsubscribe = jest.fn();
 const mockProductsUnsubscribe = jest.fn();
 const mockSettingsUnsubscribe = jest.fn();
 const mockPrintReceipt = jest.fn();
+const mockSearchFocus = jest.fn();
+const mockSearchClear = jest.fn();
 const mockGetNextOrderNumber = jest.fn(async () => '51-EMP-260326-0001');
 const mockReserveNextOrderNumber = jest.fn(() => ({
     orderNo: '51-EMP-260326-0001',
@@ -45,6 +47,10 @@ const mockPayOrder = Object.assign(
         },
     }
 );
+const mockUpsertPendingOrderJournalEntry = jest.fn(async (entry: any) => [entry]);
+const mockMarkPendingOrderJournalEntry = jest.fn(async (orderId: string, updates: any) => [
+    { orderId, syncState: updates.syncState, lastError: updates.lastError },
+]);
 
 const mockProduct = {
     id: 'p-1',
@@ -156,6 +162,10 @@ jest.mock('@pos/printings/data-access', () => ({
 jest.mock('@pos/orders/data-access', () => ({
     buildEbtAllocations: jest.fn(() => ({})),
     getLineTotal: jest.fn((quantity: number, price: number) => +(quantity * price).toFixed(2)),
+    upsertPendingOrderJournalEntry: (...args: unknown[]) =>
+        mockUpsertPendingOrderJournalEntry(...args),
+    markPendingOrderJournalEntry: (...args: unknown[]) =>
+        mockMarkPendingOrderJournalEntry(...args),
     ordersActions: {
         optimisticMarkPaid: (payload: unknown) => ({
             type: 'orders/optimisticMarkPaid',
@@ -163,6 +173,14 @@ jest.mock('@pos/orders/data-access', () => ({
         }),
         optimisticRestoreOpen: (payload: unknown) => ({
             type: 'orders/optimisticRestoreOpen',
+            payload,
+        }),
+        hydratePendingOrders: (payload: unknown) => ({
+            type: 'orders/hydratePendingOrders',
+            payload,
+        }),
+        markPendingOrderSyncState: (payload: unknown) => ({
+            type: 'orders/markPendingOrderSyncState',
             payload,
         }),
     },
@@ -197,6 +215,7 @@ jest.mock('./sales-screen.styles', () => ({
 
 jest.mock('./sales-catalog-pane', () => ({
     SalesCatalogPane: ({
+        searchRef,
         hasCatalogProducts,
         filteredProducts,
         onCategoryChange,
@@ -208,6 +227,9 @@ jest.mock('./sales-catalog-pane', () => ({
         onOpenBackOfficeForm,
     }: any) => {
         const { View, Pressable, Text } = require('react-native');
+        if (searchRef) {
+            searchRef.current = { focus: mockSearchFocus, clear: mockSearchClear };
+        }
         return (
             <View>
                 <Text testID="sales-catalog-count">{filteredProducts.length}</Text>
@@ -276,7 +298,7 @@ jest.mock('./sales-catalog-pane', () => ({
 }));
 
 jest.mock('./sales-product-dialog', () => ({
-    SalesProductDialog: ({ product, onUpsertCart }: any) => {
+    SalesProductDialog: ({ product, onUpsertCart, onClose }: any) => {
         const { Pressable, Text, View } = require('react-native');
         return product ? (
             <View>
@@ -291,6 +313,9 @@ jest.mock('./sales-product-dialog', () => ({
                     }
                 >
                     <Text>Details</Text>
+                </Pressable>
+                <Pressable testID="sales-product-details-close" onPress={onClose}>
+                    <Text>Close</Text>
                 </Pressable>
             </View>
         ) : null;
@@ -334,6 +359,8 @@ describe('SalesScreen', () => {
     beforeEach(() => {
         jest.useFakeTimers();
         jest.clearAllMocks();
+        mockSearchFocus.mockClear();
+        mockSearchClear.mockClear();
         interactionCallbacks = [];
         mockInteractionCancel = jest.fn();
         jest
@@ -382,6 +409,7 @@ describe('SalesScreen', () => {
             },
             store: { id: 's-1' },
             printer: { id: 'printer-1' },
+            tenantSession: { tenantId: 'tenant-1' },
             settings: { enforceSalesBasedOnInventory: false },
             station: {
                 stationNumber: '51',
@@ -454,6 +482,34 @@ describe('SalesScreen', () => {
         );
     });
 
+    it('restores search focus after submitting from product details', () => {
+        mockState.activeProduct = mockWeightedProduct;
+        const { getByTestId } = renderSalesScreen();
+
+        fireEvent.press(getByTestId('sales-product-details-submit'));
+
+        act(() => {
+            interactionCallbacks.forEach((callback) => callback());
+            jest.runOnlyPendingTimers();
+        });
+
+        expect(mockSearchFocus).toHaveBeenCalled();
+    });
+
+    it('restores search focus after closing product details', () => {
+        mockState.activeProduct = mockWeightedProduct;
+        const { getByTestId } = renderSalesScreen();
+
+        fireEvent.press(getByTestId('sales-product-details-close'));
+
+        act(() => {
+            interactionCallbacks.forEach((callback) => callback());
+            jest.runOnlyPendingTimers();
+        });
+
+        expect(mockSearchFocus).toHaveBeenCalled();
+    });
+
     it('shows availability alert when inventory enforcement blocks a product', () => {
         mockState.settings.enforceSalesBasedOnInventory = true;
         const { getByTestId } = renderSalesScreen();
@@ -487,6 +543,10 @@ describe('SalesScreen', () => {
             fireEvent.press(getByTestId('sales-search-barcode'));
             await Promise.resolve();
         });
+        act(() => {
+            interactionCallbacks.forEach((callback) => callback());
+            jest.runOnlyPendingTimers();
+        });
         await act(async () => {
             fireEvent.press(getByTestId('sales-search-empty'));
             await Promise.resolve();
@@ -496,6 +556,8 @@ describe('SalesScreen', () => {
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/upsert' })
         );
+        expect(mockSearchClear).toHaveBeenCalled();
+        expect(mockSearchFocus).toHaveBeenCalled();
         expect(getByTestId('sales-catalog-count').props.children).toBe(0);
     });
 
@@ -607,7 +669,7 @@ describe('SalesScreen', () => {
             'Order could not be saved',
             'The order was not saved. Please try again. The receipt may have already been printed.'
         );
-        expect(mockDispatch).toHaveBeenCalledWith(
+        expect(mockDispatch).not.toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/reset' })
         );
     });
@@ -719,7 +781,7 @@ describe('SalesScreen', () => {
             'Payment could not be completed',
             'The order is still open. Please try again. The receipt may have already been printed.'
         );
-        expect(mockNavigate).toHaveBeenCalledWith('Order List');
+        expect(mockNavigate).not.toHaveBeenCalledWith('Order List');
     });
 
     it('dispatches cart upsert and deselect from product details dialog', () => {

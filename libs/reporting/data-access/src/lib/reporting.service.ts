@@ -21,8 +21,8 @@ export const buildSalesSummaryFromOrders = (
     const byDate: Record<string, { datePart: string; orders: number; amount: number }> = {};
 
     orders.forEach((order) => {
-        const employeeId = order.employeeId || 'unknown';
-        const employeeName = order.employeeName || 'Unknown';
+        const employeeId = order.createdBy?.id || order.employeeId || 'unknown';
+        const employeeName = order.createdBy?.name || order.employeeName || 'Unknown';
         const total = Number(order.total || 0);
         const eventIso =
             status === 'PAID'

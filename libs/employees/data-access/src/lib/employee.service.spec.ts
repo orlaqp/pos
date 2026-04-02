@@ -10,6 +10,7 @@ jest.mock('@pos/shared/amplify', () => ({
 
 jest.mock('@pos/auth/data-access', () => ({
   stampTenant: jest.fn((value) => value),
+  getCurrentTenantId: jest.fn(() => 'tenant-123'),
 }));
 
 jest.mock('@pos/shared/api', () => ({
@@ -17,14 +18,17 @@ jest.mock('@pos/shared/api', () => ({
 }));
 
 import { API, DataStore } from '@pos/shared/amplify';
+import { getCurrentTenantId } from '@pos/auth/data-access';
 import { EmployeeService } from './employee.service';
 
 const queryMock = DataStore.query as jest.Mock;
 const graphqlMock = API.graphql as jest.Mock;
+const getCurrentTenantIdMock = getCurrentTenantId as jest.Mock;
 
 describe('EmployeeService.getEmployee', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
+    getCurrentTenantIdMock.mockReturnValue('tenant-123');
   });
 
   it('returns the direct predicate match when found', async () => {
@@ -74,46 +78,15 @@ describe('EmployeeService.getEmployee', () => {
     expect(queryMock).toHaveBeenCalledTimes(2);
   });
 
-  it('falls back to the backend employee query when local data misses', async () => {
+  it('returns null when local employee data misses the PIN', async () => {
     queryMock
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([]);
-    graphqlMock.mockResolvedValueOnce({
-      data: {
-        listEmployees: {
-          items: [
-            {
-              id: 'emp-1',
-              pin: '1234',
-              active: true,
-              firstName: 'Orlando',
-              lastName: 'Quero',
-            },
-          ],
-        },
-      },
-    });
 
     const employee = await EmployeeService.getEmployee('1234');
 
-    expect(employee).toEqual(
-      expect.objectContaining({
-        id: 'emp-1',
-        pin: '1234',
-      })
-    );
-    expect(graphqlMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        authMode: 'userPool',
-        variables: {
-          filter: {
-            active: { eq: true },
-            pin: { eq: '1234' },
-          },
-          limit: 20,
-        },
-      })
-    );
+    expect(employee).toBeNull();
+    expect(graphqlMock).not.toHaveBeenCalled();
   });
 
   it('returns null when no active employee matches the PIN', async () => {
@@ -144,7 +117,8 @@ describe('EmployeeService.getEmployee', () => {
 
 describe('EmployeeService.getEmployeeByEmail', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
+    getCurrentTenantIdMock.mockReturnValue('tenant-123');
   });
 
   it('returns a local active employee matching email', async () => {
@@ -178,6 +152,7 @@ describe('EmployeeService.getEmployeeByEmail', () => {
               id: 'emp-1',
               email: 'orlaqp+pos@gmail.com',
               active: true,
+              tenantId: 'tenant-123',
               firstName: 'Orlando',
               lastName: 'Quero',
             },
@@ -201,6 +176,7 @@ describe('EmployeeService.getEmployeeByEmail', () => {
           filter: {
             active: { eq: true },
             email: { eq: 'orlaqp+pos@gmail.com' },
+            tenantId: { eq: 'tenant-123' },
           },
           limit: 20,
         },
@@ -211,7 +187,8 @@ describe('EmployeeService.getEmployeeByEmail', () => {
 
 describe('EmployeeService.getAll', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
+    getCurrentTenantIdMock.mockReturnValue('tenant-123');
   });
 
   it('returns local employees when the cache is already hydrated', async () => {
@@ -288,6 +265,9 @@ describe('EmployeeService.getAll', () => {
       expect.objectContaining({
         authMode: 'userPool',
         variables: {
+          filter: {
+            tenantId: { eq: 'tenant-123' },
+          },
           limit: 100,
         },
       })
@@ -297,6 +277,9 @@ describe('EmployeeService.getAll', () => {
       expect.objectContaining({
         authMode: 'userPool',
         variables: {
+          filter: {
+            tenantId: { eq: 'tenant-123' },
+          },
           limit: 100,
           nextToken: 'page-2',
         },

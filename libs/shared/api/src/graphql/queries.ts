@@ -454,6 +454,7 @@ export const syncCustomers = /* GraphQL */ `query SyncCustomers(
 export const getEmployee = /* GraphQL */ `query GetEmployee($id: ID!) {
   getEmployee(id: $id) {
     id
+    tenantId
     code
     firstName
     lastName
@@ -484,6 +485,7 @@ export const listEmployees = /* GraphQL */ `query ListEmployees(
   listEmployees(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      tenantId
       code
       firstName
       lastName
@@ -524,6 +526,7 @@ export const syncEmployees = /* GraphQL */ `query SyncEmployees(
   ) {
     items {
       id
+      tenantId
       code
       firstName
       lastName

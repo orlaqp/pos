@@ -334,6 +334,9 @@ export const cartSlice = createSlice({
         addPayment: (state: CartState, action: PayloadAction<CartPayment[]>) => {
             state.footer.payments = action.payload;
         },
+        restoreSnapshot: (state: CartState, action: PayloadAction<CartState>) => {
+            Object.assign(state, action.payload);
+        },
         reset: (state: CartState) => {
             state.id = undefined;
             state.orderNo = undefined;

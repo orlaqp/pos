@@ -48,6 +48,15 @@ jest.mock('react-redux', () => ({
 }));
 
 jest.mock('@pos/theme/native', () => ({
+    getThemeColors: () => ({
+        grey0: '#fff',
+        grey5: '#ccc',
+        background: '#000',
+        black: '#000',
+        white: '#fff',
+        primary: '#00f',
+        error: '#f00',
+    }),
     useSharedStyles: () => ({
         page: {},
         secondaryText: {},
@@ -55,6 +64,21 @@ jest.mock('@pos/theme/native', () => ({
         textCenter: {},
         textBold: {},
         darkBackground: {},
+    }),
+}));
+
+jest.mock('@pos/theme/native/design-tokens', () => ({
+    useDesignTokens: () => ({
+        spacing: { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 },
+        radius: { md: 8, lg: 12 },
+        colors: {
+            canvas: '#000',
+            surface: '#111',
+            border: '#222',
+            text: '#fff',
+            textMuted: '#999',
+            primary: '#00f',
+        },
     }),
 }));
 
@@ -147,6 +171,10 @@ jest.mock('@pos/products/data-access', () => ({
     },
     selectAllProducts: () => mockProducts,
     subscribeToProductChanges: () => ({ unsubscribe: jest.fn() }),
+}));
+
+jest.mock('@pos/store', () => ({
+    useAppDispatch: () => mockDispatch,
 }));
 
 jest.mock('@pos/employees/data-access', () => ({

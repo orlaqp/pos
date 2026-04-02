@@ -4,11 +4,52 @@ import {
     Product,
 } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from '@pos/shared/amplify';
+import { API, DataStore } from '@pos/shared/amplify';
 import { inventoryCountActions } from './inventory-count.slice';
 import { InventoryCountDTO } from './inventory-count.entity';
 import { Alert } from 'react-native';
 import { requireCurrentTenantId, stampTenant } from '@pos/auth/data-access';
+import { getProduct } from '@pos/shared/api';
+
+const updateProductInventoryDeltaMutation = /* GraphQL */ `
+    mutation UpdateProductInventoryDelta(
+        $input: UpdateProductInput!
+        $condition: ModelProductConditionInput
+    ) {
+        updateProduct(input: $input, condition: $condition) {
+            id
+            tenantId
+            name
+            description
+            price
+            tags
+            cost
+            barcode
+            sku
+            plu
+            quantity
+            unitOfMeasure
+            trackStock
+            reorderPoint
+            reorderQuantity
+            picture
+            isActive
+            isEBTEligible
+            discountable
+            minAllowedPrice
+            maxManualDiscountPercent
+            maxManualDiscountAmount
+            createdAt
+            updatedAt
+            _version
+            _deleted
+            _lastChangedAt
+            productCategoryId
+            productBrandId
+            __typename
+        }
+    }
+`;
 
 const isInventoryDebugEnabled = () =>
     typeof __DEV__ !== 'undefined' && __DEV__;
@@ -16,6 +57,120 @@ const isInventoryDebugEnabled = () =>
 const debugInventoryApply = (context: string, payload: Record<string, unknown>) => {
     if (!isInventoryDebugEnabled()) return;
     console.log(`[inventory-debug][${context}]`, payload);
+};
+
+const getGraphqlErrorMessage = (result: unknown) => {
+    if (!result || typeof result !== 'object') return undefined;
+    if (!('errors' in result)) return undefined;
+    const errors = (result as { errors?: Array<{ message?: string }> }).errors || [];
+    return errors.map((error) => error?.message).filter(Boolean).join(' | ') || undefined;
+};
+
+const getErrorMessage = (error: unknown) => {
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    if (
+        error &&
+        typeof error === 'object' &&
+        'errors' in error &&
+        Array.isArray((error as { errors?: unknown[] }).errors)
+    ) {
+        const messages = (error as { errors?: unknown[] }).errors
+            ?.map((entry) => {
+                if (
+                    entry &&
+                    typeof entry === 'object' &&
+                    'message' in entry &&
+                    typeof (entry as { message?: unknown }).message === 'string'
+                ) {
+                    return (entry as { message: string }).message;
+                }
+
+                return undefined;
+            })
+            .filter(Boolean);
+
+        if (messages && messages.length > 0) {
+            return messages.join(' | ');
+        }
+    }
+
+    if (
+        error &&
+        typeof error === 'object' &&
+        'message' in error &&
+        typeof (error as { message?: unknown }).message === 'string'
+    ) {
+        return (error as { message: string }).message;
+    }
+
+    return String(error);
+};
+
+const fetchLatestProductVersion = async (productId: string) => {
+    const result = await API.graphql({
+        query: getProduct,
+        variables: { id: productId },
+        authMode: 'userPool',
+    });
+
+    const message = getGraphqlErrorMessage(result);
+    if (message) {
+        throw new Error(message);
+    }
+
+    const remote = (result as { data?: { getProduct?: { _version?: number | null } | null } })
+        .data?.getProduct;
+
+    return remote?._version;
+};
+
+const executeInventoryCountDelta = async (
+    productId: string,
+    delta: number,
+    version?: number | null
+) => {
+    const result = await API.graphql({
+        query: updateProductInventoryDeltaMutation,
+        variables: {
+            input: {
+                id: productId,
+                quantity: delta,
+                _version: version,
+            },
+        },
+        authMode: 'userPool',
+    });
+
+    const message = getGraphqlErrorMessage(result);
+    if (message) {
+        throw new Error(message);
+    }
+};
+
+const applyInventoryCountDelta = async (product: Product, delta: number) => {
+    const currentVersion = (product as Product & { _version?: number | null })._version;
+
+    try {
+        await executeInventoryCountDelta(product.id, delta, currentVersion);
+    } catch (error) {
+        const message =
+            error instanceof Error ? error.message : String(error);
+
+        const shouldRetry =
+            message.toLowerCase().includes('conflict') ||
+            message.toLowerCase().includes('conditionalcheckfailed') ||
+            message.toLowerCase().includes('version');
+
+        if (!shouldRetry) {
+            throw error;
+        }
+
+        const latestVersion = await fetchLatestProductVersion(product.id);
+        await executeInventoryCountDelta(product.id, delta, latestVersion);
+    }
 };
 
 export class InventoryCountService {
@@ -182,13 +337,9 @@ const updateInventory = async (count: InventoryCountDTO) => {
                 countId: count.id || 'new-count',
             });
 
-            const updatedProduct = Product.copyOf(product, updated => {
-                // Product quantity is handled as delta by AppSync resolver.
-                updated.quantity = delta;
-            });
-            await DataStore.save(updatedProduct);
+            await applyInventoryCountDelta(product, delta);
         }
     } catch (error) {
-        Alert.alert('Error while updating inventory', (error as any).message);
+        Alert.alert('Error while updating inventory', getErrorMessage(error));
     }
 }

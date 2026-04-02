@@ -107,6 +107,23 @@ export const useHomeScreenStyles = () => {
             fontSize: 15,
             fontWeight: '600',
         },
+        savedLoginStatusText: {
+            color: '#9aa7ba',
+            textAlign: 'center',
+            marginTop: 16,
+            fontSize: 13,
+            lineHeight: 18,
+        },
+        secondaryDeviceActionButton: {
+            marginTop: 10,
+            paddingVertical: 10,
+            alignItems: 'center',
+        },
+        secondaryDeviceActionButtonText: {
+            color: '#7eb6ff',
+            fontSize: 14,
+            fontWeight: '600',
+        },
         setupButton: {
             borderRadius: 16,
             minHeight: 52,

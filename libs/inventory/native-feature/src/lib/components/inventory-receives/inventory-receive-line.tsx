@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import { View, Text, Alert } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
@@ -32,6 +32,7 @@ export function InventoryReceiveLine({
     const [comment, setComment] = useState<string | undefined>(
         item.comments || undefined
     );
+    const receivedRef = useRef<string>(item.received.toString());
     const productKey = toTestKey(item.productName);
     
     const originalReceived = item.received;
@@ -46,6 +47,7 @@ export function InventoryReceiveLine({
 
     const updateReceived = (received: string) => {
         const validatedReceive = received || originalReceived?.toString();
+        receivedRef.current = validatedReceive;
         setReceived(validatedReceive);
         onUpdate({ ...item, received: +validatedReceive });
     };
@@ -68,6 +70,7 @@ export function InventoryReceiveLine({
                     testID={`inventory-receive-qty-${productKey}`}
                     value={received}
                     onChangeText={(value) => {
+                        receivedRef.current = value;
                         setReceived(value);
                         if (!value) return;
 
@@ -80,10 +83,11 @@ export function InventoryReceiveLine({
                         { marginRight: 25 },
                     ]}
                     onFocus={() => {
+                        receivedRef.current = '';
                         setReceived('');
                         onUpdate({ ...item, received: 0 });
                     }}
-                    onBlur={() => updateReceived(received)}
+                    onBlur={() => updateReceived(receivedRef.current)}
                     editable={!readOnly}
                 />
             </View>

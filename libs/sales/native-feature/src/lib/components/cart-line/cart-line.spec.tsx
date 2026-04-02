@@ -5,6 +5,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 const mockOnRemove = jest.fn();
 const mockOnSelect = jest.fn();
+const mockOnOpenDetails = jest.fn();
 const mockOnIncrement = jest.fn();
 const mockOnDecrement = jest.fn();
 
@@ -35,7 +36,7 @@ describe('CartLine', () => {
         jest.clearAllMocks();
     });
 
-    it('calls select and remove handlers', () => {
+    it('opens details on press and selects on long press', () => {
         jest.spyOn(Alert, 'alert').mockImplementation((_: any, __: any, actions: any) => {
             actions[1].onPress();
         });
@@ -56,6 +57,7 @@ describe('CartLine', () => {
             <CartLine
                 item={item}
                 onRemove={mockOnRemove}
+                onOpenDetails={mockOnOpenDetails}
                 onSelect={mockOnSelect}
                 onIncrement={mockOnIncrement}
                 onDecrement={mockOnDecrement}
@@ -63,6 +65,9 @@ describe('CartLine', () => {
         );
 
         fireEvent.press(getByText('Apple'));
+        expect(mockOnOpenDetails).toHaveBeenCalledWith(item);
+
+        fireEvent(getByText('Apple'), 'longPress');
         expect(mockOnSelect).toHaveBeenCalledWith(item);
 
         fireEvent.press(getByTestId('cart-line-increment'));
@@ -91,6 +96,7 @@ describe('CartLine', () => {
             <CartLine
                 item={item}
                 onRemove={mockOnRemove}
+                onOpenDetails={mockOnOpenDetails}
                 onSelect={mockOnSelect}
                 onIncrement={mockOnIncrement}
                 onDecrement={mockOnDecrement}
@@ -119,6 +125,7 @@ describe('CartLine', () => {
                 item={item}
                 selected
                 onRemove={mockOnRemove}
+                onOpenDetails={mockOnOpenDetails}
                 onSelect={mockOnSelect}
                 onIncrement={mockOnIncrement}
                 onDecrement={mockOnDecrement}

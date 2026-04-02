@@ -10,6 +10,9 @@ export {
     selectLoadingStatus,
     selectIsEmpty,
     selectFilteredOrderList,
+    selectHasPendingUnsyncedOrders,
+    selectPendingOrderSyncState,
+    selectPendingUnsyncedOrderCount,
     upsertOrder,
     payOrder,
     type PayOrderRequest,
@@ -19,3 +22,4 @@ export * from './lib/order.entity';
 export * from './lib/order.service';
 export * from './lib/data-store-sync';
 export * from './lib/ebt-allocation';
+export * from './lib/pending-order-journal';

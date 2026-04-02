@@ -29,14 +29,46 @@ export function override(resources: AmplifyAuthCognitoStackTemplate, amplifyProj
     const userPoolClient = resources.userPoolClient as unknown as {
         readAttributes?: string[];
         writeAttributes?: string[];
+        refreshTokenValidity?: number;
+        accessTokenValidity?: number;
+        idTokenValidity?: number;
+        tokenValidityUnits?: {
+            refreshToken?: string;
+            accessToken?: string;
+            idToken?: string;
+        };
     };
     const userPoolClientWeb = resources.userPoolClientWeb as unknown as {
         readAttributes?: string[];
         writeAttributes?: string[];
+        refreshTokenValidity?: number;
+        accessTokenValidity?: number;
+        idTokenValidity?: number;
+        tokenValidityUnits?: {
+            refreshToken?: string;
+            accessToken?: string;
+            idToken?: string;
+        };
     };
 
     userPoolClient.readAttributes = clientAttributes;
     userPoolClient.writeAttributes = clientAttributes;
     userPoolClientWeb.readAttributes = clientAttributes;
     userPoolClientWeb.writeAttributes = clientAttributes;
+    userPoolClient.refreshTokenValidity = 3650;
+    userPoolClient.accessTokenValidity = 24;
+    userPoolClient.idTokenValidity = 24;
+    userPoolClient.tokenValidityUnits = {
+        refreshToken: 'days',
+        accessToken: 'hours',
+        idToken: 'hours',
+    };
+    userPoolClientWeb.refreshTokenValidity = 3650;
+    userPoolClientWeb.accessTokenValidity = 24;
+    userPoolClientWeb.idTokenValidity = 24;
+    userPoolClientWeb.tokenValidityUnits = {
+        refreshToken: 'days',
+        accessToken: 'hours',
+        idToken: 'hours',
+    };
 }

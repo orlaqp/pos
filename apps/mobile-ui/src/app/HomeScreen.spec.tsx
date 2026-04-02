@@ -59,7 +59,12 @@ jest.mock('@pos/auth/data-access', () => ({
     authActions: {
         logoff: () => ({ type: 'auth/logoff' }),
     },
+    clearRememberedAdminCredentials: jest.fn(async () => undefined),
     clearCurrentTenantContext: jest.fn(),
+    getRememberedAdminCredentialStatus: jest.fn(async () => ({
+        enabled: true,
+        username: 'owner@example.com',
+    })),
     Role: {
         Sales: 'Sales',
         Payments: 'Payments',
@@ -78,6 +83,7 @@ jest.mock('@pos/employees/data-access', () => ({
     EmployeeService: {
         getEmployee: jest.fn(),
         getAll: jest.fn(async () => []),
+        getLocalEmployees: jest.fn(async () => []),
         save: jest.fn(),
     },
     selectAllEmployees: (state: any) => state.employees.all,
@@ -163,12 +169,27 @@ jest.mock('./home-setup-wizard', () => ({
 }));
 
 jest.mock('./home-pin-login', () => ({
-    HomePinLogin: ({ onLogoff }: { onLogoff?: () => void }) => {
+    HomePinLogin: ({
+        onLogoff,
+        onRemoveSavedLogin,
+        savedLoginStatusLabel,
+    }: {
+        onLogoff?: () => void;
+        onRemoveSavedLogin?: () => void;
+        savedLoginStatusLabel?: string;
+    }) => {
         const { Pressable, Text, View } = require('react-native');
         return (
             <View testID="home-pin-login">
+                <Text>{savedLoginStatusLabel}</Text>
                 <Pressable testID="home-pin-logoff-button" onPress={onLogoff}>
                     <Text>Log off business</Text>
+                </Pressable>
+                <Pressable
+                    testID="home-pin-remove-saved-login-button"
+                    onPress={onRemoveSavedLogin}
+                >
+                    <Text>Remove saved login from this device</Text>
                 </Pressable>
             </View>
         );
@@ -255,14 +276,34 @@ describe('HomeScreen', () => {
         );
     });
 
-    it('verifies existing employees before showing setup again', async () => {
+    it('offers removing saved credentials without logging out immediately', async () => {
+        mockState.employees.loginEmployee = undefined;
+        mockState.employees.all = [{ id: 'employee-1' }];
+        const navigation = {
+            navigate: jest.fn(),
+        } as any;
+
+        const { getByTestId } = render(<HomeScreen navigation={navigation} />);
+
+        await act(async () => {
+            fireEvent.press(getByTestId('home-pin-remove-saved-login-button'));
+        });
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Remove saved login?',
+            'This only removes the stored admin username and password from this device. Your current admin session will stay active.',
+            expect.any(Array)
+        );
+    });
+
+    it('rechecks local employees before showing setup again', async () => {
         const { EmployeeService } = require('@pos/employees/data-access');
 
         mockState.employees.loginEmployee = undefined;
         mockState.employees.all = [];
         mockState.employees.initialEmployeeSyncComplete = true;
         mockState.employees.loadingStatus = 'loaded';
-        EmployeeService.getAll.mockResolvedValueOnce([
+        EmployeeService.getLocalEmployees.mockResolvedValueOnce([
             {
                 id: 'owner-1',
                 code: 'OWNER',

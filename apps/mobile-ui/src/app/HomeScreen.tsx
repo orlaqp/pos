@@ -6,10 +6,13 @@ import { View, Alert, ScrollView, Animated, Image } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     authActions,
+    clearRememberedAdminCredentials,
     clearCurrentTenantContext,
+    getRememberedAdminCredentialStatus,
     Role,
     tenantSessionActions,
 } from '@pos/auth/data-access';
+import { selectPendingUnsyncedOrderCount } from '@pos/orders/data-access';
 import { useForm } from 'react-hook-form';
 import {
     employeesActions,
@@ -26,10 +29,7 @@ import { RootState } from '@pos/store';
 import {
     isStoreInfoIncomplete,
     selectInitialStoreSyncComplete,
-    selectPreferredStore,
     selectStore,
-    storeInfoActions,
-    StoreInfoEntityMapper,
     StoreInfoService,
 } from '@pos/store-info/data-access';
 import { useHomeScreenStyles } from './HomeScreen.styles';
@@ -90,7 +90,7 @@ type PendingOwnerEmployee = {
     phone: string | null;
     email: string | null;
     pin: string;
-    roles: Role[];
+    roles: Array<(typeof Role)[keyof typeof Role]>;
     active: boolean;
 };
 
@@ -119,6 +119,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const user = useSelector((state: RootState) => state.auth.user);
     const businessName = useSelector((state: RootState) => state.tenantSession.businessName);
     const station = useSelector(selectStation);
+    const pendingUnsyncedOrderCount = useSelector(selectPendingUnsyncedOrderCount);
     const [pin, setPin] = useState<string>('');
     const [invalidPinAttempt, setInvalidPinAttempt] = useState(0);
     const [pinResetToken, setPinResetToken] = useState(0);
@@ -129,9 +130,9 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const [lockNow, setLockNow] = useState<number>(Date.now());
     const [setupError, setSetupError] = useState<string | null>(null);
     const [setupSaving, setSetupSaving] = useState(false);
-    const [setupVerificationStatus, setSetupVerificationStatus] = useState<
-        'idle' | 'verifying' | 'verified'
-    >('idle');
+    const [savedLoginStatusLabel, setSavedLoginStatusLabel] = useState(
+        'Checking saved login on this device...'
+    );
     const [pendingRoutePath, setPendingRoutePath] = useState<string | null>(null);
     const [setupStep, setSetupStep] = useState<'employee' | 'store'>('employee');
     const [pendingOwnerEmployee, setPendingOwnerEmployee] =
@@ -160,38 +161,17 @@ export const HomeScreen = (props: HomeScreenProps) => {
         },
     });
     const storeNeedsSetup = initialStoreSyncComplete && isStoreInfoIncomplete(store);
-    const employeesReady = employeesLoadingStatus === 'loaded';
+    const accessSyncInProgress =
+        !employee && (!initialEmployeeSyncComplete || !initialStoreSyncComplete);
     const needsInitialEmployee =
-        employeesReady && initialEmployeeSyncComplete && employees.length === 0;
+        !accessSyncInProgress &&
+        !employee &&
+        employees.length === 0 &&
+        !store?.id;
     const needsSetupWizard =
-        setupVerificationStatus === 'verified' &&
-        employeesReady &&
+        !accessSyncInProgress &&
         !employee &&
         (needsInitialEmployee || storeNeedsSetup);
-
-    useEffect(() => {
-        console.log('[home-setup] state', {
-            employeesReady,
-            initialEmployeeSyncComplete,
-            employeeCount: employees.length,
-            storeId: store?.id ?? null,
-            storeNeedsSetup,
-            setupVerificationStatus,
-            needsInitialEmployee,
-            needsSetupWizard,
-            userEmail: user?.email ?? null,
-        });
-    }, [
-        employees.length,
-        employeesReady,
-        initialEmployeeSyncComplete,
-        needsInitialEmployee,
-        needsSetupWizard,
-        setupVerificationStatus,
-        store?.id,
-        storeNeedsSetup,
-        user?.email,
-    ]);
     const paths: PathDetails[] = useMemo(() => [
         {
             title: 'Sales',
@@ -291,6 +271,21 @@ export const HomeScreen = (props: HomeScreenProps) => {
         return pin;
     };
 
+    const resetPinEntry = () => {
+        setPin('');
+        setPinResetToken((current) => current + 1);
+    };
+
+    const clearPinGuard = useCallback(async () => {
+        setInvalidPinAttempt(0);
+        const clearedState: PinLockState = {
+            failedAttempts: 0,
+            lockedUntil: null,
+        };
+        setPinLockState(clearedState);
+        await clearPinLockState();
+    }, []);
+
     const loginWithE2EManager = useCallback(async () => {
         try {
             const emp = await EmployeeService.getEmployee(E2E_MANAGER_PIN);
@@ -298,15 +293,13 @@ export const HomeScreen = (props: HomeScreenProps) => {
                 return;
             }
 
+            await clearPinGuard();
             dispatch(employeesActions.loginEmployee(emp));
-            setInvalidPinAttempt(0);
-            setPinLockState({ failedAttempts: 0, lockedUntil: null });
-            await clearPinLockState();
             resetPinEntry();
         } catch (error) {
             console.error('E2E manager login failed', error);
         }
-    }, [dispatch]);
+    }, [clearPinGuard, dispatch]);
 
     const confirmLogoff = useCallback(() => {
         Alert.alert('Log off business?', 'This will sign out the admin session on this device.', [
@@ -314,11 +307,17 @@ export const HomeScreen = (props: HomeScreenProps) => {
             {
                 text: 'Log off',
                 onPress: async () => {
+                    if (pendingUnsyncedOrderCount > 0) {
+                        Alert.alert(
+                            'Pending orders are still on this device',
+                            `${pendingUnsyncedOrderCount} order${pendingUnsyncedOrderCount === 1 ? '' : 's'} still need to sync. Sign in again on this device to let them finish syncing.`
+                        );
+                    }
+
                     try {
                         await markManualSignOut();
-                        await Auth.signOut();
+                        await Auth.signOut('local');
                         await DataStore.stop();
-                        await DataStore.clear();
                     } finally {
                         clearCurrentTenantContext();
                         dispatch(authActions.logoff());
@@ -328,12 +327,38 @@ export const HomeScreen = (props: HomeScreenProps) => {
                 },
             },
         ]);
-    }, [dispatch]);
+    }, [dispatch, pendingUnsyncedOrderCount]);
 
-    const resetPinEntry = () => {
-        setPin('');
-        setPinResetToken((current) => current + 1);
-    };
+    const refreshSavedLoginStatus = useCallback(async () => {
+        const status = await getRememberedAdminCredentialStatus();
+        setSavedLoginStatusLabel(
+            status.enabled
+                ? `Saved login enabled on this device${status.username ? ` for ${status.username}` : ''}.`
+                : 'No saved login stored on this device.'
+        );
+    }, []);
+
+    const removeSavedLogin = useCallback(() => {
+        Alert.alert(
+            'Remove saved login?',
+            'This only removes the stored admin username and password from this device. Your current admin session will stay active.',
+            [
+                { text: 'Cancel' },
+                {
+                    text: 'Remove',
+                    style: 'destructive',
+                    onPress: async () => {
+                        await clearRememberedAdminCredentials();
+                        await refreshSavedLoginStatus();
+                        Alert.alert(
+                            'Saved login removed',
+                            'The stored admin credentials were removed from this device.'
+                        );
+                    },
+                },
+            ]
+        );
+    }, [refreshSavedLoginStatus]);
 
     const recordFailedPinAttempt = useCallback(async (message: string) => {
         const nextFailedAttempts = pinLockState.failedAttempts + 1;
@@ -372,15 +397,14 @@ export const HomeScreen = (props: HomeScreenProps) => {
         }
 
         EmployeeService.getEmployee(pin)
-            .then((emp) => {
+            .then(async (emp) => {
                 if (!emp) {
                     void recordFailedPinAttempt('The PIN number you entered is not valid');
                     return;
                 }
+
+                await clearPinGuard();
                 dispatch(employeesActions.loginEmployee(emp));
-                setInvalidPinAttempt(0);
-                setPinLockState({ failedAttempts: 0, lockedUntil: null });
-                void clearPinLockState();
                 resetPinEntry();
             })
             .catch((error) => {
@@ -389,12 +413,12 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     'Unable to validate PIN at the moment. Please try again.'
                 );
             });
-    }, [dispatch, isPinLocked, pin, recordFailedPinAttempt]);
+    }, [clearPinGuard, dispatch, isPinLocked, pin, recordFailedPinAttempt]);
 
     useEffect(() => {
         if (
             !isE2EEnabled() ||
-            !employeesReady ||
+            accessSyncInProgress ||
             !!employee ||
             needsSetupWizard
         ) {
@@ -402,11 +426,15 @@ export const HomeScreen = (props: HomeScreenProps) => {
         }
 
         void loginWithE2EManager();
-    }, [employee, employeesReady, loginWithE2EManager, needsSetupWizard]);
+    }, [accessSyncInProgress, employee, loginWithE2EManager, needsSetupWizard]);
 
     useEffect(() => {
         resetPinEntry();
     }, [employee]);
+
+    useEffect(() => {
+        void refreshSavedLoginStatus();
+    }, [refreshSavedLoginStatus, user?.email]);
 
     useEffect(() => {
         let active = true;
@@ -444,95 +472,6 @@ export const HomeScreen = (props: HomeScreenProps) => {
 
         return () => clearInterval(interval);
     }, [isPinLocked, lockedUntil]);
-
-    useEffect(() => {
-        if (
-            !employeesReady ||
-            !initialEmployeeSyncComplete ||
-            !initialStoreSyncComplete ||
-            !!employee ||
-            (!needsInitialEmployee && !storeNeedsSetup)
-        ) {
-            setSetupVerificationStatus('verified');
-            return;
-        }
-
-        let active = true;
-        setSetupVerificationStatus('verifying');
-
-        void (async () => {
-            try {
-                if (needsInitialEmployee) {
-                    const recoveredEmployees = await EmployeeService.getAll();
-                    if (!active) {
-                        return;
-                    }
-
-                    console.log('[home-setup] employee recovery', {
-                        recoveredCount: recoveredEmployees.length,
-                    });
-
-                    if (recoveredEmployees.length > 0) {
-                        dispatch(
-                            employeesActions.setAll(
-                                recoveredEmployees.map((x) => ({
-                                    id: x.id,
-                                    code: x.code,
-                                    firstName: x.firstName,
-                                    lastName: x.lastName,
-                                    middleName: x.middleName,
-                                    dob: x.dob,
-                                    phone: x.phone,
-                                    email: x.email,
-                                    pin: x.pin,
-                                    roles: x.roles,
-                                    active: x.active,
-                                    createdAt: x.createdAt,
-                                    updatedAt: x.updatedAt,
-                                }))
-                            )
-                        );
-                    }
-                }
-
-                if (storeNeedsSetup) {
-                    const recoveredStores = await StoreInfoService.getStore();
-                    if (!active) {
-                        return;
-                    }
-
-                    const preferredStore = selectPreferredStore(recoveredStores);
-                    console.log('[home-setup] store recovery', {
-                        recoveredCount: recoveredStores.length,
-                        preferredStoreId: preferredStore?.id ?? null,
-                    });
-                    if (preferredStore && !isStoreInfoIncomplete(preferredStore)) {
-                        dispatch(
-                            storeInfoActions.set(StoreInfoEntityMapper.fromModel(preferredStore))
-                        );
-                    }
-                }
-            } catch (error) {
-                console.error('Setup verification failed', error);
-            } finally {
-                if (active) {
-                    setSetupVerificationStatus('verified');
-                }
-            }
-        })();
-
-        return () => {
-            active = false;
-        };
-    }, [
-        dispatch,
-        employee,
-        employeesReady,
-        initialEmployeeSyncComplete,
-        initialStoreSyncComplete,
-        needsInitialEmployee,
-        storeNeedsSetup,
-    ]);
 
     useEffect(() => {
         if (needsInitialEmployee) {
@@ -707,30 +646,20 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     onSaveStoreDetails={saveStoreDetails}
                     onLogoff={confirmLogoff}
                 />
-            ) : !employee && (!employeesReady || setupVerificationStatus === 'verifying') ? (
+            ) : !employee && accessSyncInProgress ? (
                 <View style={styles.shell}>
                     <View style={styles.hero}>
                         <Image source={brandMark} style={styles.brandMark} resizeMode="contain" />
                         <Text style={styles.businessLabel}>{businessName || 'Business workspace'}</Text>
-                        <Text style={styles.heroTitle}>
-                            {setupVerificationStatus === 'verifying'
-                                ? 'Checking business setup'
-                                : 'Loading employee access'}
-                        </Text>
+                        <Text style={styles.heroTitle}>Syncing employee access</Text>
                         <Text style={styles.heroSubtitle}>
-                            {setupVerificationStatus === 'verifying'
-                                ? 'Verifying existing owner and store records before opening setup.'
-                                : 'Restoring staff records for this tenant before showing the PIN screen or setup flow.'}
+                            Syncing staff records for this tenant before showing the PIN screen or setup flow.
                         </Text>
                     </View>
                     <View style={styles.keypadCard}>
-                        <Text style={styles.keypadTitle}>
-                            {setupVerificationStatus === 'verifying'
-                                ? 'Verifying setup'
-                                : 'Preparing employee data'}
-                        </Text>
+                        <Text style={styles.keypadTitle}>Preparing employee access</Text>
                         <Text style={styles.keypadHint}>
-                            This only takes a moment on startup.
+                            The PIN screen will appear once employee sync finishes.
                         </Text>
                     </View>
                 </View>
@@ -749,6 +678,13 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     onPinUpdated={onPinUpdated}
                     onE2EManagerLogin={loginWithE2EManager}
                     onLogoff={confirmLogoff}
+                    savedLoginStatusLabel={savedLoginStatusLabel}
+                    pendingOrderStatusLabel={
+                        pendingUnsyncedOrderCount > 0
+                            ? `${pendingUnsyncedOrderCount} order${pendingUnsyncedOrderCount === 1 ? '' : 's'} waiting to sync on this device.`
+                            : 'Order sync is healthy on this device.'
+                    }
+                    onRemoveSavedLogin={removeSavedLogin}
                 />
             ) : (
                 <View testID="home-ready-shell">

@@ -28,6 +28,7 @@ export interface ProductsState extends EntityState<ProductEntity, string> {
     selected?: ProductEntity;
     filterQuery?: string;
     filteredList?: ProductEntity[];
+    pendingQuantityDeltas?: Record<string, number>;
 }
 
 export const productsAdapter = createEntityAdapter<ProductEntity, string>({
@@ -48,7 +49,39 @@ export const initialProductsState: ProductsState =
         selected: undefined,
         filterQuery: undefined,
         filteredList: undefined,
+        pendingQuantityDeltas: {},
     });
+
+const applyPendingQuantityDeltasToIncoming = (
+    incoming: ProductEntity[],
+    previous: Record<string, ProductEntity | undefined>,
+    pendingQuantityDeltas: Record<string, number> = {}
+) => {
+    const nextPending: Record<string, number> = {};
+
+    const items = incoming.map((item) => {
+        const pendingDelta = pendingQuantityDeltas[item.id];
+        if (!pendingDelta) {
+            return item;
+        }
+
+        const previousDisplayedQuantity = previous[item.id]?.quantity;
+        if (
+            previousDisplayedQuantity !== undefined &&
+            item.quantity === previousDisplayedQuantity
+        ) {
+            return item;
+        }
+
+        nextPending[item.id] = pendingDelta;
+        return {
+            ...item,
+            quantity: item.quantity + pendingDelta,
+        };
+    });
+
+    return { items, nextPending };
+};
 
 export const productsSlice = createSlice({
     name: PRODUCT_FEATURE_KEY,
@@ -58,7 +91,14 @@ export const productsSlice = createSlice({
             state: ProductsState,
             action: PayloadAction<ProductEntity[]>
         ) => {
-            productsAdapter.setAll(state, action.payload);
+            const previousEntities = { ...state.entities };
+            const { items, nextPending } = applyPendingQuantityDeltasToIncoming(
+                action.payload,
+                previousEntities,
+                state.pendingQuantityDeltas
+            );
+            productsAdapter.setAll(state, items);
+            state.pendingQuantityDeltas = nextPending;
             state.loadingStatus = 'loaded';
             filterList(state, state.filterQuery);
         },
@@ -75,6 +115,25 @@ export const productsSlice = createSlice({
             action: PayloadAction<Update<ProductEntity, string>>
         ) => {
             productsAdapter.updateOne(state, action.payload);
+            filterList(state, state.filterQuery);
+        },
+        applyRealtimePatch: (
+            state: ProductsState,
+            action: PayloadAction<
+                Partial<ProductEntity> & { id: string }
+            >
+        ) => {
+            const existing = state.entities[action.payload.id];
+            if (!existing) return;
+
+            productsAdapter.updateOne(state, {
+                id: action.payload.id,
+                changes: action.payload,
+            });
+
+            if (state.pendingQuantityDeltas?.[action.payload.id] !== undefined) {
+                delete state.pendingQuantityDeltas[action.payload.id];
+            }
             filterList(state, state.filterQuery);
         },
         select: (
@@ -100,6 +159,7 @@ export const productsSlice = createSlice({
             state.filteredList = initialProductsState.filteredList;
             state.loadingStatus = initialProductsState.loadingStatus;
             state.selected = initialProductsState.selected;
+            state.pendingQuantityDeltas = initialProductsState.pendingQuantityDeltas;
         },
         updateQuantities(
             state: ProductsState,
@@ -114,6 +174,51 @@ export const productsSlice = createSlice({
                 }))
             );
         },
+        applyQuantityDeltas(
+            state: ProductsState,
+            action: PayloadAction<{ productId: string; delta?: number | undefined }[]>
+        ) {
+            if (!action.payload) return;
+
+            const updates = action.payload.flatMap((p) => {
+                const delta = p.delta;
+                if (
+                    delta === undefined ||
+                    delta === null ||
+                    Number.isNaN(delta)
+                ) {
+                    return [];
+                }
+
+                const existing = state.entities[p.productId];
+                if (!existing) {
+                    return [];
+                }
+
+                return [{
+                    id: p.productId,
+                    changes: { quantity: (existing.quantity || 0) + delta },
+                }];
+            });
+
+            if (updates.length === 0) return;
+            productsAdapter.updateMany(state, updates);
+            action.payload.forEach((p) => {
+                const delta = p.delta;
+                if (
+                    delta === undefined ||
+                    delta === null ||
+                    Number.isNaN(delta)
+                ) {
+                    return;
+                }
+
+                state.pendingQuantityDeltas = state.pendingQuantityDeltas || {};
+                state.pendingQuantityDeltas[p.productId] =
+                    (state.pendingQuantityDeltas[p.productId] || 0) + delta;
+            });
+            filterList(state, state.filterQuery);
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -126,7 +231,14 @@ export const productsSlice = createSlice({
                     state: ProductsState,
                     action: PayloadAction<ProductEntity[]>
                 ) => {
-                    productsAdapter.setAll(state, action.payload);
+                    const previousEntities = { ...state.entities };
+                    const { items, nextPending } = applyPendingQuantityDeltasToIncoming(
+                        action.payload,
+                        previousEntities,
+                        state.pendingQuantityDeltas
+                    );
+                    productsAdapter.setAll(state, items);
+                    state.pendingQuantityDeltas = nextPending;
                     filterList(state, state.filterQuery);
                     state.loadingStatus = 'loaded';
                 }

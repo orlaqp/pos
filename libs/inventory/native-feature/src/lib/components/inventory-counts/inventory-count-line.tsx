@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import { View, Text, Alert } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
@@ -13,6 +13,13 @@ export interface InventoryCountLineProps {
     onDelete: (item: InventoryCountLineDTO) => void;
 }
 
+const toTestKey = (value: string) =>
+    value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
 export function InventoryCountLine({
     readOnly,
     item,
@@ -22,9 +29,11 @@ export function InventoryCountLine({
     const theme = useTheme();
     const styles = useSharedStyles();
     const [count, setCount] = useState<string | undefined>(item.newCount?.toString());
+    const countRef = useRef<string | undefined>(item.newCount?.toString());
     const [comment, setComment] = useState<string | undefined>(
         item.comments || undefined
     );
+    const productKey = toTestKey(item.productName);
     
     const originalCount = item.newCount;
     const originalComment = item.comments;
@@ -39,10 +48,12 @@ export function InventoryCountLine({
 
     const updateCount = (count: string) => {
         if (!count) {
+            countRef.current = originalCount?.toString();
             setCount(originalCount?.toString());
             return;
         }
 
+        countRef.current = count;
         setCount(count);
         onUpdate({ ...item, newCount: +count });
     };
@@ -62,15 +73,23 @@ export function InventoryCountLine({
             </View>
             <View style={{ flex: 1 }}>
                 <TextInput
+                    testID={`inventory-count-qty-${productKey}`}
                     value={count}
-                    onChangeText={(text) => { setCount(text); updateCount(text); }}
+                    onChangeText={(text) => {
+                        countRef.current = text;
+                        setCount(text);
+                        updateCount(text);
+                    }}
                     placeholder='#'
                     style={[
                         styles.input, styles.primaryText,
                         { marginRight: 25 },
                     ]}
-                    onFocus={() => setCount('')}
-                    // onBlur={(e) => updateCount(e.nativeEvent.text)}
+                    onFocus={() => {
+                        countRef.current = '';
+                        setCount('');
+                    }}
+                    onBlur={() => updateCount(countRef.current || '')}
                     editable={!readOnly}
                 />
             </View>

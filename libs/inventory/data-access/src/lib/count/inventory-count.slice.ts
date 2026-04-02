@@ -161,10 +161,18 @@ export const selectInventoryCountSelected = createSelector(
     (state: InventoryCountState) => state.selected
 )
 
+const sortCountsChronologically = (items: InventoryCountDTO[]) =>
+    [...items].sort((left, right) => {
+        const leftTime = new Date(left.createdAt || left.updatedAt || 0).getTime();
+        const rightTime = new Date(right.createdAt || right.updatedAt || 0).getTime();
+        return rightTime - leftTime;
+    });
 
 function filterList(state: InventoryCountState, query?: string) {
     state.loadingStatus = 'loaded';
-    const all = inventoryCountAdapter.getSelectors().selectAll(state);
+    const all = sortCountsChronologically(
+        inventoryCountAdapter.getSelectors().selectAll(state)
+    );
     
     if (!query) {
         state.filteredList = all;

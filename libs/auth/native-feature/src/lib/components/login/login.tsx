@@ -1,18 +1,23 @@
 import React, { useEffect, useState } from 'react';
 
-import { Animated, Pressable, View, StyleSheet, useWindowDimensions } from 'react-native';
+import { Alert, Animated, Pressable, View, StyleSheet, useWindowDimensions } from 'react-native';
 import { useTheme, Button, Text } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { FormProvider, useForm } from 'react-hook-form';
-import { UIInput, UIAlert } from '@pos/shared/ui-native';
+import { UIInput, UIAlert, UISwitch } from '@pos/shared/ui-native';
 import {
     E2E_OWNER_EMAIL,
     E2E_OWNER_PASSWORD,
     activateE2EMode,
 } from '@pos/shared/utils';
 import { useSelector } from 'react-redux';
-import { signIn } from '@pos/auth/data-access';
+import {
+    clearRememberedAdminCredentials,
+    getRememberedAdminCredentialStatus,
+    saveRememberedAdminCredentials,
+    signIn,
+} from '@pos/auth/data-access';
 import { RootState, useAppDispatch } from '@pos/store';
 
 import { getThemeColors } from '@pos/theme/native';
@@ -30,6 +35,7 @@ export interface LoginProps {
 type SignInModel = {
     email: string;
     password: string;
+    rememberCredentials: boolean;
 };
 
 export function LoginScreen(props: LoginProps) {
@@ -50,11 +56,31 @@ export function LoginScreen(props: LoginProps) {
         defaultValues: {
             email: initialEmail,
             password: '',
+            rememberCredentials: false,
         },
     });
 
     const login = async (model: SignInModel) => {
-        await dispatch(signIn({ email: model.email.trim(), password: model.password }));
+        await dispatch(
+            signIn({ email: model.email.trim(), password: model.password })
+        ).unwrap();
+
+        try {
+            if (model.rememberCredentials) {
+                await saveRememberedAdminCredentials({
+                    username: model.email.trim(),
+                    password: model.password,
+                });
+            } else {
+                await clearRememberedAdminCredentials();
+            }
+        } catch (error) {
+            console.error('Unable to update remembered login settings', error);
+            Alert.alert(
+                'Signed in',
+                'The admin login was restored, but the saved-login preference could not be updated on this device.'
+            );
+        }
     };
 
     const loginWithE2EAccount = async () => {
@@ -102,6 +128,36 @@ export function LoginScreen(props: LoginProps) {
             ]),
         ]).start();
     }, [formOpacity, formTranslateY, heroOpacity, heroTranslateY]);
+
+    useEffect(() => {
+        let active = true;
+
+        getRememberedAdminCredentialStatus()
+            .then((status) => {
+                if (!active || !status.enabled) {
+                    return;
+                }
+
+                formMethods.setValue('rememberCredentials', true, {
+                    shouldDirty: false,
+                    shouldTouch: false,
+                });
+
+                if (!initialEmail && status.username) {
+                    formMethods.setValue('email', status.username, {
+                        shouldDirty: false,
+                        shouldTouch: false,
+                    });
+                }
+            })
+            .catch((storageError) => {
+                console.error('Unable to read remembered login status', storageError);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [formMethods, initialEmail]);
 
     return (
         <FormProvider {...formMethods}>
@@ -162,6 +218,20 @@ export function LoginScreen(props: LoginProps) {
                                 textAlign="left"
                                 rules={{ required: 'Password is required' }}
                             />
+                            <View style={styles.rememberRow}>
+                                <UISwitch
+                                    name="rememberCredentials"
+                                    testID="login-remember-switch"
+                                />
+                                <View style={styles.rememberCopy}>
+                                    <Text style={styles.rememberTitle}>
+                                        Remember credentials on this device
+                                    </Text>
+                                    <Text style={styles.rememberHint}>
+                                        Allows the app to silently restore the admin session if it expires.
+                                    </Text>
+                                </View>
+                            </View>
 
                             <Button
                                 testID="login-submit-button"
@@ -250,6 +320,27 @@ const useStyles = () => {
             width: '100%',
             maxWidth: 440,
             alignSelf: 'center',
+        },
+        rememberRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 14,
+            marginTop: 6,
+            marginBottom: 8,
+        },
+        rememberCopy: {
+            flex: 1,
+        },
+        rememberTitle: {
+            color: colors.black,
+            fontSize: 15,
+            fontWeight: '600',
+            marginBottom: 2,
+        },
+        rememberHint: {
+            color: colors.grey3,
+            fontSize: 13,
+            lineHeight: 18,
         },
         eyebrow: {
             color: '#7eb6ff',

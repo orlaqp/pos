@@ -10,7 +10,7 @@ import { Button, Dialog } from '@rneui/themed';
 import React, { useEffect, useMemo, useState } from 'react';
 import i18next from 'i18next';
 
-import { View, TextInput, Alert, Text, Image } from 'react-native';
+import { View, Alert, Text, Image } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -58,8 +58,8 @@ export type CartMode = 'order' | 'payment';
 export interface CartProps {
     mode: CartMode;
     onSubmit: (cart: CartState, payments?: ICartPayment[]) => void;
-    searchRef: React.RefObject<TextInput>;
     products: ProductEntity[];
+    onInteractionComplete: () => void;
 }
 
 const mapDefinitionToPricing = (definition: any): DiscountDefinition => ({
@@ -144,7 +144,12 @@ const baseAmountForDisplay = (
         ? cart.footer.subtotal || cart.footer.baseSubtotal
         : selectedLineTotal;
 
-export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
+export function Cart({
+    mode,
+    onSubmit,
+    products,
+    onInteractionComplete,
+}: CartProps) {
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
     const localStyles = createCartStyles(tokens);
@@ -301,14 +306,27 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
     const onSelect = (item: CartItem) => {
         if (cart.selected?.identifier === item.identifier) {
             dispatch(cartActions.select(undefined));
+            onInteractionComplete();
             return;
         }
 
         dispatch(cartActions.select(item));
+        onInteractionComplete();
+    };
+
+    const onOpenDetails = (item: CartItem) => {
+        dispatch(
+            cartActions.setActiveProduct({
+                identifier: item.identifier,
+                product: item.product,
+                quantity: item.quantity,
+            })
+        );
     };
 
     const onRemove = (item: CartItem) => {
         dispatch(cartActions.removeProduct(item));
+        onInteractionComplete();
     };
 
     const onIncrement = (item: CartItem) => {
@@ -319,11 +337,13 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                 quantity: item.quantity + 1,
             })
         );
+        onInteractionComplete();
     };
 
     const onDecrement = (item: CartItem) => {
         if (item.quantity <= 1) {
             dispatch(cartActions.removeProduct(item));
+            onInteractionComplete();
             return;
         }
 
@@ -334,11 +354,13 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                 quantity: item.quantity - 1,
             })
         );
+        onInteractionComplete();
     };
 
     const paymentEntered = (payments: ICartPayment[]) => {
         setReceivePayment(false);
         onSubmit(cart, payments);
+        onInteractionComplete();
     };
 
     const submitOrder = () => {
@@ -354,6 +376,7 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
     const confirmPrintOrder = () => {
         setOrderSummaryVisible(false);
         onSubmit(cart);
+        onInteractionComplete();
     };
 
     const validateProductInventory = () => {
@@ -374,14 +397,6 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
 
         return !notAvailableProducts.length;
     };
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            searchRef.current?.focus();
-        }, 25);
-
-        return () => clearTimeout(timer);
-    }, [cart, searchRef]);
 
     const disabledActionReason = useMemo(() => {
         if (!selectedItem) return 'Select a cart line for line-level adjustments.';
@@ -407,6 +422,7 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
         dispatch(cartActions.addPromoCode({ code }));
         setPromoCodeInput('');
         setPromoVisible(false);
+        onInteractionComplete();
     };
 
     const resolveApprovalByPin = async (
@@ -517,6 +533,7 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
         dispatch(cartActions.applyManualDiscount(request));
         setManualDraft(defaultManualDraft());
         setManualVisible(false);
+        onInteractionComplete();
     };
 
     const openOverrideDialog = () => {
@@ -578,6 +595,7 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
         dispatch(cartActions.applyPriceOverride(request));
         setOverrideDraft(defaultOverrideDraft());
         setOverrideVisible(false);
+        onInteractionComplete();
     };
 
     if (!cart.items.length) {
@@ -618,6 +636,7 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                                     (lineSummary?.allocatedOrderDiscountTotal || 0)
                                 }
                                 lineTotal={lineSummary?.lineTotalBeforeTax}
+                                onOpenDetails={onOpenDetails}
                                 onSelect={onSelect}
                                 onRemove={onRemove}
                                 onIncrement={onIncrement}
@@ -711,13 +730,19 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                 overlayStyle={[styles.overlay, localStyles.summaryDialog]}
                 orderSummary={orderSummary}
                 orderLevelAdjustments={orderLevelAdjustments}
-                onClose={() => setOrderSummaryVisible(false)}
+                onClose={() => {
+                    setOrderSummaryVisible(false);
+                    onInteractionComplete();
+                }}
                 onConfirm={confirmPrintOrder}
             />
 
             <Dialog
                 isVisible={receivePayment}
-                onBackdropPress={() => setReceivePayment(false)}
+                onBackdropPress={() => {
+                    setReceivePayment(false);
+                    onInteractionComplete();
+                }}
                 supportedOrientations={['landscape']}
                 presentationStyle="fullScreen"
                 overlayStyle={[styles.overlay, { width: 450 }]}
@@ -739,7 +764,10 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                         promoCodeInput={promoCodeInput}
                         placeholderTextColor={tokens.colors.textSecondary}
                         onChangePromoCode={setPromoCodeInput}
-                        onClose={() => setPromoVisible(false)}
+                        onClose={() => {
+                            setPromoVisible(false);
+                            onInteractionComplete();
+                        }}
                         onSubmit={submitPromoCode}
                     />
 
@@ -751,7 +779,10 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                         approvalTargetName={approvalTargetName}
                         baseAmount={baseAmountForDisplay(manualDraft.scope, cart, selectedLineTotal)}
                         placeholderTextColor={tokens.colors.textSecondary}
-                        onClose={() => setManualVisible(false)}
+                        onClose={() => {
+                            setManualVisible(false);
+                            onInteractionComplete();
+                        }}
                         onSubmit={submitManualDiscount}
                         onChange={(updater) => setManualDraft(updater)}
                     />
@@ -764,7 +795,10 @@ export function Cart({ mode, onSubmit, searchRef, products }: CartProps) {
                         selectedItemName={selectedItem?.product.name}
                         basePrice={selectedItem?.product.price || 0}
                         placeholderTextColor={tokens.colors.textSecondary}
-                        onClose={() => setOverrideVisible(false)}
+                        onClose={() => {
+                            setOverrideVisible(false);
+                            onInteractionComplete();
+                        }}
                         onSubmit={submitOverride}
                         onChange={(updater) => setOverrideDraft(updater)}
                     />

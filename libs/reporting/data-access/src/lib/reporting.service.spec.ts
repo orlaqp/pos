@@ -37,6 +37,7 @@ describe('reporting.service', () => {
                 id: 'o1',
                 employeeId: 'e1',
                 employeeName: 'Cashier A',
+                createdBy: { id: 'seller-1', name: 'Seller A' },
                 total: 10,
                 orderDate: '2026-03-10T10:00:00.000Z',
                 lines: [
@@ -53,6 +54,7 @@ describe('reporting.service', () => {
                 id: 'o2',
                 employeeId: 'e1',
                 employeeName: 'Cashier A',
+                createdBy: { id: 'seller-1', name: 'Seller A' },
                 total: 5,
                 orderDate: '2026-03-11T10:00:00.000Z',
                 lines: [
@@ -71,7 +73,35 @@ describe('reporting.service', () => {
         expect(summary.totalOrders).toBe(2);
         expect(summary.totalAmount).toBe(15);
         expect(summary.employees?.[0]).toEqual(
-            expect.objectContaining({ employeeId: 'e1', orders: 2, amount: 15 })
+            expect.objectContaining({
+                employeeId: 'seller-1',
+                employeeName: 'Seller A',
+                orders: 2,
+                amount: 15,
+            })
+        );
+    });
+
+    it('falls back to order employee fields when createdBy is missing', () => {
+        const orders = [
+            {
+                id: 'o1',
+                employeeId: 'cashier-1',
+                employeeName: 'Cashier A',
+                total: 9,
+                orderDate: '2026-03-10T10:00:00.000Z',
+                lines: [],
+            },
+        ] as unknown as Order[];
+
+        const summary = buildSalesSummaryFromOrders(orders);
+        expect(summary.employees?.[0]).toEqual(
+            expect.objectContaining({
+                employeeId: 'cashier-1',
+                employeeName: 'Cashier A',
+                orders: 1,
+                amount: 9,
+            })
         );
     });
 

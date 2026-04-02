@@ -4,7 +4,7 @@ import { Dispatch } from '@reduxjs/toolkit';
 import { API, DataStore } from '@pos/shared/amplify';
 import { EmployeeEntity } from './employee.entity';
 import { EmployeeEntityMapper } from './employee.entity';
-import { stampTenant } from '@pos/auth/data-access';
+import { getCurrentTenantId, stampTenant } from '@pos/auth/data-access';
 import { listEmployees } from '@pos/shared/api';
 
 const normalizePin = (value: string | null | undefined) => String(value ?? '').trim();
@@ -13,7 +13,27 @@ const isDeletedFlag = (value: unknown) => value === true || value === 'true';
 const isActiveRemoteEmployee = (employee: Employee | null | undefined): employee is Employee =>
     !!employee && !isDeletedFlag(employee._deleted);
 
+const matchesCurrentTenant = (employee: Pick<Employee, 'tenantId'> | null | undefined) => {
+    const tenantId = getCurrentTenantId();
+    if (!tenantId) {
+        return true;
+    }
+
+    if (!employee?.tenantId) {
+        return true;
+    }
+
+    return employee?.tenantId === tenantId;
+};
+
 const fetchRemoteEmployees = async (variables: Record<string, unknown>) => {
+    const tenantId = getCurrentTenantId();
+    const tenantScopedFilter = tenantId
+        ? {
+              ...(variables.filter as Record<string, unknown> | undefined),
+              tenantId: { eq: tenantId },
+          }
+        : (variables.filter as Record<string, unknown> | undefined);
     const response = await API.graphql<{
         listEmployees?: {
             items?: Array<Employee | null> | null;
@@ -21,7 +41,10 @@ const fetchRemoteEmployees = async (variables: Record<string, unknown>) => {
         } | null;
     }>({
         query: listEmployees,
-        variables,
+        variables: {
+            ...variables,
+            ...(tenantScopedFilter ? { filter: tenantScopedFilter } : {}),
+        },
         authMode: 'userPool',
     });
 
@@ -67,6 +90,36 @@ const fetchAllRemoteEmployees = async () => {
 };
 
 export class EmployeeService {
+    static async getLocalEmployees() {
+        return DataStore.query(Employee);
+    }
+
+    static async getSyncedLocalEmployees(timeoutMs = 15000) {
+        return new Promise<Employee[]>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                subscription.unsubscribe();
+                reject(new Error(`Employee DataStore sync timed out after ${timeoutMs}ms`));
+            }, timeoutMs);
+
+            const subscription = DataStore.observeQuery(Employee).subscribe({
+                next: ({ isSynced, items }) => {
+                    if (!isSynced) {
+                        return;
+                    }
+
+                    clearTimeout(timeout);
+                    subscription.unsubscribe();
+                    resolve(items);
+                },
+                error: (error) => {
+                    clearTimeout(timeout);
+                    subscription.unsubscribe();
+                    reject(error);
+                },
+            });
+        });
+    }
+
     static async save(dispatch: Dispatch<any>, employee: EmployeeEntity) {
         const { employeesActions } = require('./slices/employees.slice');
 
@@ -104,7 +157,7 @@ export class EmployeeService {
     }
 
     static getAll() {
-        return DataStore.query(Employee).then(async (employees) => {
+        return EmployeeService.getLocalEmployees().then(async (employees) => {
             console.log('[employees] local query total', {
                 itemCount: employees.length,
             });
@@ -141,29 +194,18 @@ export class EmployeeService {
 
         const allEmployees = await DataStore.query(Employee);
         const fallbackMatch = allEmployees.find(
-            (employee) => employee.active && normalizePin(employee.pin) === normalizedPin
+            (employee) =>
+                employee.active &&
+                !isDeletedFlag(employee._deleted) &&
+                matchesCurrentTenant(employee) &&
+                normalizePin(employee.pin) === normalizedPin
         );
 
         if (fallbackMatch) {
             return EmployeeEntityMapper.fromModel(fallbackMatch);
         }
 
-        const result = await fetchRemoteEmployees({
-            filter: {
-                active: { eq: true },
-                pin: { eq: normalizedPin },
-            },
-            limit: 20,
-        });
-
-        const remoteMatch = result?.items?.find(
-            (employee): employee is Employee =>
-                isActiveRemoteEmployee(employee) &&
-                employee.active &&
-                normalizePin(employee.pin) === normalizedPin
-        );
-
-        return remoteMatch ? EmployeeEntityMapper.fromModel(remoteMatch) : null;
+        return null;
     }
 
     static async getEmployeeByEmail(email: string) {
@@ -175,7 +217,10 @@ export class EmployeeService {
 
         const localMatch = (await DataStore.query(Employee)).find(
             (employee) =>
-                employee.active && normalizeEmail(employee.email) === normalizedEmail
+                employee.active &&
+                !isDeletedFlag(employee._deleted) &&
+                matchesCurrentTenant(employee) &&
+                normalizeEmail(employee.email) === normalizedEmail
         );
 
         if (localMatch) {

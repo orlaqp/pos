@@ -4,8 +4,8 @@ import {
 } from '@pos/reporting/data-access';
 import { OrderStatus } from '@pos/shared/models';
 import { DateRange } from '@pos/shared/ui-native';
-import { selectAllCategories } from '@pos/categories/data-access';
-import React, { useMemo } from 'react';
+import { CategoryService, selectAllCategories } from '@pos/categories/data-access';
+import React from 'react';
 import i18next from 'i18next';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -16,10 +16,6 @@ import { normalizeReportRange } from '../report-utils';
 export function CategoryPerformance() {
     const styles = useSharedStyles();
     const categories = useSelector(selectAllCategories);
-    const categoriesById = useMemo(
-        () => Object.fromEntries((categories || []).map((category) => [category.id, category.name])),
-        [categories]
-    );
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key) ? String(i18next.t(key)) : fallback;
 
@@ -44,12 +40,17 @@ export function CategoryPerformance() {
     ];
 
     const getData = async (range: DateRange) => {
+        const resolvedCategories =
+            categories?.length > 0 ? categories : await CategoryService.getAll();
+        const resolvedCategoriesById = Object.fromEntries(
+            (resolvedCategories || []).map((category) => [category.id, category.name])
+        );
         const orders = await getOrdersForStatuses({
             statuses: [OrderStatus.PAID],
             range: normalizeReportRange(range),
         });
 
-        return buildCategoryPerformanceRows(orders, categoriesById);
+        return buildCategoryPerformanceRows(orders, resolvedCategoriesById);
     };
 
     return (

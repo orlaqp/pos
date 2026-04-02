@@ -5,6 +5,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockDispatch = jest.fn();
 const mockOnSubmit = jest.fn();
+const mockOnInteractionComplete = jest.fn();
 
 let mockCartState: any;
 let mockEmployeeState: any;
@@ -26,6 +27,10 @@ jest.mock('react-redux', () => ({
 jest.mock('@pos/sales/data-access', () => ({
     cartActions: {
         select: (item: unknown) => ({ type: 'cart/select', payload: item }),
+        setActiveProduct: (item: unknown) => ({
+            type: 'cart/setActiveProduct',
+            payload: item,
+        }),
         removeProduct: (item: unknown) => ({
             type: 'cart/removeProduct',
             payload: item,
@@ -175,12 +180,14 @@ jest.mock('../cart-line/cart-line', () => ({
     __esModule: true,
     default: ({
         item,
+        onOpenDetails,
         onSelect,
         onRemove,
         onIncrement,
         onDecrement,
     }: {
         item: { product: { name: string } };
+        onOpenDetails: (item: any) => void;
         onSelect: (item: any) => void;
         onRemove: (item: any) => void;
         onIncrement?: (item: any) => void;
@@ -191,7 +198,10 @@ jest.mock('../cart-line/cart-line', () => ({
             return (
                 <View>
                     <Text>{item.product.name}</Text>
-                    <Pressable testID="cart-line-select" onPress={() => onSelect(item)}>
+                    <Pressable testID="cart-line-open-details" onPress={() => onOpenDetails(item)}>
+                        <Text>OpenDetails</Text>
+                    </Pressable>
+                    <Pressable testID="cart-line-select" onLongPress={() => onSelect(item)}>
                         <Text>Select</Text>
                     </Pressable>
                     <Pressable testID="cart-line-remove" onPress={() => onRemove(item)}>
@@ -278,13 +288,12 @@ describe('Cart', () => {
     });
 
     const renderCart = (mode: 'order' | 'payment') => {
-        const searchRef = { current: null } as React.RefObject<any>;
         return render(
             <Cart
                 mode={mode}
                 onSubmit={mockOnSubmit}
-                searchRef={searchRef}
                 products={[{ id: 'p-1', quantity: 100 } as any]}
+                onInteractionComplete={mockOnInteractionComplete}
             />
         );
     };
@@ -295,12 +304,16 @@ describe('Cart', () => {
         expect(getByText('Cart is empty')).toBeTruthy();
     });
 
-    it('dispatches select and remove from line actions', () => {
+    it('opens details on press and select/remove from line actions', () => {
         const { getByTestId } = renderCart('order');
-        fireEvent.press(getByTestId('cart-line-select'));
+        fireEvent.press(getByTestId('cart-line-open-details'));
+        fireEvent(getByTestId('cart-line-select'), 'longPress');
         fireEvent.press(getByTestId('cart-line-remove'));
         fireEvent.press(getByTestId('cart-line-increment'));
         fireEvent.press(getByTestId('cart-line-decrement'));
+        expect(mockDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({ type: 'cart/setActiveProduct' })
+        );
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/select' })
         );
@@ -310,18 +323,20 @@ describe('Cart', () => {
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/upsert' })
         );
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(4);
     });
 
     it('deselects a cart line when the selected row is tapped again', () => {
         mockCartState.selected = mockCartState.items[0];
         const { getByTestId } = renderCart('order');
 
-        fireEvent.press(getByTestId('cart-line-select'));
+        fireEvent(getByTestId('cart-line-select'), 'longPress');
 
         expect(mockDispatch).toHaveBeenCalledWith({
             type: 'cart/select',
             payload: undefined,
         });
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
     });
 
     it('opens order summary instead of submitting directly in order mode', () => {
@@ -330,6 +345,7 @@ describe('Cart', () => {
         expect(getByText('Order summary')).toBeTruthy();
         expect(getAllByText('Apple').length).toBeGreaterThan(1);
         expect(mockOnSubmit).not.toHaveBeenCalled();
+        expect(mockOnInteractionComplete).not.toHaveBeenCalled();
     });
 
     it('closes order summary without submitting', () => {
@@ -339,6 +355,7 @@ describe('Cart', () => {
 
         expect(queryByText('Order summary')).toBeFalsy();
         expect(mockOnSubmit).not.toHaveBeenCalled();
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
     });
 
     it('submits from order summary print action', () => {
@@ -347,24 +364,29 @@ describe('Cart', () => {
         fireEvent.press(getByTestId('order-summary-print-button'));
 
         expect(mockOnSubmit).toHaveBeenCalledWith(mockCartState);
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
     });
 
     it('opens payment modal in payment mode and submits payments', () => {
         const { getByText, getByTestId } = renderCart('payment');
         fireEvent.press(getByText(/Receive Payment/));
+        expect(mockOnInteractionComplete).not.toHaveBeenCalled();
         fireEvent.press(getByTestId('cart-payment-entered'));
         expect(mockOnSubmit).toHaveBeenCalledWith(
             mockCartState,
             expect.arrayContaining([expect.objectContaining({ method: 'cash' })])
         );
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
     });
 
     it('closes payment modal on backdrop press', () => {
         const { getByText, getByTestId, queryByText } = renderCart('payment');
         fireEvent.press(getByText(/Receive Payment/));
         expect(queryByText('CartPayment')).toBeTruthy();
+        expect(mockOnInteractionComplete).not.toHaveBeenCalled();
         fireEvent.press(getByTestId('cart-payment-backdrop'));
         expect(queryByText('CartPayment')).toBeFalsy();
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
     });
 
     it('opens the promo dialog and dispatches a promo code', () => {
@@ -379,6 +401,7 @@ describe('Cart', () => {
                 payload: { code: 'SAVE5' },
             })
         );
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
     });
 
     it('hides the discount card when the logged-in employee does not have the discounts role', () => {
@@ -402,8 +425,8 @@ describe('Cart', () => {
             <Cart
                 mode="order"
                 onSubmit={mockOnSubmit}
-                searchRef={{ current: null } as any}
                 products={[{ id: 'p-1', quantity: 1 } as any]}
+                onInteractionComplete={mockOnInteractionComplete}
             />
         );
         fireEvent.press(getByText(/Print Order/));

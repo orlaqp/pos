@@ -156,10 +156,18 @@ export const selectInventoryReceiveFilteredList = createSelector(
     (state: InventoryReceiveState) => state.filteredList
 )
 
+const sortReceivesChronologically = (items: InventoryReceiveDTO[]) =>
+    [...items].sort((left, right) => {
+        const leftTime = new Date(left.createdAt || left.updatedAt || 0).getTime();
+        const rightTime = new Date(right.createdAt || right.updatedAt || 0).getTime();
+        return rightTime - leftTime;
+    });
 
 function filterList(state: InventoryReceiveState, query?: string) {
   state.loadingStatus = 'loaded';
-  const all = inventoryReceiveAdapter.getSelectors().selectAll(state);
+  const all = sortReceivesChronologically(
+      inventoryReceiveAdapter.getSelectors().selectAll(state)
+  );
   
   if (!query) {
       state.filteredList = all;

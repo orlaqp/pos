@@ -32,20 +32,10 @@ export const fetchEmployees = createAsyncThunk(
   'employees/fetchStatus',
   async (_, thunkAPI) => {
     try {
-      const state = thunkAPI.getState() as RootState;
-      const employees = await EmployeeService.getAll();
-      const ownerEmail = state.auth.user?.email;
-      const recoveredOwner =
-        employees.length === 0 && ownerEmail
-          ? await EmployeeService.getEmployeeByEmail(ownerEmail)
-          : null;
+      const employees = await EmployeeService.getSyncedLocalEmployees();
 
       return {
-        employees: (
-          recoveredOwner
-            ? [recoveredOwner]
-            : employees.map(x => EmployeeEntityMapper.fromModel(x))
-        ),
+        employees: employees.map(x => EmployeeEntityMapper.fromModel(x)),
         initialSyncComplete: true,
       };
     } catch (error) {
@@ -111,7 +101,19 @@ export const employeesSlice = createSlice({
     setAll: (state: EmployeesState, action: PayloadAction<EmployeeEntity[] >) =>{
         employeesAdapter.setAll(state, action.payload);
         state.loadingStatus = 'loaded';
+        if (action.payload.length > 0) {
+            state.initialSyncComplete = true;
+        }
         filterList(state, state.filterQuery);
+    },
+    markInitialSyncComplete: (
+        state: EmployeesState,
+        action: PayloadAction<boolean | undefined>
+    ) => {
+        state.initialSyncComplete = action.payload ?? true;
+        if (state.loadingStatus === 'not loaded') {
+            state.loadingStatus = 'loaded';
+        }
     },
   },
   extraReducers: (builder) => {

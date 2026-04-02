@@ -16,6 +16,7 @@ export interface CartLineProps {
     appliedDiscounts?: AppliedDiscountDetail[];
     lineDiscountTotal?: number;
     lineTotal?: number;
+    onOpenDetails: (item: CartItem) => void;
     onSelect: (item: CartItem) => void;
     onRemove: (item: CartItem) => void;
     onIncrement?: (item: CartItem) => void;
@@ -28,6 +29,7 @@ export function CartLine({
     appliedDiscounts = [],
     lineDiscountTotal = 0,
     lineTotal,
+    onOpenDetails,
     onRemove,
     onSelect,
     onIncrement,
@@ -65,7 +67,8 @@ export function CartLine({
                 selected && localStyles.containerSelected,
                 requiresWeight && localStyles.containerError,
             ]}
-            onPress={() => onSelect(item)}
+            onPress={() => onOpenDetails(item)}
+            onLongPress={() => onSelect(item)}
         >
             {selected && !requiresWeight ? (
                 <View style={localStyles.selectedAccent} />

@@ -134,14 +134,21 @@ export const Auth = {
             username,
         });
     },
-    async signOut() {
+    async signOut(mode: 'local' | 'global' = 'local') {
         return signOut({
-            global: true,
+            global: mode === 'global',
         });
     },
     async currentAuthenticatedUser() {
         try {
             return await toLegacyUser();
+        } catch (error) {
+            throw normalizeAuthError(error);
+        }
+    },
+    async fetchSession(forceRefresh = false) {
+        try {
+            return await fetchAuthSession({ forceRefresh });
         } catch (error) {
             throw normalizeAuthError(error);
         }

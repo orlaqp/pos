@@ -22,6 +22,7 @@ import {
     StyleSheet,
     Text,
     TextInput,
+    useWindowDimensions,
     View,
 } from 'react-native';
 import { Share } from 'react-native';
@@ -176,6 +177,7 @@ export function ReportViewer({
 }: ReportViewerProps) {
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
+    const { height: windowHeight } = useWindowDimensions();
     const [loading, setLoading] = useState<boolean>(true);
     const [totals, setTotals] = useState<Record<string, number>>();
     const [items, setItems] = useState<any[]>([]);
@@ -195,6 +197,10 @@ export function ReportViewer({
     const selectedRangeLabel = `${dateRange.startDate.format('MM-DD-YYYY')}  ->  ${dateRange.endDate.format(
         'MM-DD-YYYY'
     )}`;
+    const tableHeight = Math.max(
+        240,
+        Math.min(560, Math.round(windowHeight * 0.48))
+    );
     const filteredItems = useMemo(
         () => filterReportItems(items, headers, debouncedQuery),
         [debouncedQuery, headers, items]
@@ -380,8 +386,8 @@ export function ReportViewer({
                         </UICard>
 
                         <View style={styles.reportCardWrap}>
-                            <View style={styles.rangeTagWrap}>
-                                <View style={styles.rangeTag}>
+                            <View style={styles.rangeTagWrap} pointerEvents="box-none">
+                                <View style={styles.rangeTag} pointerEvents="none">
                                     <Text style={styles.rangeTagText}>{selectedRangeLabel}</Text>
                                 </View>
                             </View>
@@ -434,6 +440,7 @@ export function ReportViewer({
                                                 <View key={h.field} style={[styles.colCell, { flex: h.width }]}>
                                                     <Pressable
                                                         style={styles.headerPressable}
+                                                        hitSlop={8}
                                                         onPress={() => toggleSort(h.field)}
                                                     >
                                                         <Text
@@ -454,30 +461,36 @@ export function ReportViewer({
                                             ))}
                                         </View>
 
-                                        <FlatList
-                                            data={visibleItems}
-                                            keyExtractor={(item, index) =>
-                                                getRowKey(item as Record<string, unknown>, index)
-                                            }
-                                            renderItem={({ item }) => (
-                                                <View style={styles.dataRow}>
-                                                    {headers.map((h) => (
-                                                        <View key={h.field} style={[styles.colCell, { flex: h.width }]}>
-                                                            <Text
-                                                                style={[
-                                                                    styles.colValue,
-                                                                    {
-                                                                        textAlign: getCellAlignment(h),
-                                                                    },
-                                                                ]}
-                                                            >
-                                                                {formatCellValue(item[h.field], h.format)}
-                                                            </Text>
-                                                        </View>
-                                                    ))}
-                                                </View>
-                                            )}
-                                        />
+                                        <View style={[styles.tableListWrap, { height: tableHeight }]}>
+                                            <FlatList
+                                                data={visibleItems}
+                                                contentContainerStyle={styles.tableListContent}
+                                                nestedScrollEnabled
+                                                keyboardShouldPersistTaps="handled"
+                                                ListFooterComponent={<View style={styles.tableListFooter} />}
+                                                keyExtractor={(item, index) =>
+                                                    getRowKey(item as Record<string, unknown>, index)
+                                                }
+                                                renderItem={({ item }) => (
+                                                    <View style={styles.dataRow}>
+                                                        {headers.map((h) => (
+                                                            <View key={h.field} style={[styles.colCell, { flex: h.width }]}>
+                                                                <Text
+                                                                    style={[
+                                                                        styles.colValue,
+                                                                        {
+                                                                            textAlign: getCellAlignment(h),
+                                                                        },
+                                                                    ]}
+                                                                >
+                                                                    {formatCellValue(item[h.field], h.format)}
+                                                                </Text>
+                                                            </View>
+                                                        ))}
+                                                    </View>
+                                                )}
+                                            />
+                                        </View>
 
                                         {!!totals && (
                                             <View style={styles.totalRow}>
@@ -652,6 +665,15 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             paddingVertical: tokens.spacing.sm,
             borderBottomWidth: 1,
             borderBottomColor: `${tokens.colors.border}66`,
+        },
+        tableListWrap: {
+            width: '100%',
+        },
+        tableListContent: {
+            paddingBottom: tokens.spacing.md,
+        },
+        tableListFooter: {
+            height: tokens.spacing.xxl,
         },
         colValue: {
             color: tokens.colors.textPrimary,

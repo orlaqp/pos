@@ -15,6 +15,10 @@ import {
 } from '@reduxjs/toolkit';
 import { OrderEntity, OrderEntityMapper } from '../order.entity';
 import { FilterRequest, OrderService } from '../order.service';
+import {
+    PendingOrderJournalEntry,
+    PendingOrderSyncState,
+} from '../pending-order-journal';
 
 export const ORDER_FEATURE_KEY = 'orders';
 
@@ -42,6 +46,8 @@ export interface OrdersState extends EntityState<OrderEntity, string> {
     filterQuery: FilterRequest;
     filteredList?: OrderEntity[];
     pendingStatusOverrides: Record<string, OrderStatus | keyof typeof OrderStatus | undefined>;
+    pendingOrderSyncState: Record<string, PendingOrderSyncState>;
+    pendingOrderLastError: Record<string, string | undefined>;
 }
 
 export const ordersAdapter = createEntityAdapter<OrderEntity, string>({
@@ -119,6 +125,8 @@ export const initialOrdersState: OrdersState = ordersAdapter.getInitialState({
     filterQuery: { status: OrderStatus.OPEN },
     filteredList: undefined,
     pendingStatusOverrides: {},
+    pendingOrderSyncState: {},
+    pendingOrderLastError: {},
 });
 
 export const ordersSlice = createSlice({
@@ -139,6 +147,50 @@ export const ordersSlice = createSlice({
         },
         clearSelection: (state: OrdersState) => {
             state.selected = undefined;
+        },
+        hydratePendingOrders: (
+            state: OrdersState,
+            action: PayloadAction<PendingOrderJournalEntry[]>
+        ) => {
+            state.pendingOrderSyncState = Object.fromEntries(
+                action.payload.map((entry) => [entry.orderId, entry.syncState])
+            );
+            state.pendingOrderLastError = Object.fromEntries(
+                action.payload.map((entry) => [entry.orderId, entry.lastError])
+            );
+        },
+        markPendingOrderSyncState: (
+            state: OrdersState,
+            action: PayloadAction<{
+                orderId: string;
+                syncState: PendingOrderSyncState;
+                error?: string;
+            }>
+        ) => {
+            state.pendingOrderSyncState[action.payload.orderId] =
+                action.payload.syncState;
+            state.pendingOrderLastError[action.payload.orderId] =
+                action.payload.error;
+        },
+        markAllPendingOrdersSyncFailed: (
+            state: OrdersState,
+            action: PayloadAction<string | undefined>
+        ) => {
+            Object.keys(state.pendingOrderSyncState).forEach((orderId) => {
+                if (state.pendingOrderSyncState[orderId] !== 'synced') {
+                    state.pendingOrderSyncState[orderId] = 'sync_failed';
+                    state.pendingOrderLastError[orderId] = action.payload;
+                }
+            });
+        },
+        clearPendingOrderTracking: (
+            state: OrdersState,
+            action: PayloadAction<string[]>
+        ) => {
+            action.payload.forEach((orderId) => {
+                delete state.pendingOrderSyncState[orderId];
+                delete state.pendingOrderLastError[orderId];
+            });
         },
         filter: (state: OrdersState, action: PayloadAction<FilterRequest>) => {
             state.filterQuery = action.payload;
@@ -203,6 +255,9 @@ export const ordersSlice = createSlice({
                     action: PayloadAction<SubmitOrderResponse>
                 ) => {
                     ordersAdapter.upsertOne(state, action.payload.order);
+                    state.pendingOrderSyncState[action.payload.order.id] =
+                        'sync_pending';
+                    delete state.pendingOrderLastError[action.payload.order.id];
                     filterList(state, state.filterQuery);
                     state.submitStatus = 'saved';
                     if (!action.payload.skipAutoPrint) {
@@ -231,6 +286,9 @@ export const ordersSlice = createSlice({
                     if (!action.payload) return;
 
                     delete state.pendingStatusOverrides[action.payload.order.id];
+                    state.pendingOrderSyncState[action.payload.order.id] =
+                        'sync_pending';
+                    delete state.pendingOrderLastError[action.payload.order.id];
                     ordersAdapter.updateOne(state, {
                         id: action.payload.order.id,
                         changes: action.payload.order,
@@ -270,8 +328,6 @@ export const ordersActions = ordersSlice.actions;
 export const getOrdersState = (rootState: RootState): OrdersState =>
     rootState[ORDER_FEATURE_KEY];
 
-const orderSelectors = ordersAdapter.getSelectors<RootState>(getOrdersState);
-
 export const selectAllOrders = createSelector(
     getOrdersState,
     (state) => ordersAdapter.getSelectors<OrdersState>((ordersState) => ordersState).selectAll(state)
@@ -304,6 +360,24 @@ export const selectIsEmpty = createSelector(
 export const selectFilteredOrderList = createSelector(
     getOrdersState,
     (state: OrdersState) => state.filteredList
+);
+
+export const selectPendingOrderSyncState = createSelector(
+    getOrdersState,
+    (state: OrdersState) => state.pendingOrderSyncState
+);
+
+export const selectPendingUnsyncedOrderCount = createSelector(
+    getOrdersState,
+    (state: OrdersState) =>
+        Object.values(state.pendingOrderSyncState).filter(
+            (value) => value !== 'synced'
+        ).length
+);
+
+export const selectHasPendingUnsyncedOrders = createSelector(
+    selectPendingUnsyncedOrderCount,
+    (count) => count > 0
 );
 
 function filterList(state: OrdersState, options: FilterRequest) {

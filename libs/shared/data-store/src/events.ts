@@ -34,10 +34,34 @@ export const subscribeEvents = (dispatch: Dispatch) =>
                     isDeltaSync: (data as ModelSyncedEvent & { isDeltaSync?: boolean }).isDeltaSync,
                     counts: (data as ModelSyncedEvent & { counts?: unknown }).counts,
                 });
+                if ((data as ModelSyncedEvent).model.name === 'Product') {
+                    logSyncDebug('hub', 'product:modelSynced', {
+                        isFullSync: (data as ModelSyncedEvent & { isFullSync?: boolean }).isFullSync,
+                        isDeltaSync: (data as ModelSyncedEvent & { isDeltaSync?: boolean }).isDeltaSync,
+                        counts: (data as ModelSyncedEvent & { counts?: unknown }).counts,
+                    });
+                }
+                break;
+            case 'subscriptionError':
+                console.error(
+                    `DataStore subscriptionError: ${JSON.stringify(data)}`
+                );
                 break;
             case 'outboxMutationFailed':
+                dispatch(
+                    eventsActions.recordOutboxMutationFailed(
+                        new Date().toISOString()
+                    )
+                );
                 console.error(
                     `DataStore mutation failed: ${JSON.stringify(data)}`
+                );
+                break;
+            case 'outboxStatus':
+                dispatch(
+                    eventsActions.setOutboxStatus(
+                        !!(data as { isEmpty?: boolean } | undefined)?.isEmpty
+                    )
                 );
                 break;
             default:
@@ -45,6 +69,11 @@ export const subscribeEvents = (dispatch: Dispatch) =>
         }
 
         if (event === 'networkStatus') {
+            dispatch(
+                eventsActions.setNetworkStatus(
+                    !!(data as { active?: boolean } | undefined)?.active
+                )
+            );
             logSyncDebug('hub', 'networkStatus', {
                 active: (data as { active?: boolean } | undefined)?.active,
             });

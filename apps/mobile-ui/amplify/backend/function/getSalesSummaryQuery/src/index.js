@@ -19,8 +19,8 @@ const docClient = new AWS.DynamoDB.DocumentClient();
     const productList = Object.values(groups.byProduct);
     const dateList = Object.values(groups.byDate);
 
-    sortListBy(productList, 'amount');
-    sortListBy(employeeList, 'amount');
+    sortDescListBy(productList, 'amount');
+    sortDescListBy(employeeList, 'amount');
 
     const res = {
         products: productList,
@@ -85,15 +85,17 @@ function processGroups(orders, range) {
     console.log('days diff', daysDiff);
 
     orders.forEach((order) => {
-        const employeeGroup = res.byEmployee[order.employeeId] || {
-            employeeId: order.employeeId,
-            employeeName: order.employeeName,
+        const employeeId = order.createdBy?.id || order.employeeId || 'unknown';
+        const employeeName = order.createdBy?.name || order.employeeName || 'Unknown';
+        const employeeGroup = res.byEmployee[employeeId] || {
+            employeeId,
+            employeeName,
             orders: 0,
             amount: 0,
         };
         employeeGroup.orders += 1;
         employeeGroup.amount += order.total;
-        res.byEmployee[order.employeeId] = employeeGroup;
+        res.byEmployee[employeeId] = employeeGroup;
 
         const datePiece = firstXOfDate(order.orderDate, dateGrouping);
         const dateGroup = res.byDate[datePiece] || {
@@ -129,6 +131,15 @@ const sortListBy = (items, key) => {
     items.sort((a, b) => {
         if (a[key] > b[key]) return 1;
         if (a[key] < b[key]) return -1;
+
+        return 0;
+    });
+}
+
+const sortDescListBy = (items, key) => {
+    items.sort((a, b) => {
+        if (a[key] > b[key]) return -1;
+        if (a[key] < b[key]) return 1;
 
         return 0;
     });

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { Alert, FlatList, StyleSheet, TextInput, View, Text } from 'react-native';
+import { Alert, FlatList, Keyboard, StyleSheet, TextInput, View, Text } from 'react-native';
 import { getThemeColors, useSharedStyles } from '@pos/theme/native';
 import { UIActions, UICard, UIScreen, UISearchInput } from '@pos/shared/ui-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -113,6 +113,9 @@ export function InventoryCountForm({
     const [lines, setLines] = useState<InventoryCountLineDTO[]>(
         inventoryCount ? inventoryCount.lines.map(l => ({...l})) : []
     );
+    const linesRef = useRef<InventoryCountLineDTO[]>(
+        inventoryCount ? inventoryCount.lines.map((l) => ({ ...l })) : []
+    );
     const ref = useRef<TextInput>(null);
     const products = useSelector(selectAllProducts);
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
@@ -125,32 +128,51 @@ export function InventoryCountForm({
     );
     const employee = useSelector(selectLoginEmployee);
 
+    const runAfterInputCommit = (action: () => void) => {
+        Keyboard.dismiss();
+        setTimeout(action, 0);
+    };
+
+    const syncLinesState = (
+        updater:
+            | InventoryCountLineDTO[]
+            | ((current: InventoryCountLineDTO[]) => InventoryCountLineDTO[])
+    ) => {
+        setLines((current) => {
+            const next =
+                typeof updater === 'function'
+                    ? (updater as (current: InventoryCountLineDTO[]) => InventoryCountLineDTO[])(current)
+                    : updater;
+            linesRef.current = next;
+            return next;
+        });
+    };
+
     const searchSubmit = (text: string) => {
         setFilter(text);
         ref.current?.clear();
     };
 
     const addItem = (product: ProductEntity) => {
-        const result = appendCountLineIfMissing(lines, product);
-        if (!result.added) return;
+        syncLinesState((current) => {
+            const result = appendCountLineIfMissing(current, product);
+            if (!result.added) return current;
 
-        setLines((_) => {
             const next = result.nextLines;
             if (!inventoryCount && countMode === 'quick') {
                 setQuickModeLines(next);
             }
             return next;
         });
-
         setFilter('');
     };
 
     const updateItem = (item: InventoryCountLineDTO) => {
-        setLines(applyCountLineUpdate(lines, item));
+        syncLinesState((current) => applyCountLineUpdate(current, item));
     };
 
     const deleteItem = (item: InventoryCountLineDTO) => {
-        setLines((res) => {
+        syncLinesState((res) => {
             const next = res.filter((i) => i.productId !== item.productId);
             if (!inventoryCount && countMode === 'quick') {
                 setQuickModeLines(next);
@@ -160,7 +182,8 @@ export function InventoryCountForm({
     };
 
     const save = async (updateInv: boolean) => {
-        const missingQuantity = lines.some(x => x.newCount === undefined || x.newCount === null);
+        const currentLines = linesRef.current;
+        const missingQuantity = currentLines.some(x => x.newCount === undefined || x.newCount === null);
 
         if (missingQuantity) {
             Alert.alert('Make sure all products have a new count value')
@@ -173,7 +196,7 @@ export function InventoryCountForm({
         if (inventoryCount) {
             inv = {
                 comments: inventoryCount.comments,
-                lines,
+                lines: currentLines,
                 status: inventoryCount.status,
                 id: inventoryCount.id,
                 createdBy: {
@@ -191,7 +214,7 @@ export function InventoryCountForm({
             }
 
             inv = InventoryCountMapper.newCount(employee);
-            inv.lines = lines;
+            inv.lines = currentLines;
         }
 
         if (updateInv) {
@@ -251,7 +274,7 @@ export function InventoryCountForm({
 
         if (countMode !== 'full' || fullCountInitialized) return;
 
-        setLines((prev) => asFullCountLines(prev, products));
+        syncLinesState((prev) => asFullCountLines(prev, products));
         setFullCountInitialized(true);
     }, [countMode, fullCountInitialized, inventoryCount, products]);
 
@@ -315,12 +338,12 @@ export function InventoryCountForm({
     const enableQuickCountMode = () => {
         setCountMode('quick');
         if (!inventoryCount) {
-            setLines(quickModeLines.map((line) => ({ ...line })));
+            syncLinesState(quickModeLines.map((line) => ({ ...line })));
         }
     };
 
     const regenerateFullCount = () => {
-        setLines((prev) => asFullCountLines(prev, products));
+        syncLinesState((prev) => asFullCountLines(prev, products));
         setFilter('');
     };
 
@@ -606,7 +629,7 @@ export function InventoryCountForm({
                     <View style={local.footerButtons}>
                         <UIActions
                             busy={busy}
-                            submitAction={() => save(false)}
+                            submitAction={() => runAfterInputCommit(() => save(false))}
                             cancelAction={confirmCancel}
                         />
                         <View style={{ marginLeft: 10 }}>
@@ -614,7 +637,7 @@ export function InventoryCountForm({
                                 color="success"
                                 title="Update Inventory"
                                 testID="inventory-count-update-inventory-button"
-                                onPress={updateInventory}
+                                onPress={() => runAfterInputCommit(updateInventory)}
                                 icon={{
                                     name: 'scale-balance',
                                     type: 'material-community',

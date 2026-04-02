@@ -78,7 +78,7 @@ export const signIn = createAsyncThunk(
                 const message = buildMessage(error);
 
                 if (message === 'There is already a signed in user.') {
-                    await Auth.signOut();
+                    await Auth.signOut('local');
                     signInResponse = await Auth.signIn(req.email, req.password);
                 } else {
                     throw error;

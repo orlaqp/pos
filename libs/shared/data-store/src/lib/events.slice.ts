@@ -22,6 +22,9 @@ export interface EventEntity {
 export interface EventsState extends EntityState<EventEntity, string> {
     loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
     error?: string;
+    outboxEmpty: boolean;
+    networkActive: boolean;
+    lastOutboxMutationFailedAt?: string;
 }
 
 export const eventsAdapter = createEntityAdapter<EventEntity, string>({
@@ -32,6 +35,9 @@ export const eventsAdapter = createEntityAdapter<EventEntity, string>({
 export const initialEventsState: EventsState = eventsAdapter.getInitialState({
     loadingStatus: 'not loaded',
     error: undefined,
+    outboxEmpty: true,
+    networkActive: true,
+    lastOutboxMutationFailedAt: undefined,
 });
 
 export const eventsSlice = createSlice({
@@ -49,7 +55,18 @@ export const eventsSlice = createSlice({
             eventsAdapter.addOne(state, action.payload);
         },
         remove: eventsAdapter.removeOne,
-        // ...
+        setOutboxStatus: (state: EventsState, action: PayloadAction<boolean>) => {
+            state.outboxEmpty = action.payload;
+        },
+        setNetworkStatus: (state: EventsState, action: PayloadAction<boolean>) => {
+            state.networkActive = action.payload;
+        },
+        recordOutboxMutationFailed: (
+            state: EventsState,
+            action: PayloadAction<string>
+        ) => {
+            state.lastOutboxMutationFailedAt = action.payload;
+        },
     }
 });
 
@@ -111,4 +128,19 @@ export const selectAllEvents = createSelector(
 export const selectEventsEntities = createSelector(
     getEventsState,
     (state) => eventSelectors.selectEntities({ [EVENTS_FEATURE_KEY]: state })
+);
+
+export const selectOutboxEmpty = createSelector(
+    getEventsState,
+    (state) => state.outboxEmpty
+);
+
+export const selectNetworkActive = createSelector(
+    getEventsState,
+    (state) => state.networkActive
+);
+
+export const selectLastOutboxMutationFailedAt = createSelector(
+    getEventsState,
+    (state) => state.lastOutboxMutationFailedAt
 );

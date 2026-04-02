@@ -8,7 +8,10 @@ const mockGoBack = jest.fn();
 const mockConfirm = jest.fn((_: string, __: string, onConfirm: () => void) => onConfirm());
 const mockInventoryReceiveSave = jest.fn(() => Promise.resolve());
 const mockProductSearch = jest.fn(() => ({ items: [], allNumbers: false }));
-const mockFetchProducts = jest.fn(() => ({ type: 'products/fetchStatus/pending' }));
+const mockApplyQuantityDeltas = jest.fn((payload) => ({
+    type: 'products/applyQuantityDeltas',
+    payload,
+}));
 const mockProducts: unknown[] = [];
 let mockInventoryReceiveSelected: any = null;
 let mockEmployee: any = {
@@ -29,7 +32,19 @@ jest.mock('react-redux', () => ({
         }),
 }));
 
+jest.mock('@pos/store', () => ({
+    useAppDispatch: () => mockDispatch,
+}));
+
 jest.mock('@pos/theme/native', () => ({
+    getThemeColors: () => ({
+        primary: '#00f',
+        background: '#fff',
+        card: '#111',
+        border: '#333',
+        text: '#fff',
+        textMuted: '#999',
+    }),
     useSharedStyles: () => ({
         page: {},
         secondaryText: {},
@@ -37,6 +52,30 @@ jest.mock('@pos/theme/native', () => ({
         textCenter: {},
         textBold: {},
         darkBackground: {},
+    }),
+}));
+
+jest.mock('@pos/theme/native/design-tokens', () => ({
+    useDesignTokens: () => ({
+        colors: {
+            canvas: '#000',
+            primary: '#00f',
+            text: '#fff',
+            borderSubtle: '#333',
+            surfaceRaised: '#111',
+        },
+        spacing: {
+            xs: 4,
+            sm: 8,
+            md: 12,
+            lg: 16,
+            xl: 24,
+            xxl: 32,
+        },
+        radius: {
+            md: 12,
+            lg: 16,
+        },
     }),
 }));
 
@@ -59,14 +98,31 @@ jest.mock('@pos/shared/ui-native', () => ({
         return React.forwardRef(
             (
                 {
+                    value,
+                    onChangeText,
                     onSubmit,
                     onClear,
-                }: { onSubmit: (text: string) => void; onClear: () => void },
+                }: {
+                    value?: string;
+                    onChangeText?: (text: string) => void;
+                    onSubmit: (text: string) => void;
+                    onClear: () => void;
+                },
                 _
             ) => {
-                const { Pressable: RNPressable, Text: RNText, View: RNView } = require('react-native');
+                const {
+                    Pressable: RNPressable,
+                    Text: RNText,
+                    TextInput: RNTextInput,
+                    View: RNView,
+                } = require('react-native');
                 return (
                     <RNView testID="inventory-receive-search">
+                        <RNTextInput
+                            testID="inventory-receive-search-input"
+                            value={value}
+                            onChangeText={onChangeText}
+                        />
                         <RNPressable
                             testID="inventory-receive-search-submit"
                             onPress={() => onSubmit('111')}
@@ -118,7 +174,9 @@ jest.mock('@pos/shared/utils', () => ({
 }));
 
 jest.mock('@pos/products/data-access', () => ({
-    fetchProducts: (...args: unknown[]) => mockFetchProducts(...args),
+    productsActions: {
+        applyQuantityDeltas: (...args: unknown[]) => mockApplyQuantityDeltas(...args),
+    },
     ProductService: {
         search: (...args: unknown[]) => mockProductSearch(...args),
     },
@@ -242,7 +300,7 @@ describe('InventoryReceiveForm integration', () => {
         mockInventoryReceiveSelected = null;
         mockEmployee = { id: 'emp-1', firstName: 'Test', lastName: 'User' };
         mockProductSearch.mockReturnValue({ items: [], allNumbers: false });
-        mockFetchProducts.mockReturnValue({ type: 'products/fetchStatus/pending' });
+        mockApplyQuantityDeltas.mockClear();
         jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
     });
 
@@ -280,7 +338,42 @@ describe('InventoryReceiveForm integration', () => {
                 expect.objectContaining({ status: 'COMPLETED', lines: [] }),
                 true
             );
-            expect(mockFetchProducts).toHaveBeenCalled();
+            expect(mockApplyQuantityDeltas).toHaveBeenCalledWith([]);
+        });
+    });
+
+    it('dispatches local product quantity updates after a completed receive', async () => {
+        mockInventoryReceiveSelected = {
+            id: 'recv-1',
+            comments: 'existing',
+            status: 'IN_PROGRESS',
+            lines: [
+                {
+                    productId: 'p-1',
+                    productName: 'Aceitunas Jumbo',
+                    unitOfMeasure: 'EA',
+                    received: 4,
+                    comments: '',
+                },
+            ],
+        };
+        (mockProducts as any[]).splice(0, mockProducts.length, {
+            id: 'p-1',
+            name: 'Aceitunas Jumbo',
+            unitOfMeasure: 'EA',
+            quantity: 4,
+        });
+
+        const { getByTestId } = render(
+            <InventoryReceiveForm route={route} navigation={navigation} />
+        );
+
+        fireEvent.press(getByTestId('inventory-receive-update-inventory-button'));
+
+        await waitFor(() => {
+            expect(mockApplyQuantityDeltas).toHaveBeenCalledWith([
+                { productId: 'p-1', delta: 4 },
+            ]);
         });
     });
 

@@ -21,6 +21,9 @@ import {
     clearCurrentTenantContext,
     tenantSessionActions,
 } from '@pos/auth/data-access';
+import {
+    selectPendingUnsyncedOrderCount,
+} from '@pos/orders/data-access';
 import { DataStore } from '@pos/shared/amplify';
 import { markManualSignOut } from './session-signout';
 
@@ -64,6 +67,7 @@ export function Navigation() {
     const cart = useSelector(selectCart);
     const defaultPrinter = useSelector(getDefaultPrinter);
     const store = useSelector(selectStore);
+    const pendingUnsyncedOrderCount = useSelector(selectPendingUnsyncedOrderCount);
 
     const [showOtherOrders, setShowOtherOrders] = useState<boolean>(false);
     const [showSalesActions, setShowSalesActions] = useState<boolean>(false);
@@ -117,11 +121,17 @@ export function Navigation() {
             {
                 text: 'Yes',
                 onPress: async () => {
+                    if (pendingUnsyncedOrderCount > 0) {
+                        Alert.alert(
+                            'Pending orders are still on this device',
+                            `${pendingUnsyncedOrderCount} order${pendingUnsyncedOrderCount === 1 ? '' : 's'} still need to sync. Sign in again on this device to let them finish syncing.`
+                        );
+                    }
+
                     try {
                         await markManualSignOut();
-                        await Auth.signOut();
+                        await Auth.signOut('local');
                         await DataStore.stop();
-                        await DataStore.clear();
                     } finally {
                         clearCurrentTenantContext();
                         dispatch(authActions.logoff());

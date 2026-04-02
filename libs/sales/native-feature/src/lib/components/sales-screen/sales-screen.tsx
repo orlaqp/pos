@@ -28,13 +28,16 @@ import {
 } from '@pos/products/data-access';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ButtonItemType, UIScreen } from '@pos/shared/ui-native';
-import { useAppDispatch } from '@pos/store';
+import { RootState, useAppDispatch } from '@pos/store';
 import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import {
     buildEbtAllocations,
+    markPendingOrderJournalEntry,
+    PendingOrderJournalEntry,
     getLineTotal,
     ordersActions,
     payOrder,
+    upsertPendingOrderJournalEntry,
     upsertOrder,
 } from '@pos/orders/data-access';
 import { selectStore } from '@pos/store-info/data-access';
@@ -134,6 +137,9 @@ export function SalesScreen({
     const allProducts = useSelector(selectAllProducts);
     const globalSettings = useSelector(getGlobalSettings);
     const employee = useSelector(selectLoginEmployee);
+    const tenantId = useSelector(
+        (state: RootState) => state.tenantSession?.tenantId as string | undefined
+    );
     const station = useSelector(selectStation);
 
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
@@ -152,14 +158,26 @@ export function SalesScreen({
             : fallback;
     const hasCatalogProducts = getActiveProducts(allProducts).length > 0;
     const canManageCatalog = !!employee?.roles?.includes(Role.Admin);
-    const deselectProduct = () => dispatch(cartActions.setActiveProduct(undefined));
+    const restoreSearchFocus = useCallback(() => {
+        const interaction = InteractionManager.runAfterInteractions(() => {
+            setTimeout(() => {
+                searchRef.current?.focus();
+            }, 25);
+        });
+
+        return () => interaction.cancel?.();
+    }, []);
+    const deselectProduct = useCallback(() => {
+        dispatch(cartActions.setActiveProduct(undefined));
+    }, [dispatch]);
     const shouldReturnToOrderList = () =>
         navigation.getState?.()?.routeNames?.includes('Order List');
 
-    const upsertCart = (item: CartItem) => {
+    const upsertCart = useCallback((item: CartItem) => {
         dispatch(cartActions.upsert(item));
         deselectProduct();
-    };
+        restoreSearchFocus();
+    }, [deselectProduct, dispatch, restoreSearchFocus]);
 
     const preparePrintableOrderCart = useCallback(
         async (cart: CartState) => {
@@ -258,6 +276,7 @@ export function SalesScreen({
         }
 
         searchRef.current?.clear();
+        restoreSearchFocus();
         return '';
     };
 
@@ -333,6 +352,22 @@ export function SalesScreen({
 
         if (route.params.mode === 'order') {
             void preparePrintableOrderCart(cart).then((cartForOrder) => {
+                const journalEntry: PendingOrderJournalEntry = {
+                    orderId: cartForOrder.id!,
+                    orderNo: cartForOrder.orderNo,
+                    tenantId,
+                    statusTarget: 'OPEN',
+                    cart: cartForOrder,
+                    employee: employee
+                        ? {
+                              id: employee.id,
+                              name: `${employee.firstName} ${employee.lastName}`,
+                          }
+                        : undefined,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    syncState: 'local_only',
+                };
                 const shouldFastPrint = !!defaultPrinter && !!storeInfo;
 
                 if (!defaultPrinter || !storeInfo) {
@@ -373,20 +408,43 @@ export function SalesScreen({
                 }
 
                 Promise.resolve(
-                    dispatch(
-                        upsertOrder({
-                            cart: cartForOrder,
-                            defaultPrinter,
-                            storeInfo,
-                            skipAutoPrint:
-                                shouldFastPrint || !defaultPrinter || !storeInfo,
-                        })
-                    )
+                    upsertPendingOrderJournalEntry(journalEntry)
                 )
+                    .then((entries) => {
+                        dispatch(ordersActions.hydratePendingOrders(entries));
+                        return dispatch(
+                            upsertOrder({
+                                cart: cartForOrder,
+                                defaultPrinter,
+                                storeInfo,
+                                skipAutoPrint:
+                                    shouldFastPrint || !defaultPrinter || !storeInfo,
+                            })
+                        );
+                    })
                     .then((result) => {
                         if (
                             !upsertOrder.fulfilled.match(result)
                         ) {
+                            dispatch(
+                                ordersActions.markPendingOrderSyncState({
+                                    orderId: cartForOrder.id!,
+                                    syncState: 'sync_failed',
+                                    error: t(
+                                        'SALES_OrderSaveFailedMessage',
+                                        'The order was not saved. Please try again.'
+                                    ),
+                                })
+                            );
+                            void markPendingOrderJournalEntry(cartForOrder.id!, {
+                                syncState: 'sync_failed',
+                                lastError: t(
+                                    'SALES_OrderSaveFailedMessage',
+                                    'The order was not saved. Please try again.'
+                                ),
+                            }).then((entries) =>
+                                dispatch(ordersActions.hydratePendingOrders(entries))
+                            );
                             Alert.alert(
                                 t(
                                     'SALES_OrderSaveFailedTitle',
@@ -405,12 +463,39 @@ export function SalesScreen({
                                           'The order was not saved. Please try again.'
                                       )
                             );
+                            return;
                         }
+
+                        dispatch(
+                            ordersActions.markPendingOrderSyncState({
+                                orderId: result.payload.order.id,
+                                syncState: 'sync_pending',
+                            })
+                        );
+                        void markPendingOrderJournalEntry(result.payload.order.id, {
+                            syncState: 'sync_pending',
+                        }).then((entries) =>
+                            dispatch(ordersActions.hydratePendingOrders(entries))
+                        );
+                        dispatch(cartActions.reset());
                     })
                     .catch((error) => {
                         console.error(
                             'Order save failed',
                             getErrorMessage(error) ?? error
+                        );
+                        dispatch(
+                            ordersActions.markPendingOrderSyncState({
+                                orderId: cartForOrder.id!,
+                                syncState: 'sync_failed',
+                                error: getErrorMessage(error) ?? String(error),
+                            })
+                        );
+                        void markPendingOrderJournalEntry(cartForOrder.id!, {
+                            syncState: 'sync_failed',
+                            lastError: getErrorMessage(error) ?? String(error),
+                        }).then((entries) =>
+                            dispatch(ordersActions.hydratePendingOrders(entries))
                         );
                         Alert.alert(
                             t(
@@ -432,8 +517,6 @@ export function SalesScreen({
                         );
                     });
             });
-
-            dispatch(cartActions.reset());
             return;
         }
 
@@ -456,6 +539,28 @@ export function SalesScreen({
                         }
 
                         const shouldFastPrint = !!defaultPrinter && !!storeInfo;
+                        const orderId = cart.id ?? String(uuid.v4());
+                        const cartForPayment: CartState = {
+                            ...cart,
+                            id: orderId,
+                        };
+                        const journalEntry: PendingOrderJournalEntry = {
+                            orderId,
+                            orderNo: cart.orderNo,
+                            tenantId,
+                            statusTarget: 'PAID',
+                            cart: cartForPayment,
+                            payments,
+                            employee: employee
+                                ? {
+                                      id: employee.id,
+                                      name: `${employee.firstName} ${employee.lastName}`,
+                                  }
+                                : undefined,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            syncState: 'local_only',
+                        };
                         if (cart.id) {
                             dispatch(
                                 ordersActions.optimisticMarkPaid({
@@ -546,17 +651,21 @@ export function SalesScreen({
                         }
 
                         Promise.resolve(
-                            dispatch(
-                                payOrder({
-                                    cart,
-                                    payments,
-                                    defaultPrinter,
-                                    storeInfo,
-                                    skipAutoPrint:
-                                        shouldFastPrint || !defaultPrinter || !storeInfo,
-                                })
-                            )
+                            upsertPendingOrderJournalEntry(journalEntry)
                         )
+                            .then((entries) => {
+                                dispatch(ordersActions.hydratePendingOrders(entries));
+                                return dispatch(
+                                    payOrder({
+                                        cart: cartForPayment,
+                                        payments,
+                                        defaultPrinter,
+                                        storeInfo,
+                                        skipAutoPrint:
+                                            shouldFastPrint || !defaultPrinter || !storeInfo,
+                                    })
+                                );
+                            })
                             .then((result) => {
                                 if (
                                     !payOrder.fulfilled.match(result) ||
@@ -587,7 +696,49 @@ export function SalesScreen({
                                                   'The order is still open. Please try again.'
                                               )
                                     );
+                                    void markPendingOrderJournalEntry(orderId, {
+                                        syncState: 'sync_failed',
+                                        lastError: t(
+                                            'SALES_PaymentFailedMessage',
+                                            'The order is still open. Please try again.'
+                                        ),
+                                    }).then((entries) =>
+                                        dispatch(ordersActions.hydratePendingOrders(entries))
+                                    );
+                                    dispatch(
+                                        ordersActions.markPendingOrderSyncState({
+                                            orderId,
+                                            syncState: 'sync_failed',
+                                            error: t(
+                                                'SALES_PaymentFailedMessage',
+                                                'The order is still open. Please try again.'
+                                            ),
+                                        })
+                                    );
+                                    return;
                                 }
+
+                                dispatch(
+                                    ordersActions.markPendingOrderSyncState({
+                                        orderId: result.payload.order.id,
+                                        syncState: 'sync_pending',
+                                    })
+                                );
+                                void markPendingOrderJournalEntry(
+                                    result.payload.order.id,
+                                    {
+                                        syncState: 'sync_pending',
+                                    }
+                                ).then((entries) =>
+                                    dispatch(ordersActions.hydratePendingOrders(entries))
+                                );
+
+                                if (shouldReturnToOrderList()) {
+                                    navigation.navigate('Order List' as never);
+                                } else {
+                                    navigation.goBack();
+                                }
+                                dispatch(cartActions.reset());
                             })
                             .catch((error) => {
                                 if (cart.id) {
@@ -619,14 +770,20 @@ export function SalesScreen({
                                               'The order is still open. Please try again.'
                                           )
                                 );
+                                void markPendingOrderJournalEntry(orderId, {
+                                    syncState: 'sync_failed',
+                                    lastError: getErrorMessage(error) ?? String(error),
+                                }).then((entries) =>
+                                    dispatch(ordersActions.hydratePendingOrders(entries))
+                                );
+                                dispatch(
+                                    ordersActions.markPendingOrderSyncState({
+                                        orderId,
+                                        syncState: 'sync_failed',
+                                        error: getErrorMessage(error) ?? String(error),
+                                    })
+                                );
                             });
-
-                        if (shouldReturnToOrderList()) {
-                            navigation.navigate('Order List' as never);
-                        } else {
-                            navigation.goBack();
-                        }
-                        dispatch(cartActions.reset());
                     },
                 },
             ]
@@ -749,8 +906,8 @@ export function SalesScreen({
                         key="cart"
                         mode={route.params.mode}
                         onSubmit={onCartSubmit}
-                        searchRef={searchRef}
                         products={allProducts}
+                        onInteractionComplete={restoreSearchFocus}
                     />
                 </View>
             </View>
@@ -758,7 +915,10 @@ export function SalesScreen({
                 product={product}
                 overlayStyle={[styles.overlay, { maxWidth: 560, width: '88%' }]}
                 enforceSalesBasedOnInventory={globalSettings?.enforceSalesBasedOnInventory}
-                onClose={deselectProduct}
+                onClose={() => {
+                    deselectProduct();
+                    restoreSearchFocus();
+                }}
                 onUpsertCart={upsertCart}
             />
         </UIScreen>

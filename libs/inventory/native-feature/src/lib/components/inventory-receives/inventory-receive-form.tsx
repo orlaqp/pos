@@ -17,7 +17,7 @@ import { RootState, useAppDispatch } from '@pos/store';
 import { InventoryReceive } from '@pos/shared/models';
 import {
     ProductEntity,
-    fetchProducts,
+    productsActions,
     ProductService,
     selectAllProducts,
     subscribeToProductChanges,
@@ -97,6 +97,29 @@ export function InventoryReceiveForm({
         setLines(inventoryReceive.lines.map((l) => ({ ...l })));
     }, [inventoryReceive]);
 
+    const buildQuantityDeltas = (receiveLines: InventoryReceiveLineDTO[]) => {
+        const deltaByProductId = new Map<string, number>();
+
+        receiveLines.forEach((line) => {
+            if (
+                line.received === undefined ||
+                line.received === null ||
+                Number.isNaN(line.received)
+            ) {
+                return;
+            }
+
+            deltaByProductId.set(
+                line.productId,
+                (deltaByProductId.get(line.productId) || 0) + line.received
+            );
+        });
+
+        return Array.from(deltaByProductId.entries())
+            .map(([productId, delta]) => ({ productId, delta }))
+            .filter((entry) => entry.delta !== 0);
+    };
+
     const save = async (updateInv: boolean) => {
         if (busy) return;
         setBusy(true);
@@ -131,7 +154,9 @@ export function InventoryReceiveForm({
 
         await InventoryReceiveService.save(dispatch, inv, updateInv);
         if (updateInv) {
-            await dispatch(fetchProducts());
+            dispatch(
+                productsActions.applyQuantityDeltas(buildQuantityDeltas(inv.lines))
+            );
         }
         dispatch(inventoryReceiveActions.clearSelection());
         navigation.goBack();

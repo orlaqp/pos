@@ -8,8 +8,7 @@ jest.mock('@pos/shared/amplify', () => ({
 
 jest.mock('../employee.service', () => ({
   EmployeeService: {
-    getAll: jest.fn(),
-    getEmployeeByEmail: jest.fn(),
+    getSyncedLocalEmployees: jest.fn(),
   },
 }));
 
@@ -22,8 +21,7 @@ import {
 import { DataStore } from '@pos/shared/amplify';
 import { EmployeeService } from '../employee.service';
 
-const getAllEmployeesMock = EmployeeService.getAll as jest.Mock;
-const getEmployeeByEmailMock = EmployeeService.getEmployeeByEmail as jest.Mock;
+const getSyncedLocalEmployeesMock = EmployeeService.getSyncedLocalEmployees as jest.Mock;
 
 describe('employees reducer', () => {
   beforeEach(() => {
@@ -78,7 +76,7 @@ describe('employees reducer', () => {
   });
 
   it('fulfills fetchEmployees from the local employee cache immediately', async () => {
-    getAllEmployeesMock.mockResolvedValue([
+    getSyncedLocalEmployeesMock.mockResolvedValue([
       {
         id: 'emp-1',
         firstName: 'Orlando',
@@ -114,19 +112,8 @@ describe('employees reducer', () => {
     expect(action.meta.requestStatus).toBe('fulfilled');
   });
 
-
-  it('falls back to the signed-in owner email when the employee list is empty', async () => {
-    getAllEmployeesMock.mockResolvedValue([]);
-    getEmployeeByEmailMock.mockResolvedValue({
-      id: 'owner-1',
-      firstName: 'Casa',
-      lastName: 'Martinez',
-      email: 'martinez.casa@yahoo.com',
-      active: true,
-      pin: '1234',
-      code: 'OWNER',
-      roles: ['Admin'],
-    });
+  it('fulfills fetchEmployees with an empty synced local employee list', async () => {
+    getSyncedLocalEmployeesMock.mockResolvedValue([]);
 
     const action = await fetchEmployees()(
       jest.fn(),
@@ -141,15 +128,9 @@ describe('employees reducer', () => {
       undefined
     );
 
-    expect(getEmployeeByEmailMock).toHaveBeenCalledWith('martinez.casa@yahoo.com');
     expect(action.type).toBe('employees/fetchStatus/fulfilled');
     expect(action.payload).toEqual({
-      employees: [
-        expect.objectContaining({
-          id: 'owner-1',
-          email: 'martinez.casa@yahoo.com',
-        }),
-      ],
+      employees: [],
       initialSyncComplete: true,
     });
   });

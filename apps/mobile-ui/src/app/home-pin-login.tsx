@@ -18,6 +18,9 @@ interface HomePinLoginProps {
     onPinUpdated: (nextPin: string) => string;
     onE2EManagerLogin?: () => void;
     onLogoff?: () => void;
+    savedLoginStatusLabel?: string;
+    pendingOrderStatusLabel?: string;
+    onRemoveSavedLogin?: () => void;
 }
 
 export function HomePinLogin({
@@ -34,6 +37,9 @@ export function HomePinLogin({
     onPinUpdated,
     onE2EManagerLogin,
     onLogoff,
+    savedLoginStatusLabel,
+    pendingOrderStatusLabel,
+    onRemoveSavedLogin,
 }: HomePinLoginProps) {
     return (
         <View style={styles.shell} testID="home-pin-login-screen">
@@ -76,6 +82,23 @@ export function HomePinLogin({
                         style={styles.pinLogoffButton}
                     >
                         <Text style={styles.pinLogoffButtonText}>Log off business</Text>
+                    </Pressable>
+                ) : null}
+                {savedLoginStatusLabel ? (
+                    <Text style={styles.savedLoginStatusText}>{savedLoginStatusLabel}</Text>
+                ) : null}
+                {pendingOrderStatusLabel ? (
+                    <Text style={styles.savedLoginStatusText}>{pendingOrderStatusLabel}</Text>
+                ) : null}
+                {onRemoveSavedLogin ? (
+                    <Pressable
+                        testID="home-pin-remove-saved-login-button"
+                        onPress={onRemoveSavedLogin}
+                        style={styles.secondaryDeviceActionButton}
+                    >
+                        <Text style={styles.secondaryDeviceActionButtonText}>
+                            Remove saved login from this device
+                        </Text>
                     </Pressable>
                 ) : null}
             </View>

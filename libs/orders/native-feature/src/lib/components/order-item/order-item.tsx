@@ -12,8 +12,17 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { cartActions } from '@pos/sales/data-access';
-import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
-import { selectStore } from '@pos/store-info/data-access';
+import {
+    getDefaultPrinter,
+    printReceipt,
+    PrinterEntityMapper,
+    PrinterService,
+} from '@pos/printings/data-access';
+import {
+    selectStore,
+    StoreInfoEntityMapper,
+    StoreInfoService,
+} from '@pos/store-info/data-access';
 import { Role } from '@pos/auth/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
@@ -99,7 +108,25 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
     };
 
     const printItem = async () => {
-        if (!store || !defaultPrinter) {
+        const fallbackStore =
+            store ||
+            (await StoreInfoService.getStore()
+                .then((stores) => {
+                    const preferred = stores?.[0];
+                    return preferred
+                        ? StoreInfoEntityMapper.fromModel(preferred)
+                        : undefined;
+                })
+                .catch(() => undefined));
+        const fallbackPrinter =
+            defaultPrinter ||
+            (await PrinterService.getDefaultPrinter()
+                .then((printer) =>
+                    printer ? PrinterEntityMapper.fromModel(printer) : undefined
+                )
+                .catch(() => undefined));
+
+        if (!fallbackStore || !fallbackPrinter) {
             Alert.alert(
                 t(
                     'ORDERITEM_PrintRequirements',
@@ -110,8 +137,8 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
         }
 
         printReceipt(
-            store,
-            defaultPrinter,
+            fallbackStore,
+            fallbackPrinter,
             OrderEntityMapper.asCartState(item),
             {
                 ...item,
