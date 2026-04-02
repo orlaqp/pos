@@ -7,11 +7,15 @@ import {
   validateEbtPayment,
 } from './ebt-allocation';
 import { getInventoryQuantityDelta, OrderService } from './order.service';
-import { DataStore } from '@pos/shared/amplify';
+import { API, DataStore } from '@pos/shared/amplify';
 import { StationService } from '@pos/settings/data-access';
 import { stampTenant } from '@pos/auth/data-access';
+import { getProduct } from '@pos/shared/api';
 
 jest.mock('@pos/shared/amplify', () => ({
+  API: {
+    graphql: jest.fn(async () => ({ data: {} })),
+  },
   DataStore: {
     save: jest.fn(async (value) => value),
     query: jest.fn(),
@@ -29,6 +33,10 @@ jest.mock('@pos/auth/data-access', () => ({
   requireCurrentTenantId: jest.fn(() => 'test-tenant'),
 }));
 
+jest.mock('@pos/shared/api', () => ({
+  getProduct: 'getProductQuery',
+}));
+
 jest.mock('@pos/shared/models', () => {
   const actual = jest.requireActual('@pos/shared/models');
 
@@ -38,6 +46,17 @@ jest.mock('@pos/shared/models', () => {
     }
   }
 
+  (MockOrder as any).copyOf = (
+    existing: Record<string, unknown>,
+    mutator: (draft: Record<string, unknown>) => void
+  ) => {
+    const draft = {
+      ...existing,
+    };
+    mutator(draft);
+    return draft;
+  };
+
   class MockOrderLine {
     constructor(init: Record<string, unknown>) {
       Object.assign(this, init);
@@ -45,6 +64,12 @@ jest.mock('@pos/shared/models', () => {
   }
 
   class MockProduct {
+    constructor(init: Record<string, unknown>) {
+      Object.assign(this, init);
+    }
+  }
+
+  class MockPayment {
     constructor(init: Record<string, unknown>) {
       Object.assign(this, init);
     }
@@ -62,6 +87,7 @@ jest.mock('@pos/shared/models', () => {
     ...actual,
     Order: MockOrder,
     OrderLine: MockOrderLine,
+    Payment: MockPayment,
     Product: MockProduct,
   };
 });
@@ -207,6 +233,7 @@ describe('OrderService', () => {
 
   it('returns the saved paid order from closeOrder after inventory updates complete', async () => {
     const saveMock = jest.mocked(DataStore.save);
+    const queryMock = jest.mocked(DataStore.query);
     const updatedOrder = {
       id: 'order-1',
       status: 'PAID',
@@ -219,9 +246,14 @@ describe('OrderService', () => {
       updatedAt: '2026-03-24T12:00:00.000Z',
     } as any;
 
-    jest
+    const getUpdatedOrderSpy = jest
       .spyOn(OrderService as any, 'getUpdatedOrder')
       .mockResolvedValue(updatedOrder);
+    queryMock.mockResolvedValue({
+      id: 'order-1',
+      status: 'OPEN',
+      tenantId: 'tenant-1',
+    } as any);
     saveMock.mockResolvedValue(savedOrder);
     const updateInventorySpy = jest
       .spyOn(OrderService as any, 'updateInventory')
@@ -245,13 +277,100 @@ describe('OrderService', () => {
             },
           },
         ],
+        footer: {
+          baseSubtotal: 4.59,
+          subtotal: 4.59,
+          total: 4.59,
+          lineDiscountTotal: 0,
+          orderDiscountTotal: 0,
+          discount: 0,
+          savingsTotal: 0,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+        },
+        promoCodes: [],
+        appliedDiscountSummary: undefined,
       } as any,
       payments: [{ type: 'cash', amount: 4.59 }],
     });
 
-    expect(saveMock).toHaveBeenCalledWith(updatedOrder);
+    expect(queryMock).toHaveBeenCalledWith(expect.anything(), 'order-1');
+    expect(saveMock).toHaveBeenCalled();
     expect(updateInventorySpy).toHaveBeenCalledWith(savedOrder);
     expect(result).toBe(savedOrder);
+
+    updateInventorySpy.mockRestore();
+    getUpdatedOrderSpy.mockRestore();
+  });
+
+  it('creates a paid order directly for one-step checkout', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+    const updateInventorySpy = jest
+      .spyOn(OrderService as any, 'updateInventory')
+      .mockResolvedValueOnce(undefined);
+
+    saveMock.mockResolvedValue({
+      id: 'order-2',
+      status: 'PAID',
+      orderNo: '51-25-260316-0007',
+      lines: [],
+      paymentInfo: { payments: [] },
+    } as any);
+
+    const result = await OrderService.createPaidOrder({
+      by: {
+        id: 'employee-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+      } as any,
+      order: {
+        id: 'generated-cart-id',
+        orderNo: '51-25-260316-0007',
+        items: [
+          {
+            identifier: 'line-1',
+            quantity: 1,
+            product: {
+              id: 'product-1',
+              name: 'Rice',
+              price: 4.59,
+              unitOfMeasure: 'ea',
+              isEBTEligible: true,
+            },
+          },
+        ],
+        footer: {
+          baseSubtotal: 4.59,
+          subtotal: 4.59,
+          total: 4.59,
+          lineDiscountTotal: 0,
+          orderDiscountTotal: 0,
+          discount: 0,
+          savingsTotal: 0,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+        },
+        promoCodes: [],
+        appliedDiscountSummary: undefined,
+      } as any,
+      payments: [{ type: 'cash', amount: 4.59 }],
+    });
+
+    expect(saveMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'generated-cart-id',
+        status: 'PAID',
+      })
+    );
+    expect(updateInventorySpy).toHaveBeenCalled();
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: 'order-2',
+        status: 'PAID',
+      })
+    );
+
+    updateInventorySpy.mockRestore();
   });
 
   it('uses a negative quantity delta for paid orders', () => {
@@ -303,13 +422,14 @@ describe('OrderService', () => {
 
   it('updates inventory for every unique product in a paid order', async () => {
     const queryMock = jest.mocked(DataStore.query);
-    const saveMock = jest.mocked(DataStore.save);
+    const graphqlMock = jest.mocked(API.graphql);
 
     queryMock.mockImplementation(async (_model: any, idOrPredicate: any) => {
       if (idOrPredicate === 'product-1') {
         return {
           id: 'product-1',
           quantity: 10,
+          _version: 3,
         } as any;
       }
 
@@ -317,11 +437,14 @@ describe('OrderService', () => {
         return {
           id: 'product-2',
           quantity: 20,
+          _version: 7,
         } as any;
       }
 
       return null as any;
     });
+
+    graphqlMock.mockResolvedValue({ data: {} } as any);
 
     await OrderService.updateInventory({
       status: 'PAID',
@@ -333,37 +456,52 @@ describe('OrderService', () => {
 
     expect(queryMock).toHaveBeenCalledWith(expect.anything(), 'product-1');
     expect(queryMock).toHaveBeenCalledWith(expect.anything(), 'product-2');
-    expect(saveMock).toHaveBeenCalledTimes(2);
-    expect(saveMock).toHaveBeenNthCalledWith(
+    expect(graphqlMock).toHaveBeenCalledTimes(2);
+    expect(graphqlMock).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
-        id: 'product-1',
-        quantity: -1,
+        authMode: 'userPool',
+        variables: {
+          input: {
+            id: 'product-1',
+            quantity: -1,
+            _version: 3,
+          },
+        },
       })
     );
-    expect(saveMock).toHaveBeenNthCalledWith(
+    expect(graphqlMock).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
-        id: 'product-2',
-        quantity: -2,
+        authMode: 'userPool',
+        variables: {
+          input: {
+            id: 'product-2',
+            quantity: -2,
+            _version: 7,
+          },
+        },
       })
     );
   });
 
   it('fails inventory updates loudly when a product is missing locally', async () => {
     const queryMock = jest.mocked(DataStore.query);
-    const saveMock = jest.mocked(DataStore.save);
+    const graphqlMock = jest.mocked(API.graphql);
 
     queryMock.mockImplementation(async (_model: any, idOrPredicate: any) => {
       if (idOrPredicate === 'product-1') {
         return {
           id: 'product-1',
           quantity: 10,
+          _version: 2,
         } as any;
       }
 
       return null as any;
     });
+
+    graphqlMock.mockResolvedValue({ data: {} } as any);
 
     await expect(
       OrderService.updateInventory({
@@ -375,11 +513,79 @@ describe('OrderService', () => {
       } as any)
     ).rejects.toThrow('Inventory update failed for products: product-2');
 
-    expect(saveMock).toHaveBeenCalledTimes(1);
-    expect(saveMock).toHaveBeenCalledWith(
+    expect(graphqlMock).toHaveBeenCalledTimes(1);
+    expect(graphqlMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        id: 'product-1',
-        quantity: -1,
+        authMode: 'userPool',
+        variables: {
+          input: {
+            id: 'product-1',
+            quantity: -1,
+            _version: 2,
+          },
+        },
+      })
+    );
+  });
+
+  it('retries inventory deltas with the latest remote version on conditional conflicts', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const graphqlMock = jest.mocked(API.graphql);
+
+    queryMock.mockResolvedValue({
+      id: 'product-1',
+      quantity: 10,
+      _version: 4,
+    } as any);
+
+    graphqlMock
+      .mockRejectedValueOnce(new Error('The conditional request failed'))
+      .mockResolvedValueOnce({
+        data: {
+          getProduct: {
+            _version: 9,
+          },
+        },
+      } as any)
+      .mockResolvedValueOnce({ data: {} } as any);
+
+    await OrderService.updateInventory({
+      status: 'PAID',
+      lines: [{ productId: 'product-1', quantity: 2 }],
+    } as any);
+
+    expect(graphqlMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        authMode: 'userPool',
+        variables: {
+          input: {
+            id: 'product-1',
+            quantity: -2,
+            _version: 4,
+          },
+        },
+      })
+    );
+    expect(graphqlMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        query: getProduct,
+        variables: { id: 'product-1' },
+        authMode: 'userPool',
+      })
+    );
+    expect(graphqlMock).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        authMode: 'userPool',
+        variables: {
+          input: {
+            id: 'product-1',
+            quantity: -2,
+            _version: 9,
+          },
+        },
       })
     );
   });

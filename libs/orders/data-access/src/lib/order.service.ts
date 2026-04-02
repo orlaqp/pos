@@ -1,7 +1,7 @@
 import { MutableModel } from '@aws-amplify/datastore';
 /* eslint-disable @nx/enforce-module-boundaries */
 import { Order, OrderLine, OrderMetaData, OrderStatus, Payment, PaymentInfo, Product, RefundInfo } from '@pos/shared/models';
-import { DataStore } from '@pos/shared/amplify';
+import { API, DataStore } from '@pos/shared/amplify';
 import { OrderEntity, OrderEntityMapper } from './order.entity';
 import { CartPayment, CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
@@ -16,6 +16,7 @@ import {
     EbtLineAllocation,
 } from './ebt-allocation';
 import { requireCurrentTenantId, stampTenant } from '@pos/auth/data-access';
+import { getProduct } from '@pos/shared/api';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -44,6 +45,10 @@ export interface UpsertOrderRequest extends CreateOrderRequest {
     status?: OrderStatus | keyof typeof OrderStatus;
     paymentInfo: PaymentInfo;
     refundInfo: RefundInfo;
+}
+
+export interface CreatePaidOrderRequest extends CreateOrderRequest {
+    payments: CartPayment[];
 }
 
 export class OrderService {
@@ -109,6 +114,17 @@ export class OrderService {
     }
 
     static async closeOrder(request: CloseOrderRequest) {
+        const existing = await DataStore.query(Order, request.id);
+
+        if (!existing) {
+            Alert.alert(`It seems that order: ${request.id} does not exist`);
+            return null;
+        }
+
+        return OrderService.closeExistingOrder(existing, request);
+    }
+
+    static async createPaidOrder(request: CreatePaidOrderRequest) {
         const validation = validateEbtPayment(
             request.order.items.map((item) => ({
                 identifier: item.identifier,
@@ -137,7 +153,111 @@ export class OrderService {
             request.payments
         );
 
-        const updatedOrder = await OrderService.getUpdatedOrder(request, (o) => {
+        const order = new Order(stampTenant({
+            id: request.order.id,
+            orderNo:
+                request.order.orderNo ??
+                (await StationService.getNextOrderNumber(request.by)),
+            status: 'PAID',
+            baseSubtotal: request.order.footer.baseSubtotal,
+            subtotal: request.order.footer.subtotal,
+            tax: 0,
+            total: request.order.footer.total,
+            lineDiscountTotal: request.order.footer.lineDiscountTotal,
+            orderDiscountTotal: request.order.footer.orderDiscountTotal,
+            discountTotal: request.order.footer.discount,
+            savingsTotal: request.order.footer.savingsTotal,
+            promoCodes: request.order.promoCodes.map((promo) => promo.code),
+            pricingVersion: 'discounts-v1',
+            pricingSnapshotHash: buildPricingSnapshotHash(request.order),
+            pricingSource: request.order.footer.pricingSource,
+            reconciliationStatus: request.order.footer.reconciliationStatus,
+            appliedDiscountSummary: request.order.appliedDiscountSummary
+                ? JSON.stringify(request.order.appliedDiscountSummary)
+                : null,
+            employeeId: request.by.id!,
+            employeeName: `${request.by.firstName} ${request.by.lastName}`,
+            lines: buildOrderLines(request.order, allocations),
+            createdBy: {
+                id: request.by.id,
+                name: `${request.by.firstName} ${request.by.lastName}`
+            },
+            updatedBy: {
+                id: request.by.id,
+                name: `${request.by.firstName} ${request.by.lastName}`
+            },
+            paymentInfo: {
+                employeeId: request.by.id,
+                employeeName: `${request.by.firstName} ${request.by.lastName}`,
+                payments: request.payments?.map((payment) =>
+                    new Payment({
+                        type: payment.type.toUpperCase() as any,
+                        amount: +payment.amount,
+                    })
+                ),
+            },
+            orderDate: moment().toISOString(),
+        }) as never);
+
+        const savedOrder = await DataStore.save(order);
+        await OrderService.updateInventory(savedOrder).catch((error) => {
+            console.error('Order inventory update failed', error);
+            Alert.alert(
+                'Inventory update failed',
+                'The order was saved, but inventory could not be updated right away.'
+            );
+        });
+
+        return savedOrder;
+    }
+
+    static async closeExistingOrder(order: Order, request: Omit<CloseOrderRequest, 'id'>) {
+        const validation = validateEbtPayment(
+            request.order.items.map((item) => ({
+                identifier: item.identifier,
+                quantity: item.quantity,
+                price: item.product.price,
+                isEBTEligible: item.product.isEBTEligible ?? false,
+            })),
+            request.payments
+        );
+
+        if (!validation.valid) {
+            Alert.alert(
+                'EBT validation failed',
+                `EBT amount ($${validation.ebtPaymentTotal.toFixed(2)}) cannot exceed EBT-eligible amount ($${validation.ebtEligibleTotal.toFixed(2)}).`
+            );
+            return null;
+        }
+
+        const allocations = buildEbtAllocations(
+            request.order.items.map((item) => ({
+                identifier: item.identifier,
+                quantity: item.quantity,
+                price: item.product.price,
+                isEBTEligible: item.product.isEBTEligible ?? false,
+            })),
+            request.payments
+        );
+
+        const updatedOrder = Order.copyOf(order, (o) => {
+            o.tenantId = order.tenantId || requireCurrentTenantId();
+            o.baseSubtotal = request.order.footer.baseSubtotal;
+            o.subtotal = request.order.footer.subtotal;
+            o.tax = 0;
+            o.total = request.order.footer.total;
+            o.lineDiscountTotal = request.order.footer.lineDiscountTotal;
+            o.orderDiscountTotal = request.order.footer.orderDiscountTotal;
+            o.discountTotal = request.order.footer.discount;
+            o.savingsTotal = request.order.footer.savingsTotal;
+            o.promoCodes = request.order.promoCodes.map((promo) => promo.code);
+            o.pricingVersion = 'discounts-v1';
+            o.pricingSnapshotHash = buildPricingSnapshotHash(request.order);
+            o.pricingSource = request.order.footer.pricingSource;
+            o.reconciliationStatus = request.order.footer.reconciliationStatus;
+            o.appliedDiscountSummary = request.order.appliedDiscountSummary
+                ? JSON.stringify(request.order.appliedDiscountSummary)
+                : null;
             o.status = 'PAID';
             o.lines = buildOrderLines(request.order, allocations);
             o.updatedBy = {
@@ -150,11 +270,9 @@ export class OrderService {
                 payments: request.payments?.map(p => new Payment({
                     type: p.type.toUpperCase() as any,
                     amount: +p.amount
-                }))
+                    }))
             };
         });
-
-        if (!updatedOrder) return null;
 
         const closedOrder = await DataStore.save(updatedOrder);
         await OrderService.updateInventory(closedOrder).catch((error) => {
@@ -562,6 +680,71 @@ export class OrderService {
     // }
 }
 
+const updateProductInventoryDeltaMutation = /* GraphQL */ `
+    mutation UpdateProductInventoryDelta(
+        $input: UpdateProductInput!
+        $condition: ModelProductConditionInput
+    ) {
+        updateProduct(input: $input, condition: $condition) {
+            id
+            _version
+            __typename
+        }
+    }
+`;
+
+const getGraphqlErrorMessage = (result: unknown) => {
+    if (!result || typeof result !== 'object' || !('errors' in result)) {
+        return undefined;
+    }
+
+    const errors =
+        (result as { errors?: Array<{ message?: string }> }).errors || [];
+
+    return errors.map((error) => error?.message).filter(Boolean).join(' | ') || undefined;
+};
+
+const fetchLatestProductVersion = async (productId: string) => {
+    const result = await API.graphql({
+        query: getProduct,
+        variables: { id: productId },
+        authMode: 'userPool',
+    });
+
+    const message = getGraphqlErrorMessage(result);
+    if (message) {
+        throw new Error(message);
+    }
+
+    const remote = (result as { data?: { getProduct?: { _version?: number | null } | null } })
+        .data?.getProduct;
+
+    return remote?._version;
+};
+
+const executeInventoryDeltaMutation = async (
+    productId: string,
+    quantityDelta: number,
+    version?: number | null
+) => {
+    const result = await API.graphql({
+        query: updateProductInventoryDeltaMutation,
+        variables: {
+            input: {
+                id: productId,
+                quantity: quantityDelta,
+                _version: version,
+            },
+        },
+        authMode: 'userPool',
+    });
+
+    const message = getGraphqlErrorMessage(result);
+    if (message) {
+        throw new Error(message);
+    }
+};
+
 async function updateProductQuantity(
     status: OrderStatus | keyof typeof OrderStatus,
     id: string,
@@ -573,12 +756,27 @@ async function updateProductQuantity(
         throw new Error(`Product ${id} not found locally for inventory update`);
     }
 
-    const updatedProduct = Product.copyOf(p, (updated) => {
-        // Product quantity is handled as a signed delta by the custom AppSync resolver.
-        updated.quantity = getInventoryQuantityDelta(status, quantity);
-    });
+    const delta = getInventoryQuantityDelta(status, quantity);
+    const currentVersion = (p as Product & { _version?: number | null })._version;
 
-    return DataStore.save(updatedProduct);
+    try {
+        await executeInventoryDeltaMutation(id, delta, currentVersion);
+    } catch (error) {
+        const message =
+            error instanceof Error ? error.message : String(error);
+        const shouldRetry =
+            message.toLowerCase().includes('conflict') ||
+            message.toLowerCase().includes('conditionalcheckfailed') ||
+            message.toLowerCase().includes('conditional request failed') ||
+            message.toLowerCase().includes('version');
+
+        if (!shouldRetry) {
+            throw error;
+        }
+
+        const latestVersion = await fetchLatestProductVersion(id);
+        await executeInventoryDeltaMutation(id, delta, latestVersion);
+    }
 }
 
 export function getInventoryQuantityDelta(

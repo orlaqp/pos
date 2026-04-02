@@ -15,6 +15,7 @@ export {
     selectPendingUnsyncedOrderCount,
     upsertOrder,
     payOrder,
+    submitOrderAndPay,
     type PayOrderRequest,
     type SubmitOrderResponse,
 } from './lib/slices/orders.slice';

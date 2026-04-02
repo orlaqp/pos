@@ -404,6 +404,7 @@ export function Dashboard(_props: DashboardProps) {
                                                     2
                                                 )}`}
                                                 primaryTextColor="#EAF4FF"
+                                                primaryTextSize={24}
                                             />
                                         </View>
                                     </View>
@@ -415,6 +416,7 @@ export function Dashboard(_props: DashboardProps) {
                                                 text={t('DASHBOARD_Orders', 'Orders')}
                                                 value={salesSummary.totalOrders.toString()}
                                                 primaryTextColor="#FFF4D7"
+                                                primaryTextSize={24}
                                             />
                                         </View>
                                     </View>
@@ -431,6 +433,7 @@ export function Dashboard(_props: DashboardProps) {
                                                     salesSummary
                                                 ).toFixed(2)}`}
                                                 primaryTextColor="#E9FFF3"
+                                                primaryTextSize={24}
                                             />
                                         </View>
                                     </View>
@@ -447,6 +450,7 @@ export function Dashboard(_props: DashboardProps) {
                                                     salesSummary
                                                 ).toLocaleString()}
                                                 primaryTextColor="#F5E9FF"
+                                                primaryTextSize={24}
                                             />
                                         </View>
                                     </View>

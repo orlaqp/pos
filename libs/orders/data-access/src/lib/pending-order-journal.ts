@@ -113,13 +113,20 @@ export const upsertPendingOrderJournalEntry = async (
     const entries = parseJournal(
         await AsyncStorage.getItem(PENDING_ORDER_JOURNAL_KEY)
     );
+    const matchesSameEntry = (item: PendingOrderJournalEntry) => {
+        if (item.tenantId !== entry.tenantId) {
+            return false;
+        }
+
+        if (item.orderId === entry.orderId) {
+            return true;
+        }
+
+        return !!entry.orderNo && !!item.orderNo && item.orderNo === entry.orderNo;
+    };
     const nextEntries = [
         entry,
-        ...entries.filter(
-            (item) =>
-                item.orderId !== entry.orderId ||
-                item.tenantId !== entry.tenantId
-        ),
+        ...entries.filter((item) => !matchesSameEntry(item)),
     ];
     await writeJournal(nextEntries);
     return filterJournal(nextEntries, { tenantId: entry.tenantId });

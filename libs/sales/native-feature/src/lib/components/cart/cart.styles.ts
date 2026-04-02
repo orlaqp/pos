@@ -43,6 +43,23 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         actionsWrap: {
             marginTop: tokens.spacing.sm,
         },
+        checkoutSecondaryButtonContainer: {
+            marginBottom: tokens.spacing.sm,
+            borderRadius: tokens.radii.md,
+            overflow: 'hidden',
+        },
+        checkoutSecondaryButton: {
+            minHeight: 48,
+            borderRadius: tokens.radii.md,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            backgroundColor: tokens.colors.surface,
+        },
+        checkoutSecondaryButtonTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 16,
+            fontWeight: '700',
+        },
         discountActionCard: {
             borderRadius: tokens.radii.md,
             borderWidth: 1,

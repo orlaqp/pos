@@ -145,4 +145,34 @@ describe('pending-order-journal', () => {
         expect(tenantOneEntries[0].syncState).toBe('sync_failed');
         expect(tenantTwoEntries[0].syncState).toBe('local_only');
     });
+
+    it('replaces an older tenant journal row when the same order number is saved again with a new id', async () => {
+        await upsertPendingOrderJournalEntry({
+            orderId: 'temp-order-id',
+            orderNo: '1001',
+            tenantId: 'tenant-1',
+            statusTarget: 'OPEN',
+            cart: { id: 'temp-order-id', items: [], footer: {} as any } as any,
+            createdAt: '2026-04-01T00:00:00.000Z',
+            updatedAt: '2026-04-01T00:00:00.000Z',
+            syncState: 'local_only',
+        });
+
+        await upsertPendingOrderJournalEntry({
+            orderId: 'final-order-id',
+            orderNo: '1001',
+            tenantId: 'tenant-1',
+            statusTarget: 'PAID',
+            cart: { id: 'final-order-id', items: [], footer: {} as any } as any,
+            createdAt: '2026-04-01T00:00:00.000Z',
+            updatedAt: '2026-04-01T01:00:00.000Z',
+            syncState: 'local_only',
+        });
+
+        const entries = await readPendingOrderJournal({ tenantId: 'tenant-1' });
+
+        expect(entries).toHaveLength(1);
+        expect(entries[0].orderId).toBe('final-order-id');
+        expect(entries[0].statusTarget).toBe('PAID');
+    });
 });

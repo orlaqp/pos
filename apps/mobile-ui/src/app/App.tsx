@@ -15,6 +15,7 @@ import { AppErrorBoundary } from './app-error-boundary';
 import { Alert, AppState, Image, StyleSheet, View } from 'react-native';
 import { UISpinner } from '@pos/shared/ui-native';
 import {
+    fetchDeviceSettings,
     fetchGlobalSettings,
     fetchStationInfo,
 } from '@pos/settings/data-access';
@@ -559,17 +560,20 @@ const AppContent = () => {
             const finishBusinessData = startSyncMeasure('app-bootstrap', 'business-data.fetches');
             const businessDataResults = await Promise.allSettled([
                 dispatch(fetchStoreInfo()).unwrap(),
+                dispatch(fetchDeviceSettings()).unwrap(),
                 dispatch(fetchGlobalSettings()).unwrap(),
                 dispatch(fetchDefaultPrinter()).unwrap(),
             ]);
             finishBusinessData({
                 storeInfo: businessDataResults[0].status,
-                globalSettings: businessDataResults[1].status,
-                defaultPrinter: businessDataResults[2].status,
+                deviceSettings: businessDataResults[1].status,
+                globalSettings: businessDataResults[2].status,
+                defaultPrinter: businessDataResults[3].status,
             });
 
             const stageLabels = [
                 'fetchStoreInfo()',
+                'fetchDeviceSettings()',
                 'fetchGlobalSettings()',
                 'fetchDefaultPrinter()',
             ];

@@ -287,10 +287,14 @@ describe('Cart', () => {
         jest.useRealTimers();
     });
 
-    const renderCart = (mode: 'order' | 'payment') => {
+    const renderCart = (
+        mode: 'order' | 'payment',
+        options?: { preferPayFromSalesScreen?: boolean }
+    ) => {
         return render(
             <Cart
                 mode={mode}
+                preferPayFromSalesScreen={options?.preferPayFromSalesScreen}
                 onSubmit={mockOnSubmit}
                 products={[{ id: 'p-1', quantity: 100 } as any]}
                 onInteractionComplete={mockOnInteractionComplete}
@@ -363,7 +367,11 @@ describe('Cart', () => {
         fireEvent.press(getByText(/Print Order/));
         fireEvent.press(getByTestId('order-summary-print-button'));
 
-        expect(mockOnSubmit).toHaveBeenCalledWith(mockCartState);
+        expect(mockOnSubmit).toHaveBeenCalledWith(
+            mockCartState,
+            undefined,
+            expect.objectContaining({ intent: 'save_open_order' })
+        );
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
     });
 
@@ -374,9 +382,34 @@ describe('Cart', () => {
         fireEvent.press(getByTestId('cart-payment-entered'));
         expect(mockOnSubmit).toHaveBeenCalledWith(
             mockCartState,
-            expect.arrayContaining([expect.objectContaining({ method: 'cash' })])
+            expect.arrayContaining([expect.objectContaining({ method: 'cash' })]),
+            expect.objectContaining({ intent: 'receive_payment' })
         );
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows receive payment as primary and keeps save open order when pay from sales is enabled', () => {
+        const { getByText, getByTestId } = renderCart('order', {
+            preferPayFromSalesScreen: true,
+        });
+
+        expect(getByText(/Receive Payment/)).toBeTruthy();
+        expect(getByTestId('cart-save-open-order-button')).toBeTruthy();
+    });
+
+    it('opens payment modal from order mode when pay from sales is enabled', () => {
+        const { getByText, getByTestId } = renderCart('order', {
+            preferPayFromSalesScreen: true,
+        });
+
+        fireEvent.press(getByText(/Receive Payment/));
+        fireEvent.press(getByTestId('cart-payment-entered'));
+
+        expect(mockOnSubmit).toHaveBeenCalledWith(
+            mockCartState,
+            expect.arrayContaining([expect.objectContaining({ method: 'cash' })]),
+            expect.objectContaining({ intent: 'receive_payment' })
+        );
     });
 
     it('closes payment modal on backdrop press', () => {

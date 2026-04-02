@@ -4,6 +4,7 @@ import {
     settingsActions,
     fetchGlobalSettings,
     updateGlobalSettings,
+    updatePayFromSalesScreen,
     translate,
 } from '@pos/settings/data-access';
 import { UICard, UIScreen, UIStack } from '@pos/shared/ui-native';
@@ -40,6 +41,10 @@ export function Settings(_props: SettingsProps) {
             ...settings.globalSettings,
             enforceSalesBasedOnInventory: enforce
         }));
+    };
+
+    const setPayFromSales = (enabled: boolean) => {
+        dispatch(updatePayFromSalesScreen(enabled));
     };
 
     return (
@@ -107,6 +112,26 @@ export function Settings(_props: SettingsProps) {
                                         }
                                         onValueChange={(value) =>
                                             setGlobalSettings(value)
+                                        }
+                                    />
+                                </UIStack>
+
+                                <UIStack
+                                    direction="horizontal"
+                                    justify="space-between"
+                                    align="center"
+                                    style={styles.settingRow}
+                                >
+                                    <Text style={styles.settingLabel}>
+                                        {translate(
+                                            'SETTINGS_PayFromSalesScreen'
+                                        )}
+                                    </Text>
+                                    <Switch
+                                        testID="settings-pay-from-sales-screen-switch"
+                                        value={settings.payFromSalesScreen}
+                                        onValueChange={(value) =>
+                                            setPayFromSales(value)
                                         }
                                     />
                                 </UIStack>

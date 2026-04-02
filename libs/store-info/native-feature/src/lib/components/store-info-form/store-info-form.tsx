@@ -2,7 +2,7 @@ import { UIActions, UICard, UIInput, UIScreen, UIStack } from '@pos/shared/ui-na
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { fetchStoreInfo, selectStore, StoreInfoEntity, StoreInfoService } from '@pos/store-info/data-access';
 import React, { useEffect, useState } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
+import { FieldErrors, FormProvider, useForm } from 'react-hook-form';
 
 import { View, Text, Alert, ScrollView, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -20,19 +20,62 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
     const storeInfo = useSelector(selectStore);
     const dispatch = useAppDispatch();
     const [busy, setBusy] = useState<boolean>(false);
+    const defaultFormValues = {
+        id: storeInfo?.id,
+        name: storeInfo?.name || '',
+        address: storeInfo?.address || '',
+        city: storeInfo?.city || '',
+        state: storeInfo?.state || '',
+        zipCode: storeInfo?.zipCode || '',
+        country: storeInfo?.country || 'USA',
+        email: storeInfo?.email || '',
+        phone: storeInfo?.phone || '',
+        fax: storeInfo?.fax || '',
+        disclaimer: storeInfo?.disclaimer || '',
+        timezone: storeInfo?.timezone || 'America/New_York',
+    };
 
     const save = async () => {
         setBusy(true);
-        const formValues: StoreInfoEntity = form.getValues();
-        
-        if (!formValues.id) {
-            delete formValues.id;
-        }
+        try {
+            const formValues: StoreInfoEntity = form.getValues();
+            
+            if (!formValues.id) {
+                delete formValues.id;
+            }
 
-        await StoreInfoService.save(dispatch, formValues);
-        // navigation.goBack();
-        Alert.alert('Store information has been updated');
-        setBusy(false);
+            await StoreInfoService.save(dispatch, formValues);
+            Alert.alert('Store information has been updated');
+        } catch (error) {
+            Alert.alert(
+                'Unable to save store information',
+                error instanceof Error
+                    ? error.message
+                    : 'Please try again in a moment.'
+            );
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const onInvalid = (errors: FieldErrors<StoreInfoEntity>) => {
+        const firstInvalidField = Object.keys(errors)[0];
+        const labelByField: Partial<Record<keyof StoreInfoEntity, string>> = {
+            name: 'Name',
+            email: 'Email',
+            address: 'Address',
+            city: 'City',
+            state: 'State',
+            zipCode: 'Zip Code',
+            phone: 'Phone',
+        };
+
+        Alert.alert(
+            'Missing required information',
+            firstInvalidField
+                ? `${labelByField[firstInvalidField as keyof StoreInfoEntity] || firstInvalidField} is required.`
+                : 'Please complete all required fields before saving.'
+        );
     };
 
     const confirmCancel = () => {
@@ -48,24 +91,16 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
 
     const form = useForm< StoreInfoEntity >({
         mode: 'onChange',
-        defaultValues: {
-            id: storeInfo?.id,
-            name: storeInfo?.name,
-            address: storeInfo?.address,
-            city: storeInfo?.city,
-            state: storeInfo?.state,
-            zipCode: storeInfo?.zipCode,
-            country: 'USA',
-            email: storeInfo?.email,
-            phone: storeInfo?.phone,
-            fax: storeInfo?.fax,
-            disclaimer: storeInfo?.disclaimer,
-        },
+        defaultValues: defaultFormValues,
     });
 
     useEffect(() => {
         dispatch(fetchStoreInfo());
     }, [dispatch]);
+
+    useEffect(() => {
+        form.reset(defaultFormValues);
+    }, [form, storeInfo]);
     
     return (
         <UIScreen padded>
@@ -89,30 +124,69 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
                                         <Text style={styles.sectionTitle}>Business Details</Text>
                                         <View style={styles.twoColumnRow}>
                                             <View style={styles.column}>
-                                                <UIInput name="name" label="Name" placeholder="Name" rules={{ required: true }} />
+                                                <UIInput
+                                                    name="name"
+                                                    label="Name"
+                                                    placeholder="Name"
+                                                    rules={{ required: 'Name is required' }}
+                                                />
                                             </View>
                                             <View style={styles.columnSpaced}>
-                                                <UIInput name="email" label="Email" placeholder="Email" rules={{ required: true }} />
+                                                <UIInput
+                                                    name="email"
+                                                    label="Email"
+                                                    placeholder="Email"
+                                                    rules={{ required: 'Email is required' }}
+                                                />
                                             </View>
                                         </View>
-                                        <UIInput name="address" label="Address" placeholder="Address" rules={{ required: true }} />
+                                        <UIInput
+                                            name="address"
+                                            label="Address"
+                                            placeholder="Address"
+                                            rules={{ required: 'Address is required' }}
+                                        />
                                         <View style={styles.twoColumnRow}>
                                             <View style={styles.column}>
-                                                <UIInput name="city" label="City" placeholder="City" rules={{ required: true }} />
+                                                <UIInput
+                                                    name="city"
+                                                    label="City"
+                                                    placeholder="City"
+                                                    rules={{ required: 'City is required' }}
+                                                />
                                             </View>
                                             <View style={styles.columnSpaced}>
-                                                <UIInput name="state" label="State" placeholder="State" rules={{ required: true }} />
+                                                <UIInput
+                                                    name="state"
+                                                    label="State"
+                                                    placeholder="State"
+                                                    rules={{ required: 'State is required' }}
+                                                />
                                             </View>
                                         </View>
                                         <View style={styles.threeColumnRow}>
                                             <View style={styles.column}>
-                                                <UIInput name="zipCode" label="Zip Code" placeholder="Zip Code" rules={{ required: true }} />
+                                                <UIInput
+                                                    name="zipCode"
+                                                    label="Zip Code"
+                                                    placeholder="Zip Code"
+                                                    rules={{ required: 'Zip Code is required' }}
+                                                />
                                             </View>
                                             <View style={styles.columnSpaced}>
-                                                <UIInput name="phone" label="Phone" placeholder="Phone" rules={{ required: true }} />
+                                                <UIInput
+                                                    name="phone"
+                                                    label="Phone"
+                                                    placeholder="Phone"
+                                                    rules={{ required: 'Phone is required' }}
+                                                />
                                             </View>
                                             <View style={styles.columnSpaced}>
-                                                <UIInput name="fax" label="Fax" placeholder="Fax" rules={{ required: true }} />
+                                                <UIInput
+                                                    name="fax"
+                                                    label="Fax"
+                                                    placeholder="Fax"
+                                                />
                                             </View>
                                         </View>
                                     </UIStack>
@@ -134,7 +208,7 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
 
                                 <UIActions
                                     busy={busy}
-                                    submitAction={form.handleSubmit(save)}
+                                    submitAction={form.handleSubmit(save, onInvalid)}
                                     cancelAction={confirmCancel}
                                 />
                             </UIStack>

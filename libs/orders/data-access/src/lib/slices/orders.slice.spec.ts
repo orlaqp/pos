@@ -6,6 +6,7 @@ import {
     ordersActions,
     ordersReducer,
     payOrder,
+    submitOrderAndPay,
     upsertOrder,
 } from './orders.slice';
 
@@ -23,7 +24,9 @@ jest.mock('@pos/printings/data-access', () => ({
 jest.mock('../order.service', () => ({
     OrderService: {
         create: jest.fn(),
+        createPaidOrder: jest.fn(),
         update: jest.fn(),
+        closeExistingOrder: jest.fn(),
         search: jest.fn((items: any[], options: { status: string; filter?: string }) =>
             items.filter((item) => {
                 const statusMatch = item.status === options.status;
@@ -281,6 +284,59 @@ describe('orders reducer', () => {
         );
     });
 
+    it('returns a paid order from submitOrderAndPay without relying on a second lookup', async () => {
+        const createPaidOrderMock = jest.mocked(OrderService.createPaidOrder);
+        const dispatch = jest.fn();
+        const getState = () =>
+            ({
+                employees: {
+                    loginEmployee: {
+                        id: 'employee-1',
+                        firstName: 'Test',
+                        lastName: 'Cashier',
+                    },
+                },
+            }) as any;
+
+        createPaidOrderMock.mockResolvedValueOnce({
+            id: 'created-order-id',
+            orderNo: '51-EMP-260330-0009',
+            status: 'PAID',
+        } as any);
+
+        const result = await submitOrderAndPay(
+            {
+                cart: {
+                    id: 'generated-cart-id',
+                    orderNo: '51-EMP-260330-0009',
+                } as any,
+                payments: [{ type: 'cash', amount: 10 }],
+            },
+            { requestId: 'request-id' } as any
+        )(dispatch, getState, undefined);
+
+        expect(createPaidOrderMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                by: expect.objectContaining({
+                    id: 'employee-1',
+                }),
+                order: expect.objectContaining({
+                    id: 'generated-cart-id',
+                }),
+                payments: [{ type: 'cash', amount: 10 }],
+            })
+        );
+        expect(result.type).toBe('order/submitAndPay/fulfilled');
+        expect(result.payload).toEqual(
+            expect.objectContaining({
+                order: expect.objectContaining({
+                    id: 'created-order-id',
+                    status: 'PAID',
+                }),
+            })
+        );
+    });
+
     it('optimistically removes a paid order from the OPEN filtered list and can restore it on failure', () => {
         let state = ordersReducer(
             undefined,
@@ -372,6 +428,60 @@ describe('orders reducer', () => {
         expect(state.filteredList).toEqual([
             expect.objectContaining({ id: 'o2', status: 'OPEN' }),
         ]);
+    });
+
+    it('keeps one-step paid orders out of OPEN until synced PAID arrives', () => {
+        let state = ordersReducer(
+            undefined,
+            ordersActions.setAll([
+                { id: 'o1', status: 'OPEN', orderNo: 'N1' } as any,
+            ])
+        );
+
+        state = ordersReducer(
+            state,
+            submitOrderAndPay.fulfilled(
+                {
+                    cart: { id: 'o1' } as any,
+                    order: {
+                        id: 'o1',
+                        status: 'PAID',
+                        orderNo: 'N1',
+                    } as any,
+                },
+                'request-id',
+                { cart: { id: 'o1' }, payments: [] } as any
+            )
+        );
+
+        state = ordersReducer(
+            state,
+            ordersActions.setAll([
+                { id: 'o1', status: 'OPEN', orderNo: 'N1' } as any,
+            ])
+        );
+
+        expect(state.entities.o1).toEqual(
+            expect.objectContaining({
+                id: 'o1',
+                status: 'PAID',
+            })
+        );
+        expect(state.filteredList).toEqual([]);
+
+        state = ordersReducer(
+            state,
+            ordersActions.setAll([
+                { id: 'o1', status: 'PAID', orderNo: 'N1' } as any,
+            ])
+        );
+
+        expect(state.entities.o1).toEqual(
+            expect.objectContaining({
+                id: 'o1',
+                status: 'PAID',
+            })
+        );
     });
 
     it('sets submit error on rejected pay without mutating order status', () => {

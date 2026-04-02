@@ -1,4 +1,5 @@
 import {
+  fetchDeviceSettings,
   fetchGlobalSettings,
   initialSettingsState,
   resetDataStore,
@@ -17,6 +18,9 @@ describe('settings reducer', () => {
 
     state = settingsReducer(state, settingsActions.setLanguage('es'));
     expect(state.languageTag).toBe('es');
+
+    state = settingsReducer(state, settingsActions.setPayFromSalesScreen(true));
+    expect(state.payFromSalesScreen).toBe(true);
 
     state = settingsReducer(state, settingsActions.setGlobalSettings({ taxValue: 7 } as any));
     expect(state.globalSettings).toEqual(expect.objectContaining({ taxValue: 7 }));
@@ -55,5 +59,23 @@ describe('settings reducer', () => {
       fetchGlobalSettings.rejected(new Error('fail'), '', undefined)
     );
     expect(state.globalSettingsStatus).toBe('error');
+  });
+
+  it('handles fetchDeviceSettings lifecycle', () => {
+    let state = settingsReducer(undefined, fetchDeviceSettings.pending('', undefined));
+    expect(state.deviceSettingsStatus).toBe('loading');
+
+    state = settingsReducer(
+      state,
+      fetchDeviceSettings.fulfilled({ payFromSalesScreen: true }, '', undefined)
+    );
+    expect(state.deviceSettingsStatus).toBe('loaded');
+    expect(state.payFromSalesScreen).toBe(true);
+
+    state = settingsReducer(
+      state,
+      fetchDeviceSettings.rejected(new Error('fail'), '', undefined)
+    );
+    expect(state.deviceSettingsStatus).toBe('error');
   });
 });

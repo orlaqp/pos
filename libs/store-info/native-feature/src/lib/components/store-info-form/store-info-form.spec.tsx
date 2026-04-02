@@ -162,4 +162,42 @@ describe('StoreInfoForm integration', () => {
             expect(savedPayload.id).toBeUndefined();
         });
     });
+
+    it('shows an error alert when save fails', async () => {
+        mockStoreInfoSave.mockRejectedValueOnce(
+            new Error('Store information is not available yet.')
+        );
+        const navigation = { goBack: mockGoBack };
+        const { getByTestId } = render(<StoreInfoForm navigation={navigation as any} />);
+
+        fireEvent.press(getByTestId('store-info-save'));
+
+        await waitFor(() => {
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Unable to save store information',
+                'Store information is not available yet.'
+            );
+        });
+    });
+
+    it('allows saving when fax is blank', async () => {
+        mockStoreInfo = {
+            ...mockStoreInfo,
+            fax: '',
+        };
+        const navigation = { goBack: mockGoBack };
+        const { getByTestId } = render(<StoreInfoForm navigation={navigation as any} />);
+
+        fireEvent.press(getByTestId('store-info-save'));
+
+        await waitFor(() => {
+            expect(mockStoreInfoSave).toHaveBeenCalledWith(
+                mockDispatch,
+                expect.objectContaining({
+                    id: 'store-1',
+                    fax: '',
+                })
+            );
+        });
+    });
 });

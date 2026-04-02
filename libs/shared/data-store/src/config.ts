@@ -43,6 +43,11 @@ const withTenantConflictResolution = (
     return new conflict.modelConstructor(merged);
 };
 
+const isConditionalConflictMessage = (message: unknown) =>
+    typeof message === 'string' &&
+    (message.includes('ConditionalCheckFailedException') ||
+        message.includes('The conditional request failed'));
+
 export const configureDataStore = () => {
     console.log('Configuring data store sync expressions');
 
@@ -72,6 +77,14 @@ export const configureDataStore = () => {
                     operation: (error as { operation?: unknown }).operation,
                     model: (error as { model?: unknown }).model,
                 };
+                if (isConditionalConflictMessage(details.message)) {
+                    console.warn(
+                        'DataStore sync conflict',
+                        JSON.stringify(details, null, 2)
+                    );
+                    return;
+                }
+
                 console.error('DataStore sync error', JSON.stringify(details, null, 2));
                 return;
             }

@@ -121,6 +121,31 @@ export const payOrder = createAsyncThunk(
     }
 );
 
+export const submitOrderAndPay = createAsyncThunk(
+    'order/submitAndPay',
+    async (request: PayOrderRequest, thunkAPI) => {
+        const employee = (thunkAPI.getState() as RootState).employees
+            .loginEmployee!;
+        const paidOrder = await OrderService.createPaidOrder({
+            by: employee as any,
+            order: request.cart,
+            payments: request.payments,
+        });
+
+        if (!paidOrder) return;
+
+        return {
+            ...request,
+            cart: {
+                ...request.cart,
+                id: paidOrder.id,
+                orderNo: paidOrder.orderNo,
+            },
+            order: OrderEntityMapper.fromModel(paidOrder),
+        };
+    }
+);
+
 export const initialOrdersState: OrdersState = ordersAdapter.getInitialState({
     loadingStatus: 'not loaded',
     submitStatus: 'not saved',
@@ -139,7 +164,14 @@ export const ordersSlice = createSlice({
         setAll: (state: OrdersState, action: PayloadAction<OrderEntity[]>) => {
             ordersAdapter.setAll(
                 state,
-                action.payload.map((order) => applyPendingOverride(order, state.pendingStatusOverrides))
+                action.payload.map((order) => {
+                    const pendingStatus = state.pendingStatusOverrides[order.id];
+                    if (pendingStatus && order.status === pendingStatus) {
+                        delete state.pendingStatusOverrides[order.id];
+                    }
+
+                    return applyPendingOverride(order, state.pendingStatusOverrides);
+                })
             );
             filterList(state, state.filterQuery);
             state.loadingStatus = 'loaded';
@@ -288,7 +320,7 @@ export const ordersSlice = createSlice({
                 ) => {
                     if (!action.payload) return;
 
-                    delete state.pendingStatusOverrides[action.payload.order.id];
+                    state.pendingStatusOverrides[action.payload.order.id] = 'PAID';
                     state.pendingOrderSyncState[action.payload.order.id] =
                         'sync_pending';
                     delete state.pendingOrderLastError[action.payload.order.id];
@@ -316,6 +348,27 @@ export const ordersSlice = createSlice({
                 if (orderId) {
                     delete state.pendingStatusOverrides[orderId];
                 }
+                state.submitStatus = 'error';
+                state.error = action.error.message;
+            })
+            .addCase(
+                submitOrderAndPay.fulfilled,
+                (
+                    state: OrdersState,
+                    action: PayloadAction<SubmitOrderResponse | undefined>
+                ) => {
+                    if (!action.payload) return;
+
+                    state.pendingStatusOverrides[action.payload.order.id] = 'PAID';
+                    state.pendingOrderSyncState[action.payload.order.id] =
+                        'sync_pending';
+                    delete state.pendingOrderLastError[action.payload.order.id];
+                    ordersAdapter.upsertOne(state, action.payload.order);
+                    filterList(state, state.filterQuery);
+                    state.submitStatus = 'saved';
+                }
+            )
+            .addCase(submitOrderAndPay.rejected, (state: OrdersState, action) => {
                 state.submitStatus = 'error';
                 state.error = action.error.message;
             });

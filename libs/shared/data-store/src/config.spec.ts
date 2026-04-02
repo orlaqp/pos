@@ -42,9 +42,21 @@ const {
 } = require('./config');
 
 describe('configureDataStore', () => {
+    const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+    const consoleWarnSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+
     beforeEach(() => {
         jest.clearAllMocks();
         resetInventorySyncForTests();
+    });
+
+    afterAll(() => {
+        consoleErrorSpy.mockRestore();
+        consoleWarnSpy.mockRestore();
     });
 
     it('configures only date-window sync expressions for operational models', () => {
@@ -103,5 +115,38 @@ describe('configureDataStore', () => {
         expect(mockConfigure).toHaveBeenCalledTimes(1);
         expect(mockSubtract).toHaveBeenCalledWith(15, 'days');
         expect(mockSubtract).toHaveBeenCalledWith(3, 'days');
+    });
+
+    it('downgrades conditional sync conflicts to warnings to avoid redboxes', () => {
+        configureDataStore();
+
+        const options = mockConfigure.mock.calls[0][0];
+        options.errorHandler({
+            message: 'The conditional request failed',
+            operation: 'Update',
+            model: 'Product',
+        });
+
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+            'DataStore sync conflict',
+            expect.stringContaining('The conditional request failed')
+        );
+        expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it('still reports non-conflict sync failures as errors', () => {
+        configureDataStore();
+
+        const options = mockConfigure.mock.calls[0][0];
+        options.errorHandler({
+            message: 'Network error',
+            operation: 'Sync',
+            model: 'Order',
+        });
+
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+            'DataStore sync error',
+            expect.stringContaining('Network error')
+        );
     });
 });

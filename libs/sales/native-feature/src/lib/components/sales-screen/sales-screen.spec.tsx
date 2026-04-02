@@ -47,6 +47,18 @@ const mockPayOrder = Object.assign(
         },
     }
 );
+const mockSubmitOrderAndPay = Object.assign(
+    jest.fn((payload: unknown) => ({
+        type: 'orders/submitAndPay',
+        payload,
+    })),
+    {
+        fulfilled: {
+            match: (action: { type?: string }) =>
+                action.type === 'orders/submitAndPay/fulfilled',
+        },
+    }
+);
 const mockUpsertPendingOrderJournalEntry = jest.fn(async (entry: any) => [entry]);
 
 const mockProduct = {
@@ -129,6 +141,8 @@ jest.mock('@pos/products/data-access', () => ({
 
 jest.mock('@pos/settings/data-access', () => ({
     getGlobalSettings: (state: any) => state.settings,
+    selectPayFromSalesScreen: (state: any) =>
+        state.settings.payFromSalesScreen,
     selectStation: (state: any) => state.station,
     stationActions: {
         set: (payload: unknown) => ({ type: 'station/set', payload }),
@@ -173,6 +187,7 @@ jest.mock('@pos/orders/data-access', () => ({
     },
     upsertOrder: mockUpsertOrder,
     payOrder: mockPayOrder,
+    submitOrderAndPay: mockSubmitOrderAndPay,
 }));
 
 jest.mock('@pos/sales/data-access', () => ({
@@ -311,26 +326,51 @@ jest.mock('./sales-product-dialog', () => ({
 
 jest.mock('../cart/cart', () => ({
     __esModule: true,
-    default: ({ onSubmit }: { onSubmit: (cart: any, payments?: any[]) => void }) => {
+    default: ({
+        onSubmit,
+        preferPayFromSalesScreen,
+    }: {
+        onSubmit: (
+            cart: any,
+            payments?: any[],
+            options?: { intent?: 'save_open_order' | 'receive_payment' }
+        ) => void;
+        preferPayFromSalesScreen?: boolean;
+    }) => {
         const { View, Pressable, Text } = require('react-native');
         return (
             <View>
+                <Text testID="sales-cart-prefer-pay-now">
+                    {preferPayFromSalesScreen ? 'pay-now' : 'open-order'}
+                </Text>
                 <Pressable
                     testID="sales-cart-submit-order"
-                    onPress={() => onSubmit({ id: 'cart-1' })}
+                    onPress={() =>
+                        onSubmit({ id: 'cart-1' }, undefined, {
+                            intent: 'save_open_order',
+                        })
+                    }
                 >
                     <Text>Submit Order</Text>
                 </Pressable>
                 <Pressable
                     testID="sales-cart-submit-payment-empty"
-                    onPress={() => onSubmit({ id: 'cart-1' }, undefined)}
+                    onPress={() =>
+                        onSubmit({ id: 'cart-1' }, undefined, {
+                            intent: 'receive_payment',
+                        })
+                    }
                 >
                     <Text>Submit Payment Empty</Text>
                 </Pressable>
                 <Pressable
                     testID="sales-cart-submit-payment"
                     onPress={() =>
-                        onSubmit({ id: 'cart-1' }, [{ type: 'cash', amount: 10 }])
+                        onSubmit(
+                            { id: 'cart-1' },
+                            [{ type: 'cash', amount: 10 }],
+                            { intent: 'receive_payment' }
+                        )
                     }
                 >
                     <Text>Submit Payment</Text>
@@ -380,6 +420,19 @@ describe('SalesScreen', () => {
                 });
             }
 
+            if (action?.type === 'orders/submitAndPay') {
+                return Promise.resolve({
+                    type: 'orders/submitAndPay/fulfilled',
+                    payload: {
+                        order: {
+                            id: 'cart-1',
+                            status: 'PAID',
+                            orderNo: '51-EMP-260326-0001',
+                        },
+                    },
+                });
+            }
+
             return action;
         });
         mockState = {
@@ -397,7 +450,10 @@ describe('SalesScreen', () => {
             store: { id: 's-1' },
             printer: { id: 'printer-1' },
             tenantSession: { tenantId: 'tenant-1' },
-            settings: { enforceSalesBasedOnInventory: false },
+            settings: {
+                enforceSalesBasedOnInventory: false,
+                payFromSalesScreen: false,
+            },
             station: {
                 stationNumber: '51',
                 currentDate: '260326',
@@ -505,6 +561,21 @@ describe('SalesScreen', () => {
             'Not Available',
             'We do not have this product in inventory at the moment'
         );
+    });
+
+    it('passes pay-now preference to cart only for order mode', () => {
+        mockState.settings.payFromSalesScreen = true;
+
+        const orderScreen = renderSalesScreen('order');
+        expect(orderScreen.getByTestId('sales-cart-prefer-pay-now').props.children).toBe(
+            'pay-now'
+        );
+        orderScreen.unmount();
+
+        const paymentScreen = renderSalesScreen('payment');
+        expect(
+            paymentScreen.getByTestId('sales-cart-prefer-pay-now').props.children
+        ).toBe('open-order');
     });
 
     it('handles search flow and barcode auto-add behavior', async () => {
@@ -748,6 +819,78 @@ describe('SalesScreen', () => {
             'The order is still open. Please try again.'
         );
         expect(mockNavigate).not.toHaveBeenCalledWith('Order List');
+    });
+
+    it('runs one-step checkout from order mode and prints both copies', async () => {
+        mockState.settings.payFromSalesScreen = true;
+        const { getByTestId } = renderSalesScreen('order');
+
+        await act(async () => {
+            fireEvent.press(getByTestId('sales-cart-submit-payment'));
+            await Promise.resolve();
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+
+        expect(mockSubmitOrderAndPay).toHaveBeenCalledWith(
+            expect.objectContaining({
+                skipAutoPrint: true,
+                payments: [{ type: 'cash', amount: 10 }],
+            })
+        );
+        expect(mockPrintReceipt).toHaveBeenNthCalledWith(
+            1,
+            expect.anything(),
+            expect.anything(),
+            expect.anything(),
+            expect.objectContaining({ copyType: 'CUSTOMER' })
+        );
+        expect(mockPrintReceipt).toHaveBeenNthCalledWith(
+            2,
+            expect.anything(),
+            expect.anything(),
+            expect.anything(),
+            expect.objectContaining({ copyType: 'MERCHANT' })
+        );
+        expect(mockNavigate).not.toHaveBeenCalledWith('Order List');
+        expect(mockDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({ type: 'cart/reset' })
+        );
+        expect(mockUpsertPendingOrderJournalEntry).toHaveBeenCalledTimes(1);
+        expect(mockUpsertPendingOrderJournalEntry).toHaveBeenCalledWith(
+            expect.objectContaining({
+                statusTarget: 'PAID',
+                payments: [{ type: 'cash', amount: 10 }],
+            })
+        );
+    });
+
+    it('leaves the order open when one-step payment fails after create', async () => {
+        mockState.settings.payFromSalesScreen = true;
+        mockDispatch.mockImplementation((action: any) => {
+            if (action?.type === 'orders/submitAndPay') {
+                return Promise.resolve({ type: 'orders/submitAndPay/rejected' });
+            }
+
+            return action;
+        });
+
+        const { getByTestId } = renderSalesScreen('order');
+
+        await act(async () => {
+            fireEvent.press(getByTestId('sales-cart-submit-payment'));
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Payment could not be completed',
+            'The order was saved as open. Please complete payment from Open Orders.'
+        );
+        expect(mockPrintReceipt).not.toHaveBeenCalled();
+        expect(mockDispatch).not.toHaveBeenCalledWith(
+            expect.objectContaining({ type: 'cart/reset' })
+        );
     });
 
     it('dispatches cart upsert and deselect from product details dialog', () => {

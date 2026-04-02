@@ -57,7 +57,14 @@ export type CartMode = 'order' | 'payment';
 
 export interface CartProps {
     mode: CartMode;
-    onSubmit: (cart: CartState, payments?: ICartPayment[]) => void;
+    preferPayFromSalesScreen?: boolean;
+    onSubmit: (
+        cart: CartState,
+        payments?: ICartPayment[],
+        options?: {
+            intent?: 'save_open_order' | 'receive_payment';
+        }
+    ) => void;
     products: ProductEntity[];
     onInteractionComplete: () => void;
 }
@@ -146,6 +153,7 @@ const baseAmountForDisplay = (
 
 export function Cart({
     mode,
+    preferPayFromSalesScreen = false,
     onSubmit,
     products,
     onInteractionComplete,
@@ -198,6 +206,7 @@ export function Cart({
     const canOverridePrice = cart.policy?.canOverridePrice !== false;
     const canViewDiscountControls =
         DISCOUNT_CONTROLS_ENABLED && (employee?.roles || []).includes(Role.Discounts);
+    const payFromSalesScreen = mode === 'order' && preferPayFromSalesScreen;
     const selectedLineHasManualAdjustment =
         !!selectedItem?.identifier &&
         (cart.manualDiscounts.some(
@@ -359,14 +368,14 @@ export function Cart({
 
     const paymentEntered = (payments: ICartPayment[]) => {
         setReceivePayment(false);
-        onSubmit(cart, payments);
+        onSubmit(cart, payments, { intent: 'receive_payment' });
         onInteractionComplete();
     };
 
     const submitOrder = () => {
         if (!validateProductInventory()) return;
 
-        if (mode === 'payment') {
+        if (mode === 'payment' || payFromSalesScreen) {
             setReceivePayment(true);
         } else {
             setOrderSummaryVisible(true);
@@ -375,7 +384,7 @@ export function Cart({
 
     const confirmPrintOrder = () => {
         setOrderSummaryVisible(false);
-        onSubmit(cart);
+        onSubmit(cart, undefined, { intent: 'save_open_order' });
         onInteractionComplete();
     };
 
@@ -692,12 +701,29 @@ export function Cart({
                             : `${invalidItemCount} items need weight before checkout`}
                     </Text>
                 ) : null}
+                {payFromSalesScreen ? (
+                    <Button
+                        testID="cart-save-open-order-button"
+                        title={t('CART_SaveOpenOrder', 'Save Open Order')}
+                        type="outline"
+                        disabled={!ready}
+                        onPress={() => {
+                            if (!validateProductInventory()) return;
+                            setOrderSummaryVisible(true);
+                        }}
+                        buttonStyle={localStyles.checkoutSecondaryButton}
+                        titleStyle={localStyles.checkoutSecondaryButtonTitle}
+                        containerStyle={localStyles.checkoutSecondaryButtonContainer}
+                    />
+                ) : null}
                 <Button
                     testID="cart-pay-order-button"
                     title={
                         !ready && invalidItemCount > 0
                             ? 'Resolve cart items to continue'
-                            : mode === 'order'
+                            : payFromSalesScreen || mode === 'payment'
+                              ? `${t('CART_ReceivePayment', 'Receive Payment')}  •  $${cart.footer.total.toFixed(2)}`
+                              : mode === 'order'
                               ? `${t('CART_PrintOrder', 'Print Order')}  •  $${cart.footer.total.toFixed(2)}`
                               : `${t('CART_ReceivePayment', 'Receive Payment')}  •  $${cart.footer.total.toFixed(2)}`
                     }
@@ -705,9 +731,9 @@ export function Cart({
                         name:
                             !ready && invalidItemCount > 0
                                 ? 'alert-circle-outline'
-                                : mode === 'order'
-                                  ? 'printer'
-                                  : 'credit-card-check-outline',
+                                : payFromSalesScreen || mode === 'payment'
+                                  ? 'credit-card-check-outline'
+                                  : 'printer',
                         type: 'material-community',
                         color: ready ? '#ffffff' : tokens.colors.textSecondary,
                     }}

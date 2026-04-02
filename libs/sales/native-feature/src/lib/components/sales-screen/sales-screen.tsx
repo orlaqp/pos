@@ -29,17 +29,19 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ButtonItemType, UIScreen } from '@pos/shared/ui-native';
 import { RootState, useAppDispatch } from '@pos/store';
-import { getDefaultPrinter } from '@pos/printings/data-access';
+import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import {
     PendingOrderJournalEntry,
     ordersActions,
     payOrder,
+    submitOrderAndPay,
     upsertPendingOrderJournalEntry,
     upsertOrder,
 } from '@pos/orders/data-access';
 import { selectStore } from '@pos/store-info/data-access';
 import {
     getGlobalSettings,
+    selectPayFromSalesScreen,
     selectStation,
     stationActions,
     StationService,
@@ -111,6 +113,7 @@ export function SalesScreen({
     const defaultPrinter = useSelector(getDefaultPrinter);
     const allProducts = useSelector(selectAllProducts);
     const globalSettings = useSelector(getGlobalSettings);
+    const payFromSalesScreen = useSelector(selectPayFromSalesScreen);
     const employee = useSelector(selectLoginEmployee);
     const tenantId = useSelector(
         (state: RootState) =>
@@ -369,10 +372,42 @@ export function SalesScreen({
         [dispatch, globalSettings]
     );
 
-    const onCartSubmit = (cart: CartState, payments?: CartPayment[]) => {
+    const onCartSubmit = (
+        cart: CartState,
+        payments?: CartPayment[],
+        options?: {
+            intent?: 'save_open_order' | 'receive_payment';
+        }
+    ) => {
         const cartItems = cart.items ?? [];
+        const intent =
+            options?.intent ||
+            (route.params.mode === 'payment'
+                ? 'receive_payment'
+                : 'save_open_order');
+        const buildJournalEntry = (
+            cartState: CartState,
+            statusTarget: 'OPEN' | 'PAID',
+            paymentInfo?: CartPayment[]
+        ): PendingOrderJournalEntry => ({
+            orderId: cartState.id!,
+            orderNo: cartState.orderNo,
+            tenantId,
+            statusTarget,
+            cart: cartState,
+            payments: paymentInfo,
+            employee: employee
+                ? {
+                      id: employee.id,
+                      name: `${employee.firstName} ${employee.lastName}`,
+                  }
+                : undefined,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            syncState: 'local_only',
+        });
 
-        if (route.params.mode === 'order') {
+        if (route.params.mode === 'order' && intent === 'save_open_order') {
             if (!ensureCheckoutContext('order', cart)) {
                 logSaleFlow('checkout-blocked', {
                     mode: 'order',
@@ -392,22 +427,7 @@ export function SalesScreen({
                     });
 
                     const cartForOrder = await preparePrintableOrderCart(cart);
-                    const journalEntry: PendingOrderJournalEntry = {
-                        orderId: cartForOrder.id!,
-                        orderNo: cartForOrder.orderNo,
-                        tenantId,
-                        statusTarget: 'OPEN',
-                        cart: cartForOrder,
-                        employee: employee
-                            ? {
-                                  id: employee.id,
-                                  name: `${employee.firstName} ${employee.lastName}`,
-                              }
-                            : undefined,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                        syncState: 'local_only',
-                    };
+                    const journalEntry = buildJournalEntry(cartForOrder, 'OPEN');
 
                     await upsertPendingOrderJournalEntry(journalEntry);
                     logSaleFlow('order-journal-upserted', {
@@ -457,6 +477,122 @@ export function SalesScreen({
                         t(
                             'SALES_OrderSaveFailedTitle',
                             'Order could not be saved'
+                        ),
+                        message
+                    );
+                }
+            })();
+            return;
+        }
+
+        if (route.params.mode === 'order' && intent === 'receive_payment') {
+            if (!payments?.length) {
+                Alert.alert(
+                    t(
+                        'SALES_PaymentRequiredMessage',
+                        'An order cannot be marked as paid without payment information'
+                    )
+                );
+                return;
+            }
+
+            if (!ensureCheckoutContext('order', cart)) {
+                logSaleFlow('checkout-blocked', {
+                    mode: 'order-pay-now',
+                    hasTenantId: !!tenantId,
+                    hasEmployeeId: !!employee?.id,
+                    hasStationNumber: !!station?.stationNumber,
+                });
+                return;
+            }
+
+            void (async () => {
+                try {
+                    logSaleFlow('one-step-submit-start', {
+                        cartItemCount: cartItems.length,
+                        hasPrinter: !!defaultPrinter,
+                        hasStoreInfo: !!storeInfo,
+                    });
+
+                    const cartForOrder = await preparePrintableOrderCart(cart);
+
+                    const submitResult = await dispatch(
+                        submitOrderAndPay({
+                            cart: cartForOrder,
+                            payments,
+                            defaultPrinter,
+                            storeInfo,
+                            skipAutoPrint: true,
+                        })
+                    );
+
+                    if (
+                        !submitOrderAndPay.fulfilled.match(submitResult) ||
+                        !submitResult.payload
+                    ) {
+                        Alert.alert(
+                            t(
+                                'SALES_PaymentFailedTitle',
+                                'Payment could not be completed'
+                            ),
+                            t(
+                                'SALES_OneStepPaymentFailedOpenOrderMessage',
+                                'The order was saved as open. Please complete payment from Open Orders.'
+                            )
+                        );
+                        return;
+                    }
+
+                    const cartForPayment: CartState = {
+                        ...cartForOrder,
+                        id: submitResult.payload.order.id,
+                        orderNo:
+                            submitResult.payload.order.orderNo ?? cartForOrder.orderNo,
+                    };
+
+                    await upsertPendingOrderJournalEntry(
+                        buildJournalEntry(cartForPayment, 'PAID', payments)
+                    );
+
+                    if (defaultPrinter && storeInfo) {
+                        await printReceipt(
+                            storeInfo,
+                            defaultPrinter,
+                            cartForPayment,
+                            {
+                                ...submitResult.payload.order,
+                                copyType: 'CUSTOMER',
+                            }
+                        );
+                        await printReceipt(
+                            storeInfo,
+                            defaultPrinter,
+                            cartForPayment,
+                            {
+                                ...submitResult.payload.order,
+                                copyType: 'MERCHANT',
+                            }
+                        );
+                    }
+
+                    logSaleFlow('one-step-submit-succeeded', {
+                        orderId: submitResult.payload.order.id,
+                    });
+                    dispatch(cartActions.reset());
+                } catch (error) {
+                    const message =
+                        getErrorMessage(error) ??
+                        t(
+                            'SALES_PaymentFailedMessage',
+                            'The order is still open. Please try again.'
+                        );
+                    logSaleFlow('one-step-submit-failed', {
+                        message,
+                    });
+                    Alert.alert(
+                        t(
+                            'SALES_PaymentFailedTitle',
+                            'Payment could not be completed'
                         ),
                         message
                     );
@@ -731,6 +867,9 @@ export function SalesScreen({
                     <Cart
                         key="cart"
                         mode={route.params.mode}
+                        preferPayFromSalesScreen={
+                            route.params.mode === 'order' && payFromSalesScreen
+                        }
                         onSubmit={onCartSubmit}
                         products={allProducts}
                         onInteractionComplete={restoreSearchFocus}
