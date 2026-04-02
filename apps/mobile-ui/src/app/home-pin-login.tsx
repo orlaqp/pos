@@ -21,6 +21,7 @@ interface HomePinLoginProps {
     savedLoginStatusLabel?: string;
     pendingOrderStatusLabel?: string;
     onRemoveSavedLogin?: () => void;
+    onOpenAppDiagnostics?: () => void;
 }
 
 export function HomePinLogin({
@@ -40,6 +41,7 @@ export function HomePinLogin({
     savedLoginStatusLabel,
     pendingOrderStatusLabel,
     onRemoveSavedLogin,
+    onOpenAppDiagnostics,
 }: HomePinLoginProps) {
     return (
         <View style={styles.shell} testID="home-pin-login-screen">
@@ -98,6 +100,17 @@ export function HomePinLogin({
                     >
                         <Text style={styles.secondaryDeviceActionButtonText}>
                             Remove saved login from this device
+                        </Text>
+                    </Pressable>
+                ) : null}
+                {onOpenAppDiagnostics ? (
+                    <Pressable
+                        testID="home-pin-app-diagnostics-button"
+                        onPress={onOpenAppDiagnostics}
+                        style={styles.secondaryDeviceActionButton}
+                    >
+                        <Text style={styles.secondaryDeviceActionButtonText}>
+                            View app diagnostics on this device
                         </Text>
                     </Pressable>
                 ) : null}

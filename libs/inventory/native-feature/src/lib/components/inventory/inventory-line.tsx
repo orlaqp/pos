@@ -28,6 +28,7 @@ export function InventoryLine({ item }: InventoryLineProps) {
     const prevReorderPoint = item.reorderPoint;
     const [reorderQuantity, setReorderQuantity] = useState<string | null | undefined>(item.reorderQuantity?.toString());
     const prevReorderQuantity = item.reorderQuantity;
+    const isLowInventory = item.quantity <= +(reorderPoint || -1);
 
     const updateReorderPoint = (text: string) => {
         const value = +text;
@@ -60,7 +61,7 @@ export function InventoryLine({ item }: InventoryLineProps) {
                 local.row,
                 {
                     backgroundColor:
-                        item.quantity <= +(reorderPoint || -1)
+                        isLowInventory
                             ? theme.theme.colors.error
                             : styles.smallDataRow.backgroundColor,
                     borderWidth: 1,
@@ -68,8 +69,21 @@ export function InventoryLine({ item }: InventoryLineProps) {
             ]}
         >
             <View style={local.identityColumn}>
-                <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">{item.name}</Text>
-                <Text style={styles.secondaryText} numberOfLines={1} ellipsizeMode="tail">{item.description}</Text>
+                <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+                    {item.name}
+                </Text>
+                {!!item.description && (
+                    <Text
+                        testID={`inventory-stock-description-${productKey}`}
+                        style={[
+                            styles.description,
+                            local.description,
+                            isLowInventory && local.lowInventoryDescription,
+                        ]}
+                    >
+                        {item.description}
+                    </Text>
+                )}
             </View>
             <View style={local.qtyColumn}>
                 <Text testID={`inventory-stock-qty-${productKey}`} style={styles.name}>
@@ -109,7 +123,7 @@ export function InventoryLine({ item }: InventoryLineProps) {
 const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     StyleSheet.create({
         row: {
-            alignItems: 'center',
+            alignItems: 'flex-start',
             paddingVertical: tokens.spacing.sm,
         },
         identityColumn: {
@@ -117,13 +131,22 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flexDirection: 'column',
             paddingRight: tokens.spacing.md,
         },
+        description: {
+            marginBottom: 0,
+        },
+        lowInventoryDescription: {
+            color: 'rgba(255, 255, 255, 0.9)',
+        },
         qtyColumn: {
             flex: 1,
             alignItems: 'center',
+            justifyContent: 'center',
+            alignSelf: 'stretch',
         },
         inputColumn: {
             flex: 1,
             paddingHorizontal: tokens.spacing.xs,
+            justifyContent: 'center',
         },
         input: {
             marginRight: 0,

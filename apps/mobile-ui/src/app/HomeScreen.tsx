@@ -47,6 +47,11 @@ import {
 import { E2E_MANAGER_PIN } from '@pos/shared/utils';
 import { Auth, DataStore } from '@pos/shared/amplify';
 import { markManualSignOut } from './session-signout';
+import {
+    buildPreviousSessionSummary,
+    readCurrentAppLifecycleSession,
+    readPreviousAppLifecycleSession,
+} from './app-lifecycle-diagnostics';
 
 interface PathDetails {
     title: string;
@@ -349,6 +354,35 @@ export const HomeScreen = (props: HomeScreenProps) => {
             ]
         );
     }, [refreshSavedLoginStatus]);
+
+    const openAppDiagnostics = useCallback(async () => {
+        const [previousSession, currentSession] = await Promise.all([
+            readPreviousAppLifecycleSession(),
+            readCurrentAppLifecycleSession(),
+        ]);
+
+        const previousSummary = buildPreviousSessionSummary(previousSession);
+        const previousEvents = previousSession?.events.slice(-8) || [];
+        const currentEvents = currentSession?.events.slice(-6) || [];
+
+        const sections = [
+            previousSummary
+                ? `Previous session\nStarted: ${previousSummary.startedAt}\nEnded: ${previousSummary.endedAt || 'unknown'}\nLast event: ${previousSummary.lastEvent || 'unknown'}\nEvents: ${previousSummary.eventCount}`
+                : 'Previous session\nNo previous session diagnostics recorded on this device yet.',
+            previousEvents.length > 0
+                ? `Previous events\n${previousEvents
+                      .map((event) => `${event.at}  ${event.name}`)
+                      .join('\n')}`
+                : 'Previous events\nNo stored events.',
+            currentEvents.length > 0
+                ? `Current session\n${currentEvents
+                      .map((event) => `${event.at}  ${event.name}`)
+                      .join('\n')}`
+                : 'Current session\nNo current session events recorded yet.',
+        ];
+
+        Alert.alert('App diagnostics', sections.join('\n\n'));
+    }, []);
 
     const recordFailedPinAttempt = useCallback(async (message: string) => {
         const nextFailedAttempts = pinLockState.failedAttempts + 1;
@@ -665,6 +699,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     savedLoginStatusLabel={savedLoginStatusLabel}
                     pendingOrderStatusLabel="Order journal entries stay on this device until you retry them manually."
                     onRemoveSavedLogin={removeSavedLogin}
+                    onOpenAppDiagnostics={openAppDiagnostics}
                 />
             ) : (
                 <View testID="home-ready-shell">

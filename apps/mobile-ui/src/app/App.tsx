@@ -51,6 +51,10 @@ import {
     markManualSignOut,
     readManualSignOut,
 } from './session-signout';
+import {
+    beginAppLifecycleSession,
+    recordAppLifecycleEvent,
+} from './app-lifecycle-diagnostics';
 import { listEmployees } from '@pos/shared/api';
 
 type BootstrapStatus = 'idle' | 'checking-session' | 'resolving-tenant' | 'preparing-business-data' | 'ready' | 'error';
@@ -236,8 +240,22 @@ const AppContent = () => {
     const silentReauthInFlightRef = useRef<Promise<User | null> | null>(null);
     const lastForegroundSessionCheckAtRef = useRef(0);
     const hasActiveSale = (cart.items?.length || 0) > 0;
+    const recordLifecycleEvent = useCallback(
+        (name: string, details?: Record<string, unknown>) => {
+            void recordAppLifecycleEvent(name, details);
+        },
+        []
+    );
+
+    useEffect(() => {
+        void beginAppLifecycleSession();
+    }, []);
 
     const resetSessionState = useCallback(async (options?: { manual?: boolean; destructive?: boolean }) => {
+        recordLifecycleEvent('session.reset:start', {
+            manual: options?.manual ?? true,
+            destructive: options?.destructive ?? false,
+        });
         try {
             if (options?.manual ?? true) {
                 await markManualSignOut();
@@ -254,8 +272,12 @@ const AppContent = () => {
             dispatch(tenantSessionActions.clearTenantSession());
             dispatch(employeesActions.logoffEmployee());
             await clearLastBootstrappedTenantId();
+            recordLifecycleEvent('session.reset:complete', {
+                manual: options?.manual ?? true,
+                destructive: options?.destructive ?? false,
+            });
         }
-    }, [dispatch]);
+    }, [dispatch, recordLifecycleEvent]);
 
     const attemptSilentReauth = useCallback(async () => {
         if (silentReauthInFlightRef.current) {
@@ -281,10 +303,17 @@ const AppContent = () => {
                 await clearManualSignOut();
                 setBootstrapError(undefined);
                 setSessionRecoveryState('healthy');
+                recordLifecycleEvent('session.reauth:success', {
+                    tenantId: restoredUser.tenantId,
+                });
                 return restoredUser;
             } catch (error) {
                 console.error('Silent admin re-login failed', error);
                 setSessionRecoveryState('needs_reauth');
+                recordLifecycleEvent('session.reauth:failed', {
+                    message:
+                        error instanceof Error ? error.message : String(error),
+                });
                 return null;
             }
         })();
@@ -298,10 +327,14 @@ const AppContent = () => {
                 silentReauthInFlightRef.current = null;
             }
         }
-    }, [dispatch]);
+    }, [dispatch, recordLifecycleEvent]);
 
     const handleExpiredSession = useCallback(
         async (message?: string) => {
+            recordLifecycleEvent('session.expired:detected', {
+                hasActiveSale,
+                message: message || 'unknown',
+            });
             const restoredUser = await attemptSilentReauth();
             if (restoredUser) {
                 return;
@@ -351,7 +384,7 @@ const AppContent = () => {
             await resetSessionState({ manual: false });
             setBootstrapStatus('ready');
         },
-        [attemptSilentReauth, hasActiveSale, resetSessionState]
+        [attemptSilentReauth, hasActiveSale, recordLifecycleEvent, resetSessionState]
     );
 
     const startBootstrap = useCallback(async () => {
@@ -361,6 +394,9 @@ const AppContent = () => {
         }
 
         const bootstrapPromise = (async () => {
+        recordLifecycleEvent('bootstrap:start', {
+            hasAuthUser: Boolean(authUser),
+        });
         if (process.env.NODE_ENV === 'test') {
             setBootstrapStatus('ready');
             return;
@@ -546,6 +582,9 @@ const AppContent = () => {
 
             dispatch(tenantSessionActions.setBootstrapStatus('ready'));
             setBootstrapStatus('ready');
+            recordLifecycleEvent('bootstrap:ready', {
+                tenantId: user.tenantId,
+            });
             finishBootstrap({
                 result: 'ready',
             });
@@ -562,6 +601,7 @@ const AppContent = () => {
             dispatch(tenantSessionActions.setTenantSessionError(message));
             setBootstrapError(message);
             setBootstrapStatus('error');
+            recordLifecycleEvent('bootstrap:error', { message });
             finishBootstrap({
                 result: 'error',
                 message,
@@ -577,10 +617,11 @@ const AppContent = () => {
         });
 
         return bootstrapPromise;
-    }, [attemptSilentReauth, authUser, dispatch]);
+    }, [attemptSilentReauth, authUser, dispatch, recordLifecycleEvent]);
 
     const signOutFromStartup = useCallback(async () => {
         setBootstrapError(undefined);
+        recordLifecycleEvent('startup.signout:start');
 
         try {
             await Auth.signOut('local');
@@ -590,8 +631,9 @@ const AppContent = () => {
             await resetSessionState();
             setSessionRecoveryState('healthy');
             setBootstrapStatus('ready');
+            recordLifecycleEvent('startup.signout:complete');
         }
-    }, [resetSessionState]);
+    }, [recordLifecycleEvent, resetSessionState]);
 
     useEffect(() => {
         startBootstrap();
@@ -653,6 +695,7 @@ const AppContent = () => {
         }
 
         const subscription = AppState.addEventListener('change', async (nextState) => {
+            recordLifecycleEvent('appstate.change', { nextState });
             if (nextState !== 'active') {
                 return;
             }
@@ -678,8 +721,14 @@ const AppContent = () => {
                     setSessionRecoveryState('refreshing');
                     await Auth.fetchSession();
                     setSessionRecoveryState('healthy');
+                    recordLifecycleEvent('session.validation:success');
                 } catch (error) {
                     const sessionIssue = classifyAuthSessionError(error);
+                    recordLifecycleEvent('session.validation:failed', {
+                        sessionIssue,
+                        message:
+                            error instanceof Error ? error.message : String(error),
+                    });
                     if (
                         sessionIssue !== 'no_session' &&
                         sessionIssue !== 'revoked' &&
@@ -712,7 +761,7 @@ const AppContent = () => {
         return () => {
             subscription.remove();
         };
-    }, [authUser, handleExpiredSession]);
+    }, [authUser, handleExpiredSession, recordLifecycleEvent]);
 
     useEffect(() => {
         if (sessionRecoveryState !== 'deferred_until_sale_complete' || hasActiveSale) {

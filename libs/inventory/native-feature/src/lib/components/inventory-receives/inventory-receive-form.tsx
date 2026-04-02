@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { Alert, FlatList, StyleSheet, TextInput, View, Text } from 'react-native';
+import { Alert, FlatList, Keyboard, StyleSheet, TextInput, View, Text } from 'react-native';
 import { getThemeColors, useSharedStyles } from '@pos/theme/native';
 import { UIActions, UICard, UIScreen, UISearchInput } from '@pos/shared/ui-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -17,7 +17,6 @@ import { RootState, useAppDispatch } from '@pos/store';
 import { InventoryReceive } from '@pos/shared/models';
 import {
     ProductEntity,
-    productsActions,
     ProductService,
     selectAllProducts,
     subscribeToProductChanges,
@@ -85,50 +84,43 @@ export function InventoryReceiveForm({
     const [filter, setFilter] = useState<string>();
     const [lines, setLines] = useState<InventoryReceiveLineDTO[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>([]);
-    
+    const linesRef = useRef<InventoryReceiveLineDTO[]>([]);
     const ref = useRef<TextInput>(null);
+
+    const syncLinesState = (
+        updater:
+            | InventoryReceiveLineDTO[]
+            | ((current: InventoryReceiveLineDTO[]) => InventoryReceiveLineDTO[])
+    ) => {
+        setLines((current) => {
+            const next =
+                typeof updater === 'function'
+                    ? (updater as (current: InventoryReceiveLineDTO[]) => InventoryReceiveLineDTO[])(current)
+                    : updater;
+            linesRef.current = next;
+            return next;
+        });
+    };
 
     useEffect(() => {
         if (!inventoryReceive) {
-            setLines([]);
+            syncLinesState([]);
             return;
         }
 
-        setLines(inventoryReceive.lines.map((l) => ({ ...l })));
+        syncLinesState(inventoryReceive.lines.map((l) => ({ ...l })));
     }, [inventoryReceive]);
-
-    const buildQuantityDeltas = (receiveLines: InventoryReceiveLineDTO[]) => {
-        const deltaByProductId = new Map<string, number>();
-
-        receiveLines.forEach((line) => {
-            if (
-                line.received === undefined ||
-                line.received === null ||
-                Number.isNaN(line.received)
-            ) {
-                return;
-            }
-
-            deltaByProductId.set(
-                line.productId,
-                (deltaByProductId.get(line.productId) || 0) + line.received
-            );
-        });
-
-        return Array.from(deltaByProductId.entries())
-            .map(([productId, delta]) => ({ productId, delta }))
-            .filter((entry) => entry.delta !== 0);
-    };
 
     const save = async (updateInv: boolean) => {
         if (busy) return;
         setBusy(true);
+        const currentLines = linesRef.current;
         let inv: InventoryReceiveDTO;
 
         if (inventoryReceive) {
             inv = {
                 comments: inventoryReceive.comments,
-                lines: lines,
+                lines: currentLines,
                 status: inventoryReceive.status,
                 id: inventoryReceive.id,
                 // createdAt: inventoryReceive.createdAt,
@@ -145,7 +137,7 @@ export function InventoryReceiveForm({
             }
 
             inv = InventoryReceiveMapper.newReceive(employee);
-            inv.lines = lines;
+            inv.lines = currentLines;
         }
 
         if (updateInv) {
@@ -153,11 +145,6 @@ export function InventoryReceiveForm({
         }
 
         await InventoryReceiveService.save(dispatch, inv, updateInv);
-        if (updateInv) {
-            dispatch(
-                productsActions.applyQuantityDeltas(buildQuantityDeltas(inv.lines))
-            );
-        }
         dispatch(inventoryReceiveActions.clearSelection());
         navigation.goBack();
         setBusy(false);
@@ -165,6 +152,7 @@ export function InventoryReceiveForm({
 
     const updateInventory = () => {
         if (busy) return;
+        Keyboard.dismiss();
         confirm(
             '',
             'This action will adjust your inventory based on this receive. You will no be able to undo this operation',
@@ -195,19 +183,21 @@ export function InventoryReceiveForm({
     };
 
     const updateItem = (item: InventoryReceiveLineDTO) => {
-        setLines(applyReceiveLineUpdate(lines, item));
+        syncLinesState((current) => applyReceiveLineUpdate(current, item));
     };
 
     const deleteItem = (item: InventoryReceiveLineDTO) => {
-        setLines((res) => res.filter((i) => i.productId !== item.productId));
+        syncLinesState((res) => res.filter((i) => i.productId !== item.productId));
     };
 
     const addItem = (product: ProductEntity) => {
-        const result = appendReceiveLineIfMissing(lines, product);
-        if (!result.added) return;
-
-        setLines(result.nextLines);
-
+        let added = false;
+        syncLinesState((current) => {
+            const result = appendReceiveLineIfMissing(current, product);
+            added = result.added;
+            return result.added ? result.nextLines : current;
+        });
+        if (!added) return;
         setFilter('');
     };
 

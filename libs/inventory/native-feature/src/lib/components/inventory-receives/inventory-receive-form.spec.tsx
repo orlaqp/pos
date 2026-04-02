@@ -8,10 +8,6 @@ const mockGoBack = jest.fn();
 const mockConfirm = jest.fn((_: string, __: string, onConfirm: () => void) => onConfirm());
 const mockInventoryReceiveSave = jest.fn(() => Promise.resolve());
 const mockProductSearch = jest.fn(() => ({ items: [], allNumbers: false }));
-const mockApplyQuantityDeltas = jest.fn((payload) => ({
-    type: 'products/applyQuantityDeltas',
-    payload,
-}));
 const mockProducts: unknown[] = [];
 let mockInventoryReceiveSelected: any = null;
 let mockEmployee: any = {
@@ -174,9 +170,6 @@ jest.mock('@pos/shared/utils', () => ({
 }));
 
 jest.mock('@pos/products/data-access', () => ({
-    productsActions: {
-        applyQuantityDeltas: (...args: unknown[]) => mockApplyQuantityDeltas(...args),
-    },
     ProductService: {
         search: (...args: unknown[]) => mockProductSearch(...args),
     },
@@ -300,7 +293,6 @@ describe('InventoryReceiveForm integration', () => {
         mockInventoryReceiveSelected = null;
         mockEmployee = { id: 'emp-1', firstName: 'Test', lastName: 'User' };
         mockProductSearch.mockReturnValue({ items: [], allNumbers: false });
-        mockApplyQuantityDeltas.mockClear();
         jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
     });
 
@@ -338,11 +330,10 @@ describe('InventoryReceiveForm integration', () => {
                 expect.objectContaining({ status: 'COMPLETED', lines: [] }),
                 true
             );
-            expect(mockApplyQuantityDeltas).toHaveBeenCalledWith([]);
         });
     });
 
-    it('dispatches local product quantity updates after a completed receive', async () => {
+    it('uses the latest line values when completing a receive', async () => {
         mockInventoryReceiveSelected = {
             id: 'recv-1',
             comments: 'existing',
@@ -368,12 +359,25 @@ describe('InventoryReceiveForm integration', () => {
             <InventoryReceiveForm route={route} navigation={navigation} />
         );
 
+        fireEvent.press(getByTestId('inventory-receive-line-update-p-1'));
         fireEvent.press(getByTestId('inventory-receive-update-inventory-button'));
 
         await waitFor(() => {
-            expect(mockApplyQuantityDeltas).toHaveBeenCalledWith([
-                { productId: 'p-1', delta: 4 },
-            ]);
+            expect(mockInventoryReceiveSave).toHaveBeenCalledWith(
+                mockDispatch,
+                expect.objectContaining({
+                    id: 'recv-1',
+                    status: 'COMPLETED',
+                    lines: [
+                        expect.objectContaining({
+                            productId: 'p-1',
+                            received: 8,
+                            comments: 'updated',
+                        }),
+                    ],
+                }),
+                true
+            );
         });
     });
 
