@@ -66,19 +66,23 @@ describe('end-of-day.service', () => {
             CASH: 10,
             CC: 5,
             CHECK: 0,
+            EBT: 0,
         });
+        expect(result.totalAmount).toBe(0);
     });
 
-    it('filters by product id when provided and keeps all orders otherwise', () => {
+    it('filters by product id when provided and only sums matching orders', () => {
         const orders: any[] = [
             {
                 createdBy: { id: 'x' },
+                total: 2,
                 paymentInfo: { payments: [{ type: 'CASH', amount: 2 }] },
                 lines: [{ productId: 'p1' }],
             },
             {
                 createdBy: { id: 'y' },
-                paymentInfo: { payments: [{ type: 'CC', amount: 3 }] },
+                total: 7,
+                paymentInfo: { payments: [{ type: 'CC', amount: 3 }, { type: 'EBT', amount: 4 }] },
                 lines: [{ productId: 'p2' }],
             },
         ];
@@ -87,7 +91,11 @@ describe('end-of-day.service', () => {
         const onlyP2 = filterOrders(orders as any, { productId: 'p2' });
 
         expect(all.orders).toHaveLength(2);
+        expect(all.summary).toEqual({ CASH: 2, CC: 3, CHECK: 0, EBT: 4 });
+        expect(all.totalAmount).toBe(9);
         expect(onlyP2.orders).toHaveLength(1);
         expect(onlyP2.orders[0].lines[0].productId).toBe('p2');
+        expect(onlyP2.summary).toEqual({ CASH: 0, CC: 3, CHECK: 0, EBT: 4 });
+        expect(onlyP2.totalAmount).toBe(7);
     });
 });

@@ -143,8 +143,8 @@ describe('Dashboard', () => {
                         ],
                     },
                     lines: [
-                        { categoryId: 'c1', price: 2.5, quantity: 2 },
-                        { categoryId: 'c2', price: 5.5, quantity: 1 },
+                        { categoryId: 'c1', price: 2.5, quantity: 2, lineTotalBeforeTax: 4.25 },
+                        { categoryId: 'c2', price: 5.5, quantity: 1, lineTotalBeforeTax: 5 },
                     ],
                 },
             ] as any,
@@ -154,8 +154,8 @@ describe('Dashboard', () => {
         expect(supplemental.totalDiscounts).toBe(1.25);
         expect(supplemental.discountedOrders).toBe(1);
         expect(supplemental.topCategories).toEqual([
-            { name: 'Baking', value: '$5.50' },
-            { name: 'Produce', value: '$5.00' },
+            { name: 'Baking', value: '$5.00' },
+            { name: 'Produce', value: '$4.25' },
         ]);
         expect(supplemental.paymentMix).toEqual([
             { name: 'Cards', value: 10 },

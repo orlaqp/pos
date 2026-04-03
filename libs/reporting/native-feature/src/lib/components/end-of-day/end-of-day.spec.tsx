@@ -61,9 +61,9 @@ describe('EndOfDay', () => {
     });
 
     it('computes and formats payment totals', () => {
-        const total = getPaymentMethodsTotal({ CC: 12.5, CASH: 3, CHECK: 4.25 });
-        expect(total).toBe(19.75);
-        expect(formatPaymentAmount(total)).toBe('$19.75');
+        const total = getPaymentMethodsTotal({ CC: 12.5, CASH: 3, CHECK: 4.25, EBT: 1.5 });
+        expect(total).toBe(21.25);
+        expect(formatPaymentAmount(total)).toBe('$21.25');
     });
 
     it('loads paid sales and falls back to empty array', async () => {
@@ -85,16 +85,18 @@ describe('EndOfDay', () => {
     it('builds widget definitions for summary cards', () => {
         const widgets = buildEndOfDayWidgets(
             3,
-            { CC: 10, CASH: 5, CHECK: 2 },
+            18.5,
+            { CC: 10, CASH: 5, CHECK: 2, EBT: 0 },
             '#111'
         );
 
         expect(widgets).toEqual([
             { text: 'Sales', value: '3', backgroundColor: '#111', flex: 0.7 },
-            { text: 'Total', value: '$17', backgroundColor: '#111', flex: 1 },
+            { text: 'Total', value: '$18.5', backgroundColor: '#111', flex: 1 },
             { text: 'Credit Card', value: '$10', backgroundColor: '#1976d2', flex: 1 },
             { text: 'Cash', value: '$5', backgroundColor: '#e91e63', flex: 1 },
             { text: 'Checks', value: '$2', backgroundColor: '#43a047', flex: 1 },
+            { text: 'EBT', value: '$0', backgroundColor: '#8e24aa', flex: 1 },
         ]);
     });
 

@@ -44,7 +44,7 @@ export const buildDayRange = (date: Date) => ({
 });
 
 export const getPaymentMethodsTotal = (summary: PaymentMethodsSummary) =>
-    summary.CASH + summary.CC + summary.CHECK;
+    summary.CASH + summary.CC + summary.CHECK + summary.EBT;
 
 export const formatPaymentAmount = (amount: number) =>
     `$${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
@@ -59,6 +59,7 @@ export const loadPaidSalesForRange = async (
 
 export const buildEndOfDayWidgets = (
     ordersCount: number,
+    totalAmount: number,
     summary: PaymentMethodsSummary,
     defaultBackgroundColor: string,
     labels: {
@@ -67,12 +68,14 @@ export const buildEndOfDayWidgets = (
         creditCard: string;
         cash: string;
         checks: string;
+        ebt: string;
     } = {
         sales: 'Sales',
         total: 'Total',
         creditCard: 'Credit Card',
         cash: 'Cash',
         checks: 'Checks',
+        ebt: 'EBT',
     }
 ): EndOfDayWidget[] => [
     {
@@ -83,7 +86,7 @@ export const buildEndOfDayWidgets = (
     },
     {
         text: labels.total,
-        value: formatPaymentAmount(getPaymentMethodsTotal(summary)),
+        value: formatPaymentAmount(totalAmount),
         backgroundColor: defaultBackgroundColor,
         flex: 1,
     },
@@ -103,6 +106,12 @@ export const buildEndOfDayWidgets = (
         text: labels.checks,
         value: formatPaymentAmount(summary.CHECK),
         backgroundColor: '#43a047',
+        flex: 1,
+    },
+    {
+        text: labels.ebt,
+        value: formatPaymentAmount(summary.EBT),
+        backgroundColor: '#8e24aa',
         flex: 1,
     },
 ];
@@ -198,7 +207,7 @@ export function EndOfDay(props: EndOfDayProps) {
     const [orders, setOrders] = useState<Order[]>([]);
     const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
     const [paymentMethodsSummary, setPaymentMethodsSummary] = useState<PaymentMethodsSummary>({
-        CC: 0, CASH: 0, CHECK: 0
+        CC: 0, CASH: 0, CHECK: 0, EBT: 0
     });
     
     const [employeesOpen, setEmployeesOpen] = useState(false);
@@ -244,6 +253,7 @@ export function EndOfDay(props: EndOfDayProps) {
     });
     const widgets = buildEndOfDayWidgets(
         filteredOrders.length,
+        filteredOrders.reduce((sum, order) => sum + Number(order.total || 0), 0),
         paymentMethodsSummary,
         styles.dataRow.backgroundColor,
         {
@@ -252,6 +262,7 @@ export function EndOfDay(props: EndOfDayProps) {
             creditCard: t('EOD_CreditCard', 'Credit Card'),
             cash: t('EOD_Cash', 'Cash'),
             checks: t('EOD_Checks', 'Checks'),
+            ebt: t('EOD_EBT', 'EBT'),
         }
     );
     const hasFilteredData = filteredOrders.length > 0;

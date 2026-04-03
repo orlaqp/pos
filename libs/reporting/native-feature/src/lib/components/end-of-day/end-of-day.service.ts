@@ -30,27 +30,37 @@ export interface PaymentMethodsSummary {
     CC: number;
     CASH: number;
     CHECK: number;
+    EBT: number;
 }
 
 export const filterOrders = (orders: Order[], request: OrdersFilterRequest) => {
-    const summary: PaymentMethodsSummary = { CC: 0, CASH: 0, CHECK: 0 };
-
     const filtered = orders.filter(o => {
         if (request.openedBy && o.createdBy?.id !== request.openedBy) return false;
         if (request.closedBy && o.paymentInfo?.employeeId !== request.closedBy) return false;
-        // if (request.productId && o.createdBy?.id !== request.employeeId) return false;
-        
-        o.paymentInfo?.payments?.forEach(p => {
-            summary[p?.type] += p?.amount;
-        });
 
         if (!request.productId) return true;
 
         return o.lines.some(p => p?.productId === request.productId);
-    });   
+    });
+
+    const summary = filtered.reduce(
+        (acc, order) => {
+            order.paymentInfo?.payments?.forEach((payment) => {
+                const type = String(payment?.type || '').toUpperCase() as keyof PaymentMethodsSummary;
+                if (!(type in acc)) return;
+                acc[type] += Number(payment?.amount || 0);
+            });
+
+            return acc;
+        },
+        { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+    );
+
+    const totalAmount = filtered.reduce((sum, order) => sum + Number(order.total || 0), 0);
 
     return {
         orders: filtered,
-        summary
+        summary,
+        totalAmount,
     };
 }

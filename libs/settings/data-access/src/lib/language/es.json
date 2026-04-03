@@ -128,6 +128,7 @@
     "EOD_CreditCard": "Tarjeta",
     "EOD_Cash": "Efectivo",
     "EOD_Checks": "Cheques",
+    "EOD_EBT": "EBT",
     "EOD_OrderNo": "No. de orden",
     "EOD_CreatedBy": "Creada por",
     "EOD_Payments": "Pagos",

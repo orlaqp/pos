@@ -39,6 +39,9 @@ interface DashboardSupplemental {
     discountedOrders: number;
 }
 
+const getDashboardLineAmount = (line: NonNullable<Order['lines']>[number]) =>
+    Number(line?.lineTotalBeforeTax ?? Number(line?.price || 0) * Number(line?.quantity || 0));
+
 export const hasSalesData = (summary?: SalesSummary) =>
     !!summary && summary.totalAmount > 0;
 
@@ -121,7 +124,7 @@ export const buildDashboardSupplemental = (
         (order.lines || []).forEach((line) => {
             const categoryId = line?.categoryId;
             if (!categoryId) return;
-            const amount = Number(line?.price || 0) * Number(line?.quantity || 0);
+            const amount = getDashboardLineAmount(line);
             categoryTotals[categoryId] = (categoryTotals[categoryId] || 0) + amount;
         });
     });
