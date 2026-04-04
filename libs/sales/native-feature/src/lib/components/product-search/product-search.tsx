@@ -62,6 +62,8 @@ export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((pr
                     autoCorrect={false}
                     autoCapitalize='none'
                     blurOnSubmit={false}
+                    clearOnSubmit={true}
+                    retainFocusOnSubmit={true}
                     onSubmit={onFilterChange}
                 />
             </View>

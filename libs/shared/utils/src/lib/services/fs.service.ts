@@ -1,4 +1,4 @@
-import RNFS, { writeFile, readFile, exists } from 'react-native-fs';
+import RNFS, { writeFile, readFile, exists, stat, unlink } from 'react-native-fs';
 
 const basePath = RNFS.CachesDirectoryPath;
 
@@ -21,6 +21,35 @@ export class FsService {
         }
 
         return null;
+    }
+
+    static async getInfo(name: string) {
+        const path = getFullPath(name);
+        const wasFound = await exists(path);
+
+        if (!wasFound) {
+            return null;
+        }
+
+        const fileStats = await stat(path);
+        return {
+            path,
+            modifiedTime:
+                fileStats.mtime instanceof Date
+                    ? fileStats.mtime.getTime()
+                    : new Date(fileStats.mtime).getTime(),
+        };
+    }
+
+    static async remove(name: string) {
+        const path = getFullPath(name);
+        const wasFound = await exists(path);
+
+        if (!wasFound) {
+            return;
+        }
+
+        await unlink(path);
     }
 
 }

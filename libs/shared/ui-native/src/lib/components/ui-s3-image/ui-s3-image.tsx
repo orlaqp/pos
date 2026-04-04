@@ -21,15 +21,40 @@ export interface UIS3ImageProps {
 const imageUriCache = new Map<string, string>();
 const pendingImageLoads = new Map<string, Promise<string>>();
 
-const resolveImageUri = async (s3Key: string): Promise<string> => {
-    const cached = imageUriCache.get(s3Key);
+const clearCachedImageUri = (s3Key: string) => {
+    imageUriCache.delete(s3Key);
+    pendingImageLoads.delete(s3Key);
+};
+
+const resolveImageUri = async (
+    s3Key: string,
+    options?: { forceFresh?: boolean }
+): Promise<string> => {
+    const forceFresh = !!options?.forceFresh;
+    const cached = !forceFresh ? imageUriCache.get(s3Key) : undefined;
     if (cached) return cached;
 
-    const inflight = pendingImageLoads.get(s3Key);
+    const inflight = !forceFresh ? pendingImageLoads.get(s3Key) : undefined;
     if (inflight) return inflight;
 
-    const request = AssetsService.getAssetUri(s3Key)
-        .catch(() => AssetsService.getImage(s3Key))
+    const request = (async () => {
+        if (!forceFresh) {
+            const cachedImage = await AssetsService.getCachedImage(s3Key);
+            if (cachedImage) {
+                return cachedImage;
+            }
+        }
+
+        const assetUri = await AssetsService.getAssetUri(s3Key).catch(() =>
+            AssetsService.getImage(s3Key, { forceRefresh: true })
+        );
+
+        if (!forceFresh) {
+            void AssetsService.getImage(s3Key).catch(() => undefined);
+        }
+
+        return assetUri;
+    })()
         .then((uri) => {
             imageUriCache.set(s3Key, uri);
             return uri;
@@ -48,6 +73,7 @@ export function UIS3Image({
     height,
 }: UIS3ImageProps) {
     const [uri, setUri] = useState<string | undefined>();
+    const [loadAttempt, setLoadAttempt] = useState(0);
 
     useEffect(() => {
         let mounted = true;
@@ -59,7 +85,9 @@ export function UIS3Image({
             };
         }
 
-        resolveImageUri(s3Key)
+        resolveImageUri(s3Key, {
+            forceFresh: loadAttempt > 0,
+        })
             .then((resolved) => {
                 if (mounted) setUri(resolved);
             })
@@ -70,6 +98,21 @@ export function UIS3Image({
         return () => {
             mounted = false;
         };
+    }, [loadAttempt, s3Key]);
+
+    const onImageError = () => {
+        if (!s3Key || loadAttempt >= 1) {
+            return;
+        }
+
+        clearCachedImageUri(s3Key);
+        void AssetsService.invalidateCachedImage(s3Key);
+        setUri(undefined);
+        setLoadAttempt((current) => current + 1);
+    };
+
+    useEffect(() => {
+        setLoadAttempt(0);
     }, [s3Key]);
 
     if (!uri) return null;
@@ -79,6 +122,7 @@ export function UIS3Image({
             style={{ height, width }}
             source={{ uri }}
             resizeMode="contain"
+            onError={onImageError}
         />
     );
 }

@@ -46,6 +46,17 @@ jest.mock('@rneui/themed', () => ({
 }));
 
 describe('UiSearchInput', () => {
+    beforeEach(() => {
+        jest.spyOn(global, 'requestAnimationFrame').mockImplementation((callback: FrameRequestCallback) => {
+            callback(0);
+            return 0;
+        });
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
     it('should render successfully', () => {
         const { toJSON } = render(<UISearchInput onSubmit={jest.fn()} />);
         expect(toJSON()).toBeTruthy();
@@ -62,6 +73,34 @@ describe('UiSearchInput', () => {
         });
 
         expect(onSubmit).toHaveBeenCalledWith('123456');
+    });
+
+    it('clears and restores focus on submit when configured', () => {
+        const onSubmit = jest.fn();
+        const onChangeText = jest.fn();
+        const focus = jest.fn();
+        const clear = jest.fn();
+        const ref = React.createRef<any>();
+        const { getByTestId } = render(
+            <UISearchInput
+                ref={ref}
+                onSubmit={onSubmit}
+                onChangeText={onChangeText}
+                clearOnSubmit={true}
+                retainFocusOnSubmit={true}
+            />
+        );
+
+        ref.current = { focus, clear };
+        fireEvent.changeText(getByTestId('ui-search-input'), 'apple');
+        fireEvent(getByTestId('ui-search-input'), 'submitEditing', {
+            nativeEvent: { text: 'apple' },
+        });
+
+        expect(onSubmit).toHaveBeenCalledWith('apple');
+        expect(onChangeText).toHaveBeenCalledWith('');
+        expect(clear).toHaveBeenCalled();
+        expect(focus).toHaveBeenCalled();
     });
 
     it('clears the current text and notifies submit listeners', () => {

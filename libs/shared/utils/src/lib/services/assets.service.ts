@@ -11,6 +11,12 @@ export interface UploadResponse {
 }
 
 export type GetAssetResponse = Readable | ReadableStream | Blob | undefined;
+export interface GetImageOptions {
+    forceRefresh?: boolean;
+    maxAgeMs?: number;
+}
+
+const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 export class AssetsService {
     static async uploadAsset(mediaType: MediaType, keyPrefix: string): Promise<UploadResponse | null> {
@@ -50,12 +56,32 @@ export class AssetsService {
         return Storage.get(key, { download: false });
     }
 
-    static async getImage(key: string): Promise<string> {
-        // check if image is stored in cache
-        const content = await FsService.get(key);
+    static async getCachedImage(
+        key: string,
+        options?: { maxAgeMs?: number }
+    ): Promise<string | undefined> {
+        const maxAgeMs = options?.maxAgeMs ?? ONE_WEEK_MS;
+        const cacheInfo = await FsService.getInfo(key);
 
-        if (content) {
-            return content;
+        if (!cacheInfo || Date.now() - cacheInfo.modifiedTime > maxAgeMs) {
+            return undefined;
+        }
+
+        return (await FsService.get(key)) ?? undefined;
+    }
+
+    static async getImage(key: string, options?: GetImageOptions): Promise<string> {
+        const forceRefresh = !!options?.forceRefresh;
+        const maxAgeMs = options?.maxAgeMs ?? ONE_WEEK_MS;
+
+        if (!forceRefresh) {
+            const cacheInfo = await FsService.getInfo(key);
+            if (cacheInfo && Date.now() - cacheInfo.modifiedTime <= maxAgeMs) {
+                const cachedContent = await FsService.get(key);
+                if (cachedContent) {
+                    return cachedContent;
+                }
+            }
         }
 
         const res = await Storage.get(key, { download: true });
@@ -68,8 +94,13 @@ export class AssetsService {
 
         return base64 as string;
     }
+
+    static invalidateCachedImage(key: string) {
+        return FsService.remove(key);
+    }
     
-    static deleteAsset(key: string) {
+    static async deleteAsset(key: string) {
+        await FsService.remove(key);
         return Storage.remove(key);
     }
 

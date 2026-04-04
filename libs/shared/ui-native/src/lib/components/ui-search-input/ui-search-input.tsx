@@ -7,6 +7,8 @@ type UiSearchInputProps = React.ComponentProps<typeof TextInput> & {
     onSubmit: (text: string) => void | Promise<unknown>;
     onClear?: () => void;
     debounceTime?: number;
+    clearOnSubmit?: boolean;
+    retainFocusOnSubmit?: boolean;
 };
 
 export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
@@ -22,11 +24,27 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
             onChangeText,
             onSubmit,
             onClear,
+            clearOnSubmit = false,
+            retainFocusOnSubmit = false,
             ...restOfProps
         } =
             props;
         const [text, setText] = useState<string>(typeof value === 'string' ? value : '');
         const currentText = typeof value === 'string' ? value : text;
+        const inputRef = React.useRef<TextInput | null>(null);
+
+        const setCombinedRef = (node: TextInput | null) => {
+            inputRef.current = node;
+
+            if (typeof ref === 'function') {
+                ref(node);
+                return;
+            }
+
+            if (ref) {
+                ref.current = node;
+            }
+        };
 
         const handleChangeText = (nextText: string) => {
             setText(nextText);
@@ -35,8 +53,21 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
 
         const handleSubmit = (submittedText?: string) => {
             const nextText = submittedText ?? currentText;
-            setText(nextText);
             void onSubmit(nextText);
+
+            if (clearOnSubmit) {
+                setText('');
+                onChangeText?.('');
+                inputRef.current?.clear?.();
+            } else {
+                setText(nextText);
+            }
+
+            if (retainFocusOnSubmit) {
+                requestAnimationFrame(() => {
+                    inputRef.current?.focus?.();
+                });
+            }
         };
 
         const clearText = () => {
@@ -48,7 +79,7 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
 
         return (
             <Input
-                ref={ref as any}
+                ref={setCombinedRef as any}
                 {...restOfProps}
                 value={currentText}
                 autoComplete='off'
