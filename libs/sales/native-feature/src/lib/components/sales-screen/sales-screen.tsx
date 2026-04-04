@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import i18next from 'i18next';
 
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
@@ -24,8 +24,10 @@ import {
     ProductEntity,
     ProductService,
     selectAllProducts,
+    selectProductsEntities,
     subscribeToProductChanges,
 } from '@pos/products/data-access';
+import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ButtonItemType, UIScreen } from '@pos/shared/ui-native';
 import { RootState, useAppDispatch } from '@pos/store';
@@ -53,8 +55,8 @@ import {
     getActiveProducts,
     getAutoAddQuantity,
     getBrowseModeProducts,
+    getVisibleProducts,
     getSelectedQuantity,
-    isSameProductList,
     shouldBlockSelectionByInventory,
     shouldSetFilteredProducts,
 } from './sales-screen.logic';
@@ -111,6 +113,7 @@ export function SalesScreen({
     const storeInfo = useSelector(selectStore);
     const defaultPrinter = useSelector(getDefaultPrinter);
     const allProducts = useSelector(selectAllProducts);
+    const productsEntities = useSelector(selectProductsEntities);
     const globalSettings = useSelector(getGlobalSettings);
     const payFromSalesScreen = useSelector(selectPayFromSalesScreen);
     const employee = useSelector(selectLoginEmployee);
@@ -123,22 +126,44 @@ export function SalesScreen({
     );
     const station = useSelector(selectStation);
 
-    const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
-        []
-    );
     const [browseMode, setBrowseMode] = useState<'idle' | 'all' | 'category'>('idle');
     const [activeCategory, setActiveCategory] = useState<CategoryEntity | undefined>();
+    const [searchText, setSearchText] = useState<string>();
     const [isSearchActive, setIsSearchActive] = useState(false);
     const [showCategories, setShowCategories] = useState(true);
+    const [categoryRefreshToken, setCategoryRefreshToken] = useState(0);
     const [categoryWidth] = useState(() => new Animated.Value(150));
     const [categoryOpacity] = useState(() => new Animated.Value(1));
     const [contentOpacity] = useState(() => new Animated.Value(1));
+    const browseModeRef = useRef(browseMode);
+    const activeCategoryRef = useRef(activeCategory);
+    const searchTextRef = useRef(searchText);
+    const isSearchActiveRef = useRef(isSearchActive);
+    const showCategoriesRef = useRef(showCategories);
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
             : fallback;
     const hasCatalogProducts = getActiveProducts(allProducts).length > 0;
     const canManageCatalog = !!employee?.roles?.includes(Role.Admin);
+    const filteredProducts = useMemo(
+        () =>
+            getVisibleProducts(
+                allProducts,
+                browseMode,
+                activeCategory,
+                isSearchActive ? searchText : undefined
+            ),
+        [activeCategory, allProducts, browseMode, isSearchActive, searchText]
+    );
+
+    useEffect(() => {
+        browseModeRef.current = browseMode;
+        activeCategoryRef.current = activeCategory;
+        searchTextRef.current = searchText;
+        isSearchActiveRef.current = isSearchActive;
+        showCategoriesRef.current = showCategories;
+    }, [activeCategory, browseMode, isSearchActive, searchText, showCategories]);
     const restoreSearchFocus = useCallback(() => {
         const interaction = InteractionManager.runAfterInteractions(() => {
             setTimeout(() => {
@@ -202,6 +227,11 @@ export function SalesScreen({
         deselectProduct();
         restoreSearchFocus();
     }, [deselectProduct, dispatch, restoreSearchFocus]);
+    const getLatestProduct = useCallback(
+        (product: ProductEntity) =>
+            productsEntities[product.id] ?? product,
+        [productsEntities]
+    );
 
     const preparePrintableOrderCart = useCallback(
         async (cart: CartState) => {
@@ -238,52 +268,70 @@ export function SalesScreen({
         [dispatch, employee, station]
     );
 
-    const onCategoryChange = async (c?: CategoryEntity) => {
+    const onCategoryChange = (c?: CategoryEntity) => {
         setIsSearchActive(false);
+        setSearchText(undefined);
         setActiveCategory(c);
 
         if (!c?.id) {
             setBrowseMode('idle');
-            setFilteredProducts([]);
             return;
         }
 
         setBrowseMode('category');
-        const res = await ProductService.search(allProducts, {
-            categoryId: c.id,
-            onlyActive: true
-        });
-        setFilteredProducts(res.items);
     };
 
     const onShowAllProducts = useCallback(() => {
         setIsSearchActive(false);
+        setSearchText(undefined);
         setActiveCategory(undefined);
         setBrowseMode('all');
-        setFilteredProducts(getActiveProducts(allProducts));
-    }, [allProducts]);
+    }, []);
+
+    const resetCatalogUi = useCallback(() => {
+        const shouldResetCatalogState =
+            browseModeRef.current !== 'idle' ||
+            !!activeCategoryRef.current ||
+            searchTextRef.current !== undefined ||
+            isSearchActiveRef.current ||
+            !showCategoriesRef.current;
+
+        if (!shouldResetCatalogState) {
+            return;
+        }
+
+        setActiveCategory(undefined);
+        setSearchText(undefined);
+        setIsSearchActive(false);
+        setBrowseMode('idle');
+        setShowCategories(true);
+        setCategoryRefreshToken((current) => current + 1);
+        searchRef.current?.clear?.();
+    }, []);
 
     const onFilterChange = async (text: string) => {
         if (!text?.trim()) {
             setIsSearchActive(false);
-            setFilteredProducts(
-                getBrowseModeProducts(allProducts, browseMode, activeCategory)
-            );
+            setSearchText(undefined);
             return '';
         }
 
+        const normalizedText = text.trim();
         setIsSearchActive(true);
-        const res = await ProductService.search(allProducts, { text, onlyActive: true });
+        setSearchText(normalizedText);
+        const res = await ProductService.search(allProducts, {
+            text: normalizedText,
+            onlyActive: true,
+        });
 
         if (shouldSetFilteredProducts(text, res.allNumbers)) {
-            setFilteredProducts(res.items);
-            // return text;
+            return '';
         }
 
         if (res.items.length === 1 && res.allNumbers) {
             // searchRef.current?.clear();
 
-            const p = res.items[0];
+            const p = getLatestProduct(res.items[0]);
             // add product to cart directly
             dispatch(
                 cartActions.upsert(
@@ -294,9 +342,7 @@ export function SalesScreen({
                 )
             );
             setIsSearchActive(false);
-            setFilteredProducts(
-                getBrowseModeProducts(allProducts, browseMode, activeCategory)
-            );
+            setSearchText(undefined);
         }
 
         searchRef.current?.clear();
@@ -306,7 +352,7 @@ export function SalesScreen({
 
     const onProductSelected = useCallback(
         (p: ButtonItemType) => {
-            const product = p as ProductEntity;
+            const product = getLatestProduct(p as ProductEntity);
 
             if (
                 shouldBlockSelectionByInventory(
@@ -337,12 +383,12 @@ export function SalesScreen({
                 })
             );
         },
-        [dispatch, globalSettings]
+        [dispatch, getLatestProduct, globalSettings]
     );
 
     const onProductLongPress = useCallback(
         (p: ButtonItemType) => {
-            const product = p as ProductEntity;
+            const product = getLatestProduct(p as ProductEntity);
 
             if (
                 shouldBlockSelectionByInventory(
@@ -368,7 +414,7 @@ export function SalesScreen({
                 })
             );
         },
-        [dispatch, globalSettings]
+        [dispatch, getLatestProduct, globalSettings]
     );
 
     const onCartSubmit = (
@@ -726,6 +772,13 @@ export function SalesScreen({
         };
     }, [dispatch]);
 
+    useFocusEffect(
+        useCallback(() => {
+            resetCatalogUi();
+            return undefined;
+        }, [resetCatalogUi])
+    );
+
     useEffect(() => {
         if (!hasCatalogProducts) return;
 
@@ -735,24 +788,6 @@ export function SalesScreen({
 
         return () => interaction.cancel?.();
     }, [hasCatalogProducts]);
-
-    useEffect(() => {
-        if (isSearchActive) {
-            return;
-        }
-
-        const nextProducts = getBrowseModeProducts(
-            allProducts,
-            browseMode,
-            activeCategory
-        );
-        // Keep the filtered view aligned with source catalog updates without
-        // overwriting active search selections when the list is unchanged.
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setFilteredProducts((current) =>
-            isSameProductList(current, nextProducts) ? current : nextProducts
-        );
-    }, [activeCategory, allProducts, browseMode, isSearchActive]);
 
     useEffect(() => {
         Animated.parallel([
@@ -807,6 +842,8 @@ export function SalesScreen({
                     onCategoryChange={onCategoryChange}
                     onShowAllProducts={onShowAllProducts}
                     showAllProducts={browseMode === 'all'}
+                    selectedCategoryId={activeCategory?.id}
+                    categoryRefreshToken={categoryRefreshToken}
                     onToggleCategories={() => setShowCategories((current) => !current)}
                     onFilterChange={onFilterChange}
                     onProductSelected={onProductSelected}

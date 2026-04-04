@@ -7,14 +7,13 @@ const mockDispatch = jest.fn();
 const mockGoBack = jest.fn();
 const mockNavigate = jest.fn();
 const mockSearch = jest.fn();
-const mockSyncCategories = jest.fn();
-const mockSyncProducts = jest.fn();
 const mockCategoriesUnsubscribe = jest.fn();
 const mockProductsUnsubscribe = jest.fn();
 const mockSettingsUnsubscribe = jest.fn();
 const mockPrintReceipt = jest.fn();
 const mockSearchFocus = jest.fn();
 const mockSearchClear = jest.fn();
+let focusEffectCallback: (() => void | (() => void)) | undefined;
 const mockGetNextOrderNumber = jest.fn(async () => '51-EMP-260326-0001');
 const mockReserveNextOrderNumber = jest.fn(() => ({
     orderNo: '51-EMP-260326-0001',
@@ -95,6 +94,17 @@ jest.mock('@pos/store', () => ({
     useAppDispatch: () => mockDispatch,
 }));
 
+jest.mock('@react-navigation/native', () => ({
+    useFocusEffect: (callback: () => void | (() => void)) => {
+        const React = require('react');
+        focusEffectCallback = callback;
+        React.useEffect(() => {
+            const cleanup = callback();
+            return cleanup;
+        }, [callback]);
+    },
+}));
+
 jest.mock('@pos/theme/native/design-tokens', () => ({
     useDesignTokens: () => ({
         colors: {
@@ -121,7 +131,6 @@ jest.mock('@pos/employees/data-access', () => ({
 }));
 
 jest.mock('@pos/categories/data-access', () => ({
-    syncCategories: (...args: unknown[]) => mockSyncCategories(...args),
     subscribeToCategoryChanges: () => ({ unsubscribe: mockCategoriesUnsubscribe }),
 }));
 
@@ -133,7 +142,6 @@ jest.mock('@pos/products/data-access', () => ({
     ProductService: {
         search: (...args: unknown[]) => mockSearch(...args),
     },
-    syncProducts: (...args: unknown[]) => mockSyncProducts(...args),
     subscribeToProductChanges: () => ({ unsubscribe: mockProductsUnsubscribe }),
 }));
 
@@ -216,6 +224,8 @@ jest.mock('./sales-catalog-pane', () => ({
         searchRef,
         hasCatalogProducts,
         filteredProducts,
+        selectedCategoryId,
+        showAllProducts,
         onCategoryChange,
         onShowAllProducts,
         onFilterChange,
@@ -231,6 +241,8 @@ jest.mock('./sales-catalog-pane', () => ({
         return (
             <View>
                 <Text testID="sales-catalog-count">{filteredProducts.length}</Text>
+                <Text testID="sales-selected-category">{selectedCategoryId ?? 'none'}</Text>
+                <Text testID="sales-show-all-state">{showAllProducts ? 'all' : 'not-all'}</Text>
                 <Pressable testID="sales-category-clear" onPress={() => onCategoryChange(undefined)}>
                     <Text>Clear Category</Text>
                 </Pressable>
@@ -384,6 +396,7 @@ describe('SalesScreen', () => {
         jest.clearAllMocks();
         mockSearchFocus.mockClear();
         mockSearchClear.mockClear();
+        focusEffectCallback = undefined;
         interactionCallbacks = [];
         mockInteractionCancel = jest.fn();
         jest
@@ -392,7 +405,7 @@ describe('SalesScreen', () => {
                 interactionCallbacks.push(callback);
                 return { cancel: mockInteractionCancel } as any;
             });
-        mockSearch.mockResolvedValue({
+        mockSearch.mockReturnValue({
             items: [mockProduct],
             allNumbers: false,
             quantity: undefined,
@@ -484,8 +497,6 @@ describe('SalesScreen', () => {
         const { getByTestId } = renderSalesScreen();
 
         expect(getByTestId('sales-catalog-count').props.children).toBe(0);
-        expect(mockSyncCategories).not.toHaveBeenCalled();
-        expect(mockSyncProducts).not.toHaveBeenCalled();
         expect(mockCategoriesUnsubscribe).not.toHaveBeenCalled();
         expect(mockProductsUnsubscribe).not.toHaveBeenCalled();
 
@@ -493,8 +504,6 @@ describe('SalesScreen', () => {
             interactionCallbacks.forEach((callback) => callback());
         });
 
-        expect(mockSyncCategories).not.toHaveBeenCalled();
-        expect(mockSyncProducts).not.toHaveBeenCalled();
     });
 
     it('dispatches cart upsert when an EA product is selected', () => {
@@ -575,16 +584,20 @@ describe('SalesScreen', () => {
     });
 
     it('handles search flow and barcode auto-add behavior', async () => {
-        mockSearch
-            .mockResolvedValueOnce({
+        mockSearch.mockImplementation((_: any, options: { text?: string }) => {
+            if (options.text === '12345') {
+                return {
+                    items: [mockProduct],
+                    allNumbers: true,
+                    quantity: 7,
+                };
+            }
+
+            return {
                 items: [mockProduct],
                 allNumbers: false,
-            })
-            .mockResolvedValueOnce({
-                items: [mockProduct],
-                allNumbers: true,
-                quantity: 7,
-            });
+            };
+        });
 
         const { getByTestId } = renderSalesScreen();
 
@@ -616,11 +629,6 @@ describe('SalesScreen', () => {
     });
 
     it('handles category changes with and without selected category and supports all products', async () => {
-        mockSearch.mockResolvedValue({
-            items: [mockProduct],
-            allNumbers: false,
-        });
-
         const { getByTestId } = renderSalesScreen();
         await act(async () => {
             fireEvent.press(getByTestId('sales-category-clear'));
@@ -637,11 +645,57 @@ describe('SalesScreen', () => {
             await Promise.resolve();
         });
         expect(getByTestId('sales-catalog-count').props.children).toBe(2);
+        expect(mockSearch).not.toHaveBeenCalled();
+    });
 
-        expect(mockSearch).toHaveBeenCalledWith(
-            mockState.allProducts,
-            expect.objectContaining({ categoryId: 'c-1', onlyActive: true })
-        );
+    it('resets catalog ui when the sales screen regains focus', async () => {
+        const { getByTestId } = renderSalesScreen();
+
+        await act(async () => {
+            fireEvent.press(getByTestId('sales-category-select'));
+            await Promise.resolve();
+        });
+        expect(getByTestId('sales-selected-category').props.children).toBe('c-1');
+
+        await act(async () => {
+            fireEvent.press(getByTestId('sales-search-submit'));
+            await Promise.resolve();
+        });
+        expect(getByTestId('sales-catalog-count').props.children).toBe(1);
+
+        act(() => {
+            focusEffectCallback?.();
+        });
+
+        expect(getByTestId('sales-selected-category').props.children).toBe('none');
+        expect(getByTestId('sales-show-all-state').props.children).toBe('not-all');
+        expect(getByTestId('sales-catalog-count').props.children).toBe(0);
+        expect(mockSearchClear).toHaveBeenCalled();
+    });
+
+    it('does not keep resetting catalog ui when focus fires again without state changes', async () => {
+        const { getByTestId } = renderSalesScreen();
+
+        await act(async () => {
+            fireEvent.press(getByTestId('sales-category-select'));
+            await Promise.resolve();
+        });
+
+        expect(getByTestId('sales-selected-category').props.children).toBe('c-1');
+
+        act(() => {
+            focusEffectCallback?.();
+        });
+
+        expect(getByTestId('sales-selected-category').props.children).toBe('none');
+        expect(mockSearchClear).toHaveBeenCalledTimes(1);
+
+        act(() => {
+            focusEffectCallback?.();
+        });
+
+        expect(getByTestId('sales-selected-category').props.children).toBe('none');
+        expect(mockSearchClear).toHaveBeenCalledTimes(1);
     });
 
     it('submits order mode and resets cart after save success', async () => {

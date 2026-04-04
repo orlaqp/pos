@@ -23,6 +23,8 @@ interface SalesCatalogPaneProps {
     onCategoryChange: (category?: CategoryEntity) => void;
     onShowAllProducts: () => void;
     showAllProducts: boolean;
+    selectedCategoryId?: string;
+    categoryRefreshToken?: number;
     onToggleCategories: () => void;
     onFilterChange: (text: string) => Promise<string | void>;
     onProductSelected: (product: ButtonItemType) => void;
@@ -44,6 +46,8 @@ export function SalesCatalogPane({
     onCategoryChange,
     onShowAllProducts,
     showAllProducts,
+    selectedCategoryId,
+    categoryRefreshToken,
     onToggleCategories,
     onFilterChange,
     onProductSelected,
@@ -69,6 +73,8 @@ export function SalesCatalogPane({
                             onSelected={onCategoryChange}
                             onShowAll={onShowAllProducts}
                             showAllSelected={showAllProducts}
+                            selectedCategoryId={selectedCategoryId}
+                            refreshToken={categoryRefreshToken}
                         />
                     ) : null}
                 </View>

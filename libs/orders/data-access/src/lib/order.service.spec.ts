@@ -530,6 +530,7 @@ describe('OrderService', () => {
     expect(graphqlMock).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
+        query: expect.stringContaining('quantity'),
         authMode: 'userPool',
         variables: {
           input: {
@@ -543,6 +544,7 @@ describe('OrderService', () => {
     expect(graphqlMock).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
+        query: expect.stringContaining('quantity'),
         authMode: 'userPool',
         variables: {
           input: {
@@ -553,6 +555,16 @@ describe('OrderService', () => {
         },
       })
     );
+
+    const firstMutation = graphqlMock.mock.calls[0]?.[0] as { query?: string };
+    expect(firstMutation.query).toEqual(expect.stringContaining('quantity'));
+    expect(firstMutation.query).toEqual(expect.stringContaining('updatedAt'));
+    expect(firstMutation.query).toEqual(expect.stringContaining('_version'));
+    expect(firstMutation.query).toEqual(expect.stringContaining('_lastChangedAt'));
+    expect(firstMutation.query).toEqual(expect.stringContaining('productCategoryId'));
+    expect(firstMutation.query).toEqual(expect.stringContaining('productBrandId'));
+    expect(firstMutation.query).toEqual(expect.stringContaining('unitOfMeasure'));
+    expect(firstMutation.query).toEqual(expect.stringContaining('trackStock'));
   });
 
   it('fails inventory updates loudly when a product is missing locally', async () => {

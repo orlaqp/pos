@@ -105,7 +105,13 @@ export const inventoryReceiveSlice = createSlice({
       .addCase(
         fetchInventoryReceive.fulfilled,
         (state: InventoryReceiveState, action: PayloadAction< InventoryReceiveDTO[] >) => {
-          inventoryReceiveAdapter.setAll(state, action.payload);
+          inventoryReceiveAdapter.setAll(
+              state,
+              InventoryReceiveMapper.composeReceiveItems(
+                  action.payload,
+                  state.lines
+              )
+          );
           filterList(state, state.filterQuery);
           state.loadingStatus = 'loaded';
         }

@@ -105,7 +105,13 @@ export const inventoryCountSlice = createSlice({
       .addCase(
         fetchInventoryCount.fulfilled,
         (state: InventoryCountState, action: PayloadAction< InventoryCountDTO[] >) => {
-          inventoryCountAdapter.setAll(state, action.payload);
+          inventoryCountAdapter.setAll(
+              state,
+              InventoryCountMapper.composeInventoryItems(
+                  action.payload,
+                  state.lines
+              )
+          );
           filterList(state, state.filterQuery);
           state.loadingStatus = 'loaded';
         }

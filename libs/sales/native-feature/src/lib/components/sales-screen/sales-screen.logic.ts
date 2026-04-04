@@ -1,5 +1,6 @@
 import { CategoryEntity } from '@pos/categories/data-access';
 import { ProductEntity } from '@pos/products/data-access';
+import { ProductService } from '@pos/products/data-access';
 import { EACH } from '@pos/unit-of-measures/data-access';
 
 type Dictionary<T> = Record<string, T | undefined>;
@@ -38,6 +39,23 @@ export const getBrowseModeProducts = (
     return [];
 };
 
+export const getVisibleProducts = (
+    allProducts: ProductEntity[],
+    browseMode: 'idle' | 'all' | 'category',
+    activeCategory: CategoryEntity | undefined,
+    searchText: string | undefined
+): ProductEntity[] => {
+    const normalizedSearchText = searchText?.trim();
+    if (normalizedSearchText) {
+        return ProductService.search(allProducts, {
+            text: normalizedSearchText,
+            onlyActive: true,
+        }).items;
+    }
+
+    return getBrowseModeProducts(allProducts, browseMode, activeCategory);
+};
+
 export const getAutoAddQuantity = (
     product: ProductEntity,
     quantity?: number
@@ -60,17 +78,4 @@ export const getSingleProductFromDictionary = (
     const productIds = Object.keys(products);
     if (productIds.length !== 1) return undefined;
     return products[productIds[0]] as ProductEntity | undefined;
-};
-
-export const isSameProductList = (
-    left: ProductEntity[],
-    right: ProductEntity[]
-): boolean => {
-    if (left === right) return true;
-    if (left.length !== right.length) return false;
-
-    return left.every((product, index) => {
-        const next = right[index];
-        return product?.id === next?.id;
-    });
 };

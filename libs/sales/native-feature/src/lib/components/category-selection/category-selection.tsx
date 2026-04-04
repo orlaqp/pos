@@ -1,15 +1,17 @@
 import React, { useCallback } from 'react';
-import { categoriesActions, CategoryEntity, selectAllCategories, selectedCategory } from '@pos/categories/data-access';
+import { CategoryEntity, selectAllCategories } from '@pos/categories/data-access';
 import { UIEmptyState, UIS3Image } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 export interface CategorySelectionProps {
     onSelected: (c?: CategoryEntity) => void;
     onShowAll?: () => void;
     showAllSelected?: boolean;
+    selectedCategoryId?: string;
+    refreshToken?: number;
 }
 
 interface CategoryTileProps {
@@ -30,6 +32,7 @@ const CategoryTile = React.memo(function CategoryTile({
         <Pressable
             testID={`sales-category-${item.id || item.name}`}
             onPress={() => onPress(item)}
+            accessibilityState={{ selected: isSelected }}
             style={[styles.itemCard, isSelected && styles.itemCardSelected]}
         >
             <View style={styles.imageWrap}>
@@ -49,34 +52,34 @@ export function CategorySelection({
     onSelected,
     onShowAll,
     showAllSelected = false,
+    selectedCategoryId,
+    refreshToken = 0,
 }: CategorySelectionProps) {
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
     const categories = useSelector(selectAllCategories);
-    const selected = useSelector(selectedCategory);
-    const dispatch = useDispatch();
-    const selectedId = selected?.id;
 
-    const onSelection = useCallback((item: CategoryEntity) => {
-        if (selectedId === item.id) {
-            onSelected(undefined);
-            dispatch(categoriesActions.clearSelection());
-            return;
-        }
+    const onSelection = useCallback(
+        (item: CategoryEntity) => {
+            if (item.id && selectedCategoryId === item.id) {
+                onSelected(undefined);
+                return;
+            }
 
-        onSelected(item);
-        dispatch(categoriesActions.select(item));
-    }, [dispatch, onSelected, selectedId]);
+            onSelected(item);
+        },
+        [onSelected, selectedCategoryId]
+    );
 
     const renderCategory = useCallback(
         ({ item }: { item: CategoryEntity }) => (
             <CategoryTile
                 item={item}
-                isSelected={selectedId === item.id}
+                isSelected={selectedCategoryId === item.id}
                 onPress={onSelection}
             />
         ),
-        [onSelection, selectedId]
+        [onSelection, selectedCategoryId]
     );
 
     return (
@@ -92,10 +95,8 @@ export function CategorySelection({
             {categories.length ? (
                 <Pressable
                     testID="sales-category-all"
-                    onPress={() => {
-                        dispatch(categoriesActions.clearSelection());
-                        onShowAll?.();
-                    }}
+                    onPress={() => onShowAll?.()}
+                    accessibilityState={{ selected: showAllSelected }}
                     style={[
                         styles.itemCard,
                         styles.allCard,
@@ -118,10 +119,10 @@ export function CategorySelection({
                 keyExtractor={(item) => item.id || item.name}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.listContent}
+                extraData={`${selectedCategoryId ?? ''}:${String(showAllSelected)}:${refreshToken}`}
                 initialNumToRender={10}
                 maxToRenderPerBatch={10}
                 windowSize={7}
-                removeClippedSubviews
                 renderItem={renderCategory}
             />
         </View>

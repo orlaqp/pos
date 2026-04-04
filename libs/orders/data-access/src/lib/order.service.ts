@@ -735,7 +735,34 @@ const updateProductInventoryDeltaMutation = /* GraphQL */ `
     ) {
         updateProduct(input: $input, condition: $condition) {
             id
+            tenantId
+            name
+            description
+            price
+            tags
+            cost
+            barcode
+            sku
+            plu
+            quantity
+            unitOfMeasure
+            trackStock
+            reorderPoint
+            reorderQuantity
+            picture
+            isActive
+            isEBTEligible
+            discountable
+            minAllowedPrice
+            maxManualDiscountPercent
+            maxManualDiscountAmount
+            createdAt
+            updatedAt
             _version
+            _deleted
+            _lastChangedAt
+            productCategoryId
+            productBrandId
             __typename
         }
     }

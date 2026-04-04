@@ -2,9 +2,8 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
-const mockDispatch = jest.fn();
 const mockOnSelected = jest.fn();
-let mockSelectedCategory: any;
+const mockOnShowAll = jest.fn();
 let mockCategories = [
     { id: 'c1', name: 'Fruits', picture: null },
     { id: 'c2', name: 'Snacks', picture: null },
@@ -22,17 +21,11 @@ jest.mock('react-native-gesture-handler', () => ({
 }));
 
 jest.mock('react-redux', () => ({
-    useDispatch: () => mockDispatch,
     useSelector: (selector: (state: unknown) => unknown) => selector({}),
 }));
 
 jest.mock('@pos/categories/data-access', () => ({
-    categoriesActions: {
-        select: (item: unknown) => ({ type: 'categories/select', payload: item }),
-        clearSelection: () => ({ type: 'categories/clearSelection' }),
-    },
     selectAllCategories: () => mockCategories,
-    selectedCategory: () => mockSelectedCategory,
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
@@ -47,9 +40,8 @@ const { default: CategorySelection } = require('./category-selection');
 
 describe('CategorySelection', () => {
     beforeEach(() => {
-        mockDispatch.mockClear();
         mockOnSelected.mockClear();
-        mockSelectedCategory = mockCategories[0];
+        mockOnShowAll.mockClear();
         mockCategories = [
             { id: 'c1', name: 'Fruits', picture: null },
             { id: 'c2', name: 'Snacks', picture: null },
@@ -57,31 +49,24 @@ describe('CategorySelection', () => {
         ];
     });
 
-    it('renders categories and handles selection', () => {
+    it('renders categories and handles selection from props', () => {
         const { getByTestId } = render(
-            <CategorySelection onSelected={mockOnSelected} />
+            <CategorySelection onSelected={mockOnSelected} selectedCategoryId="c1" />
         );
 
         fireEvent.press(getByTestId('sales-category-c2'));
 
         expect(mockOnSelected).toHaveBeenCalledWith(mockCategories[1]);
-        expect(mockDispatch).toHaveBeenCalledWith({
-            type: 'categories/select',
-            payload: mockCategories[1],
-        });
     });
 
-    it('clears selection when pressing selected category', () => {
+    it('clears selection when pressing the currently selected category', () => {
         const { getByTestId } = render(
-            <CategorySelection onSelected={mockOnSelected} />
+            <CategorySelection onSelected={mockOnSelected} selectedCategoryId="c1" />
         );
 
         fireEvent.press(getByTestId('sales-category-c1'));
 
         expect(mockOnSelected).toHaveBeenCalledWith(undefined);
-        expect(mockDispatch).toHaveBeenCalledWith({
-            type: 'categories/clearSelection',
-        });
     });
 
     it('uses category name in testID fallback when id is missing', () => {
@@ -93,18 +78,38 @@ describe('CategorySelection', () => {
         expect(mockOnSelected).toHaveBeenCalledWith(mockCategories[2]);
     });
 
-    it('selects category when no category is currently selected', () => {
-        mockSelectedCategory = undefined;
+    it('marks selection based on selectedCategoryId only', () => {
         const { getByTestId } = render(
-            <CategorySelection onSelected={mockOnSelected} />
+            <CategorySelection
+                onSelected={mockOnSelected}
+                selectedCategoryId="c2"
+                onShowAll={mockOnShowAll}
+            />
         );
 
-        fireEvent.press(getByTestId('sales-category-c1'));
-        expect(mockOnSelected).toHaveBeenCalledWith(mockCategories[0]);
-        expect(mockDispatch).toHaveBeenCalledWith({
-            type: 'categories/select',
-            payload: mockCategories[0],
+        expect(getByTestId('sales-category-c2').props.accessibilityState).toEqual({
+            selected: true,
         });
+        expect(getByTestId('sales-category-c1').props.accessibilityState).toEqual({
+            selected: false,
+        });
+    });
+
+    it('marks all products based on showAllSelected and calls onShowAll', () => {
+        const { getByTestId } = render(
+            <CategorySelection
+                onSelected={mockOnSelected}
+                onShowAll={mockOnShowAll}
+                showAllSelected
+            />
+        );
+
+        expect(getByTestId('sales-category-all').props.accessibilityState).toEqual({
+            selected: true,
+        });
+
+        fireEvent.press(getByTestId('sales-category-all'));
+        expect(mockOnShowAll).toHaveBeenCalled();
     });
 
     it('shows empty state when there are no categories', () => {

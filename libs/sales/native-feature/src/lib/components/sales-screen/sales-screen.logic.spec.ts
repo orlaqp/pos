@@ -4,10 +4,27 @@ import {
     getCategoryFilteredProducts,
     getSelectedQuantity,
     getSingleProductFromDictionary,
+    getVisibleProducts,
     shouldBlockSelectionByInventory,
     shouldSetFilteredProducts,
 } from './sales-screen.logic';
 import { EACH } from '@pos/unit-of-measures/data-access';
+
+jest.mock('@pos/products/data-access', () => ({
+    ProductService: {
+        search: (products: any[], options: { text?: string; onlyActive?: boolean }) => ({
+            items: products.filter((product) => {
+                const matchesText = options.text
+                    ? String(product.name || '')
+                          .toLowerCase()
+                          .includes(options.text.toLowerCase())
+                    : true;
+                const matchesActive = options.onlyActive ? product.isActive : true;
+                return matchesText && matchesActive;
+            }),
+        }),
+    },
+}));
 
 describe('sales-screen.logic', () => {
     const products = [
@@ -66,5 +83,36 @@ describe('sales-screen.logic', () => {
                 '1': products[0],
             } as any)
         ).toEqual(products[0]);
+    });
+
+    it('derives visible search results from the latest live products', () => {
+        expect(
+            getVisibleProducts(
+                [
+                    {
+                        id: '1',
+                        name: 'Apple',
+                        quantity: 5,
+                        isActive: true,
+                        productCategoryId: 'a',
+                    } as any,
+                    {
+                        id: '2',
+                        name: 'Banana',
+                        quantity: 8,
+                        isActive: true,
+                        productCategoryId: 'a',
+                    } as any,
+                ],
+                'all',
+                undefined,
+                'apple'
+            )
+        ).toEqual([
+            expect.objectContaining({
+                id: '1',
+                quantity: 5,
+            }),
+        ]);
     });
 });
