@@ -70,6 +70,7 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
                 multiline={false}
                 renderErrorMessage={false}
                 clearButtonMode='always'
+                blurOnSubmit={false}
                 onChangeText={handleChangeText}
                 onSubmitEditing={(e) => handleSubmit(e.nativeEvent.text)}
             />

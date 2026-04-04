@@ -9,7 +9,6 @@ import { RootState, useAppDispatch } from '@pos/store';
 import { BackOffice } from '@pos/back-office/native-feature';
 import {
     CompactOrderList,
-    OrderJournalList,
     Orders,
 } from '@pos/orders/native-feature';
 import { Button, Dialog, useTheme } from '@rneui/themed';
@@ -64,16 +63,12 @@ export function Navigation() {
     const businessName = useSelector(
         (state: RootState) => state.tenantSession.businessName
     );
-    const currentTenantId = useSelector(
-        (state: RootState) => state.tenantSession.currentTenantId
-    );
     const dispatch = useAppDispatch();
     const cart = useSelector(selectCart);
     const defaultPrinter = useSelector(getDefaultPrinter);
     const store = useSelector(selectStore);
 
     const [showOtherOrders, setShowOtherOrders] = useState<boolean>(false);
-    const [showOrderJournal, setShowOrderJournal] = useState<boolean>(false);
     const [showSalesActions, setShowSalesActions] = useState<boolean>(false);
 
     const print = () => {
@@ -181,17 +176,6 @@ export function Navigation() {
                 ]}
             >
                 <Button
-                    testID="nav-actions-order-journal"
-                    type="clear"
-                    title="Order Journal"
-                    onPress={() => {
-                        setShowSalesActions(false);
-                        setShowOrderJournal(true);
-                    }}
-                    buttonStyle={{ justifyContent: 'flex-start' }}
-                    titleStyle={{ width: '100%', textAlign: 'left' }}
-                />
-                <Button
                     testID="nav-actions-open-orders"
                     type="clear"
                     title="Open Orders"
@@ -233,28 +217,6 @@ export function Navigation() {
                                 : theme.theme.colors.error,
                     }}
                 />
-            </Dialog>
-            <Dialog
-                isVisible={showOrderJournal}
-                onBackdropPress={() => setShowOrderJournal(false)}
-                supportedOrientations={['landscape']}
-                presentationStyle="fullScreen"
-                overlayStyle={[
-                    styles.overlay,
-                    {
-                        width: 820,
-                        maxWidth: '95%',
-                        borderRadius: 16,
-                        padding: 20,
-                    },
-                ]}
-            >
-                {showOrderJournal ? (
-                    <OrderJournalList
-                        tenantId={currentTenantId}
-                        onClose={() => setShowOrderJournal(false)}
-                    />
-                ) : null}
             </Dialog>
             <Stack.Navigator
                 id="root-navigation"

@@ -112,6 +112,8 @@
     "DASHBOARD_Subtitle": "Sales performance and trends across the selected period.",
     "DASHBOARD_NoDataForRange": "No data found for this date range",
     "DASHBOARD_GrossIncome": "Gross Income",
+    "DASHBOARD_EstGrossProfit": "Est. Gross Profit",
+    "DASHBOARD_MissingCostNote": "Estimated profit excludes {{count}} sold lines with missing cost.",
     "DASHBOARD_TotalSales": "Total Sales",
     "DASHBOARD_NewCustomers": "New Customers",
     "DASHBOARD_TopProducts": "Top 5 Products",

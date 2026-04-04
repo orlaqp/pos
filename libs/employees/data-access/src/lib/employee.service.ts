@@ -55,38 +55,15 @@ const fetchRemoteEmployees = async (variables: Record<string, unknown>) => {
 const fetchAllRemoteEmployees = async () => {
     const employees: Employee[] = [];
     let nextToken: string | null | undefined = undefined;
-    let page = 0;
 
     do {
-        page += 1;
         const result = await fetchRemoteEmployees({
             limit: 100,
             ...(nextToken ? { nextToken } : {}),
         });
-
-        console.log('[employees] remote list page', {
-            page,
-            itemCount: result?.items?.length ?? 0,
-            nextToken: result?.nextToken ?? null,
-        });
-        console.log(
-            '[employees] remote list sample',
-            (result?.items ?? []).slice(0, 5).map((employee) => ({
-                id: employee?.id ?? null,
-                email: employee?.email ?? null,
-                active: employee?.active ?? null,
-                deleted: employee?._deleted ?? null,
-                lastChangedAt: employee?._lastChangedAt ?? null,
-                updatedAt: employee?.updatedAt ?? null,
-            }))
-        );
         employees.push(...(result?.items?.filter(isActiveRemoteEmployee) ?? []));
         nextToken = result?.nextToken;
     } while (nextToken);
-
-    console.log('[employees] remote list total', {
-        itemCount: employees.length,
-    });
     return employees;
 };
 
@@ -96,7 +73,8 @@ export class EmployeeService {
     }
 
     static async getSyncedLocalEmployees(timeoutMs = 15000) {
-        return new Promise<Employee[]>((resolve, reject) => {
+        return new Promise<{ employees: Employee[]; initialSyncComplete: boolean }>(
+            (resolve, reject) => {
             const timeout = setTimeout(() => {
                 void DataStore.query(Employee)
                     .then((employees) => {
@@ -139,13 +117,12 @@ export class EmployeeService {
                         })),
                     });
 
-                    if (!isSynced) {
-                        return;
-                    }
-
                     clearTimeout(timeout);
                     subscription.unsubscribe();
-                    resolve(items);
+                    resolve({
+                        employees: items,
+                        initialSyncComplete: isSynced,
+                    });
                 },
                 error: (error) => {
                     clearTimeout(timeout);
@@ -171,7 +148,7 @@ export class EmployeeService {
         const existing = await DataStore.query(Employee, employee.id);
 
         if (!existing) {
-            return console.log(`It seems that employee: ${employee.id} has been removed`);
+            return;
         }
 
         await DataStore.save(
@@ -194,9 +171,6 @@ export class EmployeeService {
 
     static getAll() {
         return EmployeeService.getLocalEmployees().then(async (employees) => {
-            console.log('[employees] local query total', {
-                itemCount: employees.length,
-            });
             if (employees.length > 0) {
                 return employees;
             }

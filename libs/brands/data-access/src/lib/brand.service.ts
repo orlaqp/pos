@@ -20,7 +20,7 @@ export class BrandService {
         const existing = await DataStore.query(Brand, brand.id);
 
         if (!existing) {
-            return console.log(`It seems that brand: ${brand.id} has been removed`);
+            return;
         }
 
         await DataStore.save(

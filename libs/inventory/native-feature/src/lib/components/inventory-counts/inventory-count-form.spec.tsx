@@ -588,6 +588,7 @@ describe('InventoryCountForm helpers', () => {
 
         expect(updated[0].newCount).toBe(12);
         expect(updated[0].comments).toBe('counted');
+        expect(updated[0]).not.toBe(lines[0]);
         expect(unchanged).toBe(lines);
     });
 

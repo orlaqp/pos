@@ -8,10 +8,6 @@ jest.mock('@pos/shared/amplify', () => ({
   },
 }));
 
-jest.mock('react-native-uuid', () => ({
-  v4: jest.fn(() => 'event-id'),
-}));
-
 describe('subscribeEvents', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -36,8 +32,17 @@ describe('subscribeEvents', () => {
       },
     });
 
+    expect(dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'events/add',
+        payload: expect.objectContaining({
+          event: 'outboxMutationFailed',
+          data: 'model=Category operation=CREATE id=category-1',
+        }),
+      })
+    );
     expect(errorSpy).toHaveBeenCalledWith(
-      'DataStore mutation failed: {"model":{"name":"Category"},"operation":"CREATE","element":{"id":"category-1","name":"Carnes"}}'
+      'DataStore mutation failed: model=Category operation=CREATE id=category-1'
     );
 
     errorSpy.mockRestore();
@@ -67,7 +72,31 @@ describe('subscribeEvents', () => {
         type: 'events/add',
         payload: expect.objectContaining({
           event: 'modelSynced',
+          data: 'model=Product full=yes delta=no new=1 updated=0 deleted=0',
         }),
+      })
+    );
+  });
+
+  it('does not record noisy hub events that are not part of diagnostics history', async () => {
+    const dispatch = jest.fn();
+
+    subscribeEvents(dispatch);
+
+    const listener = (Hub.listen as jest.Mock).mock.calls[0][1];
+    await listener({
+      source: 'datastore',
+      payload: {
+        event: 'ready',
+        data: {
+          models: ['Product', 'Category'],
+        },
+      },
+    });
+
+    expect(dispatch).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'events/add',
       })
     );
   });

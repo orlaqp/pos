@@ -5,16 +5,26 @@ import { GlobalSettings } from '@pos/shared/models';
 import { settingsActions } from './slices/settings.slice';
 
 export const syncGlobalSettings = (dispatch: Dispatch) => {
-    console.log('Syncing global settings to the store');
-    DataStore.query(GlobalSettings).then((settings) =>
-        updateStore(dispatch, settings)
-    );
+    let subscription: { unsubscribe: () => void } | undefined;
+    let shouldUnsubscribeAfterSubscribe = false;
+    subscription = DataStore.observeQuery(GlobalSettings).subscribe(({ items }) => {
+        updateStore(dispatch, items);
+        if (subscription) {
+            subscription.unsubscribe();
+            return;
+        }
+
+        shouldUnsubscribeAfterSubscribe = true;
+    });
+
+    if (shouldUnsubscribeAfterSubscribe) {
+        subscription.unsubscribe();
+    }
 };
 
 export const subscribeToGlobalSettingsChanges = (dispatch: Dispatch) => {
     return DataStore.observeQuery(GlobalSettings).subscribe(({ isSynced, items }) => {
-        if (!isSynced) return;
-        console.log('Global Settings changes detected');
+        void isSynced;
         updateStore(dispatch, items);
     });
 };

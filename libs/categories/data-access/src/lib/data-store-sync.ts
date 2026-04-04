@@ -8,10 +8,22 @@ import { logSyncDebug, startSyncMeasure, trackSyncSubscription } from '@pos/shar
 
 export const syncCategories = (dispatch: Dispatch) => {
     const finish = startSyncMeasure('categories', 'syncCategories');
-    DataStore.query(Category).then((categories) => {
-        finish({ itemCount: categories.length });
-        updateStore(dispatch, categories);
+    let subscription: { unsubscribe: () => void } | undefined;
+    let shouldUnsubscribeAfterSubscribe = false;
+    subscription = DataStore.observeQuery(Category).subscribe(({ items }) => {
+        finish({ itemCount: items.length });
+        updateStore(dispatch, items);
+        if (subscription) {
+            subscription.unsubscribe();
+            return;
+        }
+
+        shouldUnsubscribeAfterSubscribe = true;
     });
+
+    if (shouldUnsubscribeAfterSubscribe) {
+        subscription.unsubscribe();
+    }
 };
 
 export const subscribeToCategoryChanges = (dispatch: Dispatch) => {

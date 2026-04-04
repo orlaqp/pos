@@ -26,6 +26,7 @@ import { EACH } from '@pos/unit-of-measures/data-access';
 import i18next from 'i18next';
 import { useSelector } from 'react-redux';
 import { selectAllCategories } from '@pos/categories/data-access';
+import { selectProductsEntities } from '@pos/products/data-access';
 
 /* eslint-disable-next-line */
 export interface DashboardProps {}
@@ -37,6 +38,10 @@ interface DashboardSupplemental {
     paymentMixPercentages: { name: string; amount: string; percent: string; ratio: number }[];
     totalDiscounts: number;
     discountedOrders: number;
+    estimatedGrossProfit: number;
+    missingCostLineCount: number;
+    missingCostProductCount: number;
+    excludedSalesAmount: number;
 }
 
 const getDashboardLineAmount = (line: NonNullable<Order['lines']>[number]) =>
@@ -84,18 +89,10 @@ export const getDashboardAverageTicket = (summary?: SalesSummary) => {
     return totalAmount / totalOrders;
 };
 
-export const getDashboardItemsSold = (summary?: SalesSummary) =>
-    Number(
-        (summary?.products || []).reduce(
-            (sum, item) =>
-                sum + (Number(item?.amount || 0) > 0 ? Number(item?.quantity || 0) : 0),
-            0
-        )
-    );
-
 export const buildDashboardSupplemental = (
     orders: Order[],
-    categoriesById: Record<string, string>
+    categoriesById: Record<string, string>,
+    productsById: Record<string, { cost?: number | null } | undefined>
 ): DashboardSupplemental => {
     const categoryTotals: Record<string, number> = {};
     const paymentTotals: Record<string, number> = {
@@ -107,6 +104,10 @@ export const buildDashboardSupplemental = (
 
     let totalDiscounts = 0;
     let discountedOrders = 0;
+    let estimatedGrossProfit = 0;
+    let missingCostLineCount = 0;
+    let excludedSalesAmount = 0;
+    const missingCostProductIds = new Set<string>();
 
     orders.forEach((order) => {
         const discountTotal = Number(order.discountTotal || 0);
@@ -126,6 +127,24 @@ export const buildDashboardSupplemental = (
             if (!categoryId) return;
             const amount = getDashboardLineAmount(line);
             categoryTotals[categoryId] = (categoryTotals[categoryId] || 0) + amount;
+
+            const productId = String(line?.productId || '').trim();
+            if (!productId) {
+                return;
+            }
+
+            const rawCost = productsById[productId]?.cost;
+            const resolvedCost =
+                rawCost === null || rawCost === undefined ? null : Number(rawCost);
+
+            if (resolvedCost === null || Number.isNaN(resolvedCost)) {
+                missingCostLineCount += 1;
+                excludedSalesAmount += amount;
+                missingCostProductIds.add(productId);
+                return;
+            }
+
+            estimatedGrossProfit += amount - resolvedCost * Number(line?.quantity || 0);
         });
     });
 
@@ -167,6 +186,10 @@ export const buildDashboardSupplemental = (
         paymentMixPercentages,
         totalDiscounts,
         discountedOrders,
+        estimatedGrossProfit,
+        missingCostLineCount,
+        missingCostProductCount: missingCostProductIds.size,
+        excludedSalesAmount,
     };
 };
 
@@ -223,10 +246,19 @@ export function Dashboard(_props: DashboardProps) {
     const [emptyOpacity] = useState(() => new Animated.Value(0));
     const [emptyTranslateY] = useState(() => new Animated.Value(12));
     const categories = useSelector(selectAllCategories);
+    const productsById =
+        useSelector(selectProductsEntities) as Record<
+            string,
+            { cost?: number | null } | undefined
+        >;
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
             : fallback;
+    const tMissingCostNote = (count: number) =>
+        i18next.isInitialized && i18next.exists('DASHBOARD_MissingCostNote')
+            ? String(i18next.t('DASHBOARD_MissingCostNote', { count }))
+            : `Estimated profit excludes ${count} sold lines with missing cost.`;
     const formattedRange = formatDashboardDateRange(dateRange);
     const categoriesById = useMemo(
         () =>
@@ -264,7 +296,11 @@ export function Dashboard(_props: DashboardProps) {
                         .then((orders) => {
                             if (!cancelled) {
                                 setSupplemental(
-                                    buildDashboardSupplemental(orders || [], categoriesById)
+                                    buildDashboardSupplemental(
+                                        orders || [],
+                                        categoriesById,
+                                        productsById || {}
+                                    )
                                 );
                             }
                         })
@@ -287,7 +323,7 @@ export function Dashboard(_props: DashboardProps) {
             cancelled = true;
             interactionHandle?.cancel?.();
         };
-    }, [categoriesById, dateRange]);
+    }, [categoriesById, dateRange, productsById]);
 
     useEffect(() => {
         if (loading || hasSalesData(salesSummary)) return;
@@ -444,20 +480,27 @@ export function Dashboard(_props: DashboardProps) {
                                         <View style={styles.metricShell}>
                                             <Widget
                                                 backgroundColor="#22132A"
-                                                icon="package-variant-closed"
+                                                icon="cash-multiple"
                                                 text={t(
-                                                    'DASHBOARD_ItemsSold',
-                                                    'Items Sold'
+                                                    'DASHBOARD_EstGrossProfit',
+                                                    'Est. Gross Profit'
                                                 )}
-                                                value={getDashboardItemsSold(
-                                                    salesSummary
-                                                ).toLocaleString()}
+                                                value={`$ ${Number(
+                                                    supplemental?.estimatedGrossProfit || 0
+                                                ).toFixed(2)}`}
                                                 primaryTextColor="#F5E9FF"
                                                 primaryTextSize={24}
                                             />
                                         </View>
                                     </View>
                                 </View>
+                                {!!supplemental?.missingCostLineCount && (
+                                    <Text style={styles.metricsHelperText}>
+                                        {tMissingCostNote(
+                                            supplemental.missingCostLineCount
+                                        )}
+                                    </Text>
+                                )}
 
                                 <UICard style={styles.analyticsCard}>
                                     <View style={styles.insightsRow}>
@@ -759,6 +802,13 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         metricColumnSpaced: {
             flex: 1,
             marginLeft: tokens.spacing.md,
+        },
+        metricsHelperText: {
+            color: '#7B8A97',
+            fontSize: 13,
+            lineHeight: 18,
+            marginTop: -4,
+            marginBottom: tokens.spacing.sm,
         },
         metricShell: {
             backgroundColor: '#0A0E14',

@@ -5,7 +5,6 @@ import {
     selectFilteredList,
     selectIsEmpty,
     selectLoadingStatus,
-    syncProducts,
     subscribeToProductChanges,
 } from '@pos/products/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
@@ -39,10 +38,8 @@ export function ProductList({ navigation }: ProductListProps) {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        syncProducts(dispatch);
         const sub = subscribeToProductChanges(dispatch);
         return () => {
-            console.log('Closing products subscription');
             sub.unsubscribe();
         };
     }, [dispatch]);

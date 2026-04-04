@@ -51,6 +51,11 @@ export interface CreatePaidOrderRequest extends CreateOrderRequest {
     payments: CartPayment[];
 }
 
+const logOrderTiming = (step: string, details?: Record<string, unknown>) => {
+    void step;
+    void details;
+};
+
 export class OrderService {
 
     /**
@@ -114,6 +119,11 @@ export class OrderService {
     }
 
     static async closeOrder(request: CloseOrderRequest) {
+        const startedAt = Date.now();
+        logOrderTiming('close-order-start', {
+            orderId: request.id,
+            paymentCount: request.payments?.length || 0,
+        });
         const existing = await DataStore.query(Order, request.id);
 
         if (!existing) {
@@ -121,10 +131,21 @@ export class OrderService {
             return null;
         }
 
-        return OrderService.closeExistingOrder(existing, request);
+        const result = await OrderService.closeExistingOrder(existing, request);
+        logOrderTiming('close-order-end', {
+            orderId: request.id,
+            durationMs: Date.now() - startedAt,
+            saved: !!result,
+        });
+        return result;
     }
 
     static async createPaidOrder(request: CreatePaidOrderRequest) {
+        const startedAt = Date.now();
+        logOrderTiming('create-paid-order-start', {
+            orderId: request.order.id,
+            paymentCount: request.payments?.length || 0,
+        });
         const validation = validateEbtPayment(
             request.order.items.map((item) => ({
                 identifier: item.identifier,
@@ -200,12 +221,14 @@ export class OrderService {
         }) as never);
 
         const savedOrder = await DataStore.save(order);
-        await OrderService.updateInventory(savedOrder).catch((error) => {
-            console.error('Order inventory update failed', error);
-            Alert.alert(
-                'Inventory update failed',
-                'The order was saved, but inventory could not be updated right away.'
-            );
+        logOrderTiming('create-paid-order-save-complete', {
+            orderId: savedOrder.id,
+            durationMs: Date.now() - startedAt,
+        });
+        OrderService.runInventoryUpdateInBackground(savedOrder);
+        logOrderTiming('create-paid-order-end', {
+            orderId: savedOrder.id,
+            durationMs: Date.now() - startedAt,
         });
 
         return savedOrder;
@@ -275,13 +298,11 @@ export class OrderService {
         });
 
         const closedOrder = await DataStore.save(updatedOrder);
-        await OrderService.updateInventory(closedOrder).catch((error) => {
-            console.error('Order inventory update failed', error);
-            Alert.alert(
-                'Inventory update failed',
-                'The order was saved, but inventory could not be updated right away.'
-            );
+        logOrderTiming('close-existing-order-save-complete', {
+            orderId: closedOrder.id,
+            status: closedOrder.status,
         });
+        OrderService.runInventoryUpdateInBackground(closedOrder);
 
         return closedOrder;
     }
@@ -362,7 +383,6 @@ export class OrderService {
             );
 
             if (line) {
-                console.log(`Found product ${line.product.name}, removing 1`);
                 line.quantity -= l.quantity;
             }
         });
@@ -585,14 +605,42 @@ export class OrderService {
         }
     }
 
+    private static runInventoryUpdateInBackground(order: Order) {
+        const startedAt = Date.now();
+        logOrderTiming('inventory-update-start', {
+            orderId: order.id,
+            status: order.status,
+        });
+
+        void OrderService.updateInventory(order)
+            .then(() => {
+                logOrderTiming('inventory-update-end', {
+                    orderId: order.id,
+                    status: order.status,
+                    durationMs: Date.now() - startedAt,
+                });
+            })
+            .catch((error) => {
+                console.error('Order inventory update failed', error);
+                logOrderTiming('inventory-update-failed', {
+                    orderId: order.id,
+                    status: order.status,
+                    durationMs: Date.now() - startedAt,
+                    message: error instanceof Error ? error.message : String(error),
+                });
+                Alert.alert(
+                    'Inventory update failed',
+                    'The order was saved, but inventory could not be updated right away.'
+                );
+            });
+    }
+
     static search(items: OrderEntity[], options: FilterRequest) {
         // const lowerQuery = options.filter?.toLowerCase() || '';
         let searchResult: OrderEntity[];
         const fullOrderNumber = options.filter && isOrderNumber(options.filter);
 
         if (fullOrderNumber) {
-            console.log('Found full order number');
-            
             searchResult = items.filter(i => i.status === options.status && i.orderNo === options.filter)
         } else {
             searchResult = items.filter((i) => {

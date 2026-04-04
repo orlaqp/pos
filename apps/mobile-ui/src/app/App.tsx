@@ -12,7 +12,7 @@ import { logSyncDebug, startSyncMeasure } from '@pos/shared/utils';
 import Navigation from './navigation';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppErrorBoundary } from './app-error-boundary';
-import { Alert, AppState, Image, StyleSheet, View } from 'react-native';
+import { Alert, AppState, Image, InteractionManager, StyleSheet, View } from 'react-native';
 import { UISpinner } from '@pos/shared/ui-native';
 import {
     fetchDeviceSettings,
@@ -24,11 +24,10 @@ import {
     fetchEmployees,
     employeesActions,
     subscribeToEmployeeChanges,
-    syncEmployees,
 } from '@pos/employees/data-access';
 import { fetchStoreInfo } from '@pos/store-info/data-access';
 import { fetchDefaultPrinter } from '@pos/printings/data-access';
-import { subscribeToProductChanges, syncProducts } from '@pos/products/data-access';
+import { subscribeToProductChanges } from '@pos/products/data-access';
 import { selectCart } from '@pos/sales/data-access';
 import brandMark from '../../assets/branding/pos-icon-transparent-2048.png';
 import {
@@ -45,7 +44,7 @@ import {
     User,
 } from '@pos/auth/data-access';
 import { configureDataStore } from '@pos/shared/data-store';
-import { API, Auth, DataStore } from '@pos/shared/amplify';
+import { Auth, DataStore } from '@pos/shared/amplify';
 import { E2EControlPanel } from './e2e-control-panel';
 import {
     clearManualSignOut,
@@ -56,7 +55,6 @@ import {
     beginAppLifecycleSession,
     recordAppLifecycleEvent,
 } from './app-lifecycle-diagnostics';
-import { listEmployees } from '@pos/shared/api';
 
 type BootstrapStatus = 'idle' | 'checking-session' | 'resolving-tenant' | 'preparing-business-data' | 'ready' | 'error';
 type SessionRecoveryState =
@@ -83,46 +81,6 @@ const isUnauthorizedError = (error: unknown) => {
 
 const logBootstrapStageError = (stage: string, error: unknown) => {
     console.error(`App bootstrap failed during ${stage}`, error);
-};
-
-const logRemoteEmployeesForTenant = async (tenantId: string) => {
-    const response = await API.graphql<{
-        listEmployees?: {
-            items?: Array<{
-                id?: string | null;
-                tenantId?: string | null;
-                email?: string | null;
-                active?: boolean | null;
-                _deleted?: boolean | null;
-                _lastChangedAt?: number | null;
-            } | null> | null;
-            nextToken?: string | null;
-        } | null;
-    }>({
-        query: listEmployees,
-        variables: {
-            filter: {
-                tenantId: { eq: tenantId },
-            },
-            limit: 100,
-        },
-        authMode: 'userPool',
-    });
-
-    const items = response.data?.listEmployees?.items ?? [];
-    logSyncDebug('app-bootstrap', 'employees:remote-visible-to-user', {
-        tenantId,
-        itemCount: items.length,
-        nextToken: response.data?.listEmployees?.nextToken ?? null,
-        sample: items.slice(0, 10).map((employee) => ({
-            id: employee?.id ?? null,
-            tenantId: employee?.tenantId ?? null,
-            email: employee?.email ?? null,
-            active: employee?.active ?? null,
-            deleted: employee?._deleted ?? null,
-            lastChangedAt: employee?._lastChangedAt ?? null,
-        })),
-    });
 };
 
 const withTimeout = <T,>(
@@ -240,6 +198,10 @@ const AppContent = () => {
     const sessionValidationInFlightRef = useRef<Promise<void> | null>(null);
     const silentReauthInFlightRef = useRef<Promise<User | null> | null>(null);
     const lastForegroundSessionCheckAtRef = useRef(0);
+    const lastKnownAppStateRef = useRef(AppState.currentState);
+    const deferredBusinessRefreshRef = useRef<{ cancel?: () => void } | null>(
+        null
+    );
     const hasActiveSale = (cart.items?.length || 0) > 0;
     const recordLifecycleEvent = useCallback(
         (name: string, details?: Record<string, unknown>) => {
@@ -251,6 +213,51 @@ const AppContent = () => {
     useEffect(() => {
         void beginAppLifecycleSession();
     }, []);
+
+    useEffect(() => {
+        recordLifecycleEvent('appstate.initial', {
+            currentState: AppState.currentState,
+        });
+    }, [recordLifecycleEvent]);
+
+    useEffect(() => {
+        return () => {
+            deferredBusinessRefreshRef.current?.cancel?.();
+            deferredBusinessRefreshRef.current = null;
+        };
+    }, []);
+
+    const refreshBusinessContext = useCallback(async () => {
+        const finishBusinessData = startSyncMeasure(
+            'app-bootstrap',
+            'business-data.fetches'
+        );
+        const businessDataResults = await Promise.allSettled([
+            dispatch(fetchStoreInfo()).unwrap(),
+            dispatch(fetchDeviceSettings()).unwrap(),
+            dispatch(fetchGlobalSettings()).unwrap(),
+            dispatch(fetchDefaultPrinter()).unwrap(),
+        ]);
+        finishBusinessData({
+            storeInfo: businessDataResults[0].status,
+            deviceSettings: businessDataResults[1].status,
+            globalSettings: businessDataResults[2].status,
+            defaultPrinter: businessDataResults[3].status,
+        });
+
+        const stageLabels = [
+            'fetchStoreInfo()',
+            'fetchDeviceSettings()',
+            'fetchGlobalSettings()',
+            'fetchDefaultPrinter()',
+        ];
+
+        businessDataResults.forEach((result, index) => {
+            if (result.status === 'rejected') {
+                logBootstrapStageError(stageLabels[index], result.reason);
+            }
+        });
+    }, [dispatch]);
 
     const resetSessionState = useCallback(async (options?: { manual?: boolean; destructive?: boolean }) => {
         recordLifecycleEvent('session.reset:start', {
@@ -532,12 +539,6 @@ const AppContent = () => {
                 logBootstrapStageError('fetchStationInfo()', error);
             }
 
-            try {
-                await logRemoteEmployeesForTenant(user.tenantId);
-            } catch (error) {
-                logBootstrapStageError('logRemoteEmployeesForTenant()', error);
-            }
-
             const finishEmployees = startSyncMeasure('app-bootstrap', 'fetchEmployees');
             await dispatch(fetchEmployees()).unwrap();
             finishEmployees();
@@ -557,33 +558,6 @@ const AppContent = () => {
                 logBootstrapStageError('EmployeeService.getLocalEmployees()', error);
             }
 
-            const finishBusinessData = startSyncMeasure('app-bootstrap', 'business-data.fetches');
-            const businessDataResults = await Promise.allSettled([
-                dispatch(fetchStoreInfo()).unwrap(),
-                dispatch(fetchDeviceSettings()).unwrap(),
-                dispatch(fetchGlobalSettings()).unwrap(),
-                dispatch(fetchDefaultPrinter()).unwrap(),
-            ]);
-            finishBusinessData({
-                storeInfo: businessDataResults[0].status,
-                deviceSettings: businessDataResults[1].status,
-                globalSettings: businessDataResults[2].status,
-                defaultPrinter: businessDataResults[3].status,
-            });
-
-            const stageLabels = [
-                'fetchStoreInfo()',
-                'fetchDeviceSettings()',
-                'fetchGlobalSettings()',
-                'fetchDefaultPrinter()',
-            ];
-
-            businessDataResults.forEach((result, index) => {
-                if (result.status === 'rejected') {
-                    logBootstrapStageError(stageLabels[index], result.reason);
-                }
-            });
-
             dispatch(tenantSessionActions.setBootstrapStatus('ready'));
             setBootstrapStatus('ready');
             recordLifecycleEvent('bootstrap:ready', {
@@ -592,6 +566,11 @@ const AppContent = () => {
             finishBootstrap({
                 result: 'ready',
             });
+            deferredBusinessRefreshRef.current?.cancel?.();
+            deferredBusinessRefreshRef.current =
+                InteractionManager.runAfterInteractions(() => {
+                    void refreshBusinessContext();
+                });
         } catch (error) {
             console.error('App bootstrap failed', error);
             const message =
@@ -621,7 +600,13 @@ const AppContent = () => {
         });
 
         return bootstrapPromise;
-    }, [attemptSilentReauth, authUser, dispatch, recordLifecycleEvent]);
+    }, [
+        attemptSilentReauth,
+        authUser,
+        dispatch,
+        recordLifecycleEvent,
+        refreshBusinessContext,
+    ]);
 
     const signOutFromStartup = useCallback(async () => {
         setBootstrapError(undefined);
@@ -648,20 +633,30 @@ const AppContent = () => {
             return;
         }
 
+        let isCancelled = false;
+        let employeesSub: { unsubscribe: () => void } | undefined;
+
         logSyncDebug('app-employees', 'subscribe:start', {
             tenantId: tenantSession.currentTenantId,
             bootstrapStatus,
         });
 
-        syncEmployees(dispatch);
-        const employeesSub = subscribeToEmployeeChanges(dispatch);
+        const interaction = InteractionManager.runAfterInteractions(() => {
+            if (isCancelled) {
+                return;
+            }
+
+            employeesSub = subscribeToEmployeeChanges(dispatch);
+        });
 
         return () => {
+            isCancelled = true;
             logSyncDebug('app-employees', 'subscribe:stop', {
                 tenantId: tenantSession.currentTenantId,
                 bootstrapStatus,
             });
-            employeesSub.unsubscribe();
+            interaction.cancel();
+            employeesSub?.unsubscribe();
         };
     }, [authUser, bootstrapStatus, dispatch, tenantSession.currentTenantId]);
 
@@ -674,20 +669,30 @@ const AppContent = () => {
             return;
         }
 
+        let isCancelled = false;
+        let productsSub: { unsubscribe: () => void } | undefined;
+
         logSyncDebug('app-products', 'subscribe:start', {
             tenantId: tenantSession.currentTenantId,
             bootstrapStatus,
         });
 
-        syncProducts(dispatch);
-        const productsSub = subscribeToProductChanges(dispatch);
+        const interaction = InteractionManager.runAfterInteractions(() => {
+            if (isCancelled) {
+                return;
+            }
+
+            productsSub = subscribeToProductChanges(dispatch);
+        });
 
         return () => {
+            isCancelled = true;
             logSyncDebug('app-products', 'subscribe:stop', {
                 tenantId: tenantSession.currentTenantId,
                 bootstrapStatus,
             });
-            productsSub.unsubscribe();
+            interaction.cancel();
+            productsSub?.unsubscribe();
         };
     }, [authUser, bootstrapStatus, dispatch, tenantSession.currentTenantId]);
 
@@ -699,7 +704,12 @@ const AppContent = () => {
         }
 
         const subscription = AppState.addEventListener('change', async (nextState) => {
-            recordLifecycleEvent('appstate.change', { nextState });
+            const previousState = lastKnownAppStateRef.current;
+            lastKnownAppStateRef.current = nextState;
+            recordLifecycleEvent('appstate.change', {
+                previousState,
+                nextState,
+            });
             if (nextState !== 'active') {
                 return;
             }
@@ -766,6 +776,16 @@ const AppContent = () => {
             subscription.remove();
         };
     }, [authUser, handleExpiredSession, recordLifecycleEvent]);
+
+    useEffect(() => {
+        const subscription = AppState.addEventListener('memoryWarning', () => {
+            recordLifecycleEvent('appstate.memoryWarning');
+        });
+
+        return () => {
+            subscription.remove();
+        };
+    }, [recordLifecycleEvent]);
 
     useEffect(() => {
         if (sessionRecoveryState !== 'deferred_until_sale_complete' || hasActiveSale) {

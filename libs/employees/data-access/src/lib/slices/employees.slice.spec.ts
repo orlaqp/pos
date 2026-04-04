@@ -76,14 +76,17 @@ describe('employees reducer', () => {
   });
 
   it('fulfills fetchEmployees from the local employee cache immediately', async () => {
-    getSyncedLocalEmployeesMock.mockResolvedValue([
-      {
-        id: 'emp-1',
-        firstName: 'Orlando',
-        lastName: 'Quero',
-        active: true,
-      },
-    ]);
+    getSyncedLocalEmployeesMock.mockResolvedValue({
+      employees: [
+        {
+          id: 'emp-1',
+          firstName: 'Orlando',
+          lastName: 'Quero',
+          active: true,
+        },
+      ],
+      initialSyncComplete: false,
+    });
 
     const action = await fetchEmployees()(
       jest.fn(),
@@ -107,13 +110,16 @@ describe('employees reducer', () => {
           lastName: 'Quero',
         }),
       ],
-      initialSyncComplete: true,
+      initialSyncComplete: false,
     });
     expect(action.meta.requestStatus).toBe('fulfilled');
   });
 
   it('fulfills fetchEmployees with an empty synced local employee list', async () => {
-    getSyncedLocalEmployeesMock.mockResolvedValue([]);
+    getSyncedLocalEmployeesMock.mockResolvedValue({
+      employees: [],
+      initialSyncComplete: true,
+    });
 
     const action = await fetchEmployees()(
       jest.fn(),

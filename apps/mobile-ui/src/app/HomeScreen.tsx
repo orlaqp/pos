@@ -52,6 +52,11 @@ import {
     readCurrentAppLifecycleSession,
     readPreviousAppLifecycleSession,
 } from './app-lifecycle-diagnostics';
+import {
+    isNativeLifecycleDiagnosticsAvailable,
+    readCurrentNativeLifecycleSession,
+    readPreviousNativeLifecycleSession,
+} from './native-lifecycle-diagnostics';
 
 interface PathDetails {
     title: string;
@@ -96,6 +101,19 @@ type PendingOwnerEmployee = {
     pin: string;
     roles: Array<(typeof Role)[keyof typeof Role]>;
     active: boolean;
+};
+
+const formatLifecycleEvent = (event: {
+    at: string;
+    name: string;
+    details?: Record<string, unknown>;
+}) => {
+    const details =
+        event.details && Object.keys(event.details).length > 0
+            ? ` ${JSON.stringify(event.details)}`
+            : '';
+
+    return `${event.at}  ${event.name}${details}`;
 };
 
 const getOwnerNameParts = (name?: string) => {
@@ -356,14 +374,24 @@ export const HomeScreen = (props: HomeScreenProps) => {
     }, [refreshSavedLoginStatus]);
 
     const openAppDiagnostics = useCallback(async () => {
-        const [previousSession, currentSession] = await Promise.all([
+        const [
+            previousSession,
+            currentSession,
+            previousNativeSession,
+            currentNativeSession,
+        ] = await Promise.all([
             readPreviousAppLifecycleSession(),
             readCurrentAppLifecycleSession(),
+            readPreviousNativeLifecycleSession(),
+            readCurrentNativeLifecycleSession(),
         ]);
 
         const previousSummary = buildPreviousSessionSummary(previousSession);
         const previousEvents = previousSession?.events.slice(-8) || [];
         const currentEvents = currentSession?.events.slice(-6) || [];
+        const previousNativeSummary = buildPreviousSessionSummary(previousNativeSession);
+        const previousNativeEvents = previousNativeSession?.events.slice(-10) || [];
+        const currentNativeEvents = currentNativeSession?.events.slice(-8) || [];
 
         const sections = [
             previousSummary
@@ -371,15 +399,39 @@ export const HomeScreen = (props: HomeScreenProps) => {
                 : 'Previous session\nNo previous session diagnostics recorded on this device yet.',
             previousEvents.length > 0
                 ? `Previous events\n${previousEvents
-                      .map((event) => `${event.at}  ${event.name}`)
+                      .map(formatLifecycleEvent)
                       .join('\n')}`
                 : 'Previous events\nNo stored events.',
             currentEvents.length > 0
                 ? `Current session\n${currentEvents
-                      .map((event) => `${event.at}  ${event.name}`)
+                      .map(formatLifecycleEvent)
                       .join('\n')}`
                 : 'Current session\nNo current session events recorded yet.',
         ];
+
+        if (isNativeLifecycleDiagnosticsAvailable()) {
+            sections.push(
+                previousNativeSummary
+                    ? `Native previous session\nStarted: ${previousNativeSummary.startedAt}\nEnded: ${previousNativeSummary.endedAt || 'unknown'}\nLast event: ${previousNativeSummary.lastEvent || 'unknown'}\nEvents: ${previousNativeSummary.eventCount}`
+                    : 'Native previous session\nNo native previous session diagnostics recorded yet.'
+            );
+
+            sections.push(
+                previousNativeEvents.length > 0
+                    ? `Native previous events\n${previousNativeEvents
+                          .map(formatLifecycleEvent)
+                          .join('\n')}`
+                    : 'Native previous events\nNo native stored events.'
+            );
+
+            sections.push(
+                currentNativeEvents.length > 0
+                    ? `Native current session\n${currentNativeEvents
+                          .map(formatLifecycleEvent)
+                          .join('\n')}`
+                    : 'Native current session\nNo native current session events recorded yet.'
+            );
+        }
 
         Alert.alert('App diagnostics', sections.join('\n\n'));
     }, []);

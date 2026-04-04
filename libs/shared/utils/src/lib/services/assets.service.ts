@@ -55,7 +55,6 @@ export class AssetsService {
         const content = await FsService.get(key);
 
         if (content) {
-            console.log(`returned from cache: ${key}`);
             return content;
         }
 
@@ -75,4 +74,3 @@ export class AssetsService {
     }
 
 }
-

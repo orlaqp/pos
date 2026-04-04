@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { View, Text, Alert } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
@@ -62,6 +62,13 @@ export function InventoryCountLine({
 
         onUpdate({ ...item, comments: finalComment });
     };
+
+    useEffect(() => {
+        const nextCount = item.newCount?.toString();
+        countRef.current = nextCount;
+        setCount(nextCount);
+        setComment(item.comments || undefined);
+    }, [item.comments, item.newCount, item.productId]);
 
     return (
         <View style={[styles.smallDataRow, styles.centered]}>

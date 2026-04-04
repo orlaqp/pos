@@ -64,19 +64,28 @@ const logChangedProducts = (items: Product[]) => {
 
 export const syncProducts = (dispatch: Dispatch) => {
     const finish = startSyncMeasure('products', 'syncProducts');
-    DataStore.query(Product).then((products) => {
-        finish({ itemCount: products.length });
-        updateStore(dispatch, products);
+    let subscription: { unsubscribe: () => void } | undefined;
+    let shouldUnsubscribeAfterSubscribe = false;
+    subscription = DataStore.observeQuery(Product).subscribe(({ items }) => {
+        finish({ itemCount: items.length });
+        updateStore(dispatch, items);
+        if (subscription) {
+            subscription.unsubscribe();
+            return;
+        }
+
+        shouldUnsubscribeAfterSubscribe = true;
     });
+
+    if (shouldUnsubscribeAfterSubscribe) {
+        subscription.unsubscribe();
+    }
 };
 
 
 export const subscribeToProductChanges = (dispatch: Dispatch) => {
     const release = trackSyncSubscription('products.observeQuery');
     const subscription = DataStore.observeQuery(Product).subscribe(({ isSynced, items }) => {
-        if (!isSynced) {
-            return;
-        }
         logSyncDebug('products.observeQuery', 'update', {
             isSynced,
             itemCount: items.length,

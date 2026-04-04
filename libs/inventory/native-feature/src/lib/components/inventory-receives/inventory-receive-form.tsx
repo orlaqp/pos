@@ -214,7 +214,6 @@ export function InventoryReceiveForm({
     useEffect(() => {
         const productsSub = subscribeToProductChanges(dispatch);
         return () => {
-            console.log('Closing inventory receive form subscriptions');
             productsSub.unsubscribe();
         };
     }, [dispatch]);

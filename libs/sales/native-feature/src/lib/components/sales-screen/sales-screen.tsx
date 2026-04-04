@@ -31,11 +31,9 @@ import { ButtonItemType, UIScreen } from '@pos/shared/ui-native';
 import { RootState, useAppDispatch } from '@pos/store';
 import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
 import {
-    PendingOrderJournalEntry,
     ordersActions,
     payOrder,
     submitOrderAndPay,
-    upsertPendingOrderJournalEntry,
     upsertOrder,
 } from '@pos/orders/data-access';
 import { selectStore } from '@pos/store-info/data-access';
@@ -96,7 +94,8 @@ const getErrorMessage = (reason: unknown) => {
 };
 
 const logSaleFlow = (step: string, details?: Record<string, unknown>) => {
-    console.info('[sales-flow]', step, details ?? {});
+    void step;
+    void details;
 };
 
 /* eslint-disable-next-line */
@@ -385,27 +384,6 @@ export function SalesScreen({
             (route.params.mode === 'payment'
                 ? 'receive_payment'
                 : 'save_open_order');
-        const buildJournalEntry = (
-            cartState: CartState,
-            statusTarget: 'OPEN' | 'PAID',
-            paymentInfo?: CartPayment[]
-        ): PendingOrderJournalEntry => ({
-            orderId: cartState.id!,
-            orderNo: cartState.orderNo,
-            tenantId,
-            statusTarget,
-            cart: cartState,
-            payments: paymentInfo,
-            employee: employee
-                ? {
-                      id: employee.id,
-                      name: `${employee.firstName} ${employee.lastName}`,
-                  }
-                : undefined,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            syncState: 'local_only',
-        });
 
         if (route.params.mode === 'order' && intent === 'save_open_order') {
             if (!ensureCheckoutContext('order', cart)) {
@@ -427,13 +405,6 @@ export function SalesScreen({
                     });
 
                     const cartForOrder = await preparePrintableOrderCart(cart);
-                    const journalEntry = buildJournalEntry(cartForOrder, 'OPEN');
-
-                    await upsertPendingOrderJournalEntry(journalEntry);
-                    logSaleFlow('order-journal-upserted', {
-                        orderId: journalEntry.orderId,
-                        entryCount: 1,
-                    });
 
                     const result = await dispatch(
                         upsertOrder({
@@ -550,10 +521,6 @@ export function SalesScreen({
                             submitResult.payload.order.orderNo ?? cartForOrder.orderNo,
                     };
 
-                    await upsertPendingOrderJournalEntry(
-                        buildJournalEntry(cartForPayment, 'PAID', payments)
-                    );
-
                     if (defaultPrinter && storeInfo) {
                         await printReceipt(
                             storeInfo,
@@ -639,24 +606,9 @@ export function SalesScreen({
                             cartItemCount: cartItems.length,
                             hasPrinter: !!defaultPrinter,
                             hasStoreInfo: !!storeInfo,
+                            submittedAt: new Date().toISOString(),
                         });
-                        const journalEntry: PendingOrderJournalEntry = {
-                            orderId,
-                            orderNo: cart.orderNo,
-                            tenantId,
-                            statusTarget: 'PAID',
-                            cart: cartForPayment,
-                            payments,
-                            employee: employee
-                                ? {
-                                      id: employee.id,
-                                      name: `${employee.firstName} ${employee.lastName}`,
-                                  }
-                                : undefined,
-                            createdAt: new Date().toISOString(),
-                            updatedAt: new Date().toISOString(),
-                            syncState: 'local_only',
-                        };
+                        const paymentSubmitStartedAt = Date.now();
                         if (cart.id) {
                             dispatch(
                                 ordersActions.optimisticMarkPaid({
@@ -670,23 +622,16 @@ export function SalesScreen({
                             );
                         }
                         Promise.resolve(
-                            upsertPendingOrderJournalEntry(journalEntry)
+                            dispatch(
+                                payOrder({
+                                    cart: cartForPayment,
+                                    payments,
+                                    defaultPrinter,
+                                    storeInfo,
+                                    skipAutoPrint: !defaultPrinter || !storeInfo,
+                                })
+                            )
                         )
-                            .then(() => {
-                                logSaleFlow('payment-journal-upserted', {
-                                    orderId: journalEntry.orderId,
-                                    entryCount: 1,
-                                });
-                                return dispatch(
-                                    payOrder({
-                                        cart: cartForPayment,
-                                        payments,
-                                        defaultPrinter,
-                                        storeInfo,
-                                        skipAutoPrint: !defaultPrinter || !storeInfo,
-                                    })
-                                );
-                            })
                             .then((result) => {
                                 if (
                                     !payOrder.fulfilled.match(result) ||
@@ -712,8 +657,13 @@ export function SalesScreen({
                                     return;
                                 }
 
+                                logSaleFlow('payment-close-order-complete', {
+                                    orderId: result.payload.order.id,
+                                    durationMs: Date.now() - paymentSubmitStartedAt,
+                                });
                                 logSaleFlow('payment-submit-succeeded', {
                                     orderId: result.payload.order.id,
+                                    durationMs: Date.now() - paymentSubmitStartedAt,
                                 });
 
                                 if (shouldReturnToOrderList()) {

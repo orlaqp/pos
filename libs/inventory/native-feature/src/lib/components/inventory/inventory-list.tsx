@@ -29,7 +29,6 @@ export function InventoryList({ navigation: _navigation }: InventoryListProps) {
         const products = subscribeToProductChanges(dispatch);
 
         return () => {
-            console.log('Closing products subscription');
             products.unsubscribe();
         };
     }, [dispatch]);

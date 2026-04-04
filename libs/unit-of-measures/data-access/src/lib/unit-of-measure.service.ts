@@ -20,7 +20,7 @@ export class UnitOfMeasureService {
         const existing = await DataStore.query(UnitOfMeasure, unitOfMeasure.id);
 
         if (!existing) {
-            return console.log(`It seems that unitOfMeasure: ${unitOfMeasure.id} has been removed`);
+            return;
         }
 
         await DataStore.save(

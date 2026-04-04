@@ -8,7 +8,6 @@ import { PrinterEntityMapper } from './slices/printer.entity';
 const deviceId = DeviceInfo.getUniqueIdSync();
 
 export const syncDefaultPrinter = (dispatch: Dispatch) => {
-    console.log('Syncing printers to the store');
     DataStore.query(Printer).then((items) => {
         const defaultPrinter = items.find(p => p.deviceId === deviceId);
 

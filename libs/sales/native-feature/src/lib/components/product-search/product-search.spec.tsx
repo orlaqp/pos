@@ -6,6 +6,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 const mockOnFilterChange = jest.fn().mockResolvedValue('');
 const mockPrimary = '#00f';
 const mockGrey = '#999';
+const mockFocus = jest.fn();
 
 jest.mock('@pos/shared/ui-native', () => ({
     UISearchInput: (() => {
@@ -14,12 +15,20 @@ jest.mock('@pos/shared/ui-native', () => ({
         return React.forwardRef(
             (
                 { onSubmit }: { onSubmit: (value: string) => void },
-                _ref: React.ForwardedRef<any>
-            ) => (
-                <Pressable testID="product-search-submit" onPress={() => onSubmit('apple')}>
-                    <Text>Search</Text>
-                </Pressable>
-            )
+                ref: React.ForwardedRef<any>
+            ) => {
+                if (typeof ref === 'function') {
+                    ref({ focus: mockFocus });
+                } else if (ref) {
+                    ref.current = { focus: mockFocus };
+                }
+
+                return (
+                    <Pressable testID="product-search-submit" onPress={() => onSubmit('apple')}>
+                        <Text>Search</Text>
+                    </Pressable>
+                );
+            }
         );
     })(),
 }));
@@ -55,6 +64,7 @@ const { ProductSearch } = require('./product-search');
 describe('ProductSearch', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        mockFocus.mockClear();
     });
 
     it('submits filter text', () => {
@@ -78,6 +88,7 @@ describe('ProductSearch', () => {
         expect(getByText(mockGrey)).toBeTruthy();
         fireEvent.press(getByTestId('product-search-keyboard'));
         expect(getByText(mockPrimary)).toBeTruthy();
+        expect(mockFocus).toHaveBeenCalled();
         fireEvent.press(getByTestId('product-search-keyboard'));
         expect(getByText(mockGrey)).toBeTruthy();
     });

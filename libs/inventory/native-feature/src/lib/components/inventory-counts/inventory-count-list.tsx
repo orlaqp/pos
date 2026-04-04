@@ -45,7 +45,6 @@ export function InventoryCountList({ navigation }: InventoryListProps) {
 
         return () => {
             active = false;
-            console.log('Closing inventory count subscription');
             counts?.unsubscribe();
             lines?.unsubscribe();
         };

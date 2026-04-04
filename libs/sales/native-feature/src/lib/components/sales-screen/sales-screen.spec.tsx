@@ -59,8 +59,6 @@ const mockSubmitOrderAndPay = Object.assign(
         },
     }
 );
-const mockUpsertPendingOrderJournalEntry = jest.fn(async (entry: any) => [entry]);
-
 const mockProduct = {
     id: 'p-1',
     name: 'Apple',
@@ -173,8 +171,6 @@ jest.mock('@pos/printings/data-access', () => ({
 jest.mock('@pos/orders/data-access', () => ({
     buildEbtAllocations: jest.fn(() => ({})),
     getLineTotal: jest.fn((quantity: number, price: number) => +(quantity * price).toFixed(2)),
-    upsertPendingOrderJournalEntry: (...args: unknown[]) =>
-        mockUpsertPendingOrderJournalEntry(...args),
     ordersActions: {
         optimisticMarkPaid: (payload: unknown) => ({
             type: 'orders/optimisticMarkPaid',
@@ -648,7 +644,7 @@ describe('SalesScreen', () => {
         );
     });
 
-    it('submits order mode, persists the journal entry, and resets cart after save success', async () => {
+    it('submits order mode and resets cart after save success', async () => {
         const { getByTestId } = renderSalesScreen('order');
 
         await act(async () => {
@@ -852,16 +848,10 @@ describe('SalesScreen', () => {
             expect.anything(),
             expect.objectContaining({ copyType: 'MERCHANT' })
         );
+        expect(mockPrintReceipt).toHaveBeenCalledTimes(2);
         expect(mockNavigate).not.toHaveBeenCalledWith('Order List');
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/reset' })
-        );
-        expect(mockUpsertPendingOrderJournalEntry).toHaveBeenCalledTimes(1);
-        expect(mockUpsertPendingOrderJournalEntry).toHaveBeenCalledWith(
-            expect.objectContaining({
-                statusTarget: 'PAID',
-                payments: [{ type: 'cash', amount: 10 }],
-            })
         );
     });
 

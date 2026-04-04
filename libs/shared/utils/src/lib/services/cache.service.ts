@@ -10,8 +10,6 @@ export class CacheService {
         const exist = await RNFS.exists(path);
 
         if (!exist) {
-            console.log(`Image ${key} does not exist in cache`);
-            
             const res = await Storage.get(key, { download: true });
             let base64: string = (await blobToBase64(res.Body)) as any;
             const extension = key.split('.').pop();
@@ -20,9 +18,6 @@ export class CacheService {
                 'data:binary/octet-stream;',
                 `data:image/${extension};`
             );
-            
-            console.log(`Writing image ${key} to cache`);
-            
             await RNFS.writeFile(path, base64);
         }
 

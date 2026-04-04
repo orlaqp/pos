@@ -1,4 +1,5 @@
 #import "AppDelegate.h"
+#import "AppLifecycleNativeDiagnostics.h"
 
 #import <React/RCTBundleURLProvider.h>
 
@@ -46,6 +47,8 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  [[AppLifecycleNativeDiagnostics shared] start];
+
   self.reactNativeDelegate = [ReactNativeDelegate new];
   self.reactNativeDelegate.dependencyProvider = [RCTAppDependencyProvider new];
   self.reactNativeFactory = [[RCTReactNativeFactory alloc] initWithDelegate:self.reactNativeDelegate];

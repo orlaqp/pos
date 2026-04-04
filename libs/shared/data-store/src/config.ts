@@ -49,11 +49,8 @@ const isConditionalConflictMessage = (message: unknown) =>
         message.includes('The conditional request failed'));
 
 export const configureDataStore = () => {
-    console.log('Configuring data store sync expressions');
-
     const tenantId = getCurrentTenantId();
     if (!tenantId) {
-        console.log('Skipping DataStore sync configuration until tenant is resolved');
         return;
     }
 

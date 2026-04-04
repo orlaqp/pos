@@ -34,7 +34,6 @@ export function BrandList({ navigation }: BrandListProps) {
     useEffect(() => {
         const sub = subscribeToBrandChanges(dispatch);
         return () => {
-            console.log('Closing brands subscription');
             sub.unsubscribe()
         }
     }, [dispatch]);

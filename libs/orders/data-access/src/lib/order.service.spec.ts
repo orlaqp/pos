@@ -11,6 +11,7 @@ import { API, DataStore } from '@pos/shared/amplify';
 import { StationService } from '@pos/settings/data-access';
 import { stampTenant } from '@pos/auth/data-access';
 import { getProduct } from '@pos/shared/api';
+import { Alert } from 'react-native';
 
 jest.mock('@pos/shared/amplify', () => ({
   API: {
@@ -229,37 +230,38 @@ describe('order.service EBT helpers', () => {
 describe('OrderService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
   });
 
-  it('returns the saved paid order from closeOrder after inventory updates complete', async () => {
+  it('returns the saved paid order from closeOrder without waiting for inventory updates', async () => {
     const saveMock = jest.mocked(DataStore.save);
     const queryMock = jest.mocked(DataStore.query);
-    const updatedOrder = {
+    const savedOrder = {
       id: 'order-1',
       status: 'PAID',
       lines: [],
       paymentInfo: { payments: [] },
-    } as any;
-    const savedOrder = {
-      ...updatedOrder,
       _version: 4,
       updatedAt: '2026-03-24T12:00:00.000Z',
     } as any;
 
-    const getUpdatedOrderSpy = jest
-      .spyOn(OrderService as any, 'getUpdatedOrder')
-      .mockResolvedValue(updatedOrder);
     queryMock.mockResolvedValue({
       id: 'order-1',
       status: 'OPEN',
       tenantId: 'tenant-1',
     } as any);
     saveMock.mockResolvedValue(savedOrder);
+    let resolveInventory: (() => void) | undefined;
     const updateInventorySpy = jest
       .spyOn(OrderService as any, 'updateInventory')
-      .mockResolvedValueOnce(undefined);
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveInventory = resolve;
+          })
+      );
 
-    const result = await OrderService.closeOrder({
+    const resultPromise = OrderService.closeOrder({
       id: 'order-1',
       by: {
         id: 'employee-1',
@@ -293,14 +295,18 @@ describe('OrderService', () => {
       } as any,
       payments: [{ type: 'cash', amount: 4.59 }],
     });
+    const result = await Promise.race([
+      resultPromise,
+      new Promise((resolve) => setTimeout(() => resolve('timeout'), 25)),
+    ]);
 
     expect(queryMock).toHaveBeenCalledWith(expect.anything(), 'order-1');
     expect(saveMock).toHaveBeenCalled();
     expect(updateInventorySpy).toHaveBeenCalledWith(savedOrder);
     expect(result).toBe(savedOrder);
+    resolveInventory?.();
 
     updateInventorySpy.mockRestore();
-    getUpdatedOrderSpy.mockRestore();
   });
 
   it('creates a paid order directly for one-step checkout', async () => {
@@ -371,6 +377,70 @@ describe('OrderService', () => {
     );
 
     updateInventorySpy.mockRestore();
+  });
+
+  it('still returns a saved paid order when background inventory update fails', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+    const savedOrder = {
+      id: 'order-2',
+      status: 'PAID',
+      orderNo: '51-25-260316-0007',
+      lines: [],
+      paymentInfo: { payments: [] },
+    } as any;
+
+    saveMock.mockResolvedValue(savedOrder);
+    jest
+      .spyOn(OrderService as any, 'updateInventory')
+      .mockRejectedValueOnce(new Error('inventory unavailable'));
+
+    const result = await OrderService.createPaidOrder({
+      by: {
+        id: 'employee-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+      } as any,
+      order: {
+        id: 'generated-cart-id',
+        orderNo: '51-25-260316-0007',
+        items: [
+          {
+            identifier: 'line-1',
+            quantity: 1,
+            product: {
+              id: 'product-1',
+              name: 'Rice',
+              price: 4.59,
+              unitOfMeasure: 'ea',
+              isEBTEligible: true,
+            },
+          },
+        ],
+        footer: {
+          baseSubtotal: 4.59,
+          subtotal: 4.59,
+          total: 4.59,
+          lineDiscountTotal: 0,
+          orderDiscountTotal: 0,
+          discount: 0,
+          savingsTotal: 0,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+        },
+        promoCodes: [],
+        appliedDiscountSummary: undefined,
+      } as any,
+      payments: [{ type: 'cash', amount: 4.59 }],
+    });
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(result).toBe(savedOrder);
+    expect(Alert.alert).toHaveBeenCalledWith(
+      'Inventory update failed',
+      'The order was saved, but inventory could not be updated right away.'
+    );
   });
 
   it('uses a negative quantity delta for paid orders', () => {

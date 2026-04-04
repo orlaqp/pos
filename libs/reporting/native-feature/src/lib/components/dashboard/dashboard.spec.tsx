@@ -1,16 +1,24 @@
 /* eslint-disable import/first */
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 import moment from 'moment';
 import * as mockReactNative from 'react-native';
 
 const mockGetSalesForRange = jest.fn();
+const mockGetSalesSummaryForRange = jest.fn();
+const mockProductsById: Record<string, { cost?: number | null }> = {};
 
 jest.mock('@pos/reporting/data-access', () => ({
     buildSalesSummaryFromOrders: jest.requireActual(
         '@pos/reporting/data-access'
     ).buildSalesSummaryFromOrders,
     getSalesForRange: (...args: unknown[]) => mockGetSalesForRange(...args),
+    getSalesSummaryForRange: (...args: unknown[]) =>
+        mockGetSalesSummaryForRange(...args),
+}));
+
+jest.mock('@pos/products/data-access', () => ({
+    selectProductsEntities: () => mockProductsById,
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
@@ -56,7 +64,6 @@ import {
     buildTopProductItems,
     Dashboard,
     getDashboardAverageTicket,
-    getDashboardItemsSold,
     hasSalesData,
     normalizeDashboardRange,
     sortDashboardSummary,
@@ -65,7 +72,17 @@ import {
 describe('Dashboard', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        Object.keys(mockProductsById).forEach((key) => {
+            delete mockProductsById[key];
+        });
         mockGetSalesForRange.mockResolvedValue([]);
+        mockGetSalesSummaryForRange.mockResolvedValue({
+            totalAmount: 0,
+            totalOrders: 0,
+            products: [],
+            employees: [],
+            dates: [],
+        });
     });
 
     it('renders loading state', () => {
@@ -130,7 +147,9 @@ describe('Dashboard', () => {
             { label: '03-12', values: [15.5] },
         ]);
         expect(getDashboardAverageTicket(summary)).toBe(15.5);
-        expect(getDashboardItemsSold(summary)).toBeCloseTo(4.345);
+
+        mockProductsById.p1 = { cost: 1.5 };
+        mockProductsById.p2 = { cost: 2 };
 
         const supplemental = buildDashboardSupplemental(
             [
@@ -143,12 +162,25 @@ describe('Dashboard', () => {
                         ],
                     },
                     lines: [
-                        { categoryId: 'c1', price: 2.5, quantity: 2, lineTotalBeforeTax: 4.25 },
-                        { categoryId: 'c2', price: 5.5, quantity: 1, lineTotalBeforeTax: 5 },
+                        {
+                            productId: 'p1',
+                            categoryId: 'c1',
+                            price: 2.5,
+                            quantity: 2,
+                            lineTotalBeforeTax: 4.25,
+                        },
+                        {
+                            productId: 'p2',
+                            categoryId: 'c2',
+                            price: 5.5,
+                            quantity: 1,
+                            lineTotalBeforeTax: 5,
+                        },
                     ],
                 },
             ] as any,
-            { c1: 'Produce', c2: 'Baking' }
+            { c1: 'Produce', c2: 'Baking' },
+            mockProductsById
         );
 
         expect(supplemental.totalDiscounts).toBe(1.25);
@@ -169,6 +201,10 @@ describe('Dashboard', () => {
             { name: 'Cards', amount: '$10.00', percent: '65%', ratio: 10 / 15.5 },
             { name: 'Cash', amount: '$5.50', percent: '35%', ratio: 5.5 / 15.5 },
         ]);
+        expect(supplemental.estimatedGrossProfit).toBe(4.25);
+        expect(supplemental.missingCostLineCount).toBe(0);
+        expect(supplemental.missingCostProductCount).toBe(0);
+        expect(supplemental.excludedSalesAmount).toBe(0);
     });
 
     it('returns empty helper outputs for missing summary sections', () => {
@@ -176,7 +212,131 @@ describe('Dashboard', () => {
         expect(buildTopEmployeeItems(undefined)).toEqual([]);
         expect(buildRevenueOverTime(undefined)).toBeUndefined();
         expect(getDashboardAverageTicket(undefined)).toBe(0);
-        expect(getDashboardItemsSold(undefined)).toBe(0);
     });
 
+    it('excludes lines with missing cost from estimated gross profit and tracks disclosure counts', () => {
+        mockProductsById.p1 = { cost: 1.5 };
+        mockProductsById.p2 = { cost: null };
+
+        const supplemental = buildDashboardSupplemental(
+            [
+                {
+                    lines: [
+                        {
+                            productId: 'p1',
+                            categoryId: 'c1',
+                            price: 2.5,
+                            quantity: 2,
+                            lineTotalBeforeTax: 4.25,
+                        },
+                        {
+                            productId: 'p2',
+                            categoryId: 'c2',
+                            price: 5.5,
+                            quantity: 1,
+                            lineTotalBeforeTax: 5,
+                        },
+                        {
+                            productId: 'p2',
+                            categoryId: 'c2',
+                            price: 3,
+                            quantity: 2,
+                        },
+                    ],
+                },
+            ] as any,
+            { c1: 'Produce', c2: 'Baking' },
+            mockProductsById
+        );
+
+        expect(supplemental.estimatedGrossProfit).toBe(1.25);
+        expect(supplemental.missingCostLineCount).toBe(2);
+        expect(supplemental.missingCostProductCount).toBe(1);
+        expect(supplemental.excludedSalesAmount).toBe(11);
+    });
+
+    it('renders the estimated gross profit card value', async () => {
+        mockProductsById.p1 = { cost: 1.5 };
+        mockProductsById.p2 = { cost: 2 };
+        mockGetSalesSummaryForRange.mockResolvedValue({
+            totalAmount: 42.5,
+            totalOrders: 3,
+            products: [
+                { productName: 'Apples', unitOfMeasure: 'EA', quantity: 2, amount: 12 },
+                { productName: 'Flour', unitOfMeasure: 'LB', quantity: 1, amount: 30.5 },
+            ],
+            employees: [],
+            dates: [],
+        });
+        mockGetSalesForRange.mockResolvedValue([
+            {
+                lines: [
+                    {
+                        productId: 'p1',
+                        categoryId: 'c1',
+                        price: 2.5,
+                        quantity: 2,
+                        lineTotalBeforeTax: 4.25,
+                    },
+                    {
+                        productId: 'p2',
+                        categoryId: 'c2',
+                        price: 5.5,
+                        quantity: 1,
+                        lineTotalBeforeTax: 5,
+                    },
+                ],
+            },
+        ]);
+
+        const { toJSON } = render(<Dashboard />);
+
+        await waitFor(() => {
+            const rendered = JSON.stringify(toJSON());
+            expect(rendered).toContain('Est. Gross Profit');
+            expect(rendered).toContain('$ 4.25');
+            expect(rendered).not.toContain('Estimated profit excludes');
+        });
+    });
+
+    it('renders the missing-cost disclosure note only when profit excludes sold lines', async () => {
+        mockProductsById.p1 = { cost: 1.5 };
+        mockProductsById.p2 = { cost: null };
+        mockGetSalesSummaryForRange.mockResolvedValue({
+            totalAmount: 20,
+            totalOrders: 2,
+            products: [{ productName: 'Apples', unitOfMeasure: 'EA', quantity: 2, amount: 20 }],
+            employees: [],
+            dates: [],
+        });
+        mockGetSalesForRange.mockResolvedValue([
+            {
+                lines: [
+                    {
+                        productId: 'p1',
+                        categoryId: 'c1',
+                        price: 2.5,
+                        quantity: 2,
+                        lineTotalBeforeTax: 4.25,
+                    },
+                    {
+                        productId: 'p2',
+                        categoryId: 'c2',
+                        price: 5.5,
+                        quantity: 1,
+                        lineTotalBeforeTax: 5,
+                    },
+                ],
+            },
+        ]);
+
+        const { toJSON } = render(<Dashboard />);
+
+        await waitFor(() => {
+            const rendered = JSON.stringify(toJSON());
+            expect(rendered).toContain(
+                'Estimated profit excludes 1 sold lines with missing cost.'
+            );
+        });
+    });
 });

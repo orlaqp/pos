@@ -45,7 +45,6 @@ export function InventoryReceiveList({ navigation }: InventoryListProps) {
 
         return () => {
             active = false;
-            console.log('Closing inventory receive subscription');
             receives?.unsubscribe();
             lines?.unsubscribe();
         };

@@ -178,10 +178,6 @@ export class ProductService {
         const existing = await DataStore.query(Product, product.id);
 
         if (!existing) {
-            console.log(
-                `It seems that product: ${product.id} has been removed`
-            );
-
             return false;
         }
 

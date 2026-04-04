@@ -24,7 +24,7 @@ export class CategoryService {
         const cat = await DataStore.query(Category, category.id);
 
         if (!cat) {
-            return console.log(`It seems that category: ${category.id} has been removed`);
+            return;
         }
 
         await DataStore.save(

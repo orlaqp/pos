@@ -112,6 +112,8 @@
     "DASHBOARD_Subtitle": "Rendimiento de ventas y tendencias en el periodo seleccionado.",
     "DASHBOARD_NoDataForRange": "No se encontraron datos para este rango de fechas",
     "DASHBOARD_GrossIncome": "Ingreso bruto",
+    "DASHBOARD_EstGrossProfit": "Ganancia bruta est.",
+    "DASHBOARD_MissingCostNote": "La ganancia estimada excluye {{count}} lineas vendidas sin costo.",
     "DASHBOARD_TotalSales": "Ventas totales",
     "DASHBOARD_NewCustomers": "Nuevos clientes",
     "DASHBOARD_TopProducts": "Top 5 productos",

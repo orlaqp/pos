@@ -1,11 +1,9 @@
 import React, { useEffect } from 'react';
 import {
     categoriesActions,
-    fetchCategories,
     selectFilteredList,
     selectIsEmpty,
     selectLoadingStatus,
-    syncCategories,
     subscribeToCategoryChanges,
 } from '@pos/categories/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
@@ -27,7 +25,7 @@ export const buildCategoryListProps = (navigation: NativeStackNavigationProp<any
         filteredListSelector: selectFilteredList,
         clearSelectionAction: categoriesActions.clearSelection,
         filterAction: categoriesActions.filter,
-        fetchItemsAction: fetchCategories,
+        fetchItemsAction: undefined,
         emptyTitle: 'No categories yet',
         emptySubtitle:
             'Create categories to organize products and make catalog browsing easier.',
@@ -39,10 +37,8 @@ export function CategoryList({ navigation }: CategoryListProps) {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        syncCategories(dispatch);
         const sub = subscribeToCategoryChanges(dispatch);
         return () => {
-            console.log('Closing category subscription');
             sub.unsubscribe()
         }
     }, [dispatch]);

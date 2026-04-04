@@ -6,17 +6,28 @@ import { unitOfMeasuresActions } from './slices/unit-of-measures.slice';
 import { UnitOfMeasureEntityMapper } from './unit-of-measure.entity';
 
 export const syncUnitOfMeasures = (dispatch: Dispatch) => {
-    console.log('Syncing unit of measures to the store');
-    DataStore.query(UnitOfMeasure).then((ums) => updateStore(dispatch, ums));
+    let subscription: { unsubscribe: () => void } | undefined;
+    let shouldUnsubscribeAfterSubscribe = false;
+    subscription = DataStore.observeQuery(UnitOfMeasure).subscribe(({ items }) => {
+        updateStore(dispatch, items);
+        if (subscription) {
+            subscription.unsubscribe();
+            return;
+        }
+
+        shouldUnsubscribeAfterSubscribe = true;
+    });
+
+    if (shouldUnsubscribeAfterSubscribe) {
+        subscription.unsubscribe();
+    }
 };
 
 export const subscribeToUnitOfMeasureChanges = (dispatch: Dispatch) => {
     return DataStore.observeQuery(UnitOfMeasure).subscribe(
         ({ isSynced, items }) => {
-            if (isSynced) {
-                console.log('Unit of measure changes detected');
-                updateStore(dispatch, items);
-            }
+            void isSynced;
+            updateStore(dispatch, items);
         }
     );
 };

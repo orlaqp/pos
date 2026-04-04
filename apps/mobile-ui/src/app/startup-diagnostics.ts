@@ -22,8 +22,8 @@ const buildDiagnostics = (
 export const logStartupDiagnostics = (
     awsConfig?: Record<string, unknown>
 ): void => {
-    const payload = buildDiagnostics(awsConfig);
-    console.info('[startup-diagnostics]', payload);
+    buildDiagnostics(awsConfig);
+    void awsConfig;
 };
 
 export { buildDiagnostics };

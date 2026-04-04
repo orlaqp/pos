@@ -29,7 +29,13 @@ const nowIso = () => new Date().toISOString();
 const buildSessionId = () =>
     `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+let currentSessionCache: LifecycleSession | null = null;
+
 const readStoredSession = async (): Promise<LifecycleSession | null> => {
+    if (currentSessionCache) {
+        return currentSessionCache;
+    }
+
     try {
         const raw = await AsyncStorage.getItem(APP_LIFECYCLE_SESSION_KEY);
         if (!raw) {
@@ -41,6 +47,7 @@ const readStoredSession = async (): Promise<LifecycleSession | null> => {
             return null;
         }
 
+        currentSessionCache = parsed;
         return parsed;
     } catch (error) {
         console.warn('[app-lifecycle] unable to read lifecycle session', error);
@@ -49,6 +56,8 @@ const readStoredSession = async (): Promise<LifecycleSession | null> => {
 };
 
 const writeStoredSession = async (session: LifecycleSession) => {
+    currentSessionCache = session;
+
     try {
         await AsyncStorage.setItem(
             APP_LIFECYCLE_SESSION_KEY,
@@ -89,11 +98,8 @@ const summarizeSession = (
 
 export const beginAppLifecycleSession = async (): Promise<string> => {
     const previous = await readStoredSession();
-    const previousSummary = summarizeSession(previous);
-
-    if (previousSummary) {
+    if (summarizeSession(previous)) {
         await writePreviousSession(previous);
-        console.info('[app-lifecycle][previous-session]', previousSummary);
     }
 
     const nextSession: LifecycleSession = {

@@ -19,12 +19,14 @@ jest.mock('@rneui/themed', () => ({
         onChangeText,
         value,
         testID,
+        blurOnSubmit,
     }: {
         rightIcon?: { onPress?: () => void };
         onSubmitEditing?: (event: { nativeEvent: { text: string } }) => void;
         onChangeText?: (text: string) => void;
         value?: string;
         testID?: string;
+        blurOnSubmit?: boolean;
     }) => {
         const { Pressable, TextInput } = require('react-native');
 
@@ -35,6 +37,7 @@ jest.mock('@rneui/themed', () => ({
                     value={value}
                     onChangeText={onChangeText}
                     onSubmitEditing={onSubmitEditing}
+                    blurOnSubmit={blurOnSubmit}
                 />
                 <Pressable testID="ui-search-clear-button" onPress={rightIcon?.onPress} />
             </>
@@ -52,6 +55,7 @@ describe('UiSearchInput', () => {
         const onSubmit = jest.fn();
         const { getByTestId } = render(<UISearchInput onSubmit={onSubmit} />);
 
+        expect(getByTestId('ui-search-input').props.blurOnSubmit).toBe(false);
         fireEvent.changeText(getByTestId('ui-search-input'), '123456');
         fireEvent(getByTestId('ui-search-input'), 'submitEditing', {
             nativeEvent: { text: '123456' },

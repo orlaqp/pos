@@ -89,12 +89,16 @@ export const applyCountLineUpdate = (
     lines: InventoryCountLineDTO[],
     item: InventoryCountLineDTO
 ) => {
-    const line = lines.find((l) => l.productId === item.productId);
-    if (!line) return lines;
+    const index = lines.findIndex((line) => line.productId === item.productId);
+    if (index === -1) return lines;
 
-    line.newCount = item.newCount;
-    line.comments = item.comments;
-    return [...lines];
+    const next = [...lines];
+    next[index] = {
+        ...next[index],
+        newCount: item.newCount,
+        comments: item.comments,
+    };
+    return next;
 };
 
 export function InventoryCountForm({
@@ -260,7 +264,6 @@ export function InventoryCountForm({
     useEffect(() => {
         const productsSub = subscribeToProductChanges(dispatch);
         return () => {
-            console.log('Closing products subscriptions');
             productsSub.unsubscribe();
         };
     }, [dispatch]);
@@ -555,11 +558,11 @@ export function InventoryCountForm({
                 <FlatList
                     horizontal={false}
                     data={lineItems}
+                    keyExtractor={(item) => item.productId}
                     renderItem={(data) => (
                         <InventoryCountLine
                             readOnly={route.params?.readOnly}
                             item={data.item}
-                            key={data.index}
                             onUpdate={updateItem}
                             onDelete={deleteItem}
                         />

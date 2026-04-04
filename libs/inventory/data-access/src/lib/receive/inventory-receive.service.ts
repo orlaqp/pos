@@ -56,7 +56,8 @@ const isInventoryDebugEnabled = () =>
 
 const debugInventoryApply = (context: string, payload: Record<string, unknown>) => {
     if (!isInventoryDebugEnabled()) return;
-    console.log(`[inventory-debug][${context}]`, payload);
+    void context;
+    void payload;
 };
 
 const getErrorMessage = (error: unknown) => {
@@ -265,9 +266,7 @@ async function updateReceive(receive: InventoryReceiveDTO, dispatch: Dispatch<an
     const existing = await DataStore.query(InventoryReceive, receive.id);
 
     if (!existing) {
-        return console.log(
-            `It seems that inventory receive: ${receive.id} has been removed`
-        );
+        return;
     }
 
     await DataStore.save(

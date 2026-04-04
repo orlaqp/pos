@@ -34,7 +34,6 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
     useEffect(() => {
         const ordersSub = subscribeToOrderChanges(dispatch);
         return () => {
-            console.log('Closing orders subscription');
             ordersSub?.unsubscribe();
         };
     }, [dispatch]);

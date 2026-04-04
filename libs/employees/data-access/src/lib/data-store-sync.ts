@@ -8,30 +8,40 @@ import { logSyncDebug, startSyncMeasure, trackSyncSubscription } from '@pos/shar
 
 export const syncEmployees = (dispatch: Dispatch) => {
     const finish = startSyncMeasure('employees', 'syncEmployees');
-    DataStore.query(Employee).then((employees) => {
+    let subscription: { unsubscribe: () => void } | undefined;
+    let shouldUnsubscribeAfterSubscribe = false;
+    subscription = DataStore.observeQuery(Employee).subscribe(({ items }) => {
         finish({
-            itemCount: employees.length,
-            sample: employees.slice(0, 5).map((employee) => ({
+            itemCount: items.length,
+            sample: items.slice(0, 5).map((employee) => ({
                 id: employee.id,
                 tenantId: employee.tenantId,
                 email: employee.email,
                 active: employee.active,
             })),
         });
-        updateStore(dispatch, employees);
+        updateStore(dispatch, items);
+        if (subscription) {
+            subscription.unsubscribe();
+            return;
+        }
+
+        shouldUnsubscribeAfterSubscribe = true;
     });
+
+    if (shouldUnsubscribeAfterSubscribe) {
+        subscription.unsubscribe();
+    }
 };
 
 export const subscribeToEmployeeChanges = (dispatch: Dispatch) => {
     const release = trackSyncSubscription('employees.observeQuery');
     const subscription = DataStore.observeQuery(Employee).subscribe(({ isSynced, items }) => {
-        if (isSynced) {
-            logSyncDebug('employees.observeQuery', 'update', {
-                isSynced,
-                itemCount: items.length,
-            });
-            updateStore(dispatch, items);
-        }
+        logSyncDebug('employees.observeQuery', 'update', {
+            isSynced,
+            itemCount: items.length,
+        });
+        updateStore(dispatch, items);
     });
 
     return {

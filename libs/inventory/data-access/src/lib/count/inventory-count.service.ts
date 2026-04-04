@@ -56,7 +56,8 @@ const isInventoryDebugEnabled = () =>
 
 const debugInventoryApply = (context: string, payload: Record<string, unknown>) => {
     if (!isInventoryDebugEnabled()) return;
-    console.log(`[inventory-debug][${context}]`, payload);
+    void context;
+    void payload;
 };
 
 const getGraphqlErrorMessage = (result: unknown) => {
@@ -250,10 +251,6 @@ async function updateCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
     const existing = await DataStore.query(InventoryCount, count.id);
 
     if (!existing) {
-        console.log(
-            `It seems that inventory: ${count.id} has been removed`
-        );
-
         return null;
     }
 

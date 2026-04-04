@@ -1,4 +1,9 @@
-import { buildReceiptLines, getReceiptCopyLabel, printReceipt } from './printing.service';
+import {
+  buildReceiptLines,
+  getReceiptCopyLabel,
+  printReceipt,
+  stopDiscovery,
+} from './printing.service';
 
 const mockIsE2EPrinterSpyEnabled = jest.fn(() => false);
 const mockRecordE2EPrintJob = jest.fn();
@@ -139,5 +144,9 @@ describe('printing.service helpers', () => {
         copyType: 'CUSTOMER',
       })
     );
+  });
+
+  it('does not throw when discovery cleanup runs before a manager exists', () => {
+    expect(() => stopDiscovery()).not.toThrow();
   });
 });

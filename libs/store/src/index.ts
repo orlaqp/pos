@@ -22,6 +22,8 @@ import { employeesReducer, EMPLOYEE_FEATURE_KEY } from '@pos/employees/data-acce
 import { productsReducer, PRODUCT_FEATURE_KEY } from '@pos/products/data-access';
 import { eventsReducer, EVENTS_FEATURE_KEY } from '@pos/shared/data-store';
 
+const isDevRuntime = typeof __DEV__ !== 'undefined' && __DEV__;
+
 export const store = configureStore({
   reducer: {
       [AWS_CONFIG_FEATURE_KEY]: awsConfigReducer,
@@ -43,7 +45,7 @@ export const store = configureStore({
       [EVENTS_FEATURE_KEY]: eventsReducer,
   },
   middleware: (getDefaultMiddleware) =>
-      process.env.NODE_ENV === 'test'
+      process.env.NODE_ENV === 'test' || !isDevRuntime
           ? getDefaultMiddleware()
           : getDefaultMiddleware().concat(logger),
 });

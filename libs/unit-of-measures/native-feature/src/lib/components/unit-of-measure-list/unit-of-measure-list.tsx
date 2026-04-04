@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import {
     unitOfMeasuresActions,
-    fetchUnitOfMeasures,
     selectFilteredList,
     selectIsEmpty,
     selectLoadingStatus,
@@ -28,7 +27,7 @@ export const buildUnitOfMeasureListProps = (
         filteredListSelector: selectFilteredList,
         clearSelectionAction: unitOfMeasuresActions.clearSelection,
         filterAction: unitOfMeasuresActions.filter,
-        fetchItemsAction: fetchUnitOfMeasures,
+        fetchItemsAction: undefined,
         emptyTitle: 'No units yet',
         emptySubtitle:
             'Create units of measure before assigning them to products in the catalog.',
@@ -42,7 +41,6 @@ export function UnitOfMeasureList({ navigation }: UnitOfMeasureListProps) {
     useEffect(() => {
         const sub = subscribeToUnitOfMeasureChanges(dispatch);
         return () => {
-            console.log('Closing unit of measures subscription');
             sub.unsubscribe();
         };
     }, [dispatch]);

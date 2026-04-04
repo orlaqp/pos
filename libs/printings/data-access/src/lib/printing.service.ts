@@ -61,6 +61,11 @@ type ReceiptOrderEntity = {
 
 let starManager: StarDeviceDiscoveryManager;
 
+const logReceiptTiming = (step: string, details?: Record<string, unknown>) => {
+    void step;
+    void details;
+};
+
 
 export const discoverStarPrinters = async (): Promise<StarPrinter[]> => {
     return new Promise((resolve, reject) => {
@@ -79,13 +84,11 @@ export const discoverStarPrinters = async (): Promise<StarPrinter[]> => {
                 // Callback for printer found.
                 manager.onPrinterFound = (printer: StarPrinter) => {
                     printers.push(printer);
-                    console.log(printer);
                 };
 
                 // Callback for discovery finished. (option)
                 manager.onDiscoveryFinished = () => {
                     resolve(printers);
-                    console.log(`Discovery finished.`);
                 };
 
                 // Start discovery.
@@ -97,12 +100,21 @@ export const discoverStarPrinters = async (): Promise<StarPrinter[]> => {
             })
             .catch((error) => {
                 console.error('Error while searching for printers...', error);
+                reject(error);
             });
     });
 };
 
 export const stopDiscovery = () => {
-    starManager.stopDiscovery();
+    if (!starManager) {
+        return;
+    }
+
+    try {
+        starManager.stopDiscovery();
+    } catch (error) {
+        console.error('Error while stopping printer discovery...', error);
+    }
 };
 
 export const printReceipt = async (
@@ -111,12 +123,26 @@ export const printReceipt = async (
     cart: ReceiptCartState,
     order?: ReceiptOrderEntity,
 ) => {
+    const startedAt = Date.now();
     if (!store || !printerInfo) {
         Alert.alert('Store and printer should be available in order to print..');
         return;
     }
 
+    logReceiptTiming('print-receipt-start', {
+        orderId: order?.id,
+        orderNo: order?.orderNo,
+        copyType: order?.copyType,
+        printerIdentifier: printerInfo.identifier,
+    });
     await printSingleReceipt(store, printerInfo, cart, order);
+    logReceiptTiming('print-receipt-end', {
+        orderId: order?.id,
+        orderNo: order?.orderNo,
+        copyType: order?.copyType,
+        printerIdentifier: printerInfo.identifier,
+        durationMs: Date.now() - startedAt,
+    });
 };
 
 const printSingleReceipt = async (
@@ -238,6 +264,7 @@ export const print = async (
     printerInfo: PrinterEntity,
     dataBuilder: (builder: StarXpandCommand.StarXpandCommandBuilder) => void
 ): Promise<void> => {
+    const startedAt = Date.now();
     const settings = new StarConnectionSettings();
     settings.interfaceType = InterfaceType.Lan;
     settings.identifier = printerInfo.identifier;
@@ -245,16 +272,32 @@ export const print = async (
     const printer = new StarPrinter(settings);
 
     try {
+        const openStartedAt = Date.now();
         await printer.open();
+        logReceiptTiming('printer-open-complete', {
+            printerIdentifier: printerInfo.identifier,
+            durationMs: Date.now() - openStartedAt,
+        });
         const builder = new StarXpandCommand.StarXpandCommandBuilder();
         dataBuilder(builder);
         const commands = await builder.getCommands();
+        const printStartedAt = Date.now();
         await printer.print(commands);
+        logReceiptTiming('printer-print-complete', {
+            printerIdentifier: printerInfo.identifier,
+            durationMs: Date.now() - printStartedAt,
+        });
     } catch (error) {
-        console.log(error);
+        console.error(error);
     } finally {
+        const closeStartedAt = Date.now();
         await printer.close();
         await printer.dispose();
+        logReceiptTiming('printer-close-complete', {
+            printerIdentifier: printerInfo.identifier,
+            durationMs: Date.now() - closeStartedAt,
+            totalDurationMs: Date.now() - startedAt,
+        });
     }
 };
 

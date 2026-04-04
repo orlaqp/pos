@@ -32,11 +32,11 @@ export const fetchEmployees = createAsyncThunk(
   'employees/fetchStatus',
   async (_, thunkAPI) => {
     try {
-      const employees = await EmployeeService.getSyncedLocalEmployees();
+      const result = await EmployeeService.getSyncedLocalEmployees();
 
       return {
-        employees: employees.map(x => EmployeeEntityMapper.fromModel(x)),
-        initialSyncComplete: true,
+        employees: result.employees.map(x => EmployeeEntityMapper.fromModel(x)),
+        initialSyncComplete: result.initialSyncComplete,
       };
     } catch (error) {
       const message =
