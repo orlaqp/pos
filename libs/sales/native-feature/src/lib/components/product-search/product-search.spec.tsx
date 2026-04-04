@@ -7,6 +7,7 @@ const mockOnFilterChange = jest.fn().mockResolvedValue('');
 const mockPrimary = '#00f';
 const mockGrey = '#999';
 const mockFocus = jest.fn();
+const mockSearchInputProps = jest.fn();
 
 jest.mock('@pos/shared/ui-native', () => ({
     UISearchInput: (() => {
@@ -14,9 +15,14 @@ jest.mock('@pos/shared/ui-native', () => ({
         const { Pressable, Text } = require('react-native');
         return React.forwardRef(
             (
-                { onSubmit }: { onSubmit: (value: string) => void },
+                props: {
+                    onSubmit: (value: string) => void;
+                    clearOnSubmit?: boolean;
+                    retainFocusOnSubmit?: boolean;
+                },
                 ref: React.ForwardedRef<any>
             ) => {
+                mockSearchInputProps(props);
                 if (typeof ref === 'function') {
                     ref({ focus: mockFocus });
                 } else if (ref) {
@@ -24,7 +30,7 @@ jest.mock('@pos/shared/ui-native', () => ({
                 }
 
                 return (
-                    <Pressable testID="product-search-submit" onPress={() => onSubmit('apple')}>
+                    <Pressable testID="product-search-submit" onPress={() => props.onSubmit('apple')}>
                         <Text>Search</Text>
                     </Pressable>
                 );
@@ -65,6 +71,7 @@ describe('ProductSearch', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockFocus.mockClear();
+        mockSearchInputProps.mockClear();
     });
 
     it('submits filter text', () => {
@@ -76,6 +83,12 @@ describe('ProductSearch', () => {
 
         fireEvent.press(getByTestId('product-search-submit'));
         expect(mockOnFilterChange).toHaveBeenCalledWith('apple');
+        expect(mockSearchInputProps).toHaveBeenCalledWith(
+            expect.objectContaining({
+                clearOnSubmit: true,
+                retainFocusOnSubmit: true,
+            })
+        );
     });
 
     it('toggles keyboard button active color', () => {

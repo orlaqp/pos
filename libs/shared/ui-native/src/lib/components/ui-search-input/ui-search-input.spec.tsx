@@ -3,6 +3,9 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 import { UISearchInput } from './ui-search-input';
 
+const mockInputFocus = jest.fn();
+const mockInputClear = jest.fn();
+
 jest.mock('@rneui/themed', () => ({
     useTheme: () => ({
         theme: {
@@ -13,36 +16,47 @@ jest.mock('@rneui/themed', () => ({
             },
         },
     }),
-    Input: ({
-        rightIcon,
-        onSubmitEditing,
-        onChangeText,
-        value,
-        testID,
-        blurOnSubmit,
-    }: {
-        rightIcon?: { onPress?: () => void };
-        onSubmitEditing?: (event: { nativeEvent: { text: string } }) => void;
-        onChangeText?: (text: string) => void;
-        value?: string;
-        testID?: string;
-        blurOnSubmit?: boolean;
-    }) => {
-        const { Pressable, TextInput } = require('react-native');
+    Input: require('react').forwardRef(
+        (
+            {
+                rightIcon,
+                onSubmitEditing,
+                onChangeText,
+                value,
+                testID,
+                blurOnSubmit,
+            }: {
+                rightIcon?: { onPress?: () => void };
+                onSubmitEditing?: (event: { nativeEvent: { text: string } }) => void;
+                onChangeText?: (text: string) => void;
+                value?: string;
+                testID?: string;
+                blurOnSubmit?: boolean;
+            },
+            ref: React.ForwardedRef<any>
+        ) => {
+            const { Pressable, TextInput } = require('react-native');
 
-        return (
-            <>
-                <TextInput
-                    testID={testID || 'ui-search-input'}
-                    value={value}
-                    onChangeText={onChangeText}
-                    onSubmitEditing={onSubmitEditing}
-                    blurOnSubmit={blurOnSubmit}
-                />
-                <Pressable testID="ui-search-clear-button" onPress={rightIcon?.onPress} />
-            </>
-        );
-    },
+            if (typeof ref === 'function') {
+                ref({ focus: mockInputFocus, clear: mockInputClear });
+            } else if (ref) {
+                ref.current = { focus: mockInputFocus, clear: mockInputClear };
+            }
+
+            return (
+                <>
+                    <TextInput
+                        testID={testID || 'ui-search-input'}
+                        value={value}
+                        onChangeText={onChangeText}
+                        onSubmitEditing={onSubmitEditing}
+                        blurOnSubmit={blurOnSubmit}
+                    />
+                    <Pressable testID="ui-search-clear-button" onPress={rightIcon?.onPress} />
+                </>
+            );
+        }
+    ),
 }));
 
 describe('UiSearchInput', () => {
@@ -51,6 +65,8 @@ describe('UiSearchInput', () => {
             callback(0);
             return 0;
         });
+        mockInputFocus.mockClear();
+        mockInputClear.mockClear();
     });
 
     afterEach(() => {
@@ -78,12 +94,8 @@ describe('UiSearchInput', () => {
     it('clears and restores focus on submit when configured', () => {
         const onSubmit = jest.fn();
         const onChangeText = jest.fn();
-        const focus = jest.fn();
-        const clear = jest.fn();
-        const ref = React.createRef<any>();
         const { getByTestId } = render(
             <UISearchInput
-                ref={ref}
                 onSubmit={onSubmit}
                 onChangeText={onChangeText}
                 clearOnSubmit={true}
@@ -91,7 +103,6 @@ describe('UiSearchInput', () => {
             />
         );
 
-        ref.current = { focus, clear };
         fireEvent.changeText(getByTestId('ui-search-input'), 'apple');
         fireEvent(getByTestId('ui-search-input'), 'submitEditing', {
             nativeEvent: { text: 'apple' },
@@ -99,8 +110,8 @@ describe('UiSearchInput', () => {
 
         expect(onSubmit).toHaveBeenCalledWith('apple');
         expect(onChangeText).toHaveBeenCalledWith('');
-        expect(clear).toHaveBeenCalled();
-        expect(focus).toHaveBeenCalled();
+        expect(mockInputClear).toHaveBeenCalled();
+        expect(mockInputFocus).toHaveBeenCalled();
     });
 
     it('clears the current text and notifies submit listeners', () => {
