@@ -39,17 +39,29 @@ const getKeychainOptions = () => {
     };
 };
 
+const readRememberedAdminMarker = async () => {
+    const [enabled, username] = await Promise.all([
+        AsyncStorage.getItem(REMEMBERED_ADMIN_ENABLED_KEY),
+        AsyncStorage.getItem(REMEMBERED_ADMIN_USERNAME_KEY),
+    ]);
+
+    return {
+        enabled: enabled === '1',
+        username: username?.trim() || undefined,
+    };
+};
+
 const setRememberedAdminMarker = async (username: string) => {
-    await AsyncStorage.multiSet([
-        [REMEMBERED_ADMIN_ENABLED_KEY, '1'],
-        [REMEMBERED_ADMIN_USERNAME_KEY, username],
+    await Promise.all([
+        AsyncStorage.setItem(REMEMBERED_ADMIN_ENABLED_KEY, '1'),
+        AsyncStorage.setItem(REMEMBERED_ADMIN_USERNAME_KEY, username),
     ]);
 };
 
 const clearRememberedAdminMarker = async () => {
-    await AsyncStorage.multiRemove([
-        REMEMBERED_ADMIN_ENABLED_KEY,
-        REMEMBERED_ADMIN_USERNAME_KEY,
+    await Promise.all([
+        AsyncStorage.removeItem(REMEMBERED_ADMIN_ENABLED_KEY),
+        AsyncStorage.removeItem(REMEMBERED_ADMIN_USERNAME_KEY),
     ]);
 };
 
@@ -79,11 +91,8 @@ export const clearRememberedAdminCredentials = async () => {
 
 export const getRememberedAdminCredentials = async (): Promise<RememberedAdminCredentials | null> => {
     try {
-        const [enabled, usernameHint] = await AsyncStorage.multiGet([
-            REMEMBERED_ADMIN_ENABLED_KEY,
-            REMEMBERED_ADMIN_USERNAME_KEY,
-        ]);
-        const isEnabled = enabled?.[1] === '1';
+        const marker = await readRememberedAdminMarker();
+        const isEnabled = marker.enabled;
 
         if (!isEnabled) {
             return null;
@@ -97,13 +106,13 @@ export const getRememberedAdminCredentials = async (): Promise<RememberedAdminCr
             return null;
         }
 
-        const username = stored.username?.trim() || usernameHint?.[1]?.trim() || '';
+        const username = stored.username?.trim() || marker.username || '';
         if (!username || !stored.password) {
             await clearRememberedAdminCredentials();
             return null;
         }
 
-        if (username !== usernameHint?.[1]) {
+        if (username !== marker.username) {
             await setRememberedAdminMarker(username);
         }
 
@@ -119,14 +128,18 @@ export const getRememberedAdminCredentials = async (): Promise<RememberedAdminCr
 
 export const getRememberedAdminCredentialStatus =
     async (): Promise<RememberedAdminCredentialStatus> => {
-        const remembered = await getRememberedAdminCredentials();
+        try {
+            const marker = await readRememberedAdminMarker();
+            if (!marker.enabled) {
+                return { enabled: false };
+            }
 
-        if (!remembered) {
+            return {
+                enabled: true,
+                username: marker.username,
+            };
+        } catch (error) {
+            console.error('Unable to load remembered admin credential status', error);
             return { enabled: false };
         }
-
-        return {
-            enabled: true,
-            username: remembered.username,
-        };
     };

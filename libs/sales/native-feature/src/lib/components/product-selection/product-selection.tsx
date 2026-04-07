@@ -8,7 +8,7 @@ import {
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { EACH } from '@pos/unit-of-measures/data-access';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import {
@@ -31,7 +31,7 @@ export function ProductSelection({
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
     const localStyles = useStyles(tokens);
-    const [rows, setRows] = useState<ProductEntity[][]>();
+    const rows = useMemo(() => chunkProducts(products), [products]);
 
     const productBackgroundColor = (product: ProductEntity) => {
         const state = getProductCardState(product);
@@ -42,10 +42,6 @@ export function ProductSelection({
 
         return styles.itemBackground;
     }
-
-    useEffect(() => {
-        setRows(chunkProducts(products));
-    }, [products]);
 
     return (
         <View style={localStyles.container}>

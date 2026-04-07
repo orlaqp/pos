@@ -140,6 +140,13 @@ export function SalesScreen({
     const searchTextRef = useRef(searchText);
     const isSearchActiveRef = useRef(isSearchActive);
     const showCategoriesRef = useRef(showCategories);
+    const isScreenFocusedRef = useRef(false);
+    const searchFocusInteractionRef = useRef<{ cancel?: () => void } | null>(
+        null
+    );
+    const searchFocusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+        null
+    );
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
@@ -164,14 +171,45 @@ export function SalesScreen({
         isSearchActiveRef.current = isSearchActive;
         showCategoriesRef.current = showCategories;
     }, [activeCategory, browseMode, isSearchActive, searchText, showCategories]);
+    const cancelPendingSearchFocus = useCallback(() => {
+        searchFocusInteractionRef.current?.cancel?.();
+        searchFocusInteractionRef.current = null;
+        if (searchFocusTimeoutRef.current) {
+            clearTimeout(searchFocusTimeoutRef.current);
+            searchFocusTimeoutRef.current = null;
+        }
+    }, []);
     const restoreSearchFocus = useCallback(() => {
-        const interaction = InteractionManager.runAfterInteractions(() => {
-            setTimeout(() => {
-                searchRef.current?.focus();
-            }, 25);
-        });
+        if (!isScreenFocusedRef.current) {
+            return;
+        }
 
-        return () => interaction.cancel?.();
+        if (searchFocusInteractionRef.current || searchFocusTimeoutRef.current) {
+            return;
+        }
+
+        searchFocusInteractionRef.current = InteractionManager.runAfterInteractions(
+            () => {
+                searchFocusInteractionRef.current = null;
+                searchFocusTimeoutRef.current = setTimeout(() => {
+                    searchFocusTimeoutRef.current = null;
+
+                    if (!isScreenFocusedRef.current) {
+                        return;
+                    }
+
+                    const input = searchRef.current as
+                        | (TextInput & { isFocused?: () => boolean })
+                        | null;
+
+                    if (input?.isFocused?.()) {
+                        return;
+                    }
+
+                    input?.focus?.();
+                }, 25);
+            }
+        );
     }, []);
     const deselectProduct = useCallback(() => {
         dispatch(cartActions.setActiveProduct(undefined));
@@ -268,10 +306,11 @@ export function SalesScreen({
         [dispatch, employee, station]
     );
 
-    const onCategoryChange = (c?: CategoryEntity) => {
+    const onCategoryChange = useCallback((c?: CategoryEntity) => {
         setIsSearchActive(false);
         setSearchText(undefined);
         setActiveCategory(c);
+        restoreSearchFocus();
 
         if (!c?.id) {
             setBrowseMode('idle');
@@ -279,14 +318,15 @@ export function SalesScreen({
         }
 
         setBrowseMode('category');
-    };
+    }, [restoreSearchFocus]);
 
     const onShowAllProducts = useCallback(() => {
         setIsSearchActive(false);
         setSearchText(undefined);
         setActiveCategory(undefined);
         setBrowseMode('all');
-    }, []);
+        restoreSearchFocus();
+    }, [restoreSearchFocus]);
 
     const resetCatalogUi = useCallback(() => {
         const shouldResetCatalogState =
@@ -344,9 +384,6 @@ export function SalesScreen({
             setIsSearchActive(false);
             setSearchText(undefined);
         }
-
-        searchRef.current?.clear();
-        restoreSearchFocus();
         return '';
     };
 
@@ -774,20 +811,20 @@ export function SalesScreen({
 
     useFocusEffect(
         useCallback(() => {
+            isScreenFocusedRef.current = true;
             resetCatalogUi();
-            return undefined;
-        }, [resetCatalogUi])
+            restoreSearchFocus();
+            return () => {
+                isScreenFocusedRef.current = false;
+                cancelPendingSearchFocus();
+            };
+        }, [cancelPendingSearchFocus, resetCatalogUi, restoreSearchFocus])
     );
 
     useEffect(() => {
         if (!hasCatalogProducts) return;
-
-        const interaction = InteractionManager.runAfterInteractions(() => {
-            searchRef.current?.focus();
-        });
-
-        return () => interaction.cancel?.();
-    }, [hasCatalogProducts]);
+        restoreSearchFocus();
+    }, [hasCatalogProducts, restoreSearchFocus]);
 
     useEffect(() => {
         Animated.parallel([

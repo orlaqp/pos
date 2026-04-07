@@ -55,6 +55,7 @@ import {
     beginAppLifecycleSession,
     recordAppLifecycleEvent,
 } from './app-lifecycle-diagnostics';
+import { shouldValidateSessionOnForeground } from './foreground-session-guard';
 
 type BootstrapStatus = 'idle' | 'checking-session' | 'resolving-tenant' | 'preparing-business-data' | 'ready' | 'error';
 type SessionRecoveryState =
@@ -199,6 +200,9 @@ const AppContent = () => {
     const silentReauthInFlightRef = useRef<Promise<User | null> | null>(null);
     const lastForegroundSessionCheckAtRef = useRef(0);
     const lastKnownAppStateRef = useRef(AppState.currentState);
+    const foregroundValidationTaskRef = useRef<{ cancel?: () => void } | null>(
+        null
+    );
     const deferredBusinessRefreshRef = useRef<{ cancel?: () => void } | null>(
         null
     );
@@ -224,6 +228,8 @@ const AppContent = () => {
         return () => {
             deferredBusinessRefreshRef.current?.cancel?.();
             deferredBusinessRefreshRef.current = null;
+            foregroundValidationTaskRef.current?.cancel?.();
+            foregroundValidationTaskRef.current = null;
         };
     }, []);
 
@@ -399,6 +405,20 @@ const AppContent = () => {
         if (bootstrapInFlightRef.current) {
             logSyncDebug('app-bootstrap', 'startup:skip-inflight');
             return bootstrapInFlightRef.current;
+        }
+
+        const currentTenantId = tenantSession.currentTenantId;
+        if (
+            bootstrapStatus === 'ready' &&
+            !bootstrapError &&
+            authUser?.tenantId &&
+            currentTenantId === authUser.tenantId &&
+            tenantSession.bootstrapStatus === 'ready'
+        ) {
+            logSyncDebug('app-bootstrap', 'startup:skip-ready', {
+                tenantId: authUser.tenantId,
+            });
+            return;
         }
 
         const bootstrapPromise = (async () => {
@@ -603,9 +623,13 @@ const AppContent = () => {
     }, [
         attemptSilentReauth,
         authUser,
+        bootstrapError,
+        bootstrapStatus,
         dispatch,
         recordLifecycleEvent,
         refreshBusinessContext,
+        tenantSession.bootstrapStatus,
+        tenantSession.currentTenantId,
     ]);
 
     const signOutFromStartup = useCallback(async () => {
@@ -711,71 +735,107 @@ const AppContent = () => {
                 nextState,
             });
             if (nextState !== 'active') {
+                foregroundValidationTaskRef.current?.cancel?.();
+                foregroundValidationTaskRef.current = null;
                 return;
             }
 
             const now = Date.now();
             if (
-                now - lastForegroundSessionCheckAtRef.current <
-                FOREGROUND_SESSION_CHECK_THROTTLE_MS
+                !shouldValidateSessionOnForeground({
+                    previousState,
+                    nextState,
+                    now,
+                    lastForegroundSessionCheckAt: lastForegroundSessionCheckAtRef.current,
+                    throttleMs: FOREGROUND_SESSION_CHECK_THROTTLE_MS,
+                    bootstrapStatus,
+                    sessionRecoveryState,
+                    hasAuthUser: Boolean(authUser),
+                    hasValidationInFlight: Boolean(
+                        sessionValidationInFlightRef.current
+                    ),
+                    hasValidationScheduled: Boolean(
+                        foregroundValidationTaskRef.current
+                    ),
+                    hasBootstrapInFlight: Boolean(bootstrapInFlightRef.current),
+                    hasSilentReauthInFlight: Boolean(
+                        silentReauthInFlightRef.current
+                    ),
+                })
             ) {
                 return;
             }
 
-            if (sessionValidationInFlightRef.current) {
-                return;
-            }
-
             lastForegroundSessionCheckAtRef.current = now;
+            foregroundValidationTaskRef.current = InteractionManager.runAfterInteractions(
+                () => {
+                    foregroundValidationTaskRef.current = null;
 
-            const validationPromise = (async () => {
-                try {
-                    // Do not force-refresh on every foreground transition.
-                    // fetchAuthSession() will use the current session and only refresh if needed.
-                    setSessionRecoveryState('refreshing');
-                    await Auth.fetchSession();
-                    setSessionRecoveryState('healthy');
-                    recordLifecycleEvent('session.validation:success');
-                } catch (error) {
-                    const sessionIssue = classifyAuthSessionError(error);
-                    recordLifecycleEvent('session.validation:failed', {
-                        sessionIssue,
-                        message:
-                            error instanceof Error ? error.message : String(error),
-                    });
                     if (
-                        sessionIssue !== 'no_session' &&
-                        sessionIssue !== 'revoked' &&
-                        sessionIssue !== 'expired'
+                        AppState.currentState !== 'active' ||
+                        sessionValidationInFlightRef.current ||
+                        bootstrapInFlightRef.current ||
+                        silentReauthInFlightRef.current
                     ) {
-                        console.error('Session validation failed', error);
-                        setSessionRecoveryState(
-                            sessionIssue === 'transient' ? 'refreshing' : 'healthy'
-                        );
                         return;
                     }
 
-                    await handleExpiredSession(
-                        error instanceof Error ? error.message : String(error)
-                    );
-                }
-            })();
+                    const validationPromise = (async () => {
+                        try {
+                            // Do not force-refresh on every foreground transition.
+                            // fetchAuthSession() will use the current session and only refresh if needed.
+                            setSessionRecoveryState('refreshing');
+                            await Auth.fetchSession();
+                            setSessionRecoveryState('healthy');
+                            recordLifecycleEvent('session.validation:success');
+                        } catch (error) {
+                            const sessionIssue = classifyAuthSessionError(error);
+                            recordLifecycleEvent('session.validation:failed', {
+                                sessionIssue,
+                                message:
+                                    error instanceof Error ? error.message : String(error),
+                            });
+                            if (
+                                sessionIssue !== 'no_session' &&
+                                sessionIssue !== 'revoked' &&
+                                sessionIssue !== 'expired'
+                            ) {
+                                console.error('Session validation failed', error);
+                                setSessionRecoveryState(
+                                    sessionIssue === 'transient' ? 'refreshing' : 'healthy'
+                                );
+                                return;
+                            }
 
-            sessionValidationInFlightRef.current = validationPromise;
+                            await handleExpiredSession(
+                                error instanceof Error ? error.message : String(error)
+                            );
+                        }
+                    })();
 
-            try {
-                await validationPromise;
-            } finally {
-                if (sessionValidationInFlightRef.current === validationPromise) {
-                    sessionValidationInFlightRef.current = null;
+                    sessionValidationInFlightRef.current = validationPromise;
+
+                    void validationPromise.finally(() => {
+                        if (sessionValidationInFlightRef.current === validationPromise) {
+                            sessionValidationInFlightRef.current = null;
+                        }
+                    });
                 }
-            }
+            );
         });
 
         return () => {
+            foregroundValidationTaskRef.current?.cancel?.();
+            foregroundValidationTaskRef.current = null;
             subscription.remove();
         };
-    }, [authUser, handleExpiredSession, recordLifecycleEvent]);
+    }, [
+        authUser,
+        bootstrapStatus,
+        handleExpiredSession,
+        recordLifecycleEvent,
+        sessionRecoveryState,
+    ]);
 
     useEffect(() => {
         const subscription = AppState.addEventListener('memoryWarning', () => {

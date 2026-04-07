@@ -623,8 +623,6 @@ describe('SalesScreen', () => {
         expect(mockDispatch).toHaveBeenCalledWith(
             expect.objectContaining({ type: 'cart/upsert' })
         );
-        expect(mockSearchClear).toHaveBeenCalled();
-        expect(mockSearchFocus).toHaveBeenCalled();
         expect(getByTestId('sales-catalog-count').props.children).toBe(0);
     });
 
@@ -634,18 +632,31 @@ describe('SalesScreen', () => {
             fireEvent.press(getByTestId('sales-category-clear'));
             await Promise.resolve();
         });
+        act(() => {
+            interactionCallbacks.forEach((callback) => callback());
+            jest.runOnlyPendingTimers();
+        });
         expect(getByTestId('sales-catalog-count').props.children).toBe(0);
         await act(async () => {
             fireEvent.press(getByTestId('sales-category-select'));
             await Promise.resolve();
+        });
+        act(() => {
+            interactionCallbacks.forEach((callback) => callback());
+            jest.runOnlyPendingTimers();
         });
         expect(getByTestId('sales-catalog-count').props.children).toBe(2);
         await act(async () => {
             fireEvent.press(getByTestId('sales-category-all'));
             await Promise.resolve();
         });
+        act(() => {
+            interactionCallbacks.forEach((callback) => callback());
+            jest.runOnlyPendingTimers();
+        });
         expect(getByTestId('sales-catalog-count').props.children).toBe(2);
         expect(mockSearch).not.toHaveBeenCalled();
+        expect(mockSearchFocus).toHaveBeenCalled();
     });
 
     it('resets catalog ui when the sales screen regains focus', async () => {

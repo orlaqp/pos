@@ -81,6 +81,24 @@ describe('remembered admin credentials', () => {
         });
     });
 
+    it('reads remembered status without touching keychain credentials', async () => {
+        await saveRememberedAdminCredentials({
+            username: 'owner@example.com',
+            password: 'secret-123',
+        });
+
+        jest.clearAllMocks();
+
+        await expect(getRememberedAdminCredentialStatus()).resolves.toEqual({
+            enabled: true,
+            username: 'owner@example.com',
+        });
+
+        expect((require('react-native-keychain') as {
+            getGenericPassword: jest.Mock;
+        }).getGenericPassword).not.toHaveBeenCalled();
+    });
+
     it('clears stored credentials and marker', async () => {
         await saveRememberedAdminCredentials({
             username: 'owner@example.com',
