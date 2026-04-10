@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
     categoriesActions,
     selectFilteredList,
@@ -7,6 +7,7 @@ import {
     subscribeToCategoryChanges,
 } from '@pos/categories/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import CategoryItem from '../category-item/category-item';
 import { useDispatch } from 'react-redux';
@@ -36,12 +37,14 @@ export const buildCategoryListProps = (navigation: NativeStackNavigationProp<any
 export function CategoryList({ navigation }: CategoryListProps) {
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        const sub = subscribeToCategoryChanges(dispatch);
-        return () => {
-            sub.unsubscribe()
-        }
-    }, [dispatch]);
+    useFocusEffect(
+        React.useCallback(() => {
+            const sub = subscribeToCategoryChanges(dispatch);
+            return () => {
+                sub.unsubscribe();
+            };
+        }, [dispatch])
+    );
 
     const props = buildCategoryListProps(navigation);
 

@@ -115,9 +115,11 @@ export function CategorySelection({
                 </Pressable>
             ) : null}
             <FlatList
+                testID="sales-category-list"
                 data={categories}
                 keyExtractor={(item) => item.id || item.name}
                 showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
                 contentContainerStyle={styles.listContent}
                 extraData={`${selectedCategoryId ?? ''}:${String(showAllSelected)}:${refreshToken}`}
                 initialNumToRender={10}

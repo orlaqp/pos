@@ -628,7 +628,11 @@ export function Cart({
     return (
         <View style={localStyles.root}>
             <View style={localStyles.linesWrap}>
-                <ScrollView contentContainerStyle={localStyles.linesContent}>
+                <ScrollView
+                    testID="cart-lines-scroll"
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={localStyles.linesContent}
+                >
                     {cart.items.map((i) => {
                         const lineSummary = cart.appliedDiscountSummary?.lineSummaries.find(
                             (summary) => summary.lineId === i.identifier
@@ -672,25 +676,33 @@ export function Cart({
                         disabledActionReason={disabledActionReason}
                         selectedLineHasManualAdjustment={selectedLineHasManualAdjustment}
                         hasOrderManualAdjustment={hasOrderManualAdjustment}
-                        onToggleExpanded={() => setActionsExpanded((current) => !current)}
+                        onToggleExpanded={() => {
+                            setActionsExpanded((current) => !current);
+                            onInteractionComplete();
+                        }}
                         onOpenPromo={openPromoDialog}
                         onOpenManual={openManualDiscountDialog}
                         onOpenOverride={openOverrideDialog}
-                        onRemovePromo={(code) => dispatch(cartActions.removePromoCode(code))}
-                        onClearLinePricing={() =>
+                        onRemovePromo={(code) => {
+                            dispatch(cartActions.removePromoCode(code));
+                            onInteractionComplete();
+                        }}
+                        onClearLinePricing={() => {
                             dispatch(
                                 cartActions.removePricingAdjustment({
                                     lineId: selectedItem?.identifier,
                                 })
-                            )
-                        }
-                        onClearOrderDiscount={() =>
+                            );
+                            onInteractionComplete();
+                        }}
+                        onClearOrderDiscount={() => {
                             dispatch(
                                 cartActions.removePricingAdjustment({
                                     scope: 'ORDER',
                                 })
-                            )
-                        }
+                            );
+                            onInteractionComplete();
+                        }}
                     />
                 )}
 

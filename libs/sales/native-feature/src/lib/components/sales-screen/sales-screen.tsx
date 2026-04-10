@@ -25,7 +25,6 @@ import {
     ProductService,
     selectAllProducts,
     selectProductsEntities,
-    subscribeToProductChanges,
 } from '@pos/products/data-access';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -100,6 +99,8 @@ const logSaleFlow = (step: string, details?: Record<string, unknown>) => {
     void details;
 };
 
+const SALES_SEARCH_REFOCUS_DELAY_MS = 200;
+
 /* eslint-disable-next-line */
 export function SalesScreen({
     navigation,
@@ -141,6 +142,7 @@ export function SalesScreen({
     const isSearchActiveRef = useRef(isSearchActive);
     const showCategoriesRef = useRef(showCategories);
     const isScreenFocusedRef = useRef(false);
+    const isProductDialogOpenRef = useRef(Boolean(product));
     const searchFocusInteractionRef = useRef<{ cancel?: () => void } | null>(
         null
     );
@@ -179,8 +181,19 @@ export function SalesScreen({
             searchFocusTimeoutRef.current = null;
         }
     }, []);
+    useEffect(() => {
+        isProductDialogOpenRef.current = Boolean(product);
+
+        if (product) {
+            cancelPendingSearchFocus();
+        }
+    }, [cancelPendingSearchFocus, product]);
     const restoreSearchFocus = useCallback(() => {
         if (!isScreenFocusedRef.current) {
+            return;
+        }
+
+        if (isProductDialogOpenRef.current) {
             return;
         }
 
@@ -191,29 +204,61 @@ export function SalesScreen({
         searchFocusInteractionRef.current = InteractionManager.runAfterInteractions(
             () => {
                 searchFocusInteractionRef.current = null;
-                searchFocusTimeoutRef.current = setTimeout(() => {
-                    searchFocusTimeoutRef.current = null;
+                if (!isScreenFocusedRef.current || isProductDialogOpenRef.current) {
+                    return;
+                }
 
-                    if (!isScreenFocusedRef.current) {
-                        return;
-                    }
+                const input = searchRef.current as
+                    | (TextInput & { isFocused?: () => boolean })
+                    | null;
 
-                    const input = searchRef.current as
-                        | (TextInput & { isFocused?: () => boolean })
-                        | null;
+                if (input?.isFocused?.()) {
+                    return;
+                }
 
-                    if (input?.isFocused?.()) {
-                        return;
-                    }
-
-                    input?.focus?.();
-                }, 25);
+                input?.focus?.();
             }
         );
     }, []);
+    const blurSearchFocus = useCallback(() => {
+        const input = searchRef.current as
+            | (TextInput & { blur?: () => void })
+            | null;
+        input?.blur?.();
+    }, []);
+    const scheduleSearchFocusRestore = useCallback(
+        ({
+            blurFirst = false,
+            delayMs = SALES_SEARCH_REFOCUS_DELAY_MS,
+        }: {
+            blurFirst?: boolean;
+            delayMs?: number;
+        } = {}) => {
+            cancelPendingSearchFocus();
+
+            if (!isScreenFocusedRef.current || isProductDialogOpenRef.current) {
+                return;
+            }
+
+            if (blurFirst) {
+                blurSearchFocus();
+            }
+
+            searchFocusTimeoutRef.current = setTimeout(() => {
+                searchFocusTimeoutRef.current = null;
+                restoreSearchFocus();
+            }, delayMs);
+        },
+        [blurSearchFocus, cancelPendingSearchFocus, restoreSearchFocus]
+    );
     const deselectProduct = useCallback(() => {
         dispatch(cartActions.setActiveProduct(undefined));
     }, [dispatch]);
+    const closeProductDialog = useCallback(() => {
+        isProductDialogOpenRef.current = false;
+        deselectProduct();
+        scheduleSearchFocusRestore();
+    }, [deselectProduct, scheduleSearchFocusRestore]);
     const shouldReturnToOrderList = () =>
         navigation.getState?.()?.routeNames?.includes('Order List');
     const ensureCheckoutContext = useCallback(
@@ -261,10 +306,11 @@ export function SalesScreen({
     );
 
     const upsertCart = useCallback((item: CartItem) => {
+        isProductDialogOpenRef.current = false;
         dispatch(cartActions.upsert(item));
         deselectProduct();
-        restoreSearchFocus();
-    }, [deselectProduct, dispatch, restoreSearchFocus]);
+        scheduleSearchFocusRestore();
+    }, [deselectProduct, dispatch, scheduleSearchFocusRestore]);
     const getLatestProduct = useCallback(
         (product: ProductEntity) =>
             productsEntities[product.id] ?? product,
@@ -310,23 +356,24 @@ export function SalesScreen({
         setIsSearchActive(false);
         setSearchText(undefined);
         setActiveCategory(c);
-        restoreSearchFocus();
 
         if (!c?.id) {
             setBrowseMode('idle');
+            scheduleSearchFocusRestore({ blurFirst: true });
             return;
         }
 
         setBrowseMode('category');
-    }, [restoreSearchFocus]);
+        scheduleSearchFocusRestore({ blurFirst: true });
+    }, [scheduleSearchFocusRestore]);
 
     const onShowAllProducts = useCallback(() => {
         setIsSearchActive(false);
         setSearchText(undefined);
         setActiveCategory(undefined);
         setBrowseMode('all');
-        restoreSearchFocus();
-    }, [restoreSearchFocus]);
+        scheduleSearchFocusRestore({ blurFirst: true });
+    }, [scheduleSearchFocusRestore]);
 
     const resetCatalogUi = useCallback(() => {
         const shouldResetCatalogState =
@@ -389,6 +436,8 @@ export function SalesScreen({
 
     const onProductSelected = useCallback(
         (p: ButtonItemType) => {
+            cancelPendingSearchFocus();
+            blurSearchFocus();
             const product = getLatestProduct(p as ProductEntity);
 
             if (
@@ -410,6 +459,7 @@ export function SalesScreen({
 
             if (product.unitOfMeasure?.toLowerCase() === EACH) {
                 dispatch(cartActions.upsert(CartItemMapper.fromProduct(product, 1)));
+                scheduleSearchFocusRestore({ blurFirst: true });
                 return;
             }
 
@@ -420,11 +470,20 @@ export function SalesScreen({
                 })
             );
         },
-        [dispatch, getLatestProduct, globalSettings]
+        [
+            blurSearchFocus,
+            cancelPendingSearchFocus,
+            dispatch,
+            getLatestProduct,
+            globalSettings,
+            scheduleSearchFocusRestore,
+        ]
     );
 
     const onProductLongPress = useCallback(
         (p: ButtonItemType) => {
+            cancelPendingSearchFocus();
+            blurSearchFocus();
             const product = getLatestProduct(p as ProductEntity);
 
             if (
@@ -451,7 +510,7 @@ export function SalesScreen({
                 })
             );
         },
-        [dispatch, getLatestProduct, globalSettings]
+        [blurSearchFocus, cancelPendingSearchFocus, dispatch, getLatestProduct, globalSettings]
     );
 
     const onCartSubmit = (
@@ -785,29 +844,28 @@ export function SalesScreen({
         );
     };
 
-    useEffect(() => {
-        let active = true;
-        let categoriesSub: { unsubscribe: () => void } | undefined;
-        let productsSub: { unsubscribe: () => void } | undefined;
-        let globalSettingsSub: { unsubscribe: () => void } | undefined;
-        const interaction = InteractionManager.runAfterInteractions(() => {
-            if (!active) {
-                return;
-            }
+    useFocusEffect(
+        useCallback(() => {
+            let active = true;
+            let categoriesSub: { unsubscribe: () => void } | undefined;
+            let globalSettingsSub: { unsubscribe: () => void } | undefined;
+            const interaction = InteractionManager.runAfterInteractions(() => {
+                if (!active) {
+                    return;
+                }
 
-            categoriesSub = subscribeToCategoryChanges(dispatch);
-            productsSub = subscribeToProductChanges(dispatch);
-            globalSettingsSub = subscribeToGlobalSettingsChanges(dispatch);
-        });
-        
-        return () => {
-            active = false;
-            interaction.cancel?.();
-            categoriesSub?.unsubscribe();
-            productsSub?.unsubscribe();
-            globalSettingsSub?.unsubscribe();
-        };
-    }, [dispatch]);
+                categoriesSub = subscribeToCategoryChanges(dispatch);
+                globalSettingsSub = subscribeToGlobalSettingsChanges(dispatch);
+            });
+
+            return () => {
+                active = false;
+                interaction.cancel?.();
+                categoriesSub?.unsubscribe();
+                globalSettingsSub?.unsubscribe();
+            };
+        }, [dispatch])
+    );
 
     useFocusEffect(
         useCallback(() => {
@@ -881,7 +939,10 @@ export function SalesScreen({
                     showAllProducts={browseMode === 'all'}
                     selectedCategoryId={activeCategory?.id}
                     categoryRefreshToken={categoryRefreshToken}
-                    onToggleCategories={() => setShowCategories((current) => !current)}
+                    onToggleCategories={() => {
+                        setShowCategories((current) => !current);
+                        scheduleSearchFocusRestore({ blurFirst: true });
+                    }}
                     onFilterChange={onFilterChange}
                     onProductSelected={onProductSelected}
                     onProductLongPress={onProductLongPress}
@@ -896,7 +957,7 @@ export function SalesScreen({
                         }
                         onSubmit={onCartSubmit}
                         products={allProducts}
-                        onInteractionComplete={restoreSearchFocus}
+                        onInteractionComplete={scheduleSearchFocusRestore}
                     />
                 </View>
             </View>
@@ -904,10 +965,7 @@ export function SalesScreen({
                 product={product}
                 overlayStyle={[styles.overlay, { maxWidth: 560, width: '88%' }]}
                 enforceSalesBasedOnInventory={globalSettings?.enforceSalesBasedOnInventory}
-                onClose={() => {
-                    deselectProduct();
-                    restoreSearchFocus();
-                }}
+                onClose={closeProductDialog}
                 onUpsertCart={upsertCart}
             />
         </UIScreen>

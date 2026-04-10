@@ -54,6 +54,9 @@ describe('CategorySelection', () => {
             <CategorySelection onSelected={mockOnSelected} selectedCategoryId="c1" />
         );
 
+        expect(getByTestId('sales-category-list').props.keyboardShouldPersistTaps).toBe(
+            'handled'
+        );
         fireEvent.press(getByTestId('sales-category-c2'));
 
         expect(mockOnSelected).toHaveBeenCalledWith(mockCategories[1]);

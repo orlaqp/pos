@@ -12,6 +12,7 @@ const mockProductsUnsubscribe = jest.fn();
 const mockSettingsUnsubscribe = jest.fn();
 const mockPrintReceipt = jest.fn();
 const mockSearchFocus = jest.fn();
+const mockSearchBlur = jest.fn();
 const mockSearchClear = jest.fn();
 let focusEffectCallback: (() => void | (() => void)) | undefined;
 const mockGetNextOrderNumber = jest.fn(async () => '51-EMP-260326-0001');
@@ -236,7 +237,11 @@ jest.mock('./sales-catalog-pane', () => ({
     }: any) => {
         const { View, Pressable, Text } = require('react-native');
         if (searchRef) {
-            searchRef.current = { focus: mockSearchFocus, clear: mockSearchClear };
+            searchRef.current = {
+                focus: mockSearchFocus,
+                blur: mockSearchBlur,
+                clear: mockSearchClear,
+            };
         }
         return (
             <View>
@@ -336,6 +341,7 @@ jest.mock('../cart/cart', () => ({
     __esModule: true,
     default: ({
         onSubmit,
+        onInteractionComplete,
         preferPayFromSalesScreen,
     }: {
         onSubmit: (
@@ -343,6 +349,7 @@ jest.mock('../cart/cart', () => ({
             payments?: any[],
             options?: { intent?: 'save_open_order' | 'receive_payment' }
         ) => void;
+        onInteractionComplete: () => void;
         preferPayFromSalesScreen?: boolean;
     }) => {
         const { View, Pressable, Text } = require('react-native');
@@ -383,6 +390,12 @@ jest.mock('../cart/cart', () => ({
                 >
                     <Text>Submit Payment</Text>
                 </Pressable>
+                <Pressable
+                    testID="sales-cart-interaction-complete"
+                    onPress={onInteractionComplete}
+                >
+                    <Text>Cart Interaction Complete</Text>
+                </Pressable>
             </View>
         );
     },
@@ -395,6 +408,7 @@ describe('SalesScreen', () => {
         jest.useFakeTimers();
         jest.clearAllMocks();
         mockSearchFocus.mockClear();
+        mockSearchBlur.mockClear();
         mockSearchClear.mockClear();
         focusEffectCallback = undefined;
         interactionCallbacks = [];
@@ -493,6 +507,21 @@ describe('SalesScreen', () => {
             />
         );
 
+    const flushInteractionCallbacks = () => {
+        act(() => {
+            const callbacks = [...interactionCallbacks];
+            interactionCallbacks = [];
+            callbacks.forEach((callback) => callback());
+        });
+    };
+
+    const flushDelayedSearchRestore = () => {
+        act(() => {
+            jest.advanceTimersByTime(200);
+        });
+        flushInteractionCallbacks();
+    };
+
     it('renders from cached state before background sync starts', () => {
         const { getByTestId } = renderSalesScreen();
 
@@ -514,6 +543,25 @@ describe('SalesScreen', () => {
         );
     });
 
+    it('delays search refocus after tapping a product card', () => {
+        const { getByTestId } = renderSalesScreen();
+
+        flushInteractionCallbacks();
+        mockSearchFocus.mockClear();
+
+        fireEvent.press(getByTestId('sales-product-select'));
+
+        act(() => {
+            jest.advanceTimersByTime(199);
+        });
+
+        expect(mockSearchFocus).not.toHaveBeenCalled();
+
+        flushDelayedSearchRestore();
+
+        expect(mockSearchFocus).toHaveBeenCalledTimes(1);
+    });
+
     it('dispatches cart setActiveProduct when a weighted product is selected', () => {
         const { getByTestId } = renderSalesScreen();
         fireEvent.press(getByTestId('sales-product-select-weighted'));
@@ -530,6 +578,15 @@ describe('SalesScreen', () => {
         );
     });
 
+    it('does not steal search focus while the weighted product dialog is open', () => {
+        mockState.activeProduct = mockWeightedProduct;
+        renderSalesScreen();
+
+        flushInteractionCallbacks();
+
+        expect(mockSearchFocus).not.toHaveBeenCalled();
+    });
+
     it('restores search focus after submitting from product details', () => {
         mockState.activeProduct = mockWeightedProduct;
         const { getByTestId } = renderSalesScreen();
@@ -537,9 +594,11 @@ describe('SalesScreen', () => {
         fireEvent.press(getByTestId('sales-product-details-submit'));
 
         act(() => {
-            interactionCallbacks.forEach((callback) => callback());
-            jest.runOnlyPendingTimers();
+            jest.advanceTimersByTime(199);
         });
+        expect(mockSearchFocus).not.toHaveBeenCalled();
+
+        flushDelayedSearchRestore();
 
         expect(mockSearchFocus).toHaveBeenCalled();
     });
@@ -551,9 +610,11 @@ describe('SalesScreen', () => {
         fireEvent.press(getByTestId('sales-product-details-close'));
 
         act(() => {
-            interactionCallbacks.forEach((callback) => callback());
-            jest.runOnlyPendingTimers();
+            jest.advanceTimersByTime(199);
         });
+        expect(mockSearchFocus).not.toHaveBeenCalled();
+
+        flushDelayedSearchRestore();
 
         expect(mockSearchFocus).toHaveBeenCalled();
     });
@@ -610,10 +671,7 @@ describe('SalesScreen', () => {
             fireEvent.press(getByTestId('sales-search-barcode'));
             await Promise.resolve();
         });
-        act(() => {
-            interactionCallbacks.forEach((callback) => callback());
-            jest.runOnlyPendingTimers();
-        });
+        flushInteractionCallbacks();
         await act(async () => {
             fireEvent.press(getByTestId('sales-search-empty'));
             await Promise.resolve();
@@ -628,35 +686,79 @@ describe('SalesScreen', () => {
 
     it('handles category changes with and without selected category and supports all products', async () => {
         const { getByTestId } = renderSalesScreen();
+        flushInteractionCallbacks();
+        mockSearchFocus.mockClear();
+
         await act(async () => {
             fireEvent.press(getByTestId('sales-category-clear'));
             await Promise.resolve();
         });
         act(() => {
-            interactionCallbacks.forEach((callback) => callback());
-            jest.runOnlyPendingTimers();
+            jest.advanceTimersByTime(199);
         });
+        expect(mockSearchFocus).not.toHaveBeenCalled();
+        flushDelayedSearchRestore();
         expect(getByTestId('sales-catalog-count').props.children).toBe(0);
+
         await act(async () => {
             fireEvent.press(getByTestId('sales-category-select'));
             await Promise.resolve();
         });
         act(() => {
-            interactionCallbacks.forEach((callback) => callback());
-            jest.runOnlyPendingTimers();
+            jest.advanceTimersByTime(199);
         });
+        expect(mockSearchFocus).toHaveBeenCalledTimes(1);
+        flushDelayedSearchRestore();
         expect(getByTestId('sales-catalog-count').props.children).toBe(2);
+
         await act(async () => {
             fireEvent.press(getByTestId('sales-category-all'));
             await Promise.resolve();
         });
         act(() => {
-            interactionCallbacks.forEach((callback) => callback());
-            jest.runOnlyPendingTimers();
+            jest.advanceTimersByTime(199);
         });
+        expect(mockSearchFocus).toHaveBeenCalledTimes(2);
+        flushDelayedSearchRestore();
         expect(getByTestId('sales-catalog-count').props.children).toBe(2);
         expect(mockSearch).not.toHaveBeenCalled();
-        expect(mockSearchFocus).toHaveBeenCalled();
+        expect(mockSearchFocus).toHaveBeenCalledTimes(3);
+    });
+
+    it('delays search refocus after toggling categories', () => {
+        const { getByTestId } = renderSalesScreen();
+
+        flushInteractionCallbacks();
+        mockSearchFocus.mockClear();
+
+        fireEvent.press(getByTestId('sales-toggle-categories'));
+
+        act(() => {
+            jest.advanceTimersByTime(199);
+        });
+        expect(mockSearchFocus).not.toHaveBeenCalled();
+
+        flushDelayedSearchRestore();
+
+        expect(mockSearchFocus).toHaveBeenCalledTimes(1);
+    });
+
+    it('delays search refocus after cart interaction completion', () => {
+        const { getByTestId } = renderSalesScreen();
+
+        flushInteractionCallbacks();
+        mockSearchFocus.mockClear();
+
+        fireEvent.press(getByTestId('sales-cart-interaction-complete'));
+
+        act(() => {
+            jest.advanceTimersByTime(199);
+        });
+        expect(mockSearchFocus).not.toHaveBeenCalled();
+
+        flushDelayedSearchRestore();
+
+        expect(mockSearchFocus).toHaveBeenCalledTimes(1);
     });
 
     it('resets catalog ui when the sales screen regains focus', async () => {
@@ -984,7 +1086,7 @@ describe('SalesScreen', () => {
         view.unmount();
         expect(mockInteractionCancel).toHaveBeenCalled();
         expect(mockCategoriesUnsubscribe).toHaveBeenCalled();
-        expect(mockProductsUnsubscribe).toHaveBeenCalled();
+        expect(mockProductsUnsubscribe).not.toHaveBeenCalled();
         expect(mockSettingsUnsubscribe).toHaveBeenCalled();
     });
 

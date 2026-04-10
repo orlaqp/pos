@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
     unitOfMeasuresActions,
     selectFilteredList,
@@ -7,6 +7,7 @@ import {
     subscribeToUnitOfMeasureChanges,
 } from '@pos/unit-of-measures/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import UnitOfMeasureItem from '../unit-of-measure-item/unit-of-measure-item';
 import { useDispatch } from 'react-redux';
@@ -38,12 +39,14 @@ export const buildUnitOfMeasureListProps = (
 export function UnitOfMeasureList({ navigation }: UnitOfMeasureListProps) {
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        const sub = subscribeToUnitOfMeasureChanges(dispatch);
-        return () => {
-            sub.unsubscribe();
-        };
-    }, [dispatch]);
+    useFocusEffect(
+        React.useCallback(() => {
+            const sub = subscribeToUnitOfMeasureChanges(dispatch);
+            return () => {
+                sub.unsubscribe();
+            };
+        }, [dispatch])
+    );
 
     const props = buildUnitOfMeasureListProps(navigation);
 

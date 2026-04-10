@@ -17,20 +17,15 @@ jest.mock('@rneui/themed', () => ({
     }),
     Input: require('react').forwardRef(
         (
-            {
-                rightIcon,
-                onSubmitEditing,
-                onChangeText,
-                value,
-                testID,
-                blurOnSubmit,
-            }: {
+            props: {
                 rightIcon?: { onPress?: () => void };
                 onSubmitEditing?: (event: { nativeEvent: { text: string } }) => void;
                 onChangeText?: (text: string) => void;
                 value?: string;
                 testID?: string;
                 blurOnSubmit?: boolean;
+                autoFocus?: boolean;
+                onBlur?: () => void;
             },
             ref: React.ForwardedRef<{ focus: () => void }>
         ) => {
@@ -45,13 +40,18 @@ jest.mock('@rneui/themed', () => ({
             return (
                 <>
                     <TextInput
-                        testID={testID || 'ui-search-input'}
-                        value={value}
-                        onChangeText={onChangeText}
-                        onSubmitEditing={onSubmitEditing}
-                        blurOnSubmit={blurOnSubmit}
+                        testID={props.testID || 'ui-search-input'}
+                        value={props.value}
+                        onChangeText={props.onChangeText}
+                        onSubmitEditing={props.onSubmitEditing}
+                        blurOnSubmit={props.blurOnSubmit}
+                        autoFocus={props.autoFocus}
+                        onBlur={props.onBlur}
                     />
-                    <Pressable testID="ui-search-clear-button" onPress={rightIcon?.onPress} />
+                    <Pressable
+                        testID="ui-search-clear-button"
+                        onPress={props.rightIcon?.onPress}
+                    />
                 </>
             );
         }
@@ -79,6 +79,14 @@ describe('UiSearchInput', () => {
         });
 
         expect(onSubmit).toHaveBeenCalledWith('123456');
+    });
+
+    it('allows callers to disable auto focus', () => {
+        const { getByTestId } = render(
+            <UISearchInput onSubmit={jest.fn()} autoFocus={false} />
+        );
+
+        expect(getByTestId('ui-search-input').props.autoFocus).toBe(false);
     });
 
     it('clears the current text and notifies submit listeners', () => {
@@ -117,5 +125,18 @@ describe('UiSearchInput', () => {
         expect(onSubmit).toHaveBeenCalledWith('banana');
         expect(onChangeText).toHaveBeenCalledWith('');
         expect(mockFocus).toHaveBeenCalled();
+    });
+
+    it('can regain focus after blur when configured', () => {
+        jest.useFakeTimers();
+        const { getByTestId } = render(
+            <UISearchInput onSubmit={jest.fn()} retainFocusOnBlur={true} />
+        );
+
+        fireEvent(getByTestId('ui-search-input'), 'blur');
+        jest.runAllTimers();
+
+        expect(mockFocus).toHaveBeenCalled();
+        jest.useRealTimers();
     });
 });

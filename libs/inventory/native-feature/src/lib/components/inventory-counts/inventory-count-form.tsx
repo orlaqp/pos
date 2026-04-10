@@ -15,7 +15,7 @@ import {
     selectInventoryCountSelected,
 } from '@pos/inventory/data-access';
 import { InventoryCount } from '@pos/shared/models';
-import { ProductEntity, productsActions, ProductService, selectAllProducts, subscribeToProductChanges } from '@pos/products/data-access';
+import { ProductEntity, productsActions, ProductService, selectAllProducts } from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
 import InventoryCountLine from '../inventory-counts/inventory-count-line';
 import { confirm } from '@pos/shared/utils';
@@ -260,13 +260,6 @@ export function InventoryCountForm({
             ]
         );
     };
-
-    useEffect(() => {
-        const productsSub = subscribeToProductChanges(dispatch);
-        return () => {
-            productsSub.unsubscribe();
-        };
-    }, [dispatch]);
 
     useEffect(() => {
         if (inventoryCount) {

@@ -58,6 +58,7 @@ jest.mock('../line-chart/line-chart', () => ({
 }));
 
 import {
+    areDashboardRangesEqual,
     buildDashboardSupplemental,
     buildRevenueOverTime,
     buildTopEmployeeItems,
@@ -107,6 +108,19 @@ describe('Dashboard', () => {
         expect(moment.isMoment(normalized.endDate)).toBe(true);
         expect(normalized.startDate.hour()).toBe(0);
         expect(normalized.endDate.hour()).toBe(23);
+    });
+
+    it('treats identical normalized ranges as equal', () => {
+        const left = normalizeDashboardRange({
+            startDate: moment('2026-04-08T00:00:00'),
+            endDate: moment('2026-04-08T23:59:59'),
+        } as any);
+        const right = normalizeDashboardRange({
+            startDate: moment('2026-04-08T12:00:00'),
+            endDate: moment('2026-04-08T12:30:00'),
+        } as any);
+
+        expect(areDashboardRangesEqual(left, right)).toBe(true);
     });
 
     it('sorts summary employees/products descending and keeps reference', () => {

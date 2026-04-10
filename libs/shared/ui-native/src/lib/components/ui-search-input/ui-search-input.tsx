@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { Input, useTheme } from '@rneui/themed';
-import { TextInput } from 'react-native';
+import { NativeSyntheticEvent, TextInput, TextInputFocusEventData } from 'react-native';
 // import debounce from 'lodash/debounce';
 type UiSearchInputProps = React.ComponentProps<typeof TextInput> & {
     onSubmit: (text: string) => void | Promise<unknown>;
@@ -9,6 +9,7 @@ type UiSearchInputProps = React.ComponentProps<typeof TextInput> & {
     debounceTime?: number;
     clearOnSubmit?: boolean;
     retainFocusOnSubmit?: boolean;
+    retainFocusOnBlur?: boolean;
 };
 
 export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
@@ -26,6 +27,8 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
             onClear,
             clearOnSubmit,
             retainFocusOnSubmit,
+            retainFocusOnBlur,
+            autoFocus,
             ...restOfProps
         } =
             props;
@@ -71,6 +74,18 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
             }
         };
 
+        const handleBlur = (
+            event: NativeSyntheticEvent<TextInputFocusEventData>
+        ) => {
+            restOfProps.onBlur?.(event);
+
+            if (retainFocusOnBlur) {
+                setTimeout(() => {
+                    inputRef.current?.focus?.();
+                }, 25);
+            }
+        };
+
         const clearText = () => {
             setText('');
             onChangeText?.('');
@@ -102,8 +117,10 @@ export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
                 multiline={false}
                 renderErrorMessage={false}
                 clearButtonMode='always'
+                autoFocus={autoFocus ?? true}
                 blurOnSubmit={false}
                 onChangeText={handleChangeText}
+                onBlur={handleBlur}
                 onSubmitEditing={(e) => handleSubmit(e.nativeEvent.text)}
             />
         );

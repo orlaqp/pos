@@ -44,6 +44,9 @@ interface DashboardSupplemental {
     excludedSalesAmount: number;
 }
 
+export const areDashboardRangesEqual = (left: DateRange, right: DateRange) =>
+    left.startDate.isSame(right.startDate) && left.endDate.isSame(right.endDate);
+
 const getDashboardLineAmount = (line: NonNullable<Order['lines']>[number]) =>
     Number(line?.lineTotalBeforeTax ?? Number(line?.price || 0) * Number(line?.quantity || 0));
 
@@ -242,7 +245,7 @@ export function Dashboard(_props: DashboardProps) {
         endDate: moment().endOf('day'),
     });
     const [salesSummary, setSalesSummary] = useState<SalesSummary>();
-    const [supplemental, setSupplemental] = useState<DashboardSupplemental>();
+    const [orders, setOrders] = useState<Order[]>([]);
     const [emptyOpacity] = useState(() => new Animated.Value(0));
     const [emptyTranslateY] = useState(() => new Animated.Value(12));
     const categories = useSelector(selectAllCategories);
@@ -267,9 +270,18 @@ export function Dashboard(_props: DashboardProps) {
             ),
         [categories]
     );
+    const supplemental = useMemo(
+        () => buildDashboardSupplemental(orders, categoriesById, productsById || {}),
+        [categoriesById, orders, productsById]
+    );
 
     const updateDateRange = (range: DateRange) => {
-        setDateRange(range);
+        const normalizedRange = normalizeDashboardRange(range);
+        setDateRange((currentRange) =>
+            areDashboardRangesEqual(currentRange, normalizedRange)
+                ? currentRange
+                : normalizedRange
+        );
     };
 
     useEffect(() => {
@@ -277,42 +289,28 @@ export function Dashboard(_props: DashboardProps) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setLoading(true);
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSupplemental(undefined);
+        setOrders([]);
 
         const interactionHandle = InteractionManager.runAfterInteractions(() => {
             (async () => {
                 try {
                     const normalizedRange = normalizeDashboardRange(dateRange);
-                    const summary = await loadDashboardSummary(normalizedRange);
+                    const [summary, paidOrders] = await Promise.all([
+                        loadDashboardSummary(normalizedRange),
+                        getSalesForRange('PAID', normalizedRange),
+                    ]);
 
                     if (cancelled) {
                         return;
                     }
 
                     setSalesSummary(summary);
+                    setOrders(paidOrders || []);
                     setLoading(false);
-
-                    getSalesForRange('PAID', normalizedRange)
-                        .then((orders) => {
-                            if (!cancelled) {
-                                setSupplemental(
-                                    buildDashboardSupplemental(
-                                        orders || [],
-                                        categoriesById,
-                                        productsById || {}
-                                    )
-                                );
-                            }
-                        })
-                        .catch(() => {
-                            if (!cancelled) {
-                                setSupplemental(undefined);
-                            }
-                        });
                 } catch {
                     if (!cancelled) {
                         setSalesSummary(undefined);
-                        setSupplemental(undefined);
+                        setOrders([]);
                         setLoading(false);
                     }
                 }
@@ -323,7 +321,7 @@ export function Dashboard(_props: DashboardProps) {
             cancelled = true;
             interactionHandle?.cancel?.();
         };
-    }, [categoriesById, dateRange, productsById]);
+    }, [dateRange]);
 
     useEffect(() => {
         if (loading || hasSalesData(salesSummary)) return;

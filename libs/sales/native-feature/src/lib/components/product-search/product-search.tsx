@@ -53,7 +53,7 @@ export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((pr
                 <UISearchInput
                     testID="sales-product-search-input"
                     ref={setCombinedRef}
-                    autoFocus={true}
+                    autoFocus={false}
                     clearTextOnFocus={true}
                     clearOnSubmit={true}
                     retainFocusOnSubmit={true}

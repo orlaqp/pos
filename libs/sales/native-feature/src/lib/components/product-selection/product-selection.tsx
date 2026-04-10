@@ -59,6 +59,7 @@ export function ProductSelection({
                 <FlatList
                     testID="product-selection-list"
                     data={rows}
+                    keyboardShouldPersistTaps="handled"
                     contentContainerStyle={localStyles.listContent}
                     renderItem={(info) => (
                         <View

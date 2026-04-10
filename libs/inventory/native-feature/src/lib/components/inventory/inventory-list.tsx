@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
     ProductEntity,
     ProductService,
     selectAllProducts,
-    subscribeToProductChanges,
 } from '@pos/products/data-access';
 import { useSharedStyles } from '@pos/theme/native';
 import { FlatList, StyleSheet, View, Text } from 'react-native';
@@ -20,18 +19,9 @@ export interface InventoryListProps {
 
 export function InventoryList({ navigation: _navigation }: InventoryListProps) {
     const styles = useStyles();
-    const dispatch = useDispatch();
     const products = useSelector(selectAllProducts);
     const [filterText, setFilterText] = useState<string>();
     const [filteredList, setFilteredList] = useState<ProductEntity[]>(products);
-
-    useEffect(() => {
-        const products = subscribeToProductChanges(dispatch);
-
-        return () => {
-            products.unsubscribe();
-        };
-    }, [dispatch]);
 
     useEffect(() => {
         const res = ProductService.search(products, {

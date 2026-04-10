@@ -11,6 +11,7 @@ import {
     UISearchInput,
 } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import OrderItem from '../order-item/order-item';
 import { View, StyleSheet, FlatList, TextInput, Text } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -45,12 +46,14 @@ export function OrderList({ navigation }: OrderListProps) {
             ? String(i18next.t(key))
             : fallback;
     
-    useEffect(() => {
-        const ordersSub = subscribeToOrderChanges(dispatch);
-        return () => {
-            ordersSub?.unsubscribe();
-        };
-    }, [dispatch]);
+    useFocusEffect(
+        React.useCallback(() => {
+            const ordersSub = subscribeToOrderChanges(dispatch);
+            return () => {
+                ordersSub?.unsubscribe();
+            };
+        }, [dispatch])
+    );
 
     const filteredOrders = useMemo(
         () =>

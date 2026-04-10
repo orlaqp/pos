@@ -6,14 +6,24 @@ import UnitOfMeasureList, {
     buildUnitOfMeasureListProps,
 } from './unit-of-measure-list';
 
+jest.mock('@pos/shared/ui-native', () => ({
+    UIGenericItemList: () => null,
+}));
+
+jest.mock('@react-navigation/native', () => ({
+    useFocusEffect: (callback: () => void | (() => void)) => {
+        const ReactLocal = require('react');
+        ReactLocal.useEffect(() => callback(), [callback]);
+    },
+}));
+
 describe('UnitOfMeasureList', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
     it('should render successfully', () => {
-        const { container } = render(<UnitOfMeasureList navigation={{} as any} />);
-        expect(container).toBeTruthy();
+        expect(() => render(<UnitOfMeasureList navigation={{} as any} />)).not.toThrow();
     });
 
     it('builds item-list props for unit-of-measure flow', () => {
@@ -25,9 +35,9 @@ describe('UnitOfMeasureList', () => {
                 ItemComponent: UnitOfMeasureItem,
                 formNavName: 'UnitOfMeasure Form',
                 navigation,
+                fetchItemsAction: undefined,
             })
         );
-        expect(props.fetchItemsAction).toBeDefined();
         expect(props.filterAction).toBeDefined();
     });
 

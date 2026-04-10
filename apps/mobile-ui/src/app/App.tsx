@@ -56,6 +56,7 @@ import {
     recordAppLifecycleEvent,
 } from './app-lifecycle-diagnostics';
 import { shouldValidateSessionOnForeground } from './foreground-session-guard';
+import { markAppInstallSeen } from './install-state';
 
 type BootstrapStatus = 'idle' | 'checking-session' | 'resolving-tenant' | 'preparing-business-data' | 'ready' | 'error';
 type SessionRecoveryState =
@@ -438,6 +439,32 @@ const AppContent = () => {
             let user = authUser;
 
             if (!user) {
+                const firstLaunchAfterInstall = await markAppInstallSeen();
+
+                if (firstLaunchAfterInstall) {
+                    recordLifecycleEvent('install.firstLaunchDetected');
+                    await clearManualSignOut();
+
+                    try {
+                        await Auth.signOut('local');
+                    } catch (error) {
+                        console.warn('First-launch local sign out skipped', error);
+                    }
+
+                    try {
+                        await DataStore.stop();
+                        await DataStore.clear();
+                    } catch (error) {
+                        console.warn('First-launch DataStore reset skipped', error);
+                    }
+
+                    clearCurrentTenantContext();
+                    dispatch(authActions.logoff());
+                    dispatch(tenantSessionActions.clearTenantSession());
+                    dispatch(employeesActions.logoffEmployee());
+                    await clearLastBootstrappedTenantId();
+                }
+
                 const manuallySignedOut = await readManualSignOut();
 
                 if (manuallySignedOut) {

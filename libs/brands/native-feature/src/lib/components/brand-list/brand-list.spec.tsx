@@ -4,14 +4,24 @@ import { render } from '@testing-library/react-native';
 import BrandItem from '../brand-item/brand-item';
 import BrandList, { buildBrandListProps } from './brand-list';
 
+jest.mock('@pos/shared/ui-native', () => ({
+    UIGenericItemList: () => null,
+}));
+
+jest.mock('@react-navigation/native', () => ({
+    useFocusEffect: (callback: () => void | (() => void)) => {
+        const ReactLocal = require('react');
+        ReactLocal.useEffect(() => callback(), [callback]);
+    },
+}));
+
 describe('BrandList', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
     it('should render successfully', () => {
-        const { container } = render(<BrandList navigation={{} as any} />);
-        expect(container).toBeTruthy();
+        expect(() => render(<BrandList navigation={{} as any} />)).not.toThrow();
     });
 
     it('builds item-list props for brand flow', () => {

@@ -181,6 +181,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
             country: store?.country || 'US',
         },
     });
+    const { reset: resetStoreSetupForm } = storeSetupForm;
     const storeNeedsSetup = initialStoreSyncComplete && isStoreInfoIncomplete(store);
     const accessSyncInProgress =
         !employee && (!initialEmployeeSyncComplete || !initialStoreSyncComplete);
@@ -548,7 +549,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
     }, [needsInitialEmployee, storeNeedsSetup]);
 
     useEffect(() => {
-        storeSetupForm.reset({
+        resetStoreSetupForm({
             name: store?.name || businessName || '',
             phone: store?.phone === '000-000-0000' ? '' : store?.phone || '',
             email: store?.email || user?.email || '',
@@ -559,7 +560,19 @@ export const HomeScreen = (props: HomeScreenProps) => {
             zipCode: store?.zipCode === '00000' ? '' : store?.zipCode || '',
             country: store?.country || 'US',
         });
-    }, [businessName, store, storeSetupForm, user?.email]);
+    }, [
+        businessName,
+        resetStoreSetupForm,
+        store?.address,
+        store?.city,
+        store?.country,
+        store?.email,
+        store?.name,
+        store?.phone,
+        store?.state,
+        store?.zipCode,
+        user?.email,
+    ]);
 
     useEffect(() => {
         if (!needsSetupWizard) return;

@@ -310,6 +310,9 @@ describe('Cart', () => {
 
     it('opens details on press and select/remove from line actions', () => {
         const { getByTestId } = renderCart('order');
+        expect(getByTestId('cart-lines-scroll').props.keyboardShouldPersistTaps).toBe(
+            'handled'
+        );
         fireEvent.press(getByTestId('cart-line-open-details'));
         fireEvent(getByTestId('cart-line-select'), 'longPress');
         fireEvent.press(getByTestId('cart-line-remove'));
@@ -434,7 +437,17 @@ describe('Cart', () => {
                 payload: { code: 'SAVE5' },
             })
         );
-        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
+    });
+
+    it('restores interaction completion when the promo dialog is canceled', () => {
+        const { getByText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Promo'));
+        fireEvent.press(getByText('Cancel'));
+
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
     });
 
     it('hides the discount card when the logged-in employee does not have the discounts role', () => {
@@ -491,6 +504,18 @@ describe('Cart', () => {
                 })
             );
         });
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
+    });
+
+    it('restores interaction completion when the manual discount dialog is canceled', () => {
+        mockCartState.selected = mockCartState.items[0];
+        const { getByText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Manual'));
+        fireEvent.press(getByText('Cancel'));
+
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
     });
 
     it('resolves manual discount approval from an approver pin', async () => {
@@ -532,6 +557,7 @@ describe('Cart', () => {
                 })
             );
         });
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
     });
 
     it('blocks approval when the approver pin does not have discount access', async () => {
@@ -565,5 +591,100 @@ describe('Cart', () => {
                 'This employee cannot approve discounts.'
             );
         });
+    });
+
+    it('submits a price override and reports interaction completion', async () => {
+        mockCartState.selected = mockCartState.items[0];
+        const { getByText, getByPlaceholderText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Override'));
+        fireEvent.changeText(getByPlaceholderText('2.50'), '1.99');
+        fireEvent.press(getByText('Apply'));
+
+        await waitFor(() => {
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'cart/applyPriceOverride',
+                    payload: expect.objectContaining({
+                        finalPrice: 1.99,
+                    }),
+                })
+            );
+        });
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
+    });
+
+    it('restores interaction completion when the override dialog is canceled', () => {
+        mockCartState.selected = mockCartState.items[0];
+        const { getByText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Override'));
+        fireEvent.press(getByText('Cancel'));
+
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
+    });
+
+    it('reports interaction completion when discount actions are toggled', () => {
+        const { getByText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
+    });
+
+    it('reports interaction completion when removing a promo code', () => {
+        mockCartState.promoCodes = [{ code: 'SAVE5' }];
+        mockCartState.footer.discount = 1;
+        const { getByText } = renderCart('order');
+
+        fireEvent.press(getByText('SAVE5 ×'));
+
+        expect(mockDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'cart/removePromoCode',
+                payload: 'SAVE5',
+            })
+        );
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
+    });
+
+    it('reports interaction completion when clearing line pricing', () => {
+        mockCartState.selected = mockCartState.items[0];
+        mockCartState.manualDiscounts = [
+            {
+                scope: 'LINE',
+                lineId: mockCartState.items[0].identifier,
+            },
+        ];
+        const { getByText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Clear line pricing'));
+
+        expect(mockDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'cart/removePricingAdjustment',
+                payload: { lineId: mockCartState.items[0].identifier },
+            })
+        );
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
+    });
+
+    it('reports interaction completion when clearing the order discount', () => {
+        mockCartState.manualDiscounts = [{ scope: 'ORDER' }];
+        const { getByText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Clear order discount'));
+
+        expect(mockDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'cart/removePricingAdjustment',
+                payload: { scope: 'ORDER' },
+            })
+        );
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
     });
 });

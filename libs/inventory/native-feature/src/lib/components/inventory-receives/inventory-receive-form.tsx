@@ -19,7 +19,6 @@ import {
     ProductEntity,
     ProductService,
     selectAllProducts,
-    subscribeToProductChanges,
 } from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
 import InventoryReceiveLine from '../inventory-receives/inventory-receive-line';
@@ -210,13 +209,6 @@ export function InventoryReceiveForm({
         const searchResult = ProductService.search(products, { text: filter.trim() });
         setFilteredProducts(dedupeProducts(searchResult.items));
     }, [filter, products]);
-
-    useEffect(() => {
-        const productsSub = subscribeToProductChanges(dispatch);
-        return () => {
-            productsSub.unsubscribe();
-        };
-    }, [dispatch]);
 
     return (
         <UIScreen>

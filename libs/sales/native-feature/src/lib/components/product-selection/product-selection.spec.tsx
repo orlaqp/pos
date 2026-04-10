@@ -115,6 +115,9 @@ describe('ProductSelection', () => {
         fireEvent(getByTestId('product-btn-p-1'), 'longPress');
 
         expect(getByText('In stock: 1.23')).toBeTruthy();
+        expect(getByTestId('product-selection-list').props.keyboardShouldPersistTaps).toBe(
+            'handled'
+        );
         expect(mockOnSelected).toHaveBeenCalledWith(products[0]);
         expect(mockOnLongPress).toHaveBeenCalledWith(products[0]);
     });
