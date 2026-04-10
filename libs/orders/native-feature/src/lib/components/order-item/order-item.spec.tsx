@@ -4,6 +4,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 const mockDispatch = jest.fn();
 const mockNavigate = jest.fn();
+const mockUseSelector = jest.fn(() => undefined);
 
 jest.mock('@pos/theme/native', () => ({
     useSharedStyles: () => ({
@@ -42,16 +43,20 @@ jest.mock('@rneui/themed', () => ({
 
 jest.mock('react-redux', () => ({
     useDispatch: () => mockDispatch,
-    useSelector: jest.fn(() => undefined),
+    useSelector: (selector: unknown) => mockUseSelector(selector),
 }));
 
 jest.mock('@pos/printings/data-access', () => ({
     getDefaultPrinter: jest.fn(),
     printReceipt: jest.fn(),
+    PrinterEntityMapper: { fromModel: jest.fn((printer) => printer) },
+    PrinterService: { getDefaultPrinter: jest.fn() },
 }));
 
 jest.mock('@pos/store-info/data-access', () => ({
     selectStore: jest.fn(),
+    StoreInfoEntityMapper: { fromModel: jest.fn((store) => store) },
+    StoreInfoService: { getStore: jest.fn() },
 }));
 
 jest.mock('@pos/employees/data-access', () => ({
@@ -81,10 +86,14 @@ const {
     getStatusAccentColor,
     parseOrderNoSegments,
 } = require('./order-item');
+const { printReceipt } = require('@pos/printings/data-access');
+const { OrderEntityMapper } = require('@pos/orders/data-access');
 
 describe('OrderItem integration', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        mockUseSelector.mockReset();
+        mockUseSelector.mockImplementation(() => undefined);
     });
 
     it('shows Payment action for OPEN orders and navigates to Sales payment mode', () => {
@@ -188,5 +197,48 @@ describe('OrderItem integration', () => {
         expect(getStatusAccentColor('OPEN', colors)).toBe('#a');
         expect(getStatusAccentColor('PAID', colors)).toBe('#b');
         expect(getStatusAccentColor('REFUNDED', colors)).toBe('#c');
+    });
+
+    it('prints merchant copy for paid orders', () => {
+        const item = {
+            id: 'o-4',
+            orderNo: '51-EBTDEV01-260311-0004',
+            subtotal: 20,
+            tax: 0,
+            total: 20,
+            status: 'PAID',
+            employeeId: 'emp-1',
+            employeeName: 'Cashier',
+            orderDate: '2026-03-12T12:00:00.000Z',
+            lines: [],
+        };
+        const printer = { identifier: 'printer-1' };
+        const store = { name: 'Test Store' };
+        const cartState = { items: [], footer: { total: 20 } };
+
+        mockUseSelector
+            .mockImplementationOnce(() => printer)
+            .mockImplementationOnce(() => undefined)
+            .mockImplementationOnce(() => store);
+        OrderEntityMapper.asCartState.mockReturnValue(cartState);
+
+        const { getByTestId } = render(
+            <OrderItem
+                item={item}
+                navigation={{ navigate: mockNavigate }}
+                onVoid={jest.fn()}
+            />
+        );
+
+        fireEvent.press(getByTestId('order-item-print-button'));
+
+        expect(printReceipt).toHaveBeenCalledWith(
+            store,
+            printer,
+            cartState,
+            expect.objectContaining({
+                copyType: 'MERCHANT',
+            })
+        );
     });
 });

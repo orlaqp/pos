@@ -108,6 +108,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
     };
 
     const printItem = async () => {
+        const receiptCopyType = item.status === 'PAID' ? 'MERCHANT' : 'CUSTOMER';
         const fallbackStore =
             store ||
             (await StoreInfoService.getStore()
@@ -142,7 +143,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
             OrderEntityMapper.asCartState(item),
             {
                 ...item,
-                copyType: 'CUSTOMER',
+                copyType: receiptCopyType,
             }
         );
     };
