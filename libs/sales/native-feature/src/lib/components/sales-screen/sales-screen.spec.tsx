@@ -897,7 +897,7 @@ describe('SalesScreen', () => {
         expect(mockGoBack).not.toHaveBeenCalled();
     });
 
-    it('skips auto-print when no printer is selected', async () => {
+    it('keeps the payment print path enabled when no printer is selected', async () => {
         mockState.printer = undefined;
 
         const { getByTestId } = renderSalesScreen('payment');
@@ -911,7 +911,7 @@ describe('SalesScreen', () => {
 
         expect(mockPayOrder).toHaveBeenCalledWith(
             expect.objectContaining({
-                skipAutoPrint: true,
+                skipAutoPrint: false,
             })
         );
         expect(mockPrintReceipt).not.toHaveBeenCalled();

@@ -59,7 +59,16 @@ type ReceiptOrderEntity = {
     }>;
 };
 
+export type ReceiptPreviewPayload = {
+    copyType?: 'CUSTOMER' | 'MERCHANT';
+    orderNo?: string;
+    receiptText: string;
+};
+
 let starManager: StarDeviceDiscoveryManager;
+let receiptPreviewHandler:
+    | ((payload: ReceiptPreviewPayload) => void)
+    | null = null;
 
 const logReceiptTiming = (step: string, details?: Record<string, unknown>) => {
     void step;
@@ -119,13 +128,27 @@ export const stopDiscovery = () => {
 
 export const printReceipt = async (
     store: ReceiptStoreInfo,
-    printerInfo: PrinterEntity,
+    printerInfo: PrinterEntity | undefined,
     cart: ReceiptCartState,
     order?: ReceiptOrderEntity,
 ) => {
     const startedAt = Date.now();
-    if (!store || !printerInfo) {
-        Alert.alert('Store and printer should be available in order to print..');
+    if (!store) {
+        Alert.alert('Store information should be available in order to preview or print.');
+        return;
+    }
+
+    if (!printerInfo) {
+        if (!receiptPreviewHandler) {
+            Alert.alert('No printer is configured for this device.');
+            return;
+        }
+
+        receiptPreviewHandler({
+            copyType: order?.copyType,
+            orderNo: order?.orderNo,
+            receiptText: buildReceiptPreviewText(store, cart, order),
+        });
         return;
     }
 
@@ -145,6 +168,18 @@ export const printReceipt = async (
     });
 };
 
+export const registerReceiptPreviewHandler = (
+    handler: (payload: ReceiptPreviewPayload) => void
+) => {
+    receiptPreviewHandler = handler;
+
+    return () => {
+        if (receiptPreviewHandler === handler) {
+            receiptPreviewHandler = null;
+        }
+    };
+};
+
 const printSingleReceipt = async (
     store: ReceiptStoreInfo,
     printerInfo: PrinterEntity,
@@ -153,20 +188,9 @@ const printSingleReceipt = async (
 ) => {
     const date = new Date();
     const receiptLines = buildReceiptLines(cart, order);
-    const totalPaymentsText = order?.paymentInfo?.payments
-        ?.map((p) => `${p.type}: $ ${p.amount.toFixed(2)}`)
-        .join('\n') || '';
+    const totalPaymentsText = getReceiptPaymentsText(order);
     const copyLabel = getReceiptCopyLabel(order);
-    const headerText =
-        `${store.name}\n` +
-        `${store.address}\n${store.city}, ${store.state} ${store.zipCode}\nP: ${store.phone}\nF: ${store.fax}\n${store.email}\n\n` +
-        `Date:${date.toLocaleString()}\n\n`;
-    const totalText =
-        `Total     ${cart.footer.total.toFixed(2).padStart(12, ' ')}\n` +
-        '--------------------------------\n';
-    const footerText = order?.id
-        ? `${totalPaymentsText}\n\n${store.disclaimer}\n${copyLabel}\n${order?.orderNo}\n`
-        : '*** NOT A RECEIPT ***\n';
+    const receiptText = buildReceiptPreviewText(store, cart, order, date);
 
     if (isE2EPrinterSpyEnabled()) {
         recordE2EPrintJob({
@@ -178,7 +202,7 @@ const printSingleReceipt = async (
             copyLabel,
             total: cart.footer.total,
             paymentSummaryText: totalPaymentsText,
-            receiptText: `${headerText}${receiptLines}${totalText}${footerText}`,
+            receiptText,
         });
         return;
     }
@@ -299,6 +323,34 @@ export const print = async (
             totalDurationMs: Date.now() - startedAt,
         });
     }
+};
+
+const getReceiptPaymentsText = (order?: ReceiptOrderEntity) =>
+    order?.paymentInfo?.payments
+        ?.map((payment) => `${payment.type}: $ ${payment.amount.toFixed(2)}`)
+        .join('\n') || '';
+
+export const buildReceiptPreviewText = (
+    store: ReceiptStoreInfo,
+    cart: ReceiptCartState,
+    order?: ReceiptOrderEntity,
+    date = new Date()
+) => {
+    const receiptLines = buildReceiptLines(cart, order);
+    const totalPaymentsText = getReceiptPaymentsText(order);
+    const copyLabel = getReceiptCopyLabel(order);
+    const headerText =
+        `${store.name ?? ''}\n` +
+        `${store.address ?? ''}\n${store.city ?? ''}, ${store.state ?? ''} ${store.zipCode ?? ''}\nP: ${store.phone ?? ''}\nF: ${store.fax ?? ''}\n${store.email ?? ''}\n\n` +
+        `Date:${date.toLocaleString()}\n\n`;
+    const totalText =
+        `Total     ${cart.footer.total.toFixed(2).padStart(12, ' ')}\n` +
+        '--------------------------------\n';
+    const footerText = order?.id
+        ? `${totalPaymentsText}\n\n${store.disclaimer ?? ''}\n${copyLabel}\n${order?.orderNo ?? ''}\n`
+        : '*** NOT A RECEIPT ***\n';
+
+    return `${headerText}${receiptLines}${totalText}${footerText}`;
 };
 
 const formatQty = (quantity: number) =>

@@ -141,6 +141,8 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
                         )}
                         {filteredList.length > 0 && (
                             <FlatList
+                                testID="compact-order-list-flat-list"
+                                keyboardShouldPersistTaps="handled"
                                 data={filteredList}
                                 keyExtractor={(item) => item.id}
                                 contentContainerStyle={local.listContent}

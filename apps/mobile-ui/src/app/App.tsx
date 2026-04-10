@@ -4,7 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { NavigationContainer } from '@react-navigation/native';
-import { ThemeProvider, Button, Text } from '@rneui/themed';
+import { ThemeProvider, Button, Dialog, Text } from '@rneui/themed';
 import { designTokens, theme } from '@pos/theme/native';
 import { Provider, useSelector } from 'react-redux';
 import { store, RootState, useAppDispatch } from '@pos/store';
@@ -12,7 +12,15 @@ import { logSyncDebug, startSyncMeasure } from '@pos/shared/utils';
 import Navigation from './navigation';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppErrorBoundary } from './app-error-boundary';
-import { Alert, AppState, Image, InteractionManager, StyleSheet, View } from 'react-native';
+import {
+    Alert,
+    AppState,
+    Image,
+    InteractionManager,
+    ScrollView,
+    StyleSheet,
+    View,
+} from 'react-native';
 import { UISpinner } from '@pos/shared/ui-native';
 import {
     fetchDeviceSettings,
@@ -26,7 +34,11 @@ import {
     subscribeToEmployeeChanges,
 } from '@pos/employees/data-access';
 import { fetchStoreInfo } from '@pos/store-info/data-access';
-import { fetchDefaultPrinter } from '@pos/printings/data-access';
+import {
+    fetchDefaultPrinter,
+    ReceiptPreviewPayload,
+    registerReceiptPreviewHandler,
+} from '@pos/printings/data-access';
 import { subscribeToProductChanges } from '@pos/products/data-access';
 import { selectCart } from '@pos/sales/data-access';
 import brandMark from '../../assets/branding/pos-icon-transparent-2048.png';
@@ -185,6 +197,7 @@ const StartupScreen = ({
 };
 
 const AppContent = () => {
+    const startupStyles = useStartupStyles();
     const dispatch = useAppDispatch();
     const authUser = useSelector((state: RootState) => state.auth.user);
     const authError = useSelector((state: RootState) => state.auth.error);
@@ -195,6 +208,13 @@ const AppContent = () => {
     const [bootstrapError, setBootstrapError] = useState<string>();
     const [sessionRecoveryState, setSessionRecoveryState] =
         useState<SessionRecoveryState>('healthy');
+    const [receiptPreviewState, setReceiptPreviewState] = useState<{
+        items: ReceiptPreviewPayload[];
+        activeIndex: number;
+    }>({
+        items: [],
+        activeIndex: 0,
+    });
     const bootstrapInFlightRef = useRef<Promise<void> | null>(null);
     const sessionExpiryAlertShownRef = useRef(false);
     const sessionValidationInFlightRef = useRef<Promise<void> | null>(null);
@@ -232,6 +252,15 @@ const AppContent = () => {
             foregroundValidationTaskRef.current?.cancel?.();
             foregroundValidationTaskRef.current = null;
         };
+    }, []);
+
+    useEffect(() => {
+        return registerReceiptPreviewHandler((payload) => {
+            setReceiptPreviewState((current) => ({
+                items: [...current.items, payload],
+                activeIndex: current.items.length === 0 ? 0 : current.activeIndex,
+            }));
+        });
     }, []);
 
     const refreshBusinessContext = useCallback(async () => {
@@ -914,6 +943,8 @@ const AppContent = () => {
         authRestoreStatus === 'inProgress' ||
         tenantSession.bootstrapStatus === 'restoring' ||
         tenantSession.bootstrapStatus === 'bootstrapping';
+    const activeReceiptPreview =
+        receiptPreviewState.items[receiptPreviewState.activeIndex];
 
     if (shouldShowStartup) {
         return (
@@ -935,9 +966,97 @@ const AppContent = () => {
     }
 
     return (
-        <NavigationContainer>
-            <Navigation />
-        </NavigationContainer>
+        <>
+            <NavigationContainer>
+                <Navigation />
+            </NavigationContainer>
+            <Dialog
+                isVisible={receiptPreviewState.items.length > 0}
+                onBackdropPress={() =>
+                    setReceiptPreviewState({ items: [], activeIndex: 0 })
+                }
+                supportedOrientations={['landscape']}
+                presentationStyle="fullScreen"
+                backdropStyle={startupStyles.receiptPreviewBackdrop}
+                overlayStyle={startupStyles.receiptPreviewOverlay}
+            >
+                <View style={startupStyles.receiptPreviewHeader}>
+                    <Text h4 style={startupStyles.receiptPreviewTitle}>
+                        Receipt Preview
+                    </Text>
+                    <Text style={startupStyles.receiptPreviewHint}>
+                        No printer is configured. This is the receipt that would be printed.
+                    </Text>
+                    {receiptPreviewState.items.length > 1 ? (
+                        <Text style={startupStyles.receiptPreviewMeta}>
+                            Copy {receiptPreviewState.activeIndex + 1} of{' '}
+                            {receiptPreviewState.items.length}
+                        </Text>
+                    ) : null}
+                </View>
+                <View style={startupStyles.receiptPreviewChipRow}>
+                    {activeReceiptPreview?.copyType ? (
+                        <View style={startupStyles.receiptPreviewChip}>
+                            <Text style={startupStyles.receiptPreviewChipText}>
+                                {activeReceiptPreview.copyType}
+                            </Text>
+                        </View>
+                    ) : null}
+                    {activeReceiptPreview?.orderNo ? (
+                        <View style={startupStyles.receiptPreviewChip}>
+                            <Text style={startupStyles.receiptPreviewChipText}>
+                                {activeReceiptPreview.orderNo}
+                            </Text>
+                        </View>
+                    ) : null}
+                </View>
+                <ScrollView style={startupStyles.receiptPreviewScroll}>
+                    <Text
+                        selectable
+                        style={startupStyles.receiptPreviewText}
+                        testID="receipt-preview-text"
+                    >
+                        {activeReceiptPreview?.receiptText}
+                    </Text>
+                </ScrollView>
+                <View style={startupStyles.receiptPreviewActions}>
+                    <Button
+                        type="clear"
+                        title="Close"
+                        onPress={() =>
+                            setReceiptPreviewState({ items: [], activeIndex: 0 })
+                        }
+                    />
+                    {receiptPreviewState.activeIndex > 0 ? (
+                        <Button
+                            type="outline"
+                            title="Previous"
+                            onPress={() =>
+                                setReceiptPreviewState((current) => ({
+                                    ...current,
+                                    activeIndex: Math.max(0, current.activeIndex - 1),
+                                }))
+                            }
+                        />
+                    ) : null}
+                    {receiptPreviewState.activeIndex <
+                    receiptPreviewState.items.length - 1 ? (
+                        <Button
+                            title="Next"
+                            onPress={() =>
+                                setReceiptPreviewState((current) => ({
+                                    ...current,
+                                    activeIndex: Math.min(
+                                        current.items.length - 1,
+                                        current.activeIndex + 1
+                                    ),
+                                }))
+                            }
+                        />
+                    ) : null}
+                </View>
+            </Dialog>
+        </>
     );
 };
 
@@ -991,6 +1110,80 @@ const useStartupStyles = () =>
             maxWidth: 520,
             marginBottom: 20,
             opacity: 0.85,
+        },
+        receiptPreviewOverlay: {
+            width: '92%',
+            maxWidth: 860,
+            borderRadius: 20,
+            padding: 20,
+            backgroundColor: '#121821',
+            borderWidth: 1,
+            borderColor: '#263241',
+            shadowColor: '#000000',
+            shadowOpacity: 0.35,
+            shadowRadius: 24,
+            shadowOffset: {
+                width: 0,
+                height: 12,
+            },
+            elevation: 12,
+        },
+        receiptPreviewBackdrop: {
+            backgroundColor: 'rgba(4, 8, 14, 0.78)',
+        },
+        receiptPreviewHeader: {
+            marginBottom: 12,
+        },
+        receiptPreviewTitle: {
+            color: appColors.textPrimary,
+            marginBottom: 6,
+        },
+        receiptPreviewHint: {
+            color: appColors.textSecondary,
+            lineHeight: 20,
+        },
+        receiptPreviewMeta: {
+            color: appColors.textSecondary,
+            marginTop: 6,
+            fontWeight: '700',
+        },
+        receiptPreviewChipRow: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            marginBottom: 12,
+            gap: 8,
+        },
+        receiptPreviewChip: {
+            borderWidth: 1,
+            borderColor: `${appColors.accent}55`,
+            backgroundColor: `${appColors.accent}18`,
+            borderRadius: 999,
+            paddingHorizontal: 10,
+            paddingVertical: 6,
+        },
+        receiptPreviewChipText: {
+            color: appColors.textPrimary,
+            fontWeight: '700',
+        },
+        receiptPreviewScroll: {
+            maxHeight: 440,
+            borderRadius: 14,
+            backgroundColor: '#0f1217',
+            paddingHorizontal: 14,
+            paddingVertical: 12,
+            marginBottom: 16,
+        },
+        receiptPreviewText: {
+            color: '#f5f7fb',
+            fontFamily: 'Courier',
+            fontSize: 13,
+            lineHeight: 20,
+        },
+        receiptPreviewActions: {
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            gap: 10,
         },
         retryButton: {
             borderRadius: 14,

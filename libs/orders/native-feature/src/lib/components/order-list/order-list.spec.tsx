@@ -141,10 +141,20 @@ jest.mock('@rneui/themed', () => ({
     },
 }));
 
+jest.mock('@react-navigation/native', () => ({
+    useFocusEffect: (callback: () => (() => void) | void) => {
+        callback();
+    },
+}));
+
 jest.mock('@pos/shared/data-store', () => ({
     eventsActions: {
         add: (payload: unknown) => ({ type: 'events/add', payload }),
     },
+}));
+
+jest.mock('@pos/shared/utils', () => ({
+    logSyncDebug: jest.fn(),
 }));
 
 jest.mock('react-native-uuid', () => ({
@@ -263,6 +273,9 @@ describe('OrderList integration', () => {
 
         expect(getByTestId('order-list-filters-card')).toBeTruthy();
         expect(getByTestId('order-list-results-card')).toBeTruthy();
+        expect(
+            getByTestId('order-list-flat-list').props.keyboardShouldPersistTaps
+        ).toBe('handled');
         expect(getByText('51-OPEN-0001')).toBeTruthy();
     });
 

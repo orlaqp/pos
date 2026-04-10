@@ -107,7 +107,7 @@ describe('OrderJournalList', () => {
             },
         ]);
 
-        const { getByText } = render(
+        const { getByText, getByTestId } = render(
             <OrderJournalList tenantId="tenant-1" onClose={jest.fn()} />
         );
 
@@ -119,6 +119,10 @@ describe('OrderJournalList', () => {
         });
 
         expect(getByText('Order Journal')).toBeTruthy();
+        expect(
+            getByTestId('order-journal-list-flat-list').props
+                .keyboardShouldPersistTaps
+        ).toBe('handled');
         expect(getByText('1001')).toBeTruthy();
         expect(getByText('Alex Cashier')).toBeTruthy();
         expect(getByText('$ 12.50')).toBeTruthy();

@@ -1,7 +1,9 @@
 import {
+  buildReceiptPreviewText,
   buildReceiptLines,
   getReceiptCopyLabel,
   printReceipt,
+  registerReceiptPreviewHandler,
   stopDiscovery,
 } from './printing.service';
 
@@ -110,6 +112,32 @@ describe('printing.service helpers', () => {
     expect(getReceiptCopyLabel({ status: 'PAID' })).toBe('** Merchant Copy **');
   });
 
+  it('builds a printable receipt preview text with the copy label', () => {
+    const receiptText = buildReceiptPreviewText(
+      {
+        name: 'QA Store',
+        address: '123 Main St',
+        city: 'Miami',
+        state: 'FL',
+        zipCode: '33101',
+        phone: '305-000-0000',
+        fax: '',
+        email: 'qa@example.com',
+        disclaimer: 'All sales are final.',
+      },
+      cart,
+      {
+        id: 'order-1',
+        orderNo: '01-01-260325-0001',
+        copyType: 'MERCHANT',
+      }
+    );
+
+    expect(receiptText).toContain('QA Store');
+    expect(receiptText).toContain('** Merchant Copy **');
+    expect(receiptText).toContain('01-01-260325-0001');
+  });
+
   it('records the print job through the E2E printer spy without using hardware transport', async () => {
     mockIsE2EPrinterSpyEnabled.mockReturnValue(true);
 
@@ -144,6 +172,41 @@ describe('printing.service helpers', () => {
         copyType: 'CUSTOMER',
       })
     );
+  });
+
+  it('emits a receipt preview when no printer is configured', async () => {
+    const previewHandler = jest.fn();
+    const unregister = registerReceiptPreviewHandler(previewHandler);
+
+    await printReceipt(
+      {
+        name: 'QA Store',
+        address: '123 Main St',
+        city: 'Miami',
+        state: 'FL',
+        zipCode: '33101',
+        phone: '305-000-0000',
+        fax: '',
+        email: 'qa@example.com',
+        disclaimer: 'All sales are final.',
+      },
+      undefined,
+      cart,
+      {
+        id: 'order-1',
+        orderNo: '01-01-260325-0001',
+        copyType: 'CUSTOMER',
+      }
+    );
+
+    expect(previewHandler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        copyType: 'CUSTOMER',
+        orderNo: '01-01-260325-0001',
+      })
+    );
+
+    unregister();
   });
 
   it('does not throw when discovery cleanup runs before a manager exists', () => {

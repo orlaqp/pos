@@ -279,6 +279,8 @@ export function OrderJournalList({
                         />
                     </UICard>
                     <FlatList
+                        testID="order-journal-list-flat-list"
+                        keyboardShouldPersistTaps="handled"
                         data={filteredEntries}
                         keyExtractor={(item) => `${item.tenantId || 'tenantless'}:${item.orderId}`}
                         contentContainerStyle={local.listContent}

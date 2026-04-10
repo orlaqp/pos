@@ -553,7 +553,7 @@ export function SalesScreen({
                             cart: cartForOrder,
                             defaultPrinter,
                             storeInfo,
-                            skipAutoPrint: !defaultPrinter || !storeInfo,
+                            skipAutoPrint: !storeInfo,
                         })
                     );
 
@@ -663,7 +663,7 @@ export function SalesScreen({
                             submitResult.payload.order.orderNo ?? cartForOrder.orderNo,
                     };
 
-                    if (defaultPrinter && storeInfo) {
+                    if (storeInfo) {
                         await printReceipt(
                             storeInfo,
                             defaultPrinter,
@@ -770,7 +770,7 @@ export function SalesScreen({
                                     payments,
                                     defaultPrinter,
                                     storeInfo,
-                                    skipAutoPrint: !defaultPrinter || !storeInfo,
+                                    skipAutoPrint: !storeInfo,
                                 })
                             )
                         )

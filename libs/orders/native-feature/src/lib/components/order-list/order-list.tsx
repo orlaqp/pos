@@ -180,6 +180,7 @@ export function OrderList({ navigation }: OrderListProps) {
                     {hasStatusOrders && hasFilteredOrders && (
                         <FlatList
                             testID="order-list-flat-list"
+                            keyboardShouldPersistTaps="handled"
                             data={filteredOrders}
                             renderItem={({ item }) => (
                                 <OrderItem
