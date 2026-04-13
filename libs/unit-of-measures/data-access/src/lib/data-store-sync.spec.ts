@@ -35,7 +35,7 @@ describe('unit-of-measures data-store sync', () => {
             return { unsubscribe: jest.fn() };
         });
 
-        subscribeToUnitOfMeasureChanges(dispatch);
+        const subscription = subscribeToUnitOfMeasureChanges(dispatch);
         observer?.({
             isSynced: false,
             items: [{ id: 'uom-1', name: 'Each' }],
@@ -46,6 +46,7 @@ describe('unit-of-measures data-store sync', () => {
                 type: 'unitOfMeasures/setAll',
             })
         );
+        subscription.unsubscribe();
     });
 
     it('uses observeQuery for one-shot unit-of-measure sync', () => {
@@ -69,6 +70,42 @@ describe('unit-of-measures data-store sync', () => {
                 type: 'unitOfMeasures/setAll',
             })
         );
+        expect(unsubscribe).toHaveBeenCalledTimes(1);
+    });
+
+    it('shares a single unit-of-measure subscription across callers and replays cached data', () => {
+        const firstDispatch = jest.fn();
+        const secondDispatch = jest.fn();
+        const unsubscribe = jest.fn();
+        let observer:
+            | ((value: { isSynced: boolean; items: any[] }) => void)
+            | undefined;
+
+        mockSubscribe.mockImplementation((callback: typeof observer) => {
+            observer = callback as typeof observer;
+            return { unsubscribe };
+        });
+
+        const firstSub = subscribeToUnitOfMeasureChanges(firstDispatch);
+        observer?.({
+            isSynced: true,
+            items: [{ id: 'uom-1', name: 'Each' }],
+        });
+        firstDispatch.mockClear();
+
+        const secondSub = subscribeToUnitOfMeasureChanges(secondDispatch);
+
+        expect(DataStore.observeQuery).toHaveBeenCalledTimes(1);
+        expect(secondDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'unitOfMeasures/setAll',
+            })
+        );
+
+        firstSub.unsubscribe();
+        expect(unsubscribe).not.toHaveBeenCalled();
+
+        secondSub.unsubscribe();
         expect(unsubscribe).toHaveBeenCalledTimes(1);
     });
 });

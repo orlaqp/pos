@@ -18,13 +18,17 @@ import {
     EmployeeService,
     selectAllEmployees,
     selectInitialEmployeeSyncComplete,
-    selectLoadingStatus as selectEmployeesLoadingStatus,
     selectLoginEmployee,
 } from '@pos/employees/data-access';
 import { selectStation } from '@pos/settings/data-access';
 import { cartActions } from '@pos/sales/data-access';
 import brandMark from '../../assets/branding/pos-icon-transparent-2048.png';
 import { RootState } from '@pos/store';
+import {
+    selectAllSyncHealth,
+    selectNetworkActive,
+    selectOutboxEmpty,
+} from '@pos/shared/data-store';
 import {
     isStoreInfoIncomplete,
     selectInitialStoreSyncComplete,
@@ -45,7 +49,11 @@ import {
     writePinLockState,
 } from './use-pin-lock';
 import { E2E_MANAGER_PIN } from '@pos/shared/utils';
-import { Auth, DataStore } from '@pos/shared/amplify';
+import {
+    Auth,
+    DataStore,
+    getDataStoreLifecycleState,
+} from '@pos/shared/amplify';
 import { markManualSignOut } from './session-signout';
 import {
     buildPreviousSessionSummary,
@@ -135,12 +143,17 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const employee = useSelector(selectLoginEmployee);
     const employees = useSelector(selectAllEmployees);
     const initialEmployeeSyncComplete = useSelector(selectInitialEmployeeSyncComplete);
-    const employeesLoadingStatus = useSelector(selectEmployeesLoadingStatus);
     const store = useSelector(selectStore);
     const initialStoreSyncComplete = useSelector(selectInitialStoreSyncComplete);
     const user = useSelector((state: RootState) => state.auth.user);
     const businessName = useSelector((state: RootState) => state.tenantSession.businessName);
+    const currentTenantId = useSelector(
+        (state: RootState) => state.tenantSession.currentTenantId
+    );
     const station = useSelector(selectStation);
+    const networkActive = useSelector(selectNetworkActive);
+    const outboxEmpty = useSelector(selectOutboxEmpty);
+    const syncHealth = useSelector(selectAllSyncHealth);
     const [pin, setPin] = useState<string>('');
     const [invalidPinAttempt, setInvalidPinAttempt] = useState(0);
     const [pinResetToken, setPinResetToken] = useState(0);
@@ -393,8 +406,43 @@ export const HomeScreen = (props: HomeScreenProps) => {
         const previousNativeSummary = buildPreviousSessionSummary(previousNativeSession);
         const previousNativeEvents = previousNativeSession?.events.slice(-10) || [];
         const currentNativeEvents = currentNativeSession?.events.slice(-8) || [];
+        const syncHealthSummary = Object.values(syncHealth)
+            .sort((left, right) => left.model.localeCompare(right.model))
+            .map((entry) =>
+                [
+                    entry.model,
+                    `status=${entry.status}`,
+                    `subs=${entry.subscriberCount}`,
+                    entry.tenantId ? `tenant=${entry.tenantId}` : null,
+                    entry.lastSnapshotAt
+                        ? `snapshot=${entry.lastSnapshotAt}`
+                        : null,
+                    entry.lastRealtimePatchAt
+                        ? `realtime=${entry.lastRealtimePatchAt}`
+                        : null,
+                    entry.lastRecoveryAttemptAt
+                        ? `recovery=${entry.lastRecoveryAttemptAt}`
+                        : null,
+                    entry.lastRecoveryError
+                        ? `recoveryError=${entry.lastRecoveryError}`
+                        : null,
+                    entry.lastError ? `error=${entry.lastError}` : null,
+                ]
+                    .filter(Boolean)
+                    .join(' | ')
+            );
 
         const sections = [
+            [
+                'Sync status',
+                `Tenant: ${currentTenantId || 'none'}`,
+                `DataStore lifecycle: ${getDataStoreLifecycleState()}`,
+                `Network active: ${networkActive}`,
+                `Outbox empty: ${outboxEmpty}`,
+                syncHealthSummary.length > 0
+                    ? syncHealthSummary.join('\n')
+                    : 'No shared sync subscriptions are currently active.',
+            ].join('\n'),
             previousSummary
                 ? `Previous session\nStarted: ${previousSummary.startedAt}\nEnded: ${previousSummary.endedAt || 'unknown'}\nLast event: ${previousSummary.lastEvent || 'unknown'}\nEvents: ${previousSummary.eventCount}`
                 : 'Previous session\nNo previous session diagnostics recorded on this device yet.',
@@ -435,7 +483,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
         }
 
         Alert.alert('App diagnostics', sections.join('\n\n'));
-    }, []);
+    }, [currentTenantId, networkActive, outboxEmpty, syncHealth]);
 
     const recordFailedPinAttempt = useCallback(async (message: string) => {
         const nextFailedAttempts = pinLockState.failedAttempts + 1;

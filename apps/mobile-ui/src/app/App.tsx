@@ -39,7 +39,11 @@ import {
     ReceiptPreviewPayload,
     registerReceiptPreviewHandler,
 } from '@pos/printings/data-access';
-import { subscribeToProductChanges } from '@pos/products/data-access';
+import {
+    ensureProductSyncHealthy,
+    subscribeToProductChanges,
+} from '@pos/products/data-access';
+import { ensureOrderSyncHealthy } from '@pos/orders/data-access';
 import { selectCart } from '@pos/sales/data-access';
 import brandMark from '../../assets/branding/pos-icon-transparent-2048.png';
 import {
@@ -55,8 +59,16 @@ import {
     tenantSessionActions,
     User,
 } from '@pos/auth/data-access';
-import { configureDataStore } from '@pos/shared/data-store';
-import { Auth, DataStore } from '@pos/shared/amplify';
+import {
+    configureDataStore,
+    selectNetworkActive,
+    selectOutboxEmpty,
+} from '@pos/shared/data-store';
+import {
+    Auth,
+    DataStore,
+    getDataStoreLifecycleState,
+} from '@pos/shared/amplify';
 import { E2EControlPanel } from './e2e-control-panel';
 import {
     clearManualSignOut,
@@ -81,6 +93,7 @@ const appTheme = theme('dark');
 const appColors = designTokens.colors;
 const LAST_BOOTSTRAPPED_TENANT_KEY = 'last-bootstrapped-tenant-id-v1';
 const FOREGROUND_SESSION_CHECK_THROTTLE_MS = 5 * 60_000;
+const SYNC_WATCHDOG_INTERVAL_MS = 15_000;
 
 const isUnauthorizedError = (error: unknown) => {
     const message =
@@ -202,6 +215,8 @@ const AppContent = () => {
     const authUser = useSelector((state: RootState) => state.auth.user);
     const authError = useSelector((state: RootState) => state.auth.error);
     const authRestoreStatus = useSelector(selectAuthRestoreStatus);
+    const networkActive = useSelector(selectNetworkActive);
+    const outboxEmpty = useSelector(selectOutboxEmpty);
     const tenantSession = useSelector((state: RootState) => state.tenantSession);
     const cart = useSelector(selectCart);
     const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('idle');
@@ -777,7 +792,10 @@ const AppContent = () => {
                 return;
             }
 
-            productsSub = subscribeToProductChanges(dispatch);
+            productsSub = subscribeToProductChanges(
+                dispatch,
+                tenantSession.currentTenantId
+            );
         });
 
         return () => {
@@ -790,6 +808,72 @@ const AppContent = () => {
             productsSub?.unsubscribe();
         };
     }, [authTenantId, bootstrapStatus, dispatch, tenantSession.currentTenantId]);
+
+    useEffect(() => {
+        const tenantId = tenantSession.currentTenantId;
+        if (
+            AppState.currentState !== 'active' ||
+            !authTenantId ||
+            !tenantId ||
+            bootstrapStatus !== 'ready' ||
+            tenantSession.bootstrapStatus !== 'ready'
+        ) {
+            return;
+        }
+
+        let isCancelled = false;
+
+        const runWatchdog = async () => {
+            if (
+                isCancelled ||
+                AppState.currentState !== 'active' ||
+                bootstrapInFlightRef.current ||
+                silentReauthInFlightRef.current ||
+                sessionValidationInFlightRef.current
+            ) {
+                return;
+            }
+
+            const lifecycleState = getDataStoreLifecycleState();
+            if (lifecycleState === 'starting' || lifecycleState === 'stopping') {
+                return;
+            }
+
+            try {
+                await ensureProductSyncHealthy(dispatch, { tenantId });
+                await ensureOrderSyncHealthy(dispatch, { tenantId });
+            } catch (error) {
+                console.error('[sync.watchdog] health check failed', error);
+                recordLifecycleEvent('sync.watchdog:error', {
+                    tenantId,
+                    message:
+                        error instanceof Error ? error.message : String(error),
+                    networkActive,
+                    outboxEmpty,
+                    lifecycleState,
+                });
+            }
+        };
+
+        void runWatchdog();
+        const interval = setInterval(() => {
+            void runWatchdog();
+        }, SYNC_WATCHDOG_INTERVAL_MS);
+
+        return () => {
+            isCancelled = true;
+            clearInterval(interval);
+        };
+    }, [
+        authTenantId,
+        bootstrapStatus,
+        dispatch,
+        networkActive,
+        outboxEmpty,
+        recordLifecycleEvent,
+        tenantSession.bootstrapStatus,
+        tenantSession.currentTenantId,
+    ]);
 
     useEffect(() => {
         if (!authUser) {

@@ -34,7 +34,7 @@ describe('employees data-store sync', () => {
             observer = callback as typeof observer;
             return { unsubscribe: jest.fn() };
         });
-        subscribeToEmployeeChanges(dispatch);
+        const subscription = subscribeToEmployeeChanges(dispatch);
         observer?.({ isSynced: false, items: employees });
 
         expect(dispatch).toHaveBeenCalledWith(
@@ -42,6 +42,7 @@ describe('employees data-store sync', () => {
                 type: 'employees/setAll',
             })
         );
+        subscription.unsubscribe();
     });
 
     it('uses observeQuery for one-shot employee sync without DataStore.query', async () => {
@@ -70,6 +71,48 @@ describe('employees data-store sync', () => {
                 type: 'employees/setAll',
             })
         );
+        expect(unsubscribe).toHaveBeenCalledTimes(1);
+    });
+
+    it('shares a single employee subscription across callers and replays cached data', () => {
+        const firstDispatch = jest.fn();
+        const secondDispatch = jest.fn();
+        const unsubscribe = jest.fn();
+        const employees = [
+            {
+                id: 'employee-1',
+                firstName: 'Ana',
+                lastName: 'Perez',
+                active: true,
+                updatedAt: '2026-04-03T10:00:00.000Z',
+            },
+        ] as any[];
+
+        let observer:
+            | ((value: { isSynced: boolean; items: any[] }) => void)
+            | undefined;
+        mockSubscribe.mockImplementation((callback: typeof observer) => {
+            observer = callback as typeof observer;
+            return { unsubscribe };
+        });
+
+        const firstSub = subscribeToEmployeeChanges(firstDispatch);
+        observer?.({ isSynced: true, items: employees });
+        firstDispatch.mockClear();
+
+        const secondSub = subscribeToEmployeeChanges(secondDispatch);
+
+        expect(DataStore.observeQuery).toHaveBeenCalledTimes(1);
+        expect(secondDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'employees/setAll',
+            })
+        );
+
+        firstSub.unsubscribe();
+        expect(unsubscribe).not.toHaveBeenCalled();
+
+        secondSub.unsubscribe();
         expect(unsubscribe).toHaveBeenCalledTimes(1);
     });
 });

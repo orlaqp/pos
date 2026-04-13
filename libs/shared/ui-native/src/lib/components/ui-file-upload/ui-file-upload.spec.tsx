@@ -60,6 +60,7 @@ describe('UiFileUpload', () => {
 
         await waitFor(() => {
             expect(mockGetAssetUri).toHaveBeenCalledWith('products/existing.jpg');
+            expect(mockGetImage).not.toHaveBeenCalled();
             expect(getByRole('image')).toBeTruthy();
         });
     });
@@ -73,6 +74,7 @@ describe('UiFileUpload', () => {
         );
 
         await waitFor(() => {
+            expect(mockGetAssetUri).toHaveBeenCalledWith('products/broken.jpg');
             expect(mockGetImage).toHaveBeenCalledWith('products/broken.jpg');
             expect(getByText('Touch to\nUpload')).toBeTruthy();
             expect(queryByRole('image')).toBeNull();

@@ -6,11 +6,53 @@ import { EmployeeEntityMapper } from './employee.entity';
 import { sortListBy } from '@pos/shared/utils';
 import { logSyncDebug, startSyncMeasure, trackSyncSubscription } from '@pos/shared/utils';
 
+const EMPLOYEE_SYNC_MODEL = 'employees';
+const employeeDispatchRefs = new Map<Dispatch, number>();
+let sharedEmployeeSubscription:
+    | {
+          unsubscribe: () => void;
+      }
+    | undefined;
+let employeeSnapshot: Employee[] = [];
+
+const getSubscriberCount = () => {
+    let count = 0;
+    employeeDispatchRefs.forEach((dispatchCount) => {
+        count += dispatchCount;
+    });
+    return count;
+};
+
+type SyncHealthChanges = {
+    status?: 'idle' | 'subscribing' | 'healthy' | 'stale' | 'recovering' | 'error';
+    subscriberCount?: number;
+};
+
+const updateSyncHealthAction = (model: string, changes: SyncHealthChanges) => ({
+    type: 'events/updateSyncHealth',
+    payload: {
+        model,
+        changes,
+    },
+});
+
+const clearSyncHealthAction = (model?: string) => ({
+    type: 'events/clearSyncHealth',
+    payload: model ? { model } : undefined,
+});
+
+const updateSyncHealth = (dispatch: Dispatch) => {
+    dispatch(
+        updateSyncHealthAction(EMPLOYEE_SYNC_MODEL, {
+            status: sharedEmployeeSubscription ? 'healthy' : 'subscribing',
+            subscriberCount: getSubscriberCount(),
+        })
+    );
+};
+
 export const syncEmployees = (dispatch: Dispatch) => {
     const finish = startSyncMeasure('employees', 'syncEmployees');
-    let subscription: { unsubscribe: () => void } | undefined;
-    let shouldUnsubscribeAfterSubscribe = false;
-    subscription = DataStore.observeQuery(Employee).subscribe(({ items }) => {
+    const subscription = DataStore.observeQuery(Employee).subscribe(({ items }) => {
         finish({
             itemCount: items.length,
             sample: items.slice(0, 5).map((employee) => ({
@@ -21,33 +63,58 @@ export const syncEmployees = (dispatch: Dispatch) => {
             })),
         });
         updateStore(dispatch, items);
-        if (subscription) {
-            subscription.unsubscribe();
-            return;
-        }
-
-        shouldUnsubscribeAfterSubscribe = true;
-    });
-
-    if (shouldUnsubscribeAfterSubscribe) {
         subscription.unsubscribe();
-    }
+    });
 };
 
 export const subscribeToEmployeeChanges = (dispatch: Dispatch) => {
-    const release = trackSyncSubscription('employees.observeQuery');
-    const subscription = DataStore.observeQuery(Employee).subscribe(({ isSynced, items }) => {
-        logSyncDebug('employees.observeQuery', 'update', {
-            isSynced,
-            itemCount: items.length,
+    const currentCount = employeeDispatchRefs.get(dispatch) || 0;
+    employeeDispatchRefs.set(dispatch, currentCount + 1);
+
+    if (!sharedEmployeeSubscription) {
+        const release = trackSyncSubscription('employees.observeQuery');
+        const subscription = DataStore.observeQuery(Employee).subscribe(({ isSynced, items }) => {
+            logSyncDebug('employees.observeQuery', 'update', {
+                isSynced,
+                itemCount: items.length,
+            });
+            employeeSnapshot = items;
+            employeeDispatchRefs.forEach((_, activeDispatch) => {
+                updateStore(activeDispatch, items);
+            });
         });
-        updateStore(dispatch, items);
-    });
+
+        sharedEmployeeSubscription = {
+            unsubscribe() {
+                subscription.unsubscribe();
+                release();
+                employeeSnapshot = [];
+                sharedEmployeeSubscription = undefined;
+            },
+        };
+    } else if (employeeSnapshot.length > 0) {
+        updateStore(dispatch, employeeSnapshot);
+    }
+
+    updateSyncHealth(dispatch);
 
     return {
         unsubscribe() {
-            subscription.unsubscribe();
-            release();
+            const nextCount = (employeeDispatchRefs.get(dispatch) || 1) - 1;
+
+            if (nextCount <= 0) {
+                employeeDispatchRefs.delete(dispatch);
+            } else {
+                employeeDispatchRefs.set(dispatch, nextCount);
+            }
+
+            if (employeeDispatchRefs.size === 0) {
+                sharedEmployeeSubscription?.unsubscribe();
+                dispatch(clearSyncHealthAction(EMPLOYEE_SYNC_MODEL));
+                return;
+            }
+
+            updateSyncHealth(dispatch);
         },
     };
 };

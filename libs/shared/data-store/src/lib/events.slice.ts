@@ -19,12 +19,33 @@ export interface EventEntity {
     timestamp: string;
 }
 
+export type SyncHealthStatus =
+    | 'idle'
+    | 'subscribing'
+    | 'healthy'
+    | 'stale'
+    | 'recovering'
+    | 'error';
+
+export interface SyncHealthEntry {
+    model: string;
+    status: SyncHealthStatus;
+    subscriberCount: number;
+    tenantId?: string;
+    lastSnapshotAt?: string;
+    lastRealtimePatchAt?: string;
+    lastRecoveryAttemptAt?: string;
+    lastRecoveryError?: string;
+    lastError?: string;
+}
+
 export interface EventsState extends EntityState<EventEntity, string> {
     loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
     error?: string;
     outboxEmpty: boolean;
     networkActive: boolean;
     lastOutboxMutationFailedAt?: string;
+    syncHealth: Record<string, SyncHealthEntry>;
 }
 
 export const eventsAdapter = createEntityAdapter<EventEntity, string>({
@@ -38,6 +59,7 @@ export const initialEventsState: EventsState = eventsAdapter.getInitialState({
     outboxEmpty: true,
     networkActive: true,
     lastOutboxMutationFailedAt: undefined,
+    syncHealth: {},
 });
 
 export const eventsSlice = createSlice({
@@ -66,6 +88,37 @@ export const eventsSlice = createSlice({
             action: PayloadAction<string>
         ) => {
             state.lastOutboxMutationFailedAt = action.payload;
+        },
+        updateSyncHealth: (
+            state: EventsState,
+            action: PayloadAction<{
+                model: string;
+                changes: Partial<SyncHealthEntry>;
+            }>
+        ) => {
+            const current = state.syncHealth[action.payload.model] || {
+                model: action.payload.model,
+                status: 'idle' as SyncHealthStatus,
+                subscriberCount: 0,
+            };
+
+            state.syncHealth[action.payload.model] = {
+                ...current,
+                ...action.payload.changes,
+                model: action.payload.model,
+            };
+        },
+        clearSyncHealth: (
+            state: EventsState,
+            action?: PayloadAction<{ model?: string } | undefined>
+        ) => {
+            const model = action?.payload?.model;
+            if (!model) {
+                state.syncHealth = {};
+                return;
+            }
+
+            delete state.syncHealth[model];
         },
     }
 });
@@ -144,3 +197,11 @@ export const selectLastOutboxMutationFailedAt = createSelector(
     getEventsState,
     (state) => state.lastOutboxMutationFailedAt
 );
+
+export const selectAllSyncHealth = createSelector(
+    getEventsState,
+    (state) => state.syncHealth
+);
+
+export const selectSyncHealthByModel = (model: string) =>
+    createSelector(getEventsState, (state) => state.syncHealth[model]);

@@ -32,7 +32,7 @@ describe('brands data-store sync', () => {
             return { unsubscribe: jest.fn() };
         });
 
-        subscribeToBrandChanges(dispatch);
+        const subscription = subscribeToBrandChanges(dispatch);
         observer?.({
             isSynced: false,
             items: [{ id: 'brand-1', name: 'House' }],
@@ -43,6 +43,7 @@ describe('brands data-store sync', () => {
                 type: 'brands/setAll',
             })
         );
+        subscription.unsubscribe();
     });
 
     it('uses observeQuery for one-shot brand sync', () => {
@@ -66,6 +67,42 @@ describe('brands data-store sync', () => {
                 type: 'brands/setAll',
             })
         );
+        expect(unsubscribe).toHaveBeenCalledTimes(1);
+    });
+
+    it('shares a single brand subscription across callers and replays cached data', () => {
+        const firstDispatch = jest.fn();
+        const secondDispatch = jest.fn();
+        const unsubscribe = jest.fn();
+        let observer:
+            | ((value: { isSynced: boolean; items: any[] }) => void)
+            | undefined;
+
+        mockSubscribe.mockImplementation((callback: typeof observer) => {
+            observer = callback as typeof observer;
+            return { unsubscribe };
+        });
+
+        const firstSub = subscribeToBrandChanges(firstDispatch);
+        observer?.({
+            isSynced: true,
+            items: [{ id: 'brand-1', name: 'House' }],
+        });
+        firstDispatch.mockClear();
+
+        const secondSub = subscribeToBrandChanges(secondDispatch);
+
+        expect(DataStore.observeQuery).toHaveBeenCalledTimes(1);
+        expect(secondDispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'brands/setAll',
+            })
+        );
+
+        firstSub.unsubscribe();
+        expect(unsubscribe).not.toHaveBeenCalled();
+
+        secondSub.unsubscribe();
         expect(unsubscribe).toHaveBeenCalledTimes(1);
     });
 });

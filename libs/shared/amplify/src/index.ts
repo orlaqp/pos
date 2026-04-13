@@ -46,6 +46,8 @@ const setDataStoreLifecycleState = (state: DataStoreLifecycleState) => {
     dataStoreLifecycleState = state;
 };
 
+export const getDataStoreLifecycleState = () => dataStoreLifecycleState;
+
 const canSubscribeToDataStore = () =>
     dataStoreLifecycleState === 'started' ||
     dataStoreLifecycleState === 'stopped';

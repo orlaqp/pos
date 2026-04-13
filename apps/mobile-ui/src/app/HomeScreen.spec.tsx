@@ -128,6 +128,13 @@ jest.mock('@pos/shared/amplify', () => ({
         stop: jest.fn(),
         clear: jest.fn(),
     },
+    getDataStoreLifecycleState: jest.fn(() => 'started'),
+}));
+
+jest.mock('@pos/shared/data-store', () => ({
+    selectAllSyncHealth: () => ({}),
+    selectNetworkActive: () => true,
+    selectOutboxEmpty: () => true,
 }));
 
 jest.mock('./HomeScreen.styles', () => ({
