@@ -115,7 +115,10 @@ export function BackOffice({ navigation, route }: BackOfficeProps) {
                             <Stack.Navigator
                                 id="back-office-navigation"
                                 initialRouteName={initialScreen}
-                                screenOptions={{ headerShown: false }}
+                                screenOptions={{
+                                    headerShown: false,
+                                    freezeOnBlur: true,
+                                }}
                             >
                                 <Stack.Screen name="Dashboard" component={Dashboard} />
                                 <Stack.Screen name="Sale List" component={Sales} />

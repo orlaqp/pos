@@ -26,6 +26,7 @@ export function StackNavigation({
             <Stack.Navigator
                 initialRouteName={initialRouteName}
                 screenOptions={{
+                    freezeOnBlur: true,
                     headerStyle: styles.navHeader,
                     headerTitleStyle: styles.headerTitle,
                 }}

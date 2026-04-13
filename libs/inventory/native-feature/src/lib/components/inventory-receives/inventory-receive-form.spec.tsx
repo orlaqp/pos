@@ -7,6 +7,10 @@ const mockDispatch = jest.fn();
 const mockGoBack = jest.fn();
 const mockConfirm = jest.fn((_: string, __: string, onConfirm: () => void) => onConfirm());
 const mockInventoryReceiveSave = jest.fn(() => Promise.resolve());
+const mockApplyQuantityDeltas = jest.fn((lines: unknown[]) => ({
+    type: 'products/applyQuantityDeltas',
+    payload: lines,
+}));
 const mockProductSearch = jest.fn(() => ({ items: [], allNumbers: false }));
 const mockProducts: unknown[] = [];
 let mockInventoryReceiveSelected: any = null;
@@ -173,6 +177,9 @@ jest.mock('@pos/products/data-access', () => ({
     ProductService: {
         search: (...args: unknown[]) => mockProductSearch(...args),
     },
+    productsActions: {
+        applyQuantityDeltas: (lines: unknown[]) => mockApplyQuantityDeltas(lines),
+    },
     selectAllProducts: () => mockProducts,
     subscribeToProductChanges: () => ({ unsubscribe: jest.fn() }),
 }));
@@ -330,6 +337,7 @@ describe('InventoryReceiveForm integration', () => {
                 expect.objectContaining({ status: 'COMPLETED', lines: [] }),
                 true
             );
+            expect(mockApplyQuantityDeltas).toHaveBeenCalledWith([]);
         });
     });
 
@@ -378,6 +386,9 @@ describe('InventoryReceiveForm integration', () => {
                 }),
                 true
             );
+            expect(mockApplyQuantityDeltas).toHaveBeenCalledWith([
+                { productId: 'p-1', delta: 8 },
+            ]);
         });
     });
 

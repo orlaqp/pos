@@ -9,6 +9,17 @@ import { logSyncDebug, startSyncMeasure, trackSyncSubscription } from '@pos/shar
 import moment from 'moment';
 
 const LAST_CLOSED_ORDER_DAYS = 3;
+const orderDispatchRefs = new Map<Dispatch, number>();
+
+let sharedOrderSubscription:
+    | {
+          unsubscribe: () => void;
+      }
+    | undefined;
+
+let openOrdersSnapshot: Order[] = [];
+let recentPaidOrdersSnapshot: Order[] = [];
+let recentRefundedOrdersSnapshot: Order[] = [];
 
 const getRecentClosedSince = () =>
     moment().subtract(LAST_CLOSED_ORDER_DAYS, 'days').toISOString();
@@ -65,67 +76,94 @@ export const syncOrders = (dispatch: Dispatch) => {
 };
 
 export const subscribeToOrderChanges = (dispatch: Dispatch) => {
-    let openOrders: Order[] = [];
-    let recentPaidOrders: Order[] = [];
-    let recentRefundedOrders: Order[] = [];
+    const currentCount = orderDispatchRefs.get(dispatch) || 0;
+    orderDispatchRefs.set(dispatch, currentCount + 1);
 
-    const publish = () =>
-        updateStoreOrders(
-            dispatch,
-            mergeSyncedOrders(openOrders, recentPaidOrders, recentRefundedOrders)
-        );
+    if (!sharedOrderSubscription) {
+        const publish = () => {
+            const mergedOrders = mergeSyncedOrders(
+                openOrdersSnapshot,
+                recentPaidOrdersSnapshot,
+                recentRefundedOrdersSnapshot
+            );
 
-    const release = trackSyncSubscription('orders.observeQuery');
+            orderDispatchRefs.forEach((_, activeDispatch) => {
+                updateStoreOrders(activeDispatch, mergedOrders);
+            });
+        };
 
-    const openSub = DataStore.observeQuery(Order, (o) => o.status.eq('OPEN')).subscribe(
-        ({ isSynced, items }) => {
+        const release = trackSyncSubscription('orders.observeQuery');
+
+        const openSub = DataStore.observeQuery(Order, (o) =>
+            o.status.eq('OPEN')
+        ).subscribe(({ isSynced, items }) => {
             logSyncDebug('orders.observeQuery', 'open:update', {
                 isSynced,
                 itemCount: items.length,
             });
-            openOrders = items;
+            openOrdersSnapshot = items;
             publish();
-        }
-    );
-
-    const recentPaidSub = DataStore.observeQuery(Order, (o) =>
-        o.and((order) => [
-            order.status.eq('PAID'),
-            order.orderDate.gt(getRecentClosedSince()),
-        ])
-    ).subscribe(({ isSynced, items }) => {
-        logSyncDebug('orders.observeQuery', 'paid:update', {
-            isSynced,
-            itemCount: items.length,
-            recentClosedSince: getRecentClosedSince(),
-            sample: summarizeOrders(items),
         });
-        recentPaidOrders = items;
-        publish();
-    });
 
-    const recentRefundedSub = DataStore.observeQuery(Order, (o) =>
-        o.and((order) => [
-            order.status.eq('REFUNDED'),
-            order.orderDate.gt(getRecentClosedSince()),
-        ])
-    ).subscribe(({ isSynced, items }) => {
-        logSyncDebug('orders.observeQuery', 'refunded:update', {
-            isSynced,
-            itemCount: items.length,
-            recentClosedSince: getRecentClosedSince(),
-            sample: summarizeOrders(items),
+        const recentPaidSub = DataStore.observeQuery(Order, (o) =>
+            o.and((order) => [
+                order.status.eq('PAID'),
+                order.orderDate.gt(getRecentClosedSince()),
+            ])
+        ).subscribe(({ isSynced, items }) => {
+            logSyncDebug('orders.observeQuery', 'paid:update', {
+                isSynced,
+                itemCount: items.length,
+                recentClosedSince: getRecentClosedSince(),
+                sample: summarizeOrders(items),
+            });
+            recentPaidOrdersSnapshot = items;
+            publish();
         });
-        recentRefundedOrders = items;
-        publish();
-    });
+
+        const recentRefundedSub = DataStore.observeQuery(Order, (o) =>
+            o.and((order) => [
+                order.status.eq('REFUNDED'),
+                order.orderDate.gt(getRecentClosedSince()),
+            ])
+        ).subscribe(({ isSynced, items }) => {
+            logSyncDebug('orders.observeQuery', 'refunded:update', {
+                isSynced,
+                itemCount: items.length,
+                recentClosedSince: getRecentClosedSince(),
+                sample: summarizeOrders(items),
+            });
+            recentRefundedOrdersSnapshot = items;
+            publish();
+        });
+
+        sharedOrderSubscription = {
+            unsubscribe() {
+                openSub.unsubscribe();
+                recentPaidSub.unsubscribe();
+                recentRefundedSub.unsubscribe();
+                release();
+                openOrdersSnapshot = [];
+                recentPaidOrdersSnapshot = [];
+                recentRefundedOrdersSnapshot = [];
+                sharedOrderSubscription = undefined;
+            },
+        };
+    }
 
     return {
         unsubscribe() {
-            openSub.unsubscribe();
-            recentPaidSub.unsubscribe();
-            recentRefundedSub.unsubscribe();
-            release();
+            const nextCount = (orderDispatchRefs.get(dispatch) || 1) - 1;
+
+            if (nextCount <= 0) {
+                orderDispatchRefs.delete(dispatch);
+            } else {
+                orderDispatchRefs.set(dispatch, nextCount);
+            }
+
+            if (orderDispatchRefs.size === 0) {
+                sharedOrderSubscription?.unsubscribe();
+            }
         },
     };
 };

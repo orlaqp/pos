@@ -146,6 +146,10 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
                                 data={filteredList}
                                 keyExtractor={(item) => item.id}
                                 contentContainerStyle={local.listContent}
+                                initialNumToRender={10}
+                                maxToRenderPerBatch={10}
+                                windowSize={7}
+                                removeClippedSubviews={true}
                                 renderItem={({ item }) => (
                                     <CompactOrderItem
                                         item={item}

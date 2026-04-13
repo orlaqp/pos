@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Alert, FlatList, Keyboard, StyleSheet, TextInput, View, Text } from 'react-native';
 import { getThemeColors, useSharedStyles } from '@pos/theme/native';
@@ -17,13 +17,13 @@ import { RootState, useAppDispatch } from '@pos/store';
 import { InventoryReceive } from '@pos/shared/models';
 import {
     ProductEntity,
+    productsActions,
     ProductService,
     selectAllProducts,
 } from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
 import InventoryReceiveLine from '../inventory-receives/inventory-receive-line';
 import { confirm } from '@pos/shared/utils';
-import { NavigationParamList } from '@pos/sales/native-feature';
 import CompactProductList from '../shared/compact-product-list/compact-product-list';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { dedupeProducts } from '../shared/dedupe-products';
@@ -32,6 +32,12 @@ import { useDesignTokens } from '@pos/theme/native/design-tokens';
 export interface InventoryFormParams {
     [name: string]: object | undefined;
     inventory: InventoryReceive;
+}
+
+interface InventoryReceiveNavigationParamList {
+    'Inventory Receive Form': {
+        readOnly?: boolean;
+    };
 }
 
 export const appendReceiveLineIfMissing = (
@@ -64,10 +70,37 @@ export const applyReceiveLineUpdate = (
     return next;
 };
 
+const asQuantityDeltas = (lines: InventoryReceiveLineDTO[]) => {
+    const totalsByProductId = new Map<string, number>();
+
+    lines.forEach((line) => {
+        if (
+            line.received === undefined ||
+            line.received === null ||
+            Number.isNaN(line.received)
+        ) {
+            return;
+        }
+
+        totalsByProductId.set(
+            line.productId,
+            (totalsByProductId.get(line.productId) || 0) + line.received
+        );
+    });
+
+    return Array.from(totalsByProductId.entries()).map(([productId, delta]) => ({
+        productId,
+        delta,
+    }));
+};
+
 export function InventoryReceiveForm({
     navigation,
     route,
-}: NativeStackScreenProps<NavigationParamList, 'Inventory Receive Form'>) {
+}: NativeStackScreenProps<
+    InventoryReceiveNavigationParamList,
+    'Inventory Receive Form'
+>) {
     const inventoryReceive = useSelector(
         (state: RootState) => state.inventoryReceive.selected
     );
@@ -82,7 +115,6 @@ export function InventoryReceiveForm({
     const [busy, setBusy] = useState<boolean>(false);
     const [filter, setFilter] = useState<string>();
     const [lines, setLines] = useState<InventoryReceiveLineDTO[]>([]);
-    const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>([]);
     const linesRef = useRef<InventoryReceiveLineDTO[]>([]);
     const ref = useRef<TextInput>(null);
 
@@ -145,6 +177,11 @@ export function InventoryReceiveForm({
 
         await InventoryReceiveService.save(dispatch, inv, updateInv);
         dispatch(inventoryReceiveActions.clearSelection());
+
+        if (inv.status === 'COMPLETED') {
+            dispatch(productsActions.applyQuantityDeltas(asQuantityDeltas(currentLines)));
+        }
+
         navigation.goBack();
         setBusy(false);
     };
@@ -200,14 +237,16 @@ export function InventoryReceiveForm({
         setFilter('');
     };
 
-    useEffect(() => {
+    const filteredProducts = useMemo(() => {
         if (!filter?.trim()) {
-            setFilteredProducts((prev) => (prev.length === 0 ? prev : []));
-            return;
+            return [];
         }
 
-        const searchResult = ProductService.search(products, { text: filter.trim() });
-        setFilteredProducts(dedupeProducts(searchResult.items));
+        const searchResult = ProductService.search(products, {
+            text: filter.trim(),
+        });
+
+        return dedupeProducts(searchResult.items);
     }, [filter, products]);
 
     return (

@@ -54,7 +54,6 @@ export const subscribeToInventoryCountChanges = (dispatch: Dispatch) => {
             isSynced,
             itemCount: items.length,
         });
-        if (!isSynced) return;
         updateInventoryCountStore(dispatch, items);
     });
     return {
@@ -73,7 +72,6 @@ export const subscribeToInventoryCountLineChanges = (dispatch: Dispatch) => {
             isSynced,
             itemCount: items.length,
         });
-        if (!isSynced) return;
         updateInventoryLineCountStore(dispatch, items);
     });
     return {
@@ -91,7 +89,6 @@ export const subscribeToInventoryReceiveChanges = (dispatch: Dispatch) => {
             isSynced,
             itemCount: items.length,
         });
-        if (!isSynced) return;
         updateInventoryReceiveStore(dispatch, items);
     });
     return {
@@ -109,7 +106,6 @@ export const subscribeToInventoryReceiveLineChanges = (dispatch: Dispatch) => {
             isSynced,
             itemCount: items.length,
         });
-        if (!isSynced) return;
         updateInventoryReceiveLineStore(dispatch, items);
     });
     return {

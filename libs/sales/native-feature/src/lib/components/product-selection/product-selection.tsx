@@ -59,8 +59,16 @@ export function ProductSelection({
                 <FlatList
                     testID="product-selection-list"
                     data={rows}
+                    keyExtractor={(item, index) =>
+                        item?.map((product) => product.id).join('-') ||
+                        `product-row-${index}`
+                    }
                     keyboardShouldPersistTaps="handled"
                     contentContainerStyle={localStyles.listContent}
+                    initialNumToRender={6}
+                    maxToRenderPerBatch={6}
+                    windowSize={5}
+                    removeClippedSubviews={true}
                     renderItem={(info) => (
                         <View
                             style={[

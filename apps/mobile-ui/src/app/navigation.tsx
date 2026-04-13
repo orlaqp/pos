@@ -221,6 +221,7 @@ export function Navigation() {
             <Stack.Navigator
                 id="root-navigation"
                 screenOptions={{
+                    freezeOnBlur: true,
                     headerStyle: {
                         backgroundColor: colors.background,
                     },

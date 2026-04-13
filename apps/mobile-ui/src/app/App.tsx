@@ -216,6 +216,8 @@ const AppContent = () => {
         activeIndex: 0,
     });
     const bootstrapInFlightRef = useRef<Promise<void> | null>(null);
+    const lastBootstrapTriggerRef = useRef<string | null>(null);
+    const startBootstrapRef = useRef<(() => Promise<void> | undefined) | null>(null);
     const sessionExpiryAlertShownRef = useRef(false);
     const sessionValidationInFlightRef = useRef<Promise<void> | null>(null);
     const silentReauthInFlightRef = useRef<Promise<User | null> | null>(null);
@@ -688,6 +690,10 @@ const AppContent = () => {
         tenantSession.currentTenantId,
     ]);
 
+    useEffect(() => {
+        startBootstrapRef.current = startBootstrap;
+    }, [startBootstrap]);
+
     const signOutFromStartup = useCallback(async () => {
         setBootstrapError(undefined);
         recordLifecycleEvent('startup.signout:start');
@@ -705,11 +711,20 @@ const AppContent = () => {
     }, [recordLifecycleEvent, resetSessionState]);
 
     useEffect(() => {
-        startBootstrap();
-    }, [startBootstrap]);
+        const bootstrapTriggerKey = authUser?.tenantId ?? 'signed-out';
+
+        if (lastBootstrapTriggerRef.current === bootstrapTriggerKey) {
+            return;
+        }
+
+        lastBootstrapTriggerRef.current = bootstrapTriggerKey;
+        void startBootstrapRef.current?.();
+    }, [authUser?.tenantId]);
+
+    const authTenantId = authUser?.tenantId;
 
     useEffect(() => {
-        if (!authUser || !tenantSession.currentTenantId || bootstrapStatus !== 'ready') {
+        if (!authTenantId || !tenantSession.currentTenantId || bootstrapStatus !== 'ready') {
             return;
         }
 
@@ -738,11 +753,11 @@ const AppContent = () => {
             interaction.cancel();
             employeesSub?.unsubscribe();
         };
-    }, [authUser, bootstrapStatus, dispatch, tenantSession.currentTenantId]);
+    }, [authTenantId, bootstrapStatus, dispatch, tenantSession.currentTenantId]);
 
     useEffect(() => {
         if (
-            !authUser ||
+            !authTenantId ||
             !tenantSession.currentTenantId ||
             bootstrapStatus !== 'ready'
         ) {
@@ -774,7 +789,7 @@ const AppContent = () => {
             interaction.cancel();
             productsSub?.unsubscribe();
         };
-    }, [authUser, bootstrapStatus, dispatch, tenantSession.currentTenantId]);
+    }, [authTenantId, bootstrapStatus, dispatch, tenantSession.currentTenantId]);
 
     useEffect(() => {
         if (!authUser) {

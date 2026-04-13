@@ -182,6 +182,11 @@ export function OrderList({ navigation }: OrderListProps) {
                             testID="order-list-flat-list"
                             keyboardShouldPersistTaps="handled"
                             data={filteredOrders}
+                            keyExtractor={(item) => item.id}
+                            initialNumToRender={10}
+                            maxToRenderPerBatch={10}
+                            windowSize={7}
+                            removeClippedSubviews={true}
                             renderItem={({ item }) => (
                                 <OrderItem
                                     navigation={navigation}

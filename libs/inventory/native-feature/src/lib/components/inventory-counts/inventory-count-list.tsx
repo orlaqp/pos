@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
     inventoryCountActions,
     fetchInventoryCount,
@@ -10,6 +10,7 @@ import {
 } from '@pos/inventory/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
 import { enableInventorySync } from '@pos/shared/data-store';
+import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import InventoryCountItem from './inventory-count-item';
 import { ActivityIndicator, View } from 'react-native';
@@ -28,27 +29,29 @@ export function InventoryCountList({ navigation }: InventoryListProps) {
     const tokens = useDesignTokens();
     const [isPreparingInventorySync, setIsPreparingInventorySync] = React.useState(true);
 
-    useEffect(() => {
-        let active = true;
-        let counts: { unsubscribe: () => void } | undefined;
-        let lines: { unsubscribe: () => void } | undefined;
+    useFocusEffect(
+        React.useCallback(() => {
+            let active = true;
+            let counts: { unsubscribe: () => void } | undefined;
+            let lines: { unsubscribe: () => void } | undefined;
 
-        void (async () => {
-            await enableInventorySync();
-            if (!active) return;
-            counts = subscribeToInventoryCountChanges(dispatch);
-            lines = subscribeToInventoryCountLineChanges(dispatch);
-            await dispatch(fetchInventoryCount());
-            if (!active) return;
-            setIsPreparingInventorySync(false);
-        })();
+            void (async () => {
+                await enableInventorySync();
+                if (!active) return;
+                counts = subscribeToInventoryCountChanges(dispatch);
+                lines = subscribeToInventoryCountLineChanges(dispatch);
+                await dispatch(fetchInventoryCount());
+                if (!active) return;
+                setIsPreparingInventorySync(false);
+            })();
 
-        return () => {
-            active = false;
-            counts?.unsubscribe();
-            lines?.unsubscribe();
-        };
-    }, [dispatch]);
+            return () => {
+                active = false;
+                counts?.unsubscribe();
+                lines?.unsubscribe();
+            };
+        }, [dispatch])
+    );
 
     if (isPreparingInventorySync) {
         return (
