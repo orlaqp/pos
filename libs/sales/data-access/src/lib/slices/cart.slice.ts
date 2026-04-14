@@ -1,6 +1,10 @@
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import type { RootState } from '@pos/store';
-import { AppliedDiscountSummary, PricingEngine } from '@pos/discounts/domain';
+import {
+    AppliedDiscountSummary,
+    PricingEngine,
+    restoreDiscountStateFromSummary,
+} from '@pos/discounts/domain';
 import {
     createSelector,
     createSlice,
@@ -157,10 +161,15 @@ export const cartSlice = createSlice({
             state.promoCodes = (o.promoCodes || [])
                 .filter((code): code is string => !!code)
                 .map((code) => ({ code }));
-            state.approvalEvents = [];
             state.appliedDiscountSummary = parseAppliedDiscountSummary(
                 o.appliedDiscountSummary
             );
+            const restoredDiscountState = restoreDiscountStateFromSummary(
+                state.appliedDiscountSummary
+            );
+            state.manualDiscounts = restoredDiscountState.manualDiscounts;
+            state.priceOverrides = restoredDiscountState.priceOverrides;
+            state.approvalEvents = state.appliedDiscountSummary?.approvalEvents || [];
             state.payments = [];
             state.selected = initialCartState.selected;
             state.activeProduct = initialCartState.activeProduct;

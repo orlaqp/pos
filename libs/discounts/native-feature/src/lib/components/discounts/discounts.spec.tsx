@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import { DiscountEditor, Discounts, PolicyEditor } from './discounts';
 
@@ -10,10 +10,13 @@ const mockListPolicies = jest.fn();
 const mockGetDefinition = jest.fn();
 const mockGetPolicy = jest.fn();
 const mockSaveDefinition = jest.fn();
+const mockDeleteDefinition = jest.fn();
 const mockSavePolicy = jest.fn();
+const mockDeletePolicy = jest.fn();
+const mockSubscribeDefinitionChanges = jest.fn();
+const mockSubscribePolicyChanges = jest.fn();
 const mockCategoriesGetAll = jest.fn();
 const mockProductsGetAll = jest.fn();
-const mockStoreGetAll = jest.fn();
 const mockStationGetConfig = jest.fn();
 
 jest.mock('react-native', () => {
@@ -62,7 +65,11 @@ jest.mock('@pos/discounts/data-access', () => ({
     getDefinition: (...args: unknown[]) => mockGetDefinition(...args),
     getPolicy: (...args: unknown[]) => mockGetPolicy(...args),
     saveDefinition: (...args: unknown[]) => mockSaveDefinition(...args),
+    deleteDefinition: (...args: unknown[]) => mockDeleteDefinition(...args),
     savePolicy: (...args: unknown[]) => mockSavePolicy(...args),
+    deletePolicy: (...args: unknown[]) => mockDeletePolicy(...args),
+    subscribeDefinitionChanges: (...args: unknown[]) => mockSubscribeDefinitionChanges(...args),
+    subscribePolicyChanges: (...args: unknown[]) => mockSubscribePolicyChanges(...args),
   },
 }));
 
@@ -81,15 +88,6 @@ jest.mock('@pos/products/data-access', () => ({
   },
   ProductEntityMapper: {
     fromProduct: (item: any) => item,
-  },
-}));
-
-jest.mock('@pos/store-info/data-access', () => ({
-  StoreInfoService: {
-    getStore: (...args: unknown[]) => mockStoreGetAll(...args),
-  },
-  StoreInfoEntityMapper: {
-    fromModel: (item: any) => item,
   },
 }));
 
@@ -200,8 +198,9 @@ describe('Discounts screen', () => {
     jest.clearAllMocks();
     mockCategoriesGetAll.mockResolvedValue([]);
     mockProductsGetAll.mockResolvedValue([]);
-    mockStoreGetAll.mockResolvedValue([]);
     mockStationGetConfig.mockResolvedValue({});
+    mockSubscribeDefinitionChanges.mockReturnValue({ unsubscribe: jest.fn() });
+    mockSubscribePolicyChanges.mockReturnValue({ unsubscribe: jest.fn() });
   });
 
   it('renders empty discounts state with a single CTA', async () => {
@@ -238,6 +237,97 @@ describe('Discounts screen', () => {
     expect(navigation.navigate).toHaveBeenCalledWith('Discount Form', { id: 'disc-1' });
   });
 
+  it('deletes a discount directly from the list', async () => {
+    mockListDefinitions
+      .mockResolvedValueOnce([
+        {
+          id: 'disc-1',
+          name: 'Summer sale',
+          type: 'MANUAL',
+          scope: 'LINE',
+          method: 'PERCENT',
+          active: true,
+        },
+      ])
+      .mockResolvedValueOnce([]);
+    mockDeleteDefinition.mockResolvedValueOnce(undefined);
+
+    const { getByTestId, getByText, queryByText } = render(
+      <Discounts navigation={navigation} route={{ name: 'Discounts' } as any} />
+    );
+
+    await waitFor(() => expect(getByText('Summer sale')).toBeTruthy());
+    fireEvent.press(getByTestId('discounts-list-delete-disc-1'));
+
+    expect(Alert.alert).toHaveBeenCalledWith(
+      'Delete discount?',
+      'Delete "Summer sale" from the backend?',
+      expect.any(Array)
+    );
+
+    const alertActions = (Alert.alert as jest.Mock).mock.calls.at(-1)?.[2] as
+      | Array<{ text?: string; onPress?: () => void | Promise<void> }>
+      | undefined;
+    const deleteAction = alertActions?.find((action) => action.text === 'Delete');
+    await act(async () => {
+      await deleteAction?.onPress?.();
+    });
+
+    await waitFor(() => expect(mockDeleteDefinition).toHaveBeenCalledWith('disc-1'));
+    await waitFor(() => expect(queryByText('Summer sale')).toBeNull());
+  });
+
+  it('shows automatic discounts in the main discounts list', async () => {
+    mockListDefinitions.mockReset();
+    mockListDefinitions.mockResolvedValue([
+      {
+        id: 'disc-auto-1',
+        name: 'Happy hour',
+        type: 'AUTOMATIC',
+        scope: 'LINE',
+        method: 'PERCENT',
+        active: true,
+      },
+    ]);
+
+    const { getByText } = render(
+      <Discounts navigation={navigation} route={{ name: 'Discounts' } as any} />
+    );
+
+    await waitFor(() => expect(getByText('Happy hour')).toBeTruthy());
+    expect(mockListDefinitions).toHaveBeenCalledWith(undefined);
+  });
+
+  it('updates the definitions list when the shared subscription emits', async () => {
+    mockListDefinitions.mockResolvedValue([]);
+    let definitionListener: ((items: any[]) => void) | undefined;
+    mockSubscribeDefinitionChanges.mockImplementationOnce((listener) => {
+      definitionListener = listener;
+      return { unsubscribe: jest.fn() };
+    });
+
+    const { getByText } = render(
+      <Discounts navigation={navigation} route={{ name: 'Discounts' } as any} />
+    );
+
+    await waitFor(() => expect(getByText('No discounts yet')).toBeTruthy());
+
+    act(() => {
+      definitionListener?.([
+        {
+          id: 'disc-live-1',
+          name: 'Live discount',
+          type: 'AUTOMATIC',
+          scope: 'ORDER',
+          method: 'PERCENT',
+          active: true,
+        },
+      ]);
+    });
+
+    await waitFor(() => expect(getByText('Live discount')).toBeTruthy());
+  });
+
   it('renders the discount editor for a new definition without crashing', async () => {
     const screen = render(
       <DiscountEditor navigation={navigation} route={{ name: 'Discount Form', params: undefined } as any} />
@@ -267,6 +357,44 @@ describe('Discounts screen', () => {
     expect(navigation.navigate).toHaveBeenCalledWith('Policy Form', { id: 'policy-1' });
   });
 
+  it('deletes a policy directly from the list', async () => {
+    mockListPolicies
+      .mockResolvedValueOnce([
+        {
+          id: 'policy-1',
+          roleKey: 'Sales',
+          canApplyOrderDiscount: true,
+          active: true,
+        },
+      ])
+      .mockResolvedValueOnce([]);
+    mockDeletePolicy.mockResolvedValueOnce(undefined);
+
+    const { getByTestId, getByText, queryByText } = render(
+      <Discounts navigation={navigation} route={{ name: 'Policies' } as any} />
+    );
+
+    await waitFor(() => expect(getByText('Sales')).toBeTruthy());
+    fireEvent.press(getByTestId('discounts-list-delete-policy-1'));
+
+    expect(Alert.alert).toHaveBeenCalledWith(
+      'Delete policy?',
+      'Delete "Sales" from the backend?',
+      expect.any(Array)
+    );
+
+    const alertActions = (Alert.alert as jest.Mock).mock.calls.at(-1)?.[2] as
+      | Array<{ text?: string; onPress?: () => void | Promise<void> }>
+      | undefined;
+    const deleteAction = alertActions?.find((action) => action.text === 'Delete');
+    await act(async () => {
+      await deleteAction?.onPress?.();
+    });
+
+    await waitFor(() => expect(mockDeletePolicy).toHaveBeenCalledWith('policy-1'));
+    await waitFor(() => expect(queryByText('Sales')).toBeNull());
+  });
+
   it('renders the static exceptions state', () => {
     const { getByText } = render(
       <Discounts navigation={navigation} route={{ name: 'Exceptions' } as any} />
@@ -290,7 +418,6 @@ describe('DiscountEditor', () => {
       { id: 'prod-1', name: 'Apple' },
       { id: 'prod-2', name: 'Bread' },
     ]);
-    mockStoreGetAll.mockResolvedValue([{ id: 'store-1', name: 'Main Store' }]);
     mockStationGetConfig.mockResolvedValue({ stationNumber: '01' });
   });
 
@@ -305,7 +432,14 @@ describe('DiscountEditor', () => {
     fireEvent.changeText(getByPlaceholderText('0'), '10');
     fireEvent.press(getByTestId('ui-actions-submit'));
 
-    await waitFor(() => expect(mockSaveDefinition).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(mockSaveDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Manual discount',
+          stationIds: null,
+        })
+      )
+    );
     expect(navigation.goBack).toHaveBeenCalled();
   });
 
@@ -336,8 +470,7 @@ describe('DiscountEditor', () => {
       applicableCategoryIds: null,
       excludedProductIds: null,
       excludedCategoryIds: null,
-      storeIds: null,
-      stationIds: null,
+      stationIds: ['station-99'],
       excludeAlreadyDiscountedItems: false,
       appliesToAllProducts: true,
       active: true,
@@ -356,7 +489,11 @@ describe('DiscountEditor', () => {
 
     await waitFor(() =>
       expect(mockSaveDefinition).toHaveBeenCalledWith(
-        expect.objectContaining({ id: 'disc-1', name: 'Existing discount' })
+        expect.objectContaining({
+          id: 'disc-1',
+          name: 'Existing discount',
+          stationIds: ['station-99'],
+        })
       )
     );
   });
@@ -395,6 +532,66 @@ describe('DiscountEditor', () => {
     fireEvent.press(getByTestId('ui-actions-cancel'));
     expect(navigation.goBack).toHaveBeenCalled();
   });
+
+  it('deletes an existing discount after confirmation', async () => {
+    mockGetDefinition.mockResolvedValueOnce({
+      id: 'disc-delete-1',
+      name: 'Delete me',
+      code: null,
+      description: null,
+      status: 'ACTIVE',
+      type: 'MANUAL',
+      method: 'PERCENT',
+      scope: 'LINE',
+      value: 10,
+      priority: 100,
+      stackMode: 'STACKABLE',
+      approvalRequired: false,
+      reasonRequired: true,
+      startDate: null,
+      endDate: null,
+      daysOfWeek: null,
+      startTime: null,
+      endTime: null,
+      minSubtotal: null,
+      minQuantity: null,
+      usageLimitTotal: null,
+      applicableProductIds: null,
+      applicableCategoryIds: null,
+      excludedProductIds: null,
+      excludedCategoryIds: null,
+      stationIds: null,
+      excludeAlreadyDiscountedItems: false,
+      appliesToAllProducts: true,
+      active: true,
+    });
+    mockDeleteDefinition.mockResolvedValueOnce(undefined);
+
+    const { getByTestId } = render(
+      <DiscountEditor
+        navigation={navigation}
+        route={{ name: 'Discount Form', params: { id: 'disc-delete-1' } } as any}
+      />
+    );
+
+    await waitFor(() => expect(getByTestId('discount-delete-button')).toBeTruthy());
+    fireEvent.press(getByTestId('discount-delete-button'));
+
+    expect(Alert.alert).toHaveBeenCalledWith(
+      'Delete discount?',
+      'This will permanently remove the discount definition from the backend.',
+      expect.any(Array)
+    );
+
+    const alertActions = (Alert.alert as jest.Mock).mock.calls.at(-1)?.[2] as
+      | Array<{ text?: string; onPress?: () => void | Promise<void> }>
+      | undefined;
+    const deleteAction = alertActions?.find((action) => action.text === 'Delete');
+    await deleteAction?.onPress?.();
+
+    await waitFor(() => expect(mockDeleteDefinition).toHaveBeenCalledWith('disc-delete-1'));
+    expect(navigation.goBack).toHaveBeenCalled();
+  });
 });
 
 describe('PolicyEditor', () => {
@@ -404,7 +601,6 @@ describe('PolicyEditor', () => {
     jest.clearAllMocks();
     mockCategoriesGetAll.mockResolvedValue([]);
     mockProductsGetAll.mockResolvedValue([]);
-    mockStoreGetAll.mockResolvedValue([]);
     mockStationGetConfig.mockResolvedValue({});
   });
 
@@ -481,6 +677,55 @@ describe('PolicyEditor', () => {
     );
 
     fireEvent.press(getByTestId('ui-actions-cancel'));
+    expect(navigation.goBack).toHaveBeenCalled();
+  });
+
+  it('deletes an existing policy after confirmation', async () => {
+    mockGetPolicy.mockResolvedValueOnce({
+      id: 'policy-delete-1',
+      roleKey: 'Sales',
+      employeeId: null,
+      maxManualPercentDiscount: 25,
+      maxManualAmountDiscount: 15,
+      maxPriceOverrideAmount: 10,
+      maxPriceOverridePercentBelowBase: 20,
+      canApplyOrderDiscount: true,
+      canOverridePrice: true,
+      canApproveDiscounts: true,
+      canApprovePriceOverrides: true,
+      canUsePromoCodes: true,
+      requireReasonForManualDiscounts: true,
+      requireReasonForOverrides: true,
+      requireApprovalForOrderDiscount: false,
+      requireApprovalForAnyPriceOverride: false,
+      allowExclusiveDiscountOverride: false,
+      active: true,
+    });
+    mockDeletePolicy.mockResolvedValueOnce(undefined);
+
+    const { getByTestId } = render(
+      <PolicyEditor
+        navigation={navigation}
+        route={{ name: 'Policy Form', params: { id: 'policy-delete-1' } } as any}
+      />
+    );
+
+    await waitFor(() => expect(getByTestId('policy-delete-button')).toBeTruthy());
+    fireEvent.press(getByTestId('policy-delete-button'));
+
+    expect(Alert.alert).toHaveBeenCalledWith(
+      'Delete policy?',
+      'This will permanently remove the discount policy from the backend.',
+      expect.any(Array)
+    );
+
+    const alertActions = (Alert.alert as jest.Mock).mock.calls.at(-1)?.[2] as
+      | Array<{ text?: string; onPress?: () => void | Promise<void> }>
+      | undefined;
+    const deleteAction = alertActions?.find((action) => action.text === 'Delete');
+    await deleteAction?.onPress?.();
+
+    await waitFor(() => expect(mockDeletePolicy).toHaveBeenCalledWith('policy-delete-1'));
     expect(navigation.goBack).toHaveBeenCalled();
   });
 });

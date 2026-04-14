@@ -424,7 +424,7 @@ describe('PricingEngine', () => {
     expect(sundayOutsideWindow.order.discountTotal).toBe(0);
   });
 
-  it('enforces store and station scoped discounts', () => {
+  it('enforces station scoped discounts', () => {
     const definitions: DiscountDefinition[] = [
       {
         id: 'store-station-oil',
@@ -436,7 +436,6 @@ describe('PricingEngine', () => {
         value: 5,
         stackMode: 'STACKABLE',
         applicableCategoryIds: ['oils'],
-        storeIds: ['store-1'],
         stationIds: ['station-1'],
       },
     ];
@@ -461,7 +460,7 @@ describe('PricingEngine', () => {
       definitions,
     });
 
-    const wrongStore = PricingEngine.preview({
+    const differentStore = PricingEngine.preview({
       now: '2026-03-16T14:00:00.000Z',
       employee: { employeeId: 'emp-1' },
       storeId: 'store-2',
@@ -502,11 +501,11 @@ describe('PricingEngine', () => {
     });
 
     expect(matched.order.discountTotal).toBe(0.5);
-    expect(wrongStore.order.discountTotal).toBe(0);
+    expect(differentStore.order.discountTotal).toBe(0.5);
     expect(wrongStation.order.discountTotal).toBe(0);
   });
 
-  it('enforces scoped promo and automatic order discounts', () => {
+  it('enforces promo and automatic order discounts without store scoping', () => {
     const definitions: DiscountDefinition[] = [
       {
         id: 'promo-store-sunday',
@@ -519,7 +518,6 @@ describe('PricingEngine', () => {
         value: 5,
         stackMode: 'STACKABLE',
         daysOfWeek: ['SUN'],
-        storeIds: ['store-1'],
       },
     ];
 
@@ -543,7 +541,7 @@ describe('PricingEngine', () => {
       definitions,
     });
 
-    const sundayWrongStore = PricingEngine.preview({
+    const sundayDifferentStore = PricingEngine.preview({
       now: '2026-03-15T14:00:00.000Z',
       timezone: 'America/New_York',
       employee: { employeeId: 'emp-1' },
@@ -584,7 +582,7 @@ describe('PricingEngine', () => {
     });
 
     expect(monday.order.orderDiscountTotal).toBe(0);
-    expect(sundayWrongStore.order.orderDiscountTotal).toBe(0);
+    expect(sundayDifferentStore.order.orderDiscountTotal).toBe(5);
     expect(sundayMatched.order.orderDiscountTotal).toBe(5);
   });
 

@@ -5,6 +5,8 @@ jest.mock('@pos/shared/amplify', () => ({
   DataStore: {
     query: jest.fn(),
     save: jest.fn(),
+    delete: jest.fn(),
+    observeQuery: jest.fn(),
   },
 }));
 
@@ -43,11 +45,88 @@ import { stampTenant } from '@pos/auth/data-access';
 
 const queryMock = DataStore.query as jest.Mock;
 const saveMock = DataStore.save as jest.Mock;
+const deleteMock = DataStore.delete as jest.Mock;
+const observeQueryMock = DataStore.observeQuery as jest.Mock;
 const graphqlMock = API.graphql as jest.Mock;
 
 describe('DiscountService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('shares definition observeQuery updates across listeners', () => {
+    const unsubscribe = jest.fn();
+    let observer: ((payload: { items: any[] }) => void) | undefined;
+
+    observeQueryMock.mockReturnValueOnce({
+      subscribe: (next: (payload: { items: any[] }) => void) => {
+        observer = next;
+        return { unsubscribe };
+      },
+    });
+
+    const firstListener = jest.fn();
+    const secondListener = jest.fn();
+
+    const firstSub = DiscountService.subscribeDefinitionChanges(firstListener);
+    const secondSub = DiscountService.subscribeDefinitionChanges(secondListener, 'PROMO_CODE');
+
+    observer?.({
+      items: [
+        { id: 'a', name: 'Manual A', type: 'MANUAL', active: true },
+        { id: 'b', name: 'Promo B', type: 'PROMO_CODE', active: true },
+      ],
+    });
+
+    expect(observeQueryMock).toHaveBeenCalledTimes(1);
+    expect(firstListener).toHaveBeenLastCalledWith([
+      expect.objectContaining({ id: 'a' }),
+      expect.objectContaining({ id: 'b' }),
+    ]);
+    expect(secondListener).toHaveBeenLastCalledWith([
+      expect.objectContaining({ id: 'b' }),
+    ]);
+
+    firstSub.unsubscribe();
+    expect(unsubscribe).not.toHaveBeenCalled();
+    secondSub.unsubscribe();
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+  });
+
+  it('shares policy observeQuery updates across listeners', () => {
+    const unsubscribe = jest.fn();
+    let observer: ((payload: { items: any[] }) => void) | undefined;
+
+    observeQueryMock.mockReturnValueOnce({
+      subscribe: (next: (payload: { items: any[] }) => void) => {
+        observer = next;
+        return { unsubscribe };
+      },
+    });
+
+    const firstListener = jest.fn();
+    const secondListener = jest.fn();
+
+    const firstSub = DiscountService.subscribePolicyChanges(firstListener);
+    const secondSub = DiscountService.subscribePolicyChanges(secondListener);
+
+    observer?.({
+      items: [
+        { id: 'policy-2', roleKey: 'Sales', active: true },
+        { id: 'policy-1', roleKey: 'Admin', active: true },
+      ],
+    });
+
+    expect(observeQueryMock).toHaveBeenCalledTimes(1);
+    expect(firstListener).toHaveBeenLastCalledWith([
+      expect.objectContaining({ id: 'policy-1' }),
+      expect.objectContaining({ id: 'policy-2' }),
+    ]);
+    expect(secondListener).toHaveBeenCalled();
+
+    firstSub.unsubscribe();
+    secondSub.unsubscribe();
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
   });
 
   it('lists and sorts definitions by name and optional type', async () => {
@@ -188,6 +267,63 @@ describe('DiscountService', () => {
     ).rejects.toThrow('Discount definition missing not found');
   });
 
+  it('deletes an existing definition', async () => {
+    const record = { id: 'disc-1', name: 'Delete me' };
+    queryMock.mockResolvedValueOnce(record);
+    deleteMock.mockResolvedValueOnce(undefined);
+
+    await DiscountService.deleteDefinition('disc-1');
+
+    expect(deleteMock).toHaveBeenCalledWith(record);
+  });
+
+  it('throws when deleting a missing definition', async () => {
+    queryMock.mockResolvedValueOnce(undefined);
+    graphqlMock.mockResolvedValueOnce({ data: { listDiscountDefinitions: { items: [] } } });
+
+    await expect(DiscountService.deleteDefinition('missing')).rejects.toThrow(
+      'Discount definition missing not found'
+    );
+  });
+
+  it('falls back to backend delete when a definition is only available remotely', async () => {
+    queryMock.mockResolvedValueOnce(undefined);
+    graphqlMock
+      .mockResolvedValueOnce({
+        data: {
+          listDiscountDefinitions: {
+            items: [{ id: 'disc-remote-1', _version: 7 }],
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          deleteDiscountDefinition: {
+            id: 'disc-remote-1',
+            _deleted: true,
+            _version: 8,
+          },
+        },
+      });
+
+    await DiscountService.deleteDefinition('disc-remote-1');
+
+    expect(graphqlMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        variables: { limit: 200 },
+        authMode: 'userPool',
+      })
+    );
+    expect(graphqlMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        variables: { input: { id: 'disc-remote-1', _version: 7 } },
+        authMode: 'userPool',
+      })
+    );
+  });
+
   it('lists policies sorted by role or employee id', async () => {
     queryMock.mockResolvedValueOnce([
       { id: '2', roleKey: 'Sales', active: true },
@@ -312,5 +448,62 @@ describe('DiscountService', () => {
         active: true,
       })
     ).rejects.toThrow('Discount policy missing not found');
+  });
+
+  it('deletes an existing policy', async () => {
+    const record = { id: 'policy-1', roleKey: 'Sales' };
+    queryMock.mockResolvedValueOnce(record);
+    deleteMock.mockResolvedValueOnce(undefined);
+
+    await DiscountService.deletePolicy('policy-1');
+
+    expect(deleteMock).toHaveBeenCalledWith(record);
+  });
+
+  it('throws when deleting a missing policy', async () => {
+    queryMock.mockResolvedValueOnce(undefined);
+    graphqlMock.mockResolvedValueOnce({ data: { listEmployeeDiscountPolicies: { items: [] } } });
+
+    await expect(DiscountService.deletePolicy('missing')).rejects.toThrow(
+      'Discount policy missing not found'
+    );
+  });
+
+  it('falls back to backend delete when a policy is only available remotely', async () => {
+    queryMock.mockResolvedValueOnce(undefined);
+    graphqlMock
+      .mockResolvedValueOnce({
+        data: {
+          listEmployeeDiscountPolicies: {
+            items: [{ id: 'policy-remote-1', _version: 4 }],
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          deleteEmployeeDiscountPolicy: {
+            id: 'policy-remote-1',
+            _deleted: true,
+            _version: 5,
+          },
+        },
+      });
+
+    await DiscountService.deletePolicy('policy-remote-1');
+
+    expect(graphqlMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        variables: { limit: 200 },
+        authMode: 'userPool',
+      })
+    );
+    expect(graphqlMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        variables: { input: { id: 'policy-remote-1', _version: 4 } },
+        authMode: 'userPool',
+      })
+    );
   });
 });

@@ -58,8 +58,22 @@ export const useDiscountsStyles = (tokens: ReturnType<typeof useDesignTokens>) =
     listWrap: { gap: tokens.spacing.sm },
     listCard: { paddingVertical: tokens.spacing.sm },
     listRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    listTouchArea: { flex: 1 },
     listCopy: { flex: 1, paddingRight: tokens.spacing.md },
     listAside: { alignItems: 'flex-end', gap: tokens.spacing.xs },
+    listActionRow: { flexDirection: 'row', gap: tokens.spacing.xs },
+    listActionButton: {
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: `${tokens.colors.accent}44`,
+      backgroundColor: `${tokens.colors.accent}14`,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+    },
+    listDeleteButton: {
+      borderColor: '#7f1d1d',
+      backgroundColor: '#2b1212',
+    },
     listTitle: { color: tokens.colors.textPrimary, fontSize: 18, fontWeight: '700' },
     metaChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.spacing.xs, marginTop: tokens.spacing.xs },
     metaChip: {
@@ -128,6 +142,34 @@ export const useDiscountsStyles = (tokens: ReturnType<typeof useDesignTokens>) =
       alignSelf: 'center',
       width: '100%',
       borderRadius: tokens.radii.lg,
+    },
+    formActionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: tokens.spacing.md,
+    },
+    deleteButton: {
+      borderRadius: tokens.radii.md,
+      borderWidth: 1,
+      borderColor: '#7f1d1d',
+      backgroundColor: '#2b1212',
+      paddingVertical: tokens.spacing.sm,
+      paddingHorizontal: tokens.spacing.md,
+      alignItems: 'center',
+    },
+    deleteButtonText: {
+      color: '#fca5a5',
+      fontSize: 15,
+      fontWeight: '700',
+    },
+    inlineDeleteButton: {
+      marginBottom: 0,
+    },
+    listDeleteText: {
+      color: '#fca5a5',
+      fontSize: 13,
+      fontWeight: '700',
     },
   });
 

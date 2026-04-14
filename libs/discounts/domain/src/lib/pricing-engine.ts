@@ -163,12 +163,6 @@ function isDefinitionContextEligible(definition: DiscountDefinition, input: Pric
     return false;
   }
 
-  if (definition.storeIds?.length) {
-    if (!input.storeId || !definition.storeIds.includes(input.storeId)) {
-      return false;
-    }
-  }
-
   if (definition.stationIds?.length) {
     if (!input.stationId || !definition.stationIds.includes(input.stationId)) {
       return false;

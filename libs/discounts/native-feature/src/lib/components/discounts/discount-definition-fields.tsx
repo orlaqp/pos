@@ -41,11 +41,12 @@ interface DiscountDefinitionFieldsProps {
   definitionPreview: string;
   categoryOptions: OptionItem[];
   productOptions: OptionItem[];
-  storeOptions: OptionItem[];
   stationOptions: OptionItem[];
+  deleteBusy?: boolean;
   onToggleAdvanced: () => void;
   onSave: () => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }
 
 export function DiscountDefinitionFields({
@@ -61,11 +62,12 @@ export function DiscountDefinitionFields({
   definitionPreview,
   categoryOptions,
   productOptions,
-  storeOptions,
   stationOptions,
+  deleteBusy = false,
   onToggleAdvanced,
   onSave,
   onCancel,
+  onDelete,
 }: DiscountDefinitionFieldsProps) {
   const definitionTypeList = promoMode
     ? [definitionTypeOptions[2]]
@@ -257,26 +259,14 @@ export function DiscountDefinitionFields({
                             list={productOptions}
                           />
                         </View>
-                        <View style={styles.formGrid}>
-                          <View style={styles.formColumn}>
-                            <Text style={styles.fieldLabel}>Stores</Text>
-                            <UIOverlayMultiSelect
-                              name="storeIds"
-                              title="Select stores"
-                              emptyLabel="Choose stores"
-                              list={storeOptions}
-                              disabled
-                            />
-                          </View>
-                          <View style={styles.formColumn}>
-                            <Text style={styles.fieldLabel}>Stations</Text>
-                            <UIOverlayMultiSelect
-                              name="stationIds"
-                              title="Select stations"
-                              emptyLabel="Choose stations"
-                              list={stationOptions}
-                            />
-                          </View>
+                        <View style={styles.formColumnWide}>
+                          <Text style={styles.fieldLabel}>Stations</Text>
+                          <UIOverlayMultiSelect
+                            name="stationIds"
+                            title="Select stations"
+                            emptyLabel="Choose stations"
+                            list={stationOptions}
+                          />
                         </View>
                       </>
                     ) : null}
@@ -295,12 +285,28 @@ export function DiscountDefinitionFields({
           </ScrollView>
           <View style={styles.actionBar}>
             <UICard tone="muted" style={styles.actionBarCard}>
-              <UIActions
-                busy={busy || loading}
-                submitTitle={editingId ? 'Update' : 'Save'}
-                submitAction={onSave}
-                cancelAction={onCancel}
-              />
+              <View style={styles.formActionRow}>
+                {editingId && onDelete ? (
+                  <Pressable
+                    testID="discount-delete-button"
+                    style={[styles.deleteButton, styles.inlineDeleteButton]}
+                    disabled={busy || loading || deleteBusy}
+                    onPress={onDelete}
+                  >
+                    <Text style={styles.deleteButtonText}>
+                      {deleteBusy ? 'Deleting…' : 'Delete'}
+                    </Text>
+                  </Pressable>
+                ) : (
+                  <View />
+                )}
+                <UIActions
+                  busy={busy || loading || deleteBusy}
+                  submitTitle={editingId ? 'Update' : 'Save'}
+                  submitAction={onSave}
+                  cancelAction={onCancel}
+                />
+              </View>
             </UICard>
           </View>
         </View>

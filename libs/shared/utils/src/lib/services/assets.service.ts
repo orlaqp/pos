@@ -50,9 +50,13 @@ export class AssetsService {
         return Storage.get(key, { download: false });
     }
 
+    static getCachedImage(key: string) {
+        return FsService.get(key);
+    }
+
     static async getImage(key: string): Promise<string> {
         // check if image is stored in cache
-        const content = await FsService.get(key);
+        const content = await AssetsService.getCachedImage(key);
 
         if (content) {
             return content;
@@ -67,6 +71,20 @@ export class AssetsService {
         await FsService.save(key, base64);
 
         return base64 as string;
+    }
+
+    static async warmImageCache(key: string) {
+        try {
+            const cached = await AssetsService.getCachedImage(key);
+            if (cached) {
+                return cached;
+            }
+
+            return await AssetsService.getImage(key);
+        } catch (error) {
+            console.error('Unable to warm image cache', error);
+            return null;
+        }
     }
     
     static deleteAsset(key: string) {

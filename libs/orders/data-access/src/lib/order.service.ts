@@ -882,11 +882,6 @@ function buildOrderLines(
         const overrideApplication = lineDiscounts.find(
             (discount) => discount.applicationType === 'PRICE_OVERRIDE'
         );
-        const pricedLine = order.appliedDiscountSummary?.applications
-            .filter((application) => application.scope === 'LINE')
-            .filter((application) => lineDiscounts.some(
-                (discount) => discount.discountApplicationId === application.discountApplicationId
-            ));
         const lineTotal = lineSummary?.lineTotalBeforeTax ?? getLineTotal(i.quantity, i.product.price);
         const allocation = allocations?.[identifier];
         const lineInit: ConstructorParameters<typeof OrderLine>[0] = {
@@ -903,6 +898,9 @@ function buildOrderLines(
             allocatedOrderDiscountTotal: lineSummary?.allocatedOrderDiscountTotal ?? 0,
             lineTotalBeforeTax: lineTotal,
             lineTotalAfterTax: lineTotal,
+            appliedDiscounts: lineDiscounts.length
+                ? JSON.stringify(lineDiscounts)
+                : undefined,
             productId: i.product.id!,
             categoryId: i.product.categoryId,
             barcode: i.product.barcode,
@@ -930,6 +928,8 @@ function buildPricingSnapshotHash(order: Omit<CartState, 'id'>) {
     const payload = JSON.stringify({
         items: order.items,
         footer: order.footer,
+        manualDiscounts: order.manualDiscounts,
+        priceOverrides: order.priceOverrides,
         summary: order.appliedDiscountSummary,
         promoCodes: order.promoCodes,
     });

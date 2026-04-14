@@ -5,14 +5,12 @@ export type ManualDraft = {
     amountValue: string;
     reasonCode: string;
     reasonNote: string;
-    approvalPin: string;
 };
 
 export type OverrideDraft = {
     finalPrice: string;
     reasonCode: string;
     reasonNote: string;
-    approvalPin: string;
 };
 
 export const defaultManualDraft = (): ManualDraft => ({
@@ -22,12 +20,10 @@ export const defaultManualDraft = (): ManualDraft => ({
     amountValue: '',
     reasonCode: '',
     reasonNote: '',
-    approvalPin: '',
 });
 
 export const defaultOverrideDraft = (): OverrideDraft => ({
     finalPrice: '',
     reasonCode: '',
     reasonNote: '',
-    approvalPin: '',
 });

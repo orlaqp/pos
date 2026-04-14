@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from '@rneui/themed';
 import { UICard, UIEmptyState, UIScreen } from '@pos/shared/ui-native';
 import {
@@ -28,6 +28,8 @@ interface DiscountsListScreenProps {
   buildDefinitionMeta: (item: DiscountDefinitionEntity) => string;
   buildPolicyMeta: (item: EmployeeDiscountPolicyEntity) => string;
   onNavigate: (route: string, params?: { id: string }) => void;
+  onDeleteDefinition: (item: DiscountDefinitionEntity) => void;
+  onDeletePolicy: (item: EmployeeDiscountPolicyEntity) => void;
 }
 
 export function DiscountsListScreen({
@@ -41,6 +43,8 @@ export function DiscountsListScreen({
   buildDefinitionMeta,
   buildPolicyMeta,
   onNavigate,
+  onDeleteDefinition,
+  onDeletePolicy,
 }: DiscountsListScreenProps) {
   if (config.type === 'static') {
     return (
@@ -106,16 +110,16 @@ export function DiscountsListScreen({
                   const navigateParams = item.id ? { id: item.id } : undefined;
 
                   return (
-                    <TouchableOpacity
-                      key={id}
-                      testID={`discounts-list-item-${id}`}
-                      activeOpacity={0.86}
-                      onPress={() =>
-                        config.createRoute ? onNavigate(config.createRoute, navigateParams) : undefined
-                      }
-                    >
-                      <UICard style={styles.listCard}>
-                        <View style={styles.listRow}>
+                    <UICard key={id} style={styles.listCard}>
+                      <View style={styles.listRow}>
+                        <TouchableOpacity
+                          testID={`discounts-list-item-${id}`}
+                          activeOpacity={0.86}
+                          style={styles.listTouchArea}
+                          onPress={() =>
+                            config.createRoute ? onNavigate(config.createRoute, navigateParams) : undefined
+                          }
+                        >
                           <View style={styles.listCopy}>
                             <Text style={styles.listTitle}>
                               {'name' in item ? item.name : item.roleKey || item.employeeId || 'Policy'}
@@ -142,17 +146,38 @@ export function DiscountsListScreen({
                               {'type' in item ? buildDefinitionMeta(item) : buildPolicyMeta(item)}
                             </Text>
                           </View>
-                          <View style={styles.listAside}>
-                            {'active' in item && !item.active ? (
-                              <View style={styles.inactivePill}>
-                                <Text style={styles.inactivePillText}>Inactive</Text>
-                              </View>
-                            ) : null}
-                            <Text style={styles.editHint}>Edit</Text>
+                        </TouchableOpacity>
+                        <View style={styles.listAside}>
+                          {'active' in item && !item.active ? (
+                            <View style={styles.inactivePill}>
+                              <Text style={styles.inactivePillText}>Inactive</Text>
+                            </View>
+                          ) : null}
+                          <View style={styles.listActionRow}>
+                            <Pressable
+                              testID={`discounts-list-edit-${id}`}
+                              style={styles.listActionButton}
+                              onPress={() =>
+                                config.createRoute ? onNavigate(config.createRoute, navigateParams) : undefined
+                              }
+                            >
+                              <Text style={styles.editHint}>Edit</Text>
+                            </Pressable>
+                            <Pressable
+                              testID={`discounts-list-delete-${id}`}
+                              style={[styles.listActionButton, styles.listDeleteButton]}
+                              onPress={() =>
+                                'type' in item
+                                  ? onDeleteDefinition(item)
+                                  : onDeletePolicy(item)
+                              }
+                            >
+                              <Text style={styles.listDeleteText}>Delete</Text>
+                            </Pressable>
                           </View>
                         </View>
-                      </UICard>
-                    </TouchableOpacity>
+                      </View>
+                    </UICard>
                   );
                 })}
               </View>

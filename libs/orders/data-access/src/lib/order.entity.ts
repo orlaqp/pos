@@ -4,6 +4,7 @@ import {
   AppliedDiscountSummary,
   DiscountPricingSource,
   DiscountReconciliationStatus,
+  restoreDiscountStateFromSummary,
 } from '@pos/discounts/domain';
 import { EmployeeEntity } from '@pos/employees/data-access';
 import type { CartState } from '@pos/sales/data-access';
@@ -245,6 +246,12 @@ export class OrderEntityMapper {
     }));
     state.promoCodes = (o.promoCodes || []).map((code) => ({ code }));
     state.appliedDiscountSummary = o.appliedDiscountSummary || undefined;
+    const restoredDiscountState = restoreDiscountStateFromSummary(
+      state.appliedDiscountSummary
+    );
+    state.manualDiscounts = restoredDiscountState.manualDiscounts;
+    state.priceOverrides = restoredDiscountState.priceOverrides;
+    state.approvalEvents = state.appliedDiscountSummary?.approvalEvents || [];
     state.selected = undefined;
 
     return state;

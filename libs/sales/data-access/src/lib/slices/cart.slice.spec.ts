@@ -304,7 +304,7 @@ describe('cart.slice', () => {
         expect(state.manualDiscounts[0].value).toBe(3);
     });
 
-    it('reprices when pricing context changes', () => {
+    it('reprices when station pricing context changes', () => {
         const base = {
             ...initialCartState,
             items: [
@@ -325,18 +325,18 @@ describe('cart.slice', () => {
                     value: 10,
                     stackMode: 'STACKABLE',
                     applicableCategoryIds: ['oils'],
-                    storeIds: ['store-1'],
+                    stationIds: ['station-1'],
                 },
             ] as any,
         };
 
         const noMatch = cartReducer(
             base as any,
-            cartActions.setPricingContext({ storeId: 'store-2' } as any)
+            cartActions.setPricingContext({ stationId: 'station-2' } as any)
         );
         const matched = cartReducer(
             noMatch,
-            cartActions.setPricingContext({ storeId: 'store-1' } as any)
+            cartActions.setPricingContext({ stationId: 'station-1' } as any)
         );
 
         expect(noMatch.footer.discount).toBe(0);
@@ -557,7 +557,57 @@ describe('cart.slice', () => {
     });
 
     it('filters nullable promo codes and keeps object discount summaries on restore', () => {
-        const summary = { applications: [], warnings: [] };
+        const summary = {
+            applications: [
+                {
+                    discountApplicationId: 'manual-order',
+                    applicationType: 'MANUAL_ORDER_DISCOUNT',
+                    scope: 'ORDER',
+                    method: 'AMOUNT',
+                    name: 'Manual order discount',
+                    source: 'manual',
+                    value: 2,
+                    discountAmount: 2,
+                    finalAmount: 8,
+                },
+            ],
+            orderLevelAdjustments: [
+                {
+                    discountApplicationId: 'manual-order',
+                    applicationType: 'MANUAL_ORDER_DISCOUNT',
+                    scope: 'ORDER',
+                    method: 'AMOUNT',
+                    name: 'Manual order discount',
+                    source: 'manual',
+                    value: 2,
+                    discountAmount: 2,
+                    finalAmount: 8,
+                },
+            ],
+            lineSummaries: [
+                {
+                    lineId: 'line-1',
+                    discounts: [
+                        {
+                            discountApplicationId: 'override-line-1',
+                            applicationType: 'PRICE_OVERRIDE',
+                            scope: 'LINE',
+                            method: 'FINAL_PRICE',
+                            name: 'Price override',
+                            source: 'override',
+                            value: 1.75,
+                            discountAmount: 0.75,
+                            finalAmount: 1.75,
+                        },
+                    ],
+                    lineDiscountTotal: 0.75,
+                    allocatedOrderDiscountTotal: 0,
+                    lineTotalBeforeTax: 1.75,
+                },
+            ],
+            approvalEvents: [],
+            warnings: [],
+        };
         const state = cartReducer(
             undefined,
             cartActions.set({
@@ -588,6 +638,21 @@ describe('cart.slice', () => {
 
         expect(state.promoCodes).toEqual([{ code: 'SAVE5' }]);
         expect(state.appliedDiscountSummary).toEqual(summary);
+        expect(state.manualDiscounts).toEqual([
+            expect.objectContaining({
+                kind: 'MANUAL_DISCOUNT',
+                scope: 'ORDER',
+                method: 'AMOUNT',
+                value: 2,
+            }),
+        ]);
+        expect(state.priceOverrides).toEqual([
+            expect.objectContaining({
+                kind: 'PRICE_OVERRIDE',
+                lineId: 'line-1',
+                finalPrice: 1.75,
+            }),
+        ]);
     });
 
     it('ignores non-json summary strings and payloads without lines', () => {

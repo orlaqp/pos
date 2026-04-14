@@ -58,6 +58,57 @@ describe('OrderEntityMapper', () => {
             employeeId: 'e-1',
             employeeName: 'Tester',
             orderDate: '2026-03-12T00:00:00.000Z',
+            appliedDiscountSummary: {
+                applications: [
+                    {
+                        discountApplicationId: 'manual-order',
+                        applicationType: 'MANUAL_ORDER_DISCOUNT',
+                        scope: 'ORDER',
+                        method: 'AMOUNT',
+                        name: 'Manual order discount',
+                        source: 'manual',
+                        value: 1.25,
+                        discountAmount: 1.25,
+                        finalAmount: 8.75,
+                    },
+                ],
+                orderLevelAdjustments: [
+                    {
+                        discountApplicationId: 'manual-order',
+                        applicationType: 'MANUAL_ORDER_DISCOUNT',
+                        scope: 'ORDER',
+                        method: 'AMOUNT',
+                        name: 'Manual order discount',
+                        source: 'manual',
+                        value: 1.25,
+                        discountAmount: 1.25,
+                        finalAmount: 8.75,
+                    },
+                ],
+                lineSummaries: [
+                    {
+                        lineId: 'line-1',
+                        discounts: [
+                            {
+                                discountApplicationId: 'override-line-1',
+                                applicationType: 'PRICE_OVERRIDE',
+                                scope: 'LINE',
+                                method: 'FINAL_PRICE',
+                                name: 'Price override',
+                                source: 'override',
+                                value: 8.75,
+                                discountAmount: 1.25,
+                                finalAmount: 8.75,
+                            },
+                        ],
+                        lineDiscountTotal: 1.25,
+                        allocatedOrderDiscountTotal: 0,
+                        lineTotalBeforeTax: 8.75,
+                    },
+                ],
+                approvalEvents: [],
+                warnings: [],
+            },
             lines: [
                 {
                     identifier: 'line-1',
@@ -78,6 +129,20 @@ describe('OrderEntityMapper', () => {
         });
 
         expect(cart.items[0].product.name).toBe('Soap Fixture');
+        expect(cart.manualDiscounts).toEqual([
+            expect.objectContaining({
+                kind: 'MANUAL_DISCOUNT',
+                scope: 'ORDER',
+                value: 1.25,
+            }),
+        ]);
+        expect(cart.priceOverrides).toEqual([
+            expect.objectContaining({
+                kind: 'PRICE_OVERRIDE',
+                lineId: 'line-1',
+                finalPrice: 8.75,
+            }),
+        ]);
     });
 
     it('maps payment info payments from order model', () => {

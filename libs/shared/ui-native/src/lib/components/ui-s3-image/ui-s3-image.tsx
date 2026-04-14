@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Image } from 'react-native';
 import { AssetsService } from '@pos/shared/utils';
@@ -20,33 +20,18 @@ export interface UIS3ImageProps {
 
 const imageUriCache = new Map<string, string>();
 const pendingImageLoads = new Map<string, Promise<string>>();
-const IMAGE_URI_CACHE_TTL_MS = 10 * 60_000;
-const imageUriResolvedAt = new Map<string, number>();
 
-const resolveImageUri = async (
-    s3Key: string,
-    options?: { forceRefresh?: boolean }
-): Promise<string> => {
-    const forceRefresh = options?.forceRefresh ?? false;
-    const resolvedAt = imageUriResolvedAt.get(s3Key) || 0;
+const resolveImageUri = async (s3Key: string): Promise<string> => {
     const cached = imageUriCache.get(s3Key);
-    const cacheIsFresh =
-        cached && Date.now() - resolvedAt < IMAGE_URI_CACHE_TTL_MS;
-    if (!forceRefresh && cacheIsFresh) return cached;
+    if (cached) return cached;
 
-    if (forceRefresh || !cacheIsFresh) {
-        imageUriCache.delete(s3Key);
-        imageUriResolvedAt.delete(s3Key);
-    }
-
-    const inflight = !forceRefresh ? pendingImageLoads.get(s3Key) : undefined;
+    const inflight = pendingImageLoads.get(s3Key);
     if (inflight) return inflight;
 
-    const request = AssetsService.getImage(s3Key)
-        .catch(() => AssetsService.getAssetUri(s3Key))
+    const request = AssetsService.getAssetUri(s3Key)
+        .catch(() => AssetsService.getImage(s3Key))
         .then((uri) => {
             imageUriCache.set(s3Key, uri);
-            imageUriResolvedAt.set(s3Key, Date.now());
             return uri;
         })
         .finally(() => {
@@ -62,64 +47,38 @@ export function UIS3Image({
     width,
     height,
 }: UIS3ImageProps) {
-    const [reloadToken, setReloadToken] = useState(0);
-    const [imageState, setImageState] = useState<{
-        key?: string;
-        uri?: string;
-    }>({});
-    const retryCountRef = useRef(0);
+    const [uri, setUri] = useState<string | undefined>();
 
     useEffect(() => {
         let mounted = true;
 
         if (!s3Key) {
-            retryCountRef.current = 0;
+            setUri(undefined);
             return () => {
                 mounted = false;
             };
         }
 
-        if (reloadToken === 0) {
-            retryCountRef.current = 0;
-        }
-
-        resolveImageUri(s3Key, { forceRefresh: retryCountRef.current > 0 })
+        resolveImageUri(s3Key)
             .then((resolved) => {
-                if (mounted) {
-                    setImageState({ key: s3Key, uri: resolved });
-                    retryCountRef.current = 0;
-                }
+                if (mounted) setUri(resolved);
             })
             .catch(() => {
-                if (mounted) {
-                    setImageState({ key: s3Key, uri: undefined });
-                }
+                if (mounted) setUri(undefined);
             });
 
         return () => {
             mounted = false;
         };
-    }, [reloadToken, s3Key]);
+    }, [s3Key]);
 
-    if (!s3Key || imageState.key !== s3Key || !imageState.uri) return null;
+    if (!uri) return null;
 
     return (
         <Image
-            testID="ui-s3-image"
             style={{ height, width }}
-            source={{ uri: imageState.uri }}
+            source={{ uri }}
             resizeMode="contain"
-            onError={() => {
-                if (!s3Key || retryCountRef.current >= 1) {
-                    return;
-                }
-
-                imageUriCache.delete(s3Key);
-                imageUriResolvedAt.delete(s3Key);
-                pendingImageLoads.delete(s3Key);
-                retryCountRef.current += 1;
-                setReloadToken((current) => current + 1);
-            }}
         />
     );
 }

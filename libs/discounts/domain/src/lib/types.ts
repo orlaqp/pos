@@ -49,7 +49,6 @@ export interface DiscountDefinition {
   excludedCategoryIds?: string[] | null;
   excludeAlreadyDiscountedItems?: boolean;
   appliesToAllProducts?: boolean;
-  storeIds?: string[] | null;
   stationIds?: string[] | null;
   active?: boolean;
 }

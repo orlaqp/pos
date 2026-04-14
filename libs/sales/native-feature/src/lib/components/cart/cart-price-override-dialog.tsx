@@ -40,7 +40,7 @@ export function CartPriceOverrideDialog({
             <View style={styles.dialogHeroCard}>
                 <Text style={styles.dialogTitle}>Price override</Text>
                 <Text style={styles.dialogHint}>
-                    Override the selected line price while respecting policy limits.
+                    Override the selected line price for the current sale.
                 </Text>
                 <View style={styles.dialogHeroMetaRow}>
                     <View style={styles.dialogHeroPill}>
@@ -92,26 +92,6 @@ export function CartPriceOverrideDialog({
                 placeholderTextColor={placeholderTextColor}
                 style={styles.dialogInput}
             />
-            <View style={styles.approvalCard}>
-                <Text style={styles.dialogSubheading}>Approval PIN if required</Text>
-                <Text style={styles.dialogFieldHint}>
-                    Only an employee PIN with override approval access is needed.
-                </Text>
-                <TextInput
-                    value={draft.approvalPin}
-                    onChangeText={(approvalPin) =>
-                        onChange((current) => ({
-                            ...current,
-                            approvalPin,
-                        }))
-                    }
-                    placeholder="Approver PIN"
-                    placeholderTextColor={placeholderTextColor}
-                    keyboardType="number-pad"
-                    secureTextEntry={true}
-                    style={styles.dialogInput}
-                />
-            </View>
             <View style={styles.dialogActionRow}>
                 <Button type="clear" title="Cancel" onPress={onClose} />
                 <Button title="Apply" onPress={onSubmit} />

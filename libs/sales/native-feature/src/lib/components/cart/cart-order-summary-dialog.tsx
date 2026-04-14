@@ -8,10 +8,11 @@ interface CartOrderSummaryDialogProps {
     styles: CartStyles;
     overlayStyle: object;
     orderSummary: any;
-    orderLevelAdjustments: Array<{
+    discountBreakdown: Array<{
         discountApplicationId: string;
         name: string;
         discountAmount: number;
+        scope: 'LINE' | 'ORDER';
     }>;
     onClose: () => void;
     onConfirm: () => void;
@@ -22,7 +23,7 @@ export function CartOrderSummaryDialog({
     styles,
     overlayStyle,
     orderSummary,
-    orderLevelAdjustments,
+    discountBreakdown,
     onClose,
     onConfirm,
 }: CartOrderSummaryDialogProps) {
@@ -90,11 +91,17 @@ export function CartOrderSummaryDialog({
                                     Saved ${orderSummary.savingsTotal.toFixed(2)}
                                 </Text>
                             ) : null}
-                            {orderLevelAdjustments.map((adjustment) => (
+                            {discountBreakdown.length > 1 ? (
+                                <Text style={styles.actionMutedCopy}>
+                                    {discountBreakdown.length} discounts applied
+                                </Text>
+                            ) : null}
+                            {discountBreakdown.map((adjustment) => (
                                 <Text
                                     key={adjustment.discountApplicationId}
                                     style={styles.summaryLine}
                                 >
+                                    {adjustment.scope === 'LINE' ? 'Line' : 'Order'} ·{' '}
                                     {adjustment.name}: -${adjustment.discountAmount.toFixed(2)}
                                 </Text>
                             ))}

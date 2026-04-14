@@ -672,7 +672,7 @@ describe('OrderService', () => {
     );
   });
 
-  it('leaves line appliedDiscounts unset and relies on order summary', async () => {
+  it('stores line applied discounts alongside the order summary', async () => {
     const saveMock = jest.mocked(DataStore.save);
     const getNextOrderNumberMock = jest.mocked(StationService.getNextOrderNumber);
     const stampTenantMock = jest.mocked(stampTenant);
@@ -797,7 +797,13 @@ describe('OrderService', () => {
 
     expect(saveMock).toHaveBeenCalledTimes(1);
     const savedOrder = saveMock.mock.calls[0][0] as any;
-    expect('appliedDiscounts' in savedOrder.lines[0]).toBe(false);
+    expect(typeof savedOrder.lines[0].appliedDiscounts).toBe('string');
+    expect(JSON.parse(savedOrder.lines[0].appliedDiscounts)).toEqual([
+      expect.objectContaining({
+        discountApplicationId: 'application-1',
+        applicationType: 'AUTOMATIC_DISCOUNT',
+      }),
+    ]);
     expect(typeof savedOrder.appliedDiscountSummary).toBe('string');
     expect(JSON.parse(savedOrder.appliedDiscountSummary)).toEqual(
       expect.objectContaining({

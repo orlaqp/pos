@@ -1,14 +1,12 @@
 import React from 'react';
-import { act, render, waitFor } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 
 import UIS3Image from './ui-s3-image';
 
-const mockGetAssetUri = jest.fn();
 const mockGetImage = jest.fn();
 
 jest.mock('@pos/shared/utils', () => ({
     AssetsService: {
-        getAssetUri: (...args: unknown[]) => mockGetAssetUri(...args),
         getImage: (...args: unknown[]) => mockGetImage(...args),
     },
 }));
@@ -18,37 +16,41 @@ describe('UIS3Image', () => {
         jest.clearAllMocks();
     });
 
-    it('renders successfully after resolving the image URI', async () => {
-        mockGetImage.mockResolvedValueOnce('data:image/png;base64,abc123');
+    it('shows a loader while downloading and then renders the locally cached image data', async () => {
+        let resolveImage: ((value: string) => void) | undefined;
+        mockGetImage.mockImplementation(
+            () =>
+                new Promise<string>((resolve) => {
+                    resolveImage = resolve;
+                })
+        );
 
-        const { getByTestId } = render(
+        const { getByTestId, queryByTestId } = render(
             <UIS3Image s3Key="image-key" width={100} height={100} />
         );
+
+        expect(getByTestId('ui-s3-image-loading')).toBeTruthy();
+        expect(queryByTestId('ui-s3-image')).toBeNull();
+
+        resolveImage?.('data:image/png;base64,abc123');
 
         await waitFor(() => {
             expect(getByTestId('ui-s3-image')).toBeTruthy();
         });
+        expect(queryByTestId('ui-s3-image-loading')).toBeNull();
         expect(mockGetImage).toHaveBeenCalledWith('image-key');
-        expect(mockGetAssetUri).not.toHaveBeenCalled();
     });
 
-    it('retries local image resolution once after the image load fails', async () => {
-        mockGetImage
-            .mockResolvedValueOnce('data:image/png;base64,stale')
-            .mockResolvedValueOnce('data:image/png;base64,fresh');
+    it('does not render an image when loading fails', async () => {
+        mockGetImage.mockRejectedValueOnce(new Error('download failed'));
 
-        const { getByTestId } = render(
+        const { queryByTestId } = render(
             <UIS3Image s3Key="image-key" width={100} height={100} />
         );
 
-        const image = await waitFor(() => getByTestId('ui-s3-image'));
-        await act(async () => {
-            image.props.onError?.();
-        });
-
         await waitFor(() => {
-            expect(mockGetImage).toHaveBeenCalledTimes(2);
+            expect(queryByTestId('ui-s3-image-loading')).toBeNull();
         });
-        expect(mockGetAssetUri).not.toHaveBeenCalled();
+        expect(queryByTestId('ui-s3-image')).toBeNull();
     });
 });

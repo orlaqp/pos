@@ -29,7 +29,6 @@ export interface DiscountDefinitionEntity {
   excludedCategoryIds?: string[] | null;
   excludeAlreadyDiscountedItems?: boolean | null;
   appliesToAllProducts?: boolean | null;
-  storeIds?: string[] | null;
   stationIds?: string[] | null;
   active: boolean;
   createdAt?: string | null;
@@ -98,7 +97,6 @@ export class DiscountEntityMapper {
         : null,
       excludeAlreadyDiscountedItems: model.excludeAlreadyDiscountedItems ?? false,
       appliesToAllProducts: model.appliesToAllProducts ?? false,
-      storeIds: model.storeIds ? model.storeIds.filter(Boolean) as string[] : null,
       stationIds: model.stationIds ? model.stationIds.filter(Boolean) as string[] : null,
       active: model.active,
       createdAt: model.createdAt,

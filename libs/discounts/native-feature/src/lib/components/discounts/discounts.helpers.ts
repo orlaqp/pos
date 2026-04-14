@@ -74,7 +74,6 @@ export interface DefinitionFormValues {
   applicableCategoryIds: string[];
   excludedProductIds: string[];
   excludedCategoryIds: string[];
-  storeIds: string[];
   stationIds: string[];
   excludeAlreadyDiscountedItems: boolean;
   appliesToAllProducts: boolean;
@@ -99,6 +98,11 @@ export interface PolicyFormValues {
   requireApprovalForAnyPriceOverride: boolean;
   allowExclusiveDiscountOverride: boolean;
   active: boolean;
+}
+
+export interface NamedOption {
+  id?: string;
+  name: string;
 }
 
 export const defaultPolicyValues: PolicyFormValues = {
@@ -146,7 +150,6 @@ export const defaultDefinitionValues = (promoMode: boolean): DefinitionFormValue
   applicableCategoryIds: [],
   excludedProductIds: [],
   excludedCategoryIds: [],
-  storeIds: [],
   stationIds: [],
   excludeAlreadyDiscountedItems: false,
   appliesToAllProducts: true,
@@ -163,6 +166,15 @@ export function parseOptionalNumber(value: string): number | null {
 export function parseRequiredNumber(value: string, fallback = 0): number {
   const parsed = parseOptionalNumber(value);
   return parsed == null ? fallback : parsed;
+}
+
+export function sortNamedOptionsAlphabetically<T extends NamedOption>(options: T[]): T[] {
+  return [...options].sort((left, right) =>
+    left.name.localeCompare(right.name, undefined, {
+      sensitivity: 'base',
+      numeric: true,
+    })
+  );
 }
 
 export function mapDefinitionToForm(
@@ -198,7 +210,6 @@ export function mapDefinitionToForm(
       entity.excludedProductIds?.filter((item): item is string => !!item) || [],
     excludedCategoryIds:
       entity.excludedCategoryIds?.filter((item): item is string => !!item) || [],
-    storeIds: entity.storeIds?.filter((item): item is string => !!item) || [],
     stationIds: entity.stationIds?.filter((item): item is string => !!item) || [],
     excludeAlreadyDiscountedItems: entity.excludeAlreadyDiscountedItems ?? false,
     appliesToAllProducts: entity.appliesToAllProducts ?? true,
@@ -269,7 +280,6 @@ export function buildDefinitionEntity(
     excludedCategoryIds: values.excludedCategoryIds.length
       ? values.excludedCategoryIds
       : null,
-    storeIds: values.storeIds.length ? values.storeIds : null,
     stationIds: values.stationIds.length ? values.stationIds : null,
     excludeAlreadyDiscountedItems: values.excludeAlreadyDiscountedItems,
     appliesToAllProducts: values.appliesToAllProducts,

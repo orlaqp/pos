@@ -6,12 +6,12 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 const mockDispatch = jest.fn();
 const mockOnSubmit = jest.fn();
 const mockOnInteractionComplete = jest.fn();
+const mockSubscribeDefinitionChanges = jest.fn();
 
 let mockCartState: any;
 let mockEmployeeState: any;
 let mockStoreState: any;
 let mockStationState: any;
-const mockStationQuery = jest.fn().mockResolvedValue([]);
 
 jest.mock('react-redux', () => ({
     useDispatch: () => mockDispatch,
@@ -61,9 +61,6 @@ jest.mock('@pos/sales/data-access', () => ({
 }));
 
 jest.mock('@pos/employees/data-access', () => ({
-    EmployeeService: {
-        getEmployee: jest.fn(),
-    },
     selectLoginEmployee: (state: any) => state.employee,
 }));
 
@@ -73,20 +70,6 @@ jest.mock('@pos/store-info/data-access', () => ({
 
 jest.mock('@pos/settings/data-access', () => ({
     selectStation: (state: any) => state.station,
-}));
-
-jest.mock('@pos/shared/amplify', () => ({
-    DataStore: {
-        query: (...args: unknown[]) => mockStationQuery(...args),
-    },
-}));
-
-jest.mock('@pos/shared/models', () => ({
-    Station: jest.fn(),
-}));
-
-jest.mock('react-native-device-info', () => ({
-    getUniqueIdSync: () => 'device-1',
 }));
 
 jest.mock('@pos/auth/data-access', () => ({
@@ -110,8 +93,7 @@ jest.mock('@pos/shared/ui-native', () => ({
 jest.mock('@pos/discounts/data-access', () => ({
     DiscountService: {
         listDefinitions: jest.fn().mockResolvedValue([]),
-        listPolicies: jest.fn().mockResolvedValue([]),
-        resolvePolicyForEmployee: jest.fn(),
+        subscribeDefinitionChanges: mockSubscribeDefinitionChanges,
     },
 }));
 
@@ -235,7 +217,6 @@ jest.mock('../cart-payment/cart-payment', () => ({
 }));
 
 const { Cart } = require('./cart');
-const { EmployeeService } = require('@pos/employees/data-access');
 const { DiscountService } = require('@pos/discounts/data-access');
 
 describe('Cart', () => {
@@ -243,6 +224,10 @@ describe('Cart', () => {
         jest.clearAllMocks();
         jest.useFakeTimers();
         jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+        mockSubscribeDefinitionChanges.mockImplementation((callback: (definitions: any[]) => void) => {
+            callback([]);
+            return jest.fn();
+        });
         mockCartState = {
             items: [
                 {
@@ -275,11 +260,10 @@ describe('Cart', () => {
             priceOverrides: [],
             approvalEvents: [],
         };
-        mockEmployeeState = { roles: ['Receive Check Payment', 'Discounts'] };
+        mockEmployeeState = { id: 'employee-1', roles: ['Receive Check Payment', 'Discounts'] };
         mockStoreState = { id: 'store-1', timezone: 'America/New_York' };
         mockStationState = { stationNumber: '25' };
-        EmployeeService.getEmployee.mockResolvedValue(null);
-        DiscountService.resolvePolicyForEmployee.mockReturnValue(undefined);
+        DiscountService.listDefinitions.mockResolvedValue([]);
     });
 
     afterEach(() => {
@@ -306,6 +290,23 @@ describe('Cart', () => {
         mockCartState.items = [];
         const { getByText } = renderCart('order');
         expect(getByText('Cart is empty')).toBeTruthy();
+    });
+
+    it('uses the configured station number in pricing context', async () => {
+        renderCart('order');
+
+        await waitFor(() =>
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'cart/setPricingContext',
+                    payload: expect.objectContaining({
+                        storeId: 'store-1',
+                        timezone: 'America/New_York',
+                        stationId: '25',
+                    }),
+                })
+            )
+        );
     });
 
     it('opens details on press and select/remove from line actions', () => {
@@ -466,6 +467,92 @@ describe('Cart', () => {
         expect(getByText('Show actions')).toBeTruthy();
     });
 
+    it('shows both line and order discounts when stacked pricing applies', () => {
+        mockCartState.footer.discount = 14;
+        mockCartState.footer.savingsTotal = 14;
+        mockCartState.appliedDiscountSummary = {
+            lineSummaries: [
+                {
+                    lineId: 'i-1',
+                    discounts: [
+                        {
+                            discountApplicationId: 'line-1',
+                            name: '20% Off Aceites',
+                            discountAmount: 10,
+                            applicationType: 'AUTOMATIC',
+                        },
+                    ],
+                    lineDiscountTotal: 10,
+                    allocatedOrderDiscountTotal: 4,
+                    lineTotalBeforeTax: 35.98,
+                },
+            ],
+            orderLevelAdjustments: [
+                {
+                    discountApplicationId: 'order-1',
+                    name: '10% Off 25',
+                    discountAmount: 4,
+                },
+            ],
+            warnings: [],
+        };
+
+        const { getByText } = renderCart('order');
+
+        expect(getByText('Saved $14.00')).toBeTruthy();
+        expect(getByText('2 discounts applied')).toBeTruthy();
+        expect(getByText('Line · 20% Off Aceites: -$10.00')).toBeTruthy();
+        expect(getByText('Order · 10% Off 25: -$4.00')).toBeTruthy();
+    });
+
+    it('subscribes to live discount definition updates while sales is open', async () => {
+        let listener: ((definitions: any[]) => void) | undefined;
+        mockSubscribeDefinitionChanges.mockImplementation((callback: (definitions: any[]) => void) => {
+            listener = callback;
+            return jest.fn();
+        });
+
+        renderCart('order');
+
+        await waitFor(() => {
+            expect(mockSubscribeDefinitionChanges).toHaveBeenCalledTimes(1);
+        });
+
+        mockDispatch.mockClear();
+
+        listener?.([
+            {
+                id: 'discount-1',
+                name: 'Live 10% Off',
+                status: 'ACTIVE',
+                type: 'AUTOMATIC',
+                method: 'PERCENT',
+                scope: 'ORDER',
+                stackMode: 'STACKABLE',
+                value: 10,
+            },
+        ]);
+
+        await waitFor(() => {
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'cart/setDefinitions',
+                    payload: [
+                        expect.objectContaining({
+                            id: 'discount-1',
+                            name: 'Live 10% Off',
+                            status: 'ACTIVE',
+                            type: 'AUTOMATIC',
+                            method: 'PERCENT',
+                            scope: 'ORDER',
+                            stackMode: 'STACKABLE',
+                        }),
+                    ],
+                })
+            );
+        });
+    });
+
     it('blocks submit when product inventory is insufficient', () => {
         const { getByText } = render(
             <Cart
@@ -518,41 +605,22 @@ describe('Cart', () => {
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
     });
 
-    it('resolves manual discount approval from an approver pin', async () => {
+    it('submits a manual percent discount without an approval pin', async () => {
         mockCartState.selected = mockCartState.items[0];
-        mockCartState.policy = {
-            maxManualPercentDiscount: 5,
-        };
-        EmployeeService.getEmployee.mockResolvedValue({
-            id: 'approver-1',
-            firstName: 'Ava',
-            lastName: 'Manager',
-            code: 'MGR',
-            roles: ['Manager'],
-            active: true,
-        });
-        DiscountService.resolvePolicyForEmployee.mockReturnValue({
-            canApproveDiscounts: true,
-        });
-
         const { getByText, getByPlaceholderText } = renderCart('order');
 
         fireEvent.press(getByText('Show actions'));
         fireEvent.press(getByText('Manual'));
         fireEvent.changeText(getByPlaceholderText('10'), '10');
-        fireEvent.changeText(getByPlaceholderText('Approver PIN'), '4321');
         fireEvent.press(getByText('Apply'));
 
         await waitFor(() => {
-            expect(EmployeeService.getEmployee).toHaveBeenCalledWith('4321');
             expect(mockDispatch).toHaveBeenCalledWith(
                 expect.objectContaining({
                     type: 'cart/applyManualDiscount',
                     payload: expect.objectContaining({
-                        approval: expect.objectContaining({
-                            approverEmployeeId: 'approver-1',
-                            approverEmployeeName: 'Ava Manager',
-                        }),
+                        method: 'PERCENT',
+                        value: 10,
                     }),
                 })
             );
@@ -560,37 +628,14 @@ describe('Cart', () => {
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
     });
 
-    it('blocks approval when the approver pin does not have discount access', async () => {
+    it('does not render the approval pin field for manual discounts', () => {
         mockCartState.selected = mockCartState.items[0];
-        mockCartState.policy = {
-            maxManualPercentDiscount: 5,
-        };
-        EmployeeService.getEmployee.mockResolvedValue({
-            id: 'cashier-1',
-            firstName: 'Chris',
-            lastName: 'Cashier',
-            code: 'CSR',
-            roles: ['Cashier'],
-            active: true,
-        });
-        DiscountService.resolvePolicyForEmployee.mockReturnValue({
-            canApproveDiscounts: false,
-        });
-
-        const { getByText, getByPlaceholderText } = renderCart('order');
+        const { getByText, queryByPlaceholderText } = renderCart('order');
 
         fireEvent.press(getByText('Show actions'));
         fireEvent.press(getByText('Manual'));
-        fireEvent.changeText(getByPlaceholderText('10'), '10');
-        fireEvent.changeText(getByPlaceholderText('Approver PIN'), '5555');
-        fireEvent.press(getByText('Apply'));
 
-        await waitFor(() => {
-            expect(Alert.alert).toHaveBeenCalledWith(
-                'Approval failed',
-                'This employee cannot approve discounts.'
-            );
-        });
+        expect(queryByPlaceholderText('Approver PIN')).toBeNull();
     });
 
     it('submits a price override and reports interaction completion', async () => {
@@ -613,6 +658,16 @@ describe('Cart', () => {
             );
         });
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not render the approval pin field for price overrides', () => {
+        mockCartState.selected = mockCartState.items[0];
+        const { getByText, queryByPlaceholderText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Override'));
+
+        expect(queryByPlaceholderText('Approver PIN')).toBeNull();
     });
 
     it('restores interaction completion when the override dialog is canceled', () => {
@@ -672,6 +727,20 @@ describe('Cart', () => {
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
     });
 
+    it('shows clear line pricing without expanding actions when a selected line already has an adjustment', () => {
+        mockCartState.selected = mockCartState.items[0];
+        mockCartState.manualDiscounts = [
+            {
+                scope: 'LINE',
+                lineId: mockCartState.items[0].identifier,
+            },
+        ];
+
+        const { getByText } = renderCart('order');
+
+        expect(getByText('Clear line pricing')).toBeTruthy();
+    });
+
     it('reports interaction completion when clearing the order discount', () => {
         mockCartState.manualDiscounts = [{ scope: 'ORDER' }];
         const { getByText } = renderCart('order');
@@ -686,5 +755,13 @@ describe('Cart', () => {
             })
         );
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
+    });
+
+    it('shows clear order discount without expanding actions when an order discount is active', () => {
+        mockCartState.manualDiscounts = [{ scope: 'ORDER' }];
+
+        const { getByText } = renderCart('order');
+
+        expect(getByText('Clear order discount')).toBeTruthy();
     });
 });

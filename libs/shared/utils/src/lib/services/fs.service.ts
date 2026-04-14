@@ -3,6 +3,10 @@ import RNFS, { writeFile, readFile, exists } from 'react-native-fs';
 const basePath = RNFS.CachesDirectoryPath;
 
 export class FsService {
+    static has(name: string) {
+        const path = getFullPath(name);
+        return exists(path);
+    }
 
     static save(name: string, content: string) {
         const path = getFullPath(name);
@@ -25,4 +29,5 @@ export class FsService {
 
 }
 
-const getFullPath = (name: string) => `${basePath}/${name.replace('/', '__')}`;
+const getFullPath = (name: string) =>
+    `${basePath}/${name.replace(/[\\/]/g, '__')}`;

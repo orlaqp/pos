@@ -787,16 +787,12 @@ const AppContent = () => {
             bootstrapStatus,
         });
 
-        const interaction = InteractionManager.runAfterInteractions(() => {
-            if (isCancelled) {
-                return;
-            }
-
+        if (!isCancelled) {
             productsSub = subscribeToProductChanges(
                 dispatch,
                 tenantSession.currentTenantId
             );
-        });
+        }
 
         return () => {
             isCancelled = true;
@@ -804,7 +800,6 @@ const AppContent = () => {
                 tenantId: tenantSession.currentTenantId,
                 bootstrapStatus,
             });
-            interaction.cancel();
             productsSub?.unsubscribe();
         };
     }, [authTenantId, bootstrapStatus, dispatch, tenantSession.currentTenantId]);

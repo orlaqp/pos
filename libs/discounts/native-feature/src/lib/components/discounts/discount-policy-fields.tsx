@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { FormProvider, UseFormReturn } from 'react-hook-form';
 import {
   UICard,
@@ -19,8 +19,10 @@ interface DiscountPolicyFieldsProps {
   editingId?: string;
   loading: boolean;
   busy: boolean;
+  deleteBusy?: boolean;
   onSave: () => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }
 
 export function DiscountPolicyFields({
@@ -29,8 +31,10 @@ export function DiscountPolicyFields({
   editingId,
   loading,
   busy,
+  deleteBusy = false,
   onSave,
   onCancel,
+  onDelete,
 }: DiscountPolicyFieldsProps) {
   return (
     <UIScreen>
@@ -105,12 +109,28 @@ export function DiscountPolicyFields({
           </ScrollView>
           <View style={styles.actionBar}>
             <UICard tone="muted" style={styles.actionBarCard}>
-              <UIActions
-                busy={busy || loading}
-                submitTitle={editingId ? 'Update' : 'Save'}
-                submitAction={onSave}
-                cancelAction={onCancel}
-              />
+              <View style={styles.formActionRow}>
+                {editingId && onDelete ? (
+                  <Pressable
+                    testID="policy-delete-button"
+                    style={[styles.deleteButton, styles.inlineDeleteButton]}
+                    disabled={busy || loading || deleteBusy}
+                    onPress={onDelete}
+                  >
+                    <Text style={styles.deleteButtonText}>
+                      {deleteBusy ? 'Deleting…' : 'Delete'}
+                    </Text>
+                  </Pressable>
+                ) : (
+                  <View />
+                )}
+                <UIActions
+                  busy={busy || loading || deleteBusy}
+                  submitTitle={editingId ? 'Update' : 'Save'}
+                  submitAction={onSave}
+                  cancelAction={onCancel}
+                />
+              </View>
             </UICard>
           </View>
         </View>

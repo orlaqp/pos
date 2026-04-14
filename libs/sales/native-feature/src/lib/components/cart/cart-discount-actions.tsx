@@ -10,10 +10,11 @@ interface CartDiscountActionsProps {
     actionsExpanded: boolean;
     hasDiscountSummary: boolean;
     savingsTotal: number;
-    orderLevelAdjustments: Array<{
+    discountBreakdown: Array<{
         discountApplicationId: string;
         name: string;
         discountAmount: number;
+        scope: 'LINE' | 'ORDER';
     }>;
     promoCodes: Array<{ code: string }>;
     pricingWarnings: string[];
@@ -37,7 +38,7 @@ export function CartDiscountActions({
     actionsExpanded,
     hasDiscountSummary,
     savingsTotal,
-    orderLevelAdjustments,
+    discountBreakdown,
     promoCodes,
     pricingWarnings,
     discountError,
@@ -52,6 +53,8 @@ export function CartDiscountActions({
     onClearLinePricing,
     onClearOrderDiscount,
 }: CartDiscountActionsProps) {
+    const showClearActions = selectedLineHasManualAdjustment || hasOrderManualAdjustment;
+
     return (
         <UICard style={styles.discountActionCard}>
             <View style={styles.discountActionHeader}>
@@ -77,12 +80,18 @@ export function CartDiscountActions({
             {hasDiscountSummary ? (
                 <>
                     <Text style={styles.summaryValue}>Saved ${savingsTotal.toFixed(2)}</Text>
-                    {orderLevelAdjustments.map((adjustment) => (
+                    {discountBreakdown.length > 1 ? (
+                        <Text style={styles.actionMutedCopy}>
+                            {discountBreakdown.length} discounts applied
+                        </Text>
+                    ) : null}
+                    {discountBreakdown.map((adjustment) => (
                         <Text
                             key={adjustment.discountApplicationId}
                             style={styles.summaryLine}
                         >
-                            {adjustment.name}: -${adjustment.discountAmount.toFixed(2)}
+                            {adjustment.scope === 'LINE' ? 'Line' : 'Order'} · {adjustment.name}:{' '}
+                            -${adjustment.discountAmount.toFixed(2)}
                         </Text>
                     ))}
                     {promoCodes.length ? (
@@ -109,6 +118,30 @@ export function CartDiscountActions({
                     {warning}
                 </Text>
             ))}
+            {showClearActions ? (
+                <View style={styles.discountActionRow}>
+                    {selectedLineHasManualAdjustment ? (
+                        <Pressable
+                            style={styles.discountSecondaryButton}
+                            onPress={onClearLinePricing}
+                        >
+                            <Text style={styles.discountSecondaryButtonText}>
+                                Clear line pricing
+                            </Text>
+                        </Pressable>
+                    ) : null}
+                    {hasOrderManualAdjustment ? (
+                        <Pressable
+                            style={styles.discountSecondaryButton}
+                            onPress={onClearOrderDiscount}
+                        >
+                            <Text style={styles.discountSecondaryButtonText}>
+                                Clear order discount
+                            </Text>
+                        </Pressable>
+                    ) : null}
+                </View>
+            ) : null}
             {actionsExpanded ? (
                 <>
                     <View style={styles.discountActionRow}>
@@ -137,30 +170,6 @@ export function CartDiscountActions({
                             <Text style={styles.discountActionButtonText}>Override</Text>
                         </Pressable>
                     </View>
-                    {selectedLineHasManualAdjustment || hasOrderManualAdjustment ? (
-                        <View style={styles.discountActionRow}>
-                            {selectedLineHasManualAdjustment ? (
-                                <Pressable
-                                    style={styles.discountSecondaryButton}
-                                    onPress={onClearLinePricing}
-                                >
-                                    <Text style={styles.discountSecondaryButtonText}>
-                                        Clear line pricing
-                                    </Text>
-                                </Pressable>
-                            ) : null}
-                            {hasOrderManualAdjustment ? (
-                                <Pressable
-                                    style={styles.discountSecondaryButton}
-                                    onPress={onClearOrderDiscount}
-                                >
-                                    <Text style={styles.discountSecondaryButtonText}>
-                                        Clear order discount
-                                    </Text>
-                                </Pressable>
-                            ) : null}
-                        </View>
-                    ) : null}
                 </>
             ) : null}
         </UICard>

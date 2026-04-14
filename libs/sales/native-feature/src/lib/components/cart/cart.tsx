@@ -19,7 +19,7 @@ import { useSharedStyles } from '@pos/theme/native';
 import CartLine from '../cart-line/cart-line';
 import EmptyCart from '../../../../../../../apps/mobile-ui/assets/illustrations/empty-cart-1600.png';
 import CartPayment from '../cart-payment/cart-payment';
-import { EmployeeService, selectLoginEmployee } from '@pos/employees/data-access';
+import { selectLoginEmployee } from '@pos/employees/data-access';
 import { Role } from '@pos/auth/data-access';
 import { ProductEntity } from '@pos/products/data-access';
 import { selectStore } from '@pos/store-info/data-access';
@@ -30,16 +30,13 @@ import {
     getUnavailableProductMessages,
     isCartReady,
 } from './cart.logic';
-import { DiscountService, EmployeeDiscountPolicyEntity } from '@pos/discounts/data-access';
+import { DiscountService } from '@pos/discounts/data-access';
 import {
     DiscountDefinition,
     EmployeeDiscountPolicy,
     ManualDiscountRequest,
     PriceOverrideRequest,
 } from '@pos/discounts/domain';
-import { DataStore } from '@pos/shared/amplify';
-import { Station } from '@pos/shared/models';
-import DeviceInfo from 'react-native-device-info';
 import { CartDiscountActions } from './cart-discount-actions';
 import { CartManualDiscountDialog } from './cart-manual-discount-dialog';
 import { CartOrderSummaryDialog } from './cart-order-summary-dialog';
@@ -78,69 +75,21 @@ const mapDefinitionToPricing = (definition: any): DiscountDefinition => ({
     stackMode: definition.stackMode as DiscountDefinition['stackMode'],
 });
 
-const mapPolicyToPricing = (policy: any): EmployeeDiscountPolicy => ({
-    ...policy,
-});
-
 const normalizePromoCode = (code: string) => code.trim().toUpperCase();
 
-const resolveApprovalForManualDiscount = (
-    draft: ManualDraft,
-    policy: EmployeeDiscountPolicy | undefined,
-    baseAmount: number
-) => {
-    if (!policy) return false;
-    const value = Number(
-        draft.method === 'PERCENT' ? draft.percentValue : draft.amountValue
-    );
-    if (draft.scope === 'ORDER' && policy.requireApprovalForOrderDiscount) return true;
-    if (draft.method === 'PERCENT') {
-        const limit = policy.maxManualPercentDiscount == null ? 100 : policy.maxManualPercentDiscount;
-        return value > limit;
-    }
-
-    const limit = policy.maxManualAmountDiscount == null ? Number.MAX_SAFE_INTEGER : policy.maxManualAmountDiscount;
-    return value > limit || value > baseAmount;
-};
-
-const resolveApprovalForOverride = (
-    draft: OverrideDraft,
-    policy: EmployeeDiscountPolicy | undefined,
-    baseUnitPrice: number
-) => {
-    if (!policy) return false;
-    if (policy.requireApprovalForAnyPriceOverride) return true;
-
-    const finalPrice = Number(draft.finalPrice);
-    const delta = Math.max(0, baseUnitPrice - finalPrice);
-    const amountLimit =
-        policy.maxPriceOverrideAmount == null ? Number.MAX_SAFE_INTEGER : policy.maxPriceOverrideAmount;
-
-    if (delta > amountLimit) return true;
-
-    const pctBelowBase = baseUnitPrice <= 0 ? 0 : (delta / baseUnitPrice) * 100;
-    const percentLimit =
-        policy.maxPriceOverridePercentBelowBase == null
-            ? 100
-            : policy.maxPriceOverridePercentBelowBase;
-
-    return pctBelowBase > percentLimit;
-};
-
-const formatEmployeeName = (employee: {
-    firstName?: string | null;
-    lastName?: string | null;
-    code?: string | null;
-}) => {
-    const displayName = [employee.firstName, employee.lastName]
-        .filter((value): value is string => !!value && value.trim().length > 0)
-        .join(' ')
-        .trim();
-
-    return displayName || employee.code?.trim() || 'Approver';
-};
-
 const DISCOUNT_CONTROLS_ENABLED = true;
+const ROLE_BASED_DISCOUNT_POLICY: EmployeeDiscountPolicy = {
+    canApplyOrderDiscount: true,
+    canOverridePrice: true,
+    canUsePromoCodes: true,
+    active: true,
+};
+const RESTRICTED_DISCOUNT_POLICY: EmployeeDiscountPolicy = {
+    canApplyOrderDiscount: false,
+    canOverridePrice: false,
+    canUsePromoCodes: false,
+    active: true,
+};
 
 const baseAmountForDisplay = (
     scope: ManualDraft['scope'],
@@ -177,12 +126,33 @@ export function Cart({
     const [promoCodeInput, setPromoCodeInput] = useState('');
     const [manualDraft, setManualDraft] = useState<ManualDraft>(defaultManualDraft);
     const [overrideDraft, setOverrideDraft] = useState<OverrideDraft>(defaultOverrideDraft);
-    const [availablePolicies, setAvailablePolicies] = useState<EmployeeDiscountPolicyEntity[]>([]);
     const ready = isCartReady(cart);
     const ebtEligibleTotal = getEbtEligibleTotal(cart);
     const invalidItemCount = cart.items.filter((item) => item.quantity === 0).length;
     const orderLevelAdjustments = cart.appliedDiscountSummary?.orderLevelAdjustments || [];
     const pricingWarnings = cart.appliedDiscountSummary?.warnings || [];
+    const discountBreakdown = useMemo(
+        () => [
+            ...((cart.appliedDiscountSummary?.lineSummaries || []).flatMap((summary) =>
+                summary.discounts.map((discount) => ({
+                    discountApplicationId: discount.discountApplicationId,
+                    name:
+                        discount.applicationType === 'PRICE_OVERRIDE'
+                            ? 'Price override'
+                            : discount.code || discount.name,
+                    discountAmount: discount.discountAmount,
+                    scope: 'LINE' as const,
+                }))
+            )),
+            ...orderLevelAdjustments.map((discount) => ({
+                discountApplicationId: discount.discountApplicationId,
+                name: discount.name,
+                discountAmount: discount.discountAmount,
+                scope: 'ORDER' as const,
+            })),
+        ],
+        [cart.appliedDiscountSummary?.lineSummaries, orderLevelAdjustments]
+    );
     const orderSummary = useMemo(() => buildOrderSummary(cart), [cart]);
     const selectedItem = cart.selected;
     const selectedLineSummary = cart.appliedDiscountSummary?.lineSummaries.find(
@@ -201,11 +171,11 @@ export function Cart({
 
     const hasDiscountSummary =
         cart.footer.discount > 0 || cart.promoCodes.length > 0 || pricingWarnings.length > 0;
-    const canUsePromoCodes = cart.policy?.canUsePromoCodes !== false;
-    const canApplyOrderDiscount = cart.policy?.canApplyOrderDiscount !== false;
-    const canOverridePrice = cart.policy?.canOverridePrice !== false;
-    const canViewDiscountControls =
-        DISCOUNT_CONTROLS_ENABLED && (employee?.roles || []).includes(Role.Discounts);
+    const hasDiscountAccess = (employee?.roles || []).includes(Role.Discounts);
+    const canUsePromoCodes = hasDiscountAccess;
+    const canApplyOrderDiscount = hasDiscountAccess;
+    const canOverridePrice = hasDiscountAccess;
+    const canViewDiscountControls = DISCOUNT_CONTROLS_ENABLED && hasDiscountAccess;
     const payFromSalesScreen = mode === 'order' && preferPayFromSalesScreen;
     const selectedLineHasManualAdjustment =
         !!selectedItem?.identifier &&
@@ -218,12 +188,32 @@ export function Cart({
     );
 
     useEffect(() => {
+        dispatch(
+            cartActions.setPolicy(
+                hasDiscountAccess
+                    ? ROLE_BASED_DISCOUNT_POLICY
+                    : RESTRICTED_DISCOUNT_POLICY
+            )
+        );
+    }, [dispatch, hasDiscountAccess]);
+
+    useEffect(() => {
         let active = true;
+        let receivedLiveDefinitions = false;
+
+        const applyDefinitions = (definitions: any[]) => {
+            dispatch(
+                cartActions.setDefinitions(
+                    definitions.map((definition) => mapDefinitionToPricing(definition))
+                )
+            );
+        };
 
         const loadDiscountContext = async () => {
             if (!employee?.id) {
                 dispatch(cartActions.setDefinitions([]));
-                dispatch(cartActions.setPolicy(undefined));
+                setDiscountsLoading(false);
+                setDiscountError(undefined);
                 return;
             }
 
@@ -231,34 +221,19 @@ export function Cart({
             setDiscountError(undefined);
 
             try {
-                const [definitions, policies] = await Promise.all([
-                    DiscountService.listDefinitions(),
-                    DiscountService.listPolicies(),
-                ]);
+                const definitions = await DiscountService.listDefinitions();
 
-                if (!active) {
+                if (!active || receivedLiveDefinitions) {
                     return;
                 }
 
-                setAvailablePolicies(policies);
-                dispatch(
-                    cartActions.setDefinitions(definitions.map((definition) => mapDefinitionToPricing(definition)))
-                );
-
-                const matchedPolicy = DiscountService.resolvePolicyForEmployee(employee, policies);
-                dispatch(
-                    cartActions.setPolicy(
-                        matchedPolicy ? mapPolicyToPricing(matchedPolicy) : undefined
-                    )
-                );
+                applyDefinitions(definitions);
             } catch (error) {
                 if (!active) {
                     return;
                 }
 
                 dispatch(cartActions.setDefinitions([]));
-                dispatch(cartActions.setPolicy(undefined));
-                setAvailablePolicies([]);
                 setDiscountError(
                     error instanceof Error ? error.message : 'Unable to load discount rules.'
                 );
@@ -269,47 +244,46 @@ export function Cart({
             }
         };
 
-        loadDiscountContext();
+        const definitionSubscription = employee?.id
+            ? DiscountService.subscribeDefinitionChanges((definitions) => {
+                  if (!active) {
+                      return;
+                  }
+
+                  receivedLiveDefinitions = true;
+                  setDiscountError(undefined);
+                  applyDefinitions(definitions);
+                  setDiscountsLoading(false);
+              })
+            : undefined;
+
+        if (!employee?.id) {
+            loadDiscountContext();
+        } else if (!receivedLiveDefinitions) {
+            loadDiscountContext();
+        } else {
+            setDiscountsLoading(false);
+        }
 
         return () => {
             active = false;
+            if (typeof definitionSubscription === 'function') {
+                definitionSubscription();
+            } else {
+                definitionSubscription?.unsubscribe?.();
+            }
         };
-    }, [dispatch, employee]);
+    }, [dispatch, employee?.id]);
 
     useEffect(() => {
-        let active = true;
-
-        const syncPricingContext = async () => {
-            let stationId: string | undefined;
-
-            try {
-                const deviceId = DeviceInfo.getUniqueIdSync();
-                const stations = await DataStore.query(Station, (station) =>
-                    station.deviceId.eq(deviceId)
-                );
-                stationId = stations[0]?.id;
-            } catch {
-                stationId = undefined;
-            }
-
-            if (!active) {
-                return;
-            }
-
-            dispatch(
-                cartActions.setPricingContext({
-                    timezone: storeInfo?.timezone,
-                    storeId: storeInfo?.id,
-                    stationId,
-                })
-            );
-        };
-
-        syncPricingContext();
-
-        return () => {
-            active = false;
-        };
+        dispatch(
+            cartActions.setPricingContext({
+                timezone: storeInfo?.timezone,
+                storeId: storeInfo?.id,
+                // Discount definitions are authored against the configured station number.
+                stationId: stationInfo?.stationNumber,
+            })
+        );
     }, [dispatch, stationInfo?.stationNumber, storeInfo?.id, storeInfo?.timezone]);
 
     const onSelect = (item: CartItem) => {
@@ -434,45 +408,6 @@ export function Cart({
         onInteractionComplete();
     };
 
-    const resolveApprovalByPin = async (
-        approvalPin: string,
-        approvalType: 'discount' | 'override'
-    ) => {
-        const normalizedPin = approvalPin.trim();
-
-        if (!normalizedPin) {
-            return undefined;
-        }
-
-        const approver = await EmployeeService.getEmployee(normalizedPin);
-        if (!approver?.id) {
-            throw new Error('No active employee matches that approval PIN.');
-        }
-
-        const approverPolicy = DiscountService.resolvePolicyForEmployee(
-            approver,
-            availablePolicies
-        );
-        const hasApprovalAccess =
-            approvalType === 'discount'
-                ? approverPolicy?.canApproveDiscounts === true
-                : approverPolicy?.canApprovePriceOverrides === true;
-
-        if (!hasApprovalAccess) {
-            throw new Error(
-                approvalType === 'discount'
-                    ? 'This employee cannot approve discounts.'
-                    : 'This employee cannot approve price overrides.'
-            );
-        }
-
-        return {
-            approverEmployeeId: approver.id,
-            approverEmployeeName: formatEmployeeName(approver),
-            approvalReference: undefined,
-        };
-    };
-
     const openManualDiscountDialog = () => {
         if (manualDraft.scope === 'ORDER' && !canApplyOrderDiscount) {
             Alert.alert('Order discounts are not allowed for this employee.');
@@ -498,32 +433,6 @@ export function Cart({
             return;
         }
 
-        const baseAmount =
-            manualDraft.scope === 'ORDER'
-                ? cart.footer.subtotal || cart.footer.baseSubtotal
-                : selectedLineTotal;
-        const approvalRequired = resolveApprovalForManualDiscount(
-            manualDraft,
-            cart.policy,
-            baseAmount
-        );
-        let approval;
-
-        try {
-            approval = await resolveApprovalByPin(manualDraft.approvalPin, 'discount');
-        } catch (error) {
-            Alert.alert(
-                'Approval failed',
-                error instanceof Error ? error.message : 'Unable to validate approval PIN.'
-            );
-            return;
-        }
-
-        if (approvalRequired && !approval?.approverEmployeeId) {
-            Alert.alert('Approval required', 'Enter an approval PIN to continue.');
-            return;
-        }
-
         const request: ManualDiscountRequest = {
             kind: 'MANUAL_DISCOUNT',
             scope: manualDraft.scope,
@@ -536,7 +445,6 @@ export function Cart({
                     : 'Manual line discount',
             reasonCode: manualDraft.reasonCode.trim() || undefined,
             reasonNote: manualDraft.reasonNote.trim() || undefined,
-            approval,
         };
 
         dispatch(cartActions.applyManualDiscount(request));
@@ -569,28 +477,6 @@ export function Cart({
             return;
         }
 
-        const approvalRequired = resolveApprovalForOverride(
-            overrideDraft,
-            cart.policy,
-            selectedItem.product.price
-        );
-        let approval;
-
-        try {
-            approval = await resolveApprovalByPin(overrideDraft.approvalPin, 'override');
-        } catch (error) {
-            Alert.alert(
-                'Approval failed',
-                error instanceof Error ? error.message : 'Unable to validate approval PIN.'
-            );
-            return;
-        }
-
-        if (approvalRequired && !approval?.approverEmployeeId) {
-            Alert.alert('Approval required', 'Enter an approval PIN to continue.');
-            return;
-        }
-
         const request: PriceOverrideRequest = {
             kind: 'PRICE_OVERRIDE',
             lineId: selectedItem.identifier,
@@ -598,7 +484,6 @@ export function Cart({
             name: 'Price override',
             reasonCode: overrideDraft.reasonCode.trim() || undefined,
             reasonNote: overrideDraft.reasonNote.trim() || undefined,
-            approval,
         };
 
         dispatch(cartActions.applyPriceOverride(request));
@@ -669,7 +554,7 @@ export function Cart({
                         actionsExpanded={actionsExpanded}
                         hasDiscountSummary={hasDiscountSummary}
                         savingsTotal={cart.footer.savingsTotal}
-                        orderLevelAdjustments={orderLevelAdjustments}
+                        discountBreakdown={discountBreakdown}
                         promoCodes={cart.promoCodes}
                         pricingWarnings={pricingWarnings}
                         discountError={discountError}
@@ -767,7 +652,7 @@ export function Cart({
                 styles={localStyles}
                 overlayStyle={[styles.overlay, localStyles.summaryDialog]}
                 orderSummary={orderSummary}
-                orderLevelAdjustments={orderLevelAdjustments}
+                discountBreakdown={discountBreakdown}
                 onClose={() => {
                     setOrderSummaryVisible(false);
                     onInteractionComplete();

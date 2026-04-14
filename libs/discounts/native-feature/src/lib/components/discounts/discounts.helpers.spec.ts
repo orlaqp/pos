@@ -7,6 +7,7 @@ import {
   mapPolicyToForm,
   parseOptionalNumber,
   parseRequiredNumber,
+  sortNamedOptionsAlphabetically,
 } from './discounts.helpers';
 
 describe('discounts helpers', () => {
@@ -24,6 +25,19 @@ describe('discounts helpers', () => {
     expect(parseOptionalNumber(' 12.5 ')).toBe(12.5);
     expect(parseRequiredNumber('', 9)).toBe(9);
     expect(parseRequiredNumber('7')).toBe(7);
+  });
+
+  it('sorts named options alphabetically without mutating the source list', () => {
+    const options = [
+      { id: '3', name: 'toston' },
+      { id: '1', name: 'ACEITES' },
+      { id: '2', name: 'Sal' },
+    ];
+
+    const sorted = sortNamedOptionsAlphabetically(options);
+
+    expect(sorted.map((item) => item.name)).toEqual(['ACEITES', 'Sal', 'toston']);
+    expect(options.map((item) => item.name)).toEqual(['toston', 'ACEITES', 'Sal']);
   });
 
   it('maps a definition entity into form values', () => {
@@ -54,7 +68,6 @@ describe('discounts helpers', () => {
         applicableCategoryIds: ['category-1'],
         excludedProductIds: null,
         excludedCategoryIds: null,
-        storeIds: ['store-1'],
         stationIds: ['station-1'],
         excludeAlreadyDiscountedItems: null,
         appliesToAllProducts: null,
@@ -142,7 +155,6 @@ describe('discounts helpers', () => {
         applicableCategoryIds: [],
         excludedProductIds: [],
         excludedCategoryIds: ['category-2'],
-        storeIds: ['store-1'],
         stationIds: [],
         approvalRequired: true,
         reasonRequired: false,
@@ -172,7 +184,6 @@ describe('discounts helpers', () => {
       applicableProductIds: ['product-1'],
       applicableCategoryIds: null,
       excludedCategoryIds: ['category-2'],
-      storeIds: ['store-1'],
       stationIds: null,
       appliesToAllProducts: false,
     });

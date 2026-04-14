@@ -40,7 +40,7 @@ export function CartManualDiscountDialog({
             <View style={styles.dialogHeroCard}>
                 <Text style={styles.dialogTitle}>Manual discount</Text>
                 <Text style={styles.dialogHint}>
-                    Apply a one-off line or order discount using the current employee policy.
+                    Apply a one-time line or order discount to the current sale.
                 </Text>
                 <View style={styles.dialogHeroMetaRow}>
                     <View style={styles.dialogHeroPill}>
@@ -157,26 +157,6 @@ export function CartManualDiscountDialog({
                 placeholderTextColor={placeholderTextColor}
                 style={styles.dialogInput}
             />
-            <View style={styles.approvalCard}>
-                <Text style={styles.dialogSubheading}>Approval PIN if required</Text>
-                <Text style={styles.dialogFieldHint}>
-                    Only an employee PIN with discount approval access is needed.
-                </Text>
-                <TextInput
-                    value={draft.approvalPin}
-                    onChangeText={(approvalPin) =>
-                        onChange((current) => ({
-                            ...current,
-                            approvalPin,
-                        }))
-                    }
-                    placeholder="Approver PIN"
-                    placeholderTextColor={placeholderTextColor}
-                    keyboardType="number-pad"
-                    secureTextEntry={true}
-                    style={styles.dialogInput}
-                />
-            </View>
             <View style={styles.dialogActionRow}>
                 <Button type="clear" title="Cancel" onPress={onClose} />
                 <Button title="Apply" onPress={onSubmit} />

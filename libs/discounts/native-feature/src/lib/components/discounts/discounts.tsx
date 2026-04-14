@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Alert } from 'react-native';
@@ -17,7 +17,6 @@ import {
   ProductService,
 } from '@pos/products/data-access';
 import { StationService } from '@pos/settings/data-access';
-import { StoreInfoEntityMapper, StoreInfoService } from '@pos/store-info/data-access';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import {
   buildDefinitionEntity,
@@ -28,6 +27,7 @@ import {
   mapDefinitionToForm,
   mapPolicyToForm,
   PolicyFormValues,
+  sortNamedOptionsAlphabetically,
 } from './discounts.helpers';
 import { useDiscountsStyles } from './discounts.styles';
 import { DiscountsListScreen } from './discounts-list-screen';
@@ -42,7 +42,6 @@ const sectionConfig = {
     actionLabel: 'Add discount',
     createRoute: 'Discount Form',
     type: 'definition' as const,
-    filter: 'MANUAL' as const,
   },
   'Promo Codes': {
     title: 'Promo codes',
@@ -143,7 +142,6 @@ interface DiscountsProps {
   route: RouteShape;
 }
 
-
 export function Discounts({ navigation, route }: DiscountsProps) {
   const key = (route.name in sectionConfig ? route.name : 'Discounts') as DiscountScreenName;
   const config = sectionConfig[key];
@@ -171,11 +169,98 @@ export function Discounts({ navigation, route }: DiscountsProps) {
 
   useFocusEffect(
     useCallback(() => {
+      let active = true;
+      const unsubscribe =
+        config.type === 'definition'
+          ? DiscountService.subscribeDefinitionChanges((items) => {
+              if (!active) return;
+              setDefinitions(items);
+              setLoading(false);
+            }, definitionFilter)
+          : config.type === 'policy'
+            ? DiscountService.subscribePolicyChanges((items) => {
+                if (!active) return;
+                setPolicies(items);
+                setLoading(false);
+              })
+            : { unsubscribe: () => undefined };
+
       load();
-    }, [load])
+
+      return () => {
+        active = false;
+        unsubscribe.unsubscribe();
+      };
+    }, [config.type, definitionFilter, load])
   );
 
   const empty = config.type === 'definition' ? definitions.length === 0 : policies.length === 0;
+
+  const confirmDeleteDefinition = useCallback(
+    (item: DiscountDefinitionEntity) => {
+      if (!item.id) {
+        return;
+      }
+
+      Alert.alert(
+        'Delete discount?',
+        `Delete "${item.name}" from the backend?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await DiscountService.deleteDefinition(item.id!);
+                setDefinitions((current) => current.filter((definition) => definition.id !== item.id));
+              } catch (error) {
+                Alert.alert(
+                  'Unable to delete discount',
+                  error instanceof Error ? error.message : 'Delete failed.'
+                );
+              }
+            },
+          },
+        ]
+      );
+    },
+    [load]
+  );
+
+  const confirmDeletePolicy = useCallback(
+    (item: EmployeeDiscountPolicyEntity) => {
+      if (!item.id) {
+        return;
+      }
+
+      const label = item.roleKey || item.employeeId || 'policy';
+
+      Alert.alert(
+        'Delete policy?',
+        `Delete "${label}" from the backend?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await DiscountService.deletePolicy(item.id!);
+                setPolicies((current) => current.filter((policy) => policy.id !== item.id));
+              } catch (error) {
+                Alert.alert(
+                  'Unable to delete policy',
+                  error instanceof Error ? error.message : 'Delete failed.'
+                );
+              }
+            },
+          },
+        ]
+      );
+    },
+    [load]
+  );
 
   return (
     <DiscountsListScreen
@@ -189,6 +274,8 @@ export function Discounts({ navigation, route }: DiscountsProps) {
       buildDefinitionMeta={buildDefinitionMeta}
       buildPolicyMeta={buildPolicyMeta}
       onNavigate={(screen, params) => (navigation.navigate as any)(screen, params)}
+      onDeleteDefinition={confirmDeleteDefinition}
+      onDeletePolicy={confirmDeletePolicy}
     />
   );
 }
@@ -204,10 +291,10 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
   const tokens = useDesignTokens();
   const styles = useDiscountsStyles(tokens);
   const [busy, setBusy] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const [loading, setLoading] = useState(Boolean(editingId));
   const [categoryOptions, setCategoryOptions] = useState<{ id?: string; name: string }[]>([]);
   const [productOptions, setProductOptions] = useState<{ id?: string; name: string }[]>([]);
-  const [storeOptions, setStoreOptions] = useState<{ id?: string; name: string }[]>([]);
   const [stationOptions, setStationOptions] = useState<{ id?: string; name: string }[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -221,50 +308,42 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
       let active = true;
 
       const load = async () => {
-        const [categories, products, stores, stationConfig] = await Promise.all([
+        const [categories, products, stationConfig] = await Promise.all([
           CategoryService.getAll(),
           ProductService.getAll(),
-          StoreInfoService.getStore(),
           StationService.getConfig(),
         ]);
 
         if (!active) return;
-
         setCategoryOptions(
-          categories
-            .map((item) => CategoryEntityMapper.fromCategory(item))
-            .map((item) => ({ id: item.id, name: item.name }))
+          sortNamedOptionsAlphabetically(
+            categories
+              .map((item) => CategoryEntityMapper.fromCategory(item))
+              .map((item) => ({ id: item.id, name: item.name }))
+          )
         );
         setProductOptions(
-          products
-            .map((item) => ProductEntityMapper.fromProduct(item))
-            .map((item) => ({ id: item.id, name: item.name }))
-        );
-        setStoreOptions(
-          stores
-            .map((item) => StoreInfoEntityMapper.fromModel(item))
-            .map((item) => ({ id: item.id, name: item.name }))
+          sortNamedOptionsAlphabetically(
+            products
+              .map((item) => ProductEntityMapper.fromProduct(item))
+              .map((item) => ({ id: item.id, name: item.name }))
+          )
         );
         setStationOptions(
-          stationConfig.stationNumber
-            ? [
-                {
-                  id: stationConfig.stationNumber,
-                  name: `Station ${stationConfig.stationNumber}`,
-                },
-              ]
-            : []
+          sortNamedOptionsAlphabetically(
+            stationConfig.stationNumber
+              ? [
+                  {
+                    id: stationConfig.stationNumber,
+                    name: `Station ${stationConfig.stationNumber}`,
+                  },
+                ]
+              : []
+          )
         );
 
-        const currentStoreId = stores[0]?.id;
-        const currentStationId = stationConfig.stationNumber;
-
         if (!editingId) {
-          form.reset({
-            ...defaultDefinitionValues(promoMode),
-            storeIds: currentStoreId ? [currentStoreId] : [],
-            stationIds: currentStationId ? [currentStationId] : [],
-          });
+          form.reset(defaultDefinitionValues(promoMode));
           setLoading(false);
           return;
         }
@@ -280,15 +359,7 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
         }
 
         const mapped = mapDefinitionToForm(definition, promoMode);
-        form.reset({
-          ...mapped,
-          storeIds: currentStoreId ? [currentStoreId] : mapped.storeIds,
-          stationIds: currentStationId
-            ? mapped.stationIds.length
-              ? mapped.stationIds.filter((item) => item === currentStationId)
-              : [currentStationId]
-            : mapped.stationIds,
-        });
+        form.reset(mapped);
         setLoading(false);
       };
 
@@ -320,6 +391,38 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
     }
   };
 
+  const confirmDelete = () => {
+    if (!editingId) {
+      return;
+    }
+
+    Alert.alert(
+      'Delete discount?',
+      'This will permanently remove the discount definition from the backend.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setDeleteBusy(true);
+            try {
+              await DiscountService.deleteDefinition(editingId);
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert(
+                'Unable to delete discount',
+                error instanceof Error ? error.message : 'Delete failed.'
+              );
+            } finally {
+              setDeleteBusy(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const definitionPreview = buildDefinitionPreview(form.watch());
 
   return (
@@ -340,11 +443,12 @@ export function DiscountEditor({ navigation, route }: DiscountEditorProps) {
       definitionPreview={definitionPreview}
       categoryOptions={categoryOptions}
       productOptions={productOptions}
-      storeOptions={storeOptions}
       stationOptions={stationOptions}
+      deleteBusy={deleteBusy}
       onToggleAdvanced={() => setShowAdvanced((current) => !current)}
       onSave={form.handleSubmit(save)}
       onCancel={() => navigation.goBack()}
+      onDelete={editingId ? confirmDelete : undefined}
     />
   );
 }
@@ -354,6 +458,7 @@ export function PolicyEditor({ navigation, route }: DiscountEditorProps) {
   const tokens = useDesignTokens();
   const styles = useDiscountsStyles(tokens);
   const [busy, setBusy] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const [loading, setLoading] = useState(Boolean(editingId));
   const form = useForm<PolicyFormValues>({
     mode: 'onChange',
@@ -402,6 +507,38 @@ export function PolicyEditor({ navigation, route }: DiscountEditorProps) {
     }
   };
 
+  const confirmDelete = () => {
+    if (!editingId) {
+      return;
+    }
+
+    Alert.alert(
+      'Delete policy?',
+      'This will permanently remove the discount policy from the backend.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setDeleteBusy(true);
+            try {
+              await DiscountService.deletePolicy(editingId);
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert(
+                'Unable to delete policy',
+                error instanceof Error ? error.message : 'Delete failed.'
+              );
+            } finally {
+              setDeleteBusy(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <DiscountPolicyFields
       form={form}
@@ -409,8 +546,10 @@ export function PolicyEditor({ navigation, route }: DiscountEditorProps) {
       editingId={editingId}
       loading={loading}
       busy={busy}
+      deleteBusy={deleteBusy}
       onSave={form.handleSubmit(save)}
       onCancel={() => navigation.goBack()}
+      onDelete={editingId ? confirmDelete : undefined}
     />
   );
 }

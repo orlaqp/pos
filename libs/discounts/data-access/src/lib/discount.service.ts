@@ -13,6 +13,19 @@ type DiscountPolicyEmployee = {
   roles?: Array<string | null>;
 };
 
+type DiscountDefinitionListener = (
+  items: DiscountDefinitionEntity[]
+) => void;
+
+type DiscountPolicyListener = (
+  items: EmployeeDiscountPolicyEntity[]
+) => void;
+
+type GraphqlResponse<T> = {
+  data?: T | null;
+  errors?: Array<{ message?: string } | null> | null;
+};
+
 const listDiscountDefinitionsQuery = /* GraphQL */ `
   query ListDiscountDefinitions($filter: ModelDiscountDefinitionFilterInput, $limit: Int, $nextToken: String) {
     listDiscountDefinitions(filter: $filter, limit: $limit, nextToken: $nextToken) {
@@ -46,11 +59,11 @@ const listDiscountDefinitionsQuery = /* GraphQL */ `
         excludedCategoryIds
         excludeAlreadyDiscountedItems
         appliesToAllProducts
-        storeIds
         stationIds
         active
         createdAt
         updatedAt
+        _version
       }
       nextToken
     }
@@ -82,8 +95,29 @@ const listEmployeeDiscountPoliciesQuery = /* GraphQL */ `
         active
         createdAt
         updatedAt
+        _version
       }
       nextToken
+    }
+  }
+`;
+
+const deleteDiscountDefinitionMutation = /* GraphQL */ `
+  mutation DeleteDiscountDefinition($input: DeleteDiscountDefinitionInput!) {
+    deleteDiscountDefinition(input: $input) {
+      id
+      _deleted
+      _version
+    }
+  }
+`;
+
+const deleteEmployeeDiscountPolicyMutation = /* GraphQL */ `
+  mutation DeleteEmployeeDiscountPolicy($input: DeleteEmployeeDiscountPolicyInput!) {
+    deleteEmployeeDiscountPolicy(input: $input) {
+      id
+      _deleted
+      _version
     }
   }
 `;
@@ -93,6 +127,24 @@ const sortDefinitions = (items: DiscountDefinitionEntity[]) =>
 
 const sortPolicies = (items: EmployeeDiscountPolicyEntity[]) =>
   items.sort((a, b) => (a.roleKey || a.employeeId || '').localeCompare(b.roleKey || b.employeeId || ''));
+
+const definitionListeners = new Map<DiscountDefinitionListener, { type?: 'MANUAL' | 'AUTOMATIC' | 'PROMO_CODE' }>();
+const policyListeners = new Set<DiscountPolicyListener>();
+
+let sharedDefinitionSubscription:
+  | {
+      unsubscribe: () => void;
+    }
+  | undefined;
+
+let sharedPolicySubscription:
+  | {
+      unsubscribe: () => void;
+    }
+  | undefined;
+
+let definitionSnapshot: DiscountDefinitionEntity[] = [];
+let policySnapshot: EmployeeDiscountPolicyEntity[] = [];
 
 const mapRemoteDefinition = (item: any): DiscountDefinitionEntity => ({
   id: item.id,
@@ -123,7 +175,6 @@ const mapRemoteDefinition = (item: any): DiscountDefinitionEntity => ({
   excludedCategoryIds: item.excludedCategoryIds ?? null,
   excludeAlreadyDiscountedItems: item.excludeAlreadyDiscountedItems ?? false,
   appliesToAllProducts: item.appliesToAllProducts ?? false,
-  storeIds: item.storeIds ?? null,
   stationIds: item.stationIds ?? null,
   active: item.active,
   createdAt: item.createdAt,
@@ -153,7 +204,144 @@ const mapRemotePolicy = (item: any): EmployeeDiscountPolicyEntity => ({
   updatedAt: item.updatedAt,
 });
 
+const findRemoteDefinitionRecord = async (id: string) => {
+  const response = await API.graphql<{
+    listDiscountDefinitions?: {
+      items?: Array<any | null> | null;
+    } | null;
+  }>({
+    query: listDiscountDefinitionsQuery,
+    variables: { limit: 200 },
+    authMode: 'userPool',
+  });
+
+  return response.data?.listDiscountDefinitions?.items?.find(
+    (definition) => !!definition && definition.id === id
+  );
+};
+
+const findRemotePolicyRecord = async (id: string) => {
+  const response = await API.graphql<{
+    listEmployeeDiscountPolicies?: {
+      items?: Array<any | null> | null;
+    } | null;
+  }>({
+    query: listEmployeeDiscountPoliciesQuery,
+    variables: { limit: 200 },
+    authMode: 'userPool',
+  });
+
+  return response.data?.listEmployeeDiscountPolicies?.items?.find(
+    (policy) => !!policy && policy.id === id
+  );
+};
+
+const filterDefinitionsByType = (
+  items: DiscountDefinitionEntity[],
+  type?: 'MANUAL' | 'AUTOMATIC' | 'PROMO_CODE'
+) => items.filter((item) => (type ? item.type === type : true));
+
+const notifyDefinitionListeners = (items: DiscountDefinitionEntity[]) => {
+  definitionListeners.forEach((config, listener) => {
+    listener(filterDefinitionsByType(items, config.type));
+  });
+};
+
+const notifyPolicyListeners = (items: EmployeeDiscountPolicyEntity[]) => {
+  policyListeners.forEach((listener) => listener(items));
+};
+
+const ensureDefinitionSubscription = () => {
+  if (sharedDefinitionSubscription) {
+    return;
+  }
+
+  const subscription = DataStore.observeQuery(DiscountDefinition).subscribe(({ items }) => {
+    definitionSnapshot = sortDefinitions(
+      items.map((item) => DiscountEntityMapper.fromDefinition(item))
+    );
+    notifyDefinitionListeners(definitionSnapshot);
+  });
+
+  sharedDefinitionSubscription = {
+    unsubscribe() {
+      subscription.unsubscribe();
+      sharedDefinitionSubscription = undefined;
+      definitionSnapshot = [];
+    },
+  };
+};
+
+const ensurePolicySubscription = () => {
+  if (sharedPolicySubscription) {
+    return;
+  }
+
+  const subscription = DataStore.observeQuery(EmployeeDiscountPolicy).subscribe(({ items }) => {
+    policySnapshot = sortPolicies(
+      items.map((item) => DiscountEntityMapper.fromPolicy(item))
+    );
+    notifyPolicyListeners(policySnapshot);
+  });
+
+  sharedPolicySubscription = {
+    unsubscribe() {
+      subscription.unsubscribe();
+      sharedPolicySubscription = undefined;
+      policySnapshot = [];
+    },
+  };
+};
+
+const getGraphqlErrorMessage = (response: GraphqlResponse<unknown>, fallback: string) => {
+  const messages = (response.errors || [])
+    .filter((error): error is { message?: string } => !!error)
+    .map((error) => error.message)
+    .filter((message): message is string => typeof message === 'string' && message.trim().length > 0);
+
+  return messages.length ? messages.join('; ') : fallback;
+};
+
 export class DiscountService {
+  static subscribeDefinitionChanges(
+    listener: DiscountDefinitionListener,
+    type?: 'MANUAL' | 'AUTOMATIC' | 'PROMO_CODE'
+  ) {
+    definitionListeners.set(listener, { type });
+    ensureDefinitionSubscription();
+
+    if (definitionSnapshot.length > 0) {
+      listener(filterDefinitionsByType(definitionSnapshot, type));
+    }
+
+    return {
+      unsubscribe() {
+        definitionListeners.delete(listener);
+        if (definitionListeners.size === 0) {
+          sharedDefinitionSubscription?.unsubscribe();
+        }
+      },
+    };
+  }
+
+  static subscribePolicyChanges(listener: DiscountPolicyListener) {
+    policyListeners.add(listener);
+    ensurePolicySubscription();
+
+    if (policySnapshot.length > 0) {
+      listener(policySnapshot);
+    }
+
+    return {
+      unsubscribe() {
+        policyListeners.delete(listener);
+        if (policyListeners.size === 0) {
+          sharedPolicySubscription?.unsubscribe();
+        }
+      },
+    };
+  }
+
   static resolvePolicyForEmployee(
     employee: DiscountPolicyEmployee | null | undefined,
     policies: EmployeeDiscountPolicyEntity[]
@@ -186,19 +374,7 @@ export class DiscountService {
       return DiscountEntityMapper.fromDefinition(item);
     }
 
-    const response = await API.graphql<{
-      listDiscountDefinitions?: {
-        items?: Array<any | null> | null;
-      } | null;
-    }>({
-      query: listDiscountDefinitionsQuery,
-      variables: { limit: 200 },
-      authMode: 'userPool',
-    });
-
-    const remoteItem = response.data?.listDiscountDefinitions?.items?.find(
-      (definition) => !!definition && definition.id === id
-    );
+    const remoteItem = await findRemoteDefinitionRecord(id);
 
     return remoteItem ? mapRemoteDefinition(remoteItem) : null;
   }
@@ -249,7 +425,6 @@ export class DiscountService {
             applicableCategoryIds: entity.applicableCategoryIds ?? undefined,
             excludedProductIds: entity.excludedProductIds ?? undefined,
             excludedCategoryIds: entity.excludedCategoryIds ?? undefined,
-            storeIds: entity.storeIds ?? undefined,
             stationIds: entity.stationIds ?? undefined,
             excludeAlreadyDiscountedItems: entity.excludeAlreadyDiscountedItems ?? false,
             appliesToAllProducts: entity.appliesToAllProducts ?? false,
@@ -290,11 +465,41 @@ export class DiscountService {
         updated.excludedCategoryIds = entity.excludedCategoryIds ?? undefined;
         updated.excludeAlreadyDiscountedItems = entity.excludeAlreadyDiscountedItems ?? false;
         updated.appliesToAllProducts = entity.appliesToAllProducts ?? false;
-        updated.storeIds = entity.storeIds ?? undefined;
         updated.stationIds = entity.stationIds ?? undefined;
         updated.active = entity.active;
       })
     );
+  }
+
+  static async deleteDefinition(id: string) {
+    const existing = await DataStore.query(DiscountDefinition, id);
+    if (existing) {
+      return DataStore.delete(existing);
+    }
+
+    const remoteItem = await findRemoteDefinitionRecord(id);
+    if (!remoteItem?._version) throw new Error(`Discount definition ${id} not found`);
+
+    const response = await API.graphql<{
+      deleteDiscountDefinition?: { id: string } | null;
+    }>({
+      query: deleteDiscountDefinitionMutation,
+      variables: {
+        input: {
+          id,
+          _version: remoteItem._version,
+        },
+      },
+      authMode: 'userPool',
+    });
+
+    if (response.errors?.length || !response.data?.deleteDiscountDefinition?.id) {
+      throw new Error(
+        getGraphqlErrorMessage(response, `Unable to delete discount definition ${id}`)
+      );
+    }
+
+    return response.data.deleteDiscountDefinition;
   }
 
   static async listPolicies() {
@@ -330,19 +535,7 @@ export class DiscountService {
       return DiscountEntityMapper.fromPolicy(item);
     }
 
-    const response = await API.graphql<{
-      listEmployeeDiscountPolicies?: {
-        items?: Array<any | null> | null;
-      } | null;
-    }>({
-      query: listEmployeeDiscountPoliciesQuery,
-      variables: { limit: 200 },
-      authMode: 'userPool',
-    });
-
-    const remoteItem = response.data?.listEmployeeDiscountPolicies?.items?.find(
-      (policy) => !!policy && policy.id === id
-    );
+    const remoteItem = await findRemotePolicyRecord(id);
 
     return remoteItem ? mapRemotePolicy(remoteItem) : null;
   }
@@ -384,5 +577,36 @@ export class DiscountService {
         updated.active = entity.active;
       })
     );
+  }
+
+  static async deletePolicy(id: string) {
+    const existing = await DataStore.query(EmployeeDiscountPolicy, id);
+    if (existing) {
+      return DataStore.delete(existing);
+    }
+
+    const remoteItem = await findRemotePolicyRecord(id);
+    if (!remoteItem?._version) throw new Error(`Discount policy ${id} not found`);
+
+    const response = await API.graphql<{
+      deleteEmployeeDiscountPolicy?: { id: string } | null;
+    }>({
+      query: deleteEmployeeDiscountPolicyMutation,
+      variables: {
+        input: {
+          id,
+          _version: remoteItem._version,
+        },
+      },
+      authMode: 'userPool',
+    });
+
+    if (response.errors?.length || !response.data?.deleteEmployeeDiscountPolicy?.id) {
+      throw new Error(
+        getGraphqlErrorMessage(response, `Unable to delete discount policy ${id}`)
+      );
+    }
+
+    return response.data.deleteEmployeeDiscountPolicy;
   }
 }
