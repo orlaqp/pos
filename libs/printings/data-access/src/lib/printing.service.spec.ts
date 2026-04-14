@@ -43,6 +43,7 @@ describe('printing.service helpers', () => {
   const cart = {
     items: [
       {
+        identifier: 'line-1',
         quantity: 1,
         product: {
           name: 'Coca Cola',
@@ -51,7 +52,73 @@ describe('printing.service helpers', () => {
       },
     ],
     footer: {
+      baseSubtotal: 8.99,
       total: 8.99,
+    },
+  };
+
+  const discountedCart = {
+    items: [
+      {
+        identifier: 'line-1',
+        quantity: 2,
+        product: {
+          name: 'Aceite vegetal',
+          price: 24.99,
+        },
+      },
+    ],
+    footer: {
+      baseSubtotal: 49.98,
+      discount: 14,
+      total: 35.98,
+    },
+    promoCodes: [{ code: 'SAVE10' }],
+    appliedDiscountSummary: {
+      applications: [],
+      approvalEvents: [],
+      pricingGeneratedAt: '2026-04-14T12:00:00.000Z',
+      warnings: [],
+      lineSummaries: [
+        {
+          lineId: 'line-1',
+          lineDiscountTotal: 10,
+          allocatedOrderDiscountTotal: 4,
+          lineTotalBeforeTax: 35.98,
+          discounts: [
+            {
+              discountApplicationId: 'line-discount-1',
+              applicationType: 'AUTOMATIC_DISCOUNT',
+              scope: 'LINE',
+              method: 'PERCENT',
+              name: '20% Off Aceites',
+              stackMode: 'STACKABLE',
+              source: 'automatic',
+              value: 20,
+              originalAmount: 49.98,
+              discountAmount: 10,
+              finalAmount: 39.98,
+              appliedAt: '2026-04-14T12:00:00.000Z',
+            },
+          ],
+        },
+      ],
+      orderLevelAdjustments: [
+        {
+          discountApplicationId: 'order-discount-1',
+          applicationType: 'AUTOMATIC_DISCOUNT',
+          scope: 'ORDER',
+          method: 'PERCENT',
+          name: '10% Off 25',
+          stackMode: 'STACKABLE',
+          source: 'automatic',
+          value: 10,
+          originalAmount: 39.98,
+          discountAmount: 4,
+          finalAmount: 35.98,
+          appliedAt: '2026-04-14T12:00:00.000Z',
+        },
+      ],
     },
   };
 
@@ -136,6 +203,49 @@ describe('printing.service helpers', () => {
     expect(receiptText).toContain('QA Store');
     expect(receiptText).toContain('** Merchant Copy **');
     expect(receiptText).toContain('01-01-260325-0001');
+  });
+
+  it('omits empty phone and fax labels from the receipt preview header', () => {
+    const receiptText = buildReceiptPreviewText(
+      {
+        name: 'QA Store',
+        address: '123 Main St',
+        city: 'Miami',
+        state: 'FL',
+        zipCode: '33101',
+        email: 'qa@example.com',
+      },
+      cart
+    );
+
+    expect(receiptText).toContain('QA Store');
+    expect(receiptText).toContain('qa@example.com');
+    expect(receiptText).not.toContain('P: ');
+    expect(receiptText).not.toContain('F: ');
+  });
+
+  it('includes discount breakdown and adjusted totals in receipt preview text', () => {
+    const receiptText = buildReceiptPreviewText(
+      {
+        name: 'QA Store',
+      },
+      discountedCart,
+      {
+        id: 'order-1',
+        orderNo: '01-01-260325-0002',
+        copyType: 'MERCHANT',
+      }
+    );
+
+    expect(receiptText).toContain('Aceite vegetal');
+    expect(receiptText).toContain('35.98');
+    expect(receiptText).toContain('Subtotal');
+    expect(receiptText).toContain('49.98');
+    expect(receiptText).toContain('Discounts');
+    expect(receiptText).toContain('-14.00');
+    expect(receiptText).toContain('Line · 20% Off Aceites');
+    expect(receiptText).toContain('Order · 10% Off 25');
+    expect(receiptText).toContain('Promo · SAVE10');
   });
 
   it('records the print job through the E2E printer spy without using hardware transport', async () => {

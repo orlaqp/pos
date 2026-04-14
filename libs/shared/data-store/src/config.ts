@@ -6,7 +6,11 @@ import {
     Order,
 } from '@pos/shared/models';
 import { getCurrentTenantId } from '@pos/auth/data-access';
-import { DataStore, syncExpression } from '@pos/shared/amplify';
+import {
+    DataStore,
+    handleDataStoreUnauthorizedError,
+    syncExpression,
+} from '@pos/shared/amplify';
 import moment from 'moment';
 
 let inventorySyncEnabled = false;
@@ -79,6 +83,11 @@ export const configureDataStore = () => {
                         'DataStore sync conflict',
                         JSON.stringify(details, null, 2)
                     );
+                    return;
+                }
+
+                if (handleDataStoreUnauthorizedError('DataStore.sync', error)) {
+                    console.error('DataStore sync error', JSON.stringify(details, null, 2));
                     return;
                 }
 

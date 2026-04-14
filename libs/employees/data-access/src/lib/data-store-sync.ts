@@ -15,6 +15,9 @@ let sharedEmployeeSubscription:
     | undefined;
 let employeeSnapshot: Employee[] = [];
 
+const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
+    !!item && item._deleted !== true;
+
 const getSubscriberCount = () => {
     let count = 0;
     employeeDispatchRefs.forEach((dispatchCount) => {
@@ -52,19 +55,37 @@ const updateSyncHealth = (dispatch: Dispatch) => {
 
 export const syncEmployees = (dispatch: Dispatch) => {
     const finish = startSyncMeasure('employees', 'syncEmployees');
-    const subscription = DataStore.observeQuery(Employee).subscribe(({ items }) => {
+    let subscription:
+        | {
+              unsubscribe: () => void;
+          }
+        | undefined;
+    let shouldUnsubscribeAfterSubscribe = false;
+    subscription = DataStore.observeQuery(Employee).subscribe(({ items }) => {
+        const activeItems = items.filter((item) =>
+            isNotDeleted(item as { _deleted?: boolean | null })
+        );
         finish({
-            itemCount: items.length,
-            sample: items.slice(0, 5).map((employee) => ({
+            itemCount: activeItems.length,
+            sample: activeItems.slice(0, 5).map((employee) => ({
                 id: employee.id,
                 tenantId: employee.tenantId,
                 email: employee.email,
                 active: employee.active,
             })),
         });
-        updateStore(dispatch, items);
-        subscription.unsubscribe();
+        updateStore(dispatch, activeItems);
+        if (subscription) {
+            subscription.unsubscribe();
+            return;
+        }
+
+        shouldUnsubscribeAfterSubscribe = true;
     });
+
+    if (shouldUnsubscribeAfterSubscribe) {
+        subscription.unsubscribe();
+    }
 };
 
 export const subscribeToEmployeeChanges = (dispatch: Dispatch) => {
@@ -74,13 +95,16 @@ export const subscribeToEmployeeChanges = (dispatch: Dispatch) => {
     if (!sharedEmployeeSubscription) {
         const release = trackSyncSubscription('employees.observeQuery');
         const subscription = DataStore.observeQuery(Employee).subscribe(({ isSynced, items }) => {
+            const activeItems = items.filter((item) =>
+                isNotDeleted(item as { _deleted?: boolean | null })
+            );
             logSyncDebug('employees.observeQuery', 'update', {
                 isSynced,
-                itemCount: items.length,
+                itemCount: activeItems.length,
             });
-            employeeSnapshot = items;
+            employeeSnapshot = activeItems;
             employeeDispatchRefs.forEach((_, activeDispatch) => {
-                updateStore(activeDispatch, items);
+                updateStore(activeDispatch, activeItems);
             });
         });
 

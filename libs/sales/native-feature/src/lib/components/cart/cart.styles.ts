@@ -525,6 +525,43 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             padding: tokens.spacing.md,
             marginBottom: tokens.spacing.sm,
         },
+        savedDiscountCard: {
+            borderRadius: 22,
+            borderWidth: 1,
+            borderColor: '#5CA9FF33',
+            backgroundColor: '#5CA9FF0D',
+            padding: tokens.spacing.md,
+            marginBottom: tokens.spacing.sm,
+        },
+        savedDiscountList: {
+            gap: tokens.spacing.xs,
+            marginTop: tokens.spacing.xs,
+        },
+        savedDiscountButton: {
+            borderRadius: 18,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            backgroundColor: tokens.colors.surfaceMuted,
+            paddingHorizontal: tokens.spacing.sm,
+            paddingVertical: tokens.spacing.sm,
+        },
+        savedDiscountButtonActive: {
+            borderColor: `${tokens.colors.accent}88`,
+            backgroundColor: `${tokens.colors.accent}18`,
+        },
+        savedDiscountButtonTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 14,
+            fontWeight: '800',
+        },
+        savedDiscountButtonTitleActive: {
+            color: tokens.colors.accent,
+        },
+        savedDiscountButtonMeta: {
+            color: tokens.colors.textSecondary,
+            fontSize: 12,
+            marginTop: 4,
+        },
         approvalCard: {
             borderRadius: 22,
             borderWidth: 1,

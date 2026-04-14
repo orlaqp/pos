@@ -9,11 +9,19 @@ interface CartManualDiscountDialogProps {
     styles: CartStyles;
     overlayStyle: object;
     draft: ManualDraft;
+    availableDefinitions: Array<{
+        id: string;
+        name: string;
+        method: 'PERCENT' | 'AMOUNT';
+        value: number;
+        scope: 'LINE' | 'ORDER';
+    }>;
     approvalTargetName: string;
     baseAmount: number;
     placeholderTextColor: string;
     onClose: () => void;
     onSubmit: () => void;
+    onSelectDefinition: (definitionId: string) => void;
     onChange: (updater: (current: ManualDraft) => ManualDraft) => void;
 }
 
@@ -22,11 +30,13 @@ export function CartManualDiscountDialog({
     styles,
     overlayStyle,
     draft,
+    availableDefinitions,
     approvalTargetName,
     baseAmount,
     placeholderTextColor,
     onClose,
     onSubmit,
+    onSelectDefinition,
     onChange,
 }: CartManualDiscountDialogProps) {
     return (
@@ -64,11 +74,12 @@ export function CartManualDiscountDialog({
                             draft.scope === scope && styles.segmentButtonActive,
                         ]}
                         onPress={() =>
-                            onChange((current) => ({
-                                ...current,
-                                scope,
-                            }))
-                        }
+                        onChange((current) => ({
+                            ...current,
+                            scope,
+                            selectedDefinitionId: undefined,
+                        }))
+                    }
                     >
                         <Text
                             style={[
@@ -90,11 +101,12 @@ export function CartManualDiscountDialog({
                             draft.method === method && styles.segmentButtonActive,
                         ]}
                         onPress={() =>
-                            onChange((current) => ({
-                                ...current,
-                                method,
-                            }))
-                        }
+                        onChange((current) => ({
+                            ...current,
+                            method,
+                            selectedDefinitionId: undefined,
+                        }))
+                    }
                     >
                         <Text
                             style={[
@@ -107,6 +119,43 @@ export function CartManualDiscountDialog({
                     </Pressable>
                 ))}
             </View>
+            {availableDefinitions.length ? (
+                <View style={styles.savedDiscountCard}>
+                    <Text style={styles.dialogSubheading}>Saved manual discounts</Text>
+                    <Text style={styles.dialogFieldHint}>
+                        Choose a saved manual rule or keep using a one-time entry below.
+                    </Text>
+                    <View style={styles.savedDiscountList}>
+                        {availableDefinitions.map((definition) => (
+                            <Pressable
+                                key={definition.id}
+                                style={[
+                                    styles.savedDiscountButton,
+                                    draft.selectedDefinitionId === definition.id &&
+                                        styles.savedDiscountButtonActive,
+                                ]}
+                                onPress={() => onSelectDefinition(definition.id)}
+                            >
+                                <Text
+                                    style={[
+                                        styles.savedDiscountButtonTitle,
+                                        draft.selectedDefinitionId === definition.id &&
+                                            styles.savedDiscountButtonTitleActive,
+                                    ]}
+                                >
+                                    {definition.name}
+                                </Text>
+                                <Text style={styles.savedDiscountButtonMeta}>
+                                    {definition.method === 'PERCENT'
+                                        ? `${definition.value}%`
+                                        : `$${definition.value.toFixed(2)}`}{' '}
+                                    · {definition.scope === 'LINE' ? 'Line' : 'Order'}
+                                </Text>
+                            </Pressable>
+                        ))}
+                    </View>
+                </View>
+            ) : null}
             <View style={styles.manualValueCard}>
                 <Text style={styles.dialogSubheading}>
                     {draft.method === 'PERCENT' ? 'Discount percent' : 'Discount amount'}
@@ -121,6 +170,7 @@ export function CartManualDiscountDialog({
                     onChangeText={(nextValue) =>
                         onChange((current) => ({
                             ...current,
+                            selectedDefinitionId: undefined,
                             percentValue:
                                 current.method === 'PERCENT' ? nextValue : current.percentValue,
                             amountValue:

@@ -37,10 +37,21 @@ type DataStoreLifecycleState =
     | 'started'
     | 'stopping';
 
+type DataStoreUnauthorizedEvent = {
+    source: string;
+    error: unknown;
+};
+
+type DataStoreUnauthorizedHandler = (
+    event: DataStoreUnauthorizedEvent
+) => Promise<void> | void;
+
 const getApiClient = () => require('aws-amplify/api').generateClient();
 const getDataStoreModule = () => require('@aws-amplify/datastore');
 const getHubModule = () => require('aws-amplify/utils');
 let dataStoreLifecycleState: DataStoreLifecycleState = 'stopped';
+let dataStoreUnauthorizedHandler: DataStoreUnauthorizedHandler | undefined;
+let unauthorizedRecoveryInFlight: Promise<void> | null = null;
 
 const setDataStoreLifecycleState = (state: DataStoreLifecycleState) => {
     dataStoreLifecycleState = state;
@@ -81,6 +92,45 @@ const getErrorMessage = (error: unknown) => {
     }
 
     return String(error);
+};
+
+export const isUnauthorizedDataStoreError = (error: unknown) => {
+    const message = getErrorMessage(error);
+
+    return (
+        message.includes('Unauthorized') ||
+        message.includes('Not Authorized') ||
+        message.includes('status code 401') ||
+        message.includes('401')
+    );
+};
+
+export const setDataStoreUnauthorizedHandler = (
+    handler?: DataStoreUnauthorizedHandler
+) => {
+    dataStoreUnauthorizedHandler = handler;
+};
+
+export const handleDataStoreUnauthorizedError = (
+    source: string,
+    error: unknown
+) => {
+    if (!isUnauthorizedDataStoreError(error) || !dataStoreUnauthorizedHandler) {
+        return false;
+    }
+
+    if (!unauthorizedRecoveryInFlight) {
+        unauthorizedRecoveryInFlight = Promise.resolve(
+            dataStoreUnauthorizedHandler({
+                source,
+                error,
+            })
+        ).finally(() => {
+            unauthorizedRecoveryInFlight = null;
+        });
+    }
+
+    return true;
 };
 
 const DATASTORE_OBSERVE_RETRY_DELAY_MS = 250;
@@ -148,6 +198,11 @@ const createRetryableObserveMethod =
                     };
                     activeSubscription = observable.subscribe(...observerArgs);
                 } catch (error) {
+                    if (handleDataStoreUnauthorizedError(`DataStore.${methodName}`, error)) {
+                        notifyObserverError(observerArgs, error);
+                        return;
+                    }
+
                     if (isRetryableDataStoreObserveError(error)) {
                         console.warn(
                             `[DataStore.${methodName}] delayed while lifecycle is settling`,
@@ -334,9 +389,30 @@ export const API = {
 };
 
 export const DataStore = {
-    query: (...args: unknown[]) => resolveDataStore().query(...args),
-    save: (...args: unknown[]) => resolveDataStore().save(...args),
-    delete: (...args: unknown[]) => resolveDataStore().delete(...args),
+    async query(...args: unknown[]) {
+        try {
+            return await resolveDataStore().query(...args);
+        } catch (error) {
+            handleDataStoreUnauthorizedError('DataStore.query', error);
+            throw error;
+        }
+    },
+    async save(...args: unknown[]) {
+        try {
+            return await resolveDataStore().save(...args);
+        } catch (error) {
+            handleDataStoreUnauthorizedError('DataStore.save', error);
+            throw error;
+        }
+    },
+    async delete(...args: unknown[]) {
+        try {
+            return await resolveDataStore().delete(...args);
+        } catch (error) {
+            handleDataStoreUnauthorizedError('DataStore.delete', error);
+            throw error;
+        }
+    },
     observe: createRetryableObserveMethod('observe'),
     observeQuery: createRetryableObserveMethod('observeQuery'),
     async start(...args: unknown[]) {
@@ -347,6 +423,7 @@ export const DataStore = {
             return result;
         } catch (error) {
             setDataStoreLifecycleState('stopped');
+            handleDataStoreUnauthorizedError('DataStore.start', error);
             throw error;
         }
     },

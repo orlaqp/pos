@@ -30,45 +30,6 @@ export function SingleItem({
         item.labelKey && i18next.isInitialized && i18next.exists(item.labelKey)
             ? i18next.t(item.labelKey)
             : item.title;
-    const listItemChildren = [
-        item.icon ? (
-            <View key={`sidebar-item-icon-${item.id}`} style={styles.iconSlot}>
-                <Icon
-                    name={item.icon}
-                    type="material-community"
-                    size={compact ? 17 : 20}
-                    color={active ? colors.primary : colors.grey3}
-                />
-            </View>
-        ) : null,
-        (
-            <ListItem.Content
-                key={`sidebar-item-content-${item.id}`}
-                style={styles.content}
-            >
-                <ListItem.Title
-                    key={`sidebar-item-title-${item.id}`}
-                    style={[
-                        styles.title,
-                        compact && styles.titleCompact,
-                        active && styles.titleActive,
-                    ]}
-                >
-                    {title}
-                </ListItem.Title>
-            </ListItem.Content>
-        ),
-        chevron ? (
-            <Icon
-                key={`sidebar-item-chevron-${item.id}`}
-                name="chevron-right"
-                type="material-community"
-                size={18}
-                color={active ? colors.primary : colors.grey4}
-            />
-        ) : null,
-    ];
-
     return (
         <ListItem
             testID={`sidebar-item-${item.id}`}
@@ -79,7 +40,35 @@ export function SingleItem({
                 active ? styles.containerActive : styles.containerInactive,
             ]}
         >
-            {listItemChildren}
+            {item.icon ? (
+                <View style={styles.iconSlot}>
+                    <Icon
+                        name={item.icon}
+                        type="material-community"
+                        size={compact ? 17 : 20}
+                        color={active ? colors.primary : colors.grey3}
+                    />
+                </View>
+            ) : null}
+            <ListItem.Content style={styles.content}>
+                <ListItem.Title
+                    style={[
+                        styles.title,
+                        compact && styles.titleCompact,
+                        active && styles.titleActive,
+                    ]}
+                >
+                    {title}
+                </ListItem.Title>
+            </ListItem.Content>
+            {chevron ? (
+                <Icon
+                    name="chevron-right"
+                    type="material-community"
+                    size={18}
+                    color={active ? colors.primary : colors.grey4}
+                />
+            ) : null}
         </ListItem>
     );
 }

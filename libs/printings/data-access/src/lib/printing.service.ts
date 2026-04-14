@@ -14,6 +14,7 @@ import {
     isE2EPrinterSpyEnabled,
     recordE2EPrintJob,
 } from '@pos/shared/utils';
+import type { AppliedDiscountSummary } from '@pos/discounts/domain';
 
 type ReceiptStoreInfo = {
     name?: string;
@@ -29,6 +30,7 @@ type ReceiptStoreInfo = {
 
 type ReceiptCartState = {
     items: Array<{
+        identifier?: string;
         quantity: number;
         product: {
             name: string;
@@ -36,8 +38,15 @@ type ReceiptCartState = {
         };
     }>;
     footer: {
+        baseSubtotal?: number;
+        subtotal?: number;
+        discount?: number;
+        tax?: number;
+        savingsTotal?: number;
         total: number;
     };
+    promoCodes?: Array<{ code: string }>;
+    appliedDiscountSummary?: AppliedDiscountSummary;
 };
 
 type ReceiptOrderEntity = {
@@ -73,6 +82,25 @@ let receiptPreviewHandler:
 const logReceiptTiming = (step: string, details?: Record<string, unknown>) => {
     void step;
     void details;
+};
+
+const buildStoreHeaderText = (store: ReceiptStoreInfo) => {
+    const lines = [store.name, store.address, `${store.city ?? ''}, ${store.state ?? ''} ${store.zipCode ?? ''}`.trim()]
+        .filter((line) => !!line && line.trim().length > 0);
+
+    if (store.phone) {
+        lines.push(store.phone);
+    }
+
+    if (store.fax) {
+        lines.push(store.fax);
+    }
+
+    if (store.email) {
+        lines.push(store.email);
+    }
+
+    return `${lines.join('\n')}\n\n`;
 };
 
 
@@ -188,6 +216,7 @@ const printSingleReceipt = async (
 ) => {
     const date = new Date();
     const receiptLines = buildReceiptLines(cart, order);
+    const receiptTotals = buildReceiptTotalsText(cart);
     const totalPaymentsText = getReceiptPaymentsText(order);
     const copyLabel = getReceiptCopyLabel(order);
     const receiptText = buildReceiptPreviewText(store, cart, order, date);
@@ -217,10 +246,7 @@ const printSingleReceipt = async (
             .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
             .styleBold(true)
             .actionPrintText(`${store.name}\n`)
-            // .styleBold(false)
-            .actionPrintText(
-                `${store.address}\n${store.city}, ${store.state} ${store.zipCode}\nP: ${store.phone}\nF: ${store.fax}\n${store.email}\n\n`
-            )
+            .actionPrintText(buildStoreHeaderText({ ...store, name: undefined }))
             .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
             .actionPrintText(
                 `Date:${date.toLocaleString()}\n` +
@@ -228,20 +254,8 @@ const printSingleReceipt = async (
                     '\n'
             )
             .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
-            .actionPrintText(
-                receiptLines
-            )
-            .actionPrintText('Total     ')
-            .add(
-                new StarXpandCommand.PrinterBuilder()
-                    .styleMagnification(
-                        new StarXpandCommand.MagnificationParameter(2, 2)
-                    )
-                    .actionPrintText(
-                        `     ${cart.footer.total.toFixed(2).padStart(7, '')}\n`
-                    )
-            )
-            .actionPrintText('--------------------------------\n')
+            .actionPrintText(receiptLines)
+            .actionPrintText(receiptTotals)
             
         if (order?.id) {
             printerBuilder
@@ -330,6 +344,75 @@ const getReceiptPaymentsText = (order?: ReceiptOrderEntity) =>
         ?.map((payment) => `${payment.type}: $ ${payment.amount.toFixed(2)}`)
         .join('\n') || '';
 
+const formatTotalRow = (label: string, amount: number) =>
+    `${label.padEnd(18, ' ')}${amount.toFixed(2).padStart(14, ' ')}\n`;
+
+const getReceiptDiscountDetails = (cart: ReceiptCartState) => {
+    const lineDiscounts =
+        cart.appliedDiscountSummary?.lineSummaries.flatMap((line) =>
+            line.discounts.map((discount) => ({
+                label: `Line · ${discount.name}`,
+                amount: discount.discountAmount,
+            }))
+        ) ?? [];
+    const orderDiscounts =
+        cart.appliedDiscountSummary?.orderLevelAdjustments.map((discount) => ({
+            label: `Order · ${discount.name}`,
+            amount: discount.discountAmount,
+        })) ?? [];
+
+    return [...lineDiscounts, ...orderDiscounts].filter(
+        (discount) => discount.amount > 0
+    );
+};
+
+const buildReceiptTotalsText = (cart: ReceiptCartState) => {
+    const rows: string[] = [];
+    const baseSubtotal =
+        cart.footer.baseSubtotal ?? cart.footer.subtotal ?? cart.footer.total;
+    const discountTotal =
+        cart.footer.discount ?? cart.footer.savingsTotal ?? 0;
+    const tax = cart.footer.tax ?? 0;
+
+    rows.push(formatTotalRow('Subtotal', baseSubtotal));
+
+    if (discountTotal > 0) {
+        rows.push(formatTotalRow('Discounts', -discountTotal));
+        getReceiptDiscountDetails(cart).forEach((discount) => {
+            rows.push(formatTotalRow(discount.label, -discount.amount));
+        });
+    }
+
+    if (tax > 0) {
+        rows.push(formatTotalRow('Tax', tax));
+    }
+
+    rows.push('--------------------------------\n');
+    rows.push(formatTotalRow('Total', cart.footer.total));
+
+    if (cart.promoCodes?.length) {
+        rows.push(
+            cart.promoCodes.map((promo) => `Promo · ${promo.code}`).join('\n') +
+                '\n'
+        );
+    }
+
+    return rows.join('');
+};
+
+const getLineSummaryTotal = (
+    cart: ReceiptCartState,
+    item: ReceiptCartState['items'][number],
+    index: number
+) => {
+    const itemIdentifier = item.identifier ?? `line-${index}`;
+    const lineSummary = cart.appliedDiscountSummary?.lineSummaries.find(
+        (summary) => summary.lineId === itemIdentifier
+    );
+
+    return lineSummary?.lineTotalBeforeTax ?? item.product.price * item.quantity;
+};
+
 export const buildReceiptPreviewText = (
     store: ReceiptStoreInfo,
     cart: ReceiptCartState,
@@ -339,18 +422,15 @@ export const buildReceiptPreviewText = (
     const receiptLines = buildReceiptLines(cart, order);
     const totalPaymentsText = getReceiptPaymentsText(order);
     const copyLabel = getReceiptCopyLabel(order);
-    const headerText =
-        `${store.name ?? ''}\n` +
-        `${store.address ?? ''}\n${store.city ?? ''}, ${store.state ?? ''} ${store.zipCode ?? ''}\nP: ${store.phone ?? ''}\nF: ${store.fax ?? ''}\n${store.email ?? ''}\n\n` +
-        `Date:${date.toLocaleString()}\n\n`;
-    const totalText =
-        `Total     ${cart.footer.total.toFixed(2).padStart(12, ' ')}\n` +
-        '--------------------------------\n';
+    const totalText = buildReceiptTotalsText(cart);
     const footerText = order?.id
         ? `${totalPaymentsText}\n\n${store.disclaimer ?? ''}\n${copyLabel}\n${order?.orderNo ?? ''}\n`
         : '*** NOT A RECEIPT ***\n';
 
-    return `${headerText}${receiptLines}${totalText}${footerText}`;
+    return `${store.name ?? ''}\n${buildStoreHeaderText({
+        ...store,
+        name: undefined,
+    })}Date:${date.toLocaleString()}\n\n${receiptLines}${totalText}${footerText}`;
 };
 
 const formatQty = (quantity: number) =>
@@ -373,7 +453,13 @@ const buildClassicLines = (cart: ReceiptCartState) => {
         'Qty    Description        Total\n' +
         '-------------------------------\n' +
         cart.items
-            .map((i) => formatLine(i.quantity, i.product.name, i.product.price * i.quantity))
+            .map((i, index) =>
+                formatLine(
+                    i.quantity,
+                    i.product.name,
+                    getLineSummaryTotal(cart, i, index)
+                )
+            )
             .join('\n') +
         '\n\n' +
         '--------------------------------\n'

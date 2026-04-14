@@ -175,6 +175,33 @@ describe('orders reducer', () => {
         expect(state.entities['o2']).toBeUndefined();
     });
 
+    it('reconciles incoming order snapshots without rebuilding unchanged rows', () => {
+        let state = ordersReducer(
+            undefined,
+            ordersActions.setAll([
+                { id: 'o2', status: 'OPEN', orderNo: 'N2', createdAt: '2026-04-01T00:00:00.000Z' } as any,
+                { id: 'o1', status: 'OPEN', orderNo: 'N1', createdAt: '2026-03-31T00:00:00.000Z' } as any,
+            ])
+        );
+
+        state = ordersReducer(
+            state,
+            ordersActions.setAll([
+                { id: 'o2', status: 'PAID', orderNo: 'N2', createdAt: '2026-04-01T00:00:00.000Z' } as any,
+                { id: 'o3', status: 'OPEN', orderNo: 'N3', createdAt: '2026-04-02T00:00:00.000Z' } as any,
+            ])
+        );
+
+        expect(state.ids).toEqual(['o2', 'o3']);
+        expect(state.entities['o2']).toEqual(
+            expect.objectContaining({ id: 'o2', status: 'PAID' })
+        );
+        expect(state.entities['o3']).toEqual(
+            expect.objectContaining({ id: 'o3', orderNo: 'N3' })
+        );
+        expect(state.entities['o1']).toBeUndefined();
+    });
+
     it('upserts the saved order, refreshes the filtered list, and prints customer copy by default', () => {
         const baseState = ordersReducer(
             undefined,

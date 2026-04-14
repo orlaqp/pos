@@ -628,6 +628,49 @@ describe('Cart', () => {
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
     });
 
+    it('applies a saved manual discount definition for the selected line', async () => {
+        mockCartState.selected = mockCartState.items[0];
+        mockCartState.footer.baseSubtotal = 12;
+        mockCartState.footer.subtotal = 12;
+        mockCartState.definitions = [
+            {
+                id: 'manual-def-1',
+                name: '0.1% for Test items',
+                type: 'MANUAL',
+                method: 'PERCENT',
+                scope: 'LINE',
+                value: 0.1,
+                status: 'ACTIVE',
+                stackMode: 'STACKABLE',
+                active: true,
+                minSubtotal: 10,
+                applicableProductIds: ['p-1'],
+            },
+        ];
+
+        const { getByText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Manual'));
+        fireEvent.press(getByText('0.1% for Test items'));
+        fireEvent.press(getByText('Apply'));
+
+        await waitFor(() => {
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'cart/applyManualDiscount',
+                    payload: expect.objectContaining({
+                        definitionId: 'manual-def-1',
+                        name: '0.1% for Test items',
+                        method: 'PERCENT',
+                        value: 0.1,
+                        lineId: 'i-1',
+                    }),
+                })
+            );
+        });
+    });
+
     it('does not render the approval pin field for manual discounts', () => {
         mockCartState.selected = mockCartState.items[0];
         const { getByText, queryByPlaceholderText } = renderCart('order');

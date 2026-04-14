@@ -2,17 +2,22 @@
 const mockConfigure = jest.fn();
 const mockStop = jest.fn(() => Promise.resolve());
 const mockStart = jest.fn(() => Promise.resolve());
+const mockClear = jest.fn(() => Promise.resolve());
 const mockSyncExpression = jest.fn((model: unknown, builder: unknown) => ({
     model,
     builder,
 }));
+const mockHandleDataStoreUnauthorizedError = jest.fn(() => true);
 
 jest.mock('@pos/shared/amplify', () => ({
     DataStore: {
         configure: (...args: unknown[]) => mockConfigure(...args),
         stop: (...args: unknown[]) => mockStop(...args),
+        clear: (...args: unknown[]) => mockClear(...args),
         start: (...args: unknown[]) => mockStart(...args),
     },
+    handleDataStoreUnauthorizedError: (...args: unknown[]) =>
+        mockHandleDataStoreUnauthorizedError(...args),
     syncExpression: (...args: unknown[]) => mockSyncExpression(...args),
 }));
 
@@ -52,6 +57,7 @@ describe('configureDataStore', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         resetInventorySyncForTests();
+        mockHandleDataStoreUnauthorizedError.mockReturnValue(true);
     });
 
     afterAll(() => {
@@ -148,5 +154,33 @@ describe('configureDataStore', () => {
             'DataStore sync error',
             expect.stringContaining('Network error')
         );
+    });
+
+    it('delegates unauthorized sync errors to the shared DataStore recovery handler', async () => {
+        configureDataStore();
+
+        const options = mockConfigure.mock.calls[0][0];
+        options.errorHandler({
+            message: 'Unauthorized',
+            operation: 'Sync',
+            model: 'DiscountDefinition',
+        });
+
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+            'DataStore sync error',
+            expect.stringContaining('Unauthorized')
+        );
+        expect(mockHandleDataStoreUnauthorizedError).toHaveBeenCalledWith(
+            'DataStore.sync',
+            expect.objectContaining({
+                message: 'Unauthorized',
+            })
+        );
+        expect(mockStop).not.toHaveBeenCalled();
+        expect(mockClear).not.toHaveBeenCalled();
+        expect(mockStart).not.toHaveBeenCalled();
     });
 });

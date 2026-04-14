@@ -470,7 +470,7 @@ export class PricingEngine {
             } else {
               const application = buildApplication({
                 id: `manual-line-${line.lineId}`,
-                definitionId: null,
+                definitionId: manualLine.definitionId ?? null,
                 applicationType: 'MANUAL_LINE_DISCOUNT',
                 scope: 'LINE',
                 method: manualLine.method,
@@ -574,7 +574,7 @@ export class PricingEngine {
           orderLevelCandidates.push(
             buildApplication({
               id: 'manual-order',
-              definitionId: null,
+              definitionId: manualOrder.definitionId ?? null,
               applicationType: 'MANUAL_ORDER_DISCOUNT',
               scope: 'ORDER',
               method: manualOrder.method,

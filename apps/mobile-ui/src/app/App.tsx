@@ -68,6 +68,7 @@ import {
     Auth,
     DataStore,
     getDataStoreLifecycleState,
+    setDataStoreUnauthorizedHandler,
 } from '@pos/shared/amplify';
 import { E2EControlPanel } from './e2e-control-panel';
 import {
@@ -447,6 +448,52 @@ const AppContent = () => {
         },
         [attemptSilentReauth, hasActiveSale, recordLifecycleEvent, resetSessionState]
     );
+
+    useEffect(() => {
+        setDataStoreUnauthorizedHandler(async ({ source, error }) => {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : typeof error === 'string'
+                      ? error
+                      : JSON.stringify(error);
+
+            recordLifecycleEvent('datastore.unauthorized', {
+                source,
+                message,
+            });
+
+            const restoredUser = await attemptSilentReauth();
+            if (restoredUser) {
+                setBootstrapError(undefined);
+                setSessionRecoveryState('healthy');
+
+                try {
+                    await DataStore.stop();
+                    await DataStore.clear();
+                } catch (recoveryError) {
+                    console.error(
+                        'DataStore unauthorized recovery reset failed',
+                        recoveryError
+                    );
+                }
+
+                lastBootstrapTriggerRef.current = null;
+                setBootstrapStatus('idle');
+                void startBootstrapRef.current?.();
+                return;
+            }
+
+            await resetSessionState({ manual: false, destructive: true });
+            setSessionRecoveryState('needs_reauth');
+            setBootstrapError(message);
+            setBootstrapStatus('ready');
+        });
+
+        return () => {
+            setDataStoreUnauthorizedHandler(undefined);
+        };
+    }, [attemptSilentReauth, recordLifecycleEvent, resetSessionState]);
 
     const startBootstrap = useCallback(async () => {
         if (bootstrapInFlightRef.current) {

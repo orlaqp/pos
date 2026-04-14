@@ -129,11 +129,11 @@ describe('products data-store sync', () => {
         });
         mockRealtimeSubscribe.mockReturnValue({ unsubscribe: realtimeUnsubscribe });
 
-        const firstSub = subscribeToProductChanges(firstDispatch);
+        const firstSub = subscribeToProductChanges(firstDispatch, 'tenant-1');
         observeObserver?.next?.({ isSynced: true, items: products });
         firstDispatch.mockClear();
 
-        const secondSub = subscribeToProductChanges(secondDispatch);
+        const secondSub = subscribeToProductChanges(secondDispatch, 'tenant-1');
 
         expect(DataStore.observeQuery).toHaveBeenCalledTimes(1);
         expect(API.graphql).toHaveBeenCalledTimes(1);

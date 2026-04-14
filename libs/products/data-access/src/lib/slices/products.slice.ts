@@ -31,8 +31,127 @@ export interface ProductsState extends EntityState<ProductEntity, string> {
     pendingQuantityDeltas?: Record<string, number>;
 }
 
+const PRODUCT_COMPARISON_FIELDS: Array<keyof ProductEntity> = [
+    'name',
+    'description',
+    'price',
+    'tags',
+    'cost',
+    'barcode',
+    'unitOfMeasure',
+    'sku',
+    'plu',
+    'quantity',
+    'trackStock',
+    'reorderPoint',
+    'reorderQuantity',
+    'picture',
+    'productCategoryId',
+    'productBrandId',
+    'discountable',
+    'minAllowedPrice',
+    'maxManualDiscountPercent',
+    'maxManualDiscountAmount',
+    'createdAt',
+    'updatedAt',
+    'isActive',
+    'isEBTEligible',
+];
+
+const arePendingQuantityDeltasEqual = (
+    left: Record<string, number> = {},
+    right: Record<string, number> = {}
+) => {
+    const leftKeys = Object.keys(left);
+    const rightKeys = Object.keys(right);
+
+    if (leftKeys.length !== rightKeys.length) {
+        return false;
+    }
+
+    return leftKeys.every((key) => left[key] === right[key]);
+};
+
+const areProductsEquivalent = (
+    left: ProductEntity | undefined,
+    right: ProductEntity
+) => {
+    if (!left) {
+        return false;
+    }
+
+    return PRODUCT_COMPARISON_FIELDS.every((field) => left[field] === right[field]);
+};
+
+const reconcileIncomingProducts = (
+    state: ProductsState,
+    incoming: ProductEntity[]
+) => {
+    const previousEntities = { ...state.entities };
+    const { items, nextPending } = applyPendingQuantityDeltasToIncoming(
+        incoming,
+        previousEntities,
+        state.pendingQuantityDeltas
+    );
+    const previousIds = (state.ids as string[]) || [];
+    const nextIds = new Set(items.map((item) => item.id));
+    const removals = previousIds.filter((id) => !nextIds.has(id));
+    const additions: ProductEntity[] = [];
+    const updates: Update<ProductEntity, string>[] = [];
+
+    items.forEach((item) => {
+        const existing = state.entities[item.id];
+
+        if (!existing) {
+            additions.push(item);
+            return;
+        }
+
+        if (areProductsEquivalent(existing, item)) {
+            return;
+        }
+
+        const { id, ...changes } = item;
+        updates.push({
+            id,
+            changes,
+        });
+    });
+
+    if (removals.length > 0) {
+        productsAdapter.removeMany(state, removals);
+    }
+
+    if (additions.length > 0) {
+        productsAdapter.addMany(state, additions);
+    }
+
+    if (updates.length > 0) {
+        productsAdapter.updateMany(state, updates);
+    }
+
+    const pendingChanged = !arePendingQuantityDeltasEqual(
+        state.pendingQuantityDeltas,
+        nextPending
+    );
+
+    state.pendingQuantityDeltas = nextPending;
+    state.loadingStatus = 'loaded';
+
+    if (
+        removals.length > 0 ||
+        additions.length > 0 ||
+        updates.length > 0 ||
+        pendingChanged
+    ) {
+        filterList(state, state.filterQuery);
+    }
+};
+
 export const productsAdapter = createEntityAdapter<ProductEntity, string>({
     selectId: (product) => product.id,
+    sortComparer: (left, right) =>
+        (left.name || '').localeCompare(right.name || ''),
 });
 
 export const fetchProducts = createAsyncThunk(
@@ -91,16 +210,7 @@ export const productsSlice = createSlice({
             state: ProductsState,
             action: PayloadAction<ProductEntity[]>
         ) => {
-            const previousEntities = { ...state.entities };
-            const { items, nextPending } = applyPendingQuantityDeltasToIncoming(
-                action.payload,
-                previousEntities,
-                state.pendingQuantityDeltas
-            );
-            productsAdapter.setAll(state, items);
-            state.pendingQuantityDeltas = nextPending;
-            state.loadingStatus = 'loaded';
-            filterList(state, state.filterQuery);
+            reconcileIncomingProducts(state, action.payload);
         },
         add: (state: ProductsState, action: PayloadAction<ProductEntity>) => {
             productsAdapter.addOne(state, action.payload);
@@ -231,16 +341,7 @@ export const productsSlice = createSlice({
                     state: ProductsState,
                     action: PayloadAction<ProductEntity[]>
                 ) => {
-                    const previousEntities = { ...state.entities };
-                    const { items, nextPending } = applyPendingQuantityDeltasToIncoming(
-                        action.payload,
-                        previousEntities,
-                        state.pendingQuantityDeltas
-                    );
-                    productsAdapter.setAll(state, items);
-                    state.pendingQuantityDeltas = nextPending;
-                    filterList(state, state.filterQuery);
-                    state.loadingStatus = 'loaded';
+                    reconcileIncomingProducts(state, action.payload);
                 }
             )
             .addCase(fetchProducts.rejected, (state: ProductsState, action) => {

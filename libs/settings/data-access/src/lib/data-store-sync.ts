@@ -14,11 +14,17 @@ let sharedGlobalSettingsSubscription:
 
 let globalSettingsSnapshot: GlobalSettings[] | undefined;
 
+const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
+    !!item && item._deleted !== true;
+
 export const syncGlobalSettings = (dispatch: Dispatch) => {
     let subscription: { unsubscribe: () => void } | undefined = undefined;
     let shouldUnsubscribeAfterSubscribe = false;
     subscription = DataStore.observeQuery(GlobalSettings).subscribe(({ items }) => {
-        updateStore(dispatch, items);
+        const activeItems = items.filter((item) =>
+            isNotDeleted(item as { _deleted?: boolean | null })
+        );
+        updateStore(dispatch, activeItems);
         if (subscription) {
             subscription.unsubscribe();
             return;
@@ -40,9 +46,12 @@ export const subscribeToGlobalSettingsChanges = (dispatch: Dispatch) => {
         const subscription = DataStore.observeQuery(GlobalSettings).subscribe(
             ({ isSynced, items }) => {
                 void isSynced;
-                globalSettingsSnapshot = items;
+                const activeItems = items.filter((item) =>
+                    isNotDeleted(item as { _deleted?: boolean | null })
+                );
+                globalSettingsSnapshot = activeItems;
                 globalSettingsDispatchRefs.forEach((_, activeDispatch) => {
-                    updateStore(activeDispatch, items);
+                    updateStore(activeDispatch, activeItems);
                 });
             }
         );

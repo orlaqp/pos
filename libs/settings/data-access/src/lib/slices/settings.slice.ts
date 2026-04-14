@@ -9,7 +9,7 @@ import {
 } from '@reduxjs/toolkit';
 import { DataStore } from '@pos/shared/amplify';
 
-import { productsSubscription, productsActions } from '@pos/products/data-access';
+import { teardownProductSync, productsActions } from '@pos/products/data-access';
 import { AvailableLanguage, setI18nConfig } from '../language/language.utils';
 import { DeviceSettingsService } from '../services/device-settings.service';
 import { GlobalSettingsService } from '../services/global-settings.service';
@@ -40,8 +40,7 @@ export const resetDataStore = createAsyncThunk(
     'settings/reset',
     async (_, thunkApi) => {
         thunkApi.dispatch(productsActions.reset());
-
-        productsSubscription?.unsubscribe();
+        teardownProductSync();
         
         await DataStore.stop();
         await DataStore.clear();

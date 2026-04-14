@@ -117,4 +117,35 @@ describe('products reducer', () => {
     );
     expect(state.pendingQuantityDeltas).toEqual({});
   });
+
+  it('reconciles incoming snapshots without losing sorted order or removing unchanged items', () => {
+    let state = productsReducer(
+      undefined,
+      fetchProducts.fulfilled(
+        [
+          { id: '2', name: 'Zulu', quantity: 2, isActive: true } as any,
+          { id: '1', name: 'Alpha', quantity: 1, isActive: true } as any,
+        ],
+        '',
+        undefined
+      )
+    );
+
+    state = productsReducer(
+      state,
+      productsActions.setAll([
+        { id: '1', name: 'Alpha', quantity: 3, isActive: true } as any,
+        { id: '3', name: 'Bravo', quantity: 4, isActive: true } as any,
+      ])
+    );
+
+    expect(state.ids).toEqual(['1', '3']);
+    expect(state.entities['1']).toEqual(
+      expect.objectContaining({ id: '1', quantity: 3 })
+    );
+    expect(state.entities['3']).toEqual(
+      expect.objectContaining({ id: '3', name: 'Bravo' })
+    );
+    expect(state.entities['2']).toBeUndefined();
+  });
 });

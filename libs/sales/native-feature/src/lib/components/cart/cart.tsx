@@ -77,6 +77,73 @@ const mapDefinitionToPricing = (definition: any): DiscountDefinition => ({
 
 const normalizePromoCode = (code: string) => code.trim().toUpperCase();
 
+const normalizeWeekday = (day: string) => day.trim().slice(0, 3).toUpperCase();
+
+const getScopedDateParts = (at: string, timezone?: string | null) => {
+    const date = new Date(at);
+    const scopedTimezone = timezone || 'UTC';
+
+    return {
+        weekday: normalizeWeekday(
+            new Intl.DateTimeFormat('en-US', {
+                weekday: 'short',
+                timeZone: scopedTimezone,
+            }).format(date)
+        ),
+        time: new Intl.DateTimeFormat('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+            timeZone: scopedTimezone,
+        }).format(date),
+    };
+};
+
+const isTimeWithinWindow = (
+    current: string,
+    start?: string | null,
+    end?: string | null
+) => {
+    if (!start && !end) return true;
+    if (start && !end) return current >= start;
+    if (!start && end) return current <= end;
+    if (!start || !end) return true;
+    if (start <= end) return current >= start && current <= end;
+    return current >= start || current <= end;
+};
+
+const isDefinitionActiveForContext = (
+    definition: DiscountDefinition,
+    at: string,
+    timezone?: string | null,
+    stationId?: string | null
+) => {
+    if (definition.active === false) return false;
+    if (definition.status !== 'ACTIVE') return false;
+    if (definition.startDate && at < definition.startDate) return false;
+    if (definition.endDate && at > definition.endDate) return false;
+
+    const { weekday, time } = getScopedDateParts(at, timezone);
+    if (definition.daysOfWeek?.length) {
+        const allowedDays = definition.daysOfWeek.map(normalizeWeekday);
+        if (!allowedDays.includes(weekday)) {
+            return false;
+        }
+    }
+
+    if (!isTimeWithinWindow(time, definition.startTime, definition.endTime)) {
+        return false;
+    }
+
+    if (definition.stationIds?.length) {
+        if (!stationId || !definition.stationIds.includes(stationId)) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
 const DISCOUNT_CONTROLS_ENABLED = true;
 const ROLE_BASED_DISCOUNT_POLICY: EmployeeDiscountPolicy = {
     canApplyOrderDiscount: true,
@@ -129,7 +196,6 @@ export function Cart({
     const ready = isCartReady(cart);
     const ebtEligibleTotal = getEbtEligibleTotal(cart);
     const invalidItemCount = cart.items.filter((item) => item.quantity === 0).length;
-    const orderLevelAdjustments = cart.appliedDiscountSummary?.orderLevelAdjustments || [];
     const pricingWarnings = cart.appliedDiscountSummary?.warnings || [];
     const discountBreakdown = useMemo(
         () => [
@@ -144,14 +210,17 @@ export function Cart({
                     scope: 'LINE' as const,
                 }))
             )),
-            ...orderLevelAdjustments.map((discount) => ({
+            ...((cart.appliedDiscountSummary?.orderLevelAdjustments || []).map((discount) => ({
                 discountApplicationId: discount.discountApplicationId,
                 name: discount.name,
                 discountAmount: discount.discountAmount,
                 scope: 'ORDER' as const,
-            })),
+            }))),
         ],
-        [cart.appliedDiscountSummary?.lineSummaries, orderLevelAdjustments]
+        [
+            cart.appliedDiscountSummary?.lineSummaries,
+            cart.appliedDiscountSummary?.orderLevelAdjustments,
+        ]
     );
     const orderSummary = useMemo(() => buildOrderSummary(cart), [cart]);
     const selectedItem = cart.selected;
@@ -186,6 +255,96 @@ export function Cart({
     const hasOrderManualAdjustment = cart.manualDiscounts.some(
         (discount) => discount.scope === 'ORDER'
     );
+    const availableManualDefinitions = useMemo(() => {
+        const currentTimestamp = new Date().toISOString();
+        const currentSubtotal = cart.footer.baseSubtotal || cart.footer.subtotal || 0;
+
+        return (cart.definitions || [])
+            .filter(
+                (definition) =>
+                    definition.type === 'MANUAL' &&
+                    (definition.method === 'PERCENT' ||
+                        definition.method === 'AMOUNT') &&
+                    definition.scope === manualDraft.scope
+            )
+            .filter((definition) =>
+                isDefinitionActiveForContext(
+                    definition,
+                    currentTimestamp,
+                    storeInfo?.timezone,
+                    stationInfo?.stationNumber
+                )
+            )
+            .filter((definition) => {
+                if (definition.minSubtotal != null && currentSubtotal < definition.minSubtotal) {
+                    return false;
+                }
+
+                if (manualDraft.scope === 'ORDER') {
+                    return canApplyOrderDiscount;
+                }
+
+                if (!selectedItem?.identifier || selectedItem.quantity === 0) {
+                    return false;
+                }
+
+                const productId = selectedItem.product.id;
+                const categoryId = selectedItem.product.categoryId || '';
+
+                if (
+                    definition.minQuantity != null &&
+                    selectedItem.quantity < definition.minQuantity
+                ) {
+                    return false;
+                }
+
+                if (
+                    definition.excludeAlreadyDiscountedItems &&
+                    (selectedLineHasManualAdjustment ||
+                        (selectedLineSummary?.discounts?.length || 0) > 0)
+                ) {
+                    return false;
+                }
+
+                if (
+                    definition.applicableProductIds?.length &&
+                    !definition.applicableProductIds.includes(productId)
+                ) {
+                    return false;
+                }
+
+                if (definition.excludedProductIds?.includes(productId)) {
+                    return false;
+                }
+
+                if (
+                    definition.applicableCategoryIds?.length &&
+                    !definition.applicableCategoryIds.includes(categoryId)
+                ) {
+                    return false;
+                }
+
+                if (definition.excludedCategoryIds?.includes(categoryId)) {
+                    return false;
+                }
+
+                return true;
+            })
+            .sort((left, right) =>
+                left.name.localeCompare(right.name, undefined, { sensitivity: 'base' })
+            );
+    }, [
+        canApplyOrderDiscount,
+        cart.definitions,
+        cart.footer.baseSubtotal,
+        cart.footer.subtotal,
+        manualDraft.scope,
+        selectedItem,
+        selectedLineHasManualAdjustment,
+        selectedLineSummary?.discounts,
+        stationInfo?.stationNumber,
+        storeInfo?.timezone,
+    ]);
 
     useEffect(() => {
         dispatch(
@@ -416,6 +575,28 @@ export function Cart({
         setManualVisible(true);
     };
 
+    const selectManualDefinition = (definitionId: string) => {
+        const definition = availableManualDefinitions.find((item) => item.id === definitionId);
+        if (!definition) {
+            return;
+        }
+
+        setManualDraft((current) => ({
+            ...current,
+            scope: definition.scope,
+            method: definition.method,
+            selectedDefinitionId: definition.id,
+            percentValue:
+                definition.method === 'PERCENT'
+                    ? String(definition.value)
+                    : current.percentValue,
+            amountValue:
+                definition.method === 'AMOUNT'
+                    ? String(definition.value)
+                    : current.amountValue,
+        }));
+    };
+
     const submitManualDiscount = async () => {
         const value = Number(manualDraftValue);
         if (!Number.isFinite(value) || value <= 0) {
@@ -438,11 +619,15 @@ export function Cart({
             scope: manualDraft.scope,
             method: manualDraft.method,
             value,
+            definitionId: manualDraft.selectedDefinitionId,
             lineId: manualDraft.scope === 'LINE' ? selectedItem?.identifier : undefined,
             name:
-                manualDraft.scope === 'ORDER'
+                availableManualDefinitions.find(
+                    (definition) => definition.id === manualDraft.selectedDefinitionId
+                )?.name ||
+                (manualDraft.scope === 'ORDER'
                     ? 'Manual order discount'
-                    : 'Manual line discount',
+                    : 'Manual line discount'),
             reasonCode: manualDraft.reasonCode.trim() || undefined,
             reasonNote: manualDraft.reasonNote.trim() || undefined,
         };
@@ -699,6 +884,13 @@ export function Cart({
                         styles={localStyles}
                         overlayStyle={[styles.overlay, localStyles.mediumDialog]}
                         draft={manualDraft}
+                        availableDefinitions={availableManualDefinitions.map((definition) => ({
+                            id: definition.id,
+                            name: definition.name,
+                            method: definition.method,
+                            value: definition.value,
+                            scope: definition.scope,
+                        }))}
                         approvalTargetName={approvalTargetName}
                         baseAmount={baseAmountForDisplay(manualDraft.scope, cart, selectedLineTotal)}
                         placeholderTextColor={tokens.colors.textSecondary}
@@ -707,7 +899,10 @@ export function Cart({
                             onInteractionComplete();
                         }}
                         onSubmit={submitManualDiscount}
-                        onChange={(updater) => setManualDraft(updater)}
+                        onSelectDefinition={selectManualDefinition}
+                        onChange={(updater) =>
+                            setManualDraft((current) => updater(current))
+                        }
                     />
 
                     <CartPriceOverrideDialog

@@ -150,6 +150,20 @@ const resetProductSyncState = () => {
     previousProductSnapshot.clear();
 };
 
+export const teardownProductSync = () => {
+    teardownProductSubscriptions();
+    productSnapshot = [];
+    activeProductTenantId = undefined;
+    productLastSubscriptionStartedAt = undefined;
+    productLastSnapshotAt = undefined;
+    productLastRealtimePatchAt = undefined;
+    productLastRecoveryAttemptAt = undefined;
+    productLastRecoveryError = undefined;
+    productLastError = undefined;
+    productRecoveryRetryCount = 0;
+    previousProductSnapshot.clear();
+};
+
 const onProductSubscriptionError = (error: unknown) => {
     productLastError = toErrorMessage(error);
     console.error('[products.sync] shared subscription failed', error);
@@ -414,14 +428,29 @@ const logChangedProducts = (items: Product[]) => {
 
 export const syncProducts = (dispatch: Dispatch) => {
     const finish = startSyncMeasure('products', 'syncProducts');
-    const subscription = DataStore.observeQuery(Product).subscribe(({ items }) => {
+    let subscription:
+        | {
+              unsubscribe: () => void;
+          }
+        | undefined;
+    let shouldUnsubscribeAfterSubscribe = false;
+    subscription = DataStore.observeQuery(Product).subscribe(({ items }) => {
         const activeItems = items.filter((item) =>
             isNotDeleted(item as { _deleted?: boolean | null })
         );
         finish({ itemCount: activeItems.length });
         updateStore(dispatch, activeItems);
-        subscription.unsubscribe();
+        if (subscription) {
+            subscription.unsubscribe();
+            return;
+        }
+
+        shouldUnsubscribeAfterSubscribe = true;
     });
+
+    if (shouldUnsubscribeAfterSubscribe) {
+        subscription.unsubscribe();
+    }
 };
 
 

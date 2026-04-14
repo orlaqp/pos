@@ -1,6 +1,7 @@
 export type ManualDraft = {
     scope: 'LINE' | 'ORDER';
     method: 'PERCENT' | 'AMOUNT';
+    selectedDefinitionId?: string;
     percentValue: string;
     amountValue: string;
     reasonCode: string;
@@ -16,6 +17,7 @@ export type OverrideDraft = {
 export const defaultManualDraft = (): ManualDraft => ({
     scope: 'LINE',
     method: 'PERCENT',
+    selectedDefinitionId: undefined,
     percentValue: '',
     amountValue: '',
     reasonCode: '',

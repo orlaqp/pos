@@ -12,6 +12,7 @@ import {
     createSlice,
     EntityState,
     PayloadAction,
+    Update,
 } from '@reduxjs/toolkit';
 import { OrderEntity, OrderEntityMapper } from '../order.entity';
 import { FilterRequest, OrderService } from '../order.service';
@@ -50,8 +51,121 @@ export interface OrdersState extends EntityState<OrderEntity, string> {
     pendingOrderLastError: Record<string, string | undefined>;
 }
 
+const ORDER_COMPARISON_FIELDS: Array<keyof OrderEntity> = [
+    'orderNo',
+    'baseSubtotal',
+    'subtotal',
+    'lineDiscountTotal',
+    'orderDiscountTotal',
+    'discountTotal',
+    'savingsTotal',
+    'tax',
+    'total',
+    'status',
+    'employeeId',
+    'employeeName',
+    'pricingVersion',
+    'pricingSnapshotHash',
+    'pricingSource',
+    'reconciliationStatus',
+    'orderDate',
+    'createdAt',
+    'updatedAt',
+];
+
+const areOrdersEquivalent = (
+    left: OrderEntity | undefined,
+    right: OrderEntity
+) => {
+    if (!left) {
+        return false;
+    }
+
+    const primitiveFieldsEqual = ORDER_COMPARISON_FIELDS.every(
+        (field) => left[field] === right[field]
+    );
+
+    if (!primitiveFieldsEqual) {
+        return false;
+    }
+
+    return (
+        JSON.stringify(left.promoCodes || null) ===
+            JSON.stringify(right.promoCodes || null) &&
+        JSON.stringify(left.appliedDiscountSummary || null) ===
+            JSON.stringify(right.appliedDiscountSummary || null) &&
+        JSON.stringify(left.lines || null) ===
+            JSON.stringify(right.lines || null) &&
+        JSON.stringify(left.payments || null) ===
+            JSON.stringify(right.payments || null) &&
+        JSON.stringify(left.paymentInfo || null) ===
+            JSON.stringify(right.paymentInfo || null) &&
+        JSON.stringify(left.refundInfo || null) ===
+            JSON.stringify(right.refundInfo || null)
+    );
+};
+
+const reconcileIncomingOrders = (
+    state: OrdersState,
+    incoming: OrderEntity[]
+) => {
+    const nextOrders = incoming.map((order) => {
+        const pendingStatus = state.pendingStatusOverrides[order.id];
+        if (pendingStatus && order.status === pendingStatus) {
+            delete state.pendingStatusOverrides[order.id];
+        }
+
+        return applyPendingOverride(order, state.pendingStatusOverrides);
+    });
+    const previousIds = (state.ids as string[]) || [];
+    const nextIds = new Set(nextOrders.map((order) => order.id));
+    const removals = previousIds.filter((id) => !nextIds.has(id));
+    const additions: OrderEntity[] = [];
+    const updates: Update<OrderEntity, string>[] = [];
+
+    nextOrders.forEach((order) => {
+        const existing = state.entities[order.id];
+
+        if (!existing) {
+            additions.push(order);
+            return;
+        }
+
+        if (areOrdersEquivalent(existing, order)) {
+            return;
+        }
+
+        const { id, ...changes } = order;
+        updates.push({
+            id,
+            changes,
+        });
+    });
+
+    if (removals.length > 0) {
+        ordersAdapter.removeMany(state, removals);
+    }
+
+    if (additions.length > 0) {
+        ordersAdapter.addMany(state, additions);
+    }
+
+    if (updates.length > 0) {
+        ordersAdapter.updateMany(state, updates);
+    }
+
+    if (removals.length > 0 || additions.length > 0 || updates.length > 0) {
+        filterList(state, state.filterQuery);
+        return;
+    }
+
+    state.loadingStatus = 'loaded';
+};
+
 export const ordersAdapter = createEntityAdapter<OrderEntity, string>({
     selectId: (order) => order.id,
+    sortComparer: (left, right) =>
+        (left.createdAt || '').localeCompare(right.createdAt || ''),
 });
 const ordersEntitySelectors = ordersAdapter.getSelectors<OrdersState>(
     (ordersState) => ordersState
@@ -162,19 +276,7 @@ export const ordersSlice = createSlice({
     initialState: initialOrdersState,
     reducers: {
         setAll: (state: OrdersState, action: PayloadAction<OrderEntity[]>) => {
-            ordersAdapter.setAll(
-                state,
-                action.payload.map((order) => {
-                    const pendingStatus = state.pendingStatusOverrides[order.id];
-                    if (pendingStatus && order.status === pendingStatus) {
-                        delete state.pendingStatusOverrides[order.id];
-                    }
-
-                    return applyPendingOverride(order, state.pendingStatusOverrides);
-                })
-            );
-            filterList(state, state.filterQuery);
-            state.loadingStatus = 'loaded';
+            reconcileIncomingOrders(state, action.payload);
         },
         remove: (state: OrdersState, action: PayloadAction<string>) => {
             ordersAdapter.removeOne(state, action.payload);

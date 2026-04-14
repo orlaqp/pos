@@ -169,6 +169,7 @@ export interface ManualDiscountRequest {
   scope: DiscountScope;
   method: 'PERCENT' | 'AMOUNT';
   value: number;
+  definitionId?: string | null;
   lineId?: string;
   name?: string;
   reasonCode?: string | null;

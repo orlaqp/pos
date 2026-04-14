@@ -90,4 +90,36 @@ describe('settings data-store sync', () => {
         secondSub.unsubscribe();
         expect(unsubscribe).toHaveBeenCalledTimes(1);
     });
+
+    it('filters deleted global settings tombstones from sync updates', () => {
+        const dispatch = jest.fn();
+        const unsubscribe = jest.fn();
+        let observer:
+            | ((value: { isSynced: boolean; items: any[] }) => void)
+            | undefined;
+
+        mockSubscribe.mockImplementation((callback: typeof observer) => {
+            observer = callback as typeof observer;
+            return { unsubscribe };
+        });
+
+        const subscription = subscribeToGlobalSettingsChanges(dispatch);
+        observer?.({
+            isSynced: true,
+            items: [
+                { id: 'deleted-settings', enforceSalesBasedOnInventory: false, _deleted: true },
+                { id: 'live-settings', enforceSalesBasedOnInventory: true, _deleted: false },
+            ],
+        });
+
+        expect(dispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'settings/setGlobalSettings',
+                payload: expect.objectContaining({ enforceSalesBasedOnInventory: true }),
+            })
+        );
+
+        subscription.unsubscribe();
+        expect(unsubscribe).toHaveBeenCalledTimes(1);
+    });
 });

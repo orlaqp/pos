@@ -115,4 +115,32 @@ describe('employees data-store sync', () => {
         secondSub.unsubscribe();
         expect(unsubscribe).toHaveBeenCalledTimes(1);
     });
+
+    it('filters deleted employee tombstones from sync updates', () => {
+        const dispatch = jest.fn();
+        let observer: ((value: { isSynced: boolean; items: any[] }) => void) | undefined;
+
+        mockSubscribe.mockImplementation((callback: typeof observer) => {
+            observer = callback as typeof observer;
+            return { unsubscribe: jest.fn() };
+        });
+
+        const subscription = subscribeToEmployeeChanges(dispatch);
+        observer?.({
+            isSynced: true,
+            items: [
+                { id: 'deleted-employee', firstName: 'Old', _deleted: true },
+                { id: 'live-employee', firstName: 'Ana', _deleted: false },
+            ],
+        });
+
+        expect(dispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'employees/setAll',
+                payload: [expect.objectContaining({ id: 'live-employee' })],
+            })
+        );
+
+        subscription.unsubscribe();
+    });
 });

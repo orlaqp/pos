@@ -29,35 +29,27 @@ export function Submenu({
             ? i18next.t(item.labelKey)
             : item.title;
     const headerContent = (
-        <View key={`sidebar-submenu-header-${item.id}`} style={styles.headerContent}>
-            {[
-                item.icon ? (
-                    <View key={`sidebar-submenu-icon-${item.id}`} style={styles.iconSlot}>
-                        <Icon
-                            name={item.icon}
-                            type="material-community"
-                            size={20}
-                            color={parentActive ? colors.primary : colors.grey3}
-                        />
-                    </View>
-                ) : null,
-                (
-                    <ListItem.Content
-                        key={`sidebar-submenu-content-${item.id}`}
-                        style={styles.headerTitleContent}
-                    >
-                        <ListItem.Title
-                            key={`sidebar-submenu-title-${item.id}`}
-                            style={[
-                                styles.headerTitle,
-                                parentActive && styles.headerTitleActive,
-                            ]}
-                        >
-                            {title}
-                        </ListItem.Title>
-                    </ListItem.Content>
-                ),
-            ]}
+        <View style={styles.headerContent}>
+            {item.icon ? (
+                <View style={styles.iconSlot}>
+                    <Icon
+                        name={item.icon}
+                        type="material-community"
+                        size={20}
+                        color={parentActive ? colors.primary : colors.grey3}
+                    />
+                </View>
+            ) : null}
+            <ListItem.Content style={styles.headerTitleContent}>
+                <ListItem.Title
+                    style={[
+                        styles.headerTitle,
+                        parentActive && styles.headerTitleActive,
+                    ]}
+                >
+                    {title}
+                </ListItem.Title>
+            </ListItem.Content>
         </View>
     );
 
@@ -69,7 +61,6 @@ export function Submenu({
             ]}
             icon={
                 <Icon
-                    key={`sidebar-submenu-icon-collapsed-${item.id}`}
                     name="chevron-down"
                     type="material-community"
                     size={18}
@@ -78,7 +69,6 @@ export function Submenu({
             }
             expandIcon={
                 <Icon
-                    key={`sidebar-submenu-icon-expanded-${item.id}`}
                     name="chevron-down"
                     type="material-community"
                     size={18}
@@ -89,20 +79,20 @@ export function Submenu({
             isExpanded={isExpanded}
             onPress={() => setExpandedId(isExpanded ? undefined : item.id)}
         >
-            <View key={`sidebar-submenu-children-${item.id}`} style={styles.childrenContainer}>
-                <View key={`sidebar-submenu-rail-${item.id}`} style={styles.childrenRail} />
-                <View key={`sidebar-submenu-items-${item.id}`} style={styles.childrenItems}>
+            <View style={styles.childrenContainer}>
+                <View style={styles.childrenRail} />
+                <View style={styles.childrenItems}>
                     {item.children?.map((c) => (
-                    <SingleItem
-                        key={c.id}
-                        chevron
-                        compact
-                        item={c}
-                        selectedId={selectedId}
-                        isActive={selectedId === c.id}
-                        setSelected={setSelected}
-                    />
-                ))}
+                        <SingleItem
+                            key={c.id}
+                            chevron
+                            compact
+                            item={c}
+                            selectedId={selectedId}
+                            isActive={selectedId === c.id}
+                            setSelected={setSelected}
+                        />
+                    ))}
                 </View>
             </View>
         </ListItem.Accordion>
