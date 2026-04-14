@@ -55,6 +55,9 @@ let productLastError: string | undefined;
 let productRecoveryRetryCount = 0;
 let productRecoveryTimer: ReturnType<typeof setTimeout> | undefined;
 
+const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
+    !!item && item._deleted !== true;
+
 const toErrorMessage = (error: unknown) =>
     error instanceof Error ? error.message : String(error);
 
@@ -199,15 +202,18 @@ const startSharedProductSubscriptions = (
     const releaseObserve = trackSyncSubscription('products.observeQuery');
     const observeSubscription = DataStore.observeQuery(Product).subscribe({
         next: ({ isSynced, items }) => {
+            const activeItems = items.filter((item) =>
+                isNotDeleted(item as { _deleted?: boolean | null })
+            );
             productRecoveryRetryCount = 0;
             productLastError = undefined;
             productLastSnapshotAt = new Date().toISOString();
             logSyncDebug('products.observeQuery', 'update', {
                 isSynced,
-                itemCount: items.length,
+                itemCount: activeItems.length,
             });
-            logChangedProducts(items);
-            publishSnapshot(items);
+            logChangedProducts(activeItems);
+            publishSnapshot(activeItems);
             broadcastSyncHealth({
                 status: 'healthy',
                 lastSnapshotAt: productLastSnapshotAt,
@@ -409,8 +415,11 @@ const logChangedProducts = (items: Product[]) => {
 export const syncProducts = (dispatch: Dispatch) => {
     const finish = startSyncMeasure('products', 'syncProducts');
     const subscription = DataStore.observeQuery(Product).subscribe(({ items }) => {
-        finish({ itemCount: items.length });
-        updateStore(dispatch, items);
+        const activeItems = items.filter((item) =>
+            isNotDeleted(item as { _deleted?: boolean | null })
+        );
+        finish({ itemCount: activeItems.length });
+        updateStore(dispatch, activeItems);
         subscription.unsubscribe();
     });
 };

@@ -16,13 +16,19 @@ let sharedCategorySubscription:
 
 let categorySnapshot: Category[] = [];
 
+const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
+    !!item && item._deleted !== true;
+
 export const syncCategories = (dispatch: Dispatch) => {
     const finish = startSyncMeasure('categories', 'syncCategories');
     let subscription: { unsubscribe: () => void } | undefined = undefined;
     let shouldUnsubscribeAfterSubscribe = false;
     subscription = DataStore.observeQuery(Category).subscribe(({ items }) => {
-        finish({ itemCount: items.length });
-        updateStore(dispatch, items);
+        const activeItems = items.filter((item) =>
+            isNotDeleted(item as { _deleted?: boolean | null })
+        );
+        finish({ itemCount: activeItems.length });
+        updateStore(dispatch, activeItems);
         if (subscription) {
             subscription.unsubscribe();
             return;
@@ -44,13 +50,16 @@ export const subscribeToCategoryChanges = (dispatch: Dispatch) => {
         const release = trackSyncSubscription('categories.observeQuery');
         const subscription = DataStore.observeQuery(Category).subscribe(
             ({ isSynced, items }) => {
+                const activeItems = items.filter((item) =>
+                    isNotDeleted(item as { _deleted?: boolean | null })
+                );
                 logSyncDebug('categories.observeQuery', 'update', {
                     isSynced,
-                    itemCount: items.length,
+                    itemCount: activeItems.length,
                 });
-                categorySnapshot = items;
+                categorySnapshot = activeItems;
                 categoryDispatchRefs.forEach((_, activeDispatch) => {
-                    updateStore(activeDispatch, items);
+                    updateStore(activeDispatch, activeItems);
                 });
             }
         );

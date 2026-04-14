@@ -1,5 +1,5 @@
 /* eslint-disable */
-import basePreset from '../../../jest.preset.js';
+const basePreset = require('../../../jest.preset.js');
 
 export default {
     displayName: 'shared-ui-native',

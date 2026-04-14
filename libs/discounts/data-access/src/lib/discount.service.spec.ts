@@ -202,6 +202,17 @@ describe('DiscountService', () => {
     );
   });
 
+  it('filters deleted definition tombstones from local queries', async () => {
+    queryMock.mockResolvedValueOnce([
+      { id: 'deleted-disc', name: 'Deleted', type: 'MANUAL', active: true, _deleted: true },
+      { id: 'live-disc', name: 'Live', type: 'MANUAL', active: true, _deleted: false },
+    ]);
+
+    const result = await DiscountService.listDefinitions();
+
+    expect(result.map((item) => item.id)).toEqual(['live-disc']);
+  });
+
   it('updates an existing definition', async () => {
     queryMock.mockResolvedValueOnce({
       id: 'disc-1',
@@ -268,12 +279,27 @@ describe('DiscountService', () => {
   });
 
   it('deletes an existing definition', async () => {
-    const record = { id: 'disc-1', name: 'Delete me' };
+    const record = { id: 'disc-1', name: 'Delete me', _version: 3 };
     queryMock.mockResolvedValueOnce(record);
+    graphqlMock.mockResolvedValueOnce({
+      data: {
+        deleteDiscountDefinition: {
+          id: 'disc-1',
+          _deleted: true,
+          _version: 4,
+        },
+      },
+    });
     deleteMock.mockResolvedValueOnce(undefined);
 
     await DiscountService.deleteDefinition('disc-1');
 
+    expect(graphqlMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variables: { input: { id: 'disc-1', _version: 3 } },
+        authMode: 'userPool',
+      })
+    );
     expect(deleteMock).toHaveBeenCalledWith(record);
   });
 
@@ -374,6 +400,17 @@ describe('DiscountService', () => {
     );
   });
 
+  it('filters deleted policy tombstones from local queries', async () => {
+    queryMock.mockResolvedValueOnce([
+      { id: 'deleted-policy', roleKey: 'Sales', active: true, _deleted: true },
+      { id: 'live-policy', roleKey: 'Admin', active: true, _deleted: false },
+    ]);
+
+    const result = await DiscountService.listPolicies();
+
+    expect(result.map((item) => item.id)).toEqual(['live-policy']);
+  });
+
   it('resolves an employee-specific policy before role policies', () => {
     const result = DiscountService.resolvePolicyForEmployee(
       { id: 'emp-1', roles: ['Sales', 'Admin'] },
@@ -451,12 +488,27 @@ describe('DiscountService', () => {
   });
 
   it('deletes an existing policy', async () => {
-    const record = { id: 'policy-1', roleKey: 'Sales' };
+    const record = { id: 'policy-1', roleKey: 'Sales', _version: 6 };
     queryMock.mockResolvedValueOnce(record);
+    graphqlMock.mockResolvedValueOnce({
+      data: {
+        deleteEmployeeDiscountPolicy: {
+          id: 'policy-1',
+          _deleted: true,
+          _version: 7,
+        },
+      },
+    });
     deleteMock.mockResolvedValueOnce(undefined);
 
     await DiscountService.deletePolicy('policy-1');
 
+    expect(graphqlMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variables: { input: { id: 'policy-1', _version: 6 } },
+        authMode: 'userPool',
+      })
+    );
     expect(deleteMock).toHaveBeenCalledWith(record);
   });
 

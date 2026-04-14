@@ -63,6 +63,7 @@ const listDiscountDefinitionsQuery = /* GraphQL */ `
         active
         createdAt
         updatedAt
+        _deleted
         _version
       }
       nextToken
@@ -95,6 +96,7 @@ const listEmployeeDiscountPoliciesQuery = /* GraphQL */ `
         active
         createdAt
         updatedAt
+        _deleted
         _version
       }
       nextToken
@@ -215,8 +217,10 @@ const findRemoteDefinitionRecord = async (id: string) => {
     authMode: 'userPool',
   });
 
-  return response.data?.listDiscountDefinitions?.items?.find(
-    (definition) => !!definition && definition.id === id
+  return response?.data?.listDiscountDefinitions?.items?.find(
+    (definition) =>
+      isNotDeleted(definition as { _deleted?: boolean | null }) &&
+      definition.id === id
   );
 };
 
@@ -231,8 +235,10 @@ const findRemotePolicyRecord = async (id: string) => {
     authMode: 'userPool',
   });
 
-  return response.data?.listEmployeeDiscountPolicies?.items?.find(
-    (policy) => !!policy && policy.id === id
+  return response?.data?.listEmployeeDiscountPolicies?.items?.find(
+    (policy) =>
+      isNotDeleted(policy as { _deleted?: boolean | null }) &&
+      policy.id === id
   );
 };
 
@@ -240,6 +246,9 @@ const filterDefinitionsByType = (
   items: DiscountDefinitionEntity[],
   type?: 'MANUAL' | 'AUTOMATIC' | 'PROMO_CODE'
 ) => items.filter((item) => (type ? item.type === type : true));
+
+const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
+  !!item && item._deleted !== true;
 
 const notifyDefinitionListeners = (items: DiscountDefinitionEntity[]) => {
   definitionListeners.forEach((config, listener) => {
@@ -251,6 +260,16 @@ const notifyPolicyListeners = (items: EmployeeDiscountPolicyEntity[]) => {
   policyListeners.forEach((listener) => listener(items));
 };
 
+const removeDefinitionFromSnapshot = (id: string) => {
+  definitionSnapshot = definitionSnapshot.filter((item) => item.id !== id);
+  notifyDefinitionListeners(definitionSnapshot);
+};
+
+const removePolicyFromSnapshot = (id: string) => {
+  policySnapshot = policySnapshot.filter((item) => item.id !== id);
+  notifyPolicyListeners(policySnapshot);
+};
+
 const ensureDefinitionSubscription = () => {
   if (sharedDefinitionSubscription) {
     return;
@@ -258,7 +277,9 @@ const ensureDefinitionSubscription = () => {
 
   const subscription = DataStore.observeQuery(DiscountDefinition).subscribe(({ items }) => {
     definitionSnapshot = sortDefinitions(
-      items.map((item) => DiscountEntityMapper.fromDefinition(item))
+      items
+        .filter((item) => isNotDeleted(item as { _deleted?: boolean | null }))
+        .map((item) => DiscountEntityMapper.fromDefinition(item))
     );
     notifyDefinitionListeners(definitionSnapshot);
   });
@@ -279,7 +300,9 @@ const ensurePolicySubscription = () => {
 
   const subscription = DataStore.observeQuery(EmployeeDiscountPolicy).subscribe(({ items }) => {
     policySnapshot = sortPolicies(
-      items.map((item) => DiscountEntityMapper.fromPolicy(item))
+      items
+        .filter((item) => isNotDeleted(item as { _deleted?: boolean | null }))
+        .map((item) => DiscountEntityMapper.fromPolicy(item))
     );
     notifyPolicyListeners(policySnapshot);
   });
@@ -370,18 +393,17 @@ export class DiscountService {
 
   static async getDefinition(id: string) {
     const item = await DataStore.query(DiscountDefinition, id);
-    if (item) {
+    if (isNotDeleted(item as { _deleted?: boolean | null })) {
       return DiscountEntityMapper.fromDefinition(item);
     }
 
     const remoteItem = await findRemoteDefinitionRecord(id);
-
     return remoteItem ? mapRemoteDefinition(remoteItem) : null;
   }
 
   static async listDefinitions(type?: 'MANUAL' | 'AUTOMATIC' | 'PROMO_CODE') {
-    const items = await DataStore.query(DiscountDefinition);
-    const localItems = items
+    const localItems = ((await DataStore.query(DiscountDefinition)) || [])
+      .filter((item) => isNotDeleted(item as { _deleted?: boolean | null }))
       .filter((item) => (type ? item.type === type : true))
       .map((item) => DiscountEntityMapper.fromDefinition(item))
       .sort((a, b) => a.name.localeCompare(b.name));
@@ -400,8 +422,8 @@ export class DiscountService {
       authMode: 'userPool',
     });
 
-    const remoteItems = (response.data?.listDiscountDefinitions?.items || [])
-      .filter((item): item is any => !!item)
+    const remoteItems = (response?.data?.listDiscountDefinitions?.items || [])
+      .filter((item): item is any => isNotDeleted(item as { _deleted?: boolean | null }))
       .filter((item) => (type ? item.type === type : true))
       .map(mapRemoteDefinition);
 
@@ -473,12 +495,11 @@ export class DiscountService {
 
   static async deleteDefinition(id: string) {
     const existing = await DataStore.query(DiscountDefinition, id);
-    if (existing) {
-      return DataStore.delete(existing);
-    }
+    const localVersion = (existing as { _version?: number } | undefined)?._version;
+    const remoteItem = localVersion ? null : await findRemoteDefinitionRecord(id);
+    const resolvedVersion = localVersion ?? remoteItem?._version;
 
-    const remoteItem = await findRemoteDefinitionRecord(id);
-    if (!remoteItem?._version) throw new Error(`Discount definition ${id} not found`);
+    if (!resolvedVersion) throw new Error(`Discount definition ${id} not found`);
 
     const response = await API.graphql<{
       deleteDiscountDefinition?: { id: string } | null;
@@ -487,7 +508,7 @@ export class DiscountService {
       variables: {
         input: {
           id,
-          _version: remoteItem._version,
+          _version: resolvedVersion,
         },
       },
       authMode: 'userPool',
@@ -499,12 +520,22 @@ export class DiscountService {
       );
     }
 
+    removeDefinitionFromSnapshot(id);
+
+    if (existing) {
+      try {
+        await DataStore.delete(existing);
+      } catch {
+        // The backend delete already succeeded; let sync settle local state if local delete races.
+      }
+    }
+
     return response.data.deleteDiscountDefinition;
   }
 
   static async listPolicies() {
-    const items = await DataStore.query(EmployeeDiscountPolicy);
-    const localItems = items
+    const localItems = ((await DataStore.query(EmployeeDiscountPolicy)) || [])
+      .filter((item) => isNotDeleted(item as { _deleted?: boolean | null }))
       .map((item) => DiscountEntityMapper.fromPolicy(item))
       .sort((a, b) => (a.roleKey || a.employeeId || '').localeCompare(b.roleKey || b.employeeId || ''));
 
@@ -522,8 +553,8 @@ export class DiscountService {
       authMode: 'userPool',
     });
 
-    const remoteItems = (response.data?.listEmployeeDiscountPolicies?.items || [])
-      .filter((item): item is any => !!item)
+    const remoteItems = (response?.data?.listEmployeeDiscountPolicies?.items || [])
+      .filter((item): item is any => isNotDeleted(item as { _deleted?: boolean | null }))
       .map(mapRemotePolicy);
 
     return sortPolicies(remoteItems);
@@ -531,12 +562,11 @@ export class DiscountService {
 
   static async getPolicy(id: string) {
     const item = await DataStore.query(EmployeeDiscountPolicy, id);
-    if (item) {
+    if (isNotDeleted(item as { _deleted?: boolean | null })) {
       return DiscountEntityMapper.fromPolicy(item);
     }
 
     const remoteItem = await findRemotePolicyRecord(id);
-
     return remoteItem ? mapRemotePolicy(remoteItem) : null;
   }
 
@@ -581,12 +611,11 @@ export class DiscountService {
 
   static async deletePolicy(id: string) {
     const existing = await DataStore.query(EmployeeDiscountPolicy, id);
-    if (existing) {
-      return DataStore.delete(existing);
-    }
+    const localVersion = (existing as { _version?: number } | undefined)?._version;
+    const remoteItem = localVersion ? null : await findRemotePolicyRecord(id);
+    const resolvedVersion = localVersion ?? remoteItem?._version;
 
-    const remoteItem = await findRemotePolicyRecord(id);
-    if (!remoteItem?._version) throw new Error(`Discount policy ${id} not found`);
+    if (!resolvedVersion) throw new Error(`Discount policy ${id} not found`);
 
     const response = await API.graphql<{
       deleteEmployeeDiscountPolicy?: { id: string } | null;
@@ -595,7 +624,7 @@ export class DiscountService {
       variables: {
         input: {
           id,
-          _version: remoteItem._version,
+          _version: resolvedVersion,
         },
       },
       authMode: 'userPool',
@@ -605,6 +634,16 @@ export class DiscountService {
       throw new Error(
         getGraphqlErrorMessage(response, `Unable to delete discount policy ${id}`)
       );
+    }
+
+    removePolicyFromSnapshot(id);
+
+    if (existing) {
+      try {
+        await DataStore.delete(existing);
+      } catch {
+        // The backend delete already succeeded; let sync settle local state if local delete races.
+      }
     }
 
     return response.data.deleteEmployeeDiscountPolicy;

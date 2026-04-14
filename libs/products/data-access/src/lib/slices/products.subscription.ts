@@ -8,6 +8,9 @@ type Subscription = { unsubscribe: () => void };
 
 export let productsSubscription: Subscription | null;
 
+const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
+    !!item && item._deleted !== true;
+
 export const observeProductChanges = (dispatch: Dispatch) => {
     if (productsSubscription) {
         productsSubscription.unsubscribe();
@@ -16,7 +19,13 @@ export const observeProductChanges = (dispatch: Dispatch) => {
 
     productsSubscription = DataStore.observeQuery(Product).subscribe(({ isSynced, items }) => {
         if (isSynced) {
-            dispatch(productsActions.setAll(items.map(i => ProductEntityMapper.fromProduct(i))));
+            dispatch(
+                productsActions.setAll(
+                    items
+                        .filter((item) => isNotDeleted(item as { _deleted?: boolean | null }))
+                        .map((i) => ProductEntityMapper.fromProduct(i))
+                )
+            );
         }
     }, (error) => {
         dispatch(productsActions.error(error));

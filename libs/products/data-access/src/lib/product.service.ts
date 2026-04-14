@@ -3,6 +3,9 @@ import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from '@pos/shared/amplify';
 import { productsActions } from './slices/products.slice';
 import { ProductEntity } from './product.entity';
+
+const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
+    !!item && item._deleted !== true;
 import { Alert } from 'react-native';
 import { stampTenant } from '@pos/auth/data-access';
 
@@ -214,7 +217,9 @@ export class ProductService {
 
     static getAll() {
         try {
-            return DataStore.query(Product);
+            return DataStore.query(Product).then((items) =>
+                items.filter((item) => isNotDeleted(item as { _deleted?: boolean | null }))
+            );
         } catch (error) {
             console.error('error querying products', error);
             return [];

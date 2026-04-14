@@ -6,6 +6,9 @@ import { CategoryEntity } from './category.entity';
 import { categoriesActions } from './slices/categories.slice';
 import { stampTenant } from '@pos/auth/data-access';
 
+const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
+    !!item && item._deleted !== true;
+
 export class CategoryService {
     static async save(dispatch: Dispatch<any>, category: CategoryEntity) {
         if (!category.id) {
@@ -43,7 +46,9 @@ export class CategoryService {
     }
 
     static getAll() {
-        return DataStore.query(Category);
+        return DataStore.query(Category).then((items) =>
+            items.filter((item) => isNotDeleted(item as { _deleted?: boolean | null }))
+        );
     }
 
     static async delete(id: string) {

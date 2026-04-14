@@ -12,6 +12,8 @@ export interface UploadResponse {
 
 export type GetAssetResponse = Readable | ReadableStream | Blob | undefined;
 
+const pendingBinaryDownloads = new Map<string, Promise<string>>();
+
 export class AssetsService {
     static async uploadAsset(mediaType: MediaType, keyPrefix: string): Promise<UploadResponse | null> {
         try {
@@ -52,6 +54,32 @@ export class AssetsService {
 
     static getCachedImage(key: string) {
         return FsService.get(key);
+    }
+
+    static getCachedImagePath(key: string) {
+        return FsService.getFileUri(key);
+    }
+
+    static async ensureImageDownloaded(key: string): Promise<string> {
+        const cached = await AssetsService.getCachedImagePath(key);
+
+        if (cached) {
+            return cached;
+        }
+
+        const inflight = pendingBinaryDownloads.get(key);
+        if (inflight) {
+            return inflight;
+        }
+
+        const request = AssetsService.getAssetUri(key)
+            .then((uri) => FsService.download(key, uri))
+            .finally(() => {
+                pendingBinaryDownloads.delete(key);
+            });
+
+        pendingBinaryDownloads.set(key, request);
+        return request;
     }
 
     static async getImage(key: string): Promise<string> {
