@@ -94,4 +94,33 @@ describe('orders data-store sync', () => {
         await expect(ensureOrderSyncHealthy(dispatch)).resolves.toBe(false);
         expect(DataStore.observeQuery).not.toHaveBeenCalled();
     });
+
+    it('recovers an order sync that previously received snapshots but has gone silent too long', async () => {
+        jest.useFakeTimers();
+        const dispatch = jest.fn();
+        const unsubscribers = [jest.fn(), jest.fn(), jest.fn(), jest.fn(), jest.fn(), jest.fn()];
+        const observers: Array<
+            | {
+                  next?: (value: { isSynced: boolean; items: any[] }) => void;
+              }
+            | undefined
+        > = [];
+
+        mockSubscribe.mockImplementation((observer: (typeof observers)[number]) => {
+            observers.push(observer);
+            return { unsubscribe: unsubscribers[observers.length - 1] };
+        });
+
+        const subscription = subscribeToOrderChanges(dispatch);
+        observers[0]?.next?.({ isSynced: true, items: [{ id: 'open-1', status: 'OPEN' }] as any[] });
+
+        jest.advanceTimersByTime(5 * 60_000 + 1);
+        await ensureOrderSyncHealthy(dispatch, { tenantId: 'tenant-1' });
+        jest.advanceTimersByTime(1_000);
+
+        expect(DataStore.observeQuery).toHaveBeenCalledTimes(6);
+
+        subscription.unsubscribe();
+        jest.useRealTimers();
+    });
 });

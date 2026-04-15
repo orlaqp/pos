@@ -11,6 +11,8 @@ import moment from 'moment';
 const LAST_CLOSED_ORDER_DAYS = 3;
 const ORDER_SYNC_MODEL = 'orders';
 export const ORDER_SYNC_STALE_THRESHOLD_MS = 60_000;
+const ORDER_SYNC_SILENT_RECOVERY_THRESHOLD_MS =
+    ORDER_SYNC_STALE_THRESHOLD_MS * 5;
 const ORDER_SYNC_RECOVERY_BASE_DELAY_MS = 1_000;
 const ORDER_SYNC_RECOVERY_MAX_DELAY_MS = 5_000;
 const orderDispatchRefs = new Map<Dispatch, number>();
@@ -295,12 +297,13 @@ export const restartOrderSync = async (
     reason = 'manual',
     tenantId?: string
 ) => {
+    const resolvedTenantId = tenantId ?? activeOrderTenantId;
     logSyncDebug('orders.sync', 'restart', {
         reason,
-        tenantId: tenantId || null,
+        tenantId: resolvedTenantId || null,
     });
     teardownOrderSubscriptions();
-    startSharedOrderSubscriptions(dispatch, tenantId);
+    startSharedOrderSubscriptions(dispatch, resolvedTenantId);
 };
 
 export const ensureOrderSyncHealthy = async (
@@ -312,6 +315,10 @@ export const ensureOrderSyncHealthy = async (
 ) => {
     const tenantId = options?.tenantId;
     const staleAfterMs = options?.staleAfterMs ?? ORDER_SYNC_STALE_THRESHOLD_MS;
+    const silentRecoveryAfterMs = Math.max(
+        staleAfterMs,
+        ORDER_SYNC_SILENT_RECOVERY_THRESHOLD_MS
+    );
     const now = Date.now();
     const lastSignalAt = orderLastSnapshotAt
         ? new Date(orderLastSnapshotAt).getTime()
@@ -339,6 +346,26 @@ export const ensureOrderSyncHealthy = async (
             status: 'stale',
         });
         scheduleOrderRecovery(dispatch, 'stale subscription');
+        return true;
+    }
+
+    if (
+        lastSignalAt &&
+        now - lastSignalAt > silentRecoveryAfterMs &&
+        (!orderLastRecoveryAttemptAt ||
+            now - new Date(orderLastRecoveryAttemptAt).getTime() >
+                silentRecoveryAfterMs)
+    ) {
+        updateSyncHealth(dispatch, {
+            status: 'stale',
+            lastSnapshotAt: orderLastSnapshotAt,
+        });
+        scheduleOrderRecovery(
+            dispatch,
+            `no order sync signal for ${Math.round(
+                (now - lastSignalAt) / 1000
+            )}s`
+        );
         return true;
     }
 

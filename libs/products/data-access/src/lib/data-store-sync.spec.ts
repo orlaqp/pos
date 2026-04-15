@@ -160,4 +160,44 @@ describe('products data-store sync', () => {
         expect(DataStore.observeQuery).not.toHaveBeenCalled();
         expect(API.graphql).not.toHaveBeenCalled();
     });
+
+    it('recovers a product sync that previously received signals but has gone silent too long', async () => {
+        jest.useFakeTimers();
+        const dispatch = jest.fn();
+        const observeUnsubscribe = jest.fn();
+        const realtimeUnsubscribe = jest.fn();
+        const products = [
+            {
+                id: 'product-1',
+                name: 'Apple',
+                quantity: 10,
+                updatedAt: '2026-04-03T10:00:00.000Z',
+            },
+        ] as any[];
+
+        let observeObserver:
+            | {
+                  next?: (value: { isSynced: boolean; items: any[] }) => void;
+              }
+            | undefined;
+
+        mockObserveSubscribe.mockImplementation((value: typeof observeObserver) => {
+            observeObserver = value;
+            return { unsubscribe: observeUnsubscribe };
+        });
+        mockRealtimeSubscribe.mockReturnValue({ unsubscribe: realtimeUnsubscribe });
+
+        const subscription = subscribeToProductChanges(dispatch, 'tenant-1');
+        observeObserver?.next?.({ isSynced: true, items: products });
+
+        jest.advanceTimersByTime(5 * 60_000 + 1);
+        await ensureProductSyncHealthy(dispatch, { tenantId: 'tenant-1' });
+        jest.advanceTimersByTime(1_000);
+
+        expect(DataStore.observeQuery).toHaveBeenCalledTimes(2);
+        expect(API.graphql).toHaveBeenCalledTimes(2);
+
+        subscription.unsubscribe();
+        jest.useRealTimers();
+    });
 });

@@ -29,6 +29,8 @@ const previousProductSnapshot = new Map<
 
 const PRODUCT_SYNC_MODEL = 'products';
 export const PRODUCT_SYNC_STALE_THRESHOLD_MS = 60_000;
+const PRODUCT_SYNC_SILENT_RECOVERY_THRESHOLD_MS =
+    PRODUCT_SYNC_STALE_THRESHOLD_MS * 5;
 const PRODUCT_SYNC_RECOVERY_BASE_DELAY_MS = 1_000;
 const PRODUCT_SYNC_RECOVERY_MAX_DELAY_MS = 5_000;
 
@@ -334,12 +336,13 @@ export const restartProductSync = async (
     reason = 'manual',
     tenantId?: string
 ) => {
+    const resolvedTenantId = tenantId ?? activeProductTenantId;
     logSyncDebug('products.sync', 'restart', {
         reason,
-        tenantId: tenantId || null,
+        tenantId: resolvedTenantId || null,
     });
     teardownProductSubscriptions();
-    startSharedProductSubscriptions(dispatch, tenantId);
+    startSharedProductSubscriptions(dispatch, resolvedTenantId);
 };
 
 export const ensureProductSyncHealthy = async (
@@ -351,6 +354,10 @@ export const ensureProductSyncHealthy = async (
 ) => {
     const tenantId = options?.tenantId;
     const staleAfterMs = options?.staleAfterMs ?? PRODUCT_SYNC_STALE_THRESHOLD_MS;
+    const silentRecoveryAfterMs = Math.max(
+        staleAfterMs,
+        PRODUCT_SYNC_SILENT_RECOVERY_THRESHOLD_MS
+    );
     const now = Date.now();
     const lastSignalAt = [
         productLastSnapshotAt,
@@ -383,6 +390,27 @@ export const ensureProductSyncHealthy = async (
             status: 'stale',
         });
         scheduleProductRecovery(dispatch, 'stale subscription');
+        return true;
+    }
+
+    if (
+        lastSignalAt &&
+        now - lastSignalAt > silentRecoveryAfterMs &&
+        (!productLastRecoveryAttemptAt ||
+            now - new Date(productLastRecoveryAttemptAt).getTime() >
+                silentRecoveryAfterMs)
+    ) {
+        updateSyncHealth(dispatch, {
+            status: 'stale',
+            lastSnapshotAt: productLastSnapshotAt,
+            lastRealtimePatchAt: productLastRealtimePatchAt,
+        });
+        scheduleProductRecovery(
+            dispatch,
+            `no product sync signal for ${Math.round(
+                (now - lastSignalAt) / 1000
+            )}s`
+        );
         return true;
     }
 
@@ -428,25 +456,26 @@ const logChangedProducts = (items: Product[]) => {
 
 export const syncProducts = (dispatch: Dispatch) => {
     const finish = startSyncMeasure('products', 'syncProducts');
-    let subscription:
-        | {
-              unsubscribe: () => void;
-          }
-        | undefined;
+    const subscriptionRef: {
+        current?: {
+            unsubscribe: () => void;
+        };
+    } = {};
     let shouldUnsubscribeAfterSubscribe = false;
-    subscription = DataStore.observeQuery(Product).subscribe(({ items }) => {
+    const subscription = DataStore.observeQuery(Product).subscribe(({ items }) => {
         const activeItems = items.filter((item) =>
             isNotDeleted(item as { _deleted?: boolean | null })
         );
         finish({ itemCount: activeItems.length });
         updateStore(dispatch, activeItems);
-        if (subscription) {
-            subscription.unsubscribe();
+        if (subscriptionRef.current) {
+            subscriptionRef.current.unsubscribe();
             return;
         }
 
         shouldUnsubscribeAfterSubscribe = true;
     });
+    subscriptionRef.current = subscription;
 
     if (shouldUnsubscribeAfterSubscribe) {
         subscription.unsubscribe();
