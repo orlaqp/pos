@@ -553,6 +553,72 @@ describe('Cart', () => {
         });
     });
 
+    it('drops disabled definitions from live sales pricing updates', async () => {
+        let listener: ((definitions: any[]) => void) | undefined;
+        mockSubscribeDefinitionChanges.mockImplementation((callback: (definitions: any[]) => void) => {
+            listener = callback;
+            return jest.fn();
+        });
+
+        renderCart('order');
+
+        await waitFor(() => {
+            expect(mockSubscribeDefinitionChanges).toHaveBeenCalledTimes(1);
+        });
+
+        mockDispatch.mockClear();
+
+        listener?.([
+            {
+                id: 'discount-disabled-status',
+                name: 'Inactive 10% Off',
+                status: 'INACTIVE',
+                type: 'AUTOMATIC',
+                method: 'PERCENT',
+                scope: 'ORDER',
+                stackMode: 'STACKABLE',
+                value: 10,
+                active: true,
+            },
+            {
+                id: 'discount-disabled-flag',
+                name: 'Disabled flag 10% Off',
+                status: 'ACTIVE',
+                type: 'AUTOMATIC',
+                method: 'PERCENT',
+                scope: 'ORDER',
+                stackMode: 'STACKABLE',
+                value: 10,
+                active: false,
+            },
+            {
+                id: 'discount-active',
+                name: 'Live 10% Off',
+                status: 'ACTIVE',
+                type: 'AUTOMATIC',
+                method: 'PERCENT',
+                scope: 'ORDER',
+                stackMode: 'STACKABLE',
+                value: 10,
+                active: true,
+            },
+        ]);
+
+        await waitFor(() => {
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'cart/setDefinitions',
+                    payload: [
+                        expect.objectContaining({
+                            id: 'discount-active',
+                            name: 'Live 10% Off',
+                        }),
+                    ],
+                })
+            );
+        });
+    });
+
     it('blocks submit when product inventory is insufficient', () => {
         const { getByText } = render(
             <Cart

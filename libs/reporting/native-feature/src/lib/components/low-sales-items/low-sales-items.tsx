@@ -45,10 +45,19 @@ export function LowSalesItems() {
                 statuses: [OrderStatus.PAID],
                 range: normalizedRange,
             }),
-            products?.length ? Promise.resolve(products) : ProductService.getAll(),
+            ProductService.getAll(),
         ]);
 
-        return buildLowSalesItemRows(orders, loadedProducts as any);
+        const mergedProducts = [
+            ...(loadedProducts as any[]),
+            ...((products as any[]) || []),
+        ].filter(
+            (product, index, list) =>
+                product?.id &&
+                list.findIndex((candidate) => candidate?.id === product.id) === index
+        );
+
+        return buildLowSalesItemRows(orders, mergedProducts as any);
     };
 
     return (

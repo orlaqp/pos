@@ -230,6 +230,17 @@ describe('PricingEngine', () => {
         stackMode: 'STACKABLE',
       },
       {
+        id: 'disabled-flag',
+        name: 'Disabled flag',
+        status: 'ACTIVE',
+        active: false,
+        type: 'AUTOMATIC',
+        method: 'PERCENT',
+        scope: 'LINE',
+        value: 50,
+        stackMode: 'STACKABLE',
+      },
+      {
         id: 'future',
         name: 'Future',
         status: 'ACTIVE',

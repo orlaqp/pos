@@ -5,7 +5,9 @@ import { Order } from '@pos/shared/models';
 export const getEmployeeItems = (employees: EmployeeEntity[]) => {
     if (!employees) return [];
 
-    const items = employees.map(e => ({ label: `${e.firstName} ${e.lastName}`, value: e.id }));
+    const items = employees
+        .map(e => ({ label: `${e.firstName} ${e.lastName}`, value: e.id }))
+        .sort((left, right) => left.label.localeCompare(right.label, undefined, { sensitivity: 'base' }));
     items.unshift({ label: 'All', value: '' });
 
     return items;
@@ -14,7 +16,9 @@ export const getEmployeeItems = (employees: EmployeeEntity[]) => {
 export const getProductItems = (products: ProductEntity[]) => {
     if (!products) return [];
 
-    const items = products.map(p => ({ label: p.name, value: p.id }));
+    const items = products
+        .map(p => ({ label: p.name, value: p.id }))
+        .sort((left, right) => left.label.localeCompare(right.label, undefined, { sensitivity: 'base' }));
     items.unshift({ label: 'All', value: '' });
 
     return items;
@@ -35,7 +39,8 @@ export interface PaymentMethodsSummary {
 
 export const filterOrders = (orders: Order[], request: OrdersFilterRequest) => {
     const filtered = orders.filter(o => {
-        if (request.openedBy && o.createdBy?.id !== request.openedBy) return false;
+        const openedById = o.createdBy?.id || o.employeeId;
+        if (request.openedBy && openedById !== request.openedBy) return false;
         if (request.closedBy && o.paymentInfo?.employeeId !== request.closedBy) return false;
 
         if (!request.productId) return true;

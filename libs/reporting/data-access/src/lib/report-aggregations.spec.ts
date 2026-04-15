@@ -144,4 +144,29 @@ describe('report-aggregations', () => {
             { product: 'Oil', quantity: 2, sales: 10, status: 'Low sales' },
         ]);
     });
+
+    it('includes sold products even when they are missing from the loaded product catalog', () => {
+        const rows = buildLowSalesItemRows(
+            [
+                {
+                    lines: [
+                        {
+                            productId: 'p-missing',
+                            productName: 'Zucchini',
+                            quantity: 3,
+                            price: 2,
+                        },
+                    ],
+                } as any,
+            ],
+            [{ id: 'p-known', name: 'Apple' }] as any
+        );
+
+        expect(rows).toEqual(
+            expect.arrayContaining([
+                { product: 'Apple', quantity: 0, sales: 0, status: 'No sales' },
+                { product: 'Zucchini', quantity: 3, sales: 6, status: 'Low sales' },
+            ])
+        );
+    });
 });

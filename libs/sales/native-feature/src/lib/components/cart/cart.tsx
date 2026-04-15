@@ -77,6 +77,9 @@ const mapDefinitionToPricing = (definition: any): DiscountDefinition => ({
 
 const normalizePromoCode = (code: string) => code.trim().toUpperCase();
 
+const isDefinitionEnabledForPricing = (definition: DiscountDefinition) =>
+    definition.active !== false && definition.status === 'ACTIVE';
+
 const normalizeWeekday = (day: string) => day.trim().slice(0, 3).toUpperCase();
 
 const getScopedDateParts = (at: string, timezone?: string | null) => {
@@ -363,7 +366,9 @@ export function Cart({
         const applyDefinitions = (definitions: any[]) => {
             dispatch(
                 cartActions.setDefinitions(
-                    definitions.map((definition) => mapDefinitionToPricing(definition))
+                    definitions
+                        .map((definition) => mapDefinitionToPricing(definition))
+                        .filter(isDefinitionEnabledForPricing)
                 )
             );
         };

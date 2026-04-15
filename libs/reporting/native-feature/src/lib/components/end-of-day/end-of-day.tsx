@@ -279,10 +279,18 @@ export function EndOfDay(props: EndOfDayProps) {
             closedBy: closedByValue,
             productId: productValue
         });
-        setFilteredOrders(prev => filterResponse.orders);
-        setPaymentMethodsSummary(prev => filterResponse.summary);
+        setFilteredOrders(filterResponse.orders);
+        setPaymentMethodsSummary(filterResponse.summary);
         
     }, [orders, employeeValue, closedByValue, productValue])
+
+    useEffect(() => {
+        setEmployeeItems(getEmployeeItems(employees));
+    }, [employees]);
+
+    useEffect(() => {
+        setProductItems(getProductItems(products));
+    }, [products]);
 
     useEffect(() => {
         let cancelled = false;
@@ -426,8 +434,9 @@ export function EndOfDay(props: EndOfDayProps) {
                         <FlatList
                             style={{ marginTop: 10 }}
                             data={filteredOrders}
+                            keyExtractor={(item) => item.id}
                             renderItem={({ item }) => (
-                                <OrderDetails key={item.id} order={item} productId={productValue} />
+                                <OrderDetails order={item} productId={productValue} />
                             )}
                         />
                     </>

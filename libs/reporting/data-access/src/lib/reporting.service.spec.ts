@@ -153,6 +153,46 @@ describe('reporting.service', () => {
         expect(result).toHaveLength(0);
     });
 
+    it('splits sales ranges recursively when AppSync reports transformation too large', async () => {
+        const longRange = {
+            startDate: moment('2026-04-01').startOf('day'),
+            endDate: moment('2026-04-16').endOf('day'),
+        };
+
+        mockGraphql
+            .mockRejectedValueOnce({
+                data: { getSales: null },
+                errors: [{ message: 'Transformation too large', errorType: 'MappingTemplate' }],
+            })
+            .mockResolvedValueOnce({
+                data: {
+                    getSales: [{ id: 'o1', updatedAt: '2026-04-03T10:00:00.000Z' }],
+                },
+            })
+            .mockResolvedValueOnce({
+                data: {
+                    getSales: [
+                        { id: 'o2', updatedAt: '2026-04-06T10:00:00.000Z' },
+                        { id: 'o3', updatedAt: '2026-04-09T10:00:00.000Z' },
+                        { id: 'o4', updatedAt: '2026-04-12T10:00:00.000Z' },
+                        { id: 'o5', updatedAt: '2026-04-15T10:00:00.000Z' },
+                        { id: 'o5', updatedAt: '2026-04-15T10:00:00.000Z' },
+                    ],
+                },
+            });
+
+        const result = await getSalesForRange(OrderStatus.PAID, longRange);
+
+        expect(mockGraphql).toHaveBeenCalledTimes(3);
+        expect(result.map((order) => order.id)).toEqual([
+            'o5',
+            'o4',
+            'o3',
+            'o2',
+            'o1',
+        ]);
+    });
+
     it('returns undefined on remote summary failure', async () => {
         mockGraphql.mockRejectedValue(new Error('network'));
 

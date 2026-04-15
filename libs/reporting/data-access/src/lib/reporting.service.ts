@@ -3,11 +3,72 @@ import { getSalesSummary } from '@pos/shared/api';
 import { Order, OrderStatus, SalesSummary } from '@pos/shared/models';
 import { DateRange } from '@pos/shared/ui-native';
 import { API } from '@pos/shared/amplify';
+import moment from 'moment';
 
 const toIsoRange = (range: DateRange) => ({
     from: range?.startDate.toISOString(),
     to: range?.endDate.toISOString(),
 });
+
+const isTransformationTooLargeError = (error: unknown) => {
+    const message = JSON.stringify(error);
+    return message.includes('Transformation too large');
+};
+
+const canSplitSalesRange = (range: DateRange) =>
+    range.startDate.clone().startOf('day').isBefore(range.endDate.clone().endOf('day'));
+
+const splitDateRangeForSales = (range: DateRange): [DateRange, DateRange] => {
+    const start = range.startDate.clone().startOf('day');
+    const end = range.endDate.clone().endOf('day');
+    const midpoint = start
+        .clone()
+        .add(Math.floor(end.diff(start, 'days') / 2), 'days')
+        .endOf('day');
+
+    return [
+        {
+            startDate: start,
+            endDate: midpoint,
+        },
+        {
+            startDate: midpoint.clone().add(1, 'millisecond'),
+            endDate: end,
+        },
+    ];
+};
+
+const mergeOrdersById = (orders: Order[][]) => {
+    const byId = new Map<string, Order>();
+
+    orders.flat().forEach((order) => {
+        if (!order?.id) return;
+        byId.set(order.id, order);
+    });
+
+    return Array.from(byId.values()).sort((a, b) => {
+        const left = a.updatedAt || a.orderDate || '';
+        const right = b.updatedAt || b.orderDate || '';
+        return left > right ? -1 : left < right ? 1 : 0;
+    });
+};
+
+const fetchSalesChunk = async (
+    status: OrderStatus | keyof typeof OrderStatus,
+    range: DateRange
+) => {
+    const { from, to } = toIsoRange(range);
+    const promise = API.graphql<{ getSales: Order[] }>({
+        query: getSalesCustom,
+        variables: {
+            status,
+            from,
+            to,
+        },
+    }) as Promise<GraphQLResult<{ getSales: Order[] }>>;
+
+    return promise.then((r) => r.data?.getSales || []);
+};
 
 export const hasSummaryData = (summary?: SalesSummary) =>
     !!summary && ((summary.totalAmount || 0) > 0 || (summary.totalOrders || 0) > 0);
@@ -113,27 +174,26 @@ export const getSalesForRange = (
     status: OrderStatus | keyof typeof OrderStatus,
     range: DateRange
 ) => {
-    const { from, to } = toIsoRange(range);
-    const promise = API.graphql<{ getSales: Order[] }>({
-        query: getSalesCustom,
-        variables: {
+    return fetchSalesChunk(status, range).catch(async (error) => {
+        if (isTransformationTooLargeError(error) && canSplitSalesRange(range)) {
+            const [left, right] = splitDateRangeForSales(range);
+            const [leftOrders, rightOrders] = await Promise.all([
+                getSalesForRange(status, left),
+                getSalesForRange(status, right),
+            ]);
+
+            return mergeOrdersById([leftOrders, rightOrders]);
+        }
+
+        const { from, to } = toIsoRange(range);
+        console.error('getSalesForRange failed', {
             status,
             from,
             to,
-        },
-    }) as Promise<GraphQLResult<{ getSales: Order[] }>>;
-
-    return promise
-        .then((r) => r.data?.getSales || [])
-        .catch(async (error) => {
-            console.error('getSalesForRange failed', {
-                status,
-                from,
-                to,
-                error,
-            });
-            return [];
+            error,
         });
+        return [];
+    });
 };
 
 export const getSalesCustom = /* GraphQL */ `

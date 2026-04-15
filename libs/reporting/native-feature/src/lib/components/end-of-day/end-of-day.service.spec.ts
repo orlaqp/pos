@@ -35,7 +35,7 @@ describe('end-of-day.service', () => {
     it('filters orders and computes payment summary by method', () => {
         const orders: any[] = [
             {
-                createdBy: { id: 'open-1' },
+                employeeId: 'open-1',
                 paymentInfo: {
                     employeeId: 'close-1',
                     payments: [
@@ -69,6 +69,28 @@ describe('end-of-day.service', () => {
             EBT: 0,
         });
         expect(result.totalAmount).toBe(0);
+    });
+
+    it('falls back to order employeeId for opened by filtering when createdBy is absent', () => {
+        const orders: any[] = [
+            {
+                employeeId: 'open-1',
+                paymentInfo: { employeeId: 'close-1', payments: [] },
+                lines: [],
+            },
+            {
+                employeeId: 'open-2',
+                paymentInfo: { employeeId: 'close-2', payments: [] },
+                lines: [],
+            },
+        ];
+
+        const result = filterOrders(orders as any, {
+            openedBy: 'open-2',
+        });
+
+        expect(result.orders).toHaveLength(1);
+        expect(result.orders[0].employeeId).toBe('open-2');
     });
 
     it('filters by product id when provided and only sums matching orders', () => {

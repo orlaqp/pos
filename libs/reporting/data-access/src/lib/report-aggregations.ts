@@ -261,11 +261,26 @@ export const buildOpenOrdersAgingRows = (orders: Order[], now = new Date()) =>
 
 export const buildLowSalesItemRows = (orders: Order[], products: Product[]) => {
     const sold = new Map<string, { quantity: number; amount: number }>();
+    const catalog = new Map<string, { id: string; name: string }>();
+
+    (products || []).forEach((product) => {
+        if (!product?.id) return;
+        catalog.set(product.id, {
+            id: product.id,
+            name: product.name || 'Unknown',
+        });
+    });
 
     orders.forEach((order) => {
         (order.lines || []).forEach((line) => {
             const productId = line?.productId;
             if (!productId) return;
+            if (!catalog.has(productId)) {
+                catalog.set(productId, {
+                    id: productId,
+                    name: line?.productName || 'Unknown',
+                });
+            }
             const current = sold.get(productId) || { quantity: 0, amount: 0 };
             current.quantity += Number(line?.quantity || 0);
             current.amount += getOrderLineSalesAmount(line);
@@ -273,7 +288,7 @@ export const buildLowSalesItemRows = (orders: Order[], products: Product[]) => {
         });
     });
 
-    return (products || [])
+    return Array.from(catalog.values())
         .map((product) => {
             const stats = sold.get(product.id) || { quantity: 0, amount: 0 };
             return {
@@ -286,9 +301,11 @@ export const buildLowSalesItemRows = (orders: Order[], products: Product[]) => {
         .sort((a, b) => {
             if (a.quantity === 0 && b.quantity !== 0) return -1;
             if (a.quantity !== 0 && b.quantity === 0) return 1;
-            return a.quantity - b.quantity;
-        })
-        .slice(0, 50);
+            if (a.quantity !== b.quantity) return a.quantity - b.quantity;
+            return a.product.localeCompare(b.product, undefined, {
+                sensitivity: 'base',
+            });
+        });
 };
 
 export const formatMoneyValue = money;
