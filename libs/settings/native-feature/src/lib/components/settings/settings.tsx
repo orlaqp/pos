@@ -48,7 +48,7 @@ export function Settings(_props: SettingsProps) {
     };
 
     return (
-        <UIScreen padded testID="settings-screen">
+        <UIScreen padded scroll testID="settings-screen">
             <UIStack spacing="xl" align="center" style={styles.pageStack}>
                 <View style={styles.container}>
                     <UIStack spacing="lg">

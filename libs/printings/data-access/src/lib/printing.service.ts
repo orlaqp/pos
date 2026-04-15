@@ -15,6 +15,7 @@ import {
     recordE2EPrintJob,
 } from '@pos/shared/utils';
 import type { AppliedDiscountSummary } from '@pos/discounts/domain';
+import { PrinterService } from './slices/printer.service';
 
 type ReceiptStoreInfo = {
     name?: string;
@@ -166,7 +167,9 @@ export const printReceipt = async (
         return;
     }
 
-    if (!printerInfo) {
+    const resolvedPrinterInfo = printerInfo ?? (await PrinterService.getDefaultPrinter());
+
+    if (!resolvedPrinterInfo) {
         if (!receiptPreviewHandler) {
             Alert.alert('No printer is configured for this device.');
             return;
@@ -184,14 +187,14 @@ export const printReceipt = async (
         orderId: order?.id,
         orderNo: order?.orderNo,
         copyType: order?.copyType,
-        printerIdentifier: printerInfo.identifier,
+        printerIdentifier: resolvedPrinterInfo.identifier,
     });
-    await printSingleReceipt(store, printerInfo, cart, order);
+    await printSingleReceipt(store, resolvedPrinterInfo as PrinterEntity, cart, order);
     logReceiptTiming('print-receipt-end', {
         orderId: order?.id,
         orderNo: order?.orderNo,
         copyType: order?.copyType,
-        printerIdentifier: printerInfo.identifier,
+        printerIdentifier: resolvedPrinterInfo.identifier,
         durationMs: Date.now() - startedAt,
     });
 };

@@ -30,14 +30,22 @@ import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ButtonItemType, UIScreen } from '@pos/shared/ui-native';
 import { RootState, useAppDispatch } from '@pos/store';
-import { getDefaultPrinter, printReceipt } from '@pos/printings/data-access';
+import {
+    getDefaultPrinter,
+    printReceipt,
+    PrinterService,
+} from '@pos/printings/data-access';
 import {
     ordersActions,
     payOrder,
     submitOrderAndPay,
     upsertOrder,
 } from '@pos/orders/data-access';
-import { selectStore } from '@pos/store-info/data-access';
+import {
+    selectPreferredStore,
+    selectStore,
+    StoreInfoService,
+} from '@pos/store-info/data-access';
 import {
     getGlobalSettings,
     selectPayFromSalesScreen,
@@ -547,13 +555,18 @@ export function SalesScreen({
                     });
 
                     const cartForOrder = await preparePrintableOrderCart(cart);
+                    const resolvedStoreInfo =
+                        storeInfo ??
+                        selectPreferredStore(await StoreInfoService.getStore());
+                    const resolvedDefaultPrinter =
+                        defaultPrinter ?? (await PrinterService.getDefaultPrinter());
 
                     const result = await dispatch(
                         upsertOrder({
                             cart: cartForOrder,
-                            defaultPrinter,
-                            storeInfo,
-                            skipAutoPrint: !storeInfo,
+                            defaultPrinter: resolvedDefaultPrinter,
+                            storeInfo: resolvedStoreInfo,
+                            skipAutoPrint: !resolvedStoreInfo,
                         })
                     );
 

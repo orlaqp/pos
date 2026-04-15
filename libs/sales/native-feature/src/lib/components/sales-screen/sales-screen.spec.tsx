@@ -11,6 +11,8 @@ const mockCategoriesUnsubscribe = jest.fn();
 const mockProductsUnsubscribe = jest.fn();
 const mockSettingsUnsubscribe = jest.fn();
 const mockPrintReceipt = jest.fn();
+const mockGetPersistedDefaultPrinter = jest.fn();
+const mockGetStores = jest.fn();
 const mockSearchFocus = jest.fn();
 const mockSearchBlur = jest.fn();
 const mockSearchClear = jest.fn();
@@ -170,11 +172,19 @@ jest.mock('react-native-uuid', () => ({
 
 jest.mock('@pos/store-info/data-access', () => ({
     selectStore: (state: any) => state.store,
+    selectPreferredStore: (stores: any[]) => stores[0],
+    StoreInfoService: {
+        getStore: (...args: unknown[]) => mockGetStores(...args),
+    },
 }));
 
 jest.mock('@pos/printings/data-access', () => ({
     getDefaultPrinter: (state: any) => state.printer,
     printReceipt: (...args: unknown[]) => mockPrintReceipt(...args),
+    PrinterService: {
+        getDefaultPrinter: (...args: unknown[]) =>
+            mockGetPersistedDefaultPrinter(...args),
+    },
 }));
 
 jest.mock('@pos/orders/data-access', () => ({
@@ -407,6 +417,8 @@ describe('SalesScreen', () => {
     beforeEach(() => {
         jest.useFakeTimers();
         jest.clearAllMocks();
+        mockGetPersistedDefaultPrinter.mockResolvedValue(undefined);
+        mockGetStores.mockResolvedValue([]);
         mockSearchFocus.mockClear();
         mockSearchBlur.mockClear();
         mockSearchClear.mockClear();
@@ -856,6 +868,40 @@ describe('SalesScreen', () => {
             expect.objectContaining({ type: 'cart/reset' })
         );
         expect(Alert.alert).not.toHaveBeenCalled();
+    });
+
+    it('falls back to persisted store and printer before saving an order', async () => {
+        mockState.printer = undefined;
+        mockState.store = undefined;
+        mockGetPersistedDefaultPrinter.mockResolvedValue({
+            identifier: 'persisted-printer',
+        });
+        mockGetStores.mockResolvedValue([
+            {
+                id: 'store-1',
+                name: 'Persisted Store',
+                timezone: 'America/New_York',
+            },
+        ]);
+
+        const { getByTestId } = renderSalesScreen('order');
+
+        await act(async () => {
+            fireEvent.press(getByTestId('sales-cart-submit-order'));
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+
+        expect(mockUpsertOrder).toHaveBeenCalledWith(
+            expect.objectContaining({
+                defaultPrinter: { identifier: 'persisted-printer' },
+                storeInfo: expect.objectContaining({
+                    id: 'store-1',
+                    name: 'Persisted Store',
+                }),
+                skipAutoPrint: false,
+            })
+        );
     });
 
     it('shows an alert when order save fails even if the UI already reset the cart', async () => {

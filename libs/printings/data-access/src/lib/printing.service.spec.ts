@@ -9,6 +9,7 @@ import {
 
 const mockIsE2EPrinterSpyEnabled = jest.fn(() => false);
 const mockRecordE2EPrintJob = jest.fn();
+const mockGetDefaultPrinter = jest.fn();
 
 jest.mock('react-native-star-io10', () => ({
   InterfaceType: { Lan: 'Lan' },
@@ -37,6 +38,12 @@ jest.mock('react-native', () => ({
 jest.mock('@pos/shared/utils', () => ({
   isE2EPrinterSpyEnabled: () => mockIsE2EPrinterSpyEnabled(),
   recordE2EPrintJob: (...args: unknown[]) => mockRecordE2EPrintJob(...args),
+}));
+
+jest.mock('./slices/printer.service', () => ({
+  PrinterService: {
+    getDefaultPrinter: (...args: unknown[]) => mockGetDefaultPrinter(...args),
+  },
 }));
 
 describe('printing.service helpers', () => {
@@ -121,6 +128,11 @@ describe('printing.service helpers', () => {
       ],
     },
   };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetDefaultPrinter.mockResolvedValue(undefined);
+  });
 
   it('builds classic receipt lines using real newline characters', () => {
     const text = buildReceiptLines(cart);
@@ -313,6 +325,46 @@ describe('printing.service helpers', () => {
       expect.objectContaining({
         copyType: 'CUSTOMER',
         orderNo: '01-01-260325-0001',
+      })
+    );
+
+    unregister();
+  });
+
+  it('uses the persisted default printer before falling back to receipt preview', async () => {
+    mockIsE2EPrinterSpyEnabled.mockReturnValue(true);
+    mockGetDefaultPrinter.mockResolvedValue({
+      identifier: 'persisted-printer-1',
+    });
+    const previewHandler = jest.fn();
+    const unregister = registerReceiptPreviewHandler(previewHandler);
+
+    await printReceipt(
+      {
+        name: 'QA Store',
+        address: '123 Main St',
+        city: 'Miami',
+        state: 'FL',
+        zipCode: '33101',
+        phone: '305-000-0000',
+        fax: '',
+        email: 'qa@example.com',
+        disclaimer: 'All sales are final.',
+      },
+      undefined,
+      cart,
+      {
+        id: 'order-1',
+        orderNo: '01-01-260325-0001',
+        copyType: 'CUSTOMER',
+      }
+    );
+
+    expect(mockGetDefaultPrinter).toHaveBeenCalled();
+    expect(previewHandler).not.toHaveBeenCalled();
+    expect(mockRecordE2EPrintJob).toHaveBeenCalledWith(
+      expect.objectContaining({
+        printerIdentifier: 'persisted-printer-1',
       })
     );
 

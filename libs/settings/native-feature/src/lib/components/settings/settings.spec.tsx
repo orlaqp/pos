@@ -68,9 +68,24 @@ jest.mock('@pos/theme/native/design-tokens', () => ({
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
-    UIScreen: ({ children, testID }: { children: React.ReactNode; testID?: string }) => {
+    UIScreen: ({
+        children,
+        testID,
+        scroll,
+    }: {
+        children: React.ReactNode;
+        testID?: string;
+        scroll?: boolean;
+    }) => {
         const { View: RNView } = require('react-native');
-        return <RNView testID={testID || 'ui-screen'}>{children}</RNView>;
+        return (
+            <RNView
+                testID={testID || 'ui-screen'}
+                accessibilityHint={scroll ? 'scroll-enabled' : 'scroll-disabled'}
+            >
+                {children}
+            </RNView>
+        );
     },
     UIStack: ({ children }: { children: React.ReactNode }) => {
         const { View: RNView } = require('react-native');
@@ -174,6 +189,10 @@ describe('Settings', () => {
         const { getByTestId, getByText } = render(<Settings />);
 
         expect(getByTestId('settings-screen')).toBeTruthy();
+        expect(getByTestId('settings-screen')).toHaveProp(
+            'accessibilityHint',
+            'scroll-enabled'
+        );
         expect(getByText('Settings')).toBeTruthy();
         expect(getByText('Use Dark Theme:')).toBeTruthy();
         expect(getByText('Enforce Sales Based on Inventory:')).toBeTruthy();
