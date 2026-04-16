@@ -259,7 +259,7 @@ const loadEnvStackName = async (envName: string) => {
   return stackName;
 };
 
-const resolveModelTables = async (
+export const resolveModelTables = async (
   cf: CloudFormationClient,
   envName: string
 ): Promise<{

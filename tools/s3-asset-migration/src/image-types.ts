@@ -118,3 +118,156 @@ export type ImageMigrationDependencies = {
   };
   runtime?: ImageMigrationRuntime;
 };
+
+export type ImageRestoreOptions = {
+  env: string;
+  profile: string;
+  manifestPath: string;
+  tenantId?: string;
+  models: ImageModel[];
+  dryRun: boolean;
+  apply: boolean;
+};
+
+export type ImageRestoreManifestEntry = Pick<
+  ImageManifestEntry,
+  'model' | 'recordId' | 'tenantId' | 'originalKey' | 'newKey' | 'status'
+>;
+
+export type ImageRestoreEntryStatus =
+  | 'skipped'
+  | 'dry-run'
+  | 'restored'
+  | 'failed';
+
+export type ImageRestoreEntry = {
+  model: ImageModel;
+  recordId: string;
+  tenantId: string | null;
+  originalKey: string;
+  newKey: string;
+  currentKey: string | null;
+  status: ImageRestoreEntryStatus;
+  error?: string;
+};
+
+export type ImageRestoreReport = {
+  preflight: {
+    env: string;
+    profile: string;
+    manifestPath: string;
+    tenantId: string | null;
+    models: ImageModel[];
+    dryRun: boolean;
+  };
+  entries: ImageRestoreEntry[];
+  counts: {
+    discovered: number;
+    eligible: number;
+    restored: number;
+    skipped: number;
+    failed: number;
+  };
+};
+
+export type ImageRestoreDependencies = {
+  cf: CloudFormationClient;
+  dynamo: DynamoDBClient;
+  documentClient?: DynamoDBDocumentClient;
+  logger: Logger;
+  resolvedTables?: {
+    Product?: { physicalTableName: string };
+    Category?: { physicalTableName: string };
+  };
+};
+
+export type ImageRestoreJpgOptions = {
+  env: string;
+  profile: string;
+  tenantId?: string;
+  models: ImageModel[];
+  dryRun: boolean;
+  apply: boolean;
+};
+
+export type ImageRestoreJpgEntryStatus =
+  | 'skipped'
+  | 'dry-run'
+  | 'updated'
+  | 'failed';
+
+export type ImageRestoreJpgEntry = {
+  model: ImageModel;
+  recordId: string;
+  tenantId: string | null;
+  currentKey: string | null;
+  targetKey: string | null;
+  status: ImageRestoreJpgEntryStatus;
+  error?: string;
+};
+
+export type ImageRestoreJpgReport = {
+  preflight: {
+    env: string;
+    profile: string;
+    tenantId: string | null;
+    models: ImageModel[];
+    dryRun: boolean;
+  };
+  entries: ImageRestoreJpgEntry[];
+  counts: {
+    discovered: number;
+    eligible: number;
+    updated: number;
+    skipped: number;
+    failed: number;
+  };
+};
+
+export type ImageRestoreJpgDependencies = {
+  cf: CloudFormationClient;
+  dynamo: DynamoDBClient;
+  documentClient?: DynamoDBDocumentClient;
+  logger: Logger;
+  resolvedTables?: {
+    Product?: { physicalTableName: string };
+    Category?: { physicalTableName: string };
+  };
+};
+
+export type ImageManifestDiscoveryOptions = {
+  env: string;
+  tenantId?: string;
+  models: ImageModel[];
+  roots?: string[];
+  limit?: number;
+  includeNonUpdated?: boolean;
+};
+
+export type ImageManifestCandidate = {
+  manifestPath: string;
+  outputDir: string | null;
+  modifiedAt: string;
+  matchedModels: ImageModel[];
+  updatedEntries: number;
+  totalEntries: number;
+  preflight: {
+    env: string | null;
+    profile: string | null;
+    tenantId: string | null;
+    models: string[];
+    dryRun: boolean | null;
+  };
+  counts: {
+    discovered: number | null;
+    processed: number | null;
+    skipped: number | null;
+    failed: number | null;
+    updated: number | null;
+  };
+};
+
+export type ImageManifestDiscoveryReport = {
+  rootsSearched: string[];
+  candidates: ImageManifestCandidate[];
+};

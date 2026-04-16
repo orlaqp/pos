@@ -14,30 +14,7 @@ jest.mock('@pos/shared/ui-native', () => ({
         const { Text } = require('react-native');
         return <Text>EBT</Text>;
     },
-    UIButton: ({
-        item,
-        onSelected,
-        onLongPress,
-        children,
-    }: {
-        item: any;
-        onSelected: (item: any) => void;
-        onLongPress?: (item: any) => void;
-        children: React.ReactNode;
-    }) => (
-        (() => {
-            const { Pressable } = require('react-native');
-            return (
-                <Pressable
-                    testID={`product-btn-${item.id}`}
-                    onPress={() => onSelected(item)}
-                    onLongPress={onLongPress ? () => onLongPress(item) : undefined}
-                >
-                    {children}
-                </Pressable>
-            );
-        })()
-    ),
+    UIS3Image: () => null,
 }));
 
 const { ProductSelection } = require('./product-selection');
@@ -112,10 +89,11 @@ describe('ProductSelection', () => {
                 onLongPress={mockOnLongPress}
             />
         );
-        fireEvent.press(getByTestId('product-btn-p-1'));
-        fireEvent(getByTestId('product-btn-p-1'), 'longPress');
+        fireEvent.press(getByTestId('ui-button-p-1'));
+        fireEvent(getByTestId('ui-button-p-1'), 'longPress');
 
-        expect(getByText('In stock: 1.23')).toBeTruthy();
+        expect(getByTestId('ui-button-p-1')).toBeTruthy();
+        expect(getByTestId('sales-product-stock-p-4')).toHaveTextContent('1.23');
         expect(getByText('Out of stock')).toBeTruthy();
         expect(getByText('Low inventory')).toBeTruthy();
         expect(getByTestId('sales-product-card-p-2')).toHaveProp(

@@ -28,6 +28,9 @@
         "migrate:develop-assets-to-ebtdev": "ts-node --project tools/tsconfig.tools.json tools/migrate-amplify-assets.ts",
         "images:bg-remove:setup": "bash tools/s3-asset-migration/python/setup-venv.sh",
         "images:bg-remove": "ts-node --project tools/tsconfig.tools.json tools/process-amplify-images.ts",
+        "images:bg-find": "ts-node --project tools/tsconfig.tools.json tools/find-amplify-image-manifests.ts",
+        "images:bg-restore": "ts-node --project tools/tsconfig.tools.json tools/restore-amplify-images.ts",
+        "images:bg-restore-jpg": "ts-node --project tools/tsconfig.tools.json tools/restore-amplify-images-jpg.ts",
         "seed:tenant-discounts": "ts-node --project tools/tsconfig.tools.json tools/seed-tenant-discounts.ts",
         "coverage:discounts-sales": "node tools/run-discount-sales-coverage.js"
     },
