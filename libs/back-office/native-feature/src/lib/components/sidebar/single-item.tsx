@@ -14,6 +14,19 @@ export interface SingleItemProps {
     setSelected: (item: SidebarItem) => void;
 }
 
+const getIconOffset = (icon?: string) => {
+    switch (icon) {
+        case 'view-dashboard-outline':
+            return 2;
+        case 'account-multiple-outline':
+            return 2;
+        case 'brightness-percent':
+            return 1;
+        default:
+            return 0;
+    }
+};
+
 export function SingleItem({
     chevron,
     compact,
@@ -26,6 +39,7 @@ export function SingleItem({
     const colors = getThemeColors(theme);
     const styles = useStyles(colors);
     const active = isActive ?? selectedId === item.id;
+    const iconOffset = getIconOffset(item.icon);
     const title =
         item.labelKey && i18next.isInitialized && i18next.exists(item.labelKey)
             ? i18next.t(item.labelKey)
@@ -47,6 +61,11 @@ export function SingleItem({
                         type="material-community"
                         size={compact ? 17 : 20}
                         color={active ? colors.primary : colors.grey3}
+                        containerStyle={
+                            iconOffset
+                                ? { transform: [{ translateX: iconOffset }] }
+                                : undefined
+                        }
                     />
                 </View>
             ) : null}
@@ -102,7 +121,7 @@ const useStyles = (colors: ReturnType<typeof getThemeColors>) =>
             width: 26,
             alignItems: 'center',
             justifyContent: 'center',
-            marginRight: 6,
+            marginRight: 10,
         },
         content: {
             marginLeft: 0,

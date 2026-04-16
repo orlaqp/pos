@@ -6,6 +6,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -20,6 +21,8 @@ export interface UIOverlayMultiSelectProps {
   rules?: RegisterOptions;
   emptyLabel?: string;
   disabled?: boolean;
+  searchable?: boolean;
+  searchPlaceholder?: string;
 }
 
 const normalizeIds = (value: unknown): string[] => {
@@ -37,11 +40,41 @@ export function UIOverlayMultiSelect({
   rules,
   emptyLabel,
   disabled = false,
+  searchable = false,
+  searchPlaceholder = 'Filter options',
 }: UIOverlayMultiSelectProps) {
+  const theme = useTheme();
+  const colors = theme?.theme?.colors || {
+    grey2: '#8f9baa',
+  };
   const { control } = useFormContext();
   const styles = useStyles();
   const [visible, setVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const options = list || [];
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredOptions = useMemo(() => {
+    if (!normalizedQuery) {
+      return options;
+    }
+
+    return options.filter((item) => {
+      const nameMatches = item.name.toLowerCase().includes(normalizedQuery);
+      const idMatches = item.id?.toLowerCase().includes(normalizedQuery);
+
+      return nameMatches || !!idMatches;
+    });
+  }, [options, normalizedQuery]);
+
+  const openOverlay = () => {
+    setSearchQuery('');
+    setVisible(true);
+  };
+
+  const closeOverlay = () => {
+    setSearchQuery('');
+    setVisible(false);
+  };
 
   return (
     <Controller
@@ -76,9 +109,10 @@ export function UIOverlayMultiSelect({
               title={buttonTitle}
               onPress={() => {
                 if (!disabled) {
-                  setVisible(true);
+                  openOverlay();
                 }
               }}
+              testID={name ? `ui-overlay-multi-select-trigger-${name}` : undefined}
               buttonStyle={styles.button}
               type="outline"
               titleStyle={styles.buttonTitle}
@@ -88,7 +122,7 @@ export function UIOverlayMultiSelect({
             />
             <Overlay
               isVisible={visible}
-              onBackdropPress={() => setVisible(false)}
+              onBackdropPress={closeOverlay}
               overlayStyle={styles.overlay}
               supportedOrientations={['landscape-left', 'landscape-right']}
               presentationStyle="fullScreen"
@@ -101,12 +135,31 @@ export function UIOverlayMultiSelect({
                     Choose one or more options to continue.
                   </Text>
                 </View>
+                {searchable ? (
+                  <View style={styles.searchWrap}>
+                    <TextInput
+                      testID={
+                        name ? `ui-overlay-multi-select-search-${name}` : undefined
+                      }
+                      value={searchQuery}
+                      onChangeText={setSearchQuery}
+                      placeholder={searchPlaceholder}
+                      placeholderTextColor={colors.grey2}
+                      style={styles.searchInput}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      clearButtonMode="while-editing"
+                    />
+                  </View>
+                ) : null}
                 <FlatList
-                  data={options}
+                  data={filteredOptions}
                   keyExtractor={(item, index) => `${item.id || item.name}-${index}`}
                   contentContainerStyle={styles.listContent}
                   ListEmptyComponent={
-                    <Text style={styles.emptyText}>No options available</Text>
+                    <Text style={styles.emptyText}>
+                      {normalizedQuery ? 'No matching options' : 'No options available'}
+                    </Text>
                   }
                   renderItem={({ item }) => {
                     const selected = !!item.id && selectedIds.includes(item.id);
@@ -134,7 +187,7 @@ export function UIOverlayMultiSelect({
                   <Pressable style={styles.footerButtonSecondary} onPress={() => onChange([])}>
                     <Text style={styles.footerButtonSecondaryText}>Clear</Text>
                   </Pressable>
-                  <Pressable style={styles.footerButtonPrimary} onPress={() => setVisible(false)}>
+                  <Pressable style={styles.footerButtonPrimary} onPress={closeOverlay}>
                     <Text style={styles.footerButtonPrimaryText}>Done</Text>
                   </Pressable>
                 </View>
@@ -174,6 +227,9 @@ const useStyles = () => {
           minHeight: 120,
           padding: 18,
         },
+        searchWrap: {
+          paddingBottom: 12,
+        },
         overlayHeader: {
           paddingBottom: 14,
         },
@@ -199,6 +255,16 @@ const useStyles = () => {
         listContent: {
           paddingTop: 4,
           paddingBottom: 6,
+        },
+        searchInput: {
+          color: colors.grey1,
+          fontSize: 15,
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.10)',
+          backgroundColor: 'rgba(255,255,255,0.04)',
+          paddingHorizontal: 14,
+          paddingVertical: 11,
         },
         emptyText: {
           color: colors.grey2,

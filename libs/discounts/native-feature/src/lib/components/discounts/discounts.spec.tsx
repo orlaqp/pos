@@ -129,10 +129,14 @@ jest.mock('@pos/shared/ui-native', () => {
       </Pressable>
     );
   };
-  const UIOverlayMultiSelect = ({ name, list }: any) => {
+  const UIOverlayMultiSelect = ({ name, list, searchable }: any) => {
     const { setValue } = useFormContext();
     return (
-      <Pressable testID={`multi-select-${name}`} onPress={() => setValue(name, list.slice(0, 2).map((item: any) => item.id))}>
+      <Pressable
+        testID={`multi-select-${name}`}
+        accessibilityHint={searchable ? 'searchable' : 'plain'}
+        onPress={() => setValue(name, list.slice(0, 2).map((item: any) => item.id))}
+      >
         <Text>multi-select</Text>
       </Pressable>
     );
@@ -336,6 +340,42 @@ describe('Discounts screen', () => {
     await waitFor(() => {
       expect(screen.getByText('This discount will apply 0% off to the eligible cart lines manually.')).toBeTruthy();
     });
+  });
+
+  it('enables search on the product and category multi-select fields', async () => {
+    const { getByTestId, getByText } = render(
+      <DiscountEditor navigation={navigation} route={{ name: 'Discount Form', params: undefined } as any} />
+    );
+
+    await waitFor(() =>
+      expect(getByTestId('multi-select-applicableCategoryIds')).toHaveProp(
+        'accessibilityHint',
+        'searchable'
+      )
+    );
+
+    await waitFor(() =>
+      expect(getByTestId('multi-select-applicableProductIds')).toHaveProp(
+        'accessibilityHint',
+        'searchable'
+      )
+    );
+
+    fireEvent.press(getByText('Show advanced rules'));
+
+    await waitFor(() =>
+      expect(getByTestId('multi-select-excludedCategoryIds')).toHaveProp(
+        'accessibilityHint',
+        'searchable'
+      )
+    );
+
+    await waitFor(() =>
+      expect(getByTestId('multi-select-excludedProductIds')).toHaveProp(
+        'accessibilityHint',
+        'searchable'
+      )
+    );
   });
 
   it('renders policies list and navigates to the policy form', async () => {

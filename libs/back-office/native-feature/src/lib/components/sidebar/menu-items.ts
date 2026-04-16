@@ -42,7 +42,7 @@ export const menuItems: SidebarItem[] = [
         id: '8',
         title: 'Employees',
         labelKey: 'SIDEBAR_Employees',
-        icon: 'account-group-outline',
+        icon: 'account-multiple-outline',
         role: Role.Admin,
         group: 'Management',
     },

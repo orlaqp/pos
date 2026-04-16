@@ -107,6 +107,9 @@ const isUnauthorizedError = (error: unknown) => {
     return message.includes('Unauthorized');
 };
 
+const isDataStoreMutationUnauthorizedSource = (source: string) =>
+    source === 'DataStore.save' || source === 'DataStore.delete';
+
 const logBootstrapStageError = (stage: string, error: unknown) => {
     console.error(`App bootstrap failed during ${stage}`, error);
 };
@@ -463,10 +466,17 @@ const AppContent = () => {
                 message,
             });
 
+            const isMutationUnauthorized =
+                isDataStoreMutationUnauthorizedSource(source);
+
             const restoredUser = await attemptSilentReauth();
             if (restoredUser) {
                 setBootstrapError(undefined);
                 setSessionRecoveryState('healthy');
+
+                if (isMutationUnauthorized) {
+                    return;
+                }
 
                 try {
                     await DataStore.stop();
@@ -484,6 +494,11 @@ const AppContent = () => {
                 return;
             }
 
+            if (isMutationUnauthorized) {
+                await handleExpiredSession(message);
+                return;
+            }
+
             await resetSessionState({ manual: false, destructive: true });
             setSessionRecoveryState('needs_reauth');
             setBootstrapError(message);
@@ -493,7 +508,7 @@ const AppContent = () => {
         return () => {
             setDataStoreUnauthorizedHandler(undefined);
         };
-    }, [attemptSilentReauth, recordLifecycleEvent, resetSessionState]);
+    }, [attemptSilentReauth, handleExpiredSession, recordLifecycleEvent, resetSessionState]);
 
     const startBootstrap = useCallback(async () => {
         if (bootstrapInFlightRef.current) {

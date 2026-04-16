@@ -154,6 +154,8 @@ export function DiscountDefinitionFields({
                         title="Select applicable categories"
                         emptyLabel="Choose categories"
                         list={categoryOptions}
+                        searchable
+                        searchPlaceholder="Filter categories"
                       />
                     </View>
                     <View style={styles.formColumnWide}>
@@ -163,6 +165,8 @@ export function DiscountDefinitionFields({
                         title="Select applicable products"
                         emptyLabel="Choose products"
                         list={productOptions}
+                        searchable
+                        searchPlaceholder="Filter products"
                       />
                     </View>
                   </UICard>
@@ -248,6 +252,8 @@ export function DiscountDefinitionFields({
                             title="Select excluded categories"
                             emptyLabel="Choose categories"
                             list={categoryOptions}
+                            searchable
+                            searchPlaceholder="Filter categories"
                           />
                         </View>
                         <View style={styles.formColumnWide}>
@@ -257,6 +263,8 @@ export function DiscountDefinitionFields({
                             title="Select excluded products"
                             emptyLabel="Choose products"
                             list={productOptions}
+                            searchable
+                            searchPlaceholder="Filter products"
                           />
                         </View>
                         <View style={styles.formColumnWide}>

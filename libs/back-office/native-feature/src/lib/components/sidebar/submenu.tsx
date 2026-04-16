@@ -11,6 +11,19 @@ export interface SubmenuProps extends SingleItemProps {
     setExpandedId: (itemId?: string) => void;
 }
 
+const getIconOffset = (icon?: string) => {
+    switch (icon) {
+        case 'view-dashboard-outline':
+            return 2;
+        case 'account-multiple-outline':
+            return 2;
+        case 'brightness-percent':
+            return 1;
+        default:
+            return 0;
+    }
+};
+
 export function Submenu({
     item,
     selectedId,
@@ -24,6 +37,7 @@ export function Submenu({
     const hasActiveChild = !!item.children?.some((c) => c.id === selectedId);
     const isExpanded = expandedId === item.id;
     const parentActive = hasActiveChild || selectedId === item.id;
+    const iconOffset = getIconOffset(item.icon);
     const title =
         item.labelKey && i18next.isInitialized && i18next.exists(item.labelKey)
             ? i18next.t(item.labelKey)
@@ -37,6 +51,11 @@ export function Submenu({
                         type="material-community"
                         size={20}
                         color={parentActive ? colors.primary : colors.grey3}
+                        containerStyle={
+                            iconOffset
+                                ? { transform: [{ translateX: iconOffset }] }
+                                : undefined
+                        }
                     />
                 </View>
             ) : null}
@@ -121,9 +140,10 @@ const useStyles = (colors: ReturnType<typeof getThemeColors>) =>
             width: 26,
             alignItems: 'center',
             justifyContent: 'center',
+            marginRight: 10,
         },
         headerTitleContent: {
-            marginLeft: 6,
+            marginLeft: 0,
         },
         headerTitle: {
             color: colors.grey1,
