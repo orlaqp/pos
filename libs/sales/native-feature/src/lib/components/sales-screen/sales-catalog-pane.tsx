@@ -16,6 +16,7 @@ interface SalesCatalogPaneProps {
     hasCatalogProducts: boolean;
     canManageCatalog: boolean;
     filteredProducts: ProductEntity[];
+    enforceSalesBasedOnInventory?: boolean;
     categoryWidth: Animated.Value;
     categoryOpacity: Animated.Value;
     contentOpacity: Animated.Value;
@@ -39,6 +40,7 @@ export function SalesCatalogPane({
     hasCatalogProducts,
     canManageCatalog,
     filteredProducts,
+    enforceSalesBasedOnInventory,
     categoryWidth,
     categoryOpacity,
     contentOpacity,
@@ -116,6 +118,9 @@ export function SalesCatalogPane({
                             <ProductSelection
                                 key="productSelection"
                                 products={filteredProducts}
+                                enforceSalesBasedOnInventory={
+                                    enforceSalesBasedOnInventory
+                                }
                                 onSelected={onProductSelected}
                                 onLongPress={onProductLongPress}
                             />

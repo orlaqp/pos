@@ -2,6 +2,7 @@ import {
     chunkProducts,
     getNextRowsToShow,
     getProductCardState,
+    getProductInventoryVisualState,
 } from './product-selection.logic';
 
 describe('product-selection.logic', () => {
@@ -31,5 +32,34 @@ describe('product-selection.logic', () => {
         expect(
             getProductCardState({ quantity: 5, reorderPoint: 2 } as any)
         ).toBe('default');
+    });
+
+    it('returns visual state labels and blocked state from inventory enforcement', () => {
+        expect(
+            getProductInventoryVisualState({ quantity: 0 } as any, true)
+        ).toEqual({
+            state: 'danger',
+            isBlocked: true,
+            statusLabel: 'Out of stock',
+        });
+
+        expect(
+            getProductInventoryVisualState(
+                { quantity: 1, reorderPoint: 2 } as any,
+                true
+            )
+        ).toEqual({
+            state: 'warning',
+            isBlocked: false,
+            statusLabel: 'Low inventory',
+        });
+
+        expect(
+            getProductInventoryVisualState({ quantity: 0 } as any, false)
+        ).toEqual({
+            state: 'danger',
+            isBlocked: false,
+            statusLabel: 'Out of stock',
+        });
     });
 });

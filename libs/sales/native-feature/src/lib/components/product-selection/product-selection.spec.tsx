@@ -107,6 +107,7 @@ describe('ProductSelection', () => {
         rerender(
             <ProductSelection
                 products={products}
+                enforceSalesBasedOnInventory
                 onSelected={mockOnSelected}
                 onLongPress={mockOnLongPress}
             />
@@ -115,6 +116,16 @@ describe('ProductSelection', () => {
         fireEvent(getByTestId('product-btn-p-1'), 'longPress');
 
         expect(getByText('In stock: 1.23')).toBeTruthy();
+        expect(getByText('Out of stock')).toBeTruthy();
+        expect(getByText('Low inventory')).toBeTruthy();
+        expect(getByTestId('sales-product-card-p-2')).toHaveProp(
+            'accessibilityState',
+            { disabled: true }
+        );
+        expect(getByTestId('sales-product-card-p-3')).toHaveProp(
+            'accessibilityState',
+            { disabled: false }
+        );
         expect(getByTestId('product-selection-list').props.keyboardShouldPersistTaps).toBe(
             'handled'
         );

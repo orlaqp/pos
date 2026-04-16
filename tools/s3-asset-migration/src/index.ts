@@ -5,3 +5,7 @@ export * from './asset-s3';
 export * from './asset-safety';
 export * from './asset-storage-env';
 export * from './asset-types';
+export * from './image-cli';
+export * from './image-migration';
+export * from './image-reporter';
+export * from './image-types';

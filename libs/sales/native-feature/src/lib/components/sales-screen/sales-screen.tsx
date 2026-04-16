@@ -943,6 +943,9 @@ export function SalesScreen({
                     hasCatalogProducts={hasCatalogProducts}
                     canManageCatalog={canManageCatalog}
                     filteredProducts={filteredProducts}
+                    enforceSalesBasedOnInventory={
+                        globalSettings?.enforceSalesBasedOnInventory
+                    }
                     categoryWidth={categoryWidth}
                     categoryOpacity={categoryOpacity}
                     contentOpacity={contentOpacity}

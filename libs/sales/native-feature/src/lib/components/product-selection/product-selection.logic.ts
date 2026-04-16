@@ -1,5 +1,6 @@
 import { ProductEntity } from '@pos/products/data-access';
 import { MINIMUM_INVENTORY_FOR_SALE } from '@pos/sales/data-access';
+import { shouldBlockSelectionByInventory } from '../sales-screen/sales-screen.logic';
 
 export const chunkProducts = (
     products: ProductEntity[],
@@ -29,4 +30,41 @@ export const getProductCardState = (
         return 'warning';
     }
     return 'default';
+};
+
+export const getProductInventoryVisualState = (
+    product: ProductEntity,
+    enforceSalesBasedOnInventory: boolean | undefined
+): {
+    state: 'danger' | 'warning' | 'default';
+    isBlocked: boolean;
+    statusLabel?: 'Out of stock' | 'Low inventory';
+} => {
+    const state = getProductCardState(product);
+    const isBlocked = shouldBlockSelectionByInventory(
+        enforceSalesBasedOnInventory,
+        product.quantity,
+        MINIMUM_INVENTORY_FOR_SALE
+    );
+
+    if (state === 'danger') {
+        return {
+            state,
+            isBlocked,
+            statusLabel: 'Out of stock',
+        };
+    }
+
+    if (state === 'warning') {
+        return {
+            state,
+            isBlocked,
+            statusLabel: 'Low inventory',
+        };
+    }
+
+    return {
+        state,
+        isBlocked,
+    };
 };
