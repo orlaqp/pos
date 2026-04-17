@@ -219,7 +219,7 @@ const printSingleReceipt = async (
 ) => {
     const date = new Date();
     const receiptLines = buildReceiptLines(cart, order);
-    const receiptTotals = buildReceiptTotalsText(cart);
+    const receiptTotalsBreakdown = buildReceiptTotalsBreakdownText(cart);
     const totalPaymentsText = getReceiptPaymentsText(order);
     const copyLabel = getReceiptCopyLabel(order);
     const receiptText = buildReceiptPreviewText(store, cart, order, date);
@@ -258,7 +258,18 @@ const printSingleReceipt = async (
             )
             .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
             .actionPrintText(receiptLines)
-            .actionPrintText(receiptTotals)
+            .actionPrintText(receiptTotalsBreakdown)
+            .actionPrintText('--------------------------------\n')
+            .actionPrintText('Total     ')
+            .add(
+                new StarXpandCommand.PrinterBuilder()
+                    .styleMagnification(
+                        new StarXpandCommand.MagnificationParameter(2, 2)
+                    )
+                    .actionPrintText(
+                        `     ${cart.footer.total.toFixed(2).padStart(7, '')}\n`
+                    )
+            )
             
         if (order?.id) {
             printerBuilder
@@ -347,6 +358,30 @@ const getReceiptPaymentsText = (order?: ReceiptOrderEntity) =>
         ?.map((payment) => `${payment.type}: $ ${payment.amount.toFixed(2)}`)
         .join('\n') || '';
 
+const buildReceiptTotalsBreakdownText = (cart: ReceiptCartState) => {
+    const rows: string[] = [];
+    const baseSubtotal =
+        cart.footer.baseSubtotal ?? cart.footer.subtotal ?? cart.footer.total;
+    const discountTotal =
+        cart.footer.discount ?? cart.footer.savingsTotal ?? 0;
+    const tax = cart.footer.tax ?? 0;
+
+    rows.push(formatTotalRow('Subtotal', baseSubtotal));
+
+    if (discountTotal > 0) {
+        rows.push(formatTotalRow('Discounts', -discountTotal));
+        getReceiptDiscountDetails(cart).forEach((discount) => {
+            rows.push(formatTotalRow(discount.label, -discount.amount));
+        });
+    }
+
+    if (tax > 0) {
+        rows.push(formatTotalRow('Tax', tax));
+    }
+
+    return rows.join('');
+};
+
 const formatTotalRow = (label: string, amount: number) =>
     `${label.padEnd(18, ' ')}${amount.toFixed(2).padStart(14, ' ')}\n`;
 
@@ -371,24 +406,7 @@ const getReceiptDiscountDetails = (cart: ReceiptCartState) => {
 
 const buildReceiptTotalsText = (cart: ReceiptCartState) => {
     const rows: string[] = [];
-    const baseSubtotal =
-        cart.footer.baseSubtotal ?? cart.footer.subtotal ?? cart.footer.total;
-    const discountTotal =
-        cart.footer.discount ?? cart.footer.savingsTotal ?? 0;
-    const tax = cart.footer.tax ?? 0;
-
-    rows.push(formatTotalRow('Subtotal', baseSubtotal));
-
-    if (discountTotal > 0) {
-        rows.push(formatTotalRow('Discounts', -discountTotal));
-        getReceiptDiscountDetails(cart).forEach((discount) => {
-            rows.push(formatTotalRow(discount.label, -discount.amount));
-        });
-    }
-
-    if (tax > 0) {
-        rows.push(formatTotalRow('Tax', tax));
-    }
+    rows.push(buildReceiptTotalsBreakdownText(cart));
 
     rows.push('--------------------------------\n');
     rows.push(formatTotalRow('Total', cart.footer.total));
