@@ -118,3 +118,5 @@ amplifytools.xcconfig
 .nx/workspace-data
 .nx/polygraph
 **/.derived-data
+libs/inventory/data-access/src/lib/receive/inventory-receive.service.ts
+tools-output/

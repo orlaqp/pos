@@ -17,7 +17,6 @@ import { RootState, useAppDispatch } from '@pos/store';
 import { InventoryReceive } from '@pos/shared/models';
 import {
     ProductEntity,
-    productsActions,
     ProductService,
     selectAllProducts,
 } from '@pos/products/data-access';
@@ -68,30 +67,6 @@ export const applyReceiveLineUpdate = (
         comments: item.comments,
     };
     return next;
-};
-
-const asQuantityDeltas = (lines: InventoryReceiveLineDTO[]) => {
-    const totalsByProductId = new Map<string, number>();
-
-    lines.forEach((line) => {
-        if (
-            line.received === undefined ||
-            line.received === null ||
-            Number.isNaN(line.received)
-        ) {
-            return;
-        }
-
-        totalsByProductId.set(
-            line.productId,
-            (totalsByProductId.get(line.productId) || 0) + line.received
-        );
-    });
-
-    return Array.from(totalsByProductId.entries()).map(([productId, delta]) => ({
-        productId,
-        delta,
-    }));
 };
 
 export function InventoryReceiveForm({
@@ -145,45 +120,45 @@ export function InventoryReceiveForm({
     const save = async (updateInv: boolean) => {
         if (busy) return;
         setBusy(true);
-        const currentLines = linesRef.current;
-        let inv: InventoryReceiveDTO;
+        try {
+            const currentLines = linesRef.current;
+            let inv: InventoryReceiveDTO;
 
-        if (inventoryReceive) {
-            inv = {
-                comments: inventoryReceive.comments,
-                lines: currentLines,
-                status: inventoryReceive.status,
-                id: inventoryReceive.id,
-                // createdAt: inventoryReceive.createdAt,
-                createdBy: {
-                    id: employee?.id,
-                    name: `${employee?.firstName} ${employee?.lastName}`
+            if (inventoryReceive) {
+                inv = {
+                    comments: inventoryReceive.comments,
+                    lines: currentLines,
+                    status: inventoryReceive.status,
+                    id: inventoryReceive.id,
+                    createdBy: {
+                        id: employee?.id,
+                        name: `${employee?.firstName} ${employee?.lastName}`
+                    }
+                };
+            } else {
+                if (!employee) {
+                    Alert.alert('The system could not find the details of the logged in employee');
+                    return;
                 }
-            };
-        } else {
-            if (!employee) {
-                Alert.alert('The system could not find the details of the logged in employee');
-                setBusy(false);
+
+                inv = InventoryReceiveMapper.newReceive(employee);
+                inv.lines = currentLines;
+            }
+
+            if (updateInv) {
+                inv.status = 'COMPLETED';
+            }
+
+            const saved = await InventoryReceiveService.save(dispatch, inv, updateInv);
+            if (!saved) {
                 return;
             }
 
-            inv = InventoryReceiveMapper.newReceive(employee);
-            inv.lines = currentLines;
+            dispatch(inventoryReceiveActions.clearSelection());
+            navigation.goBack();
+        } finally {
+            setBusy(false);
         }
-
-        if (updateInv) {
-            inv.status = 'COMPLETED';
-        }
-
-        await InventoryReceiveService.save(dispatch, inv, updateInv);
-        dispatch(inventoryReceiveActions.clearSelection());
-
-        if (inv.status === 'COMPLETED') {
-            dispatch(productsActions.applyQuantityDeltas(asQuantityDeltas(currentLines)));
-        }
-
-        navigation.goBack();
-        setBusy(false);
     };
 
     const updateInventory = () => {

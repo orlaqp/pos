@@ -966,6 +966,36 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "inventoryApplyState": {
+                    "name": "inventoryApplyState",
+                    "isArray": false,
+                    "type": {
+                        "enum": "InventoryApplyState"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryAppliedAt": {
+                    "name": "inventoryAppliedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryApplyOperationId": {
+                    "name": "inventoryApplyOperationId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryApplyError": {
+                    "name": "inventoryApplyError",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "Customer": {
                     "name": "Customer",
                     "isArray": false,
@@ -1053,6 +1083,14 @@ export const schema = {
                                     "update",
                                     "delete",
                                     "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "read",
+                                    "update"
                                 ]
                             }
                         ]
@@ -1298,6 +1336,14 @@ export const schema = {
                                     "delete",
                                     "read"
                                 ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "read",
+                                    "update"
+                                ]
                             }
                         ]
                     }
@@ -1540,6 +1586,36 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "inventoryApplyState": {
+                    "name": "inventoryApplyState",
+                    "isArray": false,
+                    "type": {
+                        "enum": "InventoryApplyState"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryAppliedAt": {
+                    "name": "inventoryAppliedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryApplyOperationId": {
+                    "name": "inventoryApplyOperationId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryApplyError": {
+                    "name": "inventoryApplyError",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -1573,6 +1649,16 @@ export const schema = {
                                 "ownerField": "tenantId",
                                 "allow": "owner",
                                 "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1704,6 +1790,16 @@ export const schema = {
                                     "delete",
                                     "read"
                                 ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
                             }
                         ]
                     }
@@ -1752,6 +1848,36 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "inventoryApplyState": {
+                    "name": "inventoryApplyState",
+                    "isArray": false,
+                    "type": {
+                        "enum": "InventoryApplyState"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryAppliedAt": {
+                    "name": "inventoryAppliedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryApplyOperationId": {
+                    "name": "inventoryApplyOperationId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryApplyError": {
+                    "name": "inventoryApplyError",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -1785,6 +1911,16 @@ export const schema = {
                                 "ownerField": "tenantId",
                                 "allow": "owner",
                                 "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1903,6 +2039,16 @@ export const schema = {
                                 "ownerField": "tenantId",
                                 "allow": "owner",
                                 "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
                                 "operations": [
                                     "create",
                                     "update",
@@ -3463,6 +3609,15 @@ export const schema = {
                 "RECONCILED_WITH_EXCEPTION"
             ]
         },
+        "InventoryApplyState": {
+            "name": "InventoryApplyState",
+            "values": [
+                "PENDING",
+                "APPLYING",
+                "APPLIED",
+                "FAILED"
+            ]
+        },
         "PaymentType": {
             "name": "PaymentType",
             "values": [
@@ -3925,8 +4080,86 @@ export const schema = {
                     "attributes": []
                 }
             }
+        },
+        "InventoryProductFinalizeResult": {
+            "name": "InventoryProductFinalizeResult",
+            "fields": {
+                "productId": {
+                    "name": "productId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "finalQuantity": {
+                    "name": "finalQuantity",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "appliedDelta": {
+                    "name": "appliedDelta",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
+        "InventoryFinalizeResult": {
+            "name": "InventoryFinalizeResult",
+            "fields": {
+                "sourceId": {
+                    "name": "sourceId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "sourceType": {
+                    "name": "sourceType",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "status": {
+                    "name": "status",
+                    "isArray": false,
+                    "type": {
+                        "enum": "InventoryApplyState"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "appliedAt": {
+                    "name": "appliedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "error": {
+                    "name": "error",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "affectedProducts": {
+                    "name": "affectedProducts",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "InventoryProductFinalizeResult"
+                    },
+                    "isRequired": true,
+                    "attributes": [],
+                    "isArrayNullable": false
+                }
+            }
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "869d630c83948f70e4c9d7d5bb44d451"
+    "version": "5b50ee76ddad349e3addca87df29c5f9"
 };

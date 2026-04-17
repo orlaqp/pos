@@ -1,7 +1,6 @@
 import { InventoryCountService } from './inventory-count.service';
 import { API, DataStore } from '@pos/shared/amplify';
 import { Alert } from 'react-native';
-import { getProduct } from '@pos/shared/api';
 
 jest.mock('@pos/shared/amplify', () => ({
     API: {
@@ -17,6 +16,15 @@ jest.mock('@pos/shared/amplify', () => ({
 jest.mock('react-native', () => ({
     Alert: {
         alert: jest.fn(),
+    },
+}));
+
+jest.mock('@pos/products/data-access', () => ({
+    productsActions: {
+        updateQuantities: (payload: unknown) => ({
+            type: 'products/updateQuantities',
+            payload,
+        }),
     },
 }));
 
@@ -45,29 +53,15 @@ jest.mock('@pos/shared/models', () => {
         }
     }
 
-    class Product {
-        constructor(input: any) {
-            Object.assign(this, input);
-        }
-
-        static copyOf(source: any, mutator: (draft: any) => void) {
-            const draft = { ...source };
-            mutator(draft);
-            return draft;
-        }
-    }
-
     return {
         InventoryCount,
         InventoryCountLine,
-        Product,
     };
 });
 
 describe('InventoryCountService', () => {
     const dispatch = jest.fn();
     const mockedGraphql = API.graphql as jest.Mock;
-    const mockedQuery = DataStore.query as jest.Mock;
     const mockedSave = DataStore.save as jest.Mock;
     const mockedAlert = Alert.alert as jest.Mock;
 
@@ -75,211 +69,176 @@ describe('InventoryCountService', () => {
         jest.clearAllMocks();
     });
 
-    it('applies inventory count as a delta mutation when updateInv=true', async () => {
-        const count = {
-            id: 'count-1',
-            comments: 'c',
-            status: 'IN_PROGRESS',
-            createdBy: { id: 'e1', name: 'Emp 1' },
-            lines: [
-                {
-                    productId: 'p-1',
-                    productName: 'Apple',
-                    unitOfMeasure: 'EA',
-                    current: 10,
-                    newCount: 25,
-                    comments: '',
-                    inventoryCountLineInventoryCountId: 'count-1',
+    it('finalizes counts through the backend lifecycle query and applies exact quantities locally', async () => {
+        mockedGraphql.mockResolvedValue({
+            data: {
+                finalizeInventoryCount: {
+                    sourceId: 'count-1',
+                    sourceType: 'INVENTORY_COUNT',
+                    status: 'APPLIED',
+                    appliedAt: '2026-04-17T10:00:00.000Z',
+                    error: null,
+                    affectedProducts: [
+                        {
+                            productId: 'p-1',
+                            finalQuantity: 30,
+                            appliedDelta: 5,
+                        },
+                    ],
                 },
-            ],
-        } as any;
-
-        mockedQuery.mockImplementation((model: unknown, arg: unknown) => {
-            if (arg === 'count-1') {
-                return Promise.resolve({ id: 'count-1', comments: 'old', status: 'IN_PROGRESS' });
-            }
-
-            if (arg === 'p-1') {
-                return Promise.resolve({ id: 'p-1', quantity: 10, _version: 3 });
-            }
-
-            return Promise.resolve([]);
+            },
         });
 
-        await InventoryCountService.save(dispatch, count, true);
+        const saved = await InventoryCountService.save(
+            dispatch,
+            {
+                id: 'count-1',
+                comments: 'cycle count',
+                status: 'COMPLETED',
+                createdBy: { id: 'e1', name: 'Emp 1' },
+                lines: [
+                    {
+                        id: 'line-1',
+                        productId: 'p-1',
+                        productName: 'Apple',
+                        unitOfMeasure: 'EA',
+                        current: 25,
+                        newCount: 30,
+                        comments: '',
+                        inventoryCountLineInventoryCountId: 'count-1',
+                    },
+                ],
+            } as any,
+            true
+        );
 
+        expect(saved).toBe(true);
         expect(mockedGraphql).toHaveBeenCalledWith(
             expect.objectContaining({
-                query: expect.stringContaining('mutation UpdateProductInventoryDelta'),
-                variables: {
-                    input: {
-                        id: 'p-1',
-                        quantity: 15,
-                        _version: 3,
-                    },
-                },
+                query: expect.stringContaining('query FinalizeInventoryCount'),
                 authMode: 'userPool',
+                variables: {
+                    input: expect.objectContaining({
+                        countId: 'count-1',
+                        comments: 'cycle count',
+                        lines: [
+                            expect.objectContaining({
+                                id: 'line-1',
+                                productId: 'p-1',
+                                current: 25,
+                                newCount: 30,
+                            }),
+                        ],
+                    }),
+                },
             })
         );
+        expect(dispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: expect.stringContaining('/update'),
+            })
+        );
+        expect(dispatch).toHaveBeenCalledWith({
+            type: 'products/updateQuantities',
+            payload: [{ productId: 'p-1', newCount: 30 }],
+        });
     });
 
-    it('does not update product inventory when updateInv=false', async () => {
-        const count = {
-            id: 'count-1',
-            comments: 'c',
-            status: 'IN_PROGRESS',
-            createdBy: { id: 'e1', name: 'Emp 1' },
-            lines: [
-                {
-                    productId: 'p-1',
-                    productName: 'Apple',
-                    unitOfMeasure: 'EA',
-                    current: 10,
-                    newCount: 25,
-                    comments: '',
-                    inventoryCountLineInventoryCountId: 'count-1',
-                },
-            ],
-        } as any;
+    it('persists count drafts without calling the lifecycle query', async () => {
+        mockedSave.mockImplementation(async (value) => ({
+            ...value,
+            id: value.id || 'draft-count-1',
+        }));
 
-        mockedQuery.mockImplementation((model: unknown, arg: unknown) => {
-            if (arg === 'count-1') {
-                return Promise.resolve({ id: 'count-1', comments: 'old', status: 'IN_PROGRESS' });
-            }
+        const saved = await InventoryCountService.save(
+            dispatch,
+            {
+                comments: 'draft',
+                status: 'IN_PROGRESS',
+                createdBy: { id: 'e1', name: 'Emp 1' },
+                lines: [
+                    {
+                        productId: 'p-1',
+                        productName: 'Apple',
+                        unitOfMeasure: 'EA',
+                        current: 20,
+                        newCount: 22,
+                        comments: '',
+                        inventoryCountLineInventoryCountId: '',
+                    },
+                ],
+            } as any,
+            false
+        );
 
-            return Promise.resolve([]);
-        });
-
-        await InventoryCountService.save(dispatch, count, false);
-
+        expect(saved).toBe(true);
         expect(mockedGraphql).not.toHaveBeenCalled();
+        expect(mockedSave).toHaveBeenCalled();
     });
 
-    it('alerts and continues when a product is missing during inventory update', async () => {
-        const count = {
-            id: 'count-1',
-            comments: 'c',
-            status: 'IN_PROGRESS',
-            createdBy: { id: 'e1', name: 'Emp 1' },
-            lines: [
-                {
-                    productId: 'missing',
-                    productName: 'Ghost Product',
-                    unitOfMeasure: 'EA',
-                    current: 0,
-                    newCount: 5,
-                    comments: '',
-                    inventoryCountLineInventoryCountId: 'count-1',
-                },
-            ],
-        } as any;
+    it('alerts and returns false when count finalization fails', async () => {
+        mockedGraphql.mockRejectedValueOnce(new Error('inventory unavailable'));
 
-        mockedQuery.mockImplementation((model: unknown, arg: unknown) => {
-            if (arg === 'count-1') {
-                return Promise.resolve({ id: 'count-1', comments: 'old', status: 'IN_PROGRESS' });
-            }
+        const saved = await InventoryCountService.save(
+            dispatch,
+            {
+                id: 'count-1',
+                comments: 'cycle count',
+                status: 'COMPLETED',
+                createdBy: { id: 'e1', name: 'Emp 1' },
+                lines: [
+                    {
+                        productId: 'p-1',
+                        productName: 'Apple',
+                        unitOfMeasure: 'EA',
+                        current: 20,
+                        newCount: 22,
+                        comments: '',
+                        inventoryCountLineInventoryCountId: 'count-1',
+                    },
+                ],
+            } as any,
+            true
+        );
 
-            if (arg === 'missing') {
-                return Promise.resolve(null);
-            }
-
-            return Promise.resolve([]);
-        });
-
-        await InventoryCountService.save(dispatch, count, true);
-
+        expect(saved).toBe(false);
         expect(mockedAlert).toHaveBeenCalledWith(
-            'Error',
-            'Product Ghost Product was not found while updating the inventory'
+            'Unable to finalize inventory count',
+            'inventory unavailable'
         );
     });
 
-    it('retries count delta with latest version when initial mutation conflicts', async () => {
-        const count = {
-            id: 'count-1',
-            comments: 'c',
-            status: 'IN_PROGRESS',
-            createdBy: { id: 'e1', name: 'Emp 1' },
-            lines: [
-                {
-                    productId: 'p-1',
-                    productName: 'Apple',
-                    unitOfMeasure: 'EA',
-                    current: 10,
-                    newCount: 25,
-                    comments: '',
-                    inventoryCountLineInventoryCountId: 'count-1',
-                },
-            ],
-        } as any;
-
-        mockedQuery.mockImplementation((model: unknown, arg: unknown) => {
-            if (arg === 'count-1') {
-                return Promise.resolve({ id: 'count-1', comments: 'old', status: 'IN_PROGRESS' });
-            }
-
-            if (arg === 'p-1') {
-                return Promise.resolve({ id: 'p-1', quantity: 10, _version: 3 });
-            }
-
-            return Promise.resolve([]);
+    it('returns false when AppSync returns count finalization errors', async () => {
+        mockedGraphql.mockResolvedValueOnce({
+            errors: [{ message: 'This inventory document has already been finalized' }],
         });
 
-        mockedGraphql
-            .mockResolvedValueOnce({
-                errors: [{ message: 'ConflictUnhandled: version mismatch' }],
-            })
-            .mockResolvedValueOnce({
-                data: {
-                    getProduct: {
-                        id: 'p-1',
-                        _version: 4,
+        const saved = await InventoryCountService.save(
+            dispatch,
+            {
+                id: 'count-1',
+                comments: 'cycle count',
+                status: 'COMPLETED',
+                createdBy: { id: 'e1', name: 'Emp 1' },
+                lines: [
+                    {
+                        productId: 'p-1',
+                        productName: 'Apple',
+                        unitOfMeasure: 'EA',
+                        current: 20,
+                        newCount: 22,
+                        comments: '',
+                        inventoryCountLineInventoryCountId: 'count-1',
                     },
-                },
-            })
-            .mockResolvedValueOnce({
-                data: {
-                    updateProduct: {
-                        id: 'p-1',
-                        quantity: 25,
-                    },
-                },
-            });
-
-        await InventoryCountService.save(dispatch, count, true);
-
-        expect(mockedGraphql).toHaveBeenNthCalledWith(
-            1,
-            expect.objectContaining({
-                query: expect.stringContaining('mutation UpdateProductInventoryDelta'),
-                variables: {
-                    input: {
-                        id: 'p-1',
-                        quantity: 15,
-                        _version: 3,
-                    },
-                },
-            })
+                ],
+            } as any,
+            true
         );
-        expect(mockedGraphql).toHaveBeenNthCalledWith(
-            2,
-            expect.objectContaining({
-                query: getProduct,
-                variables: { id: 'p-1' },
-            })
-        );
-        expect(mockedGraphql).toHaveBeenNthCalledWith(
-            3,
-            expect.objectContaining({
-                query: expect.stringContaining('mutation UpdateProductInventoryDelta'),
-                variables: {
-                    input: {
-                        id: 'p-1',
-                        quantity: 15,
-                        _version: 4,
-                    },
-                },
-            })
+
+        expect(saved).toBe(false);
+        expect(mockedAlert).toHaveBeenCalledWith(
+            'Unable to finalize inventory count',
+            'This inventory document has already been finalized'
         );
     });
 });

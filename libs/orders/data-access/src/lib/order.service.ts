@@ -1,7 +1,7 @@
 import { MutableModel } from '@aws-amplify/datastore';
 /* eslint-disable @nx/enforce-module-boundaries */
 import { Order, OrderLine, OrderMetaData, OrderStatus, Payment, PaymentInfo, Product, RefundInfo } from '@pos/shared/models';
-import { API, DataStore } from '@pos/shared/amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { OrderEntity, OrderEntityMapper } from './order.entity';
 import { CartPayment, CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
@@ -16,7 +16,6 @@ import {
     EbtLineAllocation,
 } from './ebt-allocation';
 import { requireCurrentTenantId, stampTenant } from '@pos/auth/data-access';
-import { getProduct } from '@pos/shared/api';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -55,6 +54,11 @@ const logOrderTiming = (step: string, details?: Record<string, unknown>) => {
     void step;
     void details;
 };
+
+const buildOrderInventoryOperationId = (
+    orderId: string,
+    status: 'PAID' | 'REFUNDED'
+) => `ORDER:${orderId}:${status}`;
 
 export class OrderService {
 
@@ -217,6 +221,13 @@ export class OrderService {
                     })
                 ),
             },
+            inventoryApplyState: 'PENDING',
+            inventoryAppliedAt: null,
+            inventoryApplyOperationId: buildOrderInventoryOperationId(
+                request.order.id || 'pending',
+                'PAID'
+            ),
+            inventoryApplyError: null,
             orderDate: moment().toISOString(),
         }) as never);
 
@@ -225,7 +236,6 @@ export class OrderService {
             orderId: savedOrder.id,
             durationMs: Date.now() - startedAt,
         });
-        OrderService.runInventoryUpdateInBackground(savedOrder);
         logOrderTiming('create-paid-order-end', {
             orderId: savedOrder.id,
             durationMs: Date.now() - startedAt,
@@ -295,6 +305,13 @@ export class OrderService {
                     amount: +p.amount
                     }))
             };
+            o.inventoryApplyState = 'PENDING';
+            o.inventoryAppliedAt = null;
+            o.inventoryApplyOperationId = buildOrderInventoryOperationId(
+                order.id,
+                'PAID'
+            );
+            o.inventoryApplyError = null;
         });
 
         const closedOrder = await DataStore.save(updatedOrder);
@@ -302,7 +319,6 @@ export class OrderService {
             orderId: closedOrder.id,
             status: closedOrder.status,
         });
-        OrderService.runInventoryUpdateInBackground(closedOrder);
 
         return closedOrder;
     }
@@ -318,14 +334,20 @@ export class OrderService {
         const refundedOrder = Order.copyOf(existing, (o) => {
             o.tenantId = existing.tenantId || requireCurrentTenantId();
             o.status = 'REFUNDED';
+            o.inventoryApplyState = 'PENDING';
+            o.inventoryAppliedAt = null;
+            o.inventoryApplyOperationId = buildOrderInventoryOperationId(
+                existing.id,
+                'REFUNDED'
+            );
+            o.inventoryApplyError = null;
             o.refundInfo = {
                 employeeId: request.by.id,
                 employeeName: `${request.by.firstName} ${request.by.lastName}`
             }
         });
 
-        await DataStore.save(refundedOrder);
-        await OrderService.updateInventory(refundedOrder);
+        const savedRefundedOrder = await DataStore.save(refundedOrder);
 
         const hasCartItems = !!(request.order as unknown as CartState)?.items;
         const cartOrder: CartState = hasCartItems
@@ -392,12 +414,12 @@ export class OrderService {
             cartOrder
         );
 
-        if (!newCart.items?.length) return;
+        if (!newCart.items?.length) return savedRefundedOrder;
         const createdBy = await EmployeeService.getById(refundedOrder.employeeId);
 
         if  (!createdBy) {
             Alert.alert(`Employee ${refundedOrder.employeeId} not found`);
-            return;
+            return savedRefundedOrder;
         }
 
         await OrderService.create({
@@ -405,7 +427,7 @@ export class OrderService {
             order: newCart
         }) // .upsertOrder(employee, newCart, OrderStatus.PAID);
 
-        return null;
+        return savedRefundedOrder;
     }
 
 
@@ -570,71 +592,6 @@ export class OrderService {
         return DataStore.delete(item);
     }
 
-    static async updateInventory(order: Order) {
-        // sum product quantities so we update only once
-        const summary: Record<string, number> = {};
-
-        order.lines.reduce((s, line) => {
-            if (!line) return s;
-            s[line.productId] = (s[line.productId] || 0) + line.quantity;
-
-            return s;
-        }, summary)
-
-        const failures: string[] = [];
-
-        for (const [productId, quantity] of Object.entries(summary)) {
-            try {
-                // Amplify v6/DataStore has been more reliable here when we
-                // apply inventory deltas deterministically instead of
-                // fan-out saving several product mutations at once.
-                await updateProductQuantity(order.status, productId, quantity);
-            } catch (error) {
-                console.error(
-                    `Inventory update failed for product ${productId}`,
-                    error
-                );
-                failures.push(productId);
-            }
-        }
-
-        if (failures.length) {
-            throw new Error(
-                `Inventory update failed for products: ${failures.join(', ')}`
-            );
-        }
-    }
-
-    private static runInventoryUpdateInBackground(order: Order) {
-        const startedAt = Date.now();
-        logOrderTiming('inventory-update-start', {
-            orderId: order.id,
-            status: order.status,
-        });
-
-        void OrderService.updateInventory(order)
-            .then(() => {
-                logOrderTiming('inventory-update-end', {
-                    orderId: order.id,
-                    status: order.status,
-                    durationMs: Date.now() - startedAt,
-                });
-            })
-            .catch((error) => {
-                console.error('Order inventory update failed', error);
-                logOrderTiming('inventory-update-failed', {
-                    orderId: order.id,
-                    status: order.status,
-                    durationMs: Date.now() - startedAt,
-                    message: error instanceof Error ? error.message : String(error),
-                });
-                Alert.alert(
-                    'Inventory update failed',
-                    'The order was saved, but inventory could not be updated right away.'
-                );
-            });
-    }
-
     static search(items: OrderEntity[], options: FilterRequest) {
         // const lowerQuery = options.filter?.toLowerCase() || '';
         let searchResult: OrderEntity[];
@@ -726,132 +683,6 @@ export class OrderService {
 
     //     await OrderService.upsertOrder(employee, newCart, OrderStatus.PAID);
     // }
-}
-
-const updateProductInventoryDeltaMutation = /* GraphQL */ `
-    mutation UpdateProductInventoryDelta(
-        $input: UpdateProductInput!
-        $condition: ModelProductConditionInput
-    ) {
-        updateProduct(input: $input, condition: $condition) {
-            id
-            tenantId
-            name
-            description
-            price
-            tags
-            cost
-            barcode
-            sku
-            plu
-            quantity
-            unitOfMeasure
-            trackStock
-            reorderPoint
-            reorderQuantity
-            picture
-            isActive
-            isEBTEligible
-            discountable
-            minAllowedPrice
-            maxManualDiscountPercent
-            maxManualDiscountAmount
-            createdAt
-            updatedAt
-            _version
-            _deleted
-            _lastChangedAt
-            productCategoryId
-            productBrandId
-            __typename
-        }
-    }
-`;
-
-const getGraphqlErrorMessage = (result: unknown) => {
-    if (!result || typeof result !== 'object' || !('errors' in result)) {
-        return undefined;
-    }
-
-    const errors =
-        (result as { errors?: Array<{ message?: string }> }).errors || [];
-
-    return errors.map((error) => error?.message).filter(Boolean).join(' | ') || undefined;
-};
-
-const fetchLatestProductVersion = async (productId: string) => {
-    const result = await API.graphql({
-        query: getProduct,
-        variables: { id: productId },
-        authMode: 'userPool',
-    });
-
-    const message = getGraphqlErrorMessage(result);
-    if (message) {
-        throw new Error(message);
-    }
-
-    const remote = (result as { data?: { getProduct?: { _version?: number | null } | null } })
-        .data?.getProduct;
-
-    return remote?._version;
-};
-
-const executeInventoryDeltaMutation = async (
-    productId: string,
-    quantityDelta: number,
-    version?: number | null
-) => {
-    const result = await API.graphql({
-        query: updateProductInventoryDeltaMutation,
-        variables: {
-            input: {
-                id: productId,
-                quantity: quantityDelta,
-                _version: version,
-            },
-        },
-        authMode: 'userPool',
-    });
-
-    const message = getGraphqlErrorMessage(result);
-    if (message) {
-        throw new Error(message);
-    }
-};
-
-async function updateProductQuantity(
-    status: OrderStatus | keyof typeof OrderStatus,
-    id: string,
-    quantity: number
-) {
-    const p = await DataStore.query(Product, id);
-
-    if (!p) {
-        throw new Error(`Product ${id} not found locally for inventory update`);
-    }
-
-    const delta = getInventoryQuantityDelta(status, quantity);
-    const currentVersion = (p as Product & { _version?: number | null })._version;
-
-    try {
-        await executeInventoryDeltaMutation(id, delta, currentVersion);
-    } catch (error) {
-        const message =
-            error instanceof Error ? error.message : String(error);
-        const shouldRetry =
-            message.toLowerCase().includes('conflict') ||
-            message.toLowerCase().includes('conditionalcheckfailed') ||
-            message.toLowerCase().includes('conditional request failed') ||
-            message.toLowerCase().includes('version');
-
-        if (!shouldRetry) {
-            throw error;
-        }
-
-        const latestVersion = await fetchLatestProductVersion(id);
-        await executeInventoryDeltaMutation(id, delta, latestVersion);
-    }
 }
 
 export function getInventoryQuantityDelta(

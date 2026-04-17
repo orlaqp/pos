@@ -7,6 +7,11 @@
     "defaultAuthType": {
       "mode": "AMAZON_COGNITO_USER_POOLS"
     },
+    "additionalAuthTypes": [
+      {
+        "mode": "AWS_IAM"
+      }
+    ],
     "conflictResolution": {
       "defaultResolutionStrategy": {
         "type": "AUTOMERGE"

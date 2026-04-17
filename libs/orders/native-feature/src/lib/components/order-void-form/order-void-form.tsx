@@ -8,6 +8,7 @@ import {
     OrderLineEntity,
     OrderService,
 } from '@pos/orders/data-access';
+import { productsActions } from '@pos/products/data-access';
 import OrderVoidableItem from '../order-voidable-item/order-voidable-item';
 import { Button, useTheme } from '@rneui/themed';
 import { useSelector } from 'react-redux';
@@ -18,6 +19,7 @@ import {
     spreadOrderLinesForVoid,
 } from './order-void-form.logic';
 import i18next from 'i18next';
+import { useAppDispatch } from '@pos/store';
 
 export interface OrderItemProps {
     order: OrderEntity;
@@ -25,6 +27,7 @@ export interface OrderItemProps {
 }
 
 export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
+    const dispatch = useAppDispatch();
     const theme = useTheme();
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
@@ -77,7 +80,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
         }
 
         setBusy(true);
-        await OrderService.refund({
+        const refundedOrder = await OrderService.refund({
             by: employee as any,
             id: order.id,
             order: order as any,
@@ -87,6 +90,29 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                 quantity: l.quantity,
             }))
         });
+        if (refundedOrder) {
+            const deltas = linesToRefund.reduce<Record<string, number>>(
+                (acc, line) => {
+                    if (!line.productId) {
+                        return acc;
+                    }
+
+                    acc[line.productId] =
+                        (acc[line.productId] || 0) + Number(line.quantity || 0);
+                    return acc;
+                },
+                {}
+            );
+
+            dispatch(
+                productsActions.applyQuantityDeltas(
+                    Object.entries(deltas).map(([productId, delta]) => ({
+                        productId,
+                        delta,
+                    }))
+                )
+            );
+        }
         setBusy(false);
         onRefundComplete();
     };

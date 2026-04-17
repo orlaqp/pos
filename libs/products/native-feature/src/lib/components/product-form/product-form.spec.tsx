@@ -222,6 +222,7 @@ describe('ProductForm integration', () => {
                     cost: 7.25,
                 })
             );
+            expect(mockProductSave.mock.calls[0][1].quantity).toBeUndefined();
             expect(mockGoBack).toHaveBeenCalled();
         });
     });
@@ -244,6 +245,7 @@ describe('ProductForm integration', () => {
             expect(payload.id).toBeUndefined();
             expect(payload.cost).toBeNull();
             expect(payload.price).toBe(9.99);
+            expect(payload.quantity).toBeUndefined();
         });
     });
 

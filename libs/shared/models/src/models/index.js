@@ -2,6 +2,80 @@
 import { initSchema } from '@aws-amplify/datastore';
 import { schema } from './schema';
 
+const TenantUserRole = {
+  "OWNER": "OWNER",
+  "ADMIN": "ADMIN"
+};
+
+const CategoryDiscountPolicyMode = {
+  "DEFAULT": "DEFAULT",
+  "FORCE_INCLUDE": "FORCE_INCLUDE",
+  "FORCE_EXCLUDE": "FORCE_EXCLUDE"
+};
+
+const DiscountDefinitionStatus = {
+  "DRAFT": "DRAFT",
+  "ACTIVE": "ACTIVE",
+  "INACTIVE": "INACTIVE",
+  "EXPIRED": "EXPIRED"
+};
+
+const DiscountDefinitionType = {
+  "MANUAL": "MANUAL",
+  "AUTOMATIC": "AUTOMATIC",
+  "PROMO_CODE": "PROMO_CODE"
+};
+
+const DiscountMethod = {
+  "PERCENT": "PERCENT",
+  "AMOUNT": "AMOUNT",
+  "FINAL_PRICE": "FINAL_PRICE"
+};
+
+const DiscountScope = {
+  "LINE": "LINE",
+  "ORDER": "ORDER"
+};
+
+const DiscountStackMode = {
+  "EXCLUSIVE": "EXCLUSIVE",
+  "STACKABLE": "STACKABLE",
+  "BEST_PRICE_ONLY": "BEST_PRICE_ONLY"
+};
+
+const DiscountApplicationType = {
+  "MANUAL_LINE_DISCOUNT": "MANUAL_LINE_DISCOUNT",
+  "MANUAL_ORDER_DISCOUNT": "MANUAL_ORDER_DISCOUNT",
+  "AUTOMATIC_DISCOUNT": "AUTOMATIC_DISCOUNT",
+  "PROMO_CODE": "PROMO_CODE",
+  "PRICE_OVERRIDE": "PRICE_OVERRIDE"
+};
+
+const DiscountApprovalStatus = {
+  "NOT_REQUIRED": "NOT_REQUIRED",
+  "APPROVED": "APPROVED",
+  "REJECTED": "REJECTED"
+};
+
+const PricingSource = {
+  "ONLINE_VALIDATED": "ONLINE_VALIDATED",
+  "OFFLINE_LOCAL": "OFFLINE_LOCAL"
+};
+
+const ReconciliationStatus = {
+  "NOT_REQUIRED": "NOT_REQUIRED",
+  "PENDING": "PENDING",
+  "RECONCILED": "RECONCILED",
+  "RECONCILED_WITH_EXCEPTION": "RECONCILED_WITH_EXCEPTION"
+};
+
+const InventoryApplyState = {
+  "PENDING": "PENDING",
+  "APPLYING": "APPLYING",
+  "APPLIED": "APPLIED",
+  "FAILED": "FAILED"
+};
+
 const PaymentType = {
   "CASH": "CASH",
   "CHECK": "CHECK",
@@ -25,9 +99,11 @@ const InventoryReceiveStatus = {
   "COMPLETED": "COMPLETED"
 };
 
-const { Store, Brand, Category, Customer, Employee, Order, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, DiscountDefinition, EmployeeDiscountPolicy, PaymentInfo, RefundInfo, ByEmployee, OrderLine, Payment, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary, SalesSummary } = initSchema(schema);
+const { Tenant, TenantUser, Store, Brand, Category, Customer, Employee, Order, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, DiscountDefinition, DiscountReasonCode, EmployeeDiscountPolicy, DiscountPreset, DiscountApplication, ApprovalEvent, DiscountReconciliationException, PaymentInfo, RefundInfo, ByEmployee, OrderLine, Payment, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary, SalesSummary, InventoryProductFinalizeResult, InventoryFinalizeResult } = initSchema(schema);
 
 export {
+  Tenant,
+  TenantUser,
   Store,
   Brand,
   Category,
@@ -45,7 +121,24 @@ export {
   Station,
   GlobalSettings,
   DiscountDefinition,
+  DiscountReasonCode,
   EmployeeDiscountPolicy,
+  DiscountPreset,
+  DiscountApplication,
+  ApprovalEvent,
+  DiscountReconciliationException,
+  TenantUserRole,
+  CategoryDiscountPolicyMode,
+  DiscountDefinitionStatus,
+  DiscountDefinitionType,
+  DiscountMethod,
+  DiscountScope,
+  DiscountStackMode,
+  DiscountApplicationType,
+  DiscountApprovalStatus,
+  PricingSource,
+  ReconciliationStatus,
+  InventoryApplyState,
   PaymentType,
   OrderStatus,
   InventoryCountStatus,
@@ -58,5 +151,7 @@ export {
   ProductSaleSummary,
   EmployeeSaleSummary,
   DatePartSaleSummary,
-  SalesSummary
+  SalesSummary,
+  InventoryProductFinalizeResult,
+  InventoryFinalizeResult
 };

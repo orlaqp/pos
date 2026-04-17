@@ -1,5 +1,189 @@
 export const schema = {
     "models": {
+        "Tenant": {
+            "name": "Tenant",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "name": {
+                    "name": "name",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "slug": {
+                    "name": "slug",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "ownerUserId": {
+                    "name": "ownerUserId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "Tenants",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "bySlug",
+                        "queryField": "tenantBySlug",
+                        "fields": [
+                            "slug"
+                        ]
+                    }
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "provider": "userPools",
+                                "ownerField": "ownerUserId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "TenantUser": {
+            "name": "TenantUser",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "userId": {
+                    "name": "userId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "role": {
+                    "name": "role",
+                    "isArray": false,
+                    "type": {
+                        "enum": "TenantUserRole"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "TenantUsers",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byTenantId",
+                        "queryField": "tenantUsersByTenant",
+                        "fields": [
+                            "tenantId"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byUserId",
+                        "queryField": "tenantUsersByUser",
+                        "fields": [
+                            "userId"
+                        ]
+                    }
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "provider": "userPools",
+                                "ownerField": "userId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
         "Store": {
             "name": "Store",
             "fields": {
@@ -124,8 +308,8 @@ export const schema = {
                         "rules": [
                             {
                                 "provider": "userPools",
-                                "allow": "owner",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
                                 "operations": [
                                     "create",
@@ -200,8 +384,8 @@ export const schema = {
                         "rules": [
                             {
                                 "provider": "userPools",
-                                "allow": "owner",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
                                 "operations": [
                                     "create",
@@ -277,7 +461,9 @@ export const schema = {
                 "discountPolicyMode": {
                     "name": "discountPolicyMode",
                     "isArray": false,
-                    "type": "String",
+                    "type": {
+                        "enum": "CategoryDiscountPolicyMode"
+                    },
                     "isRequired": true,
                     "attributes": []
                 },
@@ -311,8 +497,8 @@ export const schema = {
                         "rules": [
                             {
                                 "provider": "userPools",
-                                "allow": "owner",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
                                 "operations": [
                                     "create",
@@ -414,8 +600,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
                                 "operations": [
                                     "create",
@@ -560,8 +747,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
                                 "operations": [
                                     "create",
@@ -778,6 +966,36 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "inventoryApplyState": {
+                    "name": "inventoryApplyState",
+                    "isArray": false,
+                    "type": {
+                        "enum": "InventoryApplyState"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryAppliedAt": {
+                    "name": "inventoryAppliedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryApplyOperationId": {
+                    "name": "inventoryApplyOperationId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryApplyError": {
+                    "name": "inventoryApplyError",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "Customer": {
                     "name": "Customer",
                     "isArray": false,
@@ -857,14 +1075,22 @@ export const schema = {
                         "rules": [
                             {
                                 "provider": "userPools",
-                                "allow": "owner",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
                                     "delete",
                                     "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "read",
+                                    "update"
                                 ]
                             }
                         ]
@@ -1100,14 +1326,23 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
                                 "operations": [
                                     "create",
                                     "update",
                                     "delete",
                                     "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "read",
+                                    "update"
                                 ]
                             }
                         ]
@@ -1175,8 +1410,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
                                 "operations": [
                                     "create",
@@ -1292,8 +1528,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
                                 "operations": [
                                     "create",
@@ -1349,6 +1586,36 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "inventoryApplyState": {
+                    "name": "inventoryApplyState",
+                    "isArray": false,
+                    "type": {
+                        "enum": "InventoryApplyState"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryAppliedAt": {
+                    "name": "inventoryAppliedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryApplyOperationId": {
+                    "name": "inventoryApplyOperationId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryApplyError": {
+                    "name": "inventoryApplyError",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -1378,9 +1645,20 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1502,9 +1780,20 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1559,6 +1848,36 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "inventoryApplyState": {
+                    "name": "inventoryApplyState",
+                    "isArray": false,
+                    "type": {
+                        "enum": "InventoryApplyState"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryAppliedAt": {
+                    "name": "inventoryAppliedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryApplyOperationId": {
+                    "name": "inventoryApplyOperationId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "inventoryApplyError": {
+                    "name": "inventoryApplyError",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -1588,9 +1907,20 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1705,9 +2035,20 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
                                 "operations": [
                                     "create",
                                     "update",
@@ -1808,8 +2149,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
                                 "operations": [
                                     "create",
@@ -1883,8 +2225,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
                                 "operations": [
                                     "create",
@@ -1958,8 +2301,9 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
                                 "operations": [
                                     "create",
@@ -1976,54 +2320,391 @@ export const schema = {
         "DiscountDefinition": {
             "name": "DiscountDefinition",
             "fields": {
-                "id": { "name": "id", "isArray": false, "type": "ID", "isRequired": true, "attributes": [] },
-                "tenantId": { "name": "tenantId", "isArray": false, "type": "ID", "isRequired": true, "attributes": [] },
-                "name": { "name": "name", "isArray": false, "type": "String", "isRequired": true, "attributes": [] },
-                "code": { "name": "code", "isArray": false, "type": "String", "isRequired": false, "attributes": [] },
-                "description": { "name": "description", "isArray": false, "type": "String", "isRequired": false, "attributes": [] },
-                "status": { "name": "status", "isArray": false, "type": "String", "isRequired": true, "attributes": [] },
-                "type": { "name": "type", "isArray": false, "type": "String", "isRequired": true, "attributes": [] },
-                "method": { "name": "method", "isArray": false, "type": "String", "isRequired": true, "attributes": [] },
-                "scope": { "name": "scope", "isArray": false, "type": "String", "isRequired": true, "attributes": [] },
-                "value": { "name": "value", "isArray": false, "type": "Float", "isRequired": true, "attributes": [] },
-                "priority": { "name": "priority", "isArray": false, "type": "Int", "isRequired": false, "attributes": [] },
-                "stackMode": { "name": "stackMode", "isArray": false, "type": "String", "isRequired": true, "attributes": [] },
-                "approvalRequired": { "name": "approvalRequired", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "reasonRequired": { "name": "reasonRequired", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "startDate": { "name": "startDate", "isArray": false, "type": "AWSDateTime", "isRequired": false, "attributes": [] },
-                "endDate": { "name": "endDate", "isArray": false, "type": "AWSDateTime", "isRequired": false, "attributes": [] },
-                "daysOfWeek": { "name": "daysOfWeek", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": true },
-                "startTime": { "name": "startTime", "isArray": false, "type": "String", "isRequired": false, "attributes": [] },
-                "endTime": { "name": "endTime", "isArray": false, "type": "String", "isRequired": false, "attributes": [] },
-                "minSubtotal": { "name": "minSubtotal", "isArray": false, "type": "Float", "isRequired": false, "attributes": [] },
-                "minQuantity": { "name": "minQuantity", "isArray": false, "type": "Float", "isRequired": false, "attributes": [] },
-                "usageLimitTotal": { "name": "usageLimitTotal", "isArray": false, "type": "Int", "isRequired": false, "attributes": [] },
-                "usageCountTotal": { "name": "usageCountTotal", "isArray": false, "type": "Int", "isRequired": false, "attributes": [] },
-                "applicableProductIds": { "name": "applicableProductIds", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": true },
-                "applicableCategoryIds": { "name": "applicableCategoryIds", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": true },
-                "excludedProductIds": { "name": "excludedProductIds", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": true },
-                "excludedCategoryIds": { "name": "excludedCategoryIds", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": true },
-                "excludeAlreadyDiscountedItems": { "name": "excludeAlreadyDiscountedItems", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "appliesToAllProducts": { "name": "appliesToAllProducts", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "storeIds": { "name": "storeIds", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": true },
-                "stationIds": { "name": "stationIds", "isArray": true, "type": "String", "isRequired": false, "attributes": [], "isArrayNullable": true },
-                "active": { "name": "active", "isArray": false, "type": "Boolean", "isRequired": true, "attributes": [] },
-                "createdAt": { "name": "createdAt", "isArray": false, "type": "AWSDateTime", "isRequired": false, "attributes": [], "isReadOnly": true },
-                "updatedAt": { "name": "updatedAt", "isArray": false, "type": "AWSDateTime", "isRequired": false, "attributes": [], "isReadOnly": true }
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "name": {
+                    "name": "name",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "code": {
+                    "name": "code",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "description": {
+                    "name": "description",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "status": {
+                    "name": "status",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountDefinitionStatus"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "type": {
+                    "name": "type",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountDefinitionType"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "method": {
+                    "name": "method",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountMethod"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "scope": {
+                    "name": "scope",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountScope"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "value": {
+                    "name": "value",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "priority": {
+                    "name": "priority",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "stackMode": {
+                    "name": "stackMode",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountStackMode"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "approvalRequired": {
+                    "name": "approvalRequired",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "reasonRequired": {
+                    "name": "reasonRequired",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "startDate": {
+                    "name": "startDate",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "endDate": {
+                    "name": "endDate",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "daysOfWeek": {
+                    "name": "daysOfWeek",
+                    "isArray": true,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "startTime": {
+                    "name": "startTime",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "endTime": {
+                    "name": "endTime",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "minSubtotal": {
+                    "name": "minSubtotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "minQuantity": {
+                    "name": "minQuantity",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "usageLimitTotal": {
+                    "name": "usageLimitTotal",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "usageCountTotal": {
+                    "name": "usageCountTotal",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "applicableProductIds": {
+                    "name": "applicableProductIds",
+                    "isArray": true,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "applicableCategoryIds": {
+                    "name": "applicableCategoryIds",
+                    "isArray": true,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "excludedProductIds": {
+                    "name": "excludedProductIds",
+                    "isArray": true,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "excludedCategoryIds": {
+                    "name": "excludedCategoryIds",
+                    "isArray": true,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "excludeAlreadyDiscountedItems": {
+                    "name": "excludeAlreadyDiscountedItems",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "appliesToAllProducts": {
+                    "name": "appliesToAllProducts",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "storeIds": {
+                    "name": "storeIds",
+                    "isArray": true,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "stationIds": {
+                    "name": "stationIds",
+                    "isArray": true,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "active": {
+                    "name": "active",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
             },
             "syncable": true,
             "pluralName": "DiscountDefinitions",
             "attributes": [
-                { "type": "model", "properties": {} },
+                {
+                    "type": "model",
+                    "properties": {}
+                },
                 {
                     "type": "auth",
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
-                                "operations": ["create", "update", "delete", "read"]
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "DiscountReasonCode": {
+            "name": "DiscountReasonCode",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "code": {
+                    "name": "code",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "label": {
+                    "name": "label",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "description": {
+                    "name": "description",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "active": {
+                    "name": "active",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "requiresNote": {
+                    "name": "requiresNote",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "appliesTo": {
+                    "name": "appliesTo",
+                    "isArray": true,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "DiscountReasonCodes",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
                             }
                         ]
                     }
@@ -2033,41 +2714,804 @@ export const schema = {
         "EmployeeDiscountPolicy": {
             "name": "EmployeeDiscountPolicy",
             "fields": {
-                "id": { "name": "id", "isArray": false, "type": "ID", "isRequired": true, "attributes": [] },
-                "tenantId": { "name": "tenantId", "isArray": false, "type": "ID", "isRequired": true, "attributes": [] },
-                "employeeId": { "name": "employeeId", "isArray": false, "type": "ID", "isRequired": false, "attributes": [] },
-                "roleKey": { "name": "roleKey", "isArray": false, "type": "String", "isRequired": false, "attributes": [] },
-                "maxManualPercentDiscount": { "name": "maxManualPercentDiscount", "isArray": false, "type": "Float", "isRequired": false, "attributes": [] },
-                "maxManualAmountDiscount": { "name": "maxManualAmountDiscount", "isArray": false, "type": "Float", "isRequired": false, "attributes": [] },
-                "maxPriceOverrideAmount": { "name": "maxPriceOverrideAmount", "isArray": false, "type": "Float", "isRequired": false, "attributes": [] },
-                "maxPriceOverridePercentBelowBase": { "name": "maxPriceOverridePercentBelowBase", "isArray": false, "type": "Float", "isRequired": false, "attributes": [] },
-                "canApplyOrderDiscount": { "name": "canApplyOrderDiscount", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "canOverridePrice": { "name": "canOverridePrice", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "canApproveDiscounts": { "name": "canApproveDiscounts", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "canApprovePriceOverrides": { "name": "canApprovePriceOverrides", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "canUsePromoCodes": { "name": "canUsePromoCodes", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "requireReasonForManualDiscounts": { "name": "requireReasonForManualDiscounts", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "requireReasonForOverrides": { "name": "requireReasonForOverrides", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "requireApprovalForOrderDiscount": { "name": "requireApprovalForOrderDiscount", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "requireApprovalForAnyPriceOverride": { "name": "requireApprovalForAnyPriceOverride", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "allowExclusiveDiscountOverride": { "name": "allowExclusiveDiscountOverride", "isArray": false, "type": "Boolean", "isRequired": false, "attributes": [] },
-                "active": { "name": "active", "isArray": false, "type": "Boolean", "isRequired": true, "attributes": [] },
-                "createdAt": { "name": "createdAt", "isArray": false, "type": "AWSDateTime", "isRequired": false, "attributes": [], "isReadOnly": true },
-                "updatedAt": { "name": "updatedAt", "isArray": false, "type": "AWSDateTime", "isRequired": false, "attributes": [], "isReadOnly": true }
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "employeeId": {
+                    "name": "employeeId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "roleKey": {
+                    "name": "roleKey",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "maxManualPercentDiscount": {
+                    "name": "maxManualPercentDiscount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "maxManualAmountDiscount": {
+                    "name": "maxManualAmountDiscount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "maxPriceOverrideAmount": {
+                    "name": "maxPriceOverrideAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "maxPriceOverridePercentBelowBase": {
+                    "name": "maxPriceOverridePercentBelowBase",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "canApplyOrderDiscount": {
+                    "name": "canApplyOrderDiscount",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "canOverridePrice": {
+                    "name": "canOverridePrice",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "canApproveDiscounts": {
+                    "name": "canApproveDiscounts",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "canApprovePriceOverrides": {
+                    "name": "canApprovePriceOverrides",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "canUsePromoCodes": {
+                    "name": "canUsePromoCodes",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "requireReasonForManualDiscounts": {
+                    "name": "requireReasonForManualDiscounts",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "requireReasonForOverrides": {
+                    "name": "requireReasonForOverrides",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "requireApprovalForOrderDiscount": {
+                    "name": "requireApprovalForOrderDiscount",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "requireApprovalForAnyPriceOverride": {
+                    "name": "requireApprovalForAnyPriceOverride",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "allowExclusiveDiscountOverride": {
+                    "name": "allowExclusiveDiscountOverride",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "active": {
+                    "name": "active",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
             },
             "syncable": true,
             "pluralName": "EmployeeDiscountPolicies",
             "attributes": [
-                { "type": "model", "properties": {} },
+                {
+                    "type": "model",
+                    "properties": {}
+                },
                 {
                     "type": "auth",
                     "properties": {
                         "rules": [
                             {
-                                "allow": "owner",
+                                "provider": "userPools",
                                 "ownerField": "tenantId",
+                                "allow": "owner",
                                 "identityClaim": "sub",
-                                "operations": ["create", "update", "delete", "read"]
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "DiscountPreset": {
+            "name": "DiscountPreset",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "name": {
+                    "name": "name",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "scope": {
+                    "name": "scope",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountScope"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "method": {
+                    "name": "method",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountMethod"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "value": {
+                    "name": "value",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "promptForCustomValue": {
+                    "name": "promptForCustomValue",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "active": {
+                    "name": "active",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "sortOrder": {
+                    "name": "sortOrder",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "DiscountPresets",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "DiscountApplication": {
+            "name": "DiscountApplication",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "transactionId": {
+                    "name": "transactionId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "lineId": {
+                    "name": "lineId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "discountDefinitionId": {
+                    "name": "discountDefinitionId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "applicationType": {
+                    "name": "applicationType",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountApplicationType"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "scope": {
+                    "name": "scope",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountScope"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "method": {
+                    "name": "method",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountMethod"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "name": {
+                    "name": "name",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "code": {
+                    "name": "code",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "stackMode": {
+                    "name": "stackMode",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountStackMode"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "originalAmount": {
+                    "name": "originalAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "discountAmount": {
+                    "name": "discountAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "finalAmount": {
+                    "name": "finalAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "quantityBasis": {
+                    "name": "quantityBasis",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "reasonCode": {
+                    "name": "reasonCode",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "reasonNote": {
+                    "name": "reasonNote",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "appliedByEmployeeId": {
+                    "name": "appliedByEmployeeId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "appliedByEmployeeName": {
+                    "name": "appliedByEmployeeName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "approvedByEmployeeId": {
+                    "name": "approvedByEmployeeId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "approvedByEmployeeName": {
+                    "name": "approvedByEmployeeName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "approvalRequired": {
+                    "name": "approvalRequired",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "approvalStatus": {
+                    "name": "approvalStatus",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountApprovalStatus"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "approvalReference": {
+                    "name": "approvalReference",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "sourceSnapshot": {
+                    "name": "sourceSnapshot",
+                    "isArray": false,
+                    "type": "AWSJSON",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "appliedAt": {
+                    "name": "appliedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "syncStatus": {
+                    "name": "syncStatus",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "DiscountApplications",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "ApprovalEvent": {
+            "name": "ApprovalEvent",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "transactionId": {
+                    "name": "transactionId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "lineId": {
+                    "name": "lineId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "approvalType": {
+                    "name": "approvalType",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "requestingEmployeeId": {
+                    "name": "requestingEmployeeId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "approvingEmployeeId": {
+                    "name": "approvingEmployeeId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "requestedAction": {
+                    "name": "requestedAction",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "reasonCode": {
+                    "name": "reasonCode",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "reasonNote": {
+                    "name": "reasonNote",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "policySnapshot": {
+                    "name": "policySnapshot",
+                    "isArray": false,
+                    "type": "AWSJSON",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "status": {
+                    "name": "status",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "syncStatus": {
+                    "name": "syncStatus",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "ApprovalEvents",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "DiscountReconciliationException": {
+            "name": "DiscountReconciliationException",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "transactionId": {
+                    "name": "transactionId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "discountApplicationId": {
+                    "name": "discountApplicationId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "exceptionType": {
+                    "name": "exceptionType",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "severity": {
+                    "name": "severity",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "message": {
+                    "name": "message",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "backendSnapshot": {
+                    "name": "backendSnapshot",
+                    "isArray": false,
+                    "type": "AWSJSON",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "resolved": {
+                    "name": "resolved",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "resolvedByEmployeeId": {
+                    "name": "resolvedByEmployeeId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "resolvedAt": {
+                    "name": "resolvedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "DiscountReconciliationExceptions",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
                             }
                         ]
                     }
@@ -2076,6 +3520,104 @@ export const schema = {
         }
     },
     "enums": {
+        "TenantUserRole": {
+            "name": "TenantUserRole",
+            "values": [
+                "OWNER",
+                "ADMIN"
+            ]
+        },
+        "CategoryDiscountPolicyMode": {
+            "name": "CategoryDiscountPolicyMode",
+            "values": [
+                "DEFAULT",
+                "FORCE_INCLUDE",
+                "FORCE_EXCLUDE"
+            ]
+        },
+        "DiscountDefinitionStatus": {
+            "name": "DiscountDefinitionStatus",
+            "values": [
+                "DRAFT",
+                "ACTIVE",
+                "INACTIVE",
+                "EXPIRED"
+            ]
+        },
+        "DiscountDefinitionType": {
+            "name": "DiscountDefinitionType",
+            "values": [
+                "MANUAL",
+                "AUTOMATIC",
+                "PROMO_CODE"
+            ]
+        },
+        "DiscountMethod": {
+            "name": "DiscountMethod",
+            "values": [
+                "PERCENT",
+                "AMOUNT",
+                "FINAL_PRICE"
+            ]
+        },
+        "DiscountScope": {
+            "name": "DiscountScope",
+            "values": [
+                "LINE",
+                "ORDER"
+            ]
+        },
+        "DiscountStackMode": {
+            "name": "DiscountStackMode",
+            "values": [
+                "EXCLUSIVE",
+                "STACKABLE",
+                "BEST_PRICE_ONLY"
+            ]
+        },
+        "DiscountApplicationType": {
+            "name": "DiscountApplicationType",
+            "values": [
+                "MANUAL_LINE_DISCOUNT",
+                "MANUAL_ORDER_DISCOUNT",
+                "AUTOMATIC_DISCOUNT",
+                "PROMO_CODE",
+                "PRICE_OVERRIDE"
+            ]
+        },
+        "DiscountApprovalStatus": {
+            "name": "DiscountApprovalStatus",
+            "values": [
+                "NOT_REQUIRED",
+                "APPROVED",
+                "REJECTED"
+            ]
+        },
+        "PricingSource": {
+            "name": "PricingSource",
+            "values": [
+                "ONLINE_VALIDATED",
+                "OFFLINE_LOCAL"
+            ]
+        },
+        "ReconciliationStatus": {
+            "name": "ReconciliationStatus",
+            "values": [
+                "NOT_REQUIRED",
+                "PENDING",
+                "RECONCILED",
+                "RECONCILED_WITH_EXCEPTION"
+            ]
+        },
+        "InventoryApplyState": {
+            "name": "InventoryApplyState",
+            "values": [
+                "PENDING",
+                "APPLYING",
+                "APPLIED",
+                "FAILED"
+            ]
+        },
         "PaymentType": {
             "name": "PaymentType",
             "values": [
@@ -2538,8 +4080,86 @@ export const schema = {
                     "attributes": []
                 }
             }
+        },
+        "InventoryProductFinalizeResult": {
+            "name": "InventoryProductFinalizeResult",
+            "fields": {
+                "productId": {
+                    "name": "productId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "finalQuantity": {
+                    "name": "finalQuantity",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "appliedDelta": {
+                    "name": "appliedDelta",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
+        "InventoryFinalizeResult": {
+            "name": "InventoryFinalizeResult",
+            "fields": {
+                "sourceId": {
+                    "name": "sourceId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "sourceType": {
+                    "name": "sourceType",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "status": {
+                    "name": "status",
+                    "isArray": false,
+                    "type": {
+                        "enum": "InventoryApplyState"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "appliedAt": {
+                    "name": "appliedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "error": {
+                    "name": "error",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "affectedProducts": {
+                    "name": "affectedProducts",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "InventoryProductFinalizeResult"
+                    },
+                    "isRequired": true,
+                    "attributes": [],
+                    "isArrayNullable": false
+                }
+            }
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "753ed7608733eade21023bfa8ec81382"
+    "version": "5b50ee76ddad349e3addca87df29c5f9"
 };

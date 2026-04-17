@@ -1,64 +1,29 @@
-import {
-    InventoryReceive,
-    InventoryReceiveLine,
-    Product,
-} from '@pos/shared/models';
+import { InventoryReceive, InventoryReceiveLine } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { API, DataStore } from '@pos/shared/amplify';
 import { inventoryReceiveActions } from './inventory-receive.slice';
 import { InventoryReceiveDTO } from './inventory-receive.entity';
 import { Alert } from 'react-native';
 import { requireCurrentTenantId, stampTenant } from '@pos/auth/data-access';
-import { getProduct } from '@pos/shared/api';
+import { InventoryReceiveLineDTO } from './inventory-receive-line.entity';
+import { productsActions } from '@pos/products/data-access';
 
-const updateProductInventoryDeltaMutation = /* GraphQL */ `
-    mutation UpdateProductInventoryDelta(
-        $input: UpdateProductInput!
-        $condition: ModelProductConditionInput
-    ) {
-        updateProduct(input: $input, condition: $condition) {
-            id
-            tenantId
-            name
-            description
-            price
-            tags
-            cost
-            barcode
-            sku
-            plu
-            quantity
-            unitOfMeasure
-            trackStock
-            reorderPoint
-            reorderQuantity
-            picture
-            isActive
-            isEBTEligible
-            discountable
-            minAllowedPrice
-            maxManualDiscountPercent
-            maxManualDiscountAmount
-            createdAt
-            updatedAt
-            _version
-            _deleted
-            _lastChangedAt
-            productCategoryId
-            productBrandId
-            __typename
+const finalizeInventoryReceiveQuery = /* GraphQL */ `
+    query FinalizeInventoryReceive($input: FinalizeInventoryReceiveInput!) {
+        finalizeInventoryReceive(input: $input) {
+            sourceId
+            sourceType
+            status
+            appliedAt
+            error
+            affectedProducts {
+                productId
+                finalQuantity
+                appliedDelta
+            }
         }
     }
 `;
-
-const isInventoryDebugEnabled = () =>
-    typeof __DEV__ !== 'undefined' && __DEV__;
-
-const debugInventoryApply = (context: string, payload: Record<string, unknown>) => {
-    if (!isInventoryDebugEnabled()) return;
-    void context;
-    void payload;
-};
 
 const getErrorMessage = (error: unknown) => {
     if (error instanceof Error && error.message) {
@@ -128,36 +93,53 @@ const getGraphqlErrorMessage = (result: unknown) => {
     return errors.map((error) => error?.message).filter(Boolean).join(' | ') || undefined;
 };
 
-const fetchLatestProductVersion = async (productId: string) => {
-    const result = await API.graphql({
-        query: getProduct,
-        variables: { id: productId },
-        authMode: 'userPool',
-    });
+const buildOperationId = (receiveId?: string) =>
+    `INVENTORY_RECEIVE:${receiveId || 'new'}:${Date.now()}`;
 
-    const message = getGraphqlErrorMessage(result);
-    if (message) {
-        throw new Error(message);
+const normalizeReceiveLines = (lines: InventoryReceiveLineDTO[]) =>
+    lines
+        .filter((line) => !Number.isNaN(Number(line.received)))
+        .map((line) => ({
+            id: line.id,
+            productId: line.productId,
+            productName: line.productName,
+            unitOfMeasure: line.unitOfMeasure,
+            received: Number(line.received || 0),
+            comments: line.comments,
+        }));
+
+const syncFinalizedProducts = (
+    dispatch: Dispatch<any>,
+    affectedProducts: Array<{ productId?: string | null; finalQuantity?: number | null }>
+) => {
+    const updates = affectedProducts
+        .filter((product) => !!product.productId)
+        .map((product) => ({
+            productId: product.productId as string,
+            newCount: Number(product.finalQuantity || 0),
+        }));
+
+    if (updates.length > 0) {
+        dispatch(productsActions.updateQuantities(updates));
     }
-
-    const remote = (result as { data?: { getProduct?: { _version?: number | null } | null } })
-        .data?.getProduct;
-
-    return remote?._version;
 };
 
-const executeInventoryReceiveDelta = async (
-    productId: string,
-    received: number,
-    version?: number | null
+const finalizeReceive = async (
+    dispatch: Dispatch<any>,
+    receive: InventoryReceiveDTO
 ) => {
     const result = await API.graphql({
-        query: updateProductInventoryDeltaMutation,
+        query: finalizeInventoryReceiveQuery,
         variables: {
             input: {
-                id: productId,
-                quantity: received,
-                _version: version,
+                receiveId: receive.id,
+                operationId: buildOperationId(receive.id),
+                comments: receive.comments,
+                createdBy: {
+                    id: receive.createdBy?.id || '',
+                    name: receive.createdBy?.name || '',
+                },
+                lines: normalizeReceiveLines(receive.lines),
             },
         },
         authMode: 'userPool',
@@ -167,29 +149,40 @@ const executeInventoryReceiveDelta = async (
     if (message) {
         throw new Error(message);
     }
-};
 
-const applyInventoryReceiveDelta = async (product: Product, received: number) => {
-    const currentVersion = (product as Product & { _version?: number | null })._version;
+    const finalized = (result as {
+        data?: {
+            finalizeInventoryReceive?: {
+                sourceId?: string | null;
+                affectedProducts?: Array<{
+                    productId?: string | null;
+                    finalQuantity?: number | null;
+                }> | null;
+            } | null;
+        };
+    }).data?.finalizeInventoryReceive;
 
-    try {
-        await executeInventoryReceiveDelta(product.id, received, currentVersion);
-    } catch (error) {
-        const message =
-            error instanceof Error ? error.message : String(error);
-
-        const shouldRetry =
-            message.toLowerCase().includes('conflict') ||
-            message.toLowerCase().includes('conditionalcheckfailed') ||
-            message.toLowerCase().includes('version');
-
-        if (!shouldRetry) {
-            throw error;
-        }
-
-        const latestVersion = await fetchLatestProductVersion(product.id);
-        await executeInventoryReceiveDelta(product.id, received, latestVersion);
+    if (!finalized?.sourceId) {
+        throw new Error('Inventory receive finalization did not return a source id.');
     }
+
+    const finalizedReceive: InventoryReceiveDTO = {
+        ...receive,
+        id: finalized.sourceId,
+        status: 'COMPLETED',
+    };
+
+    dispatch(
+        receive.id
+            ? inventoryReceiveActions.update({
+                  id: receive.id,
+                  changes: finalizedReceive,
+              })
+            : inventoryReceiveActions.add(finalizedReceive)
+    );
+
+    syncFinalizedProducts(dispatch, finalized.affectedProducts || []);
+    return true;
 };
 
 export class InventoryReceiveService {
@@ -197,16 +190,28 @@ export class InventoryReceiveService {
         dispatch: Dispatch<any>,
         item: InventoryReceiveDTO,
         updateInv: boolean
-    ) {
-        if (!item.id) {
-            await createReceive(item, dispatch);
-        } else {
-            await updateReceive(item, dispatch);
+    ): Promise<boolean> {
+        try {
+            if (updateInv) {
+                return await finalizeReceive(dispatch, item);
+            }
+
+            if (!item.id) {
+                await createReceive(item, dispatch);
+            } else {
+                await updateReceive(item, dispatch);
+            }
+
+            return true;
+        } catch (error) {
+            Alert.alert(
+                updateInv
+                    ? 'Unable to finalize inventory receive'
+                    : 'Unable to save inventory receive',
+                getErrorMessage(error)
+            );
+            return false;
         }
-
-        if (!updateInv) return;
-
-        await updateInventory(item);
     }
 
     static getAll() {
@@ -218,11 +223,11 @@ export class InventoryReceiveService {
         if (!item)
             return console.error(`Inventory received id: ${id} not found`);
 
-        const lines = DataStore.query(InventoryReceiveLine, (l) =>
+        const lines = DataStore.query(InventoryReceiveLine, (l: any) =>
             l.inventoryReceiveLineInventoryReceiveId.eq(item.id)
         );
 
-        (await lines).forEach(l => DataStore.delete(l));
+        (await lines).forEach((l: any) => DataStore.delete(l));
 
         return DataStore.delete(item);
     }
@@ -257,7 +262,7 @@ async function createReceive(count: InventoryReceiveDTO, dispatch: Dispatch<any>
     });
 
     await Promise.all(promises);
-    return dispatch(inventoryReceiveActions.add(count));
+    dispatch(inventoryReceiveActions.add(count));
 }
 
 async function updateReceive(receive: InventoryReceiveDTO, dispatch: Dispatch<any>) {
@@ -292,7 +297,7 @@ async function updateReceive(receive: InventoryReceiveDTO, dispatch: Dispatch<an
             return;
         }
 
-        const line = await DataStore.query(InventoryReceiveLine, (c) =>
+        const line = await DataStore.query(InventoryReceiveLine, (c: any) =>
             c.id.eq(l.id!)
         );
 
@@ -311,87 +316,7 @@ async function updateReceive(receive: InventoryReceiveDTO, dispatch: Dispatch<an
 
     await Promise.all(lineUpdates);
 
-    return dispatch(
+    dispatch(
         inventoryReceiveActions.update({ id: receive.id, changes: receive })
     );
 }
-
-const buildReceivedByProductId = (lines: InventoryReceiveLineDTO[]) => {
-    const receivedByProductId = new Map<string, number>();
-    lines.forEach((line) => {
-        if (
-            line.received === undefined ||
-            line.received === null ||
-            Number.isNaN(line.received)
-        ) {
-            return;
-        }
-
-        receivedByProductId.set(
-            line.productId,
-            (receivedByProductId.get(line.productId) || 0) + line.received
-        );
-    });
-
-    return receivedByProductId;
-};
-
-const updateInventory = async (
-    count: InventoryReceiveDTO
-) => {
-    const receivedByProductId = buildReceivedByProductId(count.lines);
-
-    const failures: string[] = [];
-
-    for (const [productId, received] of receivedByProductId.entries()) {
-        const productLine = count.lines.find((line) => line.productId === productId);
-
-        try {
-            const product = await DataStore.query(Product, productId);
-
-            if (!product) {
-                failures.push(
-                    `Product ${productLine?.productName || productId} was not found while updating the inventory`
-                );
-                continue;
-            }
-
-            if (received === undefined || received === null || Number.isNaN(received)) {
-                continue;
-            }
-
-            if (received !== 0) {
-                debugInventoryApply('receive', {
-                    productId,
-                    productName: productLine?.productName,
-                    quantityBefore: product.quantity || 0,
-                    delta: received,
-                    quantityExpectedAfter: (product.quantity || 0) + received,
-                    receiveId: count.id || 'new-receive',
-                });
-
-                await applyInventoryReceiveDelta(product, received);
-            }
-        } catch (error) {
-            const message = getErrorMessage(error);
-            console.error('[inventory-receive] product delta failed', {
-                productId,
-                productName: productLine?.productName,
-                received,
-                receiveId: count.id || 'new-receive',
-                message,
-                error,
-            });
-            failures.push(
-                `${productLine?.productName || productId}: ${message}`
-            );
-        }
-    }
-
-    if (failures.length > 0) {
-        Alert.alert(
-            'Inventory receive partially applied',
-            failures.join('\n')
-        );
-    }
-};

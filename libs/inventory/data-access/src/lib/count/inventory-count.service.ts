@@ -1,64 +1,29 @@
-import {
-    InventoryCount,
-    InventoryCountLine,
-    Product,
-} from '@pos/shared/models';
+import { InventoryCount, InventoryCountLine } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { API, DataStore } from '@pos/shared/amplify';
 import { inventoryCountActions } from './inventory-count.slice';
 import { InventoryCountDTO } from './inventory-count.entity';
 import { Alert } from 'react-native';
 import { requireCurrentTenantId, stampTenant } from '@pos/auth/data-access';
-import { getProduct } from '@pos/shared/api';
+import { InventoryCountLineDTO } from './inventory-count-line.entity';
+import { productsActions } from '@pos/products/data-access';
 
-const updateProductInventoryDeltaMutation = /* GraphQL */ `
-    mutation UpdateProductInventoryDelta(
-        $input: UpdateProductInput!
-        $condition: ModelProductConditionInput
-    ) {
-        updateProduct(input: $input, condition: $condition) {
-            id
-            tenantId
-            name
-            description
-            price
-            tags
-            cost
-            barcode
-            sku
-            plu
-            quantity
-            unitOfMeasure
-            trackStock
-            reorderPoint
-            reorderQuantity
-            picture
-            isActive
-            isEBTEligible
-            discountable
-            minAllowedPrice
-            maxManualDiscountPercent
-            maxManualDiscountAmount
-            createdAt
-            updatedAt
-            _version
-            _deleted
-            _lastChangedAt
-            productCategoryId
-            productBrandId
-            __typename
+const finalizeInventoryCountQuery = /* GraphQL */ `
+    query FinalizeInventoryCount($input: FinalizeInventoryCountInput!) {
+        finalizeInventoryCount(input: $input) {
+            sourceId
+            sourceType
+            status
+            appliedAt
+            error
+            affectedProducts {
+                productId
+                finalQuantity
+                appliedDelta
+            }
         }
     }
 `;
-
-const isInventoryDebugEnabled = () =>
-    typeof __DEV__ !== 'undefined' && __DEV__;
-
-const debugInventoryApply = (context: string, payload: Record<string, unknown>) => {
-    if (!isInventoryDebugEnabled()) return;
-    void context;
-    void payload;
-};
 
 const getGraphqlErrorMessage = (result: unknown) => {
     if (!result || typeof result !== 'object') return undefined;
@@ -110,36 +75,59 @@ const getErrorMessage = (error: unknown) => {
     return String(error);
 };
 
-const fetchLatestProductVersion = async (productId: string) => {
-    const result = await API.graphql({
-        query: getProduct,
-        variables: { id: productId },
-        authMode: 'userPool',
-    });
+const buildOperationId = (countId?: string) =>
+    `INVENTORY_COUNT:${countId || 'new'}:${Date.now()}`;
 
-    const message = getGraphqlErrorMessage(result);
-    if (message) {
-        throw new Error(message);
+const normalizeCountLines = (lines: InventoryCountLineDTO[]) =>
+    lines
+        .filter(
+            (line) =>
+                line.newCount !== undefined &&
+                line.newCount !== null &&
+                !Number.isNaN(Number(line.newCount))
+        )
+        .map((line) => ({
+            id: line.id,
+            productId: line.productId,
+            productName: line.productName,
+            unitOfMeasure: line.unitOfMeasure,
+            current: Number(line.current || 0),
+            newCount: Number(line.newCount || 0),
+            comments: line.comments,
+        }));
+
+const syncFinalizedProducts = (
+    dispatch: Dispatch<any>,
+    affectedProducts: Array<{ productId?: string | null; finalQuantity?: number | null }>
+) => {
+    const updates = affectedProducts
+        .filter((product) => !!product.productId)
+        .map((product) => ({
+            productId: product.productId as string,
+            newCount: Number(product.finalQuantity || 0),
+        }));
+
+    if (updates.length > 0) {
+        dispatch(productsActions.updateQuantities(updates));
     }
-
-    const remote = (result as { data?: { getProduct?: { _version?: number | null } | null } })
-        .data?.getProduct;
-
-    return remote?._version;
 };
 
-const executeInventoryCountDelta = async (
-    productId: string,
-    delta: number,
-    version?: number | null
+const finalizeCount = async (
+    dispatch: Dispatch<any>,
+    count: InventoryCountDTO
 ) => {
     const result = await API.graphql({
-        query: updateProductInventoryDeltaMutation,
+        query: finalizeInventoryCountQuery,
         variables: {
             input: {
-                id: productId,
-                quantity: delta,
-                _version: version,
+                countId: count.id,
+                operationId: buildOperationId(count.id),
+                comments: count.comments,
+                createdBy: {
+                    id: count.createdBy?.id || '',
+                    name: count.createdBy?.name || '',
+                },
+                lines: normalizeCountLines(count.lines),
             },
         },
         authMode: 'userPool',
@@ -149,29 +137,40 @@ const executeInventoryCountDelta = async (
     if (message) {
         throw new Error(message);
     }
-};
 
-const applyInventoryCountDelta = async (product: Product, delta: number) => {
-    const currentVersion = (product as Product & { _version?: number | null })._version;
+    const finalized = (result as {
+        data?: {
+            finalizeInventoryCount?: {
+                sourceId?: string | null;
+                affectedProducts?: Array<{
+                    productId?: string | null;
+                    finalQuantity?: number | null;
+                }> | null;
+            } | null;
+        };
+    }).data?.finalizeInventoryCount;
 
-    try {
-        await executeInventoryCountDelta(product.id, delta, currentVersion);
-    } catch (error) {
-        const message =
-            error instanceof Error ? error.message : String(error);
-
-        const shouldRetry =
-            message.toLowerCase().includes('conflict') ||
-            message.toLowerCase().includes('conditionalcheckfailed') ||
-            message.toLowerCase().includes('version');
-
-        if (!shouldRetry) {
-            throw error;
-        }
-
-        const latestVersion = await fetchLatestProductVersion(product.id);
-        await executeInventoryCountDelta(product.id, delta, latestVersion);
+    if (!finalized?.sourceId) {
+        throw new Error('Inventory count finalization did not return a source id.');
     }
+
+    const finalizedCount: InventoryCountDTO = {
+        ...count,
+        id: finalized.sourceId,
+        status: 'COMPLETED',
+    };
+
+    dispatch(
+        count.id
+            ? inventoryCountActions.update({
+                  id: count.id,
+                  changes: finalizedCount,
+              })
+            : inventoryCountActions.add(finalizedCount)
+    );
+
+    syncFinalizedProducts(dispatch, finalized.affectedProducts || []);
+    return true;
 };
 
 export class InventoryCountService {
@@ -179,17 +178,28 @@ export class InventoryCountService {
         dispatch: Dispatch<any>,
         count: InventoryCountDTO,
         updateInv: boolean
-    ) {
-        let updatedCount: InventoryCountDTO | null;
-        if (!count.id) {
-            updatedCount = await createCount(count, dispatch);
-        } else {
-            updatedCount = await updateCount(count, dispatch);
+    ): Promise<boolean> {
+        try {
+            if (updateInv) {
+                return await finalizeCount(dispatch, count);
+            }
+
+            if (!count.id) {
+                await createCount(count, dispatch);
+            } else {
+                await updateCount(count, dispatch);
+            }
+
+            return true;
+        } catch (error) {
+            Alert.alert(
+                updateInv
+                    ? 'Unable to finalize inventory count'
+                    : 'Unable to save inventory count',
+                getErrorMessage(error)
+            );
+            return false;
         }
-
-        if (!updateInv || !updatedCount) return;
-
-        await updateInventory(updatedCount);
     }
 
     static getAll() {
@@ -200,11 +210,11 @@ export class InventoryCountService {
         const item = await DataStore.query(InventoryCount, id);
         if (!item) return console.error(`Inventory Id: ${id} not found`);
 
-        const lines = DataStore.query(InventoryCountLine, (l) =>
+        const lines = DataStore.query(InventoryCountLine, (l: any) =>
             l.inventoryCountLineInventoryCountId.eq(item.id)
         );
 
-        (await lines).forEach(l => DataStore.delete(l));
+        (await lines).forEach((l: any) => DataStore.delete(l));
 
         return DataStore.delete(item);
     }
@@ -278,7 +288,7 @@ async function updateCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
             return;
         }
 
-        const line = await DataStore.query(InventoryCountLine, (c) =>
+        const line = await DataStore.query(InventoryCountLine, (c: any) =>
             c.id.eq(l.id!)
         );
 
@@ -289,7 +299,9 @@ async function updateCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
 
         await DataStore.save(
             InventoryCountLine.copyOf(line[0], (updated) => {
-                updated.newCount = l.newCount;
+                if (l.newCount !== undefined) {
+                    updated.newCount = l.newCount;
+                }
                 updated.comments = l.comments;
             })
         );
@@ -302,41 +314,4 @@ async function updateCount(count: InventoryCountDTO, dispatch: Dispatch<any>) {
     );
 
     return count;
-}
-
-const updateInventory = async (count: InventoryCountDTO) => {
-    try {
-        for (let i = 0; i < count.lines.length; i++) {
-            const l = count.lines[i];
-            const product = await DataStore.query(Product, l.productId);
-
-            if (!product) {
-                Alert.alert('Error', `Product ${l.productName} was not found while updating the inventory`);
-                continue;
-            }
-
-            if (l.newCount === undefined || l.newCount === null) {
-                continue;
-            }
-
-            const delta = l.newCount! - (product.quantity || 0);
-            if (delta === 0) {
-                continue;
-            }
-
-            debugInventoryApply('count', {
-                productId: l.productId,
-                productName: l.productName,
-                quantityBefore: product.quantity || 0,
-                countedQuantity: l.newCount,
-                delta,
-                quantityExpectedAfter: (product.quantity || 0) + delta,
-                countId: count.id || 'new-count',
-            });
-
-            await applyInventoryCountDelta(product, delta);
-        }
-    } catch (error) {
-        Alert.alert('Error while updating inventory', getErrorMessage(error));
-    }
 }

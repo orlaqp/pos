@@ -6,8 +6,7 @@ import { Alert } from 'react-native';
 const mockDispatch = jest.fn();
 const mockGoBack = jest.fn();
 const mockConfirm = jest.fn((_: string, __: string, onConfirm: () => void) => onConfirm());
-const mockInventoryCountSave = jest.fn(() => Promise.resolve());
-const mockUpdateQuantities = jest.fn((lines: unknown[]) => ({ type: 'products/updateQuantities', payload: lines }));
+const mockInventoryCountSave = jest.fn(() => Promise.resolve(true));
 const mockProductSearch = jest.fn(() => ({ items: [], allNumbers: false }));
 let mockSelectedInventoryCount: any = null;
 let mockEmployee: any = {
@@ -165,9 +164,6 @@ jest.mock('@pos/shared/utils', () => ({
 jest.mock('@pos/products/data-access', () => ({
     ProductService: {
         search: (...args: unknown[]) => mockProductSearch(...args),
-    },
-    productsActions: {
-        updateQuantities: (lines: unknown[]) => mockUpdateQuantities(lines),
     },
     selectAllProducts: () => mockProducts,
     subscribeToProductChanges: () => ({ unsubscribe: jest.fn() }),
@@ -336,7 +332,7 @@ describe('InventoryCountForm integration', () => {
         });
     });
 
-    it('updates inventory with updateInv=true and dispatches product quantity update', async () => {
+    it('updates inventory with updateInv=true through the service only', async () => {
         const { getByTestId } = render(
             <InventoryCountForm route={route} navigation={navigation} />
         );
@@ -350,8 +346,22 @@ describe('InventoryCountForm integration', () => {
                 expect.objectContaining({ status: 'COMPLETED', lines: [] }),
                 true
             );
-            expect(mockUpdateQuantities).toHaveBeenCalledWith([]);
         });
+    });
+
+    it('stays on the form when finalization fails', async () => {
+        mockInventoryCountSave.mockResolvedValueOnce(false);
+
+        const { getByTestId } = render(
+            <InventoryCountForm route={route} navigation={navigation} />
+        );
+
+        fireEvent.press(getByTestId('inventory-count-save-button'));
+
+        await waitFor(() => {
+            expect(mockInventoryCountSave).toHaveBeenCalled();
+        });
+        expect(mockGoBack).not.toHaveBeenCalled();
     });
 
     it('blocks save when at least one line is missing new count', async () => {

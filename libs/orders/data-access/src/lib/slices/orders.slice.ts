@@ -1,6 +1,7 @@
 /* eslint-disable @nx/enforce-module-boundaries */
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { PrinterEntity, printReceipt } from '@pos/printings/data-access';
+import { productsActions } from '@pos/products/data-access';
 import { CartPayment, CartState } from '@pos/sales/data-access';
 import { Order, OrderStatus } from '@pos/shared/models';
 import { RootState } from '@pos/store';
@@ -162,6 +163,30 @@ const reconcileIncomingOrders = (
     state.loadingStatus = 'loaded';
 };
 
+const buildPendingInventoryDeltas = (
+    order: Pick<OrderEntity, 'lines'>,
+    multiplier: number
+) => {
+    const summary = (order.lines || []).reduce<Record<string, number>>(
+        (acc, line) => {
+            if (!line?.productId) {
+                return acc;
+            }
+
+            acc[line.productId] =
+                (acc[line.productId] || 0) +
+                multiplier * Number(line.quantity || 0);
+            return acc;
+        },
+        {}
+    );
+
+    return Object.entries(summary).map(([productId, delta]) => ({
+        productId,
+        delta,
+    }));
+};
+
 export const ordersAdapter = createEntityAdapter<OrderEntity, string>({
     selectId: (order) => order.id,
     sortComparer: (left, right) =>
@@ -190,7 +215,7 @@ export const upsertOrder = createAsyncThunk(
         let o: Order | null;
         if (shouldAttemptUpdate) {
             const updatedOrder = await OrderService.update({
-                id: request.cart.id,
+                id: request.cart.id!,
                 by: employee as any,
                 order: request.cart,
             });
@@ -208,7 +233,7 @@ export const upsertOrder = createAsyncThunk(
 
         return {
             ...request,
-            order: OrderEntityMapper.fromModel(o),
+            order: OrderEntityMapper.fromModel(o as Order),
         };
     }
 );
@@ -227,6 +252,15 @@ export const payOrder = createAsyncThunk(
         // const o = await OrderService.payOrder(request.cart);
 
         if (!o) return;
+
+        thunkAPI.dispatch(
+            productsActions.applyQuantityDeltas(
+                buildPendingInventoryDeltas(
+                    OrderEntityMapper.fromModel(o),
+                    -1
+                )
+            )
+        );
 
         return {
             ...request,
@@ -247,6 +281,15 @@ export const submitOrderAndPay = createAsyncThunk(
         });
 
         if (!paidOrder) return;
+
+        thunkAPI.dispatch(
+            productsActions.applyQuantityDeltas(
+                buildPendingInventoryDeltas(
+                    OrderEntityMapper.fromModel(paidOrder),
+                    -1
+                )
+            )
+        );
 
         return {
             ...request,

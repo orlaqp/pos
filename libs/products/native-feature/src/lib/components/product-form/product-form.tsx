@@ -59,7 +59,6 @@ export function ProductForm({ navigation }: ProductFormProps) {
             barcode: product?.barcode,
             sku: product?.sku,
             plu: product?.plu,
-            quantity: product?.quantity || 0,
             unitOfMeasure:
                 product?.unitOfMeasure || (ums.length === 1 ? ums[0]?.name : undefined),
             trackStock: product?.trackStock ?? true,
@@ -93,18 +92,26 @@ export function ProductForm({ navigation }: ProductFormProps) {
     const save = async () => {
         setBusy(true);
         try {
-            const formValues: ProductEntity = form.getValues();
-            if (!formValues.id && product?.id) {
-                formValues.id = product.id;
+            const rawValues = {
+                ...(form.getValues() as ProductEntity),
+            } as Partial<ProductEntity>;
+            if (!rawValues.id && product?.id) {
+                rawValues.id = product.id;
             }
-            formValues.cost = formValues.cost ? +formValues.cost : null;
-            formValues.price = +formValues.price;
+            rawValues.cost = rawValues.cost ? +rawValues.cost : null;
+            rawValues.price = +rawValues.price;
 
-            if (!formValues.id) {
-                delete formValues.id;
+            if (!rawValues.id) {
+                delete rawValues.id;
             }
 
-            const res = await ProductService.save(dispatch, formValues);
+            const { quantity: _quantity, ...catalogValues } =
+                rawValues as Partial<ProductEntity> & { quantity?: number };
+
+            const res = await ProductService.save(
+                dispatch,
+                catalogValues as ProductEntity
+            );
             if (!res) {
                 return;
             }

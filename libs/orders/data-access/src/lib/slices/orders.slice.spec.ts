@@ -21,11 +21,21 @@ jest.mock('@pos/printings/data-access', () => ({
     printReceipt: jest.fn(),
 }));
 
+jest.mock('@pos/products/data-access', () => ({
+    productsActions: {
+        applyQuantityDeltas: (payload: unknown) => ({
+            type: 'products/applyQuantityDeltas',
+            payload,
+        }),
+    },
+}));
+
 jest.mock('../order.service', () => ({
     OrderService: {
         create: jest.fn(),
         createPaidOrder: jest.fn(),
         update: jest.fn(),
+        closeOrder: jest.fn(),
         closeExistingOrder: jest.fn(),
         search: jest.fn((items: any[], options: { status: string; filter?: string }) =>
             items.filter((item) => {
@@ -362,6 +372,10 @@ describe('orders reducer', () => {
                 }),
             })
         );
+        expect(dispatch).toHaveBeenCalledWith({
+            type: 'products/applyQuantityDeltas',
+            payload: [],
+        });
     });
 
     it('optimistically removes a paid order from the OPEN filtered list and can restore it on failure', () => {

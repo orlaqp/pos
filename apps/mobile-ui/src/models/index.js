@@ -69,6 +69,13 @@ const ReconciliationStatus = {
   "RECONCILED_WITH_EXCEPTION": "RECONCILED_WITH_EXCEPTION"
 };
 
+const InventoryApplyState = {
+  "PENDING": "PENDING",
+  "APPLYING": "APPLYING",
+  "APPLIED": "APPLIED",
+  "FAILED": "FAILED"
+};
+
 const PaymentType = {
   "CASH": "CASH",
   "CHECK": "CHECK",
@@ -92,7 +99,7 @@ const InventoryReceiveStatus = {
   "COMPLETED": "COMPLETED"
 };
 
-const { Tenant, TenantUser, Store, Brand, Category, Customer, Employee, Order, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, DiscountDefinition, DiscountReasonCode, EmployeeDiscountPolicy, DiscountPreset, DiscountApplication, ApprovalEvent, DiscountReconciliationException, PaymentInfo, RefundInfo, ByEmployee, OrderLine, Payment, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary, SalesSummary } = initSchema(schema);
+const { Tenant, TenantUser, Store, Brand, Category, Customer, Employee, Order, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, DiscountDefinition, DiscountReasonCode, EmployeeDiscountPolicy, DiscountPreset, DiscountApplication, ApprovalEvent, DiscountReconciliationException, PaymentInfo, RefundInfo, ByEmployee, OrderLine, Payment, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary, SalesSummary, InventoryProductFinalizeResult, InventoryFinalizeResult } = initSchema(schema);
 
 export {
   Tenant,
@@ -131,6 +138,7 @@ export {
   DiscountApprovalStatus,
   PricingSource,
   ReconciliationStatus,
+  InventoryApplyState,
   PaymentType,
   OrderStatus,
   InventoryCountStatus,
@@ -143,5 +151,7 @@ export {
   ProductSaleSummary,
   EmployeeSaleSummary,
   DatePartSaleSummary,
-  SalesSummary
+  SalesSummary,
+  InventoryProductFinalizeResult,
+  InventoryFinalizeResult
 };

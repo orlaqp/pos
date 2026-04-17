@@ -159,7 +159,19 @@ type ByEmployee {
     name: String!
 }
 
-type Order @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+enum InventoryApplyState {
+  PENDING
+  APPLYING
+  APPLIED
+  FAILED
+}
+
+input ByEmployeeInput {
+  id: String!
+  name: String!
+}
+
+type Order @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam, operations: [read, update]}]) {
   id: ID!
   tenantId: ID!
   orderNo: String! @index(name: "byOrderNo")
@@ -186,6 +198,10 @@ type Order @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityC
   refundInfo: RefundInfo
   createdBy: ByEmployee
   updatedBy: ByEmployee
+  inventoryApplyState: InventoryApplyState
+  inventoryAppliedAt: AWSDateTime
+  inventoryApplyOperationId: ID
+  inventoryApplyError: String
   Customer: Customer @hasOne
 }
 
@@ -236,7 +252,7 @@ enum OrderStatus {
   PAID
 }
 
-type Product @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+type Product @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam, operations: [read, update]}]) {
   id: ID!
   tenantId: ID!
   name: String!
@@ -286,15 +302,19 @@ enum InventoryCountStatus {
   COMPLETED
 }
 
-type InventoryCount @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+type InventoryCount @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam}]) {
     id: ID!
     tenantId: ID!
     comments: String
     status: InventoryCountStatus!
     createdBy: ByEmployee!
+    inventoryApplyState: InventoryApplyState
+    inventoryAppliedAt: AWSDateTime
+    inventoryApplyOperationId: ID
+    inventoryApplyError: String
 }
 
-type InventoryCountLine @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+type InventoryCountLine @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam}]) {
     id: ID!
     tenantId: ID!
     productId: String!
@@ -311,15 +331,19 @@ enum InventoryReceiveStatus {
   COMPLETED
 }
 
-type InventoryReceive @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+type InventoryReceive @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam}]) {
     id: ID!
     tenantId: ID!
     comments: String
     status: InventoryReceiveStatus!
     createdBy: ByEmployee!
+    inventoryApplyState: InventoryApplyState
+    inventoryAppliedAt: AWSDateTime
+    inventoryApplyOperationId: ID
+    inventoryApplyError: String
 }
 
-type InventoryReceiveLine @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+type InventoryReceiveLine @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam}]) {
     id: ID!
     tenantId: ID!
     productId: String!
@@ -526,7 +550,59 @@ type SalesSummary {
     totalOrders: Float!
 }
 
+input FinalizeInventoryReceiveLineInput {
+  id: ID
+  productId: String!
+  productName: String!
+  unitOfMeasure: String!
+  received: Float!
+  comments: String
+}
+
+input FinalizeInventoryCountLineInput {
+  id: ID
+  productId: String!
+  productName: String!
+  unitOfMeasure: String!
+  current: Float!
+  newCount: Float!
+  comments: String
+}
+
+input FinalizeInventoryReceiveInput {
+  receiveId: ID
+  operationId: ID!
+  comments: String
+  createdBy: ByEmployeeInput!
+  lines: [FinalizeInventoryReceiveLineInput!]!
+}
+
+input FinalizeInventoryCountInput {
+  countId: ID
+  operationId: ID!
+  comments: String
+  createdBy: ByEmployeeInput!
+  lines: [FinalizeInventoryCountLineInput!]!
+}
+
+type InventoryProductFinalizeResult {
+  productId: ID!
+  finalQuantity: Float!
+  appliedDelta: Float!
+}
+
+type InventoryFinalizeResult {
+  sourceId: ID!
+  sourceType: String!
+  status: InventoryApplyState!
+  appliedAt: AWSDateTime
+  error: String
+  affectedProducts: [InventoryProductFinalizeResult!]!
+}
+
 type Query {
   getSales(status: OrderStatus!, from: String!, to: String!): [Order] @function (name: "getSales-${env}")
   getSalesSummary(status: OrderStatus!, from: String!, to: String!): SalesSummary @function (name: "getSalesSummaryQuery-${env}")
+  finalizeInventoryReceive(input: FinalizeInventoryReceiveInput!): InventoryFinalizeResult @function(name: "inventoryLifecycle-${env}")
+  finalizeInventoryCount(input: FinalizeInventoryCountInput!): InventoryFinalizeResult @function(name: "inventoryLifecycle-${env}")
 }

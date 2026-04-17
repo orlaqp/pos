@@ -15,7 +15,7 @@ import {
     selectInventoryCountSelected,
 } from '@pos/inventory/data-access';
 import { InventoryCount } from '@pos/shared/models';
-import { ProductEntity, productsActions, ProductService, selectAllProducts } from '@pos/products/data-access';
+import { ProductEntity, ProductService, selectAllProducts } from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
 import InventoryCountLine from '../inventory-counts/inventory-count-line';
 import { confirm } from '@pos/shared/utils';
@@ -195,45 +195,45 @@ export function InventoryCountForm({
         }
 
         setBusy(true);
-        let inv: InventoryCountDTO;
+        try {
+            let inv: InventoryCountDTO;
 
-        if (inventoryCount) {
-            inv = {
-                comments: inventoryCount.comments,
-                lines: currentLines,
-                status: inventoryCount.status,
-                id: inventoryCount.id,
-                createdBy: {
-                    id: employee?.id,
-                    name: `${employee?.firstName} ${employee?.lastName}`
-                },
-                createdAt: inventoryCount.createdAt,
-                
-            };
-        } else {
-            if (!employee) {
-                Alert.alert('No employee found');
-                setBusy(false);
+            if (inventoryCount) {
+                inv = {
+                    comments: inventoryCount.comments,
+                    lines: currentLines,
+                    status: inventoryCount.status,
+                    id: inventoryCount.id,
+                    createdBy: {
+                        id: employee?.id,
+                        name: `${employee?.firstName} ${employee?.lastName}`
+                    },
+                    createdAt: inventoryCount.createdAt,
+                };
+            } else {
+                if (!employee) {
+                    Alert.alert('No employee found');
+                    return;
+                }
+
+                inv = InventoryCountMapper.newCount(employee);
+                inv.lines = currentLines;
+            }
+
+            if (updateInv) {
+                inv.status = 'COMPLETED';
+            }
+
+            const saved = await InventoryCountService.save(dispatch, inv, updateInv);
+            if (!saved) {
                 return;
             }
 
-            inv = InventoryCountMapper.newCount(employee);
-            inv.lines = currentLines;
+            dispatch(inventoryCountActions.clearSelection());
+            navigation.goBack();
+        } finally {
+            setBusy(false);
         }
-
-        if (updateInv) {
-            inv.status = 'COMPLETED';
-        }
-
-        await InventoryCountService.save(dispatch, inv, updateInv);
-        dispatch(inventoryCountActions.clearSelection());
-
-        if (inv.status === 'COMPLETED') {
-            dispatch(productsActions.updateQuantities(inv.lines));
-        }
-        
-        navigation.goBack();
-        setBusy(false);
     };
 
     const updateInventory = () => {

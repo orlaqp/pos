@@ -11,11 +11,23 @@ type GeneratedQuery<InputType, OutputType> = string & {
 export const getSales = /* GraphQL */ `query GetSales($status: OrderStatus!, $from: String!, $to: String!) {
   getSales(status: $status, from: $from, to: $to) {
     id
+    tenantId
     orderNo
     orderDate
+    baseSubtotal
     subtotal
+    lineDiscountTotal
+    orderDiscountTotal
+    discountTotal
+    savingsTotal
     tax
     total
+    promoCodes
+    pricingVersion
+    pricingSnapshotHash
+    pricingSource
+    reconciliationStatus
+    appliedDiscountSummary
     status
     employeeId
     employeeName
@@ -29,6 +41,20 @@ export const getSales = /* GraphQL */ `query GetSales($status: OrderStatus!, $fr
       quantity
       tax
       price
+      basePrice
+      overridePrice
+      netUnitPrice
+      lineSubtotalBeforeOrderDiscount
+      lineDiscountTotal
+      allocatedOrderDiscountTotal
+      lineTotalBeforeTax
+      lineTotalAfterTax
+      appliedDiscounts
+      categoryId
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       isEBTEligible
       ebtPaidAmount
       nonEbtPaidAmount
@@ -57,6 +83,7 @@ export const getSales = /* GraphQL */ `query GetSales($status: OrderStatus!, $fr
     }
     Customer {
       id
+      tenantId
       firstName
       lastName
       middleName
@@ -112,9 +139,163 @@ export const getSalesSummary = /* GraphQL */ `query GetSalesSummary($status: Ord
   APITypes.GetSalesSummaryQueryVariables,
   APITypes.GetSalesSummaryQuery
 >;
+export const getTenant = /* GraphQL */ `query GetTenant($id: ID!) {
+  getTenant(id: $id) {
+    id
+    name
+    slug
+    ownerUserId
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedQuery<APITypes.GetTenantQueryVariables, APITypes.GetTenantQuery>;
+export const listTenants = /* GraphQL */ `query ListTenants(
+  $filter: ModelTenantFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listTenants(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      name
+      slug
+      ownerUserId
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListTenantsQueryVariables,
+  APITypes.ListTenantsQuery
+>;
+export const syncTenants = /* GraphQL */ `query SyncTenants(
+  $filter: ModelTenantFilterInput
+  $limit: Int
+  $nextToken: String
+  $lastSync: AWSTimestamp
+) {
+  syncTenants(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    lastSync: $lastSync
+  ) {
+    items {
+      id
+      name
+      slug
+      ownerUserId
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.SyncTenantsQueryVariables,
+  APITypes.SyncTenantsQuery
+>;
+export const getTenantUser = /* GraphQL */ `query GetTenantUser($id: ID!) {
+  getTenantUser(id: $id) {
+    id
+    tenantId
+    userId
+    role
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetTenantUserQueryVariables,
+  APITypes.GetTenantUserQuery
+>;
+export const listTenantUsers = /* GraphQL */ `query ListTenantUsers(
+  $filter: ModelTenantUserFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listTenantUsers(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      tenantId
+      userId
+      role
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListTenantUsersQueryVariables,
+  APITypes.ListTenantUsersQuery
+>;
+export const syncTenantUsers = /* GraphQL */ `query SyncTenantUsers(
+  $filter: ModelTenantUserFilterInput
+  $limit: Int
+  $nextToken: String
+  $lastSync: AWSTimestamp
+) {
+  syncTenantUsers(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    lastSync: $lastSync
+  ) {
+    items {
+      id
+      tenantId
+      userId
+      role
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.SyncTenantUsersQueryVariables,
+  APITypes.SyncTenantUsersQuery
+>;
 export const getStore = /* GraphQL */ `query GetStore($id: ID!) {
   getStore(id: $id) {
     id
+    tenantId
     name
     address
     city
@@ -125,6 +306,7 @@ export const getStore = /* GraphQL */ `query GetStore($id: ID!) {
     fax
     email
     disclaimer
+    timezone
     createdAt
     updatedAt
     _version
@@ -142,6 +324,7 @@ export const listStores = /* GraphQL */ `query ListStores(
   listStores(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      tenantId
       name
       address
       city
@@ -152,6 +335,7 @@ export const listStores = /* GraphQL */ `query ListStores(
       fax
       email
       disclaimer
+      timezone
       createdAt
       updatedAt
       _version
@@ -182,6 +366,7 @@ export const syncStores = /* GraphQL */ `query SyncStores(
   ) {
     items {
       id
+      tenantId
       name
       address
       city
@@ -192,6 +377,7 @@ export const syncStores = /* GraphQL */ `query SyncStores(
       fax
       email
       disclaimer
+      timezone
       createdAt
       updatedAt
       _version
@@ -211,6 +397,7 @@ export const syncStores = /* GraphQL */ `query SyncStores(
 export const getBrand = /* GraphQL */ `query GetBrand($id: ID!) {
   getBrand(id: $id) {
     id
+    tenantId
     name
     description
     createdAt
@@ -230,6 +417,7 @@ export const listBrands = /* GraphQL */ `query ListBrands(
   listBrands(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      tenantId
       name
       description
       createdAt
@@ -262,6 +450,7 @@ export const syncBrands = /* GraphQL */ `query SyncBrands(
   ) {
     items {
       id
+      tenantId
       name
       description
       createdAt
@@ -283,11 +472,14 @@ export const syncBrands = /* GraphQL */ `query SyncBrands(
 export const getCategory = /* GraphQL */ `query GetCategory($id: ID!) {
   getCategory(id: $id) {
     id
+    tenantId
     name
     description
     code
     color
     picture
+    discountable
+    discountPolicyMode
     createdAt
     updatedAt
     _version
@@ -308,11 +500,14 @@ export const listCategories = /* GraphQL */ `query ListCategories(
   listCategories(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      tenantId
       name
       description
       code
       color
       picture
+      discountable
+      discountPolicyMode
       createdAt
       updatedAt
       _version
@@ -343,11 +538,14 @@ export const syncCategories = /* GraphQL */ `query SyncCategories(
   ) {
     items {
       id
+      tenantId
       name
       description
       code
       color
       picture
+      discountable
+      discountPolicyMode
       createdAt
       updatedAt
       _version
@@ -367,6 +565,7 @@ export const syncCategories = /* GraphQL */ `query SyncCategories(
 export const getCustomer = /* GraphQL */ `query GetCustomer($id: ID!) {
   getCustomer(id: $id) {
     id
+    tenantId
     firstName
     lastName
     middleName
@@ -393,6 +592,7 @@ export const listCustomers = /* GraphQL */ `query ListCustomers(
   listCustomers(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      tenantId
       firstName
       lastName
       middleName
@@ -429,6 +629,7 @@ export const syncCustomers = /* GraphQL */ `query SyncCustomers(
   ) {
     items {
       id
+      tenantId
       firstName
       lastName
       middleName
@@ -465,6 +666,8 @@ export const getEmployee = /* GraphQL */ `query GetEmployee($id: ID!) {
     pin
     roles
     active
+    discountPolicyId
+    policyProfileKey
     createdAt
     updatedAt
     _version
@@ -496,6 +699,8 @@ export const listEmployees = /* GraphQL */ `query ListEmployees(
       pin
       roles
       active
+      discountPolicyId
+      policyProfileKey
       createdAt
       updatedAt
       _version
@@ -537,6 +742,8 @@ export const syncEmployees = /* GraphQL */ `query SyncEmployees(
       pin
       roles
       active
+      discountPolicyId
+      policyProfileKey
       createdAt
       updatedAt
       _version
@@ -556,11 +763,23 @@ export const syncEmployees = /* GraphQL */ `query SyncEmployees(
 export const getOrder = /* GraphQL */ `query GetOrder($id: ID!) {
   getOrder(id: $id) {
     id
+    tenantId
     orderNo
     orderDate
+    baseSubtotal
     subtotal
+    lineDiscountTotal
+    orderDiscountTotal
+    discountTotal
+    savingsTotal
     tax
     total
+    promoCodes
+    pricingVersion
+    pricingSnapshotHash
+    pricingSource
+    reconciliationStatus
+    appliedDiscountSummary
     status
     employeeId
     employeeName
@@ -574,6 +793,20 @@ export const getOrder = /* GraphQL */ `query GetOrder($id: ID!) {
       quantity
       tax
       price
+      basePrice
+      overridePrice
+      netUnitPrice
+      lineSubtotalBeforeOrderDiscount
+      lineDiscountTotal
+      allocatedOrderDiscountTotal
+      lineTotalBeforeTax
+      lineTotalAfterTax
+      appliedDiscounts
+      categoryId
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       isEBTEligible
       ebtPaidAmount
       nonEbtPaidAmount
@@ -602,6 +835,7 @@ export const getOrder = /* GraphQL */ `query GetOrder($id: ID!) {
     }
     Customer {
       id
+      tenantId
       firstName
       lastName
       middleName
@@ -633,11 +867,23 @@ export const listOrders = /* GraphQL */ `query ListOrders(
   listOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      tenantId
       orderNo
       orderDate
+      baseSubtotal
       subtotal
+      lineDiscountTotal
+      orderDiscountTotal
+      discountTotal
+      savingsTotal
       tax
       total
+      promoCodes
+      pricingVersion
+      pricingSnapshotHash
+      pricingSource
+      reconciliationStatus
+      appliedDiscountSummary
       status
       employeeId
       employeeName
@@ -672,11 +918,23 @@ export const syncOrders = /* GraphQL */ `query SyncOrders(
   ) {
     items {
       id
+      tenantId
       orderNo
       orderDate
+      baseSubtotal
       subtotal
+      lineDiscountTotal
+      orderDiscountTotal
+      discountTotal
+      savingsTotal
       tax
       total
+      promoCodes
+      pricingVersion
+      pricingSnapshotHash
+      pricingSource
+      reconciliationStatus
+      appliedDiscountSummary
       status
       employeeId
       employeeName
@@ -700,6 +958,7 @@ export const syncOrders = /* GraphQL */ `query SyncOrders(
 export const getProduct = /* GraphQL */ `query GetProduct($id: ID!) {
   getProduct(id: $id) {
     id
+    tenantId
     name
     description
     price
@@ -716,11 +975,14 @@ export const getProduct = /* GraphQL */ `query GetProduct($id: ID!) {
     picture
     Category {
       id
+      tenantId
       name
       description
       code
       color
       picture
+      discountable
+      discountPolicyMode
       createdAt
       updatedAt
       _version
@@ -730,6 +992,7 @@ export const getProduct = /* GraphQL */ `query GetProduct($id: ID!) {
     }
     Brand {
       id
+      tenantId
       name
       description
       createdAt
@@ -741,6 +1004,10 @@ export const getProduct = /* GraphQL */ `query GetProduct($id: ID!) {
     }
     isActive
     isEBTEligible
+    discountable
+    minAllowedPrice
+    maxManualDiscountPercent
+    maxManualDiscountAmount
     createdAt
     updatedAt
     _version
@@ -763,6 +1030,7 @@ export const listProducts = /* GraphQL */ `query ListProducts(
   listProducts(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      tenantId
       name
       description
       price
@@ -779,6 +1047,10 @@ export const listProducts = /* GraphQL */ `query ListProducts(
       picture
       isActive
       isEBTEligible
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       createdAt
       updatedAt
       _version
@@ -811,6 +1083,7 @@ export const syncProducts = /* GraphQL */ `query SyncProducts(
   ) {
     items {
       id
+      tenantId
       name
       description
       price
@@ -827,6 +1100,10 @@ export const syncProducts = /* GraphQL */ `query SyncProducts(
       picture
       isActive
       isEBTEligible
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       createdAt
       updatedAt
       _version
@@ -848,6 +1125,7 @@ export const syncProducts = /* GraphQL */ `query SyncProducts(
 export const getUnitOfMeasure = /* GraphQL */ `query GetUnitOfMeasure($id: ID!) {
   getUnitOfMeasure(id: $id) {
     id
+    tenantId
     name
     description
     createdAt
@@ -870,6 +1148,7 @@ export const listUnitOfMeasures = /* GraphQL */ `query ListUnitOfMeasures(
   listUnitOfMeasures(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      tenantId
       name
       description
       createdAt
@@ -902,6 +1181,7 @@ export const syncUnitOfMeasures = /* GraphQL */ `query SyncUnitOfMeasures(
   ) {
     items {
       id
+      tenantId
       name
       description
       createdAt
@@ -923,6 +1203,7 @@ export const syncUnitOfMeasures = /* GraphQL */ `query SyncUnitOfMeasures(
 export const getInventoryChanges = /* GraphQL */ `query GetInventoryChanges($id: ID!) {
   getInventoryChanges(id: $id) {
     id
+    tenantId
     timestamp
     type
     typeId
@@ -930,6 +1211,7 @@ export const getInventoryChanges = /* GraphQL */ `query GetInventoryChanges($id:
     quantityOut
     Product {
       id
+      tenantId
       name
       description
       price
@@ -946,6 +1228,10 @@ export const getInventoryChanges = /* GraphQL */ `query GetInventoryChanges($id:
       picture
       isActive
       isEBTEligible
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
       createdAt
       updatedAt
       _version
@@ -976,6 +1262,7 @@ export const listInventoryChanges = /* GraphQL */ `query ListInventoryChanges(
   listInventoryChanges(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      tenantId
       timestamp
       type
       typeId
@@ -1012,6 +1299,7 @@ export const syncInventoryChanges = /* GraphQL */ `query SyncInventoryChanges(
   ) {
     items {
       id
+      tenantId
       timestamp
       type
       typeId
@@ -1037,6 +1325,7 @@ export const syncInventoryChanges = /* GraphQL */ `query SyncInventoryChanges(
 export const getInventoryCount = /* GraphQL */ `query GetInventoryCount($id: ID!) {
   getInventoryCount(id: $id) {
     id
+    tenantId
     comments
     status
     createdBy {
@@ -1064,6 +1353,7 @@ export const listInventoryCounts = /* GraphQL */ `query ListInventoryCounts(
   listInventoryCounts(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      tenantId
       comments
       status
       createdAt
@@ -1096,6 +1386,7 @@ export const syncInventoryCounts = /* GraphQL */ `query SyncInventoryCounts(
   ) {
     items {
       id
+      tenantId
       comments
       status
       createdAt
@@ -1117,6 +1408,7 @@ export const syncInventoryCounts = /* GraphQL */ `query SyncInventoryCounts(
 export const getInventoryCountLine = /* GraphQL */ `query GetInventoryCountLine($id: ID!) {
   getInventoryCountLine(id: $id) {
     id
+    tenantId
     productId
     productName
     unitOfMeasure
@@ -1125,6 +1417,7 @@ export const getInventoryCountLine = /* GraphQL */ `query GetInventoryCountLine(
     comments
     InventoryCount {
       id
+      tenantId
       comments
       status
       createdAt
@@ -1159,6 +1452,7 @@ export const listInventoryCountLines = /* GraphQL */ `query ListInventoryCountLi
   ) {
     items {
       id
+      tenantId
       productId
       productName
       unitOfMeasure
@@ -1196,6 +1490,7 @@ export const syncInventoryCountLines = /* GraphQL */ `query SyncInventoryCountLi
   ) {
     items {
       id
+      tenantId
       productId
       productName
       unitOfMeasure
@@ -1222,6 +1517,7 @@ export const syncInventoryCountLines = /* GraphQL */ `query SyncInventoryCountLi
 export const getInventoryReceive = /* GraphQL */ `query GetInventoryReceive($id: ID!) {
   getInventoryReceive(id: $id) {
     id
+    tenantId
     comments
     status
     createdBy {
@@ -1249,6 +1545,7 @@ export const listInventoryReceives = /* GraphQL */ `query ListInventoryReceives(
   listInventoryReceives(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      tenantId
       comments
       status
       createdAt
@@ -1281,6 +1578,7 @@ export const syncInventoryReceives = /* GraphQL */ `query SyncInventoryReceives(
   ) {
     items {
       id
+      tenantId
       comments
       status
       createdAt
@@ -1302,6 +1600,7 @@ export const syncInventoryReceives = /* GraphQL */ `query SyncInventoryReceives(
 export const getInventoryReceiveLine = /* GraphQL */ `query GetInventoryReceiveLine($id: ID!) {
   getInventoryReceiveLine(id: $id) {
     id
+    tenantId
     productId
     productName
     unitOfMeasure
@@ -1309,6 +1608,7 @@ export const getInventoryReceiveLine = /* GraphQL */ `query GetInventoryReceiveL
     comments
     InventoryReceive {
       id
+      tenantId
       comments
       status
       createdAt
@@ -1343,6 +1643,7 @@ export const listInventoryReceiveLines = /* GraphQL */ `query ListInventoryRecei
   ) {
     items {
       id
+      tenantId
       productId
       productName
       unitOfMeasure
@@ -1379,6 +1680,7 @@ export const syncInventoryReceiveLines = /* GraphQL */ `query SyncInventoryRecei
   ) {
     items {
       id
+      tenantId
       productId
       productName
       unitOfMeasure
@@ -1404,6 +1706,7 @@ export const syncInventoryReceiveLines = /* GraphQL */ `query SyncInventoryRecei
 export const getPrinter = /* GraphQL */ `query GetPrinter($id: ID!) {
   getPrinter(id: $id) {
     id
+    tenantId
     deviceId
     identifier
     interfaceType
@@ -1430,6 +1733,7 @@ export const listPrinters = /* GraphQL */ `query ListPrinters(
   listPrinters(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      tenantId
       deviceId
       identifier
       interfaceType
@@ -1466,6 +1770,7 @@ export const syncPrinters = /* GraphQL */ `query SyncPrinters(
   ) {
     items {
       id
+      tenantId
       deviceId
       identifier
       interfaceType
@@ -1491,6 +1796,7 @@ export const syncPrinters = /* GraphQL */ `query SyncPrinters(
 export const getStation = /* GraphQL */ `query GetStation($id: ID!) {
   getStation(id: $id) {
     id
+    tenantId
     deviceId
     alias
     createdAt
@@ -1513,6 +1819,7 @@ export const listStations = /* GraphQL */ `query ListStations(
   listStations(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      tenantId
       deviceId
       alias
       createdAt
@@ -1545,6 +1852,7 @@ export const syncStations = /* GraphQL */ `query SyncStations(
   ) {
     items {
       id
+      tenantId
       deviceId
       alias
       createdAt
@@ -1565,8 +1873,10 @@ export const syncStations = /* GraphQL */ `query SyncStations(
 >;
 export const getGlobalSettings = /* GraphQL */ `query GetGlobalSettings($id: ID!) {
   getGlobalSettings(id: $id) {
-    enforceSalesBasedOnInventory
     id
+    tenantId
+    enforceSalesBasedOnInventory
+    timezone
     createdAt
     updatedAt
     _version
@@ -1586,8 +1896,10 @@ export const listGlobalSettings = /* GraphQL */ `query ListGlobalSettings(
 ) {
   listGlobalSettings(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
-      enforceSalesBasedOnInventory
       id
+      tenantId
+      enforceSalesBasedOnInventory
+      timezone
       createdAt
       updatedAt
       _version
@@ -1617,8 +1929,10 @@ export const syncGlobalSettings = /* GraphQL */ `query SyncGlobalSettings(
     lastSync: $lastSync
   ) {
     items {
-      enforceSalesBasedOnInventory
       id
+      tenantId
+      enforceSalesBasedOnInventory
+      timezone
       createdAt
       updatedAt
       _version
@@ -1634,4 +1948,948 @@ export const syncGlobalSettings = /* GraphQL */ `query SyncGlobalSettings(
 ` as GeneratedQuery<
   APITypes.SyncGlobalSettingsQueryVariables,
   APITypes.SyncGlobalSettingsQuery
+>;
+export const getDiscountDefinition = /* GraphQL */ `query GetDiscountDefinition($id: ID!) {
+  getDiscountDefinition(id: $id) {
+    id
+    tenantId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    storeIds
+    stationIds
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetDiscountDefinitionQueryVariables,
+  APITypes.GetDiscountDefinitionQuery
+>;
+export const listDiscountDefinitions = /* GraphQL */ `query ListDiscountDefinitions(
+  $filter: ModelDiscountDefinitionFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listDiscountDefinitions(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      tenantId
+      name
+      code
+      description
+      status
+      type
+      method
+      scope
+      value
+      priority
+      stackMode
+      approvalRequired
+      reasonRequired
+      startDate
+      endDate
+      daysOfWeek
+      startTime
+      endTime
+      minSubtotal
+      minQuantity
+      usageLimitTotal
+      usageCountTotal
+      applicableProductIds
+      applicableCategoryIds
+      excludedProductIds
+      excludedCategoryIds
+      excludeAlreadyDiscountedItems
+      appliesToAllProducts
+      storeIds
+      stationIds
+      active
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListDiscountDefinitionsQueryVariables,
+  APITypes.ListDiscountDefinitionsQuery
+>;
+export const syncDiscountDefinitions = /* GraphQL */ `query SyncDiscountDefinitions(
+  $filter: ModelDiscountDefinitionFilterInput
+  $limit: Int
+  $nextToken: String
+  $lastSync: AWSTimestamp
+) {
+  syncDiscountDefinitions(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    lastSync: $lastSync
+  ) {
+    items {
+      id
+      tenantId
+      name
+      code
+      description
+      status
+      type
+      method
+      scope
+      value
+      priority
+      stackMode
+      approvalRequired
+      reasonRequired
+      startDate
+      endDate
+      daysOfWeek
+      startTime
+      endTime
+      minSubtotal
+      minQuantity
+      usageLimitTotal
+      usageCountTotal
+      applicableProductIds
+      applicableCategoryIds
+      excludedProductIds
+      excludedCategoryIds
+      excludeAlreadyDiscountedItems
+      appliesToAllProducts
+      storeIds
+      stationIds
+      active
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.SyncDiscountDefinitionsQueryVariables,
+  APITypes.SyncDiscountDefinitionsQuery
+>;
+export const getDiscountReasonCode = /* GraphQL */ `query GetDiscountReasonCode($id: ID!) {
+  getDiscountReasonCode(id: $id) {
+    id
+    tenantId
+    code
+    label
+    description
+    active
+    requiresNote
+    appliesTo
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetDiscountReasonCodeQueryVariables,
+  APITypes.GetDiscountReasonCodeQuery
+>;
+export const listDiscountReasonCodes = /* GraphQL */ `query ListDiscountReasonCodes(
+  $filter: ModelDiscountReasonCodeFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listDiscountReasonCodes(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      tenantId
+      code
+      label
+      description
+      active
+      requiresNote
+      appliesTo
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListDiscountReasonCodesQueryVariables,
+  APITypes.ListDiscountReasonCodesQuery
+>;
+export const syncDiscountReasonCodes = /* GraphQL */ `query SyncDiscountReasonCodes(
+  $filter: ModelDiscountReasonCodeFilterInput
+  $limit: Int
+  $nextToken: String
+  $lastSync: AWSTimestamp
+) {
+  syncDiscountReasonCodes(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    lastSync: $lastSync
+  ) {
+    items {
+      id
+      tenantId
+      code
+      label
+      description
+      active
+      requiresNote
+      appliesTo
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.SyncDiscountReasonCodesQueryVariables,
+  APITypes.SyncDiscountReasonCodesQuery
+>;
+export const getEmployeeDiscountPolicy = /* GraphQL */ `query GetEmployeeDiscountPolicy($id: ID!) {
+  getEmployeeDiscountPolicy(id: $id) {
+    id
+    tenantId
+    employeeId
+    roleKey
+    maxManualPercentDiscount
+    maxManualAmountDiscount
+    maxPriceOverrideAmount
+    maxPriceOverridePercentBelowBase
+    canApplyOrderDiscount
+    canOverridePrice
+    canApproveDiscounts
+    canApprovePriceOverrides
+    canUsePromoCodes
+    requireReasonForManualDiscounts
+    requireReasonForOverrides
+    requireApprovalForOrderDiscount
+    requireApprovalForAnyPriceOverride
+    allowExclusiveDiscountOverride
+    active
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetEmployeeDiscountPolicyQueryVariables,
+  APITypes.GetEmployeeDiscountPolicyQuery
+>;
+export const listEmployeeDiscountPolicies = /* GraphQL */ `query ListEmployeeDiscountPolicies(
+  $filter: ModelEmployeeDiscountPolicyFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listEmployeeDiscountPolicies(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      tenantId
+      employeeId
+      roleKey
+      maxManualPercentDiscount
+      maxManualAmountDiscount
+      maxPriceOverrideAmount
+      maxPriceOverridePercentBelowBase
+      canApplyOrderDiscount
+      canOverridePrice
+      canApproveDiscounts
+      canApprovePriceOverrides
+      canUsePromoCodes
+      requireReasonForManualDiscounts
+      requireReasonForOverrides
+      requireApprovalForOrderDiscount
+      requireApprovalForAnyPriceOverride
+      allowExclusiveDiscountOverride
+      active
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListEmployeeDiscountPoliciesQueryVariables,
+  APITypes.ListEmployeeDiscountPoliciesQuery
+>;
+export const syncEmployeeDiscountPolicies = /* GraphQL */ `query SyncEmployeeDiscountPolicies(
+  $filter: ModelEmployeeDiscountPolicyFilterInput
+  $limit: Int
+  $nextToken: String
+  $lastSync: AWSTimestamp
+) {
+  syncEmployeeDiscountPolicies(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    lastSync: $lastSync
+  ) {
+    items {
+      id
+      tenantId
+      employeeId
+      roleKey
+      maxManualPercentDiscount
+      maxManualAmountDiscount
+      maxPriceOverrideAmount
+      maxPriceOverridePercentBelowBase
+      canApplyOrderDiscount
+      canOverridePrice
+      canApproveDiscounts
+      canApprovePriceOverrides
+      canUsePromoCodes
+      requireReasonForManualDiscounts
+      requireReasonForOverrides
+      requireApprovalForOrderDiscount
+      requireApprovalForAnyPriceOverride
+      allowExclusiveDiscountOverride
+      active
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.SyncEmployeeDiscountPoliciesQueryVariables,
+  APITypes.SyncEmployeeDiscountPoliciesQuery
+>;
+export const getDiscountPreset = /* GraphQL */ `query GetDiscountPreset($id: ID!) {
+  getDiscountPreset(id: $id) {
+    id
+    tenantId
+    name
+    scope
+    method
+    value
+    promptForCustomValue
+    active
+    sortOrder
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetDiscountPresetQueryVariables,
+  APITypes.GetDiscountPresetQuery
+>;
+export const listDiscountPresets = /* GraphQL */ `query ListDiscountPresets(
+  $filter: ModelDiscountPresetFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listDiscountPresets(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      tenantId
+      name
+      scope
+      method
+      value
+      promptForCustomValue
+      active
+      sortOrder
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListDiscountPresetsQueryVariables,
+  APITypes.ListDiscountPresetsQuery
+>;
+export const syncDiscountPresets = /* GraphQL */ `query SyncDiscountPresets(
+  $filter: ModelDiscountPresetFilterInput
+  $limit: Int
+  $nextToken: String
+  $lastSync: AWSTimestamp
+) {
+  syncDiscountPresets(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    lastSync: $lastSync
+  ) {
+    items {
+      id
+      tenantId
+      name
+      scope
+      method
+      value
+      promptForCustomValue
+      active
+      sortOrder
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.SyncDiscountPresetsQueryVariables,
+  APITypes.SyncDiscountPresetsQuery
+>;
+export const getDiscountApplication = /* GraphQL */ `query GetDiscountApplication($id: ID!) {
+  getDiscountApplication(id: $id) {
+    id
+    tenantId
+    transactionId
+    lineId
+    discountDefinitionId
+    applicationType
+    scope
+    method
+    name
+    code
+    stackMode
+    originalAmount
+    discountAmount
+    finalAmount
+    quantityBasis
+    reasonCode
+    reasonNote
+    appliedByEmployeeId
+    appliedByEmployeeName
+    approvedByEmployeeId
+    approvedByEmployeeName
+    approvalRequired
+    approvalStatus
+    approvalReference
+    sourceSnapshot
+    appliedAt
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetDiscountApplicationQueryVariables,
+  APITypes.GetDiscountApplicationQuery
+>;
+export const listDiscountApplications = /* GraphQL */ `query ListDiscountApplications(
+  $filter: ModelDiscountApplicationFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listDiscountApplications(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      tenantId
+      transactionId
+      lineId
+      discountDefinitionId
+      applicationType
+      scope
+      method
+      name
+      code
+      stackMode
+      originalAmount
+      discountAmount
+      finalAmount
+      quantityBasis
+      reasonCode
+      reasonNote
+      appliedByEmployeeId
+      appliedByEmployeeName
+      approvedByEmployeeId
+      approvedByEmployeeName
+      approvalRequired
+      approvalStatus
+      approvalReference
+      sourceSnapshot
+      appliedAt
+      syncStatus
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListDiscountApplicationsQueryVariables,
+  APITypes.ListDiscountApplicationsQuery
+>;
+export const syncDiscountApplications = /* GraphQL */ `query SyncDiscountApplications(
+  $filter: ModelDiscountApplicationFilterInput
+  $limit: Int
+  $nextToken: String
+  $lastSync: AWSTimestamp
+) {
+  syncDiscountApplications(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    lastSync: $lastSync
+  ) {
+    items {
+      id
+      tenantId
+      transactionId
+      lineId
+      discountDefinitionId
+      applicationType
+      scope
+      method
+      name
+      code
+      stackMode
+      originalAmount
+      discountAmount
+      finalAmount
+      quantityBasis
+      reasonCode
+      reasonNote
+      appliedByEmployeeId
+      appliedByEmployeeName
+      approvedByEmployeeId
+      approvedByEmployeeName
+      approvalRequired
+      approvalStatus
+      approvalReference
+      sourceSnapshot
+      appliedAt
+      syncStatus
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.SyncDiscountApplicationsQueryVariables,
+  APITypes.SyncDiscountApplicationsQuery
+>;
+export const getApprovalEvent = /* GraphQL */ `query GetApprovalEvent($id: ID!) {
+  getApprovalEvent(id: $id) {
+    id
+    tenantId
+    transactionId
+    lineId
+    approvalType
+    requestingEmployeeId
+    approvingEmployeeId
+    requestedAction
+    reasonCode
+    reasonNote
+    policySnapshot
+    status
+    syncStatus
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetApprovalEventQueryVariables,
+  APITypes.GetApprovalEventQuery
+>;
+export const listApprovalEvents = /* GraphQL */ `query ListApprovalEvents(
+  $filter: ModelApprovalEventFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listApprovalEvents(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      tenantId
+      transactionId
+      lineId
+      approvalType
+      requestingEmployeeId
+      approvingEmployeeId
+      requestedAction
+      reasonCode
+      reasonNote
+      policySnapshot
+      status
+      syncStatus
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListApprovalEventsQueryVariables,
+  APITypes.ListApprovalEventsQuery
+>;
+export const syncApprovalEvents = /* GraphQL */ `query SyncApprovalEvents(
+  $filter: ModelApprovalEventFilterInput
+  $limit: Int
+  $nextToken: String
+  $lastSync: AWSTimestamp
+) {
+  syncApprovalEvents(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    lastSync: $lastSync
+  ) {
+    items {
+      id
+      tenantId
+      transactionId
+      lineId
+      approvalType
+      requestingEmployeeId
+      approvingEmployeeId
+      requestedAction
+      reasonCode
+      reasonNote
+      policySnapshot
+      status
+      syncStatus
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.SyncApprovalEventsQueryVariables,
+  APITypes.SyncApprovalEventsQuery
+>;
+export const getDiscountReconciliationException = /* GraphQL */ `query GetDiscountReconciliationException($id: ID!) {
+  getDiscountReconciliationException(id: $id) {
+    id
+    tenantId
+    transactionId
+    discountApplicationId
+    exceptionType
+    severity
+    message
+    backendSnapshot
+    resolved
+    resolvedByEmployeeId
+    resolvedAt
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetDiscountReconciliationExceptionQueryVariables,
+  APITypes.GetDiscountReconciliationExceptionQuery
+>;
+export const listDiscountReconciliationExceptions = /* GraphQL */ `query ListDiscountReconciliationExceptions(
+  $filter: ModelDiscountReconciliationExceptionFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listDiscountReconciliationExceptions(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      tenantId
+      transactionId
+      discountApplicationId
+      exceptionType
+      severity
+      message
+      backendSnapshot
+      resolved
+      resolvedByEmployeeId
+      resolvedAt
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListDiscountReconciliationExceptionsQueryVariables,
+  APITypes.ListDiscountReconciliationExceptionsQuery
+>;
+export const syncDiscountReconciliationExceptions = /* GraphQL */ `query SyncDiscountReconciliationExceptions(
+  $filter: ModelDiscountReconciliationExceptionFilterInput
+  $limit: Int
+  $nextToken: String
+  $lastSync: AWSTimestamp
+) {
+  syncDiscountReconciliationExceptions(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    lastSync: $lastSync
+  ) {
+    items {
+      id
+      tenantId
+      transactionId
+      discountApplicationId
+      exceptionType
+      severity
+      message
+      backendSnapshot
+      resolved
+      resolvedByEmployeeId
+      resolvedAt
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.SyncDiscountReconciliationExceptionsQueryVariables,
+  APITypes.SyncDiscountReconciliationExceptionsQuery
+>;
+export const tenantBySlug = /* GraphQL */ `query TenantBySlug(
+  $slug: String!
+  $sortDirection: ModelSortDirection
+  $filter: ModelTenantFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  tenantBySlug(
+    slug: $slug
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      name
+      slug
+      ownerUserId
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.TenantBySlugQueryVariables,
+  APITypes.TenantBySlugQuery
+>;
+export const tenantUsersByTenant = /* GraphQL */ `query TenantUsersByTenant(
+  $tenantId: ID!
+  $sortDirection: ModelSortDirection
+  $filter: ModelTenantUserFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  tenantUsersByTenant(
+    tenantId: $tenantId
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      tenantId
+      userId
+      role
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.TenantUsersByTenantQueryVariables,
+  APITypes.TenantUsersByTenantQuery
+>;
+export const tenantUsersByUser = /* GraphQL */ `query TenantUsersByUser(
+  $userId: String!
+  $sortDirection: ModelSortDirection
+  $filter: ModelTenantUserFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  tenantUsersByUser(
+    userId: $userId
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      tenantId
+      userId
+      role
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.TenantUsersByUserQueryVariables,
+  APITypes.TenantUsersByUserQuery
 >;

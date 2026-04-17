@@ -3,7 +3,39 @@ jest.mock('react-native', () => ({
     Alert: { alert: jest.fn() },
 }));
 
+jest.mock('@pos/shared/amplify', () => ({
+    DataStore: {
+        save: jest.fn(async (value) => value),
+        query: jest.fn(),
+    },
+}));
+
+jest.mock('@pos/shared/models', () => {
+    const actual = jest.requireActual('@pos/shared/models');
+
+    class MockProduct {
+        constructor(init: Record<string, unknown>) {
+            Object.assign(this, init);
+        }
+
+        static copyOf(
+            existing: Record<string, unknown>,
+            mutator: (draft: Record<string, unknown>) => void
+        ) {
+            const draft = { ...existing };
+            mutator(draft);
+            return draft;
+        }
+    }
+
+    return {
+        ...actual,
+        Product: MockProduct,
+    };
+});
+
 import { ProductService } from './product.service';
+import { DataStore } from '@pos/shared/amplify';
 
 describe('ProductService.search barcode handling', () => {
     const products = [
@@ -164,5 +196,126 @@ describe('ProductService.search barcode handling', () => {
         expect(res.items).toHaveLength(1);
         expect(res.items[0].id).toBe('p3');
         expect(res.allNumbers).toBe(false);
+    });
+});
+
+describe('ProductService.save inventory ownership', () => {
+    const dispatch = jest.fn();
+    const mockedSave = jest.mocked(DataStore.save);
+    const mockedQuery = jest.mocked(DataStore.query);
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        mockedQuery.mockResolvedValue([]);
+    });
+
+    it('creates new products with quantity forced to zero', async () => {
+        mockedSave.mockImplementation(async (value) => ({
+            ...value,
+            id: value.id || 'product-1',
+        }));
+
+        await ProductService.save(
+            dispatch,
+            {
+                id: undefined as unknown as string,
+                name: 'Apple',
+                description: 'Fresh',
+                price: 5,
+                tags: null,
+                cost: 2,
+                barcode: '111',
+                sku: 'APL-1',
+                plu: '4015',
+                quantity: 99,
+                unitOfMeasure: 'EA',
+                trackStock: true,
+                reorderPoint: 10,
+                reorderQuantity: 20,
+                picture: null,
+                productCategoryId: null,
+                productBrandId: null,
+                discountable: true,
+                minAllowedPrice: null,
+                maxManualDiscountPercent: null,
+                maxManualDiscountAmount: null,
+                isActive: true,
+                isEBTEligible: false,
+            } as any
+        );
+
+        expect(mockedSave).toHaveBeenCalledWith(
+            expect.objectContaining({
+                quantity: 0,
+            })
+        );
+        expect(dispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'products/add',
+                payload: expect.objectContaining({
+                    quantity: 0,
+                }),
+            })
+        );
+    });
+
+    it('updates catalog fields without overwriting local quantity state', async () => {
+        mockedQuery
+            .mockResolvedValueOnce({
+                id: 'product-1',
+                quantity: 14,
+                name: 'Apple',
+                barcode: '111',
+                sku: 'APL-1',
+                plu: '4015',
+            } as any)
+            .mockResolvedValueOnce([]);
+
+        await ProductService.save(
+            dispatch,
+            {
+                id: 'product-1',
+                name: 'Apple',
+                description: 'Fresh',
+                price: 6,
+                tags: null,
+                cost: 3,
+                barcode: '111',
+                sku: 'APL-1',
+                plu: '4015',
+                quantity: 999,
+                unitOfMeasure: 'EA',
+                trackStock: true,
+                reorderPoint: 10,
+                reorderQuantity: 20,
+                picture: null,
+                productCategoryId: null,
+                productBrandId: null,
+                discountable: true,
+                minAllowedPrice: null,
+                maxManualDiscountPercent: null,
+                maxManualDiscountAmount: null,
+                isActive: true,
+                isEBTEligible: false,
+            } as any
+        );
+
+        expect(mockedSave).toHaveBeenCalledWith(
+            expect.objectContaining({
+                price: 6,
+            })
+        );
+        expect((mockedSave.mock.calls[0]?.[0] as any).quantity).not.toBe(999);
+        expect(dispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'products/update',
+                payload: expect.objectContaining({
+                    id: 'product-1',
+                    changes: expect.not.objectContaining({
+                        quantity: expect.anything(),
+                    }),
+                }),
+            })
+        );
     });
 });

@@ -1,16 +1,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 
 const mockDispatch = jest.fn();
 const mockGoBack = jest.fn();
 const mockConfirm = jest.fn((_: string, __: string, onConfirm: () => void) => onConfirm());
-const mockInventoryReceiveSave = jest.fn(() => Promise.resolve());
-const mockApplyQuantityDeltas = jest.fn((lines: unknown[]) => ({
-    type: 'products/applyQuantityDeltas',
-    payload: lines,
-}));
+const mockInventoryReceiveSave = jest.fn(() => Promise.resolve(true));
 const mockProductSearch = jest.fn(() => ({ items: [], allNumbers: false }));
 const mockProducts: unknown[] = [];
 let mockInventoryReceiveSelected: any = null;
@@ -177,9 +173,6 @@ jest.mock('@pos/products/data-access', () => ({
     ProductService: {
         search: (...args: unknown[]) => mockProductSearch(...args),
     },
-    productsActions: {
-        applyQuantityDeltas: (lines: unknown[]) => mockApplyQuantityDeltas(lines),
-    },
     selectAllProducts: () => mockProducts,
     subscribeToProductChanges: () => ({ unsubscribe: jest.fn() }),
 }));
@@ -337,8 +330,22 @@ describe('InventoryReceiveForm integration', () => {
                 expect.objectContaining({ status: 'COMPLETED', lines: [] }),
                 true
             );
-            expect(mockApplyQuantityDeltas).toHaveBeenCalledWith([]);
         });
+    });
+
+    it('stays on the form when the receive service reports failure', async () => {
+        mockInventoryReceiveSave.mockResolvedValueOnce(false);
+
+        const { getByTestId } = render(
+            <InventoryReceiveForm route={route} navigation={navigation} />
+        );
+
+        fireEvent.press(getByTestId('inventory-receive-save-button'));
+
+        await waitFor(() => {
+            expect(mockInventoryReceiveSave).toHaveBeenCalled();
+        });
+        expect(mockGoBack).not.toHaveBeenCalled();
     });
 
     it('uses the latest line values when completing a receive', async () => {
@@ -386,9 +393,6 @@ describe('InventoryReceiveForm integration', () => {
                 }),
                 true
             );
-            expect(mockApplyQuantityDeltas).toHaveBeenCalledWith([
-                { productId: 'p-1', delta: 8 },
-            ]);
         });
     });
 
@@ -496,7 +500,9 @@ describe('InventoryReceiveForm integration', () => {
             expect(mockInventoryReceiveSave).toHaveBeenCalledTimes(1);
         });
 
-        resolveSave?.();
+        await act(async () => {
+            resolveSave?.();
+        });
     });
 
     it('loads existing selected receive and supports cancel confirmation', () => {

@@ -165,15 +165,24 @@ export class ProductService {
 
         if (!product.id) {
             if (!validationRes) return false;
-            product.isEBTEligible = product.isEBTEligible ?? false;
-            product.discountable = product.discountable ?? true;
+            const normalizedProduct: ProductEntity = {
+                ...product,
+                quantity: 0,
+                isEBTEligible: product.isEBTEligible ?? false,
+                discountable: product.discountable ?? true,
+            };
 
-            const entity = new Product(stampTenant(product) as never);
+            const entity = new Product(stampTenant(normalizedProduct) as never);
             const res = await DataStore.save(entity);
 
             product.id = res.id;
 
-            dispatch(productsActions.add(product));
+            dispatch(
+                productsActions.add({
+                    ...normalizedProduct,
+                    id: res.id,
+                })
+            );
 
             return true;
         }
@@ -210,7 +219,8 @@ export class ProductService {
             })
         );
 
-        dispatch(productsActions.update({ id: product.id, changes: product }));
+        const { quantity: _quantity, ...catalogChanges } = product;
+        dispatch(productsActions.update({ id: product.id, changes: catalogChanges }));
 
         return true;
     }

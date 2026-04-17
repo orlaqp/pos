@@ -69,6 +69,13 @@ export enum ReconciliationStatus {
   RECONCILED_WITH_EXCEPTION = "RECONCILED_WITH_EXCEPTION"
 }
 
+export enum InventoryApplyState {
+  PENDING = "PENDING",
+  APPLYING = "APPLYING",
+  APPLIED = "APPLIED",
+  FAILED = "FAILED"
+}
+
 export enum PaymentType {
   CASH = "CASH",
   CHECK = "CHECK",
@@ -287,6 +294,44 @@ type LazySalesSummary = {
 export declare type SalesSummary = LazyLoading extends LazyLoadingDisabled ? EagerSalesSummary : LazySalesSummary
 
 export declare const SalesSummary: (new (init: ModelInit<SalesSummary>) => SalesSummary)
+
+type EagerInventoryProductFinalizeResult = {
+  readonly productId: string;
+  readonly finalQuantity: number;
+  readonly appliedDelta: number;
+}
+
+type LazyInventoryProductFinalizeResult = {
+  readonly productId: string;
+  readonly finalQuantity: number;
+  readonly appliedDelta: number;
+}
+
+export declare type InventoryProductFinalizeResult = LazyLoading extends LazyLoadingDisabled ? EagerInventoryProductFinalizeResult : LazyInventoryProductFinalizeResult
+
+export declare const InventoryProductFinalizeResult: (new (init: ModelInit<InventoryProductFinalizeResult>) => InventoryProductFinalizeResult)
+
+type EagerInventoryFinalizeResult = {
+  readonly sourceId: string;
+  readonly sourceType: string;
+  readonly status: InventoryApplyState | keyof typeof InventoryApplyState;
+  readonly appliedAt?: string | null;
+  readonly error?: string | null;
+  readonly affectedProducts: InventoryProductFinalizeResult[];
+}
+
+type LazyInventoryFinalizeResult = {
+  readonly sourceId: string;
+  readonly sourceType: string;
+  readonly status: InventoryApplyState | keyof typeof InventoryApplyState;
+  readonly appliedAt?: string | null;
+  readonly error?: string | null;
+  readonly affectedProducts: InventoryProductFinalizeResult[];
+}
+
+export declare type InventoryFinalizeResult = LazyLoading extends LazyLoadingDisabled ? EagerInventoryFinalizeResult : LazyInventoryFinalizeResult
+
+export declare const InventoryFinalizeResult: (new (init: ModelInit<InventoryFinalizeResult>) => InventoryFinalizeResult)
 
 type TenantMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
@@ -639,6 +684,10 @@ type EagerOrder = {
   readonly refundInfo?: RefundInfo | null;
   readonly createdBy?: ByEmployee | null;
   readonly updatedBy?: ByEmployee | null;
+  readonly inventoryApplyState?: InventoryApplyState | keyof typeof InventoryApplyState | null;
+  readonly inventoryAppliedAt?: string | null;
+  readonly inventoryApplyOperationId?: string | null;
+  readonly inventoryApplyError?: string | null;
   readonly Customer?: Customer | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
@@ -672,6 +721,10 @@ type LazyOrder = {
   readonly refundInfo?: RefundInfo | null;
   readonly createdBy?: ByEmployee | null;
   readonly updatedBy?: ByEmployee | null;
+  readonly inventoryApplyState?: InventoryApplyState | keyof typeof InventoryApplyState | null;
+  readonly inventoryAppliedAt?: string | null;
+  readonly inventoryApplyOperationId?: string | null;
+  readonly inventoryApplyError?: string | null;
   readonly Customer: AsyncItem<Customer | undefined>;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
@@ -816,6 +869,10 @@ type EagerInventoryCount = {
   readonly comments?: string | null;
   readonly status: InventoryCountStatus | keyof typeof InventoryCountStatus;
   readonly createdBy: ByEmployee;
+  readonly inventoryApplyState?: InventoryApplyState | keyof typeof InventoryApplyState | null;
+  readonly inventoryAppliedAt?: string | null;
+  readonly inventoryApplyOperationId?: string | null;
+  readonly inventoryApplyError?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -826,6 +883,10 @@ type LazyInventoryCount = {
   readonly comments?: string | null;
   readonly status: InventoryCountStatus | keyof typeof InventoryCountStatus;
   readonly createdBy: ByEmployee;
+  readonly inventoryApplyState?: InventoryApplyState | keyof typeof InventoryApplyState | null;
+  readonly inventoryAppliedAt?: string | null;
+  readonly inventoryApplyOperationId?: string | null;
+  readonly inventoryApplyError?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -878,6 +939,10 @@ type EagerInventoryReceive = {
   readonly comments?: string | null;
   readonly status: InventoryReceiveStatus | keyof typeof InventoryReceiveStatus;
   readonly createdBy: ByEmployee;
+  readonly inventoryApplyState?: InventoryApplyState | keyof typeof InventoryApplyState | null;
+  readonly inventoryAppliedAt?: string | null;
+  readonly inventoryApplyOperationId?: string | null;
+  readonly inventoryApplyError?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -888,6 +953,10 @@ type LazyInventoryReceive = {
   readonly comments?: string | null;
   readonly status: InventoryReceiveStatus | keyof typeof InventoryReceiveStatus;
   readonly createdBy: ByEmployee;
+  readonly inventoryApplyState?: InventoryApplyState | keyof typeof InventoryApplyState | null;
+  readonly inventoryAppliedAt?: string | null;
+  readonly inventoryApplyOperationId?: string | null;
+  readonly inventoryApplyError?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

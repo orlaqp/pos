@@ -1,0 +1,21 @@
+{
+  "arguments": {
+    "input": {
+      "operationId": "test-op",
+      "comments": "example",
+      "createdBy": {
+        "id": "employee-1",
+        "name": "Example Employee"
+      },
+      "lines": []
+    }
+  },
+  "identity": {
+    "claims": {
+      "sub": "tenant-1"
+    }
+  },
+  "info": {
+    "fieldName": "finalizeInventoryReceive"
+  }
+}
