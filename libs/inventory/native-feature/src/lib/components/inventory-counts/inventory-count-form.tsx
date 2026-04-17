@@ -32,6 +32,7 @@ export interface InventoryFormParams {
 }
 
 type CountMode = 'quick' | 'full';
+type PendingAction = 'save' | 'submit' | null;
 
 export const asFullCountLines = (
     existingLines: InventoryCountLineDTO[],
@@ -112,6 +113,7 @@ export function InventoryCountForm({
     const tokens = useDesignTokens();
     const local = useStyles(tokens, colors);
     const [busy, setBusy] = useState<boolean>(false);
+    const [pendingAction, setPendingAction] = useState<PendingAction>(null);
     const [filter, setFilter] = useState<string>();
     const inventoryCount = useSelector(selectInventoryCountSelected);
     const [lines, setLines] = useState<InventoryCountLineDTO[]>(
@@ -153,11 +155,13 @@ export function InventoryCountForm({
     };
 
     const searchSubmit = (text: string) => {
+        if (busy) return;
         setFilter(text);
         ref.current?.clear();
     };
 
     const addItem = (product: ProductEntity) => {
+        if (busy) return;
         syncLinesState((current) => {
             const result = appendCountLineIfMissing(current, product);
             if (!result.added) return current;
@@ -185,7 +189,8 @@ export function InventoryCountForm({
         });
     };
 
-    const save = async (updateInv: boolean) => {
+    const save = async (updateInv: boolean, action: Exclude<PendingAction, null>) => {
+        if (busy) return;
         const currentLines = linesRef.current;
         const missingQuantity = currentLines.some(x => x.newCount === undefined || x.newCount === null);
 
@@ -194,6 +199,7 @@ export function InventoryCountForm({
             return;
         }
 
+        setPendingAction(action);
         setBusy(true);
         try {
             let inv: InventoryCountDTO;
@@ -233,6 +239,7 @@ export function InventoryCountForm({
             navigation.goBack();
         } finally {
             setBusy(false);
+            setPendingAction(null);
         }
     };
 
@@ -240,7 +247,7 @@ export function InventoryCountForm({
         confirm(
             '',
             'This action will adjust your inventory based on this count. You will no be able to undo this operation',
-            () => save(true)
+            () => save(true, 'submit')
         );
     };
 
@@ -324,6 +331,7 @@ export function InventoryCountForm({
     const progress = totalItems > 0 ? countedItems / totalItems : 0;
 
     const enableFullCountMode = () => {
+        if (busy) return;
         if (!inventoryCount) {
             setQuickModeLines(lines.map((line) => ({ ...line })));
         }
@@ -332,6 +340,7 @@ export function InventoryCountForm({
     };
 
     const enableQuickCountMode = () => {
+        if (busy) return;
         setCountMode('quick');
         if (!inventoryCount) {
             syncLinesState(quickModeLines.map((line) => ({ ...line })));
@@ -339,6 +348,7 @@ export function InventoryCountForm({
     };
 
     const regenerateFullCount = () => {
+        if (busy) return;
         syncLinesState((prev) => asFullCountLines(prev, products));
         setFilter('');
     };
@@ -473,6 +483,7 @@ export function InventoryCountForm({
                                 <UISearchInput
                                     ref={ref}
                                     value={filter}
+                                    editable={!busy}
                                     placeholder="Search for products ..."
                                     debounceTime={700}
                                     onChangeText={setFilter}
@@ -488,6 +499,7 @@ export function InventoryCountForm({
                                         testID="inventory-count-mode-quick"
                                         onPress={enableQuickCountMode}
                                         buttonStyle={local.modeButton}
+                                        disabled={busy}
                                     />
                                     <View style={{ marginLeft: 8 }}>
                                         <Button
@@ -496,6 +508,7 @@ export function InventoryCountForm({
                                             testID="inventory-count-mode-full"
                                             onPress={enableFullCountMode}
                                             buttonStyle={local.modeButton}
+                                            disabled={busy}
                                         />
                                     </View>
                                     {countMode === 'full' && (
@@ -506,6 +519,7 @@ export function InventoryCountForm({
                                                 testID="inventory-count-mode-reload"
                                                 onPress={regenerateFullCount}
                                                 buttonStyle={local.modeButton}
+                                                disabled={busy}
                                             />
                                         </View>
                                     )}
@@ -540,7 +554,7 @@ export function InventoryCountForm({
             </UICard>
             {!route.params?.readOnly && (
                 <CompactProductList
-                    visible={!!filter?.trim()}
+                    visible={!busy && !!filter?.trim()}
                     products={filteredProducts}
                     onAdd={addItem}
                     onClose={() => setFilter('')}
@@ -554,7 +568,7 @@ export function InventoryCountForm({
                     keyExtractor={(item) => item.productId}
                     renderItem={(data) => (
                         <InventoryCountLine
-                            readOnly={route.params?.readOnly}
+                            readOnly={route.params?.readOnly || busy}
                             item={data.item}
                             onUpdate={updateItem}
                             onDelete={deleteItem}
@@ -625,7 +639,8 @@ export function InventoryCountForm({
                     <View style={local.footerButtons}>
                         <UIActions
                             busy={busy}
-                            submitAction={() => runAfterInputCommit(() => save(false))}
+                            submitLoading={pendingAction === 'save'}
+                            submitAction={() => runAfterInputCommit(() => save(false, 'save'))}
                             cancelAction={confirmCancel}
                         />
                         <View style={{ marginLeft: 10 }}>
@@ -634,6 +649,7 @@ export function InventoryCountForm({
                                 title="Update Inventory"
                                 testID="inventory-count-update-inventory-button"
                                 onPress={() => runAfterInputCommit(updateInventory)}
+                                loading={busy && pendingAction === 'submit'}
                                 icon={{
                                     name: 'scale-balance',
                                     type: 'material-community',
@@ -646,6 +662,7 @@ export function InventoryCountForm({
                                 disabledTitleStyle={{
                                     color: theme.theme.colors.grey5,
                                 }}
+                                disabled={busy}
                             />
                         </View>
                     </View>

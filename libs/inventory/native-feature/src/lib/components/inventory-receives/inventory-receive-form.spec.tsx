@@ -76,14 +76,34 @@ jest.mock('@pos/theme/native/design-tokens', () => ({
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
-    UIActions: ({ submitAction, cancelAction }: { submitAction: () => void; cancelAction: () => void }) => {
+    UIActions: ({
+        submitAction,
+        cancelAction,
+        busy,
+        submitLoading,
+    }: {
+        submitAction: () => void;
+        cancelAction: () => void;
+        busy?: boolean;
+        submitLoading?: boolean;
+    }) => {
         const { Pressable: RNPressable, Text: RNText, View: RNView } = require('react-native');
         return (
             <RNView>
-                <RNPressable testID="inventory-receive-save-button" onPress={submitAction}>
-                    <RNText>Save</RNText>
+                <RNPressable
+                    testID="inventory-receive-save-button"
+                    onPress={submitAction}
+                    disabled={busy}
+                    accessibilityState={{ disabled: !!busy }}
+                >
+                    <RNText>{submitLoading ? 'Save loading' : 'Save'}</RNText>
                 </RNPressable>
-                <RNPressable testID="inventory-receive-cancel-button" onPress={cancelAction}>
+                <RNPressable
+                    testID="inventory-receive-cancel-button"
+                    onPress={cancelAction}
+                    disabled={busy}
+                    accessibilityState={{ disabled: !!busy }}
+                >
                     <RNText>Cancel</RNText>
                 </RNPressable>
             </RNView>
@@ -154,11 +174,28 @@ jest.mock('@rneui/themed', () => ({
             },
         },
     }),
-    Button: ({ title, onPress, testID }: { title?: string; onPress: () => void; testID?: string }) => {
+    Button: ({
+        title,
+        onPress,
+        testID,
+        disabled,
+        loading,
+    }: {
+        title?: string;
+        onPress: () => void;
+        testID?: string;
+        disabled?: boolean;
+        loading?: boolean;
+    }) => {
         const { Pressable: RNPressable, Text: RNText } = require('react-native');
         return (
-            <RNPressable testID={testID || title} onPress={onPress}>
-                <RNText>{title || 'button'}</RNText>
+            <RNPressable
+                testID={testID || title}
+                onPress={onPress}
+                disabled={disabled}
+                accessibilityState={{ disabled: !!disabled }}
+            >
+                <RNText>{loading ? `${title || 'button'} loading` : title || 'button'}</RNText>
             </RNPressable>
         );
     },
@@ -498,6 +535,64 @@ describe('InventoryReceiveForm integration', () => {
 
         await waitFor(() => {
             expect(mockInventoryReceiveSave).toHaveBeenCalledTimes(1);
+        });
+
+        await act(async () => {
+            resolveSave?.();
+        });
+    });
+
+    it('locks actions and shows loading feedback while saving a draft', async () => {
+        let resolveSave: (() => void) | null = null;
+        mockInventoryReceiveSave.mockImplementationOnce(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolveSave = resolve;
+                })
+        );
+
+        const { getByTestId, getByText } = render(
+            <InventoryReceiveForm route={route} navigation={navigation} />
+        );
+
+        fireEvent.press(getByTestId('inventory-receive-save-button'));
+
+        await waitFor(() => {
+            expect(getByText('Save loading')).toBeTruthy();
+            expect(getByTestId('inventory-receive-save-button').props.accessibilityState.disabled).toBe(true);
+            expect(getByTestId('inventory-receive-cancel-button').props.accessibilityState.disabled).toBe(true);
+            expect(
+                getByTestId('inventory-receive-update-inventory-button').props.accessibilityState.disabled
+            ).toBe(true);
+        });
+
+        await act(async () => {
+            resolveSave?.();
+        });
+    });
+
+    it('shows loading feedback on update inventory while finalizing', async () => {
+        let resolveSave: (() => void) | null = null;
+        mockInventoryReceiveSave.mockImplementationOnce(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolveSave = resolve;
+                })
+        );
+
+        const { getByTestId, getByText } = render(
+            <InventoryReceiveForm route={route} navigation={navigation} />
+        );
+
+        fireEvent.press(getByTestId('inventory-receive-update-inventory-button'));
+
+        await waitFor(() => {
+            expect(getByText('Update Inventory loading')).toBeTruthy();
+            expect(getByTestId('inventory-receive-save-button').props.accessibilityState.disabled).toBe(true);
+            expect(getByTestId('inventory-receive-cancel-button').props.accessibilityState.disabled).toBe(true);
+            expect(
+                getByTestId('inventory-receive-update-inventory-button').props.accessibilityState.disabled
+            ).toBe(true);
         });
 
         await act(async () => {

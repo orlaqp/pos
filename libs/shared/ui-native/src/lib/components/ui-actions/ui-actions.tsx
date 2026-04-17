@@ -9,6 +9,7 @@ export interface UiActionBarProps {
     busy: boolean;
     submitTitle?: string;
     cancelTitle?: string;
+    submitLoading?: boolean;
     submitAction: () => unknown;
     cancelAction: () => unknown;
     submitButtonStyle?: StyleProp<ViewStyle>;
@@ -48,10 +49,14 @@ export function UIActions(props: UiActionBarProps) {
             <Button
                 title={props.submitTitle || 'Save'}
                 onPress={props.submitAction}
+                loading={props.submitLoading}
                 icon={{
                     name: 'check',
                     type: 'material-community',
-                    color: props.busy ? colors.grey5 : colors.grey0,
+                    color:
+                        props.busy && !props.submitLoading
+                            ? colors.grey5
+                            : colors.grey0,
                 }}
                 buttonStyle={[{ borderRadius: 10 }, props.submitButtonStyle]}
                 titleStyle={{

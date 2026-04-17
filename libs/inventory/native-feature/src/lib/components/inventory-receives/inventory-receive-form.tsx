@@ -39,6 +39,8 @@ interface InventoryReceiveNavigationParamList {
     };
 }
 
+type PendingAction = 'save' | 'submit' | null;
+
 export const appendReceiveLineIfMissing = (
     lines: InventoryReceiveLineDTO[],
     product: ProductEntity
@@ -88,6 +90,7 @@ export function InventoryReceiveForm({
     const products = useSelector(selectAllProducts);
     const employee = useSelector(selectLoginEmployee);
     const [busy, setBusy] = useState<boolean>(false);
+    const [pendingAction, setPendingAction] = useState<PendingAction>(null);
     const [filter, setFilter] = useState<string>();
     const [lines, setLines] = useState<InventoryReceiveLineDTO[]>([]);
     const linesRef = useRef<InventoryReceiveLineDTO[]>([]);
@@ -117,8 +120,9 @@ export function InventoryReceiveForm({
         syncLinesState(inventoryReceive.lines.map((l) => ({ ...l })));
     }, [inventoryReceive]);
 
-    const save = async (updateInv: boolean) => {
+    const save = async (updateInv: boolean, action: Exclude<PendingAction, null>) => {
         if (busy) return;
+        setPendingAction(action);
         setBusy(true);
         try {
             const currentLines = linesRef.current;
@@ -158,6 +162,7 @@ export function InventoryReceiveForm({
             navigation.goBack();
         } finally {
             setBusy(false);
+            setPendingAction(null);
         }
     };
 
@@ -167,7 +172,7 @@ export function InventoryReceiveForm({
         confirm(
             '',
             'This action will adjust your inventory based on this receive. You will no be able to undo this operation',
-            () => save(true)
+            () => save(true, 'submit')
         );
     };
 
@@ -189,6 +194,7 @@ export function InventoryReceiveForm({
     };
 
     const searchSubmit = (text: string) => {
+        if (busy) return;
         setFilter(text);
         // ref.current?.clear();
     };
@@ -202,6 +208,7 @@ export function InventoryReceiveForm({
     };
 
     const addItem = (product: ProductEntity) => {
+        if (busy) return;
         let added = false;
         syncLinesState((current) => {
             const result = appendReceiveLineIfMissing(current, product);
@@ -251,6 +258,7 @@ export function InventoryReceiveForm({
                             ref={ref}
                             testID="inventory-receive-search-input"
                             value={filter}
+                            editable={!busy}
                             placeholder="Search for products ..."
                             debounceTime={700}
                             onChangeText={setFilter}
@@ -264,7 +272,7 @@ export function InventoryReceiveForm({
             </UICard>
             {!route.params?.readOnly && (
                 <CompactProductList
-                    visible={!!filter}
+                    visible={!busy && !!filter}
                     products={filteredProducts}
                     onAdd={addItem}
                     onClose={() => setFilter('')}
@@ -277,7 +285,7 @@ export function InventoryReceiveForm({
                     data={lines}
                     renderItem={(data) => (
                         <InventoryReceiveLine
-                            readOnly={route.params?.readOnly}
+                            readOnly={route.params?.readOnly || busy}
                             item={data.item}
                             key={data.index}
                             onUpdate={updateItem}
@@ -297,7 +305,8 @@ export function InventoryReceiveForm({
                     <View style={local.footerButtons}>
                         <UIActions
                             busy={busy}
-                            submitAction={() => save(false)}
+                            submitLoading={pendingAction === 'save'}
+                            submitAction={() => save(false, 'save')}
                             cancelAction={confirmCancel}
                         />
                         <View style={{ marginLeft: 10 }}>
@@ -306,6 +315,7 @@ export function InventoryReceiveForm({
                                 title="Update Inventory"
                                 testID="inventory-receive-update-inventory-button"
                                 onPress={updateInventory}
+                                loading={busy && pendingAction === 'submit'}
                                 icon={{
                                     name: 'scale-balance',
                                     type: 'material-community',
@@ -318,6 +328,7 @@ export function InventoryReceiveForm({
                                 disabledTitleStyle={{
                                     color: theme.theme.colors.grey5,
                                 }}
+                                disabled={busy}
                             />
                         </View>
                     </View>
