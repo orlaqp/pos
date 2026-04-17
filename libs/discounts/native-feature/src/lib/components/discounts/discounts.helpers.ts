@@ -105,6 +105,15 @@ export interface NamedOption {
   name: string;
 }
 
+export interface DefinitionFieldAvailability {
+  lineScope: boolean;
+  minQuantityEnabled: boolean;
+  productTargetingToggleEnabled: boolean;
+  applicableFiltersEnabled: boolean;
+  exclusionFiltersEnabled: boolean;
+  excludeAlreadyDiscountedItemsEnabled: boolean;
+}
+
 export const defaultPolicyValues: PolicyFormValues = {
   roleKey: 'Sales',
   employeeId: '',
@@ -166,6 +175,22 @@ export function parseOptionalNumber(value: string): number | null {
 export function parseRequiredNumber(value: string, fallback = 0): number {
   const parsed = parseOptionalNumber(value);
   return parsed == null ? fallback : parsed;
+}
+
+export function getDefinitionFieldAvailability(
+  values: Pick<DefinitionFormValues, 'scope' | 'appliesToAllProducts'>
+): DefinitionFieldAvailability {
+  const lineScope = values.scope === 'LINE';
+  const appliesToAllProducts = values.appliesToAllProducts;
+
+  return {
+    lineScope,
+    minQuantityEnabled: lineScope,
+    productTargetingToggleEnabled: lineScope,
+    applicableFiltersEnabled: lineScope && !appliesToAllProducts,
+    exclusionFiltersEnabled: lineScope,
+    excludeAlreadyDiscountedItemsEnabled: lineScope,
+  };
 }
 
 export function sortNamedOptionsAlphabetically<T extends NamedOption>(options: T[]): T[] {
@@ -250,6 +275,11 @@ export function buildDefinitionEntity(
   existingId: string | undefined,
   promoMode: boolean
 ): DiscountDefinitionEntity {
+  const availability = getDefinitionFieldAvailability(values);
+  const appliesToAllProducts = availability.lineScope
+    ? values.appliesToAllProducts
+    : true;
+
   return {
     id: existingId,
     name: values.name.trim(),
@@ -270,19 +300,31 @@ export function buildDefinitionEntity(
     startTime: values.startTime.trim() || null,
     endTime: values.endTime.trim() || null,
     minSubtotal: parseOptionalNumber(values.minSubtotal),
-    minQuantity: parseOptionalNumber(values.minQuantity),
+    minQuantity: availability.minQuantityEnabled
+      ? parseOptionalNumber(values.minQuantity)
+      : null,
     usageLimitTotal: parseOptionalNumber(values.usageLimitTotal),
-    applicableProductIds: values.applicableProductIds.length ? values.applicableProductIds : null,
-    applicableCategoryIds: values.applicableCategoryIds.length
+    applicableProductIds: availability.applicableFiltersEnabled &&
+      values.applicableProductIds.length
+      ? values.applicableProductIds
+      : null,
+    applicableCategoryIds: availability.applicableFiltersEnabled &&
+      values.applicableCategoryIds.length
       ? values.applicableCategoryIds
       : null,
-    excludedProductIds: values.excludedProductIds.length ? values.excludedProductIds : null,
-    excludedCategoryIds: values.excludedCategoryIds.length
+    excludedProductIds: availability.exclusionFiltersEnabled &&
+      values.excludedProductIds.length
+      ? values.excludedProductIds
+      : null,
+    excludedCategoryIds: availability.exclusionFiltersEnabled &&
+      values.excludedCategoryIds.length
       ? values.excludedCategoryIds
       : null,
     stationIds: values.stationIds.length ? values.stationIds : null,
-    excludeAlreadyDiscountedItems: values.excludeAlreadyDiscountedItems,
-    appliesToAllProducts: values.appliesToAllProducts,
+    excludeAlreadyDiscountedItems: availability.excludeAlreadyDiscountedItemsEnabled
+      ? values.excludeAlreadyDiscountedItems
+      : false,
+    appliesToAllProducts,
     active: values.active,
   };
 }

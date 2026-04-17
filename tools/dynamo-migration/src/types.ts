@@ -3,8 +3,8 @@ import type {
 } from '@aws-sdk/client-cloudformation';
 import type { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 
-export const SOURCE_ENV = 'develop';
-export const TARGET_ENVS = ['ebtdev', 'prod'] as const;
+export const SOURCE_ENVS = ['develop', 'ebtdev', 'uat', 'prod'] as const;
+export const TARGET_ENVS = ['ebtdev', 'uat', 'prod'] as const;
 
 export const LEGACY_MODEL_NAMES = [
   'Store',
@@ -70,6 +70,8 @@ export type MigrationOptions = {
   sourceProfile: string;
   targetProfile: string;
   tenantId: string;
+  sourceTenantId: string;
+  targetTenantId: string;
   dryRun: boolean;
   models?: MigratableModelName[];
   parallelModels: number;
@@ -92,6 +94,7 @@ export type ScanProgress = {
 export type SourceReader = {
   scanTable: (
     tableName: string,
+    tenantId?: string,
     onProgress?: (progress: ScanProgress) => void
   ) => Promise<Record<string, unknown>[]>;
 };
@@ -157,7 +160,8 @@ export type MigrationReport = {
     targetProfile: string;
     targetTables: string[];
     dryRun: boolean;
-    tenantId: string;
+    sourceTenantId: string;
+    targetTenantId: string;
     selectedModels: MigratableModelName[] | null;
     overwrite: boolean;
     operationalHistory: string;

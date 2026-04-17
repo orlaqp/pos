@@ -19,6 +19,7 @@ export class DynamoSourceReader implements SourceReader {
 
   async scanTable(
     tableName: string,
+    tenantId?: string,
     onProgress?: (progress: ScanProgress) => void
   ): Promise<Record<string, unknown>[]> {
     const items: Record<string, unknown>[] = [];
@@ -30,6 +31,14 @@ export class DynamoSourceReader implements SourceReader {
       const response = await this.client.send(
         new ScanCommand({
           TableName: tableName,
+          ...(tenantId
+            ? {
+                FilterExpression: 'tenantId = :tenantId',
+                ExpressionAttributeValues: {
+                  ':tenantId': tenantId,
+                },
+              }
+            : {}),
           ExclusiveStartKey: exclusiveStartKey,
         })
       );

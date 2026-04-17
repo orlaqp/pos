@@ -82,6 +82,7 @@ import {
 } from './app-lifecycle-diagnostics';
 import { shouldValidateSessionOnForeground } from './foreground-session-guard';
 import { markAppInstallSeen } from './install-state';
+import amplifyConfig from '../amplifyconfiguration.json';
 
 type BootstrapStatus = 'idle' | 'checking-session' | 'resolving-tenant' | 'preparing-business-data' | 'ready' | 'error';
 type SessionRecoveryState =
@@ -93,8 +94,14 @@ type SessionRecoveryState =
 const appTheme = theme('dark');
 const appColors = designTokens.colors;
 const LAST_BOOTSTRAPPED_TENANT_KEY = 'last-bootstrapped-tenant-id-v1';
+const LAST_BOOTSTRAPPED_CONTEXT_KEY = 'last-bootstrapped-context-v2';
 const FOREGROUND_SESSION_CHECK_THROTTLE_MS = 5 * 60_000;
 const SYNC_WATCHDOG_INTERVAL_MS = 15_000;
+
+type BootstrappedDataStoreContext = {
+    tenantId: string;
+    graphqlEndpoint: string;
+};
 
 const isUnauthorizedError = (error: unknown) => {
     const message =
@@ -134,6 +141,33 @@ const getLastBootstrappedTenantId = async () => {
     }
 };
 
+const getCurrentGraphqlEndpoint = () =>
+    String(
+        (amplifyConfig as { aws_appsync_graphqlEndpoint?: string })
+            .aws_appsync_graphqlEndpoint || ''
+    );
+
+const getLastBootstrappedContext = async (): Promise<BootstrappedDataStoreContext | null> => {
+    try {
+        const value = await AsyncStorage.getItem(LAST_BOOTSTRAPPED_CONTEXT_KEY);
+        if (!value) {
+            return null;
+        }
+
+        const parsed = JSON.parse(value) as Partial<BootstrappedDataStoreContext>;
+        if (!parsed?.tenantId) {
+            return null;
+        }
+
+        return {
+            tenantId: String(parsed.tenantId),
+            graphqlEndpoint: String(parsed.graphqlEndpoint || ''),
+        };
+    } catch {
+        return null;
+    }
+};
+
 const setLastBootstrappedTenantId = async (tenantId: string) => {
     try {
         await AsyncStorage.setItem(LAST_BOOTSTRAPPED_TENANT_KEY, tenantId);
@@ -142,9 +176,23 @@ const setLastBootstrappedTenantId = async (tenantId: string) => {
     }
 };
 
+const setLastBootstrappedContext = async (
+    context: BootstrappedDataStoreContext
+) => {
+    try {
+        await AsyncStorage.setItem(
+            LAST_BOOTSTRAPPED_CONTEXT_KEY,
+            JSON.stringify(context)
+        );
+    } catch {
+        // Best-effort cache marker; bootstrap should continue even if this fails.
+    }
+};
+
 const clearLastBootstrappedTenantId = async () => {
     try {
         await AsyncStorage.removeItem(LAST_BOOTSTRAPPED_TENANT_KEY);
+        await AsyncStorage.removeItem(LAST_BOOTSTRAPPED_CONTEXT_KEY);
     } catch {
         // Best-effort cache marker.
     }
@@ -630,13 +678,18 @@ const AppContent = () => {
             const finishStop = startSyncMeasure('app-bootstrap', 'datastore.stop');
             await DataStore.stop();
             finishStop();
+            const currentGraphqlEndpoint = getCurrentGraphqlEndpoint();
             const lastTenantId = await getLastBootstrappedTenantId();
-            const shouldClearDataStore =
-                !!lastTenantId &&
-                lastTenantId !== user.tenantId;
+            const lastBootstrappedContext = await getLastBootstrappedContext();
+            const shouldClearDataStore = lastBootstrappedContext
+                ? lastBootstrappedContext.tenantId !== user.tenantId ||
+                  lastBootstrappedContext.graphqlEndpoint !== currentGraphqlEndpoint
+                : !!lastTenantId && lastTenantId !== user.tenantId;
             logSyncDebug('app-bootstrap', 'tenant-cache:state', {
                 lastTenantId,
+                lastBootstrappedContext,
                 currentTenantId: user.tenantId,
+                currentGraphqlEndpoint,
                 shouldClearDataStore,
             });
 
@@ -664,6 +717,10 @@ const AppContent = () => {
                 }
             }
             await setLastBootstrappedTenantId(user.tenantId);
+            await setLastBootstrappedContext({
+                tenantId: user.tenantId,
+                graphqlEndpoint: currentGraphqlEndpoint,
+            });
 
             setBootstrapStatus('preparing-business-data');
             dispatch(tenantSessionActions.setBootstrapStatus('bootstrapping'));

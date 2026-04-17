@@ -7,6 +7,8 @@ const baseOptions: MigrationOptions = {
   sourceProfile: 'src',
   targetProfile: 'dst',
   tenantId: 'tenant-1',
+  sourceTenantId: 'tenant-1',
+  targetTenantId: 'tenant-1',
   dryRun: true,
   parallelModels: 1,
 };
@@ -49,6 +51,16 @@ describe('safety', () => {
     ).not.toThrow();
   });
 
+  it('accepts prod as a valid source env for uat targets', () => {
+    expect(() =>
+      assertAllowedEnvironments({
+        ...baseOptions,
+        sourceEnv: 'prod',
+        targetEnv: 'uat',
+      })
+    ).not.toThrow();
+  });
+
   it('rejects same source and target env', () => {
     expect(() =>
       assertAllowedEnvironments({
@@ -74,7 +86,7 @@ describe('safety', () => {
         ...baseOptions,
         targetEnv: 'staging',
       })
-    ).toThrow('Target environment must be one of: ebtdev, prod');
+    ).toThrow('Target environment must be one of: ebtdev, uat, prod');
   });
 
   it('rejects identical physical tables', () => {

@@ -540,7 +540,7 @@ export type CreateOrderInput = {
   pricingSnapshotHash?: string | null,
   pricingSource?: PricingSource | null,
   reconciliationStatus?: ReconciliationStatus | null,
-  appliedDiscountSummary?: string | null,
+  appliedDiscountSummary?: AppliedDiscountSummarySnapshotInput | null,
   status: OrderStatus,
   employeeId: string,
   employeeName: string,
@@ -567,6 +567,120 @@ export enum ReconciliationStatus {
 }
 
 
+export type AppliedDiscountSummarySnapshotInput = {
+  applications: Array< AppliedDiscountDetailSnapshotInput >,
+  approvalEvents: Array< PricingApprovalEventSnapshotInput >,
+  lineSummaries: Array< AppliedLineDiscountSummarySnapshotInput >,
+  orderLevelAdjustments: Array< AppliedDiscountDetailSnapshotInput >,
+  warnings: Array< string >,
+  pricingGeneratedAt: string,
+};
+
+export type AppliedDiscountDetailSnapshotInput = {
+  discountApplicationId: string,
+  discountDefinitionId?: string | null,
+  applicationType: DiscountApplicationType,
+  scope: DiscountScope,
+  method: DiscountMethod,
+  name: string,
+  code?: string | null,
+  stackMode: DiscountStackMode,
+  source: DiscountSourceKind,
+  value: number,
+  originalAmount: number,
+  discountAmount: number,
+  finalAmount: number,
+  quantityBasis?: number | null,
+  reasonCode?: string | null,
+  reasonNote?: string | null,
+  appliedByEmployeeId?: string | null,
+  appliedByEmployeeName?: string | null,
+  approvedByEmployeeId?: string | null,
+  approvedByEmployeeName?: string | null,
+  approvalRequired?: boolean | null,
+  approvalStatus?: DiscountApprovalStatus | null,
+  approvalReference?: string | null,
+  sourceSnapshot?: string | null,
+  appliedAt: string,
+};
+
+export enum DiscountApplicationType {
+  MANUAL_LINE_DISCOUNT = "MANUAL_LINE_DISCOUNT",
+  MANUAL_ORDER_DISCOUNT = "MANUAL_ORDER_DISCOUNT",
+  AUTOMATIC_DISCOUNT = "AUTOMATIC_DISCOUNT",
+  PROMO_CODE = "PROMO_CODE",
+  PRICE_OVERRIDE = "PRICE_OVERRIDE",
+}
+
+
+export enum DiscountScope {
+  LINE = "LINE",
+  ORDER = "ORDER",
+}
+
+
+export enum DiscountMethod {
+  PERCENT = "PERCENT",
+  AMOUNT = "AMOUNT",
+  FINAL_PRICE = "FINAL_PRICE",
+}
+
+
+export enum DiscountStackMode {
+  EXCLUSIVE = "EXCLUSIVE",
+  STACKABLE = "STACKABLE",
+  BEST_PRICE_ONLY = "BEST_PRICE_ONLY",
+}
+
+
+export enum DiscountSourceKind {
+  manual = "manual",
+  automatic = "automatic",
+  promo = "promo",
+  override = "override",
+}
+
+
+export enum DiscountApprovalStatus {
+  NOT_REQUIRED = "NOT_REQUIRED",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+}
+
+
+export type PricingApprovalEventSnapshotInput = {
+  id: string,
+  approvalType: PricingApprovalType,
+  requestingEmployeeId: string,
+  approvingEmployeeId: string,
+  requestedAction: string,
+  reasonCode?: string | null,
+  reasonNote?: string | null,
+  policySnapshot?: string | null,
+  status: PricingApprovalDecision,
+  createdAt: string,
+};
+
+export enum PricingApprovalType {
+  DISCOUNT = "DISCOUNT",
+  PRICE_OVERRIDE = "PRICE_OVERRIDE",
+}
+
+
+export enum PricingApprovalDecision {
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+}
+
+
+export type AppliedLineDiscountSummarySnapshotInput = {
+  lineId: string,
+  discounts: Array< AppliedDiscountDetailSnapshotInput >,
+  lineDiscountTotal: number,
+  allocatedOrderDiscountTotal: number,
+  lineTotalBeforeTax: number,
+};
+
 export enum OrderStatus {
   OPEN = "OPEN",
   REFUNDED = "REFUNDED",
@@ -592,7 +706,7 @@ export type OrderLineInput = {
   allocatedOrderDiscountTotal?: number | null,
   lineTotalBeforeTax?: number | null,
   lineTotalAfterTax?: number | null,
-  appliedDiscounts?: string | null,
+  appliedDiscounts?: Array< AppliedDiscountDetailSnapshotInput > | null,
   categoryId?: string | null,
   discountable?: boolean | null,
   minAllowedPrice?: number | null,
@@ -650,7 +764,6 @@ export type ModelOrderConditionInput = {
   pricingSnapshotHash?: ModelStringInput | null,
   pricingSource?: ModelPricingSourceInput | null,
   reconciliationStatus?: ModelReconciliationStatusInput | null,
-  appliedDiscountSummary?: ModelStringInput | null,
   status?: ModelOrderStatusInput | null,
   employeeId?: ModelStringInput | null,
   employeeName?: ModelStringInput | null,
@@ -709,7 +822,7 @@ export type Order = {
   pricingSnapshotHash?: string | null,
   pricingSource?: PricingSource | null,
   reconciliationStatus?: ReconciliationStatus | null,
-  appliedDiscountSummary?: string | null,
+  appliedDiscountSummary?: AppliedDiscountSummarySnapshot | null,
   status: OrderStatus,
   employeeId: string,
   employeeName: string,
@@ -725,6 +838,68 @@ export type Order = {
   _deleted?: boolean | null,
   _lastChangedAt: number,
   orderCustomerId?: string | null,
+};
+
+export type AppliedDiscountSummarySnapshot = {
+  __typename: "AppliedDiscountSummarySnapshot",
+  applications:  Array<AppliedDiscountDetailSnapshot >,
+  approvalEvents:  Array<PricingApprovalEventSnapshot >,
+  lineSummaries:  Array<AppliedLineDiscountSummarySnapshot >,
+  orderLevelAdjustments:  Array<AppliedDiscountDetailSnapshot >,
+  warnings: Array< string >,
+  pricingGeneratedAt: string,
+};
+
+export type AppliedDiscountDetailSnapshot = {
+  __typename: "AppliedDiscountDetailSnapshot",
+  discountApplicationId: string,
+  discountDefinitionId?: string | null,
+  applicationType: DiscountApplicationType,
+  scope: DiscountScope,
+  method: DiscountMethod,
+  name: string,
+  code?: string | null,
+  stackMode: DiscountStackMode,
+  source: DiscountSourceKind,
+  value: number,
+  originalAmount: number,
+  discountAmount: number,
+  finalAmount: number,
+  quantityBasis?: number | null,
+  reasonCode?: string | null,
+  reasonNote?: string | null,
+  appliedByEmployeeId?: string | null,
+  appliedByEmployeeName?: string | null,
+  approvedByEmployeeId?: string | null,
+  approvedByEmployeeName?: string | null,
+  approvalRequired?: boolean | null,
+  approvalStatus?: DiscountApprovalStatus | null,
+  approvalReference?: string | null,
+  sourceSnapshot?: string | null,
+  appliedAt: string,
+};
+
+export type PricingApprovalEventSnapshot = {
+  __typename: "PricingApprovalEventSnapshot",
+  id: string,
+  approvalType: PricingApprovalType,
+  requestingEmployeeId: string,
+  approvingEmployeeId: string,
+  requestedAction: string,
+  reasonCode?: string | null,
+  reasonNote?: string | null,
+  policySnapshot?: string | null,
+  status: PricingApprovalDecision,
+  createdAt: string,
+};
+
+export type AppliedLineDiscountSummarySnapshot = {
+  __typename: "AppliedLineDiscountSummarySnapshot",
+  lineId: string,
+  discounts:  Array<AppliedDiscountDetailSnapshot >,
+  lineDiscountTotal: number,
+  allocatedOrderDiscountTotal: number,
+  lineTotalBeforeTax: number,
 };
 
 export type OrderLine = {
@@ -746,7 +921,7 @@ export type OrderLine = {
   allocatedOrderDiscountTotal?: number | null,
   lineTotalBeforeTax?: number | null,
   lineTotalAfterTax?: number | null,
-  appliedDiscounts?: string | null,
+  appliedDiscounts?:  Array<AppliedDiscountDetailSnapshot > | null,
   categoryId?: string | null,
   discountable?: boolean | null,
   minAllowedPrice?: number | null,
@@ -801,7 +976,7 @@ export type UpdateOrderInput = {
   pricingSnapshotHash?: string | null,
   pricingSource?: PricingSource | null,
   reconciliationStatus?: ReconciliationStatus | null,
-  appliedDiscountSummary?: string | null,
+  appliedDiscountSummary?: AppliedDiscountSummarySnapshotInput | null,
   status?: OrderStatus | null,
   employeeId?: string | null,
   employeeName?: string | null,
@@ -1523,26 +1698,6 @@ export enum DiscountDefinitionType {
 }
 
 
-export enum DiscountMethod {
-  PERCENT = "PERCENT",
-  AMOUNT = "AMOUNT",
-  FINAL_PRICE = "FINAL_PRICE",
-}
-
-
-export enum DiscountScope {
-  LINE = "LINE",
-  ORDER = "ORDER",
-}
-
-
-export enum DiscountStackMode {
-  EXCLUSIVE = "EXCLUSIVE",
-  STACKABLE = "STACKABLE",
-  BEST_PRICE_ONLY = "BEST_PRICE_ONLY",
-}
-
-
 export type ModelDiscountDefinitionConditionInput = {
   tenantId?: ModelIDInput | null,
   name?: ModelStringInput | null,
@@ -1954,22 +2109,6 @@ export type CreateDiscountApplicationInput = {
   syncStatus?: string | null,
   _version?: number | null,
 };
-
-export enum DiscountApplicationType {
-  MANUAL_LINE_DISCOUNT = "MANUAL_LINE_DISCOUNT",
-  MANUAL_ORDER_DISCOUNT = "MANUAL_ORDER_DISCOUNT",
-  AUTOMATIC_DISCOUNT = "AUTOMATIC_DISCOUNT",
-  PROMO_CODE = "PROMO_CODE",
-  PRICE_OVERRIDE = "PRICE_OVERRIDE",
-}
-
-
-export enum DiscountApprovalStatus {
-  NOT_REQUIRED = "NOT_REQUIRED",
-  APPROVED = "APPROVED",
-  REJECTED = "REJECTED",
-}
-
 
 export type ModelDiscountApplicationConditionInput = {
   tenantId?: ModelIDInput | null,
@@ -2463,7 +2602,6 @@ export type ModelOrderFilterInput = {
   pricingSnapshotHash?: ModelStringInput | null,
   pricingSource?: ModelPricingSourceInput | null,
   reconciliationStatus?: ModelReconciliationStatusInput | null,
-  appliedDiscountSummary?: ModelStringInput | null,
   status?: ModelOrderStatusInput | null,
   employeeId?: ModelStringInput | null,
   employeeName?: ModelStringInput | null,
@@ -3121,7 +3259,6 @@ export type ModelSubscriptionOrderFilterInput = {
   pricingSnapshotHash?: ModelSubscriptionStringInput | null,
   pricingSource?: ModelSubscriptionStringInput | null,
   reconciliationStatus?: ModelSubscriptionStringInput | null,
-  appliedDiscountSummary?: ModelSubscriptionStringInput | null,
   status?: ModelSubscriptionStringInput | null,
   employeeId?: ModelSubscriptionStringInput | null,
   employeeName?: ModelSubscriptionStringInput | null,
@@ -4019,7 +4156,11 @@ export type CreateOrderMutation = {
     pricingSnapshotHash?: string | null,
     pricingSource?: PricingSource | null,
     reconciliationStatus?: ReconciliationStatus | null,
-    appliedDiscountSummary?: string | null,
+    appliedDiscountSummary?:  {
+      __typename: "AppliedDiscountSummarySnapshot",
+      warnings: Array< string >,
+      pricingGeneratedAt: string,
+    } | null,
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
@@ -4042,7 +4183,6 @@ export type CreateOrderMutation = {
       allocatedOrderDiscountTotal?: number | null,
       lineTotalBeforeTax?: number | null,
       lineTotalAfterTax?: number | null,
-      appliedDiscounts?: string | null,
       categoryId?: string | null,
       discountable?: boolean | null,
       minAllowedPrice?: number | null,
@@ -4123,7 +4263,11 @@ export type UpdateOrderMutation = {
     pricingSnapshotHash?: string | null,
     pricingSource?: PricingSource | null,
     reconciliationStatus?: ReconciliationStatus | null,
-    appliedDiscountSummary?: string | null,
+    appliedDiscountSummary?:  {
+      __typename: "AppliedDiscountSummarySnapshot",
+      warnings: Array< string >,
+      pricingGeneratedAt: string,
+    } | null,
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
@@ -4146,7 +4290,6 @@ export type UpdateOrderMutation = {
       allocatedOrderDiscountTotal?: number | null,
       lineTotalBeforeTax?: number | null,
       lineTotalAfterTax?: number | null,
-      appliedDiscounts?: string | null,
       categoryId?: string | null,
       discountable?: boolean | null,
       minAllowedPrice?: number | null,
@@ -4227,7 +4370,11 @@ export type DeleteOrderMutation = {
     pricingSnapshotHash?: string | null,
     pricingSource?: PricingSource | null,
     reconciliationStatus?: ReconciliationStatus | null,
-    appliedDiscountSummary?: string | null,
+    appliedDiscountSummary?:  {
+      __typename: "AppliedDiscountSummarySnapshot",
+      warnings: Array< string >,
+      pricingGeneratedAt: string,
+    } | null,
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
@@ -4250,7 +4397,6 @@ export type DeleteOrderMutation = {
       allocatedOrderDiscountTotal?: number | null,
       lineTotalBeforeTax?: number | null,
       lineTotalAfterTax?: number | null,
-      appliedDiscounts?: string | null,
       categoryId?: string | null,
       discountable?: boolean | null,
       minAllowedPrice?: number | null,
@@ -6021,7 +6167,11 @@ export type GetSalesQuery = {
     pricingSnapshotHash?: string | null,
     pricingSource?: PricingSource | null,
     reconciliationStatus?: ReconciliationStatus | null,
-    appliedDiscountSummary?: string | null,
+    appliedDiscountSummary?:  {
+      __typename: "AppliedDiscountSummarySnapshot",
+      warnings: Array< string >,
+      pricingGeneratedAt: string,
+    } | null,
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
@@ -6044,7 +6194,6 @@ export type GetSalesQuery = {
       allocatedOrderDiscountTotal?: number | null,
       lineTotalBeforeTax?: number | null,
       lineTotalAfterTax?: number | null,
-      appliedDiscounts?: string | null,
       categoryId?: string | null,
       discountable?: boolean | null,
       minAllowedPrice?: number | null,
@@ -6747,7 +6896,11 @@ export type GetOrderQuery = {
     pricingSnapshotHash?: string | null,
     pricingSource?: PricingSource | null,
     reconciliationStatus?: ReconciliationStatus | null,
-    appliedDiscountSummary?: string | null,
+    appliedDiscountSummary?:  {
+      __typename: "AppliedDiscountSummarySnapshot",
+      warnings: Array< string >,
+      pricingGeneratedAt: string,
+    } | null,
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
@@ -6770,7 +6923,6 @@ export type GetOrderQuery = {
       allocatedOrderDiscountTotal?: number | null,
       lineTotalBeforeTax?: number | null,
       lineTotalAfterTax?: number | null,
-      appliedDiscounts?: string | null,
       categoryId?: string | null,
       discountable?: boolean | null,
       minAllowedPrice?: number | null,
@@ -6854,7 +7006,6 @@ export type ListOrdersQuery = {
       pricingSnapshotHash?: string | null,
       pricingSource?: PricingSource | null,
       reconciliationStatus?: ReconciliationStatus | null,
-      appliedDiscountSummary?: string | null,
       status: OrderStatus,
       employeeId: string,
       employeeName: string,
@@ -6899,7 +7050,6 @@ export type SyncOrdersQuery = {
       pricingSnapshotHash?: string | null,
       pricingSource?: PricingSource | null,
       reconciliationStatus?: ReconciliationStatus | null,
-      appliedDiscountSummary?: string | null,
       status: OrderStatus,
       employeeId: string,
       employeeName: string,
@@ -9231,7 +9381,11 @@ export type OnCreateOrderSubscription = {
     pricingSnapshotHash?: string | null,
     pricingSource?: PricingSource | null,
     reconciliationStatus?: ReconciliationStatus | null,
-    appliedDiscountSummary?: string | null,
+    appliedDiscountSummary?:  {
+      __typename: "AppliedDiscountSummarySnapshot",
+      warnings: Array< string >,
+      pricingGeneratedAt: string,
+    } | null,
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
@@ -9254,7 +9408,6 @@ export type OnCreateOrderSubscription = {
       allocatedOrderDiscountTotal?: number | null,
       lineTotalBeforeTax?: number | null,
       lineTotalAfterTax?: number | null,
-      appliedDiscounts?: string | null,
       categoryId?: string | null,
       discountable?: boolean | null,
       minAllowedPrice?: number | null,
@@ -9335,7 +9488,11 @@ export type OnUpdateOrderSubscription = {
     pricingSnapshotHash?: string | null,
     pricingSource?: PricingSource | null,
     reconciliationStatus?: ReconciliationStatus | null,
-    appliedDiscountSummary?: string | null,
+    appliedDiscountSummary?:  {
+      __typename: "AppliedDiscountSummarySnapshot",
+      warnings: Array< string >,
+      pricingGeneratedAt: string,
+    } | null,
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
@@ -9358,7 +9515,6 @@ export type OnUpdateOrderSubscription = {
       allocatedOrderDiscountTotal?: number | null,
       lineTotalBeforeTax?: number | null,
       lineTotalAfterTax?: number | null,
-      appliedDiscounts?: string | null,
       categoryId?: string | null,
       discountable?: boolean | null,
       minAllowedPrice?: number | null,
@@ -9439,7 +9595,11 @@ export type OnDeleteOrderSubscription = {
     pricingSnapshotHash?: string | null,
     pricingSource?: PricingSource | null,
     reconciliationStatus?: ReconciliationStatus | null,
-    appliedDiscountSummary?: string | null,
+    appliedDiscountSummary?:  {
+      __typename: "AppliedDiscountSummarySnapshot",
+      warnings: Array< string >,
+      pricingGeneratedAt: string,
+    } | null,
     status: OrderStatus,
     employeeId: string,
     employeeName: string,
@@ -9462,7 +9622,6 @@ export type OnDeleteOrderSubscription = {
       allocatedOrderDiscountTotal?: number | null,
       lineTotalBeforeTax?: number | null,
       lineTotalAfterTax?: number | null,
-      appliedDiscounts?: string | null,
       categoryId?: string | null,
       discountable?: boolean | null,
       minAllowedPrice?: number | null,

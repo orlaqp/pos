@@ -260,15 +260,27 @@ const printSingleReceipt = async (
             .actionPrintText(receiptLines)
             .actionPrintText(receiptTotalsBreakdown)
             .actionPrintText('--------------------------------\n')
-            .actionPrintText('Total     ')
+            .styleBold(true)
+            .actionPrintText('Total\n')
             .add(
                 new StarXpandCommand.PrinterBuilder()
+                    .styleAlignment(StarXpandCommand.Printer.Alignment.Right)
+                    .styleBold(true)
                     .styleMagnification(
                         new StarXpandCommand.MagnificationParameter(2, 2)
                     )
                     .actionPrintText(
-                        `     ${cart.footer.total.toFixed(2).padStart(7, '')}\n`
+                        `${formatReceiptCurrency(cart.footer.total)}\n`
                     )
+            )
+            .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
+            .styleBold(true)
+            .actionPrintText(
+                cart.promoCodes?.length
+                    ? cart.promoCodes
+                          .map((promo) => `Promo · ${promo.code}`)
+                          .join('\n') + '\n'
+                    : ''
             )
             
         if (order?.id) {
@@ -385,6 +397,8 @@ const buildReceiptTotalsBreakdownText = (cart: ReceiptCartState) => {
 const formatTotalRow = (label: string, amount: number) =>
     `${label.padEnd(18, ' ')}${amount.toFixed(2).padStart(14, ' ')}\n`;
 
+const formatReceiptCurrency = (amount: number) => `$ ${amount.toFixed(2)}`;
+
 const getReceiptDiscountDetails = (cart: ReceiptCartState) => {
     const lineDiscounts =
         cart.appliedDiscountSummary?.lineSummaries.flatMap((line) =>
@@ -405,9 +419,7 @@ const getReceiptDiscountDetails = (cart: ReceiptCartState) => {
 };
 
 const buildReceiptTotalsText = (cart: ReceiptCartState) => {
-    const rows: string[] = [];
-    rows.push(buildReceiptTotalsBreakdownText(cart));
-
+    const rows = [buildReceiptTotalsBreakdownText(cart)];
     rows.push('--------------------------------\n');
     rows.push(formatTotalRow('Total', cart.footer.total));
 

@@ -81,12 +81,21 @@ export const parseArgs = (argv: string[]): MigrationOptions => {
   const sourceProfile = args.get('source-profile');
   const targetProfile = args.get('target-profile');
   const tenantId = args.get('tenant-id');
+  const sourceTenantId = args.get('source-tenant-id') ?? tenantId;
+  const targetTenantId = args.get('target-tenant-id') ?? tenantId;
   const years = parsePositiveNumber(args.get('years'), '--years');
   const days = parsePositiveNumber(args.get('days'), '--days');
 
-  if (!sourceEnv || !targetEnv || !sourceProfile || !targetProfile || !tenantId) {
+  if (
+    !sourceEnv ||
+    !targetEnv ||
+    !sourceProfile ||
+    !targetProfile ||
+    !sourceTenantId ||
+    !targetTenantId
+  ) {
     throw new Error(
-      'Missing required arguments: --source-env --target-env --source-profile --target-profile --tenant-id'
+      'Missing required arguments: --source-env --target-env --source-profile --target-profile and either --tenant-id or both --source-tenant-id --target-tenant-id'
     );
   }
 
@@ -99,7 +108,9 @@ export const parseArgs = (argv: string[]): MigrationOptions => {
     targetEnv,
     sourceProfile,
     targetProfile,
-    tenantId,
+    tenantId: targetTenantId,
+    sourceTenantId,
+    targetTenantId,
     dryRun: parseBooleanFlag(args.get('dry-run')),
     models: parseModels(args.get('models')),
     parallelModels: parsePositiveInteger(args.get('parallel-models'), '--parallel-models', 1),

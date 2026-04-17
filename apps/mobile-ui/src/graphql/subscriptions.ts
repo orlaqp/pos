@@ -555,7 +555,11 @@ export const onCreateOrder = /* GraphQL */ `subscription OnCreateOrder(
     pricingSnapshotHash
     pricingSource
     reconciliationStatus
-    appliedDiscountSummary
+    appliedDiscountSummary {
+      warnings
+      pricingGeneratedAt
+      __typename
+    }
     status
     employeeId
     employeeName
@@ -577,7 +581,6 @@ export const onCreateOrder = /* GraphQL */ `subscription OnCreateOrder(
       allocatedOrderDiscountTotal
       lineTotalBeforeTax
       lineTotalAfterTax
-      appliedDiscounts
       categoryId
       discountable
       minAllowedPrice
@@ -660,7 +663,11 @@ export const onUpdateOrder = /* GraphQL */ `subscription OnUpdateOrder(
     pricingSnapshotHash
     pricingSource
     reconciliationStatus
-    appliedDiscountSummary
+    appliedDiscountSummary {
+      warnings
+      pricingGeneratedAt
+      __typename
+    }
     status
     employeeId
     employeeName
@@ -682,7 +689,6 @@ export const onUpdateOrder = /* GraphQL */ `subscription OnUpdateOrder(
       allocatedOrderDiscountTotal
       lineTotalBeforeTax
       lineTotalAfterTax
-      appliedDiscounts
       categoryId
       discountable
       minAllowedPrice
@@ -765,7 +771,11 @@ export const onDeleteOrder = /* GraphQL */ `subscription OnDeleteOrder(
     pricingSnapshotHash
     pricingSource
     reconciliationStatus
-    appliedDiscountSummary
+    appliedDiscountSummary {
+      warnings
+      pricingGeneratedAt
+      __typename
+    }
     status
     employeeId
     employeeName
@@ -787,7 +797,6 @@ export const onDeleteOrder = /* GraphQL */ `subscription OnDeleteOrder(
       allocatedOrderDiscountTotal
       lineTotalBeforeTax
       lineTotalAfterTax
-      appliedDiscounts
       categoryId
       discountable
       minAllowedPrice

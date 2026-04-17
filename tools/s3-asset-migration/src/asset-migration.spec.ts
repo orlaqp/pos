@@ -297,12 +297,12 @@ describe('runAssetMigration', () => {
     const scanResponses = [
       {
         Items: [
-          { id: 'prod-1', tenantId: 'tenant-1', picture: 'products/a.jpg' },
-          { id: 'prod-2', tenantId: 'tenant-1', picture: 'products/a.jpg' },
+          { id: 'prod-1', tenantId: 'tenant-1', picture: 'tenant-1/products/a.jpg' },
+          { id: 'prod-2', tenantId: 'tenant-1', picture: 'tenant-1/products/a.jpg' },
         ],
       },
       {
-        Items: [{ id: 'cat-1', tenantId: 'tenant-1', picture: 'public/categories/b.jpg' }],
+        Items: [{ id: 'cat-1', tenantId: 'tenant-1', picture: 'tenant-1/categories/b.jpg' }],
       },
     ];
 
@@ -332,11 +332,11 @@ describe('runAssetMigration', () => {
 
     expect(copyObject).toHaveBeenCalledTimes(2);
     expect(copyObject).toHaveBeenCalledWith(
-      'public/products/a.jpg',
+      'public/tenant-1/products/a.jpg',
       'public/tenant-9/products/a.jpg'
     );
     expect(copyObject).toHaveBeenCalledWith(
-      'public/categories/b.jpg',
+      'public/tenant-1/categories/b.jpg',
       'public/tenant-9/categories/b.jpg'
     );
     expect(report.prefixes).toEqual(

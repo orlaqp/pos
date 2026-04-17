@@ -49,6 +49,10 @@ import {
     ManualDraft,
     OverrideDraft,
 } from './cart.types';
+import {
+    baseAmountForDisplay,
+    getAvailableManualDefinitions,
+} from './cart-discount.helpers';
 
 export type CartMode = 'order' | 'payment';
 
@@ -80,73 +84,6 @@ const normalizePromoCode = (code: string) => code.trim().toUpperCase();
 const isDefinitionEnabledForPricing = (definition: DiscountDefinition) =>
     definition.active !== false && definition.status === 'ACTIVE';
 
-const normalizeWeekday = (day: string) => day.trim().slice(0, 3).toUpperCase();
-
-const getScopedDateParts = (at: string, timezone?: string | null) => {
-    const date = new Date(at);
-    const scopedTimezone = timezone || 'UTC';
-
-    return {
-        weekday: normalizeWeekday(
-            new Intl.DateTimeFormat('en-US', {
-                weekday: 'short',
-                timeZone: scopedTimezone,
-            }).format(date)
-        ),
-        time: new Intl.DateTimeFormat('en-GB', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-            timeZone: scopedTimezone,
-        }).format(date),
-    };
-};
-
-const isTimeWithinWindow = (
-    current: string,
-    start?: string | null,
-    end?: string | null
-) => {
-    if (!start && !end) return true;
-    if (start && !end) return current >= start;
-    if (!start && end) return current <= end;
-    if (!start || !end) return true;
-    if (start <= end) return current >= start && current <= end;
-    return current >= start || current <= end;
-};
-
-const isDefinitionActiveForContext = (
-    definition: DiscountDefinition,
-    at: string,
-    timezone?: string | null,
-    stationId?: string | null
-) => {
-    if (definition.active === false) return false;
-    if (definition.status !== 'ACTIVE') return false;
-    if (definition.startDate && at < definition.startDate) return false;
-    if (definition.endDate && at > definition.endDate) return false;
-
-    const { weekday, time } = getScopedDateParts(at, timezone);
-    if (definition.daysOfWeek?.length) {
-        const allowedDays = definition.daysOfWeek.map(normalizeWeekday);
-        if (!allowedDays.includes(weekday)) {
-            return false;
-        }
-    }
-
-    if (!isTimeWithinWindow(time, definition.startTime, definition.endTime)) {
-        return false;
-    }
-
-    if (definition.stationIds?.length) {
-        if (!stationId || !definition.stationIds.includes(stationId)) {
-            return false;
-        }
-    }
-
-    return true;
-};
-
 const DISCOUNT_CONTROLS_ENABLED = true;
 const ROLE_BASED_DISCOUNT_POLICY: EmployeeDiscountPolicy = {
     canApplyOrderDiscount: true,
@@ -160,15 +97,6 @@ const RESTRICTED_DISCOUNT_POLICY: EmployeeDiscountPolicy = {
     canUsePromoCodes: false,
     active: true,
 };
-
-const baseAmountForDisplay = (
-    scope: ManualDraft['scope'],
-    cart: CartState,
-    selectedLineTotal: number
-) =>
-    scope === 'ORDER'
-        ? cart.footer.subtotal || cart.footer.baseSubtotal
-        : selectedLineTotal;
 
 export function Cart({
     mode,
@@ -260,82 +188,22 @@ export function Cart({
     );
     const availableManualDefinitions = useMemo(() => {
         const currentTimestamp = new Date().toISOString();
-        const currentSubtotal = cart.footer.baseSubtotal || cart.footer.subtotal || 0;
+        const orderSubtotal = cart.footer.baseSubtotal || cart.footer.subtotal || 0;
+        const selectedLineSubtotal = selectedLineTotal || 0;
 
-        return (cart.definitions || [])
-            .filter(
-                (definition) =>
-                    definition.type === 'MANUAL' &&
-                    (definition.method === 'PERCENT' ||
-                        definition.method === 'AMOUNT') &&
-                    definition.scope === manualDraft.scope
-            )
-            .filter((definition) =>
-                isDefinitionActiveForContext(
-                    definition,
-                    currentTimestamp,
-                    storeInfo?.timezone,
-                    stationInfo?.stationNumber
-                )
-            )
-            .filter((definition) => {
-                if (definition.minSubtotal != null && currentSubtotal < definition.minSubtotal) {
-                    return false;
-                }
-
-                if (manualDraft.scope === 'ORDER') {
-                    return canApplyOrderDiscount;
-                }
-
-                if (!selectedItem?.identifier || selectedItem.quantity === 0) {
-                    return false;
-                }
-
-                const productId = selectedItem.product.id;
-                const categoryId = selectedItem.product.categoryId || '';
-
-                if (
-                    definition.minQuantity != null &&
-                    selectedItem.quantity < definition.minQuantity
-                ) {
-                    return false;
-                }
-
-                if (
-                    definition.excludeAlreadyDiscountedItems &&
-                    (selectedLineHasManualAdjustment ||
-                        (selectedLineSummary?.discounts?.length || 0) > 0)
-                ) {
-                    return false;
-                }
-
-                if (
-                    definition.applicableProductIds?.length &&
-                    !definition.applicableProductIds.includes(productId)
-                ) {
-                    return false;
-                }
-
-                if (definition.excludedProductIds?.includes(productId)) {
-                    return false;
-                }
-
-                if (
-                    definition.applicableCategoryIds?.length &&
-                    !definition.applicableCategoryIds.includes(categoryId)
-                ) {
-                    return false;
-                }
-
-                if (definition.excludedCategoryIds?.includes(categoryId)) {
-                    return false;
-                }
-
-                return true;
-            })
-            .sort((left, right) =>
-                left.name.localeCompare(right.name, undefined, { sensitivity: 'base' })
-            );
+        return getAvailableManualDefinitions({
+            definitions: cart.definitions || [],
+            draftScope: manualDraft.scope,
+            orderSubtotal,
+            selectedLineSubtotal,
+            selectedItem,
+            selectedLineHasManualAdjustment,
+            selectedLineDiscountCount: selectedLineSummary?.discounts?.length || 0,
+            timestamp: currentTimestamp,
+            timezone: storeInfo?.timezone,
+            stationId: stationInfo?.stationNumber,
+            canApplyOrderDiscount,
+        });
     }, [
         canApplyOrderDiscount,
         cart.definitions,

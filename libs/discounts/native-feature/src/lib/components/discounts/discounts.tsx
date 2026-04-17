@@ -24,6 +24,7 @@ import {
   defaultDefinitionValues,
   defaultPolicyValues,
   DefinitionFormValues,
+  getDefinitionFieldAvailability,
   mapDefinitionToForm,
   mapPolicyToForm,
   PolicyFormValues,
@@ -105,6 +106,7 @@ const buildPolicyMeta = (item: EmployeeDiscountPolicyEntity) => {
 };
 
 const buildDefinitionPreview = (values: DefinitionFormValues) => {
+  const availability = getDefinitionFieldAvailability(values);
   const scope = values.scope === 'ORDER' ? 'entire order' : 'eligible cart lines';
   const numericValue = Number(values.value || 0);
   const minSubtotal = Number(values.minSubtotal || 0);
@@ -120,13 +122,22 @@ const buildDefinitionPreview = (values: DefinitionFormValues) => {
   );
 
   if (values.minSubtotal && Number.isFinite(minSubtotal)) {
-    qualifiers.push(`subtotal reaches $${minSubtotal.toFixed(2)}`);
+    qualifiers.push(
+      values.scope === 'LINE'
+        ? `line subtotal reaches $${minSubtotal.toFixed(2)}`
+        : `subtotal reaches $${minSubtotal.toFixed(2)}`
+    );
   }
-  if (values.minQuantity) qualifiers.push(`quantity reaches ${values.minQuantity}`);
+  if (availability.minQuantityEnabled && values.minQuantity) {
+    qualifiers.push(`quantity reaches ${values.minQuantity}`);
+  }
   if ((values.daysOfWeek || []).length || values.startTime || values.endTime) {
     qualifiers.push('schedule restrictions are met');
   }
-  if ((values.excludedProductIds || []).length || (values.excludedCategoryIds || []).length) {
+  if (
+    availability.exclusionFiltersEnabled &&
+    ((values.excludedProductIds || []).length || (values.excludedCategoryIds || []).length)
+  ) {
     qualifiers.push('configured exclusions stay blocked');
   }
 

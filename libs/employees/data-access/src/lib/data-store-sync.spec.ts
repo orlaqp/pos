@@ -143,4 +143,31 @@ describe('employees data-store sync', () => {
 
         subscription.unsubscribe();
     });
+
+    it('marks initial sync complete when an empty employee sync finishes', () => {
+        const dispatch = jest.fn();
+        let observer:
+            | ((value: { isSynced: boolean; items: any[] }) => void)
+            | undefined;
+
+        mockSubscribe.mockImplementation((callback: typeof observer) => {
+            observer = callback as typeof observer;
+            return { unsubscribe: jest.fn() };
+        });
+
+        const subscription = subscribeToEmployeeChanges(dispatch);
+        observer?.({
+            isSynced: true,
+            items: [],
+        });
+
+        expect(dispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'employees/markInitialSyncComplete',
+                payload: true,
+            })
+        );
+
+        subscription.unsubscribe();
+    });
 });

@@ -6,6 +6,7 @@ import { OrderEntity, OrderEntityMapper } from './order.entity';
 import { CartPayment, CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
 import moment from 'moment';
+import uuid from 'react-native-uuid';
 import { EmployeeEntity, EmployeeService } from '@pos/employees/data-access';
 import { StationService } from '@pos/settings/data-access';
 import { isOrderNumber, sortDescListBy, sortListBy } from '@pos/shared/utils';
@@ -16,6 +17,11 @@ import {
     EbtLineAllocation,
 } from './ebt-allocation';
 import { requireCurrentTenantId, stampTenant } from '@pos/auth/data-access';
+import type {
+    AppliedDiscountDetail,
+    AppliedDiscountSummary,
+    PricingApprovalEvent,
+} from '@pos/discounts/domain';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -60,6 +66,78 @@ const buildOrderInventoryOperationId = (
     status: 'PAID' | 'REFUNDED'
 ) => `ORDER:${orderId}:${status}`;
 
+const toAppliedDiscountDetailSnapshot = (
+    discount: AppliedDiscountDetail
+): AppliedDiscountDetail => ({
+    discountApplicationId: discount.discountApplicationId,
+    discountDefinitionId: discount.discountDefinitionId ?? null,
+    applicationType: discount.applicationType,
+    scope: discount.scope,
+    method: discount.method,
+    name: discount.name,
+    code: discount.code ?? null,
+    stackMode: discount.stackMode,
+    source: discount.source,
+    value: discount.value,
+    originalAmount: discount.originalAmount,
+    discountAmount: discount.discountAmount,
+    finalAmount: discount.finalAmount,
+    quantityBasis: discount.quantityBasis ?? null,
+    reasonCode: discount.reasonCode ?? null,
+    reasonNote: discount.reasonNote ?? null,
+    appliedByEmployeeId: discount.appliedByEmployeeId ?? null,
+    appliedByEmployeeName: discount.appliedByEmployeeName ?? null,
+    approvedByEmployeeId: discount.approvedByEmployeeId ?? null,
+    approvedByEmployeeName: discount.approvedByEmployeeName ?? null,
+    approvalRequired: discount.approvalRequired ?? false,
+    approvalStatus: discount.approvalStatus ?? 'NOT_REQUIRED',
+    approvalReference: discount.approvalReference ?? null,
+    sourceSnapshot: discount.sourceSnapshot ?? null,
+    appliedAt: discount.appliedAt,
+});
+
+const toPricingApprovalEventSnapshot = (
+    event: PricingApprovalEvent
+): PricingApprovalEvent => ({
+    id: event.id,
+    approvalType: event.approvalType,
+    requestingEmployeeId: event.requestingEmployeeId,
+    approvingEmployeeId: event.approvingEmployeeId,
+    requestedAction: event.requestedAction,
+    reasonCode: event.reasonCode ?? null,
+    reasonNote: event.reasonNote ?? null,
+    policySnapshot: event.policySnapshot ?? null,
+    status: event.status,
+    createdAt: event.createdAt,
+});
+
+const toAppliedDiscountSummarySnapshot = (
+    summary?: AppliedDiscountSummary | null
+): AppliedDiscountSummary | null =>
+    summary
+        ? {
+              applications: summary.applications.map(toAppliedDiscountDetailSnapshot),
+              approvalEvents: summary.approvalEvents.map(
+                  toPricingApprovalEventSnapshot
+              ),
+              lineSummaries: summary.lineSummaries.map((lineSummary) => ({
+                  lineId: lineSummary.lineId,
+                  discounts: lineSummary.discounts.map(
+                      toAppliedDiscountDetailSnapshot
+                  ),
+                  lineDiscountTotal: lineSummary.lineDiscountTotal,
+                  allocatedOrderDiscountTotal:
+                      lineSummary.allocatedOrderDiscountTotal,
+                  lineTotalBeforeTax: lineSummary.lineTotalBeforeTax,
+              })),
+              orderLevelAdjustments: summary.orderLevelAdjustments.map(
+                  toAppliedDiscountDetailSnapshot
+              ),
+              warnings: [...summary.warnings],
+              pricingGeneratedAt: summary.pricingGeneratedAt,
+          }
+        : null;
+
 export class OrderService {
 
     /**
@@ -71,8 +149,9 @@ export class OrderService {
      * @memberof OrderService
      */
     static async create(request: CreateOrderRequest) {
+        const orderId = request.order.id || String(uuid.v4());
         const order = new Order(stampTenant({
-            id: request.order.id,
+            id: orderId,
             orderNo:
                 request.order.orderNo ??
                 (await StationService.getNextOrderNumber(request.by)),
@@ -90,9 +169,9 @@ export class OrderService {
             pricingSnapshotHash: buildPricingSnapshotHash(request.order),
             pricingSource: request.order.footer.pricingSource,
             reconciliationStatus: request.order.footer.reconciliationStatus,
-            appliedDiscountSummary: request.order.appliedDiscountSummary
-                ? JSON.stringify(request.order.appliedDiscountSummary)
-                : null,
+            appliedDiscountSummary: toAppliedDiscountSummarySnapshot(
+                request.order.appliedDiscountSummary
+            ),
             employeeId: request.by.id!,
             employeeName: `${request.by.firstName} ${request.by.lastName}`,
             lines: buildOrderLines(request.order),
@@ -178,8 +257,9 @@ export class OrderService {
             request.payments
         );
 
+        const orderId = request.order.id || String(uuid.v4());
         const order = new Order(stampTenant({
-            id: request.order.id,
+            id: orderId,
             orderNo:
                 request.order.orderNo ??
                 (await StationService.getNextOrderNumber(request.by)),
@@ -197,9 +277,9 @@ export class OrderService {
             pricingSnapshotHash: buildPricingSnapshotHash(request.order),
             pricingSource: request.order.footer.pricingSource,
             reconciliationStatus: request.order.footer.reconciliationStatus,
-            appliedDiscountSummary: request.order.appliedDiscountSummary
-                ? JSON.stringify(request.order.appliedDiscountSummary)
-                : null,
+            appliedDiscountSummary: toAppliedDiscountSummarySnapshot(
+                request.order.appliedDiscountSummary
+            ),
             employeeId: request.by.id!,
             employeeName: `${request.by.firstName} ${request.by.lastName}`,
             lines: buildOrderLines(request.order, allocations),
@@ -288,9 +368,9 @@ export class OrderService {
             o.pricingSnapshotHash = buildPricingSnapshotHash(request.order);
             o.pricingSource = request.order.footer.pricingSource;
             o.reconciliationStatus = request.order.footer.reconciliationStatus;
-            o.appliedDiscountSummary = request.order.appliedDiscountSummary
-                ? JSON.stringify(request.order.appliedDiscountSummary)
-                : null;
+            o.appliedDiscountSummary = toAppliedDiscountSummarySnapshot(
+                request.order.appliedDiscountSummary
+            );
             o.status = 'PAID';
             o.lines = buildOrderLines(request.order, allocations);
             o.updatedBy = {
@@ -456,9 +536,9 @@ export class OrderService {
             o.pricingSnapshotHash = buildPricingSnapshotHash(req.order);
             o.pricingSource = req.order.footer.pricingSource;
             o.reconciliationStatus = req.order.footer.reconciliationStatus;
-            o.appliedDiscountSummary = req.order.appliedDiscountSummary
-                ? JSON.stringify(req.order.appliedDiscountSummary)
-                : null;
+            o.appliedDiscountSummary = toAppliedDiscountSummarySnapshot(
+                req.order.appliedDiscountSummary
+            );
             o.lines = buildOrderLines(req.order);
 
                 o.updatedBy = {
@@ -730,7 +810,7 @@ function buildOrderLines(
             lineTotalBeforeTax: lineTotal,
             lineTotalAfterTax: lineTotal,
             appliedDiscounts: lineDiscounts.length
-                ? JSON.stringify(lineDiscounts)
+                ? lineDiscounts.map(toAppliedDiscountDetailSnapshot)
                 : undefined,
             productId: i.product.id!,
             categoryId: i.product.categoryId,

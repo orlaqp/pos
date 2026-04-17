@@ -8,7 +8,6 @@ import {
     OrderLineEntity,
     OrderService,
 } from '@pos/orders/data-access';
-import { productsActions } from '@pos/products/data-access';
 import OrderVoidableItem from '../order-voidable-item/order-voidable-item';
 import { Button, useTheme } from '@rneui/themed';
 import { useSelector } from 'react-redux';
@@ -19,7 +18,6 @@ import {
     spreadOrderLinesForVoid,
 } from './order-void-form.logic';
 import i18next from 'i18next';
-import { useAppDispatch } from '@pos/store';
 
 export interface OrderItemProps {
     order: OrderEntity;
@@ -27,7 +25,6 @@ export interface OrderItemProps {
 }
 
 export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
-    const dispatch = useAppDispatch();
     const theme = useTheme();
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
@@ -80,41 +77,31 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
         }
 
         setBusy(true);
-        const refundedOrder = await OrderService.refund({
-            by: employee as any,
-            id: order.id,
-            order: order as any,
-            refundedLines: linesToRefund.map((l) => ({
-                identifier: l.identifier,
-                price: l.price,
-                quantity: l.quantity,
-            }))
-        });
-        if (refundedOrder) {
-            const deltas = linesToRefund.reduce<Record<string, number>>(
-                (acc, line) => {
-                    if (!line.productId) {
-                        return acc;
-                    }
-
-                    acc[line.productId] =
-                        (acc[line.productId] || 0) + Number(line.quantity || 0);
-                    return acc;
-                },
-                {}
+        try {
+            await OrderService.refund({
+                by: employee as any,
+                id: order.id,
+                order: order as any,
+                refundedLines: linesToRefund.map((l) => ({
+                    identifier: l.identifier,
+                    price: l.price,
+                    quantity: l.quantity,
+                }))
+            });
+            onRefundComplete();
+        } catch (error) {
+            Alert.alert(
+                t('ORDERVOID_Error', 'Error'),
+                error instanceof Error
+                    ? error.message
+                    : t(
+                          'ORDERVOID_ProcessFailed',
+                          'The refund could not be completed. Please try again.'
+                      )
             );
-
-            dispatch(
-                productsActions.applyQuantityDeltas(
-                    Object.entries(deltas).map(([productId, delta]) => ({
-                        productId,
-                        delta,
-                    }))
-                )
-            );
+        } finally {
+            setBusy(false);
         }
-        setBusy(false);
-        onRefundComplete();
     };
 
     const confirmRefund = () => {

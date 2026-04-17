@@ -27,7 +27,11 @@ export const getSales = /* GraphQL */ `query GetSales($status: OrderStatus!, $fr
     pricingSnapshotHash
     pricingSource
     reconciliationStatus
-    appliedDiscountSummary
+    appliedDiscountSummary {
+      warnings
+      pricingGeneratedAt
+      __typename
+    }
     status
     employeeId
     employeeName
@@ -49,7 +53,6 @@ export const getSales = /* GraphQL */ `query GetSales($status: OrderStatus!, $fr
       allocatedOrderDiscountTotal
       lineTotalBeforeTax
       lineTotalAfterTax
-      appliedDiscounts
       categoryId
       discountable
       minAllowedPrice
@@ -779,7 +782,11 @@ export const getOrder = /* GraphQL */ `query GetOrder($id: ID!) {
     pricingSnapshotHash
     pricingSource
     reconciliationStatus
-    appliedDiscountSummary
+    appliedDiscountSummary {
+      warnings
+      pricingGeneratedAt
+      __typename
+    }
     status
     employeeId
     employeeName
@@ -801,7 +808,6 @@ export const getOrder = /* GraphQL */ `query GetOrder($id: ID!) {
       allocatedOrderDiscountTotal
       lineTotalBeforeTax
       lineTotalAfterTax
-      appliedDiscounts
       categoryId
       discountable
       minAllowedPrice
@@ -883,7 +889,6 @@ export const listOrders = /* GraphQL */ `query ListOrders(
       pricingSnapshotHash
       pricingSource
       reconciliationStatus
-      appliedDiscountSummary
       status
       employeeId
       employeeName
@@ -934,7 +939,6 @@ export const syncOrders = /* GraphQL */ `query SyncOrders(
       pricingSnapshotHash
       pricingSource
       reconciliationStatus
-      appliedDiscountSummary
       status
       employeeId
       employeeName

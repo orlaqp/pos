@@ -102,37 +102,81 @@ jest.mock('@pos/shared/ui-native', () => {
   const { TextInput, Text, Pressable, View } = require('react-native');
   const { Controller, useFormContext } = require('react-hook-form');
 
-  const UIInput = ({ name, placeholder }: { name: string; placeholder?: string }) => {
+  const UIInput = ({
+    name,
+    placeholder,
+    disabled,
+  }: {
+    name: string;
+    placeholder?: string;
+    disabled?: boolean;
+  }) => {
     const { control } = useFormContext();
     return (
       <Controller
         control={control}
         name={name}
         render={({ field: { onChange, value } }: any) => (
-          <TextInput placeholder={placeholder} value={value ?? ''} onChangeText={onChange} />
+          <TextInput
+            testID={`input-${name}`}
+            placeholder={placeholder}
+            value={value ?? ''}
+            editable={!disabled}
+            onChangeText={onChange}
+          />
         )}
       />
     );
   };
 
   const UINumericInput = UIInput;
-  const UISwitch = ({ name }: { name: string }) => {
+  const UISwitch = ({ name, disabled }: { name: string; disabled?: boolean }) => {
     const { setValue, watch } = useFormContext();
     const value = !!watch(name);
-    return <Pressable testID={`switch-${name}`} onPress={() => setValue(name, !value)}><Text>{`${value}`}</Text></Pressable>;
-  };
-  const UIOverlaySelect = ({ name, list, selectedId }: any) => {
-    const { setValue } = useFormContext();
     return (
-      <Pressable testID={`select-${name}`} onPress={() => setValue(name, list[0]?.id ?? selectedId)}>
+      <Pressable
+        testID={`switch-${name}`}
+        disabled={disabled}
+        onPress={() => {
+          if (!disabled) {
+            setValue(name, !value);
+          }
+        }}
+      >
+        <Text>{`${value}`}</Text>
+      </Pressable>
+    );
+  };
+  const UIOverlaySelect = ({ name, list, selectedId, disabled }: any) => {
+    const { setValue } = useFormContext();
+    const currentIndex = list.findIndex((item: any) => item.id === selectedId);
+    const nextItem = currentIndex >= 0 ? list[(currentIndex + 1) % list.length] : list[0];
+    return (
+      <Pressable
+        testID={`select-${name}`}
+        disabled={disabled}
+        onPress={() => {
+          if (!disabled) {
+            setValue(name, nextItem?.id ?? selectedId);
+          }
+        }}
+      >
         <Text>{selectedId || list[0]?.name || 'select'}</Text>
       </Pressable>
     );
   };
-  const UIOverlayMultiSelect = ({ name, list }: any) => {
+  const UIOverlayMultiSelect = ({ name, list, disabled }: any) => {
     const { setValue } = useFormContext();
     return (
-      <Pressable testID={`multi-select-${name}`} onPress={() => setValue(name, list.slice(0, 2).map((item: any) => item.id))}>
+      <Pressable
+        testID={`multi-select-${name}`}
+        disabled={disabled}
+        onPress={() => {
+          if (!disabled) {
+            setValue(name, list.slice(0, 2).map((item: any) => item.id));
+          }
+        }}
+      >
         <Text>multi-select</Text>
       </Pressable>
     );
@@ -441,6 +485,54 @@ describe('DiscountEditor', () => {
       )
     );
     expect(navigation.goBack).toHaveBeenCalled();
+  });
+
+  it('disables order-ineligible fields when the discount scope is order', async () => {
+    const { getByTestId, getByText, queryByText } = render(
+      <DiscountEditor navigation={navigation} route={{ name: 'Discount Form', params: {} } as any} />
+    );
+
+    await waitFor(() => expect(getByText('Discount Form')).toBeTruthy());
+    fireEvent.press(getByTestId('select-scope'));
+    fireEvent.press(getByText('Show advanced rules'));
+
+    await waitFor(() => {
+      expect(getByTestId('input-minQuantity').props.editable).toBe(false);
+      expect(getByTestId('multi-select-applicableCategoryIds').props.disabled).toBe(true);
+      expect(getByTestId('multi-select-applicableProductIds').props.disabled).toBe(true);
+      expect(getByTestId('multi-select-excludedCategoryIds').props.disabled).toBe(true);
+      expect(getByTestId('multi-select-excludedProductIds').props.disabled).toBe(true);
+      expect(getByTestId('switch-excludeAlreadyDiscountedItems').props.disabled).toBe(true);
+      expect(getByTestId('switch-appliesToAllProducts').props.disabled).toBe(true);
+    });
+
+    expect(getByText('Min quantity only applies to line-level discounts.')).toBeTruthy();
+    expect(getByText('Product targeting only applies to line-level discounts.')).toBeTruthy();
+    expect(
+      getByText('Exclusions and "already discounted" rules only apply to line-level discounts.')
+    ).toBeTruthy();
+    expect(queryByText('This discount will apply 0% off to the eligible cart lines manually.')).toBeNull();
+  });
+
+  it('disables applicable targeting filters until line discounts stop applying to all products', async () => {
+    const { getByTestId, getByText } = render(
+      <DiscountEditor navigation={navigation} route={{ name: 'Discount Form', params: {} } as any} />
+    );
+
+    await waitFor(() => expect(getByText('Discount Form')).toBeTruthy());
+    expect(getByTestId('multi-select-applicableCategoryIds').props.disabled).toBe(true);
+    expect(getByTestId('multi-select-applicableProductIds').props.disabled).toBe(true);
+    expect(
+      getByText('Turn off "Applies to all products" to target specific products or categories.')
+    ).toBeTruthy();
+
+    fireEvent.press(getByTestId('switch-appliesToAllProducts'));
+
+    await waitFor(() => {
+      expect(getByTestId('multi-select-applicableCategoryIds').props.disabled).toBe(false);
+      expect(getByTestId('multi-select-applicableProductIds').props.disabled).toBe(false);
+      expect(getByTestId('switch-appliesToAllProducts').props.disabled).toBe(false);
+    });
   });
 
   it('loads an existing discount and updates it', async () => {

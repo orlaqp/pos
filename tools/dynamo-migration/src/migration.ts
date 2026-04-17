@@ -320,12 +320,16 @@ export const runMigration = async (
           return;
         }
 
-        const sourceItems = await sourceReader.scanTable(sourceTable, (progress) => {
+        const sourceItems = await sourceReader.scanTable(
+          sourceTable,
+          options.sourceTenantId,
+          (progress) => {
           modelReport.scanned = progress.totalSoFar;
           dependencies.logger.info(
             `[${spec.modelName}] scanned page ${progress.page}: +${progress.itemCount} items (${progress.totalSoFar} total${progress.hasMore ? ', more pages' : ''})`
           );
-        });
+          }
+        );
         modelReport.scanned = sourceItems.length;
         const filteredItems = filterSourceItems(
           spec.modelName as LegacyModelName,
@@ -350,7 +354,7 @@ export const runMigration = async (
         }
 
         for (const sourceItem of filteredItems) {
-          const result = spec.transform(sourceItem, options.tenantId);
+          const result = spec.transform(sourceItem, options.targetTenantId);
 
           if (result.status === 'skip') {
             modelReport.skipped += 1;

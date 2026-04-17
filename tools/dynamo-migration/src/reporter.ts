@@ -19,7 +19,8 @@ export const createInitialReport = (
       .map((table) => `${table.modelName}:${table.physicalTableName}`)
       .sort(),
     dryRun: options.dryRun,
-    tenantId: options.tenantId,
+    sourceTenantId: options.sourceTenantId,
+    targetTenantId: options.targetTenantId,
     selectedModels: (options.models?.length ? options.models : undefined) ?? null,
     overwrite: true,
     operationalHistory: options.days
@@ -55,7 +56,8 @@ export const logPreflight = (logger: Logger, report: MigrationReport) => {
   logger.info(`Target stack: ${report.preflight.targetStack}`);
   logger.info(`Target profile: ${report.preflight.targetProfile}`);
   logger.info(`Target tables: ${report.preflight.targetTables.join(', ')}`);
-  logger.info(`Target tenant id: ${report.preflight.tenantId}`);
+  logger.info(`Source tenant id: ${report.preflight.sourceTenantId}`);
+  logger.info(`Target tenant id: ${report.preflight.targetTenantId}`);
   logger.info(
     `Selected models: ${
       report.preflight.selectedModels?.join(', ') || 'default production cutover set'
