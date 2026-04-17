@@ -132,6 +132,17 @@ const normalizeAssetKey = (key: string) => {
   return `public/${trimmed}`;
 };
 
+const stripTenantSegmentAfterAccess = (key: string) =>
+  key.replace(/^(public|protected|private)\/[^/]+\//, '$1/');
+
+const matchesConfiguredPrefix = (key: string, prefix: string) => {
+  const normalizedKey = normalizeAssetKey(key);
+  return (
+    normalizedKey.startsWith(prefix) ||
+    stripTenantSegmentAfterAccess(normalizedKey).startsWith(prefix)
+  );
+};
+
 const extractAssetSuffix = (key: string, kind: 'products' | 'categories') => {
   const normalized = normalizeAssetKey(key);
   const matcher = new RegExp(`(?:^|/)${kind}/(.+)$`);
@@ -219,7 +230,7 @@ const collectTenantAssetObjects = async (
   }
 
   const normalizedKeys = Array.from(new Set(rawKeys.map(normalizeAssetKey))).filter((key) =>
-    options.prefixes.some((prefix) => key.startsWith(prefix))
+    options.prefixes.some((prefix) => matchesConfiguredPrefix(key, prefix))
   );
 
   dependencies.logger.info(

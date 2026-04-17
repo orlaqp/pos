@@ -16,6 +16,7 @@ import {
   dayOfWeekOptions,
   definitionTypeOptions,
   DefinitionFormValues,
+  getDefinitionFieldAvailability,
   methodOptions,
   scopeOptions,
   stackModeOptions,
@@ -73,6 +74,12 @@ export function DiscountDefinitionFields({
     ? [definitionTypeOptions[2]]
     : definitionTypeOptions.slice(0, 2);
   const methodList = promoMode ? methodOptions.slice(0, 2) : methodOptions;
+  const scope = form.watch('scope');
+  const appliesToAllProducts = form.watch('appliesToAllProducts');
+  const availability = getDefinitionFieldAvailability({
+    scope,
+    appliesToAllProducts,
+  });
 
   return (
     <UIScreen>
@@ -138,12 +145,30 @@ export function DiscountDefinitionFields({
                     <Text style={styles.sectionTitle}>Eligibility</Text>
                     <View style={styles.formGrid}>
                       <View style={styles.formColumn}>
-                        <UINumericInput name="minSubtotal" label="Min subtotal" allowDecimals keyboardType="decimal-pad" placeholder="Optional" />
+                        <UINumericInput
+                          name="minSubtotal"
+                          label="Min subtotal"
+                          allowDecimals
+                          keyboardType="decimal-pad"
+                          placeholder="Optional"
+                        />
                       </View>
                       <View style={styles.formColumn}>
-                        <UINumericInput name="minQuantity" label="Min quantity" allowDecimals keyboardType="decimal-pad" placeholder="Optional" />
+                        <UINumericInput
+                          name="minQuantity"
+                          label="Min quantity"
+                          allowDecimals
+                          keyboardType="decimal-pad"
+                          placeholder="Optional"
+                          disabled={!availability.minQuantityEnabled}
+                        />
                       </View>
                     </View>
+                    {!availability.minQuantityEnabled ? (
+                      <Text style={styles.fieldHint}>
+                        Min quantity only applies to line-level discounts.
+                      </Text>
+                    ) : null}
                     {promoMode ? (
                       <UINumericInput name="usageLimitTotal" label="Usage limit" keyboardType="number-pad" placeholder="Optional" />
                     ) : null}
@@ -154,6 +179,7 @@ export function DiscountDefinitionFields({
                         title="Select applicable categories"
                         emptyLabel="Choose categories"
                         list={categoryOptions}
+                        disabled={!availability.applicableFiltersEnabled}
                       />
                     </View>
                     <View style={styles.formColumnWide}>
@@ -163,8 +189,18 @@ export function DiscountDefinitionFields({
                         title="Select applicable products"
                         emptyLabel="Choose products"
                         list={productOptions}
+                        disabled={!availability.applicableFiltersEnabled}
                       />
                     </View>
+                    {!availability.productTargetingToggleEnabled ? (
+                      <Text style={styles.fieldHint}>
+                        Product targeting only applies to line-level discounts.
+                      </Text>
+                    ) : appliesToAllProducts ? (
+                      <Text style={styles.fieldHint}>
+                        Turn off "Applies to all products" to target specific products or categories.
+                      </Text>
+                    ) : null}
                   </UICard>
 
                   <UICard style={styles.sectionCard}>
@@ -248,6 +284,7 @@ export function DiscountDefinitionFields({
                             title="Select excluded categories"
                             emptyLabel="Choose categories"
                             list={categoryOptions}
+                            disabled={!availability.exclusionFiltersEnabled}
                           />
                         </View>
                         <View style={styles.formColumnWide}>
@@ -257,6 +294,7 @@ export function DiscountDefinitionFields({
                             title="Select excluded products"
                             emptyLabel="Choose products"
                             list={productOptions}
+                            disabled={!availability.exclusionFiltersEnabled}
                           />
                         </View>
                         <View style={styles.formColumnWide}>
@@ -272,12 +310,23 @@ export function DiscountDefinitionFields({
                     ) : null}
                     <View style={styles.toggleRow}>
                       <Text style={styles.toggleLabel}>Exclude already discounted items</Text>
-                      <UISwitch name="excludeAlreadyDiscountedItems" />
+                      <UISwitch
+                        name="excludeAlreadyDiscountedItems"
+                        disabled={!availability.excludeAlreadyDiscountedItemsEnabled}
+                      />
                     </View>
                     <View style={styles.toggleRowNoBorder}>
                       <Text style={styles.toggleLabel}>Applies to all products</Text>
-                      <UISwitch name="appliesToAllProducts" />
+                      <UISwitch
+                        name="appliesToAllProducts"
+                        disabled={!availability.productTargetingToggleEnabled}
+                      />
                     </View>
+                    {!availability.exclusionFiltersEnabled ? (
+                      <Text style={styles.fieldHint}>
+                        Exclusions and "already discounted" rules only apply to line-level discounts.
+                      </Text>
+                    ) : null}
                   </UICard>
                 </>
               )}

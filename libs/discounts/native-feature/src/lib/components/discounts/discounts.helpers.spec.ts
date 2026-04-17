@@ -3,6 +3,7 @@ import {
   buildPolicyEntity,
   defaultDefinitionValues,
   defaultPolicyValues,
+  getDefinitionFieldAvailability,
   mapDefinitionToForm,
   mapPolicyToForm,
   parseOptionalNumber,
@@ -38,6 +39,36 @@ describe('discounts helpers', () => {
 
     expect(sorted.map((item) => item.name)).toEqual(['ACEITES', 'Sal', 'toston']);
     expect(options.map((item) => item.name)).toEqual(['toston', 'ACEITES', 'Sal']);
+  });
+
+  it('describes which definition fields apply by scope and product targeting', () => {
+    expect(
+      getDefinitionFieldAvailability({
+        scope: 'ORDER',
+        appliesToAllProducts: true,
+      })
+    ).toEqual({
+      lineScope: false,
+      minQuantityEnabled: false,
+      productTargetingToggleEnabled: false,
+      applicableFiltersEnabled: false,
+      exclusionFiltersEnabled: false,
+      excludeAlreadyDiscountedItemsEnabled: false,
+    });
+
+    expect(
+      getDefinitionFieldAvailability({
+        scope: 'LINE',
+        appliesToAllProducts: false,
+      })
+    ).toEqual({
+      lineScope: true,
+      minQuantityEnabled: true,
+      productTargetingToggleEnabled: true,
+      applicableFiltersEnabled: true,
+      exclusionFiltersEnabled: true,
+      excludeAlreadyDiscountedItemsEnabled: true,
+    });
   });
 
   it('maps a definition entity into form values', () => {
@@ -186,6 +217,64 @@ describe('discounts helpers', () => {
       excludedCategoryIds: ['category-2'],
       stationIds: null,
       appliesToAllProducts: false,
+    });
+  });
+
+  it('clears line-only and targeting-only fields when the scope is order', () => {
+    const entity = buildDefinitionEntity(
+      {
+        ...defaultDefinitionValues(false),
+        name: 'Order-only',
+        scope: 'ORDER',
+        minSubtotal: '25',
+        minQuantity: '3',
+        applicableProductIds: ['product-1'],
+        applicableCategoryIds: ['category-1'],
+        excludedProductIds: ['product-2'],
+        excludedCategoryIds: ['category-2'],
+        excludeAlreadyDiscountedItems: true,
+        appliesToAllProducts: false,
+      },
+      undefined,
+      false
+    );
+
+    expect(entity).toMatchObject({
+      scope: 'ORDER',
+      minSubtotal: 25,
+      minQuantity: null,
+      applicableProductIds: null,
+      applicableCategoryIds: null,
+      excludedProductIds: null,
+      excludedCategoryIds: null,
+      excludeAlreadyDiscountedItems: false,
+      appliesToAllProducts: true,
+    });
+  });
+
+  it('clears applicable targeting lists when the discount applies to all products', () => {
+    const entity = buildDefinitionEntity(
+      {
+        ...defaultDefinitionValues(false),
+        name: 'Line-wide',
+        scope: 'LINE',
+        appliesToAllProducts: true,
+        applicableProductIds: ['product-1'],
+        applicableCategoryIds: ['category-1'],
+        excludedProductIds: ['product-2'],
+        excludedCategoryIds: ['category-2'],
+      },
+      undefined,
+      false
+    );
+
+    expect(entity).toMatchObject({
+      scope: 'LINE',
+      applicableProductIds: null,
+      applicableCategoryIds: null,
+      excludedProductIds: ['product-2'],
+      excludedCategoryIds: ['category-2'],
+      appliesToAllProducts: true,
     });
   });
 

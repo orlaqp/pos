@@ -20,6 +20,8 @@ describe('parseArgs', () => {
     ).toEqual(
       expect.objectContaining({
         years: 1.5,
+        sourceTenantId: 'tenant-1',
+        targetTenantId: 'tenant-1',
       })
     );
   });
@@ -108,5 +110,32 @@ describe('parseArgs', () => {
         '1',
       ])
     ).toThrow('Use either --years or --days, not both');
+  });
+
+  it('accepts separate source and target tenant ids', () => {
+    expect(
+      parseArgs([
+        '--source-env',
+        'prod',
+        '--target-env',
+        'uat',
+        '--source-profile',
+        'src',
+        '--target-profile',
+        'dst',
+        '--source-tenant-id',
+        'tenant-source',
+        '--target-tenant-id',
+        'tenant-target',
+      ])
+    ).toEqual(
+      expect.objectContaining({
+        sourceEnv: 'prod',
+        targetEnv: 'uat',
+        sourceTenantId: 'tenant-source',
+        targetTenantId: 'tenant-target',
+        tenantId: 'tenant-target',
+      })
+    );
   });
 });

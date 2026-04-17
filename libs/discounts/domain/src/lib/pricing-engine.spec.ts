@@ -92,6 +92,54 @@ describe('PricingEngine', () => {
     expect(result.order.lines[0].appliedDiscounts[0].name).toBe('Seven off');
   });
 
+  it('uses line subtotal rather than order subtotal for line min subtotal thresholds', () => {
+    const definitions: DiscountDefinition[] = [
+      {
+        id: 'line-subtotal-threshold',
+        name: 'Line threshold discount',
+        status: 'ACTIVE',
+        type: 'AUTOMATIC',
+        method: 'PERCENT',
+        scope: 'LINE',
+        value: 10,
+        stackMode: 'BEST_PRICE_ONLY',
+        minSubtotal: 10,
+      },
+    ];
+
+    const result = PricingEngine.preview({
+      employee: { employeeId: 'emp-1' },
+      lines: [
+        {
+          lineId: 'line-1',
+          productId: 'prod-1',
+          productName: 'Widget',
+          quantity: 1,
+          baseUnitPrice: 6,
+          unitOfMeasure: 'EA',
+          discountable: true,
+        },
+        {
+          lineId: 'line-2',
+          productId: 'prod-2',
+          productName: 'Gadget',
+          quantity: 1,
+          baseUnitPrice: 20,
+          unitOfMeasure: 'EA',
+          discountable: true,
+        },
+      ],
+      definitions,
+    });
+
+    expect(result.order.discountTotal).toBe(2);
+    expect(result.order.lines[0].appliedDiscounts).toHaveLength(0);
+    expect(result.order.lines[1].appliedDiscounts).toHaveLength(1);
+    expect(result.order.lines[1].appliedDiscounts[0].name).toBe(
+      'Line threshold discount'
+    );
+  });
+
   it('applies promo code discounts only when the submitted code matches', () => {
     const definitions: DiscountDefinition[] = [
       {

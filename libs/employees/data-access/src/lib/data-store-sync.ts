@@ -105,6 +105,9 @@ export const subscribeToEmployeeChanges = (dispatch: Dispatch) => {
             employeeSnapshot = activeItems;
             employeeDispatchRefs.forEach((_, activeDispatch) => {
                 updateStore(activeDispatch, activeItems);
+                if (isSynced) {
+                    activeDispatch(employeesActions.markInitialSyncComplete(true));
+                }
             });
         });
 

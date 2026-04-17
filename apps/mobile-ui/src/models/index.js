@@ -57,6 +57,23 @@ const DiscountApprovalStatus = {
   "REJECTED": "REJECTED"
 };
 
+const DiscountSourceKind = {
+  "MANUAL": "manual",
+  "AUTOMATIC": "automatic",
+  "PROMO": "promo",
+  "OVERRIDE": "override"
+};
+
+const PricingApprovalType = {
+  "DISCOUNT": "DISCOUNT",
+  "PRICE_OVERRIDE": "PRICE_OVERRIDE"
+};
+
+const PricingApprovalDecision = {
+  "APPROVED": "APPROVED",
+  "REJECTED": "REJECTED"
+};
+
 const PricingSource = {
   "ONLINE_VALIDATED": "ONLINE_VALIDATED",
   "OFFLINE_LOCAL": "OFFLINE_LOCAL"
@@ -92,7 +109,7 @@ const InventoryReceiveStatus = {
   "COMPLETED": "COMPLETED"
 };
 
-const { Tenant, TenantUser, Store, Brand, Category, Customer, Employee, Order, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, DiscountDefinition, DiscountReasonCode, EmployeeDiscountPolicy, DiscountPreset, DiscountApplication, ApprovalEvent, DiscountReconciliationException, PaymentInfo, RefundInfo, ByEmployee, OrderLine, Payment, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary, SalesSummary } = initSchema(schema);
+const { Tenant, TenantUser, Store, Brand, Category, Customer, Employee, Order, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, DiscountDefinition, DiscountReasonCode, EmployeeDiscountPolicy, DiscountPreset, DiscountApplication, ApprovalEvent, DiscountReconciliationException, PaymentInfo, RefundInfo, ByEmployee, AppliedDiscountDetailSnapshot, PricingApprovalEventSnapshot, AppliedLineDiscountSummarySnapshot, AppliedDiscountSummarySnapshot, OrderLine, Payment, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary, SalesSummary } = initSchema(schema);
 
 export {
   Tenant,
@@ -129,6 +146,9 @@ export {
   DiscountStackMode,
   DiscountApplicationType,
   DiscountApprovalStatus,
+  DiscountSourceKind,
+  PricingApprovalType,
+  PricingApprovalDecision,
   PricingSource,
   ReconciliationStatus,
   PaymentType,
@@ -138,6 +158,10 @@ export {
   PaymentInfo,
   RefundInfo,
   ByEmployee,
+  AppliedDiscountDetailSnapshot,
+  PricingApprovalEventSnapshot,
+  AppliedLineDiscountSummarySnapshot,
+  AppliedDiscountSummarySnapshot,
   OrderLine,
   Payment,
   ProductSaleSummary,

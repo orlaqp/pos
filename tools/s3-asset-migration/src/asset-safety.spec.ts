@@ -37,6 +37,12 @@ describe('asset safety', () => {
     ).not.toThrow();
   });
 
+  it('accepts prod as a valid source env for uat targets', () => {
+    expect(() =>
+      assertAllowedAssetEnvironments({ ...baseOptions, sourceEnv: 'prod', targetEnv: 'uat' })
+    ).not.toThrow();
+  });
+
   it('rejects same env', () => {
     expect(() =>
       assertAllowedAssetEnvironments({ ...baseOptions, targetEnv: 'develop' })
@@ -52,7 +58,7 @@ describe('asset safety', () => {
   it('rejects unsupported target env', () => {
     expect(() =>
       assertAllowedAssetEnvironments({ ...baseOptions, targetEnv: 'staging' })
-    ).toThrow('Target environment must be one of: ebtdev, prod');
+    ).toThrow('Target environment must be one of: ebtdev, uat, prod');
   });
 
   it('rejects shared bucket', () => {

@@ -893,7 +893,9 @@ export const schema = {
                 "appliedDiscountSummary": {
                     "name": "appliedDiscountSummary",
                     "isArray": false,
-                    "type": "AWSJSON",
+                    "type": {
+                        "nonModel": "AppliedDiscountSummarySnapshot"
+                    },
                     "isRequired": false,
                     "attributes": []
                 },
@@ -3447,6 +3449,29 @@ export const schema = {
                 "REJECTED"
             ]
         },
+        "DiscountSourceKind": {
+            "name": "DiscountSourceKind",
+            "values": [
+                "manual",
+                "automatic",
+                "promo",
+                "override"
+            ]
+        },
+        "PricingApprovalType": {
+            "name": "PricingApprovalType",
+            "values": [
+                "DISCOUNT",
+                "PRICE_OVERRIDE"
+            ]
+        },
+        "PricingApprovalDecision": {
+            "name": "PricingApprovalDecision",
+            "values": [
+                "APPROVED",
+                "REJECTED"
+            ]
+        },
         "PricingSource": {
             "name": "PricingSource",
             "values": [
@@ -3565,6 +3590,380 @@ export const schema = {
                     "name": "name",
                     "isArray": false,
                     "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
+        "AppliedDiscountDetailSnapshot": {
+            "name": "AppliedDiscountDetailSnapshot",
+            "fields": {
+                "discountApplicationId": {
+                    "name": "discountApplicationId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "discountDefinitionId": {
+                    "name": "discountDefinitionId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "applicationType": {
+                    "name": "applicationType",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountApplicationType"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "scope": {
+                    "name": "scope",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountScope"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "method": {
+                    "name": "method",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountMethod"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "name": {
+                    "name": "name",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "code": {
+                    "name": "code",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "stackMode": {
+                    "name": "stackMode",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountStackMode"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "source": {
+                    "name": "source",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountSourceKind"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "value": {
+                    "name": "value",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "originalAmount": {
+                    "name": "originalAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "discountAmount": {
+                    "name": "discountAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "finalAmount": {
+                    "name": "finalAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "quantityBasis": {
+                    "name": "quantityBasis",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "reasonCode": {
+                    "name": "reasonCode",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "reasonNote": {
+                    "name": "reasonNote",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "appliedByEmployeeId": {
+                    "name": "appliedByEmployeeId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "appliedByEmployeeName": {
+                    "name": "appliedByEmployeeName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "approvedByEmployeeId": {
+                    "name": "approvedByEmployeeId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "approvedByEmployeeName": {
+                    "name": "approvedByEmployeeName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "approvalRequired": {
+                    "name": "approvalRequired",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "approvalStatus": {
+                    "name": "approvalStatus",
+                    "isArray": false,
+                    "type": {
+                        "enum": "DiscountApprovalStatus"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "approvalReference": {
+                    "name": "approvalReference",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "sourceSnapshot": {
+                    "name": "sourceSnapshot",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "appliedAt": {
+                    "name": "appliedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
+        "PricingApprovalEventSnapshot": {
+            "name": "PricingApprovalEventSnapshot",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "approvalType": {
+                    "name": "approvalType",
+                    "isArray": false,
+                    "type": {
+                        "enum": "PricingApprovalType"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "requestingEmployeeId": {
+                    "name": "requestingEmployeeId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "approvingEmployeeId": {
+                    "name": "approvingEmployeeId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "requestedAction": {
+                    "name": "requestedAction",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "reasonCode": {
+                    "name": "reasonCode",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "reasonNote": {
+                    "name": "reasonNote",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "policySnapshot": {
+                    "name": "policySnapshot",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "status": {
+                    "name": "status",
+                    "isArray": false,
+                    "type": {
+                        "enum": "PricingApprovalDecision"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
+        "AppliedLineDiscountSummarySnapshot": {
+            "name": "AppliedLineDiscountSummarySnapshot",
+            "fields": {
+                "lineId": {
+                    "name": "lineId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "discounts": {
+                    "name": "discounts",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "AppliedDiscountDetailSnapshot"
+                    },
+                    "isRequired": true,
+                    "attributes": [],
+                    "isArrayNullable": false
+                },
+                "lineDiscountTotal": {
+                    "name": "lineDiscountTotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "allocatedOrderDiscountTotal": {
+                    "name": "allocatedOrderDiscountTotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "lineTotalBeforeTax": {
+                    "name": "lineTotalBeforeTax",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                }
+            }
+        },
+        "AppliedDiscountSummarySnapshot": {
+            "name": "AppliedDiscountSummarySnapshot",
+            "fields": {
+                "applications": {
+                    "name": "applications",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "AppliedDiscountDetailSnapshot"
+                    },
+                    "isRequired": true,
+                    "attributes": [],
+                    "isArrayNullable": false
+                },
+                "approvalEvents": {
+                    "name": "approvalEvents",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "PricingApprovalEventSnapshot"
+                    },
+                    "isRequired": true,
+                    "attributes": [],
+                    "isArrayNullable": false
+                },
+                "lineSummaries": {
+                    "name": "lineSummaries",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "AppliedLineDiscountSummarySnapshot"
+                    },
+                    "isRequired": true,
+                    "attributes": [],
+                    "isArrayNullable": false
+                },
+                "orderLevelAdjustments": {
+                    "name": "orderLevelAdjustments",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "AppliedDiscountDetailSnapshot"
+                    },
+                    "isRequired": true,
+                    "attributes": [],
+                    "isArrayNullable": false
+                },
+                "warnings": {
+                    "name": "warnings",
+                    "isArray": true,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": [],
+                    "isArrayNullable": false
+                },
+                "pricingGeneratedAt": {
+                    "name": "pricingGeneratedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
                     "isRequired": true,
                     "attributes": []
                 }
@@ -3694,10 +4093,13 @@ export const schema = {
                 },
                 "appliedDiscounts": {
                     "name": "appliedDiscounts",
-                    "isArray": false,
-                    "type": "AWSJSON",
-                    "isRequired": false,
-                    "attributes": []
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "AppliedDiscountDetailSnapshot"
+                    },
+                    "isRequired": true,
+                    "attributes": [],
+                    "isArrayNullable": true
                 },
                 "categoryId": {
                     "name": "categoryId",
@@ -3928,5 +4330,5 @@ export const schema = {
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "869d630c83948f70e4c9d7d5bb44d451"
+    "version": "29600c78c4087323bfffa6a7aef35c2f"
 };

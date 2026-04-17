@@ -62,4 +62,33 @@ describe('parseAssetArgs', () => {
       })
     );
   });
+
+  it('accepts prod to uat with separate tenant ids', () => {
+    expect(
+      parseAssetArgs([
+        '--source-env',
+        'prod',
+        '--target-env',
+        'uat',
+        '--source-profile',
+        'src',
+        '--target-profile',
+        'dst',
+        '--source-tenant-id',
+        'tenant-source',
+        '--target-tenant-id',
+        'tenant-target',
+        '--apply',
+      ])
+    ).toEqual(
+      expect.objectContaining({
+        sourceEnv: 'prod',
+        targetEnv: 'uat',
+        sourceTenantId: 'tenant-source',
+        targetTenantId: 'tenant-target',
+        apply: true,
+        dryRun: false,
+      })
+    );
+  });
 });

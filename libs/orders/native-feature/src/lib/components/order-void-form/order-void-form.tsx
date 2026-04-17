@@ -77,18 +77,31 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
         }
 
         setBusy(true);
-        await OrderService.refund({
-            by: employee as any,
-            id: order.id,
-            order: order as any,
-            refundedLines: linesToRefund.map((l) => ({
-                identifier: l.identifier,
-                price: l.price,
-                quantity: l.quantity,
-            }))
-        });
-        setBusy(false);
-        onRefundComplete();
+        try {
+            await OrderService.refund({
+                by: employee as any,
+                id: order.id,
+                order: order as any,
+                refundedLines: linesToRefund.map((l) => ({
+                    identifier: l.identifier,
+                    price: l.price,
+                    quantity: l.quantity,
+                }))
+            });
+            onRefundComplete();
+        } catch (error) {
+            Alert.alert(
+                t('ORDERVOID_Error', 'Error'),
+                error instanceof Error
+                    ? error.message
+                    : t(
+                          'ORDERVOID_ProcessFailed',
+                          'The refund could not be completed. Please try again.'
+                      )
+            );
+        } finally {
+            setBusy(false);
+        }
     };
 
     const confirmRefund = () => {

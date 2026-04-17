@@ -103,6 +103,13 @@ export const useDiscountsStyles = (tokens: ReturnType<typeof useDesignTokens>) =
     previewTitle: { color: tokens.colors.textPrimary, fontSize: 14, fontWeight: '800', marginBottom: 4 },
     previewBody: { color: tokens.colors.textSecondary, fontSize: 13, lineHeight: 18 },
     fieldLabel: { color: tokens.colors.textSecondary, fontSize: 13, fontWeight: '700', marginTop: tokens.spacing.xs },
+    fieldHint: {
+      color: tokens.colors.textSecondary,
+      fontSize: 12,
+      lineHeight: 17,
+      marginTop: tokens.spacing.xs,
+      marginHorizontal: 10,
+    },
     formGrid: { flexDirection: 'row', gap: tokens.spacing.md },
     formColumn: { flex: 1 },
     formColumnWide: { width: '100%' },

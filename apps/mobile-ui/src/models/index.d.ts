@@ -57,6 +57,23 @@ export enum DiscountApprovalStatus {
   REJECTED = "REJECTED"
 }
 
+export enum DiscountSourceKind {
+  MANUAL = "manual",
+  AUTOMATIC = "automatic",
+  PROMO = "promo",
+  OVERRIDE = "override"
+}
+
+export enum PricingApprovalType {
+  DISCOUNT = "DISCOUNT",
+  PRICE_OVERRIDE = "PRICE_OVERRIDE"
+}
+
+export enum PricingApprovalDecision {
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED"
+}
+
 export enum PricingSource {
   ONLINE_VALIDATED = "ONLINE_VALIDATED",
   OFFLINE_LOCAL = "OFFLINE_LOCAL"
@@ -138,6 +155,138 @@ export declare type ByEmployee = LazyLoading extends LazyLoadingDisabled ? Eager
 
 export declare const ByEmployee: (new (init: ModelInit<ByEmployee>) => ByEmployee)
 
+type EagerAppliedDiscountDetailSnapshot = {
+  readonly discountApplicationId: string;
+  readonly discountDefinitionId?: string | null;
+  readonly applicationType: DiscountApplicationType | keyof typeof DiscountApplicationType;
+  readonly scope: DiscountScope | keyof typeof DiscountScope;
+  readonly method: DiscountMethod | keyof typeof DiscountMethod;
+  readonly name: string;
+  readonly code?: string | null;
+  readonly stackMode: DiscountStackMode | keyof typeof DiscountStackMode;
+  readonly source: DiscountSourceKind | keyof typeof DiscountSourceKind;
+  readonly value: number;
+  readonly originalAmount: number;
+  readonly discountAmount: number;
+  readonly finalAmount: number;
+  readonly quantityBasis?: number | null;
+  readonly reasonCode?: string | null;
+  readonly reasonNote?: string | null;
+  readonly appliedByEmployeeId?: string | null;
+  readonly appliedByEmployeeName?: string | null;
+  readonly approvedByEmployeeId?: string | null;
+  readonly approvedByEmployeeName?: string | null;
+  readonly approvalRequired?: boolean | null;
+  readonly approvalStatus?: DiscountApprovalStatus | keyof typeof DiscountApprovalStatus | null;
+  readonly approvalReference?: string | null;
+  readonly sourceSnapshot?: string | null;
+  readonly appliedAt: string;
+}
+
+type LazyAppliedDiscountDetailSnapshot = {
+  readonly discountApplicationId: string;
+  readonly discountDefinitionId?: string | null;
+  readonly applicationType: DiscountApplicationType | keyof typeof DiscountApplicationType;
+  readonly scope: DiscountScope | keyof typeof DiscountScope;
+  readonly method: DiscountMethod | keyof typeof DiscountMethod;
+  readonly name: string;
+  readonly code?: string | null;
+  readonly stackMode: DiscountStackMode | keyof typeof DiscountStackMode;
+  readonly source: DiscountSourceKind | keyof typeof DiscountSourceKind;
+  readonly value: number;
+  readonly originalAmount: number;
+  readonly discountAmount: number;
+  readonly finalAmount: number;
+  readonly quantityBasis?: number | null;
+  readonly reasonCode?: string | null;
+  readonly reasonNote?: string | null;
+  readonly appliedByEmployeeId?: string | null;
+  readonly appliedByEmployeeName?: string | null;
+  readonly approvedByEmployeeId?: string | null;
+  readonly approvedByEmployeeName?: string | null;
+  readonly approvalRequired?: boolean | null;
+  readonly approvalStatus?: DiscountApprovalStatus | keyof typeof DiscountApprovalStatus | null;
+  readonly approvalReference?: string | null;
+  readonly sourceSnapshot?: string | null;
+  readonly appliedAt: string;
+}
+
+export declare type AppliedDiscountDetailSnapshot = LazyLoading extends LazyLoadingDisabled ? EagerAppliedDiscountDetailSnapshot : LazyAppliedDiscountDetailSnapshot
+
+export declare const AppliedDiscountDetailSnapshot: (new (init: ModelInit<AppliedDiscountDetailSnapshot>) => AppliedDiscountDetailSnapshot)
+
+type EagerPricingApprovalEventSnapshot = {
+  readonly id: string;
+  readonly approvalType: PricingApprovalType | keyof typeof PricingApprovalType;
+  readonly requestingEmployeeId: string;
+  readonly approvingEmployeeId: string;
+  readonly requestedAction: string;
+  readonly reasonCode?: string | null;
+  readonly reasonNote?: string | null;
+  readonly policySnapshot?: string | null;
+  readonly status: PricingApprovalDecision | keyof typeof PricingApprovalDecision;
+  readonly createdAt: string;
+}
+
+type LazyPricingApprovalEventSnapshot = {
+  readonly id: string;
+  readonly approvalType: PricingApprovalType | keyof typeof PricingApprovalType;
+  readonly requestingEmployeeId: string;
+  readonly approvingEmployeeId: string;
+  readonly requestedAction: string;
+  readonly reasonCode?: string | null;
+  readonly reasonNote?: string | null;
+  readonly policySnapshot?: string | null;
+  readonly status: PricingApprovalDecision | keyof typeof PricingApprovalDecision;
+  readonly createdAt: string;
+}
+
+export declare type PricingApprovalEventSnapshot = LazyLoading extends LazyLoadingDisabled ? EagerPricingApprovalEventSnapshot : LazyPricingApprovalEventSnapshot
+
+export declare const PricingApprovalEventSnapshot: (new (init: ModelInit<PricingApprovalEventSnapshot>) => PricingApprovalEventSnapshot)
+
+type EagerAppliedLineDiscountSummarySnapshot = {
+  readonly lineId: string;
+  readonly discounts: AppliedDiscountDetailSnapshot[];
+  readonly lineDiscountTotal: number;
+  readonly allocatedOrderDiscountTotal: number;
+  readonly lineTotalBeforeTax: number;
+}
+
+type LazyAppliedLineDiscountSummarySnapshot = {
+  readonly lineId: string;
+  readonly discounts: AppliedDiscountDetailSnapshot[];
+  readonly lineDiscountTotal: number;
+  readonly allocatedOrderDiscountTotal: number;
+  readonly lineTotalBeforeTax: number;
+}
+
+export declare type AppliedLineDiscountSummarySnapshot = LazyLoading extends LazyLoadingDisabled ? EagerAppliedLineDiscountSummarySnapshot : LazyAppliedLineDiscountSummarySnapshot
+
+export declare const AppliedLineDiscountSummarySnapshot: (new (init: ModelInit<AppliedLineDiscountSummarySnapshot>) => AppliedLineDiscountSummarySnapshot)
+
+type EagerAppliedDiscountSummarySnapshot = {
+  readonly applications: AppliedDiscountDetailSnapshot[];
+  readonly approvalEvents: PricingApprovalEventSnapshot[];
+  readonly lineSummaries: AppliedLineDiscountSummarySnapshot[];
+  readonly orderLevelAdjustments: AppliedDiscountDetailSnapshot[];
+  readonly warnings: string[];
+  readonly pricingGeneratedAt: string;
+}
+
+type LazyAppliedDiscountSummarySnapshot = {
+  readonly applications: AppliedDiscountDetailSnapshot[];
+  readonly approvalEvents: PricingApprovalEventSnapshot[];
+  readonly lineSummaries: AppliedLineDiscountSummarySnapshot[];
+  readonly orderLevelAdjustments: AppliedDiscountDetailSnapshot[];
+  readonly warnings: string[];
+  readonly pricingGeneratedAt: string;
+}
+
+export declare type AppliedDiscountSummarySnapshot = LazyLoading extends LazyLoadingDisabled ? EagerAppliedDiscountSummarySnapshot : LazyAppliedDiscountSummarySnapshot
+
+export declare const AppliedDiscountSummarySnapshot: (new (init: ModelInit<AppliedDiscountSummarySnapshot>) => AppliedDiscountSummarySnapshot)
+
 type EagerOrderLine = {
   readonly identifier: string;
   readonly productId: string;
@@ -156,7 +305,7 @@ type EagerOrderLine = {
   readonly allocatedOrderDiscountTotal?: number | null;
   readonly lineTotalBeforeTax?: number | null;
   readonly lineTotalAfterTax?: number | null;
-  readonly appliedDiscounts?: string | null;
+  readonly appliedDiscounts?: AppliedDiscountDetailSnapshot[] | null;
   readonly categoryId?: string | null;
   readonly discountable?: boolean | null;
   readonly minAllowedPrice?: number | null;
@@ -185,7 +334,7 @@ type LazyOrderLine = {
   readonly allocatedOrderDiscountTotal?: number | null;
   readonly lineTotalBeforeTax?: number | null;
   readonly lineTotalAfterTax?: number | null;
-  readonly appliedDiscounts?: string | null;
+  readonly appliedDiscounts?: AppliedDiscountDetailSnapshot[] | null;
   readonly categoryId?: string | null;
   readonly discountable?: boolean | null;
   readonly minAllowedPrice?: number | null;
@@ -630,7 +779,7 @@ type EagerOrder = {
   readonly pricingSnapshotHash?: string | null;
   readonly pricingSource?: PricingSource | keyof typeof PricingSource | null;
   readonly reconciliationStatus?: ReconciliationStatus | keyof typeof ReconciliationStatus | null;
-  readonly appliedDiscountSummary?: string | null;
+  readonly appliedDiscountSummary?: AppliedDiscountSummarySnapshot | null;
   readonly status: OrderStatus | keyof typeof OrderStatus;
   readonly employeeId: string;
   readonly employeeName: string;
@@ -663,7 +812,7 @@ type LazyOrder = {
   readonly pricingSnapshotHash?: string | null;
   readonly pricingSource?: PricingSource | keyof typeof PricingSource | null;
   readonly reconciliationStatus?: ReconciliationStatus | keyof typeof ReconciliationStatus | null;
-  readonly appliedDiscountSummary?: string | null;
+  readonly appliedDiscountSummary?: AppliedDiscountSummarySnapshot | null;
   readonly status: OrderStatus | keyof typeof OrderStatus;
   readonly employeeId: string;
   readonly employeeName: string;

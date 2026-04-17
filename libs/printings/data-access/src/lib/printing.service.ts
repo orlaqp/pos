@@ -219,7 +219,7 @@ const printSingleReceipt = async (
 ) => {
     const date = new Date();
     const receiptLines = buildReceiptLines(cart, order);
-    const receiptTotals = buildReceiptTotalsText(cart);
+    const receiptTotalsBreakdown = buildReceiptTotalsBreakdownText(cart);
     const totalPaymentsText = getReceiptPaymentsText(order);
     const copyLabel = getReceiptCopyLabel(order);
     const receiptText = buildReceiptPreviewText(store, cart, order, date);
@@ -258,7 +258,28 @@ const printSingleReceipt = async (
             )
             .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
             .actionPrintText(receiptLines)
-            .actionPrintText(receiptTotals)
+            .actionPrintText(receiptTotalsBreakdown)
+            .actionPrintText('Total\n')
+            .add(
+                new StarXpandCommand.PrinterBuilder()
+                    .styleAlignment(StarXpandCommand.Printer.Alignment.Right)
+                    .styleBold(true)
+                    .styleMagnification(
+                        new StarXpandCommand.MagnificationParameter(2, 2)
+                    )
+                    .actionPrintText(
+                        `${formatReceiptCurrency(cart.footer.total)}\n`
+                    )
+            )
+            .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
+            .styleBold(true)
+            .actionPrintText(
+                cart.promoCodes?.length
+                    ? cart.promoCodes
+                          .map((promo) => `Promo · ${promo.code}`)
+                          .join('\n') + '\n'
+                    : ''
+            )
             
         if (order?.id) {
             printerBuilder
@@ -350,6 +371,8 @@ const getReceiptPaymentsText = (order?: ReceiptOrderEntity) =>
 const formatTotalRow = (label: string, amount: number) =>
     `${label.padEnd(18, ' ')}${amount.toFixed(2).padStart(14, ' ')}\n`;
 
+const formatReceiptCurrency = (amount: number) => `$ ${amount.toFixed(2)}`;
+
 const getReceiptDiscountDetails = (cart: ReceiptCartState) => {
     const lineDiscounts =
         cart.appliedDiscountSummary?.lineSummaries.flatMap((line) =>
@@ -369,7 +392,7 @@ const getReceiptDiscountDetails = (cart: ReceiptCartState) => {
     );
 };
 
-const buildReceiptTotalsText = (cart: ReceiptCartState) => {
+const buildReceiptTotalsBreakdownText = (cart: ReceiptCartState) => {
     const rows: string[] = [];
     const baseSubtotal =
         cart.footer.baseSubtotal ?? cart.footer.subtotal ?? cart.footer.total;
@@ -391,6 +414,12 @@ const buildReceiptTotalsText = (cart: ReceiptCartState) => {
     }
 
     rows.push('--------------------------------\n');
+
+    return rows.join('');
+};
+
+const buildReceiptTotalsText = (cart: ReceiptCartState) => {
+    const rows = [buildReceiptTotalsBreakdownText(cart)];
     rows.push(formatTotalRow('Total', cart.footer.total));
 
     if (cart.promoCodes?.length) {

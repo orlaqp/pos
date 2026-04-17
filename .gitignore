@@ -118,3 +118,4 @@ amplifytools.xcconfig
 .nx/workspace-data
 .nx/polygraph
 **/.derived-data
+tools-output/

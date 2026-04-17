@@ -3,8 +3,8 @@ import type { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import type { S3Client } from '@aws-sdk/client-s3';
 
-export const SOURCE_ENV = 'develop';
-export const TARGET_ENVS = ['ebtdev', 'prod'] as const;
+export const SOURCE_ENVS = ['develop', 'ebtdev', 'uat', 'prod'] as const;
+export const TARGET_ENVS = ['ebtdev', 'uat', 'prod'] as const;
 export const DEFAULT_PARALLEL_OBJECTS = 16;
 export const DEFAULT_PREFIXES = ['public/products/', 'public/categories/'] as const;
 

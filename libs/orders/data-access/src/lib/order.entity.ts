@@ -10,6 +10,7 @@ import { EmployeeEntity } from '@pos/employees/data-access';
 import type { CartState } from '@pos/sales/data-access';
 import { StationService } from '@pos/settings/data-access';
 import { Order, OrderLine, OrderStatus, Payment, PaymentType } from '@pos/shared/models';
+import uuid from 'react-native-uuid';
 
 export interface PaymentInfoEntity {
   employeeId?: string;
@@ -307,6 +308,7 @@ export class OrderEntityMapper {
       employeeName: `${employee.firstName} ${employee.lastName}`,
     };
 
+    state.id = String(uuid.v4());
     state.orderNo = await StationService.getNextOrderNumber(employee);
     state.items = cart.items
       .filter((i) => i.quantity > 0)

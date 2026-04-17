@@ -15,6 +15,10 @@ jest.mock('@pos/employees/data-access', () => ({
     },
 }));
 
+jest.mock('react-native-uuid', () => ({
+    v4: jest.fn(() => 'refund-cart-id'),
+}));
+
 const { OrderEntityMapper } = require('./order.entity');
 
 describe('OrderEntityMapper', () => {
@@ -247,6 +251,7 @@ describe('OrderEntityMapper', () => {
         );
 
         expect(refundedCart.header).toBeDefined();
+        expect(refundedCart.id).toBe('refund-cart-id');
         expect(refundedCart.items).toHaveLength(1);
         expect(refundedCart.items[0].product.name).toBe('Apple');
         expect(refundedCart.footer.total).toBe(5);

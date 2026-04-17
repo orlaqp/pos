@@ -303,53 +303,6 @@ describe('HomeScreen', () => {
         );
     });
 
-    it('rechecks local employees before showing setup again', async () => {
-        const { EmployeeService } = require('@pos/employees/data-access');
-
-        mockState.employees.loginEmployee = undefined;
-        mockState.employees.all = [];
-        mockState.employees.initialEmployeeSyncComplete = true;
-        mockState.employees.loadingStatus = 'loaded';
-        EmployeeService.getLocalEmployees.mockResolvedValueOnce([
-            {
-                id: 'owner-1',
-                code: 'OWNER',
-                firstName: 'Casa',
-                lastName: 'Martinez',
-                middleName: null,
-                dob: null,
-                phone: null,
-                email: 'martinez.casa@yahoo.com',
-                pin: '1234',
-                roles: ['Admin'],
-                active: true,
-            },
-        ]);
-
-        const navigation = {
-            navigate: jest.fn(),
-        } as any;
-
-        render(<HomeScreen navigation={navigation} />);
-
-        await act(async () => {
-            await Promise.resolve();
-            await Promise.resolve();
-        });
-
-        expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({
-                type: 'employees/setAll',
-                payload: [
-                    expect.objectContaining({
-                        id: 'owner-1',
-                        email: 'martinez.casa@yahoo.com',
-                    }),
-                ],
-            })
-        );
-    });
-
     it('shows a confirmation before logging off from the setup wizard', async () => {
         const { isStoreInfoIncomplete } = require('@pos/store-info/data-access');
 

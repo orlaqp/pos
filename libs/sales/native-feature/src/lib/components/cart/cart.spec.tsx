@@ -696,8 +696,6 @@ describe('Cart', () => {
 
     it('applies a saved manual discount definition for the selected line', async () => {
         mockCartState.selected = mockCartState.items[0];
-        mockCartState.footer.baseSubtotal = 12;
-        mockCartState.footer.subtotal = 12;
         mockCartState.definitions = [
             {
                 id: 'manual-def-1',
@@ -709,7 +707,7 @@ describe('Cart', () => {
                 status: 'ACTIVE',
                 stackMode: 'STACKABLE',
                 active: true,
-                minSubtotal: 10,
+                minSubtotal: 4,
                 applicableProductIds: ['p-1'],
             },
         ];
@@ -734,6 +732,48 @@ describe('Cart', () => {
                     }),
                 })
             );
+        });
+    });
+
+    it('does not offer a line manual discount when only the order subtotal meets the minimum', async () => {
+        mockCartState.selected = mockCartState.items[0];
+        mockCartState.items.push({
+            identifier: 'i-2',
+            quantity: 1,
+            product: {
+                id: 'p-2',
+                name: 'Banana',
+                price: 20,
+                unitOfMeasure: 'EA',
+                isEBTEligible: true,
+            },
+        });
+        mockCartState.footer.baseSubtotal = 25;
+        mockCartState.footer.subtotal = 25;
+        mockCartState.footer.total = 25;
+        mockCartState.definitions = [
+            {
+                id: 'manual-def-1',
+                name: '0.1% for Test items',
+                type: 'MANUAL',
+                method: 'PERCENT',
+                scope: 'LINE',
+                value: 0.1,
+                status: 'ACTIVE',
+                stackMode: 'STACKABLE',
+                active: true,
+                minSubtotal: 10,
+                applicableProductIds: ['p-1'],
+            },
+        ];
+
+        const { getByText, queryByText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Manual'));
+
+        await waitFor(() => {
+            expect(queryByText('0.1% for Test items')).toBeNull();
         });
     });
 

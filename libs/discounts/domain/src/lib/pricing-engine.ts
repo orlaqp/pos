@@ -177,14 +177,14 @@ function lineEligibleForDefinition(
   input: PricingCartInput,
   line: PricingCartInput['lines'][number],
   lineBaseAmount: number,
-  currentSubtotal: number,
+  qualifyingSubtotal: number,
   hasExistingLineDiscount: boolean,
   at: string
 ): boolean {
   if (line.discountable === false) return false;
   if (definition.scope !== 'LINE') return false;
   if (!isDefinitionContextEligible(definition, input, at)) return false;
-  if (definition.minSubtotal != null && currentSubtotal < definition.minSubtotal) return false;
+  if (definition.minSubtotal != null && qualifyingSubtotal < definition.minSubtotal) return false;
   if (definition.minQuantity != null && line.quantity < definition.minQuantity) return false;
   if (definition.excludeAlreadyDiscountedItems && hasExistingLineDiscount) return false;
   if (definition.applicableProductIds?.length && !definition.applicableProductIds.includes(line.productId)) return false;
@@ -398,7 +398,7 @@ export class PricingEngine {
               input,
               line,
               lineSubtotalBeforeOrderDiscount,
-              baseSubtotal,
+              lineSubtotalBeforeOrderDiscount,
               !!lineApplications.length || autoCandidates.length > 0,
               at
             )

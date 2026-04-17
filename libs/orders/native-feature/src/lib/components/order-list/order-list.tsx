@@ -203,7 +203,7 @@ export function OrderList({ navigation }: OrderListProps) {
                 isVisible={!!orderToVoid}
                 onBackdropPress={() => setOrderToVoid(undefined)}
                 supportedOrientations={['landscape']}
-                presentationStyle="fullScreen"
+                presentationStyle="overFullScreen"
                 overlayStyle={[styles.overlay, { width: 700 }]}
             >
                 {orderToVoid ? (

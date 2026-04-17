@@ -26,6 +26,8 @@ const baseOptions: MigrationOptions = {
   sourceProfile: 'src',
   targetProfile: 'dst',
   tenantId: 'tenant-9',
+  sourceTenantId: 'tenant-1',
+  targetTenantId: 'tenant-9',
   dryRun: false,
   models: ['Store'],
   parallelModels: 1,
@@ -117,6 +119,33 @@ describe('runMigration', () => {
         transformed: 1,
         written: 1,
       })
+    );
+  });
+
+  it('passes the source tenant id into source scans', async () => {
+    const scanTable = jest.fn().mockResolvedValue([{ id: 'store-1', name: 'Main' }]);
+    mockedSourceReader.mockImplementation(
+      () =>
+        ({
+          scanTable,
+        }) as never
+    );
+
+    await runMigration(baseOptions, {
+      sourceCf: {} as never,
+      targetCf: {} as never,
+      sourceDynamo: {} as never,
+      targetDynamo: {} as never,
+      logger: {
+        info: jest.fn(),
+        error: jest.fn(),
+      },
+    });
+
+    expect(scanTable).toHaveBeenCalledWith(
+      'Store-source',
+      'tenant-1',
+      expect.any(Function)
     );
   });
 

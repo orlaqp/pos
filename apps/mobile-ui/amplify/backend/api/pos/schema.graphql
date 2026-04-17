@@ -67,6 +67,23 @@ enum DiscountApprovalStatus {
   REJECTED
 }
 
+enum DiscountSourceKind {
+  manual
+  automatic
+  promo
+  override
+}
+
+enum PricingApprovalType {
+  DISCOUNT
+  PRICE_OVERRIDE
+}
+
+enum PricingApprovalDecision {
+  APPROVED
+  REJECTED
+}
+
 enum PricingSource {
   ONLINE_VALIDATED
   OFFLINE_LOCAL
@@ -159,6 +176,64 @@ type ByEmployee {
     name: String!
 }
 
+type AppliedDiscountDetailSnapshot {
+  discountApplicationId: String!
+  discountDefinitionId: String
+  applicationType: DiscountApplicationType!
+  scope: DiscountScope!
+  method: DiscountMethod!
+  name: String!
+  code: String
+  stackMode: DiscountStackMode!
+  source: DiscountSourceKind!
+  value: Float!
+  originalAmount: Float!
+  discountAmount: Float!
+  finalAmount: Float!
+  quantityBasis: Float
+  reasonCode: String
+  reasonNote: String
+  appliedByEmployeeId: String
+  appliedByEmployeeName: String
+  approvedByEmployeeId: String
+  approvedByEmployeeName: String
+  approvalRequired: Boolean
+  approvalStatus: DiscountApprovalStatus
+  approvalReference: String
+  sourceSnapshot: String
+  appliedAt: AWSDateTime!
+}
+
+type PricingApprovalEventSnapshot {
+  id: String!
+  approvalType: PricingApprovalType!
+  requestingEmployeeId: String!
+  approvingEmployeeId: String!
+  requestedAction: String!
+  reasonCode: String
+  reasonNote: String
+  policySnapshot: String
+  status: PricingApprovalDecision!
+  createdAt: AWSDateTime!
+}
+
+type AppliedLineDiscountSummarySnapshot {
+  lineId: String!
+  discounts: [AppliedDiscountDetailSnapshot!]!
+  lineDiscountTotal: Float!
+  allocatedOrderDiscountTotal: Float!
+  lineTotalBeforeTax: Float!
+}
+
+type AppliedDiscountSummarySnapshot {
+  applications: [AppliedDiscountDetailSnapshot!]!
+  approvalEvents: [PricingApprovalEventSnapshot!]!
+  lineSummaries: [AppliedLineDiscountSummarySnapshot!]!
+  orderLevelAdjustments: [AppliedDiscountDetailSnapshot!]!
+  warnings: [String!]!
+  pricingGeneratedAt: AWSDateTime!
+}
+
 type Order @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
   tenantId: ID!
@@ -177,7 +252,7 @@ type Order @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityC
   pricingSnapshotHash: String
   pricingSource: PricingSource
   reconciliationStatus: ReconciliationStatus
-  appliedDiscountSummary: AWSJSON
+  appliedDiscountSummary: AppliedDiscountSummarySnapshot
   status: OrderStatus! @index(name: "byStatusByOrderDate", sortKeyFields: ["orderDate"])
   employeeId: String!
   employeeName: String!
@@ -207,7 +282,7 @@ type OrderLine {
   allocatedOrderDiscountTotal: Float
   lineTotalBeforeTax: Float
   lineTotalAfterTax: Float
-  appliedDiscounts: AWSJSON
+  appliedDiscounts: [AppliedDiscountDetailSnapshot!]
   categoryId: String
   discountable: Boolean
   minAllowedPrice: Float

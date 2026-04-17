@@ -117,11 +117,15 @@ export class EmployeeService {
                         })),
                     });
 
+                    if (!isSynced && items.length === 0) {
+                        return;
+                    }
+
                     clearTimeout(timeout);
                     subscription.unsubscribe();
                     resolve({
                         employees: items,
-                        initialSyncComplete: isSynced,
+                        initialSyncComplete: isSynced || items.length > 0,
                     });
                 },
                 error: (error) => {
