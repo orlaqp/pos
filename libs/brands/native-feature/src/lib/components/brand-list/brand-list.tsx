@@ -1,10 +1,8 @@
 import React from 'react';
-import { brandsActions, selectFilteredList, selectIsEmpty, selectLoadingStatus, subscribeToBrandChanges } from '@pos/brands/data-access';
+import { brandsActions, selectFilteredList, selectIsEmpty, selectLoadingStatus } from '@pos/brands/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import BrandItem from '../brand-item/brand-item';
-import { useDispatch } from 'react-redux';
 
 export interface BrandListProps {
     navigation: NativeStackNavigationProp<any>;
@@ -29,17 +27,6 @@ export const buildBrandListProps = (navigation: NativeStackNavigationProp<any>) 
     } as ItemListProps<any, any>);
 
 export function BrandList({ navigation }: BrandListProps) {
-    const dispatch = useDispatch();
-
-    useFocusEffect(
-        React.useCallback(() => {
-            const sub = subscribeToBrandChanges(dispatch);
-            return () => {
-                sub.unsubscribe();
-            };
-        }, [dispatch])
-    );
-    
     const props = buildBrandListProps(navigation);
 
     return <UIGenericItemList {...props} />

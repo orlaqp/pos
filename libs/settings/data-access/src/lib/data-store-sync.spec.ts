@@ -6,8 +6,15 @@ import {
 
 const mockSubscribe = jest.fn();
 
+jest.mock('@pos/shared/utils', () => ({
+    logSyncDebug: jest.fn(),
+    startSyncMeasure: jest.fn(() => jest.fn()),
+    trackSyncSubscription: jest.fn(() => jest.fn()),
+}));
+
 jest.mock('@pos/shared/amplify', () => ({
     DataStore: {
+        query: jest.fn(),
         observeQuery: jest.fn(() => ({
             subscribe: mockSubscribe,
         })),
@@ -27,8 +34,8 @@ describe('settings data-store sync', () => {
             | ((value: { isSynced: boolean; items: any[] }) => void)
             | undefined;
 
-        mockSubscribe.mockImplementation((callback: typeof observer) => {
-            observer = callback as typeof observer;
+        mockSubscribe.mockImplementation((handlers: { next?: typeof observer }) => {
+            observer = handlers.next;
             return { unsubscribe };
         });
 
@@ -47,30 +54,20 @@ describe('settings data-store sync', () => {
         expect(unsubscribe).toHaveBeenCalledTimes(1);
     });
 
-    it('uses observeQuery for one-shot global settings sync', () => {
+    it('uses query for one-shot global settings sync', async () => {
         const dispatch = jest.fn();
-        const unsubscribe = jest.fn();
+        (DataStore.query as jest.Mock).mockResolvedValueOnce([
+            { id: 'settings-1', enforceSalesBasedOnInventory: true },
+        ]);
 
-        mockSubscribe.mockImplementation(
-            (callback: (value: { items: any[] }) => void) => {
-                callback({
-                    items: [
-                        { id: 'settings-1', enforceSalesBasedOnInventory: true },
-                    ],
-                } as any);
-                return { unsubscribe };
-            }
-        );
+        await syncGlobalSettings(dispatch);
 
-        syncGlobalSettings(dispatch);
-
-        expect(DataStore.observeQuery).toHaveBeenCalledTimes(1);
+        expect(DataStore.query).toHaveBeenCalledTimes(1);
         expect(dispatch).toHaveBeenCalledWith(
             expect.objectContaining({
                 type: 'settings/setGlobalSettings',
             })
         );
-        expect(unsubscribe).toHaveBeenCalledTimes(1);
     });
 
     it('shares a single live global settings subscription across callers', () => {
@@ -98,8 +95,8 @@ describe('settings data-store sync', () => {
             | ((value: { isSynced: boolean; items: any[] }) => void)
             | undefined;
 
-        mockSubscribe.mockImplementation((callback: typeof observer) => {
-            observer = callback as typeof observer;
+        mockSubscribe.mockImplementation((handlers: { next?: typeof observer }) => {
+            observer = handlers.next;
             return { unsubscribe };
         });
 

@@ -58,6 +58,36 @@ describe('products reducer', () => {
     expect(state.entities['2']).toEqual(expect.objectContaining({ id: '2', quantity: 8 }));
   });
 
+  it('keeps the selected product in sync when quantities change', () => {
+    let state = productsReducer(
+      undefined,
+      fetchProducts.fulfilled([{ id: '1', name: 'Alpha', quantity: 4 } as any], '', undefined)
+    );
+
+    state = productsReducer(
+      state,
+      productsActions.select({ id: '1', name: 'Alpha', quantity: 4 } as any)
+    );
+
+    state = productsReducer(
+      state,
+      productsActions.updateQuantities([{ productId: '1', newCount: 9 }])
+    );
+
+    expect(state.selected).toEqual(
+      expect.objectContaining({ id: '1', quantity: 9 })
+    );
+
+    state = productsReducer(
+      state,
+      productsActions.applyQuantityDeltas([{ productId: '1', delta: -2 }])
+    );
+
+    expect(state.selected).toEqual(
+      expect.objectContaining({ id: '1', quantity: 7 })
+    );
+  });
+
   it('preserves optimistic deltas across stale setAll payloads until DataStore catches up', () => {
     let state = productsReducer(
       undefined,
@@ -147,5 +177,70 @@ describe('products reducer', () => {
       expect.objectContaining({ id: '3', name: 'Bravo' })
     );
     expect(state.entities['2']).toBeUndefined();
+  });
+
+  it('ignores older snapshots when a newer product update is already in state', () => {
+    let state = productsReducer(
+      undefined,
+      fetchProducts.fulfilled(
+        [
+          {
+            id: '1',
+            name: 'Alpha',
+            quantity: 7,
+            updatedAt: '2026-04-18T12:40:00.000Z',
+            isActive: true,
+          } as any,
+        ],
+        '',
+        undefined
+      )
+    );
+
+    state = productsReducer(
+      state,
+      productsActions.setAll([
+        {
+          id: '1',
+          name: 'Alpha',
+          quantity: 5,
+          updatedAt: '2026-04-18T12:39:00.000Z',
+          isActive: true,
+        } as any,
+      ])
+    );
+
+    expect(state.entities['1']).toEqual(
+      expect.objectContaining({
+        id: '1',
+        quantity: 7,
+        updatedAt: '2026-04-18T12:40:00.000Z',
+      })
+    );
+  });
+
+  it('keeps the selected product synced to incoming snapshots and clears it when removed', () => {
+    let state = productsReducer(
+      undefined,
+      fetchProducts.fulfilled([{ id: '1', name: 'Alpha', quantity: 1, isActive: true } as any], '', undefined)
+    );
+
+    state = productsReducer(
+      state,
+      productsActions.select({ id: '1', name: 'Alpha', quantity: 1, isActive: true } as any)
+    );
+
+    state = productsReducer(
+      state,
+      productsActions.setAll([{ id: '1', name: 'Alpha', quantity: 5, isActive: true } as any])
+    );
+
+    expect(state.selected).toEqual(
+      expect.objectContaining({ id: '1', quantity: 5 })
+    );
+
+    state = productsReducer(state, productsActions.setAll([]));
+
+    expect(state.selected).toBeUndefined();
   });
 });

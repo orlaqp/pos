@@ -549,6 +549,10 @@ export type CreateOrderInput = {
   refundInfo?: RefundInfoInput | null,
   createdBy?: ByEmployeeInput | null,
   updatedBy?: ByEmployeeInput | null,
+  inventoryApplyState?: InventoryApplyState | null,
+  inventoryAppliedAt?: string | null,
+  inventoryApplyOperationId?: string | null,
+  inventoryApplyError?: string | null,
   _version?: number | null,
   orderCustomerId?: string | null,
 };
@@ -747,6 +751,14 @@ export type ByEmployeeInput = {
   name: string,
 };
 
+export enum InventoryApplyState {
+  PENDING = "PENDING",
+  APPLYING = "APPLYING",
+  APPLIED = "APPLIED",
+  FAILED = "FAILED",
+}
+
+
 export type ModelOrderConditionInput = {
   tenantId?: ModelIDInput | null,
   orderNo?: ModelStringInput | null,
@@ -767,6 +779,10 @@ export type ModelOrderConditionInput = {
   status?: ModelOrderStatusInput | null,
   employeeId?: ModelStringInput | null,
   employeeName?: ModelStringInput | null,
+  inventoryApplyState?: ModelInventoryApplyStateInput | null,
+  inventoryAppliedAt?: ModelStringInput | null,
+  inventoryApplyOperationId?: ModelIDInput | null,
+  inventoryApplyError?: ModelStringInput | null,
   and?: Array< ModelOrderConditionInput | null > | null,
   or?: Array< ModelOrderConditionInput | null > | null,
   not?: ModelOrderConditionInput | null,
@@ -803,6 +819,11 @@ export type ModelOrderStatusInput = {
   ne?: OrderStatus | null,
 };
 
+export type ModelInventoryApplyStateInput = {
+  eq?: InventoryApplyState | null,
+  ne?: InventoryApplyState | null,
+};
+
 export type Order = {
   __typename: "Order",
   id: string,
@@ -831,6 +852,10 @@ export type Order = {
   refundInfo?: RefundInfo | null,
   createdBy?: ByEmployee | null,
   updatedBy?: ByEmployee | null,
+  inventoryApplyState?: InventoryApplyState | null,
+  inventoryAppliedAt?: string | null,
+  inventoryApplyOperationId?: string | null,
+  inventoryApplyError?: string | null,
   Customer?: Customer | null,
   createdAt: string,
   updatedAt: string,
@@ -985,6 +1010,10 @@ export type UpdateOrderInput = {
   refundInfo?: RefundInfoInput | null,
   createdBy?: ByEmployeeInput | null,
   updatedBy?: ByEmployeeInput | null,
+  inventoryApplyState?: InventoryApplyState | null,
+  inventoryAppliedAt?: string | null,
+  inventoryApplyOperationId?: string | null,
+  inventoryApplyError?: string | null,
   _version?: number | null,
   orderCustomerId?: string | null,
 };
@@ -1249,6 +1278,10 @@ export type CreateInventoryCountInput = {
   comments?: string | null,
   status: InventoryCountStatus,
   createdBy: ByEmployeeInput,
+  inventoryApplyState?: InventoryApplyState | null,
+  inventoryAppliedAt?: string | null,
+  inventoryApplyOperationId?: string | null,
+  inventoryApplyError?: string | null,
   _version?: number | null,
 };
 
@@ -1262,6 +1295,10 @@ export type ModelInventoryCountConditionInput = {
   tenantId?: ModelIDInput | null,
   comments?: ModelStringInput | null,
   status?: ModelInventoryCountStatusInput | null,
+  inventoryApplyState?: ModelInventoryApplyStateInput | null,
+  inventoryAppliedAt?: ModelStringInput | null,
+  inventoryApplyOperationId?: ModelIDInput | null,
+  inventoryApplyError?: ModelStringInput | null,
   and?: Array< ModelInventoryCountConditionInput | null > | null,
   or?: Array< ModelInventoryCountConditionInput | null > | null,
   not?: ModelInventoryCountConditionInput | null,
@@ -1282,6 +1319,10 @@ export type InventoryCount = {
   comments?: string | null,
   status: InventoryCountStatus,
   createdBy: ByEmployee,
+  inventoryApplyState?: InventoryApplyState | null,
+  inventoryAppliedAt?: string | null,
+  inventoryApplyOperationId?: string | null,
+  inventoryApplyError?: string | null,
   createdAt: string,
   updatedAt: string,
   _version: number,
@@ -1295,6 +1336,10 @@ export type UpdateInventoryCountInput = {
   comments?: string | null,
   status?: InventoryCountStatus | null,
   createdBy?: ByEmployeeInput | null,
+  inventoryApplyState?: InventoryApplyState | null,
+  inventoryAppliedAt?: string | null,
+  inventoryApplyOperationId?: string | null,
+  inventoryApplyError?: string | null,
   _version?: number | null,
 };
 
@@ -1376,6 +1421,10 @@ export type CreateInventoryReceiveInput = {
   comments?: string | null,
   status: InventoryReceiveStatus,
   createdBy: ByEmployeeInput,
+  inventoryApplyState?: InventoryApplyState | null,
+  inventoryAppliedAt?: string | null,
+  inventoryApplyOperationId?: string | null,
+  inventoryApplyError?: string | null,
   _version?: number | null,
 };
 
@@ -1389,6 +1438,10 @@ export type ModelInventoryReceiveConditionInput = {
   tenantId?: ModelIDInput | null,
   comments?: ModelStringInput | null,
   status?: ModelInventoryReceiveStatusInput | null,
+  inventoryApplyState?: ModelInventoryApplyStateInput | null,
+  inventoryAppliedAt?: ModelStringInput | null,
+  inventoryApplyOperationId?: ModelIDInput | null,
+  inventoryApplyError?: ModelStringInput | null,
   and?: Array< ModelInventoryReceiveConditionInput | null > | null,
   or?: Array< ModelInventoryReceiveConditionInput | null > | null,
   not?: ModelInventoryReceiveConditionInput | null,
@@ -1409,6 +1462,10 @@ export type InventoryReceive = {
   comments?: string | null,
   status: InventoryReceiveStatus,
   createdBy: ByEmployee,
+  inventoryApplyState?: InventoryApplyState | null,
+  inventoryAppliedAt?: string | null,
+  inventoryApplyOperationId?: string | null,
+  inventoryApplyError?: string | null,
   createdAt: string,
   updatedAt: string,
   _version: number,
@@ -1422,6 +1479,10 @@ export type UpdateInventoryReceiveInput = {
   comments?: string | null,
   status?: InventoryReceiveStatus | null,
   createdBy?: ByEmployeeInput | null,
+  inventoryApplyState?: InventoryApplyState | null,
+  inventoryAppliedAt?: string | null,
+  inventoryApplyOperationId?: string | null,
+  inventoryApplyError?: string | null,
   _version?: number | null,
 };
 
@@ -2416,6 +2477,58 @@ export type DatePartSaleSummary = {
   amount: number,
 };
 
+export type FinalizeInventoryReceiveInput = {
+  receiveId?: string | null,
+  operationId: string,
+  comments?: string | null,
+  createdBy: ByEmployeeInput,
+  lines: Array< FinalizeInventoryReceiveLineInput >,
+};
+
+export type FinalizeInventoryReceiveLineInput = {
+  id?: string | null,
+  productId: string,
+  productName: string,
+  unitOfMeasure: string,
+  received: number,
+  comments?: string | null,
+};
+
+export type InventoryFinalizeResult = {
+  __typename: "InventoryFinalizeResult",
+  sourceId: string,
+  sourceType: string,
+  status: InventoryApplyState,
+  appliedAt?: string | null,
+  error?: string | null,
+  affectedProducts:  Array<InventoryProductFinalizeResult >,
+};
+
+export type InventoryProductFinalizeResult = {
+  __typename: "InventoryProductFinalizeResult",
+  productId: string,
+  finalQuantity: number,
+  appliedDelta: number,
+};
+
+export type FinalizeInventoryCountInput = {
+  countId?: string | null,
+  operationId: string,
+  comments?: string | null,
+  createdBy: ByEmployeeInput,
+  lines: Array< FinalizeInventoryCountLineInput >,
+};
+
+export type FinalizeInventoryCountLineInput = {
+  id?: string | null,
+  productId: string,
+  productName: string,
+  unitOfMeasure: string,
+  current: number,
+  newCount: number,
+  comments?: string | null,
+};
+
 export type ModelTenantFilterInput = {
   id?: ModelIDInput | null,
   name?: ModelStringInput | null,
@@ -2435,6 +2548,12 @@ export type ModelTenantConnection = {
   nextToken?: string | null,
   startedAt?: number | null,
 };
+
+export enum ModelSortDirection {
+  ASC = "ASC",
+  DESC = "DESC",
+}
+
 
 export type ModelTenantUserFilterInput = {
   id?: ModelIDInput | null,
@@ -2605,6 +2724,10 @@ export type ModelOrderFilterInput = {
   status?: ModelOrderStatusInput | null,
   employeeId?: ModelStringInput | null,
   employeeName?: ModelStringInput | null,
+  inventoryApplyState?: ModelInventoryApplyStateInput | null,
+  inventoryAppliedAt?: ModelStringInput | null,
+  inventoryApplyOperationId?: ModelIDInput | null,
+  inventoryApplyError?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
   updatedAt?: ModelStringInput | null,
   and?: Array< ModelOrderFilterInput | null > | null,
@@ -2710,6 +2833,10 @@ export type ModelInventoryCountFilterInput = {
   tenantId?: ModelIDInput | null,
   comments?: ModelStringInput | null,
   status?: ModelInventoryCountStatusInput | null,
+  inventoryApplyState?: ModelInventoryApplyStateInput | null,
+  inventoryAppliedAt?: ModelStringInput | null,
+  inventoryApplyOperationId?: ModelIDInput | null,
+  inventoryApplyError?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
   updatedAt?: ModelStringInput | null,
   and?: Array< ModelInventoryCountFilterInput | null > | null,
@@ -2755,6 +2882,10 @@ export type ModelInventoryReceiveFilterInput = {
   tenantId?: ModelIDInput | null,
   comments?: ModelStringInput | null,
   status?: ModelInventoryReceiveStatusInput | null,
+  inventoryApplyState?: ModelInventoryApplyStateInput | null,
+  inventoryAppliedAt?: ModelStringInput | null,
+  inventoryApplyOperationId?: ModelIDInput | null,
+  inventoryApplyError?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
   updatedAt?: ModelStringInput | null,
   and?: Array< ModelInventoryReceiveFilterInput | null > | null,
@@ -3089,12 +3220,6 @@ export type ModelDiscountReconciliationExceptionConnection = {
   startedAt?: number | null,
 };
 
-export enum ModelSortDirection {
-  ASC = "ASC",
-  DESC = "DESC",
-}
-
-
 export type ModelSubscriptionTenantFilterInput = {
   id?: ModelSubscriptionIDInput | null,
   name?: ModelSubscriptionStringInput | null,
@@ -3262,6 +3387,10 @@ export type ModelSubscriptionOrderFilterInput = {
   status?: ModelSubscriptionStringInput | null,
   employeeId?: ModelSubscriptionStringInput | null,
   employeeName?: ModelSubscriptionStringInput | null,
+  inventoryApplyState?: ModelSubscriptionStringInput | null,
+  inventoryAppliedAt?: ModelSubscriptionStringInput | null,
+  inventoryApplyOperationId?: ModelSubscriptionIDInput | null,
+  inventoryApplyError?: ModelSubscriptionStringInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
   updatedAt?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionOrderFilterInput | null > | null,
@@ -3359,6 +3488,10 @@ export type ModelSubscriptionInventoryCountFilterInput = {
   id?: ModelSubscriptionIDInput | null,
   comments?: ModelSubscriptionStringInput | null,
   status?: ModelSubscriptionStringInput | null,
+  inventoryApplyState?: ModelSubscriptionStringInput | null,
+  inventoryAppliedAt?: ModelSubscriptionStringInput | null,
+  inventoryApplyOperationId?: ModelSubscriptionIDInput | null,
+  inventoryApplyError?: ModelSubscriptionStringInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
   updatedAt?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionInventoryCountFilterInput | null > | null,
@@ -3388,6 +3521,10 @@ export type ModelSubscriptionInventoryReceiveFilterInput = {
   id?: ModelSubscriptionIDInput | null,
   comments?: ModelSubscriptionStringInput | null,
   status?: ModelSubscriptionStringInput | null,
+  inventoryApplyState?: ModelSubscriptionStringInput | null,
+  inventoryAppliedAt?: ModelSubscriptionStringInput | null,
+  inventoryApplyOperationId?: ModelSubscriptionIDInput | null,
+  inventoryApplyError?: ModelSubscriptionStringInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
   updatedAt?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionInventoryReceiveFilterInput | null > | null,
@@ -4213,6 +4350,10 @@ export type CreateOrderMutation = {
       id: string,
       name: string,
     } | null,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -4320,6 +4461,10 @@ export type UpdateOrderMutation = {
       id: string,
       name: string,
     } | null,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -4427,6 +4572,10 @@ export type DeleteOrderMutation = {
       id: string,
       name: string,
     } | null,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -4904,6 +5053,10 @@ export type CreateInventoryCountMutation = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -4929,6 +5082,10 @@ export type UpdateInventoryCountMutation = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -4954,6 +5111,10 @@ export type DeleteInventoryCountMutation = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -4984,6 +5145,10 @@ export type CreateInventoryCountLineMutation = {
       tenantId: string,
       comments?: string | null,
       status: InventoryCountStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -5021,6 +5186,10 @@ export type UpdateInventoryCountLineMutation = {
       tenantId: string,
       comments?: string | null,
       status: InventoryCountStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -5058,6 +5227,10 @@ export type DeleteInventoryCountLineMutation = {
       tenantId: string,
       comments?: string | null,
       status: InventoryCountStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -5090,6 +5263,10 @@ export type CreateInventoryReceiveMutation = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -5115,6 +5292,10 @@ export type UpdateInventoryReceiveMutation = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -5140,6 +5321,10 @@ export type DeleteInventoryReceiveMutation = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -5169,6 +5354,10 @@ export type CreateInventoryReceiveLineMutation = {
       tenantId: string,
       comments?: string | null,
       status: InventoryReceiveStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -5205,6 +5394,10 @@ export type UpdateInventoryReceiveLineMutation = {
       tenantId: string,
       comments?: string | null,
       status: InventoryReceiveStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -5241,6 +5434,10 @@ export type DeleteInventoryReceiveLineMutation = {
       tenantId: string,
       comments?: string | null,
       status: InventoryReceiveStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -6224,6 +6421,10 @@ export type GetSalesQuery = {
       id: string,
       name: string,
     } | null,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -6281,6 +6482,48 @@ export type GetSalesSummaryQuery = {
     } | null > | null,
     totalAmount: number,
     totalOrders: number,
+  } | null,
+};
+
+export type FinalizeInventoryReceiveQueryVariables = {
+  input: FinalizeInventoryReceiveInput,
+};
+
+export type FinalizeInventoryReceiveQuery = {
+  finalizeInventoryReceive?:  {
+    __typename: "InventoryFinalizeResult",
+    sourceId: string,
+    sourceType: string,
+    status: InventoryApplyState,
+    appliedAt?: string | null,
+    error?: string | null,
+    affectedProducts:  Array< {
+      __typename: "InventoryProductFinalizeResult",
+      productId: string,
+      finalQuantity: number,
+      appliedDelta: number,
+    } >,
+  } | null,
+};
+
+export type FinalizeInventoryCountQueryVariables = {
+  input: FinalizeInventoryCountInput,
+};
+
+export type FinalizeInventoryCountQuery = {
+  finalizeInventoryCount?:  {
+    __typename: "InventoryFinalizeResult",
+    sourceId: string,
+    sourceType: string,
+    status: InventoryApplyState,
+    appliedAt?: string | null,
+    error?: string | null,
+    affectedProducts:  Array< {
+      __typename: "InventoryProductFinalizeResult",
+      productId: string,
+      finalQuantity: number,
+      appliedDelta: number,
+    } >,
   } | null,
 };
 
@@ -6356,6 +6599,34 @@ export type SyncTenantsQuery = {
   } | null,
 };
 
+export type TenantBySlugQueryVariables = {
+  slug: string,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelTenantFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type TenantBySlugQuery = {
+  tenantBySlug?:  {
+    __typename: "ModelTenantConnection",
+    items:  Array< {
+      __typename: "Tenant",
+      id: string,
+      name: string,
+      slug: string,
+      ownerUserId: string,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
 export type GetTenantUserQueryVariables = {
   id: string,
 };
@@ -6410,6 +6681,62 @@ export type SyncTenantUsersQueryVariables = {
 
 export type SyncTenantUsersQuery = {
   syncTenantUsers?:  {
+    __typename: "ModelTenantUserConnection",
+    items:  Array< {
+      __typename: "TenantUser",
+      id: string,
+      tenantId: string,
+      userId: string,
+      role: TenantUserRole,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type TenantUsersByTenantQueryVariables = {
+  tenantId: string,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelTenantUserFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type TenantUsersByTenantQuery = {
+  tenantUsersByTenant?:  {
+    __typename: "ModelTenantUserConnection",
+    items:  Array< {
+      __typename: "TenantUser",
+      id: string,
+      tenantId: string,
+      userId: string,
+      role: TenantUserRole,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type TenantUsersByUserQueryVariables = {
+  userId: string,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelTenantUserFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type TenantUsersByUserQuery = {
+  tenantUsersByUser?:  {
     __typename: "ModelTenantUserConnection",
     items:  Array< {
       __typename: "TenantUser",
@@ -6953,6 +7280,10 @@ export type GetOrderQuery = {
       id: string,
       name: string,
     } | null,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -7009,6 +7340,10 @@ export type ListOrdersQuery = {
       status: OrderStatus,
       employeeId: string,
       employeeName: string,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -7053,6 +7388,10 @@ export type SyncOrdersQuery = {
       status: OrderStatus,
       employeeId: string,
       employeeName: string,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -7430,6 +7769,10 @@ export type GetInventoryCountQuery = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -7453,6 +7796,10 @@ export type ListInventoryCountsQuery = {
       tenantId: string,
       comments?: string | null,
       status: InventoryCountStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -7480,6 +7827,10 @@ export type SyncInventoryCountsQuery = {
       tenantId: string,
       comments?: string | null,
       status: InventoryCountStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -7512,6 +7863,10 @@ export type GetInventoryCountLineQuery = {
       tenantId: string,
       comments?: string | null,
       status: InventoryCountStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -7606,6 +7961,10 @@ export type GetInventoryReceiveQuery = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -7629,6 +7988,10 @@ export type ListInventoryReceivesQuery = {
       tenantId: string,
       comments?: string | null,
       status: InventoryReceiveStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -7656,6 +8019,10 @@ export type SyncInventoryReceivesQuery = {
       tenantId: string,
       comments?: string | null,
       status: InventoryReceiveStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -7687,6 +8054,10 @@ export type GetInventoryReceiveLineQuery = {
       tenantId: string,
       comments?: string | null,
       status: InventoryReceiveStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -8768,90 +9139,6 @@ export type SyncDiscountReconciliationExceptionsQuery = {
   } | null,
 };
 
-export type TenantBySlugQueryVariables = {
-  slug: string,
-  sortDirection?: ModelSortDirection | null,
-  filter?: ModelTenantFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type TenantBySlugQuery = {
-  tenantBySlug?:  {
-    __typename: "ModelTenantConnection",
-    items:  Array< {
-      __typename: "Tenant",
-      id: string,
-      name: string,
-      slug: string,
-      ownerUserId: string,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type TenantUsersByTenantQueryVariables = {
-  tenantId: string,
-  sortDirection?: ModelSortDirection | null,
-  filter?: ModelTenantUserFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type TenantUsersByTenantQuery = {
-  tenantUsersByTenant?:  {
-    __typename: "ModelTenantUserConnection",
-    items:  Array< {
-      __typename: "TenantUser",
-      id: string,
-      tenantId: string,
-      userId: string,
-      role: TenantUserRole,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
-export type TenantUsersByUserQueryVariables = {
-  userId: string,
-  sortDirection?: ModelSortDirection | null,
-  filter?: ModelTenantUserFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type TenantUsersByUserQuery = {
-  tenantUsersByUser?:  {
-    __typename: "ModelTenantUserConnection",
-    items:  Array< {
-      __typename: "TenantUser",
-      id: string,
-      tenantId: string,
-      userId: string,
-      role: TenantUserRole,
-      createdAt: string,
-      updatedAt: string,
-      _version: number,
-      _deleted?: boolean | null,
-      _lastChangedAt: number,
-    } | null >,
-    nextToken?: string | null,
-    startedAt?: number | null,
-  } | null,
-};
-
 export type OnCreateTenantSubscriptionVariables = {
   filter?: ModelSubscriptionTenantFilterInput | null,
   ownerUserId?: string | null,
@@ -9438,6 +9725,10 @@ export type OnCreateOrderSubscription = {
       id: string,
       name: string,
     } | null,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -9545,6 +9836,10 @@ export type OnUpdateOrderSubscription = {
       id: string,
       name: string,
     } | null,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -9652,6 +9947,10 @@ export type OnDeleteOrderSubscription = {
       id: string,
       name: string,
     } | null,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     Customer?:  {
       __typename: "Customer",
       id: string,
@@ -10129,6 +10428,10 @@ export type OnCreateInventoryCountSubscription = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -10154,6 +10457,10 @@ export type OnUpdateInventoryCountSubscription = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -10179,6 +10486,10 @@ export type OnDeleteInventoryCountSubscription = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -10209,6 +10520,10 @@ export type OnCreateInventoryCountLineSubscription = {
       tenantId: string,
       comments?: string | null,
       status: InventoryCountStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -10246,6 +10561,10 @@ export type OnUpdateInventoryCountLineSubscription = {
       tenantId: string,
       comments?: string | null,
       status: InventoryCountStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -10283,6 +10602,10 @@ export type OnDeleteInventoryCountLineSubscription = {
       tenantId: string,
       comments?: string | null,
       status: InventoryCountStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -10315,6 +10638,10 @@ export type OnCreateInventoryReceiveSubscription = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -10340,6 +10667,10 @@ export type OnUpdateInventoryReceiveSubscription = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -10365,6 +10696,10 @@ export type OnDeleteInventoryReceiveSubscription = {
       id: string,
       name: string,
     },
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
     createdAt: string,
     updatedAt: string,
     _version: number,
@@ -10394,6 +10729,10 @@ export type OnCreateInventoryReceiveLineSubscription = {
       tenantId: string,
       comments?: string | null,
       status: InventoryReceiveStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -10430,6 +10769,10 @@ export type OnUpdateInventoryReceiveLineSubscription = {
       tenantId: string,
       comments?: string | null,
       status: InventoryReceiveStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,
@@ -10466,6 +10809,10 @@ export type OnDeleteInventoryReceiveLineSubscription = {
       tenantId: string,
       comments?: string | null,
       status: InventoryReceiveStatus,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
       createdAt: string,
       updatedAt: string,
       _version: number,

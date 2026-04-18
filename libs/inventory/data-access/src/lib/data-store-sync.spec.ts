@@ -41,8 +41,8 @@ describe('inventory data-store sync', () => {
             | ((value: { isSynced: boolean; items: Array<{ id: string; createdAt: string }> }) => void)
             | undefined;
 
-        mockSubscribe.mockImplementation((callback: typeof observer) => {
-            observer = callback;
+        mockSubscribe.mockImplementation((handlers: { next?: typeof observer }) => {
+            observer = handlers.next;
             return { unsubscribe: jest.fn() };
         });
 
@@ -74,8 +74,8 @@ describe('inventory data-store sync', () => {
             | ((value: { isSynced: boolean; items: Array<{ id: string; createdAt: string }> }) => void)
             | undefined;
 
-        mockSubscribe.mockImplementation((callback: typeof observer) => {
-            observer = callback;
+        mockSubscribe.mockImplementation((handlers: { next?: typeof observer }) => {
+            observer = handlers.next;
             return { unsubscribe: jest.fn() };
         });
 
@@ -111,8 +111,8 @@ describe('inventory data-store sync', () => {
             | ((value: { isSynced: boolean; items: Array<{ id: string; createdAt: string }> }) => void)
             | undefined;
 
-        mockSubscribe.mockImplementation((callback: typeof observer) => {
-            observer = callback;
+        mockSubscribe.mockImplementation((handlers: { next?: typeof observer }) => {
+            observer = handlers.next;
             return { unsubscribe: jest.fn() };
         });
 
@@ -144,8 +144,8 @@ describe('inventory data-store sync', () => {
             | ((value: { isSynced: boolean; items: Array<{ id: string; createdAt: string }> }) => void)
             | undefined;
 
-        mockSubscribe.mockImplementation((callback: typeof observer) => {
-            observer = callback;
+        mockSubscribe.mockImplementation((handlers: { next?: typeof observer }) => {
+            observer = handlers.next;
             return { unsubscribe: jest.fn() };
         });
 

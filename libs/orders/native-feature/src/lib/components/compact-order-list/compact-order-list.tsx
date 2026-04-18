@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { OrderStatus } from '@pos/shared/api';
 import CompactOrderItem from '../compact-order-item/compact-order-item';
 import i18next from 'i18next';
+import { RootState } from '@pos/store';
 
 export interface CompactOrderListProps {
     onSelect: () => void;
@@ -24,6 +25,9 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [filterText, setFilterText] = useState<string>();
     const openOrders = useSelector(selectOpenOrders);
+    const currentTenantId = useSelector(
+        (state: RootState) => state?.tenantSession?.currentTenantId
+    );
     const [emptyOpacity] = useState(() => new Animated.Value(0));
     const [emptyTranslateY] = useState(() => new Animated.Value(12));
     const t = (key: string, fallback: string) =>
@@ -32,11 +36,11 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
             : fallback;
 
     useEffect(() => {
-        const ordersSub = subscribeToOrderChanges(dispatch);
+        const ordersSub = subscribeToOrderChanges(dispatch, currentTenantId);
         return () => {
             ordersSub?.unsubscribe();
         };
-    }, [dispatch]);
+    }, [currentTenantId, dispatch]);
 
     const filteredList = useMemo(() => {
         const normalizedFilter = (filterText || '').trim();

@@ -14,6 +14,9 @@ AWS.config.update({ region: process.env.REGION });
 
 const docClient = new AWS.DynamoDB.DocumentClient();
 const converter = AWS.DynamoDB.Converter;
+const appsync = new AWS.AppSync({ region: process.env.REGION });
+
+let resolvedGraphqlEndpointPromise = null;
 
 const UPDATE_PRODUCT_MUTATION = /* GraphQL */ `
   mutation UpdateProductFromOrderInventory(
@@ -22,9 +25,63 @@ const UPDATE_PRODUCT_MUTATION = /* GraphQL */ `
   ) {
     updateProduct(input: $input, condition: $condition) {
       id
+      tenantId
+      name
+      description
+      price
+      tags
+      cost
+      barcode
+      sku
+      plu
       quantity
-      _version
+      unitOfMeasure
+      trackStock
+      reorderPoint
+      reorderQuantity
+      picture
+      Category {
+        id
+        tenantId
+        name
+        description
+        code
+        color
+        picture
+        discountable
+        discountPolicyMode
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      Brand {
+        id
+        tenantId
+        name
+        description
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      isActive
+      isEBTEligible
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
+      createdAt
       updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      productCategoryId
+      productBrandId
       __typename
     }
   }
@@ -177,6 +234,7 @@ async function applyProductDelta(productId, delta) {
       await graphqlRequest(UPDATE_PRODUCT_MUTATION, {
         input: {
           id: productId,
+          tenantId: product.tenantId,
           quantity: nextQuantity,
           _version: product._version,
         },
@@ -196,6 +254,7 @@ async function updateOrderState(order, changes) {
   await graphqlRequest(UPDATE_ORDER_MUTATION, {
     input: {
       id: order.id,
+      tenantId: order.tenantId,
       _version: order._version,
       inventoryApplyState: changes.inventoryApplyState,
       inventoryApplyOperationId: changes.inventoryApplyOperationId,
@@ -248,9 +307,8 @@ async function putLedger(operationKey, item) {
 }
 
 async function graphqlRequest(query, variables) {
-  const endpoint = new AWS.Endpoint(
-    `https://${process.env.API_POS_GRAPHQLAPIIDOUTPUT}.appsync-api.${process.env.REGION}.amazonaws.com/graphql`
-  );
+  const endpointUrl = await getGraphqlEndpointUrl();
+  const endpoint = new AWS.Endpoint(endpointUrl);
   const request = new AWS.HttpRequest(endpoint, process.env.REGION);
   request.method = 'POST';
   request.path = '/graphql';
@@ -294,6 +352,34 @@ async function graphqlRequest(query, variables) {
     req.write(request.body);
     req.end();
   });
+}
+
+async function getGraphqlEndpointUrl() {
+  if (process.env.API_POS_GRAPHQLAPIENDPOINTOUTPUT) {
+    return process.env.API_POS_GRAPHQLAPIENDPOINTOUTPUT;
+  }
+
+  if (!resolvedGraphqlEndpointPromise) {
+    resolvedGraphqlEndpointPromise = appsync
+      .getGraphqlApi({
+        apiId: process.env.API_POS_GRAPHQLAPIIDOUTPUT,
+      })
+      .promise()
+      .then((response) => {
+        const endpointUrl = response?.graphqlApi?.uris?.GRAPHQL;
+        if (!endpointUrl) {
+          throw new Error('Unable to resolve GraphQL endpoint for order inventory lifecycle');
+        }
+
+        return endpointUrl;
+      })
+      .catch((error) => {
+        resolvedGraphqlEndpointPromise = null;
+        throw error;
+      });
+  }
+
+  return resolvedGraphqlEndpointPromise;
 }
 
 function getCredentials() {

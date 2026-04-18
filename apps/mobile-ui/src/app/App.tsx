@@ -26,14 +26,30 @@ import {
     fetchDeviceSettings,
     fetchGlobalSettings,
     fetchStationInfo,
+    ensureGlobalSettingsSyncHealthy,
+    selectSettings,
+    subscribeToGlobalSettingsChanges,
 } from '@pos/settings/data-access';
 import {
+    ensureCategorySyncHealthy,
+    subscribeToCategoryChanges,
+} from '@pos/categories/data-access';
+import {
+    ensureBrandSyncHealthy,
+    subscribeToBrandChanges,
+} from '@pos/brands/data-access';
+import {
+    ensureEmployeeSyncHealthy,
     EmployeeService,
     fetchEmployees,
     employeesActions,
     subscribeToEmployeeChanges,
 } from '@pos/employees/data-access';
 import { fetchStoreInfo } from '@pos/store-info/data-access';
+import {
+    ensureUnitOfMeasureSyncHealthy,
+    subscribeToUnitOfMeasureChanges,
+} from '@pos/unit-of-measures/data-access';
 import {
     fetchDefaultPrinter,
     ReceiptPreviewPayload,
@@ -266,6 +282,7 @@ const AppContent = () => {
     const authRestoreStatus = useSelector(selectAuthRestoreStatus);
     const networkActive = useSelector(selectNetworkActive);
     const outboxEmpty = useSelector(selectOutboxEmpty);
+    const settings = useSelector(selectSettings);
     const tenantSession = useSelector((state: RootState) => state.tenantSession);
     const cart = useSelector(selectCart);
     const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('idle');
@@ -843,7 +860,12 @@ const AppContent = () => {
     const authTenantId = authUser?.tenantId;
 
     useEffect(() => {
-        if (!authTenantId || !tenantSession.currentTenantId || bootstrapStatus !== 'ready') {
+        if (
+            !authTenantId ||
+            !tenantSession.currentTenantId ||
+            bootstrapStatus !== 'ready' ||
+            settings.dataStoreStatus === 'resetting'
+        ) {
             return;
         }
 
@@ -860,7 +882,10 @@ const AppContent = () => {
                 return;
             }
 
-            employeesSub = subscribeToEmployeeChanges(dispatch);
+            employeesSub = subscribeToEmployeeChanges(
+                dispatch,
+                tenantSession.currentTenantId
+            );
         });
 
         return () => {
@@ -872,13 +897,78 @@ const AppContent = () => {
             interaction.cancel();
             employeesSub?.unsubscribe();
         };
-    }, [authTenantId, bootstrapStatus, dispatch, tenantSession.currentTenantId]);
+    }, [authTenantId, bootstrapStatus, dispatch, settings.dataStoreStatus, tenantSession.currentTenantId]);
 
     useEffect(() => {
         if (
             !authTenantId ||
             !tenantSession.currentTenantId ||
-            bootstrapStatus !== 'ready'
+            bootstrapStatus !== 'ready' ||
+            settings.dataStoreStatus === 'resetting'
+        ) {
+            return;
+        }
+
+        let isCancelled = false;
+        let categoriesSub: { unsubscribe: () => void } | undefined;
+        let brandsSub: { unsubscribe: () => void } | undefined;
+        let unitOfMeasuresSub: { unsubscribe: () => void } | undefined;
+        let globalSettingsSub: { unsubscribe: () => void } | undefined;
+
+        logSyncDebug('app-reference-data', 'subscribe:start', {
+            tenantId: tenantSession.currentTenantId,
+            bootstrapStatus,
+        });
+
+        const interaction = InteractionManager.runAfterInteractions(() => {
+            if (isCancelled) {
+                return;
+            }
+
+            categoriesSub = subscribeToCategoryChanges(
+                dispatch,
+                tenantSession.currentTenantId
+            );
+            brandsSub = subscribeToBrandChanges(
+                dispatch,
+                tenantSession.currentTenantId
+            );
+            unitOfMeasuresSub = subscribeToUnitOfMeasureChanges(
+                dispatch,
+                tenantSession.currentTenantId
+            );
+            globalSettingsSub = subscribeToGlobalSettingsChanges(
+                dispatch,
+                tenantSession.currentTenantId
+            );
+        });
+
+        return () => {
+            isCancelled = true;
+            logSyncDebug('app-reference-data', 'subscribe:stop', {
+                tenantId: tenantSession.currentTenantId,
+                bootstrapStatus,
+            });
+            interaction.cancel();
+            categoriesSub?.unsubscribe();
+            brandsSub?.unsubscribe();
+            unitOfMeasuresSub?.unsubscribe();
+            globalSettingsSub?.unsubscribe();
+        };
+    }, [
+        authTenantId,
+        bootstrapStatus,
+        dispatch,
+        settings.dataStoreStatus,
+        tenantSession.currentTenantId,
+    ]);
+
+    useEffect(() => {
+        if (
+            !authTenantId ||
+            !tenantSession.currentTenantId ||
+            bootstrapStatus !== 'ready' ||
+            settings.dataStoreStatus === 'resetting'
         ) {
             return;
         }
@@ -906,7 +996,7 @@ const AppContent = () => {
             });
             productsSub?.unsubscribe();
         };
-    }, [authTenantId, bootstrapStatus, dispatch, tenantSession.currentTenantId]);
+    }, [authTenantId, bootstrapStatus, dispatch, settings.dataStoreStatus, tenantSession.currentTenantId]);
 
     useEffect(() => {
         const tenantId = tenantSession.currentTenantId;
@@ -915,7 +1005,8 @@ const AppContent = () => {
             !authTenantId ||
             !tenantId ||
             bootstrapStatus !== 'ready' ||
-            tenantSession.bootstrapStatus !== 'ready'
+            tenantSession.bootstrapStatus !== 'ready' ||
+            settings.dataStoreStatus === 'resetting'
         ) {
             return;
         }
@@ -939,7 +1030,12 @@ const AppContent = () => {
             }
 
             try {
+                await ensureEmployeeSyncHealthy(dispatch, { tenantId });
                 await ensureProductSyncHealthy(dispatch, { tenantId });
+                await ensureCategorySyncHealthy(dispatch, { tenantId });
+                await ensureBrandSyncHealthy(dispatch, { tenantId });
+                await ensureUnitOfMeasureSyncHealthy(dispatch, { tenantId });
+                await ensureGlobalSettingsSyncHealthy(dispatch, { tenantId });
                 await ensureOrderSyncHealthy(dispatch, { tenantId });
             } catch (error) {
                 console.error('[sync.watchdog] health check failed', error);
@@ -970,6 +1066,7 @@ const AppContent = () => {
         networkActive,
         outboxEmpty,
         recordLifecycleEvent,
+        settings.dataStoreStatus,
         tenantSession.bootstrapStatus,
         tenantSession.currentTenantId,
     ]);

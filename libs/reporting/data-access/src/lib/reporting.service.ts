@@ -222,7 +222,109 @@ export const getSalesCustom = /* GraphQL */ `
         nonEbtPaidAmount
       }
       discountTotal
-      appliedDiscountSummary
+      appliedDiscountSummary {
+        applications {
+          discountApplicationId
+          discountDefinitionId
+          applicationType
+          scope
+          method
+          name
+          code
+          stackMode
+          source
+          value
+          originalAmount
+          discountAmount
+          finalAmount
+          quantityBasis
+          reasonCode
+          reasonNote
+          appliedByEmployeeId
+          appliedByEmployeeName
+          approvedByEmployeeId
+          approvedByEmployeeName
+          approvalRequired
+          approvalStatus
+          approvalReference
+          sourceSnapshot
+          appliedAt
+        }
+        approvalEvents {
+          id
+          approvalType
+          requestingEmployeeId
+          approvingEmployeeId
+          requestedAction
+          reasonCode
+          reasonNote
+          policySnapshot
+          status
+          createdAt
+        }
+        lineSummaries {
+          lineId
+          discounts {
+            discountApplicationId
+            discountDefinitionId
+            applicationType
+            scope
+            method
+            name
+            code
+            stackMode
+            source
+            value
+            originalAmount
+            discountAmount
+            finalAmount
+            quantityBasis
+            reasonCode
+            reasonNote
+            appliedByEmployeeId
+            appliedByEmployeeName
+            approvedByEmployeeId
+            approvedByEmployeeName
+            approvalRequired
+            approvalStatus
+            approvalReference
+            sourceSnapshot
+            appliedAt
+          }
+          lineDiscountTotal
+          allocatedOrderDiscountTotal
+          lineTotalBeforeTax
+        }
+        orderLevelAdjustments {
+          discountApplicationId
+          discountDefinitionId
+          applicationType
+          scope
+          method
+          name
+          code
+          stackMode
+          source
+          value
+          originalAmount
+          discountAmount
+          finalAmount
+          quantityBasis
+          reasonCode
+          reasonNote
+          appliedByEmployeeId
+          appliedByEmployeeName
+          approvedByEmployeeId
+          approvedByEmployeeName
+          approvalRequired
+          approvalStatus
+          approvalReference
+          sourceSnapshot
+          appliedAt
+        }
+        warnings
+        pricingGeneratedAt
+      }
       paymentInfo {
         employeeId
         employeeName

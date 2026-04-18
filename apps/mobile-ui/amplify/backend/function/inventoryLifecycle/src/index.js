@@ -16,6 +16,9 @@ const https = require('https');
 AWS.config.update({ region: process.env.REGION });
 
 const docClient = new AWS.DynamoDB.DocumentClient();
+const appsync = new AWS.AppSync({ region: process.env.REGION });
+
+let resolvedGraphqlEndpointPromise = null;
 
 const UPDATE_PRODUCT_MUTATION = /* GraphQL */ `
   mutation UpdateProductFromLifecycle(
@@ -24,9 +27,63 @@ const UPDATE_PRODUCT_MUTATION = /* GraphQL */ `
   ) {
     updateProduct(input: $input, condition: $condition) {
       id
+      tenantId
+      name
+      description
+      price
+      tags
+      cost
+      barcode
+      sku
+      plu
       quantity
-      _version
+      unitOfMeasure
+      trackStock
+      reorderPoint
+      reorderQuantity
+      picture
+      Category {
+        id
+        tenantId
+        name
+        description
+        code
+        color
+        picture
+        discountable
+        discountPolicyMode
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      Brand {
+        id
+        tenantId
+        name
+        description
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      isActive
+      isEBTEligible
+      discountable
+      minAllowedPrice
+      maxManualDiscountPercent
+      maxManualDiscountAmount
+      createdAt
       updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      productCategoryId
+      productBrandId
       __typename
     }
   }
@@ -217,10 +274,16 @@ const SOURCE_CONFIG = {
   },
 };
 
+let currentGraphqlHost = null;
+let currentAuthorizationToken = null;
+
 exports.handler = async (event) => {
   console.log(`EVENT: ${JSON.stringify(event)}`);
 
-  const fieldName = event?.info?.fieldName;
+  currentGraphqlHost = event?.request?.headers?.host || null;
+  currentAuthorizationToken = event?.request?.headers?.authorization || null;
+
+  const fieldName = event?.fieldName || event?.info?.fieldName;
   const config = SOURCE_CONFIG[fieldName];
   if (!config) {
     throw new Error(`Unsupported inventory lifecycle operation: ${String(fieldName)}`);
@@ -291,7 +354,7 @@ exports.handler = async (event) => {
         continue;
       }
 
-      const applied = await applyInventoryLine(config, line);
+      const applied = await applyInventoryLine(config, line, tenantId);
       await putLedger(operationKey, {
         productId: line.productId,
         finalQuantity: applied.finalQuantity,
@@ -303,6 +366,7 @@ exports.handler = async (event) => {
 
     const finalizedSource = await updateSource(config, {
       id: upsertedSource.id,
+      tenantId,
       version: upsertedSource._version,
       status: 'COMPLETED',
       inventoryApplyState: 'APPLIED',
@@ -325,6 +389,7 @@ exports.handler = async (event) => {
     console.error(`${config.sourceType} finalize failed`, error);
     await updateSource(config, {
       id: upsertedSource.id,
+      tenantId,
       version: upsertedSource._version,
       status: 'COMPLETED',
       inventoryApplyState: 'FAILED',
@@ -408,6 +473,7 @@ async function upsertSource(config, source) {
 
   return updateSource(config, {
     id: existing.id,
+    tenantId: source.tenantId,
     version: existing._version,
     status: 'COMPLETED',
     inventoryApplyState: 'APPLYING',
@@ -423,6 +489,7 @@ async function updateSource(config, source) {
   const updated = await graphqlRequest(config.updateSourceMutation, {
     input: {
       id: source.id,
+      tenantId: source.tenantId,
       comments: source.comments,
       status: source.status,
       createdBy: source.createdBy,
@@ -518,7 +585,7 @@ function findExistingLine(existingLines, line) {
   return existingLines.find((existing) => existing.productId === line.productId);
 }
 
-async function applyInventoryLine(config, line) {
+async function applyInventoryLine(config, line, tenantId) {
   let attempts = 0;
 
   while (attempts < 4) {
@@ -550,6 +617,7 @@ async function applyInventoryLine(config, line) {
       const result = await graphqlRequest(UPDATE_PRODUCT_MUTATION, {
         input: {
           id: line.productId,
+          tenantId,
           quantity: finalQuantity,
           _version: product._version,
         },
@@ -653,9 +721,8 @@ async function queryLedger(operationKey) {
 }
 
 async function graphqlRequest(query, variables) {
-  const endpoint = new AWS.Endpoint(
-    `https://${process.env.API_POS_GRAPHQLAPIIDOUTPUT}.appsync-api.${process.env.REGION}.amazonaws.com/graphql`
-  );
+  const endpointUrl = await getGraphqlEndpointUrl();
+  const endpoint = new AWS.Endpoint(endpointUrl);
   const request = new AWS.HttpRequest(endpoint, process.env.REGION);
   request.method = 'POST';
   request.path = '/graphql';
@@ -666,9 +733,13 @@ async function graphqlRequest(query, variables) {
     variables,
   });
 
-  const credentials = await getCredentials();
-  const signer = new AWS.Signers.V4(request, 'appsync', true);
-  signer.addAuthorization(credentials, AWS.util.date.getDate());
+  if (currentAuthorizationToken) {
+    request.headers.Authorization = currentAuthorizationToken;
+  } else {
+    const credentials = await getCredentials();
+    const signer = new AWS.Signers.V4(request, 'appsync', true);
+    signer.addAuthorization(credentials, AWS.util.date.getDate());
+  }
 
   return new Promise((resolve, reject) => {
     const req = https.request(
@@ -699,6 +770,38 @@ async function graphqlRequest(query, variables) {
     req.write(request.body);
     req.end();
   });
+}
+
+async function getGraphqlEndpointUrl() {
+  if (process.env.API_POS_GRAPHQLAPIENDPOINTOUTPUT) {
+    return process.env.API_POS_GRAPHQLAPIENDPOINTOUTPUT;
+  }
+
+  if (currentGraphqlHost) {
+    return `https://${currentGraphqlHost}/graphql`;
+  }
+
+  if (!resolvedGraphqlEndpointPromise) {
+    resolvedGraphqlEndpointPromise = appsync
+      .getGraphqlApi({
+        apiId: process.env.API_POS_GRAPHQLAPIIDOUTPUT,
+      })
+      .promise()
+      .then((response) => {
+        const endpointUrl = response?.graphqlApi?.uris?.GRAPHQL;
+        if (!endpointUrl) {
+          throw new Error('Unable to resolve GraphQL endpoint for inventory lifecycle');
+        }
+
+        return endpointUrl;
+      })
+      .catch((error) => {
+        resolvedGraphqlEndpointPromise = null;
+        throw error;
+      });
+  }
+
+  return resolvedGraphqlEndpointPromise;
 }
 
 function firstGraphqlValue(data) {

@@ -3,8 +3,16 @@ import { syncEmployees, subscribeToEmployeeChanges } from './data-store-sync';
 
 const mockSubscribe = jest.fn();
 
+jest.mock('@pos/shared/utils', () => ({
+    sortListBy: jest.fn(),
+    logSyncDebug: jest.fn(),
+    startSyncMeasure: jest.fn(() => jest.fn()),
+    trackSyncSubscription: jest.fn(() => jest.fn()),
+}));
+
 jest.mock('@pos/shared/amplify', () => ({
     DataStore: {
+        query: jest.fn(),
         observeQuery: jest.fn(() => ({
             subscribe: mockSubscribe,
         })),
@@ -30,8 +38,8 @@ describe('employees data-store sync', () => {
         ] as any[];
 
         let observer: ((value: { isSynced: boolean; items: any[] }) => void) | undefined;
-        mockSubscribe.mockImplementation((callback: typeof observer) => {
-            observer = callback as typeof observer;
+        mockSubscribe.mockImplementation((handlers: { next?: typeof observer }) => {
+            observer = handlers.next;
             return { unsubscribe: jest.fn() };
         });
         const subscription = subscribeToEmployeeChanges(dispatch);
@@ -45,9 +53,8 @@ describe('employees data-store sync', () => {
         subscription.unsubscribe();
     });
 
-    it('uses observeQuery for one-shot employee sync without DataStore.query', async () => {
+    it('uses query for one-shot employee sync', async () => {
         const dispatch = jest.fn();
-        const unsubscribe = jest.fn();
         const employees = [
             {
                 id: 'employee-1',
@@ -58,20 +65,16 @@ describe('employees data-store sync', () => {
             },
         ] as any[];
 
-        mockSubscribe.mockImplementation((callback: (value: { items: any[] }) => void) => {
-            callback({ items: employees } as any);
-            return { unsubscribe };
-        });
+        (DataStore.query as jest.Mock).mockResolvedValueOnce(employees);
 
-        syncEmployees(dispatch);
+        await syncEmployees(dispatch);
 
-        expect(DataStore.observeQuery).toHaveBeenCalledTimes(1);
+        expect(DataStore.query).toHaveBeenCalledTimes(1);
         expect(dispatch).toHaveBeenCalledWith(
             expect.objectContaining({
                 type: 'employees/setAll',
             })
         );
-        expect(unsubscribe).toHaveBeenCalledTimes(1);
     });
 
     it('shares a single employee subscription across callers and replays cached data', () => {
@@ -91,8 +94,8 @@ describe('employees data-store sync', () => {
         let observer:
             | ((value: { isSynced: boolean; items: any[] }) => void)
             | undefined;
-        mockSubscribe.mockImplementation((callback: typeof observer) => {
-            observer = callback as typeof observer;
+        mockSubscribe.mockImplementation((handlers: { next?: typeof observer }) => {
+            observer = handlers.next;
             return { unsubscribe };
         });
 
@@ -120,8 +123,8 @@ describe('employees data-store sync', () => {
         const dispatch = jest.fn();
         let observer: ((value: { isSynced: boolean; items: any[] }) => void) | undefined;
 
-        mockSubscribe.mockImplementation((callback: typeof observer) => {
-            observer = callback as typeof observer;
+        mockSubscribe.mockImplementation((handlers: { next?: typeof observer }) => {
+            observer = handlers.next;
             return { unsubscribe: jest.fn() };
         });
 
@@ -150,8 +153,8 @@ describe('employees data-store sync', () => {
             | ((value: { isSynced: boolean; items: any[] }) => void)
             | undefined;
 
-        mockSubscribe.mockImplementation((callback: typeof observer) => {
-            observer = callback as typeof observer;
+        mockSubscribe.mockImplementation((handlers: { next?: typeof observer }) => {
+            observer = handlers.next;
             return { unsubscribe: jest.fn() };
         });
 

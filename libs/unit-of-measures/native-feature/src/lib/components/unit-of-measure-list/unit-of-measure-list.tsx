@@ -4,13 +4,10 @@ import {
     selectFilteredList,
     selectIsEmpty,
     selectLoadingStatus,
-    subscribeToUnitOfMeasureChanges,
 } from '@pos/unit-of-measures/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import UnitOfMeasureItem from '../unit-of-measure-item/unit-of-measure-item';
-import { useDispatch } from 'react-redux';
 
 export interface UnitOfMeasureListProps {
     navigation: NativeStackNavigationProp<any>;
@@ -37,17 +34,6 @@ export const buildUnitOfMeasureListProps = (
     } as ItemListProps<any, any>);
 
 export function UnitOfMeasureList({ navigation }: UnitOfMeasureListProps) {
-    const dispatch = useDispatch();
-
-    useFocusEffect(
-        React.useCallback(() => {
-            const sub = subscribeToUnitOfMeasureChanges(dispatch);
-            return () => {
-                sub.unsubscribe();
-            };
-        }, [dispatch])
-    );
-
     const props = buildUnitOfMeasureListProps(navigation);
 
     return <UIGenericItemList {...props} />;

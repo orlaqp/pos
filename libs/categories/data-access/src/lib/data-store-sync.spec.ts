@@ -12,6 +12,7 @@ jest.mock('@pos/shared/utils', () => ({
 
 jest.mock('@pos/shared/amplify', () => ({
     DataStore: {
+        query: jest.fn(),
         observeQuery: jest.fn(() => ({
             subscribe: mockSubscribe,
         })),
@@ -31,8 +32,8 @@ describe('categories data-store sync', () => {
             | ((value: { isSynced: boolean; items: any[] }) => void)
             | undefined;
 
-        mockSubscribe.mockImplementation((callback: typeof observer) => {
-            observer = callback as typeof observer;
+        mockSubscribe.mockImplementation((handlers: { next?: typeof observer }) => {
+            observer = handlers.next;
             return { unsubscribe };
         });
 
@@ -51,28 +52,20 @@ describe('categories data-store sync', () => {
         expect(unsubscribe).toHaveBeenCalledTimes(1);
     });
 
-    it('uses observeQuery for one-shot category sync', () => {
+    it('uses query for one-shot category sync', async () => {
         const dispatch = jest.fn();
-        const unsubscribe = jest.fn();
+        (DataStore.query as jest.Mock).mockResolvedValueOnce([
+            { id: 'category-1', name: 'Produce' },
+        ]);
 
-        mockSubscribe.mockImplementation(
-            (callback: (value: { items: any[] }) => void) => {
-                callback({
-                    items: [{ id: 'category-1', name: 'Produce' }],
-                } as any);
-                return { unsubscribe };
-            }
-        );
+        await syncCategories(dispatch);
 
-        syncCategories(dispatch);
-
-        expect(DataStore.observeQuery).toHaveBeenCalledTimes(1);
+        expect(DataStore.query).toHaveBeenCalledTimes(1);
         expect(dispatch).toHaveBeenCalledWith(
             expect.objectContaining({
                 type: 'categories/setAll',
             })
         );
-        expect(unsubscribe).toHaveBeenCalledTimes(1);
     });
 
     it('shares a single live category subscription across callers', () => {

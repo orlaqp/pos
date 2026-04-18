@@ -179,6 +179,8 @@ export function DiscountDefinitionFields({
                         title="Select applicable categories"
                         emptyLabel="Choose categories"
                         list={categoryOptions}
+                        searchable
+                        searchPlaceholder="Filter categories"
                         disabled={!availability.applicableFiltersEnabled}
                       />
                     </View>
@@ -189,6 +191,8 @@ export function DiscountDefinitionFields({
                         title="Select applicable products"
                         emptyLabel="Choose products"
                         list={productOptions}
+                        searchable
+                        searchPlaceholder="Filter products"
                         disabled={!availability.applicableFiltersEnabled}
                       />
                     </View>
@@ -284,6 +288,8 @@ export function DiscountDefinitionFields({
                             title="Select excluded categories"
                             emptyLabel="Choose categories"
                             list={categoryOptions}
+                            searchable
+                            searchPlaceholder="Filter categories"
                             disabled={!availability.exclusionFiltersEnabled}
                           />
                         </View>
@@ -294,6 +300,8 @@ export function DiscountDefinitionFields({
                             title="Select excluded products"
                             emptyLabel="Choose products"
                             list={productOptions}
+                            searchable
+                            searchPlaceholder="Filter products"
                             disabled={!availability.exclusionFiltersEnabled}
                           />
                         </View>

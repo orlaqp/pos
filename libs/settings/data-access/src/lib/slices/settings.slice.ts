@@ -41,10 +41,10 @@ export const resetDataStore = createAsyncThunk(
     async (_, thunkApi) => {
         thunkApi.dispatch(productsActions.reset());
         teardownProductSync();
-        
+
+        await new Promise((resolve) => setTimeout(resolve, 0));
         await DataStore.stop();
         await DataStore.clear();
-        await DataStore.start();
     }
 );
 

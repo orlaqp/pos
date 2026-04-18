@@ -612,6 +612,10 @@ export const createOrder = /* GraphQL */ `mutation CreateOrder(
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     Customer {
       id
       tenantId
@@ -720,6 +724,10 @@ export const updateOrder = /* GraphQL */ `mutation UpdateOrder(
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     Customer {
       id
       tenantId
@@ -828,6 +836,10 @@ export const deleteOrder = /* GraphQL */ `mutation DeleteOrder(
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     Customer {
       id
       tenantId
@@ -1315,6 +1327,10 @@ export const createInventoryCount = /* GraphQL */ `mutation CreateInventoryCount
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1341,6 +1357,10 @@ export const updateInventoryCount = /* GraphQL */ `mutation UpdateInventoryCount
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1367,6 +1387,10 @@ export const deleteInventoryCount = /* GraphQL */ `mutation DeleteInventoryCount
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1397,6 +1421,10 @@ export const createInventoryCountLine = /* GraphQL */ `mutation CreateInventoryC
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1435,6 +1463,10 @@ export const updateInventoryCountLine = /* GraphQL */ `mutation UpdateInventoryC
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1473,6 +1505,10 @@ export const deleteInventoryCountLine = /* GraphQL */ `mutation DeleteInventoryC
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1507,6 +1543,10 @@ export const createInventoryReceive = /* GraphQL */ `mutation CreateInventoryRec
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1533,6 +1573,10 @@ export const updateInventoryReceive = /* GraphQL */ `mutation UpdateInventoryRec
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1559,6 +1603,10 @@ export const deleteInventoryReceive = /* GraphQL */ `mutation DeleteInventoryRec
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1588,6 +1636,10 @@ export const createInventoryReceiveLine = /* GraphQL */ `mutation CreateInventor
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1625,6 +1677,10 @@ export const updateInventoryReceiveLine = /* GraphQL */ `mutation UpdateInventor
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1662,6 +1718,10 @@ export const deleteInventoryReceiveLine = /* GraphQL */ `mutation DeleteInventor
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version

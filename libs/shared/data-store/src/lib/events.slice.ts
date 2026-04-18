@@ -33,7 +33,6 @@ export interface SyncHealthEntry {
     subscriberCount: number;
     tenantId?: string;
     lastSnapshotAt?: string;
-    lastRealtimePatchAt?: string;
     lastRecoveryAttemptAt?: string;
     lastRecoveryError?: string;
     lastError?: string;

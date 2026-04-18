@@ -170,7 +170,9 @@
           "s3Key": "amplify-builds/getSalesSummaryQuery-79574142423054437964-build.zip"
         },
         "pos0614c248": {},
-        "pos": {}
+        "pos": {},
+        "inventoryLifecycle": {},
+        "orderInventoryLifecycle": {}
       },
       "api": {
         "pos": {}

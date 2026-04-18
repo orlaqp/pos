@@ -181,8 +181,90 @@ const finalizeReceive = async (
             : inventoryReceiveActions.add(finalizedReceive)
     );
 
+    await reconcileFinalizedReceiveRecord(receive, finalized.sourceId);
     syncFinalizedProducts(dispatch, finalized.affectedProducts || []);
     return true;
+};
+
+const reconcileFinalizedReceiveRecord = async (
+    receive: InventoryReceiveDTO,
+    sourceId: string
+) => {
+    const localId = receive.id || sourceId;
+    const tenantId = requireCurrentTenantId();
+    let existing = await DataStore.query(InventoryReceive, localId);
+
+    if (!existing && localId !== sourceId) {
+        existing = await DataStore.query(InventoryReceive, sourceId);
+    }
+
+    const savedReceive = existing
+        ? await DataStore.save(
+              InventoryReceive.copyOf(existing, (updated) => {
+                  updated.status = 'COMPLETED';
+                  updated.comments = receive.comments;
+              })
+          )
+        : await DataStore.save(
+              new InventoryReceive({
+                  id: sourceId,
+                  tenantId,
+                  comments: receive.comments,
+                  status: 'COMPLETED',
+                  createdBy: {
+                      id: receive.createdBy?.id || '',
+                      name: receive.createdBy?.name || '',
+                  },
+              } as never)
+          );
+
+    const existingLines = await DataStore.query(InventoryReceiveLine, (line: any) =>
+        line.inventoryReceiveLineInventoryReceiveId.eq(savedReceive.id)
+    );
+    const seenKeys = new Set<string>();
+
+    for (const line of receive.lines) {
+        const existingLine =
+            existingLines.find((candidate: any) => line.id && candidate.id === line.id) ||
+            existingLines.find((candidate: any) => candidate.productId === line.productId);
+        const identityKey = existingLine?.id || line.id || line.productId;
+        seenKeys.add(identityKey);
+
+        if (existingLine) {
+            await DataStore.save(
+                InventoryReceiveLine.copyOf(existingLine, (updated) => {
+                    updated.productId = line.productId;
+                    updated.productName = line.productName;
+                    updated.unitOfMeasure = line.unitOfMeasure;
+                    updated.received = line.received;
+                    updated.comments = line.comments;
+                })
+            );
+            continue;
+        }
+
+        await DataStore.save(
+            new InventoryReceiveLine({
+                ...(line.id ? { id: line.id } : {}),
+                tenantId,
+                productId: line.productId,
+                productName: line.productName,
+                unitOfMeasure: line.unitOfMeasure,
+                received: line.received,
+                comments: line.comments,
+                inventoryReceiveLineInventoryReceiveId: savedReceive.id,
+            } as never)
+        );
+    }
+
+    for (const existingLine of existingLines) {
+        const identityKey = existingLine.id || existingLine.productId;
+        if (seenKeys.has(identityKey)) {
+            continue;
+        }
+
+        await DataStore.delete(existingLine);
+    }
 };
 
 export class InventoryReceiveService {

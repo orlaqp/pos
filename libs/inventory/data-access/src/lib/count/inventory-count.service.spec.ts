@@ -28,6 +28,14 @@ jest.mock('@pos/products/data-access', () => ({
     },
 }));
 
+jest.mock('@pos/auth/data-access', () => ({
+    requireCurrentTenantId: () => 'tenant-1',
+    stampTenant: (value: Record<string, unknown>) => ({
+        ...value,
+        tenantId: 'tenant-1',
+    }),
+}));
+
 jest.mock('@pos/shared/models', () => {
     class InventoryCount {
         constructor(input: any) {
@@ -62,6 +70,7 @@ jest.mock('@pos/shared/models', () => {
 describe('InventoryCountService', () => {
     const dispatch = jest.fn();
     const mockedGraphql = API.graphql as jest.Mock;
+    const mockedQuery = DataStore.query as jest.Mock;
     const mockedSave = DataStore.save as jest.Mock;
     const mockedAlert = Alert.alert as jest.Mock;
 
@@ -70,6 +79,13 @@ describe('InventoryCountService', () => {
     });
 
     it('finalizes counts through the backend lifecycle query and applies exact quantities locally', async () => {
+        mockedQuery.mockResolvedValueOnce({
+            id: 'count-1',
+            status: 'IN_PROGRESS',
+            comments: 'cycle count',
+        });
+        mockedQuery.mockResolvedValueOnce([]);
+        mockedSave.mockImplementation(async (value) => value);
         mockedGraphql.mockResolvedValue({
             data: {
                 finalizeInventoryCount: {
@@ -142,6 +158,14 @@ describe('InventoryCountService', () => {
             type: 'products/updateQuantities',
             payload: [{ productId: 'p-1', newCount: 30 }],
         });
+        expect(mockedQuery).toHaveBeenCalledWith(expect.anything(), 'count-1');
+        expect(mockedSave).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: 'count-1',
+                status: 'COMPLETED',
+                comments: 'cycle count',
+            })
+        );
     });
 
     it('persists count drafts without calling the lifecycle query', async () => {
@@ -174,6 +198,68 @@ describe('InventoryCountService', () => {
         expect(saved).toBe(true);
         expect(mockedGraphql).not.toHaveBeenCalled();
         expect(mockedSave).toHaveBeenCalled();
+    });
+
+    it('creates a local completed count when finalizing a brand-new count', async () => {
+        mockedQuery
+            .mockResolvedValueOnce(undefined)
+            .mockResolvedValueOnce([]);
+        mockedSave.mockImplementation(async (value) => ({
+            ...value,
+            id: value.id || 'count-2',
+        }));
+        mockedGraphql.mockResolvedValue({
+            data: {
+                finalizeInventoryCount: {
+                    sourceId: 'count-2',
+                    sourceType: 'INVENTORY_COUNT',
+                    status: 'APPLIED',
+                    appliedAt: '2026-04-17T10:00:00.000Z',
+                    error: null,
+                    affectedProducts: [],
+                },
+            },
+        });
+
+        const saved = await InventoryCountService.save(
+            dispatch,
+            {
+                comments: 'cycle count',
+                status: 'COMPLETED',
+                createdBy: { id: 'e1', name: 'Emp 1' },
+                lines: [
+                    {
+                        productId: 'p-1',
+                        productName: 'Apple',
+                        unitOfMeasure: 'EA',
+                        current: 25,
+                        newCount: 30,
+                        comments: '',
+                        inventoryCountLineInventoryCountId: '',
+                    },
+                ],
+            } as any,
+            true
+        );
+
+        expect(saved).toBe(true);
+        expect(mockedSave).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: 'count-2',
+                status: 'COMPLETED',
+                comments: 'cycle count',
+            })
+        );
+        expect(mockedSave).toHaveBeenCalledWith(
+            expect.not.objectContaining({
+                id: undefined,
+            })
+        );
+        expect(dispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: expect.stringContaining('/add'),
+            })
+        );
     });
 
     it('alerts and returns false when count finalization fails', async () => {

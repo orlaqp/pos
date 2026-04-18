@@ -417,9 +417,6 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     entry.lastSnapshotAt
                         ? `snapshot=${entry.lastSnapshotAt}`
                         : null,
-                    entry.lastRealtimePatchAt
-                        ? `realtime=${entry.lastRealtimePatchAt}`
-                        : null,
                     entry.lastRecoveryAttemptAt
                         ? `recovery=${entry.lastRecoveryAttemptAt}`
                         : null,

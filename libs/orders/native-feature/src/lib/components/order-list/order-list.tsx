@@ -21,6 +21,7 @@ import OrderVoidForm from '../order-void-form/order-void-form';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import i18next from 'i18next';
 import { logSyncDebug } from '@pos/shared/utils';
+import { RootState } from '@pos/store';
 
 export interface OrderListProps {
     navigation?: NativeStackNavigationProp<any>;
@@ -41,6 +42,9 @@ export function OrderList({ navigation }: OrderListProps) {
     const [orderToVoid, setOrderToVoid] = useState<OrderEntity | undefined>();
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
     const allOrders = useSelector(selectAllOrders);
+    const currentTenantId = useSelector(
+        (state: RootState) => state?.tenantSession?.currentTenantId
+    );
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
@@ -48,11 +52,11 @@ export function OrderList({ navigation }: OrderListProps) {
     
     useFocusEffect(
         React.useCallback(() => {
-            const ordersSub = subscribeToOrderChanges(dispatch);
+            const ordersSub = subscribeToOrderChanges(dispatch, currentTenantId);
             return () => {
                 ordersSub?.unsubscribe();
             };
-        }, [dispatch])
+        }, [currentTenantId, dispatch])
     );
 
     const filteredOrders = useMemo(

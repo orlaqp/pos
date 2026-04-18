@@ -84,6 +84,10 @@ export const getSales = /* GraphQL */ `query GetSales($status: OrderStatus!, $fr
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     Customer {
       id
       tenantId
@@ -141,6 +145,46 @@ export const getSalesSummary = /* GraphQL */ `query GetSalesSummary($status: Ord
 ` as GeneratedQuery<
   APITypes.GetSalesSummaryQueryVariables,
   APITypes.GetSalesSummaryQuery
+>;
+export const finalizeInventoryReceive = /* GraphQL */ `query FinalizeInventoryReceive($input: FinalizeInventoryReceiveInput!) {
+  finalizeInventoryReceive(input: $input) {
+    sourceId
+    sourceType
+    status
+    appliedAt
+    error
+    affectedProducts {
+      productId
+      finalQuantity
+      appliedDelta
+      __typename
+    }
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.FinalizeInventoryReceiveQueryVariables,
+  APITypes.FinalizeInventoryReceiveQuery
+>;
+export const finalizeInventoryCount = /* GraphQL */ `query FinalizeInventoryCount($input: FinalizeInventoryCountInput!) {
+  finalizeInventoryCount(input: $input) {
+    sourceId
+    sourceType
+    status
+    appliedAt
+    error
+    affectedProducts {
+      productId
+      finalQuantity
+      appliedDelta
+      __typename
+    }
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.FinalizeInventoryCountQueryVariables,
+  APITypes.FinalizeInventoryCountQuery
 >;
 export const getTenant = /* GraphQL */ `query GetTenant($id: ID!) {
   getTenant(id: $id) {
@@ -216,6 +260,41 @@ export const syncTenants = /* GraphQL */ `query SyncTenants(
 ` as GeneratedQuery<
   APITypes.SyncTenantsQueryVariables,
   APITypes.SyncTenantsQuery
+>;
+export const tenantBySlug = /* GraphQL */ `query TenantBySlug(
+  $slug: String!
+  $sortDirection: ModelSortDirection
+  $filter: ModelTenantFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  tenantBySlug(
+    slug: $slug
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      name
+      slug
+      ownerUserId
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.TenantBySlugQueryVariables,
+  APITypes.TenantBySlugQuery
 >;
 export const getTenantUser = /* GraphQL */ `query GetTenantUser($id: ID!) {
   getTenantUser(id: $id) {
@@ -294,6 +373,76 @@ export const syncTenantUsers = /* GraphQL */ `query SyncTenantUsers(
 ` as GeneratedQuery<
   APITypes.SyncTenantUsersQueryVariables,
   APITypes.SyncTenantUsersQuery
+>;
+export const tenantUsersByTenant = /* GraphQL */ `query TenantUsersByTenant(
+  $tenantId: ID!
+  $sortDirection: ModelSortDirection
+  $filter: ModelTenantUserFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  tenantUsersByTenant(
+    tenantId: $tenantId
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      tenantId
+      userId
+      role
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.TenantUsersByTenantQueryVariables,
+  APITypes.TenantUsersByTenantQuery
+>;
+export const tenantUsersByUser = /* GraphQL */ `query TenantUsersByUser(
+  $userId: String!
+  $sortDirection: ModelSortDirection
+  $filter: ModelTenantUserFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  tenantUsersByUser(
+    userId: $userId
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      tenantId
+      userId
+      role
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.TenantUsersByUserQueryVariables,
+  APITypes.TenantUsersByUserQuery
 >;
 export const getStore = /* GraphQL */ `query GetStore($id: ID!) {
   getStore(id: $id) {
@@ -839,6 +988,10 @@ export const getOrder = /* GraphQL */ `query GetOrder($id: ID!) {
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     Customer {
       id
       tenantId
@@ -892,6 +1045,10 @@ export const listOrders = /* GraphQL */ `query ListOrders(
       status
       employeeId
       employeeName
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -942,6 +1099,10 @@ export const syncOrders = /* GraphQL */ `query SyncOrders(
       status
       employeeId
       employeeName
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1337,6 +1498,10 @@ export const getInventoryCount = /* GraphQL */ `query GetInventoryCount($id: ID!
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1360,6 +1525,10 @@ export const listInventoryCounts = /* GraphQL */ `query ListInventoryCounts(
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1393,6 +1562,10 @@ export const syncInventoryCounts = /* GraphQL */ `query SyncInventoryCounts(
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1424,6 +1597,10 @@ export const getInventoryCountLine = /* GraphQL */ `query GetInventoryCountLine(
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1529,6 +1706,10 @@ export const getInventoryReceive = /* GraphQL */ `query GetInventoryReceive($id:
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1552,6 +1733,10 @@ export const listInventoryReceives = /* GraphQL */ `query ListInventoryReceives(
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1585,6 +1770,10 @@ export const syncInventoryReceives = /* GraphQL */ `query SyncInventoryReceives(
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1615,6 +1804,10 @@ export const getInventoryReceiveLine = /* GraphQL */ `query GetInventoryReceiveL
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -2791,109 +2984,4 @@ export const syncDiscountReconciliationExceptions = /* GraphQL */ `query SyncDis
 ` as GeneratedQuery<
   APITypes.SyncDiscountReconciliationExceptionsQueryVariables,
   APITypes.SyncDiscountReconciliationExceptionsQuery
->;
-export const tenantBySlug = /* GraphQL */ `query TenantBySlug(
-  $slug: String!
-  $sortDirection: ModelSortDirection
-  $filter: ModelTenantFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  tenantBySlug(
-    slug: $slug
-    sortDirection: $sortDirection
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-  ) {
-    items {
-      id
-      name
-      slug
-      ownerUserId
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      __typename
-    }
-    nextToken
-    startedAt
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.TenantBySlugQueryVariables,
-  APITypes.TenantBySlugQuery
->;
-export const tenantUsersByTenant = /* GraphQL */ `query TenantUsersByTenant(
-  $tenantId: ID!
-  $sortDirection: ModelSortDirection
-  $filter: ModelTenantUserFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  tenantUsersByTenant(
-    tenantId: $tenantId
-    sortDirection: $sortDirection
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-  ) {
-    items {
-      id
-      tenantId
-      userId
-      role
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      __typename
-    }
-    nextToken
-    startedAt
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.TenantUsersByTenantQueryVariables,
-  APITypes.TenantUsersByTenantQuery
->;
-export const tenantUsersByUser = /* GraphQL */ `query TenantUsersByUser(
-  $userId: String!
-  $sortDirection: ModelSortDirection
-  $filter: ModelTenantUserFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  tenantUsersByUser(
-    userId: $userId
-    sortDirection: $sortDirection
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-  ) {
-    items {
-      id
-      tenantId
-      userId
-      role
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      __typename
-    }
-    nextToken
-    startedAt
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.TenantUsersByUserQueryVariables,
-  APITypes.TenantUsersByUserQuery
 >;

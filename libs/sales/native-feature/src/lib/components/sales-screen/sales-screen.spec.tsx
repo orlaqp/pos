@@ -1122,7 +1122,7 @@ describe('SalesScreen', () => {
         );
     });
 
-    it('unsubscribes background subscriptions on unmount', () => {
+    it('does not own global catalog subscriptions on unmount', () => {
         const view = renderSalesScreen();
 
         act(() => {
@@ -1130,10 +1130,9 @@ describe('SalesScreen', () => {
         });
 
         view.unmount();
-        expect(mockInteractionCancel).toHaveBeenCalled();
-        expect(mockCategoriesUnsubscribe).toHaveBeenCalled();
         expect(mockProductsUnsubscribe).not.toHaveBeenCalled();
-        expect(mockSettingsUnsubscribe).toHaveBeenCalled();
+        expect(mockCategoriesUnsubscribe).not.toHaveBeenCalled();
+        expect(mockSettingsUnsubscribe).not.toHaveBeenCalled();
     });
 
     it('shows the no-catalog state and opens back office create routes for admins', () => {

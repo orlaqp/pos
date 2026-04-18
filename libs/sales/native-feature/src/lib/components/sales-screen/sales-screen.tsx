@@ -7,7 +7,6 @@ import { Animated, View, Alert, InteractionManager, TextInput } from 'react-nati
 
 import {
     CategoryEntity,
-    subscribeToCategoryChanges,
 } from '@pos/categories/data-access';
 import { useSelector } from 'react-redux';
 import {
@@ -52,7 +51,6 @@ import {
     selectStation,
     stationActions,
     StationService,
-    subscribeToGlobalSettingsChanges,
 } from '@pos/settings/data-access';
 import { Role } from '@pos/auth/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
@@ -856,29 +854,6 @@ export function SalesScreen({
             ]
         );
     };
-
-    useFocusEffect(
-        useCallback(() => {
-            let active = true;
-            let categoriesSub: { unsubscribe: () => void } | undefined;
-            let globalSettingsSub: { unsubscribe: () => void } | undefined;
-            const interaction = InteractionManager.runAfterInteractions(() => {
-                if (!active) {
-                    return;
-                }
-
-                categoriesSub = subscribeToCategoryChanges(dispatch);
-                globalSettingsSub = subscribeToGlobalSettingsChanges(dispatch);
-            });
-
-            return () => {
-                active = false;
-                interaction.cancel?.();
-                categoriesSub?.unsubscribe();
-                globalSettingsSub?.unsubscribe();
-            };
-        }, [dispatch])
-    );
 
     useFocusEffect(
         useCallback(() => {

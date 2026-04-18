@@ -612,6 +612,10 @@ export const onCreateOrder = /* GraphQL */ `subscription OnCreateOrder(
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     Customer {
       id
       tenantId
@@ -720,6 +724,10 @@ export const onUpdateOrder = /* GraphQL */ `subscription OnUpdateOrder(
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     Customer {
       id
       tenantId
@@ -828,6 +836,10 @@ export const onDeleteOrder = /* GraphQL */ `subscription OnDeleteOrder(
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     Customer {
       id
       tenantId
@@ -1315,6 +1327,10 @@ export const onCreateInventoryCount = /* GraphQL */ `subscription OnCreateInvent
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1341,6 +1357,10 @@ export const onUpdateInventoryCount = /* GraphQL */ `subscription OnUpdateInvent
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1367,6 +1387,10 @@ export const onDeleteInventoryCount = /* GraphQL */ `subscription OnDeleteInvent
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1397,6 +1421,10 @@ export const onCreateInventoryCountLine = /* GraphQL */ `subscription OnCreateIn
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1435,6 +1463,10 @@ export const onUpdateInventoryCountLine = /* GraphQL */ `subscription OnUpdateIn
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1473,6 +1505,10 @@ export const onDeleteInventoryCountLine = /* GraphQL */ `subscription OnDeleteIn
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1507,6 +1543,10 @@ export const onCreateInventoryReceive = /* GraphQL */ `subscription OnCreateInve
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1533,6 +1573,10 @@ export const onUpdateInventoryReceive = /* GraphQL */ `subscription OnUpdateInve
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1559,6 +1603,10 @@ export const onDeleteInventoryReceive = /* GraphQL */ `subscription OnDeleteInve
       name
       __typename
     }
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
     createdAt
     updatedAt
     _version
@@ -1588,6 +1636,10 @@ export const onCreateInventoryReceiveLine = /* GraphQL */ `subscription OnCreate
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1625,6 +1677,10 @@ export const onUpdateInventoryReceiveLine = /* GraphQL */ `subscription OnUpdate
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version
@@ -1662,6 +1718,10 @@ export const onDeleteInventoryReceiveLine = /* GraphQL */ `subscription OnDelete
       tenantId
       comments
       status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
       createdAt
       updatedAt
       _version

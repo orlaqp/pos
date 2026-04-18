@@ -2,5 +2,8 @@
   "name": "inventory-lifecycle",
   "version": "1.0.0",
   "private": true,
-  "main": "index.js"
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "2.1693.0"
+  }
 }

@@ -1,89 +1,69 @@
-import { GlobalSettingsEntityMapper } from './global-settings.dto';
-import { DataStore } from '@pos/shared/amplify';
 import { Dispatch } from '@reduxjs/toolkit';
+import { DataStore } from '@pos/shared/amplify';
+import { createSharedObserveQueryManager } from '@pos/shared/data-store';
 import { GlobalSettings } from '@pos/shared/models';
+import { logSyncDebug, startSyncMeasure } from '@pos/shared/utils';
+import { GlobalSettingsEntityMapper } from './global-settings.dto';
 import { settingsActions } from './slices/settings.slice';
 
-const globalSettingsDispatchRefs = new Map<Dispatch, number>();
-
-let sharedGlobalSettingsSubscription:
-    | {
-          unsubscribe: () => void;
-      }
-    | undefined;
-
-let globalSettingsSnapshot: GlobalSettings[] | undefined;
+const GLOBAL_SETTINGS_SYNC_MODEL = 'globalSettings';
 
 const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
     !!item && item._deleted !== true;
 
-export const syncGlobalSettings = (dispatch: Dispatch) => {
-    let subscription: { unsubscribe: () => void } | undefined = undefined;
-    let shouldUnsubscribeAfterSubscribe = false;
-    subscription = DataStore.observeQuery(GlobalSettings).subscribe(({ items }) => {
+const updateStore = (dispatch: Dispatch, items: GlobalSettings[]) => {
+    logSyncDebug('globalSettings', 'updateStore', {
+        itemCount: items.length,
+    });
+    dispatch(
+        settingsActions.setGlobalSettings(
+            GlobalSettingsEntityMapper.from(items[0])
+        )
+    );
+};
+
+const globalSettingsSyncManager = createSharedObserveQueryManager<
+    GlobalSettings,
+    GlobalSettings[]
+>({
+    model: GLOBAL_SETTINGS_SYNC_MODEL,
+    trackKey: 'globalSettings.observeQuery',
+    observeQuery: () => DataStore.observeQuery(GlobalSettings),
+    mapSnapshot: ({ isSynced, items }) => {
         const activeItems = items.filter((item) =>
             isNotDeleted(item as { _deleted?: boolean | null })
         );
-        updateStore(dispatch, activeItems);
-        if (subscription) {
-            subscription.unsubscribe();
-            return;
-        }
 
-        shouldUnsubscribeAfterSubscribe = true;
-    });
+        logSyncDebug('globalSettings.observeQuery', 'update', {
+            isSynced,
+            itemCount: activeItems.length,
+        });
 
-    if (shouldUnsubscribeAfterSubscribe) {
-        subscription.unsubscribe();
+        return activeItems;
+    },
+    publishSnapshot: (dispatch, items) => {
+        updateStore(dispatch, items);
+    },
+});
+
+export const syncGlobalSettings = async (dispatch: Dispatch) => {
+    const finish = startSyncMeasure('globalSettings', 'syncGlobalSettings');
+    const items = (await DataStore.query(GlobalSettings)).filter((item) =>
+        isNotDeleted(item as { _deleted?: boolean | null })
+    );
+    finish({ itemCount: items.length });
+    updateStore(dispatch, items);
+};
+
+export const ensureGlobalSettingsSyncHealthy = async (
+    dispatch: Dispatch,
+    options?: {
+        staleAfterMs?: number;
+        tenantId?: string;
     }
-};
+) => globalSettingsSyncManager.ensureHealthy(dispatch, options);
 
-export const subscribeToGlobalSettingsChanges = (dispatch: Dispatch) => {
-    const currentCount = globalSettingsDispatchRefs.get(dispatch) || 0;
-    globalSettingsDispatchRefs.set(dispatch, currentCount + 1);
-
-    if (!sharedGlobalSettingsSubscription) {
-        const subscription = DataStore.observeQuery(GlobalSettings).subscribe(
-            ({ isSynced, items }) => {
-                void isSynced;
-                const activeItems = items.filter((item) =>
-                    isNotDeleted(item as { _deleted?: boolean | null })
-                );
-                globalSettingsSnapshot = activeItems;
-                globalSettingsDispatchRefs.forEach((_, activeDispatch) => {
-                    updateStore(activeDispatch, activeItems);
-                });
-            }
-        );
-
-        sharedGlobalSettingsSubscription = {
-            unsubscribe() {
-                subscription.unsubscribe();
-                globalSettingsSnapshot = undefined;
-                sharedGlobalSettingsSubscription = undefined;
-            },
-        };
-    } else if (globalSettingsSnapshot) {
-        updateStore(dispatch, globalSettingsSnapshot);
-    }
-
-    return {
-        unsubscribe() {
-            const nextCount = (globalSettingsDispatchRefs.get(dispatch) || 1) - 1;
-
-            if (nextCount <= 0) {
-                globalSettingsDispatchRefs.delete(dispatch);
-            } else {
-                globalSettingsDispatchRefs.set(dispatch, nextCount);
-            }
-
-            if (globalSettingsDispatchRefs.size === 0) {
-                sharedGlobalSettingsSubscription?.unsubscribe();
-            }
-        },
-    };
-};
-
-const updateStore = (dispatch: Dispatch, items: GlobalSettings[]) => {
-    dispatch(settingsActions.setGlobalSettings(GlobalSettingsEntityMapper.from(items[0])));
-};
+export const subscribeToGlobalSettingsChanges = (
+    dispatch: Dispatch,
+    tenantId?: string
+) => globalSettingsSyncManager.subscribe(dispatch, tenantId);

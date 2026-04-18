@@ -4,13 +4,10 @@ import {
     selectFilteredList,
     selectIsEmpty,
     selectLoadingStatus,
-    subscribeToCategoryChanges,
 } from '@pos/categories/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import CategoryItem from '../category-item/category-item';
-import { useDispatch } from 'react-redux';
 
 export interface CategoryListProps {
     navigation: NativeStackNavigationProp<any>;
@@ -35,17 +32,6 @@ export const buildCategoryListProps = (navigation: NativeStackNavigationProp<any
     } as ItemListProps<any, any>);
 
 export function CategoryList({ navigation }: CategoryListProps) {
-    const dispatch = useDispatch();
-
-    useFocusEffect(
-        React.useCallback(() => {
-            const sub = subscribeToCategoryChanges(dispatch);
-            return () => {
-                sub.unsubscribe();
-            };
-        }, [dispatch])
-    );
-
     const props = buildCategoryListProps(navigation);
 
     return <UIGenericItemList {...props} />;

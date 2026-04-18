@@ -28,6 +28,14 @@ jest.mock('@pos/products/data-access', () => ({
     },
 }));
 
+jest.mock('@pos/auth/data-access', () => ({
+    requireCurrentTenantId: () => 'tenant-1',
+    stampTenant: (value: Record<string, unknown>) => ({
+        ...value,
+        tenantId: 'tenant-1',
+    }),
+}));
+
 jest.mock('@pos/shared/models', () => {
     class InventoryReceive {
         constructor(input: any) {
@@ -71,6 +79,13 @@ describe('InventoryReceiveService', () => {
     });
 
     it('finalizes inventory receive through the backend lifecycle query', async () => {
+        mockedQuery.mockResolvedValueOnce({
+            id: 'receive-1',
+            status: 'IN_PROGRESS',
+            comments: 'restock',
+        });
+        mockedQuery.mockResolvedValueOnce([]);
+        mockedSave.mockImplementation(async (value) => value);
         mockedGraphql.mockResolvedValue({
             data: {
                 finalizeInventoryReceive: {
@@ -142,6 +157,14 @@ describe('InventoryReceiveService', () => {
             type: 'products/updateQuantities',
             payload: [{ productId: 'p-1', newCount: 15 }],
         });
+        expect(mockedQuery).toHaveBeenCalledWith(expect.anything(), 'receive-1');
+        expect(mockedSave).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: 'receive-1',
+                status: 'COMPLETED',
+                comments: 'restock',
+            })
+        );
     });
 
     it('persists drafts locally without calling the finalization query', async () => {
@@ -173,6 +196,67 @@ describe('InventoryReceiveService', () => {
         expect(saved).toBe(true);
         expect(mockedGraphql).not.toHaveBeenCalled();
         expect(mockedSave).toHaveBeenCalled();
+    });
+
+    it('creates a local completed receive when finalizing a brand-new receive', async () => {
+        mockedQuery
+            .mockResolvedValueOnce(undefined)
+            .mockResolvedValueOnce([]);
+        mockedSave.mockImplementation(async (value) => ({
+            ...value,
+            id: value.id || 'receive-2',
+        }));
+        mockedGraphql.mockResolvedValue({
+            data: {
+                finalizeInventoryReceive: {
+                    sourceId: 'receive-2',
+                    sourceType: 'INVENTORY_RECEIVE',
+                    status: 'APPLIED',
+                    appliedAt: '2026-04-17T10:00:00.000Z',
+                    error: null,
+                    affectedProducts: [],
+                },
+            },
+        });
+
+        const saved = await InventoryReceiveService.save(
+            dispatch,
+            {
+                comments: 'restock',
+                status: 'COMPLETED',
+                createdBy: { id: 'e1', name: 'Emp 1' },
+                lines: [
+                    {
+                        productId: 'p-1',
+                        productName: 'Apple',
+                        unitOfMeasure: 'EA',
+                        received: 5,
+                        comments: '',
+                        inventoryReceiveLineInventoryReceiveId: '',
+                    },
+                ],
+            } as any,
+            true
+        );
+
+        expect(saved).toBe(true);
+        expect(mockedSave).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: 'receive-2',
+                status: 'COMPLETED',
+                comments: 'restock',
+            })
+        );
+        expect(mockedSave).toHaveBeenCalledWith(
+            expect.not.objectContaining({
+                id: undefined,
+            })
+        );
+        expect(dispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: expect.stringContaining('/add'),
+            })
+        );
     });
 
     it('surfaces finalization errors to the user and returns false', async () => {

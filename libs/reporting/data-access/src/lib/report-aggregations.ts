@@ -3,17 +3,66 @@ import { Order, PaymentType, Product, OrderStatus } from '@pos/shared/models';
 const round = (value: number) => Math.round(value * 100) / 100;
 const money = (value: number) => `$${round(value).toFixed(2)}`;
 
-const parseDiscountSummary = (value: string | null | undefined) => {
+type DiscountApplicationSummary = {
+    definitionId?: string;
+    definitionName?: string;
+    name?: string;
+    amount?: number;
+    discountAmount?: number;
+};
+
+type ParsedDiscountSummary = {
+    applications?: DiscountApplicationSummary[];
+};
+
+const normalizeDiscountSummary = (value: unknown): ParsedDiscountSummary | undefined => {
+    if (!value || typeof value !== 'object') {
+        return undefined;
+    }
+
+    const applications = Array.isArray((value as { applications?: unknown }).applications)
+        ? ((value as { applications: unknown[] }).applications
+              .map((app) => {
+                  if (!app || typeof app !== 'object') return undefined;
+                  const typed = app as Record<string, unknown>;
+                  return {
+                      definitionId:
+                          typeof typed.definitionId === 'string'
+                              ? typed.definitionId
+                              : typeof typed.discountDefinitionId === 'string'
+                              ? typed.discountDefinitionId
+                              : undefined,
+                      definitionName:
+                          typeof typed.definitionName === 'string'
+                              ? typed.definitionName
+                              : undefined,
+                      name:
+                          typeof typed.name === 'string' ? typed.name : undefined,
+                      amount:
+                          typeof typed.amount === 'number'
+                              ? typed.amount
+                              : typeof typed.discountAmount === 'number'
+                              ? typed.discountAmount
+                              : undefined,
+                      discountAmount:
+                          typeof typed.discountAmount === 'number'
+                              ? typed.discountAmount
+                              : undefined,
+                  };
+              })
+              .filter(Boolean) as DiscountApplicationSummary[])
+        : [];
+
+    return { applications };
+};
+
+const parseDiscountSummary = (value: unknown) => {
     if (!value) return undefined;
+    if (typeof value === 'object') {
+        return normalizeDiscountSummary(value);
+    }
     try {
-        return JSON.parse(value) as {
-            applications?: Array<{
-                definitionId?: string;
-                definitionName?: string;
-                name?: string;
-                amount?: number;
-            }>;
-        };
+        return normalizeDiscountSummary(JSON.parse(String(value)));
     } catch {
         return undefined;
     }
@@ -100,7 +149,7 @@ export const buildDiscountReportRows = (orders: Order[]) => {
                 const name =
                     app.name || app.definitionName || app.definitionId || 'Unknown discount';
                 const current = totals.get(name) || { amount: 0, orders: 0 };
-                current.amount += Number(app.amount || 0);
+                current.amount += Number(app.amount ?? app.discountAmount ?? 0);
                 if (!seen.has(name)) {
                     current.orders += 1;
                     seen.add(name);

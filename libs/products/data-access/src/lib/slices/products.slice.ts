@@ -83,6 +83,33 @@ const areProductsEquivalent = (
     return PRODUCT_COMPARISON_FIELDS.every((field) => left[field] === right[field]);
 };
 
+const getTimestamp = (value: string | null | undefined) => {
+    if (!value) {
+        return undefined;
+    }
+
+    const timestamp = Date.parse(value);
+    return Number.isNaN(timestamp) ? undefined : timestamp;
+};
+
+const shouldIgnoreIncomingProduct = (
+    existing: ProductEntity | undefined,
+    incoming: ProductEntity
+) => {
+    if (!existing) {
+        return false;
+    }
+
+    const existingTimestamp = getTimestamp(existing.updatedAt);
+    const incomingTimestamp = getTimestamp(incoming.updatedAt);
+
+    if (existingTimestamp === undefined || incomingTimestamp === undefined) {
+        return false;
+    }
+
+    return incomingTimestamp < existingTimestamp;
+};
+
 const reconcileIncomingProducts = (
     state: ProductsState,
     incoming: ProductEntity[]
@@ -104,6 +131,10 @@ const reconcileIncomingProducts = (
 
         if (!existing) {
             additions.push(item);
+            return;
+        }
+
+        if (shouldIgnoreIncomingProduct(existing, item)) {
             return;
         }
 
@@ -146,6 +177,18 @@ const reconcileIncomingProducts = (
     ) {
         filterList(state, state.filterQuery);
     }
+
+    syncSelectedProduct(state);
+};
+
+const syncSelectedProduct = (state: ProductsState) => {
+    const selectedId = state.selected?.id;
+    if (!selectedId) {
+        return;
+    }
+
+    const liveSelectedProduct = state.entities[selectedId];
+    state.selected = liveSelectedProduct;
 };
 
 export const productsAdapter = createEntityAdapter<ProductEntity, string>({
@@ -215,10 +258,12 @@ export const productsSlice = createSlice({
         add: (state: ProductsState, action: PayloadAction<ProductEntity>) => {
             productsAdapter.addOne(state, action.payload);
             filterList(state, state.filterQuery);
+            syncSelectedProduct(state);
         },
         remove: (state: ProductsState, action: PayloadAction<string>) => {
             productsAdapter.removeOne(state, action.payload);
             filterList(state, state.filterQuery);
+            syncSelectedProduct(state);
         },
         update: (
             state: ProductsState,
@@ -226,6 +271,7 @@ export const productsSlice = createSlice({
         ) => {
             productsAdapter.updateOne(state, action.payload);
             filterList(state, state.filterQuery);
+            syncSelectedProduct(state);
         },
         applyRealtimePatch: (
             state: ProductsState,
@@ -245,6 +291,7 @@ export const productsSlice = createSlice({
                 delete state.pendingQuantityDeltas[action.payload.id];
             }
             filterList(state, state.filterQuery);
+            syncSelectedProduct(state);
         },
         select: (
             state: ProductsState,
@@ -283,6 +330,7 @@ export const productsSlice = createSlice({
                     changes: { quantity: p.newCount },
                 }))
             );
+            syncSelectedProduct(state);
         },
         applyQuantityDeltas(
             state: ProductsState,
@@ -328,6 +376,7 @@ export const productsSlice = createSlice({
                     (state.pendingQuantityDeltas[p.productId] || 0) + delta;
             });
             filterList(state, state.filterQuery);
+            syncSelectedProduct(state);
         },
     },
     extraReducers: (builder) => {

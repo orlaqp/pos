@@ -169,8 +169,94 @@ const finalizeCount = async (
             : inventoryCountActions.add(finalizedCount)
     );
 
+    await reconcileFinalizedCountRecord(count, finalized.sourceId);
     syncFinalizedProducts(dispatch, finalized.affectedProducts || []);
     return true;
+};
+
+const reconcileFinalizedCountRecord = async (
+    count: InventoryCountDTO,
+    sourceId: string
+) => {
+    const localId = count.id || sourceId;
+    const tenantId = requireCurrentTenantId();
+    let existing = await DataStore.query(InventoryCount, localId);
+
+    if (!existing && localId !== sourceId) {
+        existing = await DataStore.query(InventoryCount, sourceId);
+    }
+
+    const savedCount = existing
+        ? await DataStore.save(
+              InventoryCount.copyOf(existing, (updated) => {
+                  updated.status = 'COMPLETED';
+                  updated.comments = count.comments;
+              })
+          )
+        : await DataStore.save(
+              new InventoryCount({
+                  id: sourceId,
+                  tenantId,
+                  comments: count.comments,
+                  status: 'COMPLETED',
+                  createdBy: {
+                      id: count.createdBy?.id || '',
+                      name: count.createdBy?.name || '',
+                  },
+              } as never)
+          );
+
+    const existingLines = await DataStore.query(InventoryCountLine, (line: any) =>
+        line.inventoryCountLineInventoryCountId.eq(savedCount.id)
+    );
+    const seenKeys = new Set<string>();
+
+    for (const line of count.lines) {
+        const existingLine =
+            existingLines.find((candidate: any) => line.id && candidate.id === line.id) ||
+            existingLines.find((candidate: any) => candidate.productId === line.productId);
+        const identityKey = existingLine?.id || line.id || line.productId;
+        seenKeys.add(identityKey);
+
+        if (existingLine) {
+            await DataStore.save(
+                InventoryCountLine.copyOf(existingLine, (updated) => {
+                    updated.productId = line.productId;
+                    updated.productName = line.productName;
+                    updated.unitOfMeasure = line.unitOfMeasure;
+                    updated.current = line.current;
+                    if (line.newCount !== undefined) {
+                        updated.newCount = line.newCount;
+                    }
+                    updated.comments = line.comments;
+                })
+            );
+            continue;
+        }
+
+        await DataStore.save(
+            new InventoryCountLine({
+                ...(line.id ? { id: line.id } : {}),
+                tenantId,
+                productId: line.productId,
+                productName: line.productName,
+                unitOfMeasure: line.unitOfMeasure,
+                current: line.current,
+                newCount: line.newCount,
+                comments: line.comments,
+                inventoryCountLineInventoryCountId: savedCount.id,
+            } as never)
+        );
+    }
+
+    for (const existingLine of existingLines) {
+        const identityKey = existingLine.id || existingLine.productId;
+        if (seenKeys.has(identityKey)) {
+            continue;
+        }
+
+        await DataStore.delete(existingLine);
+    }
 };
 
 export class InventoryCountService {

@@ -157,7 +157,7 @@
             "Arn"
           ]
         },
-        "Runtime": "nodejs18.x",
+        "Runtime": "nodejs24.x",
         "Timeout": 30,
         "MemorySize": 256
       }
@@ -396,9 +396,14 @@
               "Action": [
                 "appsync:GraphQL"
               ],
-              "Resource": {
-                "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/${apiposGraphQLAPIIdOutput}/*"
-              }
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/${apiposGraphQLAPIIdOutput}"
+                },
+                {
+                  "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/${apiposGraphQLAPIIdOutput}/types/*/fields/*"
+                }
+              ]
             }
           ]
         }

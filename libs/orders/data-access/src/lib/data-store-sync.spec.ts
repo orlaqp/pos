@@ -34,10 +34,6 @@ jest.mock('@pos/shared/amplify', () => ({
     },
 }));
 
-jest.mock('@pos/auth/data-access', () => ({
-    getCurrentTenantId: jest.fn(() => 'tenant-1'),
-}));
-
 describe('orders data-store sync', () => {
     beforeEach(() => {
         jest.clearAllMocks();
@@ -63,29 +59,22 @@ describe('orders data-store sync', () => {
         ]);
     });
 
-    it('shares a single observeQuery set across multiple subscribers', () => {
+    it('shares a single observeQuery across multiple subscribers', () => {
         const dispatch = jest.fn();
-        const unsubscribers = [jest.fn(), jest.fn(), jest.fn()];
+        const unsubscribe = jest.fn();
 
-        mockSubscribe
-            .mockImplementationOnce(() => ({ unsubscribe: unsubscribers[0] }))
-            .mockImplementationOnce(() => ({ unsubscribe: unsubscribers[1] }))
-            .mockImplementationOnce(() => ({ unsubscribe: unsubscribers[2] }));
+        mockSubscribe.mockImplementation(() => ({ unsubscribe }));
 
         const firstSub = subscribeToOrderChanges(dispatch);
         const secondSub = subscribeToOrderChanges(dispatch);
 
-        expect(DataStore.observeQuery).toHaveBeenCalledTimes(3);
+        expect(DataStore.observeQuery).toHaveBeenCalledTimes(1);
 
         firstSub.unsubscribe();
-        unsubscribers.forEach((unsubscribe) => {
-            expect(unsubscribe).not.toHaveBeenCalled();
-        });
+        expect(unsubscribe).not.toHaveBeenCalled();
 
         secondSub.unsubscribe();
-        unsubscribers.forEach((unsubscribe) => {
-            expect(unsubscribe).toHaveBeenCalledTimes(1);
-        });
+        expect(unsubscribe).toHaveBeenCalledTimes(1);
     });
 
     it('does not restart shared order sync when no callers remain', async () => {
@@ -98,27 +87,29 @@ describe('orders data-store sync', () => {
     it('recovers an order sync that previously received snapshots but has gone silent too long', async () => {
         jest.useFakeTimers();
         const dispatch = jest.fn();
-        const unsubscribers = [jest.fn(), jest.fn(), jest.fn(), jest.fn(), jest.fn(), jest.fn()];
-        const observers: Array<
+        const unsubscribe = jest.fn();
+        let observer:
             | {
                   next?: (value: { isSynced: boolean; items: any[] }) => void;
               }
-            | undefined
-        > = [];
+            | undefined;
 
-        mockSubscribe.mockImplementation((observer: (typeof observers)[number]) => {
-            observers.push(observer);
-            return { unsubscribe: unsubscribers[observers.length - 1] };
+        mockSubscribe.mockImplementation((value: typeof observer) => {
+            observer = value;
+            return { unsubscribe };
         });
 
         const subscription = subscribeToOrderChanges(dispatch);
-        observers[0]?.next?.({ isSynced: true, items: [{ id: 'open-1', status: 'OPEN' }] as any[] });
+        observer?.next?.({
+            isSynced: true,
+            items: [{ id: 'open-1', status: 'OPEN' }] as any[],
+        });
 
         jest.advanceTimersByTime(5 * 60_000 + 1);
         await ensureOrderSyncHealthy(dispatch, { tenantId: 'tenant-1' });
         jest.advanceTimersByTime(1_000);
 
-        expect(DataStore.observeQuery).toHaveBeenCalledTimes(6);
+        expect(DataStore.observeQuery).toHaveBeenCalledTimes(2);
 
         subscription.unsubscribe();
         jest.useRealTimers();

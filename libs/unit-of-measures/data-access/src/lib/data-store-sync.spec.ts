@@ -8,10 +8,12 @@ const mockSubscribe = jest.fn();
 
 jest.mock('@pos/shared/utils', () => ({
     sortListBy: jest.fn(),
+    trackSyncSubscription: jest.fn(() => jest.fn()),
 }));
 
 jest.mock('@pos/shared/amplify', () => ({
     DataStore: {
+        query: jest.fn(),
         observeQuery: jest.fn(() => ({
             subscribe: mockSubscribe,
         })),
@@ -30,8 +32,8 @@ describe('unit-of-measures data-store sync', () => {
             | ((value: { isSynced: boolean; items: any[] }) => void)
             | undefined;
 
-        mockSubscribe.mockImplementation((callback: typeof observer) => {
-            observer = callback as typeof observer;
+        mockSubscribe.mockImplementation((handlers: { next?: typeof observer }) => {
+            observer = handlers.next;
             return { unsubscribe: jest.fn() };
         });
 
@@ -49,28 +51,20 @@ describe('unit-of-measures data-store sync', () => {
         subscription.unsubscribe();
     });
 
-    it('uses observeQuery for one-shot unit-of-measure sync', () => {
+    it('uses query for one-shot unit-of-measure sync', async () => {
         const dispatch = jest.fn();
-        const unsubscribe = jest.fn();
+        (DataStore.query as jest.Mock).mockResolvedValueOnce([
+            { id: 'uom-1', name: 'Each' },
+        ]);
 
-        mockSubscribe.mockImplementation(
-            (callback: (value: { items: any[] }) => void) => {
-                callback({
-                    items: [{ id: 'uom-1', name: 'Each' }],
-                } as any);
-                return { unsubscribe };
-            }
-        );
+        await syncUnitOfMeasures(dispatch);
 
-        syncUnitOfMeasures(dispatch);
-
-        expect(DataStore.observeQuery).toHaveBeenCalledTimes(1);
+        expect(DataStore.query).toHaveBeenCalledTimes(1);
         expect(dispatch).toHaveBeenCalledWith(
             expect.objectContaining({
                 type: 'unitOfMeasures/setAll',
             })
         );
-        expect(unsubscribe).toHaveBeenCalledTimes(1);
     });
 
     it('shares a single unit-of-measure subscription across callers and replays cached data', () => {
@@ -81,8 +75,8 @@ describe('unit-of-measures data-store sync', () => {
             | ((value: { isSynced: boolean; items: any[] }) => void)
             | undefined;
 
-        mockSubscribe.mockImplementation((callback: typeof observer) => {
-            observer = callback as typeof observer;
+        mockSubscribe.mockImplementation((handlers: { next?: typeof observer }) => {
+            observer = handlers.next;
             return { unsubscribe };
         });
 
