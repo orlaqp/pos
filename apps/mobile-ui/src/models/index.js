@@ -93,6 +93,16 @@ const InventoryApplyState = {
   "FAILED": "FAILED"
 };
 
+const RefundType = {
+  "PARTIAL": "PARTIAL",
+  "FULL": "FULL"
+};
+
+const OrderRefundStatus = {
+  "COMPLETED": "COMPLETED",
+  "FAILED": "FAILED"
+};
+
 const PaymentType = {
   "CASH": "CASH",
   "CHECK": "CHECK",
@@ -102,6 +112,7 @@ const PaymentType = {
 
 const OrderStatus = {
   "OPEN": "OPEN",
+  "PARTIALLY_REFUNDED": "PARTIALLY_REFUNDED",
   "REFUNDED": "REFUNDED",
   "PAID": "PAID"
 };
@@ -116,7 +127,7 @@ const InventoryReceiveStatus = {
   "COMPLETED": "COMPLETED"
 };
 
-const { Tenant, TenantUser, Store, Brand, Category, Customer, Employee, Order, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, DiscountDefinition, DiscountReasonCode, EmployeeDiscountPolicy, DiscountPreset, DiscountApplication, ApprovalEvent, DiscountReconciliationException, PaymentInfo, RefundInfo, ByEmployee, AppliedDiscountDetailSnapshot, PricingApprovalEventSnapshot, AppliedLineDiscountSummarySnapshot, AppliedDiscountSummarySnapshot, OrderLine, Payment, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary, SalesSummary, InventoryProductFinalizeResult, InventoryFinalizeResult } = initSchema(schema);
+const { Tenant, TenantUser, Store, Brand, Category, Customer, Employee, Order, OrderRefund, OrderRefundLine, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, DiscountDefinition, DiscountReasonCode, EmployeeDiscountPolicy, DiscountPreset, DiscountApplication, ApprovalEvent, DiscountReconciliationException, PaymentInfo, RefundInfo, ByEmployee, AppliedDiscountDetailSnapshot, PricingApprovalEventSnapshot, AppliedLineDiscountSummarySnapshot, AppliedDiscountSummarySnapshot, OrderLine, Payment, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary, SalesSummary, InventoryProductFinalizeResult, InventoryFinalizeResult } = initSchema(schema);
 
 export {
   Tenant,
@@ -127,6 +138,8 @@ export {
   Customer,
   Employee,
   Order,
+  OrderRefund,
+  OrderRefundLine,
   Product,
   UnitOfMeasure,
   InventoryChanges,
@@ -159,6 +172,8 @@ export {
   PricingSource,
   ReconciliationStatus,
   InventoryApplyState,
+  RefundType,
+  OrderRefundStatus,
   PaymentType,
   OrderStatus,
   InventoryCountStatus,

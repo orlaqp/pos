@@ -35,6 +35,22 @@ describe('DiscountEntityMapper', () => {
     );
   });
 
+  it('derives active from status for discount definitions', () => {
+    const result = DiscountEntityMapper.fromDefinition({
+      id: 'def-2',
+      name: 'Legacy active mismatch',
+      status: 'ACTIVE',
+      type: 'AUTOMATIC',
+      method: 'PERCENT',
+      scope: 'LINE',
+      value: 10,
+      stackMode: 'STACKABLE',
+      active: false,
+    } as any);
+
+    expect(result.active).toBe(true);
+  });
+
   it('maps employee discount policies', () => {
     const result = DiscountEntityMapper.fromPolicy({
       id: 'policy-1',

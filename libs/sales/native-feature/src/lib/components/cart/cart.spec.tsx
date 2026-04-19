@@ -553,7 +553,7 @@ describe('Cart', () => {
         });
     });
 
-    it('drops disabled definitions from live sales pricing updates', async () => {
+    it('drops only non-active-status definitions from live sales pricing updates', async () => {
         let listener: ((definitions: any[]) => void) | undefined;
         mockSubscribeDefinitionChanges.mockImplementation((callback: (definitions: any[]) => void) => {
             listener = callback;
@@ -609,6 +609,10 @@ describe('Cart', () => {
                 expect.objectContaining({
                     type: 'cart/setDefinitions',
                     payload: [
+                        expect.objectContaining({
+                            id: 'discount-disabled-flag',
+                            name: 'Disabled flag 10% Off',
+                        }),
                         expect.objectContaining({
                             id: 'discount-active',
                             name: 'Live 10% Off',

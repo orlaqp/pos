@@ -241,6 +241,16 @@ enum InventoryApplyState {
   FAILED
 }
 
+enum RefundType {
+  PARTIAL
+  FULL
+}
+
+enum OrderRefundStatus {
+  COMPLETED
+  FAILED
+}
+
 input ByEmployeeInput {
   id: String!
   name: String!
@@ -278,6 +288,40 @@ type Order @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityC
   inventoryApplyOperationId: ID
   inventoryApplyError: String
   Customer: Customer @hasOne
+}
+
+type OrderRefund @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam, operations: [read, update]}]) {
+  id: ID!
+  tenantId: ID!
+  orderId: ID! @index(name: "byOrderId", sortKeyFields: ["refundDate"])
+  orderNo: String!
+  refundDate: AWSDateTime! @index(name: "byRefundDate")
+  refundType: RefundType!
+  status: OrderRefundStatus!
+  refundAmount: Float!
+  refundReason: String
+  createdByEmployeeId: String!
+  createdByEmployeeName: String!
+  inventoryApplyState: InventoryApplyState
+  inventoryAppliedAt: AWSDateTime
+  inventoryApplyOperationId: ID
+  inventoryApplyError: String
+}
+
+type OrderRefundLine @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam, operations: [read, update]}]) {
+  id: ID!
+  tenantId: ID!
+  refundId: ID! @index(name: "byRefundId", sortKeyFields: ["refundDate"])
+  orderId: ID! @index(name: "byOrderIdByRefundDate", sortKeyFields: ["refundDate"])
+  refundDate: AWSDateTime!
+  orderLineIdentifier: String!
+  productId: String!
+  productName: String!
+  unitOfMeasure: String!
+  categoryId: String
+  quantityRefunded: Float!
+  unitRefundAmount: Float!
+  lineRefundAmount: Float!
 }
 
 type OrderLine {
@@ -323,6 +367,7 @@ type Payment {
 
 enum OrderStatus {
   OPEN
+  PARTIALLY_REFUNDED
   REFUNDED
   PAID
 }

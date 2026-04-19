@@ -33,23 +33,50 @@ export const useSalesScreenStyles = () => {
                 alignItems: 'flex-start',
                 marginBottom: tokens.spacing.sm,
             },
+            productsHeaderCopy: {
+                flexShrink: 1,
+                minWidth: 0,
+                paddingRight: tokens.spacing.sm,
+            },
+            productsHeaderActions: {
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: tokens.spacing.xs,
+                marginLeft: tokens.spacing.md,
+            },
+            sectionTitleRow: {
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 4,
+                marginLeft: -6,
+            },
             sectionTitle: {
                 color: tokens.colors.textPrimary,
                 fontSize: 20,
                 fontWeight: '700',
-                marginBottom: 4,
             },
             sectionSubtitle: {
                 color: tokens.colors.textSecondary,
                 fontSize: 13,
                 maxWidth: 360,
             },
-            toggleButton: {
+            toggleIconButton: {
                 borderRadius: tokens.radii.xl,
+                width: 36,
+                height: 36,
+                minWidth: 36,
+                minHeight: 36,
+                paddingHorizontal: 0,
+                paddingVertical: 0,
+                marginRight: 2,
+            },
+            currentDealsButton: {
+                borderRadius: tokens.radii.xl,
+                borderColor: tokens.colors.accent,
                 paddingHorizontal: tokens.spacing.sm,
                 minHeight: 36,
             },
-            toggleTitle: {
+            currentDealsTitle: {
                 color: tokens.colors.accent,
                 fontSize: 13,
                 fontWeight: '700',
@@ -105,6 +132,82 @@ export const useSalesScreenStyles = () => {
             cartPanel: {
                 width: 330,
                 minWidth: 300,
+            },
+            dealsDialog: {
+                width: 720,
+                maxWidth: '92%',
+                maxHeight: '88%',
+            },
+            dealsDialogTitle: {
+                color: tokens.colors.textPrimary,
+                fontSize: 26,
+                fontWeight: '700',
+                marginBottom: tokens.spacing.xs,
+            },
+            dealsDialogSubtitle: {
+                color: tokens.colors.textSecondary,
+                fontSize: 14,
+                lineHeight: 21,
+                marginBottom: tokens.spacing.md,
+            },
+            dealsDialogScroll: {
+                maxHeight: 520,
+            },
+            dealsDialogContent: {
+                paddingBottom: tokens.spacing.sm,
+            },
+            dealsSection: {
+                marginBottom: tokens.spacing.md,
+            },
+            dealsSectionTitle: {
+                color: tokens.colors.textPrimary,
+                fontSize: 15,
+                fontWeight: '700',
+                marginBottom: tokens.spacing.sm,
+            },
+            dealsCard: {
+                borderWidth: 1,
+                borderColor: tokens.colors.border,
+                backgroundColor: tokens.colors.surfaceMuted,
+                borderRadius: tokens.radii.lg,
+                paddingHorizontal: tokens.spacing.md,
+                paddingVertical: tokens.spacing.sm,
+                marginBottom: tokens.spacing.sm,
+            },
+            dealsBadgeRow: {
+                flexDirection: 'row',
+                marginBottom: tokens.spacing.xs,
+            },
+            dealsBadge: {
+                backgroundColor: tokens.colors.surface,
+                borderRadius: tokens.radii.xl,
+                paddingHorizontal: tokens.spacing.sm,
+                paddingVertical: 4,
+                borderWidth: 1,
+                borderColor: tokens.colors.border,
+            },
+            dealsBadgeText: {
+                color: tokens.colors.textSecondary,
+                fontSize: 11,
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+            },
+            dealsTitle: {
+                color: tokens.colors.textPrimary,
+                fontSize: 17,
+                fontWeight: '700',
+                marginBottom: 4,
+            },
+            dealsSubtitle: {
+                color: tokens.colors.textSecondary,
+                fontSize: 13,
+                lineHeight: 20,
+            },
+            dealsDialogFooter: {
+                flexDirection: 'row',
+                justifyContent: 'flex-end',
+                marginTop: tokens.spacing.sm,
             },
         }),
     };

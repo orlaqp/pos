@@ -1,6 +1,7 @@
 /* eslint-disable @nx/enforce-module-boundaries */
 import {
   AppliedDiscountDetail,
+  AppliedLineDiscountSummary,
   AppliedDiscountSummary,
   DiscountPricingSource,
   DiscountReconciliationStatus,
@@ -88,6 +89,10 @@ export interface OrderLineEntity {
 }
 
 export class OrderEntityMapper {
+  private static roundMoney(value: number | null | undefined) {
+    return Math.round(((value ?? 0) + Number.EPSILON) * 100) / 100;
+  }
+
   private static getInitialCartState(): CartState {
     return {
       id: undefined,
@@ -153,6 +158,120 @@ export class OrderEntityMapper {
     } catch {
       return [];
     }
+  }
+
+  private static scaleDiscountDetail(
+    discount: AppliedDiscountDetail,
+    ratio: number,
+    quantity: number
+  ): AppliedDiscountDetail {
+    return {
+      ...discount,
+      originalAmount: OrderEntityMapper.roundMoney(discount.originalAmount * ratio),
+      discountAmount: OrderEntityMapper.roundMoney(discount.discountAmount * ratio),
+      finalAmount: OrderEntityMapper.roundMoney(discount.finalAmount * ratio),
+      quantityBasis: discount.quantityBasis == null
+        ? discount.quantityBasis
+        : OrderEntityMapper.roundMoney(quantity),
+    };
+  }
+
+  private static buildRefundedLineSummaries(
+    cart: CartState,
+    refundedLines?: Array<{ identifier: string; quantity: number }>
+  ): AppliedLineDiscountSummary[] {
+    const refundedQuantities = new Map(
+      (refundedLines || []).map((line) => [line.identifier, line.quantity] as const)
+    );
+    const sourceSummaries = cart.appliedDiscountSummary?.lineSummaries || [];
+
+    return cart.items
+      .filter((item) => item.quantity > 0)
+      .map((item) => {
+        const source = sourceSummaries.find(
+          (summary) => summary.lineId === item.identifier
+        );
+
+        if (!source) {
+          return {
+            lineId: item.identifier || '',
+            discounts: [],
+            lineDiscountTotal: 0,
+            allocatedOrderDiscountTotal: 0,
+            lineTotalBeforeTax: OrderEntityMapper.roundMoney(
+              item.product.price * item.quantity
+            ),
+          };
+        }
+
+        const originalQuantity =
+          item.quantity + (refundedQuantities.get(item.identifier || '') || 0);
+        const ratio = originalQuantity > 0 ? item.quantity / originalQuantity : 1;
+
+        return {
+          lineId: source.lineId,
+          discounts: source.discounts.map((discount) =>
+            OrderEntityMapper.scaleDiscountDetail(discount, ratio, item.quantity)
+          ),
+          lineDiscountTotal: OrderEntityMapper.roundMoney(
+            source.lineDiscountTotal * ratio
+          ),
+          allocatedOrderDiscountTotal: OrderEntityMapper.roundMoney(
+            source.allocatedOrderDiscountTotal * ratio
+          ),
+          lineTotalBeforeTax: OrderEntityMapper.roundMoney(
+            source.lineTotalBeforeTax * ratio
+          ),
+        };
+      });
+  }
+
+  private static buildRefundedDiscountSummary(
+    cart: CartState,
+    refundedLines?: Array<{ identifier: string; quantity: number }>
+  ): AppliedDiscountSummary | undefined {
+    const sourceSummary = cart.appliedDiscountSummary;
+    if (!sourceSummary) return undefined;
+
+    const lineSummaries = OrderEntityMapper.buildRefundedLineSummaries(
+      cart,
+      refundedLines
+    );
+    const remainingOrderDiscountTotal = OrderEntityMapper.roundMoney(
+      lineSummaries.reduce(
+        (sum, line) => sum + (line.allocatedOrderDiscountTotal || 0),
+        0
+      )
+    );
+    const originalOrderDiscountTotal = OrderEntityMapper.roundMoney(
+      sourceSummary.lineSummaries.reduce(
+        (sum, line) => sum + (line.allocatedOrderDiscountTotal || 0),
+        0
+      )
+    );
+    const orderRatio =
+      originalOrderDiscountTotal > 0
+        ? remainingOrderDiscountTotal / originalOrderDiscountTotal
+        : 0;
+
+    const orderLevelAdjustments =
+      originalOrderDiscountTotal > 0
+        ? sourceSummary.orderLevelAdjustments.map((discount) =>
+            OrderEntityMapper.scaleDiscountDetail(discount, orderRatio, 0)
+          )
+        : [];
+
+    return {
+      applications: [
+        ...lineSummaries.flatMap((line) => line.discounts),
+        ...orderLevelAdjustments,
+      ],
+      approvalEvents: sourceSummary.approvalEvents.map((event) => ({ ...event })),
+      lineSummaries,
+      orderLevelAdjustments,
+      warnings: [...sourceSummary.warnings],
+      pricingGeneratedAt: sourceSummary.pricingGeneratedAt,
+    };
   }
 
   static fromModel(p: Order): OrderEntity {
@@ -289,7 +408,11 @@ export class OrderEntityMapper {
     };
   }
 
-  static async fromRefundedCart(employee: EmployeeEntity, cart: CartState) {
+  static async fromRefundedCart(
+    employee: EmployeeEntity,
+    cart: CartState,
+    refundedLines?: Array<{ identifier: string; quantity: number }>
+  ) {
     const state: CartState = OrderEntityMapper.getInitialCartState();
 
     const header = cart.header || {
@@ -331,23 +454,64 @@ export class OrderEntityMapper {
         },
       }));
 
-    const total = state.items.reduce(
-      (prev, next) => prev + next.product.price * next.quantity,
-      0
+    const rebuiltSummary = OrderEntityMapper.buildRefundedDiscountSummary({
+      ...cart,
+      items: cart.items.filter((i) => i.quantity > 0),
+    }, refundedLines);
+    const restoredDiscountState = restoreDiscountStateFromSummary(
+      rebuiltSummary
     );
+    const baseSubtotal = OrderEntityMapper.roundMoney(
+      state.items.reduce(
+        (prev, next) => prev + next.product.price * next.quantity,
+        0
+      )
+    );
+    const lineDiscountTotal = OrderEntityMapper.roundMoney(
+      rebuiltSummary?.lineSummaries.reduce(
+        (sum, line) => sum + (line.lineDiscountTotal || 0),
+        0
+      ) || 0
+    );
+    const orderDiscountTotal = OrderEntityMapper.roundMoney(
+      rebuiltSummary?.lineSummaries.reduce(
+        (sum, line) => sum + (line.allocatedOrderDiscountTotal || 0),
+        0
+      ) || 0
+    );
+    const subtotal = OrderEntityMapper.roundMoney(
+      rebuiltSummary?.lineSummaries.reduce(
+        (sum, line) => sum + (line.lineTotalBeforeTax || 0),
+        0
+      ) || baseSubtotal
+    );
+    const tax = 0;
+    const total = OrderEntityMapper.roundMoney(subtotal + tax);
 
     state.footer = {
-      baseSubtotal: total,
-      discount: 0,
-      lineDiscountTotal: 0,
-      orderDiscountTotal: 0,
-      subtotal: total,
-      tax: cart.footer?.tax || 0,
-      savingsTotal: 0,
+      baseSubtotal,
+      discount: OrderEntityMapper.roundMoney(
+        lineDiscountTotal + orderDiscountTotal
+      ),
+      lineDiscountTotal,
+      orderDiscountTotal,
+      subtotal,
+      tax,
+      savingsTotal: OrderEntityMapper.roundMoney(
+        lineDiscountTotal + orderDiscountTotal
+      ),
       total,
-      pricingSource: 'OFFLINE_LOCAL',
-      reconciliationStatus: 'PENDING',
+      pricingSource:
+        cart.footer?.pricingSource || ('OFFLINE_LOCAL' as DiscountPricingSource),
+      reconciliationStatus:
+        cart.footer?.reconciliationStatus ||
+        ('PENDING' as DiscountReconciliationStatus),
     };
+    state.promoCodes = [...(cart.promoCodes || [])];
+    state.appliedDiscountSummary = rebuiltSummary;
+    state.manualDiscounts = restoredDiscountState.manualDiscounts;
+    state.priceOverrides = restoredDiscountState.priceOverrides;
+    state.approvalEvents = rebuiltSummary?.approvalEvents || [];
 
     return state;
   }

@@ -82,7 +82,7 @@ const mapDefinitionToPricing = (definition: any): DiscountDefinition => ({
 const normalizePromoCode = (code: string) => code.trim().toUpperCase();
 
 const isDefinitionEnabledForPricing = (definition: DiscountDefinition) =>
-    definition.active !== false && definition.status === 'ACTIVE';
+    definition.status === 'ACTIVE';
 
 const DISCOUNT_CONTROLS_ENABLED = true;
 const ROLE_BASED_DISCOUNT_POLICY: EmployeeDiscountPolicy = {

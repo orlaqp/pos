@@ -6,9 +6,9 @@ import {
     subscribeToOrderChanges,
 } from '@pos/orders/data-access';
 import {
-    UICard,
     UIScreen,
     UISearchInput,
+    UIEmptyState,
 } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -30,6 +30,7 @@ export interface OrderListProps {
 const orderStatusList: OrderStatus[] = [
     OrderStatus.OPEN,
     OrderStatus.PAID,
+    OrderStatus.PARTIALLY_REFUNDED,
     OrderStatus.REFUNDED,
 ];
 
@@ -45,10 +46,23 @@ export function OrderList({ navigation }: OrderListProps) {
     const currentTenantId = useSelector(
         (state: RootState) => state?.tenantSession?.currentTenantId
     );
-    const t = (key: string, fallback: string) =>
-        i18next.isInitialized && i18next.exists(key)
-            ? String(i18next.t(key))
-            : fallback;
+    const t = (key: string, fallback: string) => {
+        if (!(i18next.isInitialized && i18next.exists(key))) {
+            return fallback;
+        }
+
+        const translated = String(i18next.t(key)).trim();
+        return translated.length > 0 ? translated : fallback;
+    };
+    const orderStatusTabs = useMemo(
+        () => [
+            t('ORDERSTATUS_Open', 'OPEN'),
+            t('ORDERSTATUS_Paid', 'PAID'),
+            t('ORDERSTATUS_PartiallyRefunded', 'PARTIAL'),
+            t('ORDERSTATUS_Refunded', 'REFUNDED'),
+        ],
+        [t]
+    );
     
     useFocusEffect(
         React.useCallback(() => {
@@ -118,67 +132,58 @@ export function OrderList({ navigation }: OrderListProps) {
     return (
         <UIScreen padded testID="order-list-screen">
             <View style={styles.container}>
-                <UICard tone="muted" padding="sm" testID="order-list-filters-card">
-                    <View style={styles.filtersRow}>
-                        <View style={styles.tabsColumn}>
-                            <ButtonGroup
-                                buttons={orderStatusList}
-                                selectedIndex={selectedIndex}
-                                onPress={(value) => filter(value, '')}
-                                containerStyle={styles.filterGroup}
-                                buttonStyle={styles.filterButton}
-                                buttonContainerStyle={styles.filterButtonContainer}
-                                selectedButtonStyle={styles.filterButtonSelected}
-                                textStyle={styles.filterButtonText}
-                                selectedTextStyle={styles.filterButtonTextSelected}
-                                innerBorderStyle={{ color: tokens.colors.border }}
+                <View style={styles.filtersRow} testID="order-list-filters-card">
+                    <View style={styles.tabsColumn}>
+                        <ButtonGroup
+                            buttons={orderStatusTabs}
+                            selectedIndex={selectedIndex}
+                            onPress={(value) => filter(value, '')}
+                            containerStyle={styles.filterGroup}
+                            buttonStyle={styles.filterButton}
+                            buttonContainerStyle={styles.filterButtonContainer}
+                            selectedButtonStyle={styles.filterButtonSelected}
+                            textStyle={styles.filterButtonText}
+                            selectedTextStyle={styles.filterButtonTextSelected}
+                            innerBorderStyle={{ color: tokens.colors.border }}
+                        />
+                    </View>
+                    <View style={styles.searchColumn}>
+                        <View style={!hasStatusOrders ? styles.searchDisabled : null}>
+                            <UISearchInput
+                                testID="order-list-search-input"
+                                ref={searchRef}
+                                debounceTime={300}
+                                onSubmit={(text) => filter(selectedIndex, text)}
+                                onClear={() => setFilterText(undefined)}
+                                autoFocus={hasStatusOrders}
+                                returnKeyType="search"
+                                editable={hasStatusOrders}
                             />
                         </View>
-                        {hasStatusOrders && (
-                            <View style={styles.searchColumn}>
-                                <UISearchInput
-                                    testID="order-list-search-input"
-                                    ref={searchRef}
-                                    debounceTime={300}
-                                    onSubmit={(text) => filter(selectedIndex, text)}
-                                    onClear={() => setFilterText(undefined)}
-                                    autoFocus={true}
-                                    returnKeyType="search"
-                                />
-                            </View>
-                        )}
                     </View>
-                </UICard>
+                </View>
 
-                <UICard
-                    style={styles.resultsCard}
-                    testID="order-list-results-card"
-                    padding="lg"
-                >
+                <View style={styles.resultsCard} testID="order-list-results-card">
                     {!hasStatusOrders && (
                         <View style={styles.emptyStateWrap}>
-                            <Text style={styles.emptyStateTitle}>
-                                {t('ORDERS_NoOrdersFound', 'No orders found')}
-                            </Text>
-                            <Text style={styles.emptyStateSubtitle}>
-                                {t(
+                            <UIEmptyState
+                                title={t('ORDERS_NoOrdersFound', 'No orders found')}
+                                subtitle={t(
                                     'ORDERS_NoOrdersFoundSubtitle',
                                     'Orders with the selected status will appear here.'
                                 )}
-                            </Text>
+                            />
                         </View>
                     )}
                     {hasStatusOrders && !hasFilteredOrders && (
                         <View style={styles.emptyStateWrap}>
-                            <Text style={styles.emptyStateTitle}>
-                                {t('ORDERS_NoOrdersFound', 'No orders found')}
-                            </Text>
-                            <Text style={styles.emptyStateSubtitle}>
-                                {t(
+                            <UIEmptyState
+                                title={t('ORDERS_NoOrdersFound', 'No orders found')}
+                                subtitle={t(
                                     'ORDERS_NoOrdersFoundSearchSubtitle',
                                     'Try another search term or switch to a different status.'
                                 )}
-                            </Text>
+                            />
                         </View>
                     )}
                     {hasStatusOrders && hasFilteredOrders && (
@@ -200,7 +205,7 @@ export function OrderList({ navigation }: OrderListProps) {
                             )}
                         />
                     )}
-                </UICard>
+                </View>
             </View>
 
             <Dialog
@@ -232,29 +237,36 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         filtersRow: {
             flexDirection: 'row',
             alignItems: 'center',
+            marginHorizontal: tokens.spacing.md,
+            marginTop: tokens.spacing.md,
+            marginBottom: tokens.spacing.sm,
         },
         tabsColumn: {
-            flex: 2,
+            flex: 3.4,
             justifyContent: 'center',
             marginRight: tokens.spacing.md,
         },
         searchColumn: {
-            flex: 3,
+            flex: 1.9,
             justifyContent: 'center',
+        },
+        searchDisabled: {
+            opacity: 0.45,
         },
         filterGroup: {
             margin: 0,
             borderWidth: 1,
             borderColor: tokens.colors.border,
-            backgroundColor: 'transparent',
+            backgroundColor: tokens.colors.surfaceMuted,
             borderRadius: tokens.radii.md,
             overflow: 'hidden',
             minHeight: 52,
         },
         filterButton: {
-            backgroundColor: tokens.colors.surfaceMuted,
+            backgroundColor: 'transparent',
             minHeight: 50,
             paddingVertical: 0,
+            paddingHorizontal: tokens.spacing.md,
             justifyContent: 'center',
         },
         filterButtonContainer: {
@@ -267,37 +279,30 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         filterButtonText: {
             color: tokens.colors.textMuted,
             fontWeight: '500',
-            fontSize: 18,
+            fontSize: 16,
         },
         filterButtonTextSelected: {
             color: tokens.colors.textPrimary,
             fontWeight: '700',
-            fontSize: 18,
+            fontSize: 16,
         },
         resultsCard: {
             flex: 1,
+            marginHorizontal: tokens.spacing.md,
+            marginBottom: tokens.spacing.md,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            borderRadius: tokens.radii.md,
+            backgroundColor: tokens.colors.surfaceMuted,
+            overflow: 'hidden',
         },
         emptyStateWrap: {
             flex: 1,
             minHeight: 320,
             alignItems: 'center',
             justifyContent: 'center',
-            paddingHorizontal: tokens.spacing.xl,
+            paddingHorizontal: tokens.spacing.lg,
             paddingVertical: tokens.spacing.xl,
-        },
-        emptyStateTitle: {
-            color: tokens.colors.textPrimary,
-            fontSize: 28,
-            fontWeight: '700',
-            textAlign: 'center',
-        },
-        emptyStateSubtitle: {
-            color: tokens.colors.textSecondary,
-            fontSize: 16,
-            lineHeight: 26,
-            marginTop: tokens.spacing.md,
-            maxWidth: 520,
-            textAlign: 'center',
         },
         overlay: {
             backgroundColor: tokens.colors.canvas,

@@ -687,6 +687,7 @@ export type AppliedLineDiscountSummarySnapshotInput = {
 
 export enum OrderStatus {
   OPEN = "OPEN",
+  PARTIALLY_REFUNDED = "PARTIALLY_REFUNDED",
   REFUNDED = "REFUNDED",
   PAID = "PAID",
 }
@@ -1019,6 +1020,200 @@ export type UpdateOrderInput = {
 };
 
 export type DeleteOrderInput = {
+  id: string,
+  _version?: number | null,
+};
+
+export type CreateOrderRefundInput = {
+  id?: string | null,
+  tenantId: string,
+  orderId: string,
+  orderNo: string,
+  refundDate: string,
+  refundType: RefundType,
+  status: OrderRefundStatus,
+  refundAmount: number,
+  refundReason?: string | null,
+  createdByEmployeeId: string,
+  createdByEmployeeName: string,
+  inventoryApplyState?: InventoryApplyState | null,
+  inventoryAppliedAt?: string | null,
+  inventoryApplyOperationId?: string | null,
+  inventoryApplyError?: string | null,
+  _version?: number | null,
+};
+
+export enum RefundType {
+  PARTIAL = "PARTIAL",
+  FULL = "FULL",
+}
+
+
+export enum OrderRefundStatus {
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+}
+
+
+export type ModelOrderRefundConditionInput = {
+  tenantId?: ModelIDInput | null,
+  orderId?: ModelIDInput | null,
+  orderNo?: ModelStringInput | null,
+  refundDate?: ModelStringInput | null,
+  refundType?: ModelRefundTypeInput | null,
+  status?: ModelOrderRefundStatusInput | null,
+  refundAmount?: ModelFloatInput | null,
+  refundReason?: ModelStringInput | null,
+  createdByEmployeeId?: ModelStringInput | null,
+  createdByEmployeeName?: ModelStringInput | null,
+  inventoryApplyState?: ModelInventoryApplyStateInput | null,
+  inventoryAppliedAt?: ModelStringInput | null,
+  inventoryApplyOperationId?: ModelIDInput | null,
+  inventoryApplyError?: ModelStringInput | null,
+  and?: Array< ModelOrderRefundConditionInput | null > | null,
+  or?: Array< ModelOrderRefundConditionInput | null > | null,
+  not?: ModelOrderRefundConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+};
+
+export type ModelRefundTypeInput = {
+  eq?: RefundType | null,
+  ne?: RefundType | null,
+};
+
+export type ModelOrderRefundStatusInput = {
+  eq?: OrderRefundStatus | null,
+  ne?: OrderRefundStatus | null,
+};
+
+export type OrderRefund = {
+  __typename: "OrderRefund",
+  id: string,
+  tenantId: string,
+  orderId: string,
+  orderNo: string,
+  refundDate: string,
+  refundType: RefundType,
+  status: OrderRefundStatus,
+  refundAmount: number,
+  refundReason?: string | null,
+  createdByEmployeeId: string,
+  createdByEmployeeName: string,
+  inventoryApplyState?: InventoryApplyState | null,
+  inventoryAppliedAt?: string | null,
+  inventoryApplyOperationId?: string | null,
+  inventoryApplyError?: string | null,
+  createdAt: string,
+  updatedAt: string,
+  _version: number,
+  _deleted?: boolean | null,
+  _lastChangedAt: number,
+};
+
+export type UpdateOrderRefundInput = {
+  id: string,
+  tenantId?: string | null,
+  orderId?: string | null,
+  orderNo?: string | null,
+  refundDate?: string | null,
+  refundType?: RefundType | null,
+  status?: OrderRefundStatus | null,
+  refundAmount?: number | null,
+  refundReason?: string | null,
+  createdByEmployeeId?: string | null,
+  createdByEmployeeName?: string | null,
+  inventoryApplyState?: InventoryApplyState | null,
+  inventoryAppliedAt?: string | null,
+  inventoryApplyOperationId?: string | null,
+  inventoryApplyError?: string | null,
+  _version?: number | null,
+};
+
+export type DeleteOrderRefundInput = {
+  id: string,
+  _version?: number | null,
+};
+
+export type CreateOrderRefundLineInput = {
+  id?: string | null,
+  tenantId: string,
+  refundId: string,
+  orderId: string,
+  refundDate: string,
+  orderLineIdentifier: string,
+  productId: string,
+  productName: string,
+  unitOfMeasure: string,
+  categoryId?: string | null,
+  quantityRefunded: number,
+  unitRefundAmount: number,
+  lineRefundAmount: number,
+  _version?: number | null,
+};
+
+export type ModelOrderRefundLineConditionInput = {
+  tenantId?: ModelIDInput | null,
+  refundId?: ModelIDInput | null,
+  orderId?: ModelIDInput | null,
+  refundDate?: ModelStringInput | null,
+  orderLineIdentifier?: ModelStringInput | null,
+  productId?: ModelStringInput | null,
+  productName?: ModelStringInput | null,
+  unitOfMeasure?: ModelStringInput | null,
+  categoryId?: ModelStringInput | null,
+  quantityRefunded?: ModelFloatInput | null,
+  unitRefundAmount?: ModelFloatInput | null,
+  lineRefundAmount?: ModelFloatInput | null,
+  and?: Array< ModelOrderRefundLineConditionInput | null > | null,
+  or?: Array< ModelOrderRefundLineConditionInput | null > | null,
+  not?: ModelOrderRefundLineConditionInput | null,
+  _deleted?: ModelBooleanInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+};
+
+export type OrderRefundLine = {
+  __typename: "OrderRefundLine",
+  id: string,
+  tenantId: string,
+  refundId: string,
+  orderId: string,
+  refundDate: string,
+  orderLineIdentifier: string,
+  productId: string,
+  productName: string,
+  unitOfMeasure: string,
+  categoryId?: string | null,
+  quantityRefunded: number,
+  unitRefundAmount: number,
+  lineRefundAmount: number,
+  createdAt: string,
+  updatedAt: string,
+  _version: number,
+  _deleted?: boolean | null,
+  _lastChangedAt: number,
+};
+
+export type UpdateOrderRefundLineInput = {
+  id: string,
+  tenantId?: string | null,
+  refundId?: string | null,
+  orderId?: string | null,
+  refundDate?: string | null,
+  orderLineIdentifier?: string | null,
+  productId?: string | null,
+  productName?: string | null,
+  unitOfMeasure?: string | null,
+  categoryId?: string | null,
+  quantityRefunded?: number | null,
+  unitRefundAmount?: number | null,
+  lineRefundAmount?: number | null,
+  _version?: number | null,
+};
+
+export type DeleteOrderRefundLineInput = {
   id: string,
   _version?: number | null,
 };
@@ -2744,6 +2939,66 @@ export type ModelOrderConnection = {
   startedAt?: number | null,
 };
 
+export type ModelOrderRefundFilterInput = {
+  id?: ModelIDInput | null,
+  tenantId?: ModelIDInput | null,
+  orderId?: ModelIDInput | null,
+  orderNo?: ModelStringInput | null,
+  refundDate?: ModelStringInput | null,
+  refundType?: ModelRefundTypeInput | null,
+  status?: ModelOrderRefundStatusInput | null,
+  refundAmount?: ModelFloatInput | null,
+  refundReason?: ModelStringInput | null,
+  createdByEmployeeId?: ModelStringInput | null,
+  createdByEmployeeName?: ModelStringInput | null,
+  inventoryApplyState?: ModelInventoryApplyStateInput | null,
+  inventoryAppliedAt?: ModelStringInput | null,
+  inventoryApplyOperationId?: ModelIDInput | null,
+  inventoryApplyError?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelOrderRefundFilterInput | null > | null,
+  or?: Array< ModelOrderRefundFilterInput | null > | null,
+  not?: ModelOrderRefundFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
+};
+
+export type ModelOrderRefundConnection = {
+  __typename: "ModelOrderRefundConnection",
+  items:  Array<OrderRefund | null >,
+  nextToken?: string | null,
+  startedAt?: number | null,
+};
+
+export type ModelOrderRefundLineFilterInput = {
+  id?: ModelIDInput | null,
+  tenantId?: ModelIDInput | null,
+  refundId?: ModelIDInput | null,
+  orderId?: ModelIDInput | null,
+  refundDate?: ModelStringInput | null,
+  orderLineIdentifier?: ModelStringInput | null,
+  productId?: ModelStringInput | null,
+  productName?: ModelStringInput | null,
+  unitOfMeasure?: ModelStringInput | null,
+  categoryId?: ModelStringInput | null,
+  quantityRefunded?: ModelFloatInput | null,
+  unitRefundAmount?: ModelFloatInput | null,
+  lineRefundAmount?: ModelFloatInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelOrderRefundLineFilterInput | null > | null,
+  or?: Array< ModelOrderRefundLineFilterInput | null > | null,
+  not?: ModelOrderRefundLineFilterInput | null,
+  _deleted?: ModelBooleanInput | null,
+};
+
+export type ModelOrderRefundLineConnection = {
+  __typename: "ModelOrderRefundLineConnection",
+  items:  Array<OrderRefundLine | null >,
+  nextToken?: string | null,
+  startedAt?: number | null,
+};
+
 export type ModelProductFilterInput = {
   id?: ModelIDInput | null,
   tenantId?: ModelIDInput | null,
@@ -3410,6 +3665,50 @@ export type ModelSubscriptionFloatInput = {
   between?: Array< number | null > | null,
   in?: Array< number | null > | null,
   notIn?: Array< number | null > | null,
+};
+
+export type ModelSubscriptionOrderRefundFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  orderId?: ModelSubscriptionIDInput | null,
+  orderNo?: ModelSubscriptionStringInput | null,
+  refundDate?: ModelSubscriptionStringInput | null,
+  refundType?: ModelSubscriptionStringInput | null,
+  status?: ModelSubscriptionStringInput | null,
+  refundAmount?: ModelSubscriptionFloatInput | null,
+  refundReason?: ModelSubscriptionStringInput | null,
+  createdByEmployeeId?: ModelSubscriptionStringInput | null,
+  createdByEmployeeName?: ModelSubscriptionStringInput | null,
+  inventoryApplyState?: ModelSubscriptionStringInput | null,
+  inventoryAppliedAt?: ModelSubscriptionStringInput | null,
+  inventoryApplyOperationId?: ModelSubscriptionIDInput | null,
+  inventoryApplyError?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionOrderRefundFilterInput | null > | null,
+  or?: Array< ModelSubscriptionOrderRefundFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+  tenantId?: ModelStringInput | null,
+};
+
+export type ModelSubscriptionOrderRefundLineFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  refundId?: ModelSubscriptionIDInput | null,
+  orderId?: ModelSubscriptionIDInput | null,
+  refundDate?: ModelSubscriptionStringInput | null,
+  orderLineIdentifier?: ModelSubscriptionStringInput | null,
+  productId?: ModelSubscriptionStringInput | null,
+  productName?: ModelSubscriptionStringInput | null,
+  unitOfMeasure?: ModelSubscriptionStringInput | null,
+  categoryId?: ModelSubscriptionStringInput | null,
+  quantityRefunded?: ModelSubscriptionFloatInput | null,
+  unitRefundAmount?: ModelSubscriptionFloatInput | null,
+  lineRefundAmount?: ModelSubscriptionFloatInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionOrderRefundLineFilterInput | null > | null,
+  or?: Array< ModelSubscriptionOrderRefundLineFilterInput | null > | null,
+  _deleted?: ModelBooleanInput | null,
+  tenantId?: ModelStringInput | null,
 };
 
 export type ModelSubscriptionProductFilterInput = {
@@ -4598,6 +4897,186 @@ export type DeleteOrderMutation = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
     orderCustomerId?: string | null,
+  } | null,
+};
+
+export type CreateOrderRefundMutationVariables = {
+  input: CreateOrderRefundInput,
+  condition?: ModelOrderRefundConditionInput | null,
+};
+
+export type CreateOrderRefundMutation = {
+  createOrderRefund?:  {
+    __typename: "OrderRefund",
+    id: string,
+    tenantId: string,
+    orderId: string,
+    orderNo: string,
+    refundDate: string,
+    refundType: RefundType,
+    status: OrderRefundStatus,
+    refundAmount: number,
+    refundReason?: string | null,
+    createdByEmployeeId: string,
+    createdByEmployeeName: string,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type UpdateOrderRefundMutationVariables = {
+  input: UpdateOrderRefundInput,
+  condition?: ModelOrderRefundConditionInput | null,
+};
+
+export type UpdateOrderRefundMutation = {
+  updateOrderRefund?:  {
+    __typename: "OrderRefund",
+    id: string,
+    tenantId: string,
+    orderId: string,
+    orderNo: string,
+    refundDate: string,
+    refundType: RefundType,
+    status: OrderRefundStatus,
+    refundAmount: number,
+    refundReason?: string | null,
+    createdByEmployeeId: string,
+    createdByEmployeeName: string,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type DeleteOrderRefundMutationVariables = {
+  input: DeleteOrderRefundInput,
+  condition?: ModelOrderRefundConditionInput | null,
+};
+
+export type DeleteOrderRefundMutation = {
+  deleteOrderRefund?:  {
+    __typename: "OrderRefund",
+    id: string,
+    tenantId: string,
+    orderId: string,
+    orderNo: string,
+    refundDate: string,
+    refundType: RefundType,
+    status: OrderRefundStatus,
+    refundAmount: number,
+    refundReason?: string | null,
+    createdByEmployeeId: string,
+    createdByEmployeeName: string,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type CreateOrderRefundLineMutationVariables = {
+  input: CreateOrderRefundLineInput,
+  condition?: ModelOrderRefundLineConditionInput | null,
+};
+
+export type CreateOrderRefundLineMutation = {
+  createOrderRefundLine?:  {
+    __typename: "OrderRefundLine",
+    id: string,
+    tenantId: string,
+    refundId: string,
+    orderId: string,
+    refundDate: string,
+    orderLineIdentifier: string,
+    productId: string,
+    productName: string,
+    unitOfMeasure: string,
+    categoryId?: string | null,
+    quantityRefunded: number,
+    unitRefundAmount: number,
+    lineRefundAmount: number,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type UpdateOrderRefundLineMutationVariables = {
+  input: UpdateOrderRefundLineInput,
+  condition?: ModelOrderRefundLineConditionInput | null,
+};
+
+export type UpdateOrderRefundLineMutation = {
+  updateOrderRefundLine?:  {
+    __typename: "OrderRefundLine",
+    id: string,
+    tenantId: string,
+    refundId: string,
+    orderId: string,
+    refundDate: string,
+    orderLineIdentifier: string,
+    productId: string,
+    productName: string,
+    unitOfMeasure: string,
+    categoryId?: string | null,
+    quantityRefunded: number,
+    unitRefundAmount: number,
+    lineRefundAmount: number,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type DeleteOrderRefundLineMutationVariables = {
+  input: DeleteOrderRefundLineInput,
+  condition?: ModelOrderRefundLineConditionInput | null,
+};
+
+export type DeleteOrderRefundLineMutation = {
+  deleteOrderRefundLine?:  {
+    __typename: "OrderRefundLine",
+    id: string,
+    tenantId: string,
+    refundId: string,
+    orderId: string,
+    refundDate: string,
+    orderLineIdentifier: string,
+    productId: string,
+    productName: string,
+    unitOfMeasure: string,
+    categoryId?: string | null,
+    quantityRefunded: number,
+    unitRefundAmount: number,
+    lineRefundAmount: number,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
   } | null,
 };
 
@@ -7404,6 +7883,210 @@ export type SyncOrdersQuery = {
   } | null,
 };
 
+export type GetOrderRefundQueryVariables = {
+  id: string,
+};
+
+export type GetOrderRefundQuery = {
+  getOrderRefund?:  {
+    __typename: "OrderRefund",
+    id: string,
+    tenantId: string,
+    orderId: string,
+    orderNo: string,
+    refundDate: string,
+    refundType: RefundType,
+    status: OrderRefundStatus,
+    refundAmount: number,
+    refundReason?: string | null,
+    createdByEmployeeId: string,
+    createdByEmployeeName: string,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type ListOrderRefundsQueryVariables = {
+  filter?: ModelOrderRefundFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListOrderRefundsQuery = {
+  listOrderRefunds?:  {
+    __typename: "ModelOrderRefundConnection",
+    items:  Array< {
+      __typename: "OrderRefund",
+      id: string,
+      tenantId: string,
+      orderId: string,
+      orderNo: string,
+      refundDate: string,
+      refundType: RefundType,
+      status: OrderRefundStatus,
+      refundAmount: number,
+      refundReason?: string | null,
+      createdByEmployeeId: string,
+      createdByEmployeeName: string,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type SyncOrderRefundsQueryVariables = {
+  filter?: ModelOrderRefundFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  lastSync?: number | null,
+};
+
+export type SyncOrderRefundsQuery = {
+  syncOrderRefunds?:  {
+    __typename: "ModelOrderRefundConnection",
+    items:  Array< {
+      __typename: "OrderRefund",
+      id: string,
+      tenantId: string,
+      orderId: string,
+      orderNo: string,
+      refundDate: string,
+      refundType: RefundType,
+      status: OrderRefundStatus,
+      refundAmount: number,
+      refundReason?: string | null,
+      createdByEmployeeId: string,
+      createdByEmployeeName: string,
+      inventoryApplyState?: InventoryApplyState | null,
+      inventoryAppliedAt?: string | null,
+      inventoryApplyOperationId?: string | null,
+      inventoryApplyError?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type GetOrderRefundLineQueryVariables = {
+  id: string,
+};
+
+export type GetOrderRefundLineQuery = {
+  getOrderRefundLine?:  {
+    __typename: "OrderRefundLine",
+    id: string,
+    tenantId: string,
+    refundId: string,
+    orderId: string,
+    refundDate: string,
+    orderLineIdentifier: string,
+    productId: string,
+    productName: string,
+    unitOfMeasure: string,
+    categoryId?: string | null,
+    quantityRefunded: number,
+    unitRefundAmount: number,
+    lineRefundAmount: number,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type ListOrderRefundLinesQueryVariables = {
+  filter?: ModelOrderRefundLineFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListOrderRefundLinesQuery = {
+  listOrderRefundLines?:  {
+    __typename: "ModelOrderRefundLineConnection",
+    items:  Array< {
+      __typename: "OrderRefundLine",
+      id: string,
+      tenantId: string,
+      refundId: string,
+      orderId: string,
+      refundDate: string,
+      orderLineIdentifier: string,
+      productId: string,
+      productName: string,
+      unitOfMeasure: string,
+      categoryId?: string | null,
+      quantityRefunded: number,
+      unitRefundAmount: number,
+      lineRefundAmount: number,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
+export type SyncOrderRefundLinesQueryVariables = {
+  filter?: ModelOrderRefundLineFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  lastSync?: number | null,
+};
+
+export type SyncOrderRefundLinesQuery = {
+  syncOrderRefundLines?:  {
+    __typename: "ModelOrderRefundLineConnection",
+    items:  Array< {
+      __typename: "OrderRefundLine",
+      id: string,
+      tenantId: string,
+      refundId: string,
+      orderId: string,
+      refundDate: string,
+      orderLineIdentifier: string,
+      productId: string,
+      productName: string,
+      unitOfMeasure: string,
+      categoryId?: string | null,
+      quantityRefunded: number,
+      unitRefundAmount: number,
+      lineRefundAmount: number,
+      createdAt: string,
+      updatedAt: string,
+      _version: number,
+      _deleted?: boolean | null,
+      _lastChangedAt: number,
+    } | null >,
+    nextToken?: string | null,
+    startedAt?: number | null,
+  } | null,
+};
+
 export type GetProductQueryVariables = {
   id: string,
 };
@@ -9973,6 +10656,186 @@ export type OnDeleteOrderSubscription = {
     _deleted?: boolean | null,
     _lastChangedAt: number,
     orderCustomerId?: string | null,
+  } | null,
+};
+
+export type OnCreateOrderRefundSubscriptionVariables = {
+  filter?: ModelSubscriptionOrderRefundFilterInput | null,
+  tenantId?: string | null,
+};
+
+export type OnCreateOrderRefundSubscription = {
+  onCreateOrderRefund?:  {
+    __typename: "OrderRefund",
+    id: string,
+    tenantId: string,
+    orderId: string,
+    orderNo: string,
+    refundDate: string,
+    refundType: RefundType,
+    status: OrderRefundStatus,
+    refundAmount: number,
+    refundReason?: string | null,
+    createdByEmployeeId: string,
+    createdByEmployeeName: string,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnUpdateOrderRefundSubscriptionVariables = {
+  filter?: ModelSubscriptionOrderRefundFilterInput | null,
+  tenantId?: string | null,
+};
+
+export type OnUpdateOrderRefundSubscription = {
+  onUpdateOrderRefund?:  {
+    __typename: "OrderRefund",
+    id: string,
+    tenantId: string,
+    orderId: string,
+    orderNo: string,
+    refundDate: string,
+    refundType: RefundType,
+    status: OrderRefundStatus,
+    refundAmount: number,
+    refundReason?: string | null,
+    createdByEmployeeId: string,
+    createdByEmployeeName: string,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnDeleteOrderRefundSubscriptionVariables = {
+  filter?: ModelSubscriptionOrderRefundFilterInput | null,
+  tenantId?: string | null,
+};
+
+export type OnDeleteOrderRefundSubscription = {
+  onDeleteOrderRefund?:  {
+    __typename: "OrderRefund",
+    id: string,
+    tenantId: string,
+    orderId: string,
+    orderNo: string,
+    refundDate: string,
+    refundType: RefundType,
+    status: OrderRefundStatus,
+    refundAmount: number,
+    refundReason?: string | null,
+    createdByEmployeeId: string,
+    createdByEmployeeName: string,
+    inventoryApplyState?: InventoryApplyState | null,
+    inventoryAppliedAt?: string | null,
+    inventoryApplyOperationId?: string | null,
+    inventoryApplyError?: string | null,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnCreateOrderRefundLineSubscriptionVariables = {
+  filter?: ModelSubscriptionOrderRefundLineFilterInput | null,
+  tenantId?: string | null,
+};
+
+export type OnCreateOrderRefundLineSubscription = {
+  onCreateOrderRefundLine?:  {
+    __typename: "OrderRefundLine",
+    id: string,
+    tenantId: string,
+    refundId: string,
+    orderId: string,
+    refundDate: string,
+    orderLineIdentifier: string,
+    productId: string,
+    productName: string,
+    unitOfMeasure: string,
+    categoryId?: string | null,
+    quantityRefunded: number,
+    unitRefundAmount: number,
+    lineRefundAmount: number,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnUpdateOrderRefundLineSubscriptionVariables = {
+  filter?: ModelSubscriptionOrderRefundLineFilterInput | null,
+  tenantId?: string | null,
+};
+
+export type OnUpdateOrderRefundLineSubscription = {
+  onUpdateOrderRefundLine?:  {
+    __typename: "OrderRefundLine",
+    id: string,
+    tenantId: string,
+    refundId: string,
+    orderId: string,
+    refundDate: string,
+    orderLineIdentifier: string,
+    productId: string,
+    productName: string,
+    unitOfMeasure: string,
+    categoryId?: string | null,
+    quantityRefunded: number,
+    unitRefundAmount: number,
+    lineRefundAmount: number,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
+  } | null,
+};
+
+export type OnDeleteOrderRefundLineSubscriptionVariables = {
+  filter?: ModelSubscriptionOrderRefundLineFilterInput | null,
+  tenantId?: string | null,
+};
+
+export type OnDeleteOrderRefundLineSubscription = {
+  onDeleteOrderRefundLine?:  {
+    __typename: "OrderRefundLine",
+    id: string,
+    tenantId: string,
+    refundId: string,
+    orderId: string,
+    refundDate: string,
+    orderLineIdentifier: string,
+    productId: string,
+    productName: string,
+    unitOfMeasure: string,
+    categoryId?: string | null,
+    quantityRefunded: number,
+    unitRefundAmount: number,
+    lineRefundAmount: number,
+    createdAt: string,
+    updatedAt: string,
+    _version: number,
+    _deleted?: boolean | null,
+    _lastChangedAt: number,
   } | null,
 };
 

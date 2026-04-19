@@ -196,6 +196,7 @@ describe('OrderItem integration', () => {
         const colors = { accent: '#a', success: '#b', warning: '#c' };
         expect(getStatusAccentColor('OPEN', colors)).toBe('#a');
         expect(getStatusAccentColor('PAID', colors)).toBe('#b');
+        expect(getStatusAccentColor('PARTIALLY_REFUNDED', colors)).toBe('#c');
         expect(getStatusAccentColor('REFUNDED', colors)).toBe('#c');
     });
 

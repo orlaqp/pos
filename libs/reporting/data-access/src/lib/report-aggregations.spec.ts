@@ -82,15 +82,18 @@ describe('report-aggregations', () => {
     });
 
     it('builds refund, open aging, and low/no sales rows', () => {
-        const refundedOrder: any = {
+        const refundRecord: any = {
+            id: 'refund-1',
             orderNo: '2002',
-            orderDate: '2026-03-15T10:00:00.000Z',
-            updatedAt: '2026-03-16T08:00:00.000Z',
-            status: OrderStatus.REFUNDED,
-            employeeName: 'Grace',
-            total: 18,
-            refundInfo: { employeeName: 'Grace', comments: 'Damaged item' },
-            lines: [],
+            refundDate: '2026-03-16T08:00:00.000Z',
+            createdByEmployeeName: 'Grace',
+            refundAmount: 18,
+            refundReason: 'Damaged item',
+        };
+        const refundLine: any = {
+            refundId: 'refund-1',
+            productName: 'Oil',
+            lineRefundAmount: 18,
         };
         const openOrder: any = {
             orderNo: '3003',
@@ -101,7 +104,7 @@ describe('report-aggregations', () => {
             lines: [],
         };
 
-        expect(buildRefundReportRows([refundedOrder])).toEqual([
+        expect(buildRefundReportRows([refundRecord])).toEqual([
             {
                 orderNo: '2002',
                 date: '2026-03-16',
@@ -111,12 +114,12 @@ describe('report-aggregations', () => {
             },
         ]);
 
-        expect(buildRefundInsights([refundedOrder])).toEqual({
+        expect(buildRefundInsights([refundRecord], [refundLine])).toEqual({
             totalAmount: 18,
             totalOrders: 1,
             averageAmount: 18,
             topEmployees: [{ name: 'Grace', value: '$18.00' }],
-            topProducts: [],
+            topProducts: [{ name: 'Oil', value: '$18.00' }],
             reasons: [{ name: 'Damaged item', value: '1' }],
         });
 

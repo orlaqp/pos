@@ -256,4 +256,129 @@ describe('OrderEntityMapper', () => {
         expect(refundedCart.items[0].product.name).toBe('Apple');
         expect(refundedCart.footer.total).toBe(5);
     });
+
+    it('preserves remaining discounted pricing when rebuilding a partially refunded cart', async () => {
+        const refundedCart = await OrderEntityMapper.fromRefundedCart(
+            {
+                id: 'e-1',
+                firstName: 'Test',
+                lastName: 'Cashier',
+            },
+            {
+                id: 'o-2',
+                orderNo: '51-TEST-0002',
+                items: [
+                    {
+                        identifier: 'line-1',
+                        quantity: 1,
+                        product: {
+                            id: 'p-1',
+                            name: 'Discounted Apple',
+                            price: 10,
+                            unitOfMeasure: 'EA',
+                            barcode: null,
+                            sku: null,
+                            isEBTEligible: true,
+                        },
+                    },
+                ],
+                footer: {
+                    baseSubtotal: 20,
+                    discount: 5,
+                    lineDiscountTotal: 2,
+                    orderDiscountTotal: 3,
+                    subtotal: 15,
+                    tax: 0,
+                    savingsTotal: 5,
+                    total: 15,
+                    pricingSource: 'OFFLINE_LOCAL',
+                    reconciliationStatus: 'PENDING',
+                },
+                promoCodes: [{ code: 'SAVE5' }],
+                appliedDiscountSummary: {
+                    applications: [],
+                    approvalEvents: [],
+                    lineSummaries: [
+                        {
+                            lineId: 'line-1',
+                            discounts: [
+                                {
+                                    discountApplicationId: 'manual-line-1',
+                                    applicationType: 'MANUAL_LINE_DISCOUNT',
+                                    scope: 'LINE',
+                                    method: 'PERCENT',
+                                    name: 'Manual line',
+                                    source: 'manual',
+                                    value: 10,
+                                    originalAmount: 20,
+                                    discountAmount: 2,
+                                    finalAmount: 18,
+                                    quantityBasis: 2,
+                                    appliedAt: '2026-04-18T00:00:00.000Z',
+                                    stackMode: 'STACKABLE',
+                                },
+                            ],
+                            lineDiscountTotal: 2,
+                            allocatedOrderDiscountTotal: 3,
+                            lineTotalBeforeTax: 15,
+                        },
+                    ],
+                    orderLevelAdjustments: [
+                        {
+                            discountApplicationId: 'manual-order',
+                            applicationType: 'MANUAL_ORDER_DISCOUNT',
+                            scope: 'ORDER',
+                            method: 'AMOUNT',
+                            name: 'Manual order',
+                            source: 'manual',
+                            value: 3,
+                            originalAmount: 18,
+                            discountAmount: 3,
+                            finalAmount: 15,
+                            appliedAt: '2026-04-18T00:00:00.000Z',
+                            stackMode: 'STACKABLE',
+                        },
+                    ],
+                    warnings: [],
+                    pricingGeneratedAt: '2026-04-18T00:00:00.000Z',
+                },
+                definitions: [],
+                manualDiscounts: [],
+                priceOverrides: [],
+                approvalEvents: [],
+                selected: undefined,
+                header: undefined,
+            },
+            [{ identifier: 'line-1', quantity: 1 }]
+        );
+
+        expect(refundedCart.footer).toMatchObject({
+            baseSubtotal: 10,
+            lineDiscountTotal: 1,
+            orderDiscountTotal: 1.5,
+            discount: 2.5,
+            subtotal: 7.5,
+            total: 7.5,
+            savingsTotal: 2.5,
+        });
+        expect(refundedCart.promoCodes).toEqual([{ code: 'SAVE5' }]);
+        expect(refundedCart.manualDiscounts).toEqual([
+            expect.objectContaining({
+                kind: 'MANUAL_DISCOUNT',
+                scope: 'LINE',
+                lineId: 'line-1',
+                value: 10,
+            }),
+            expect.objectContaining({
+                kind: 'MANUAL_DISCOUNT',
+                scope: 'ORDER',
+                value: 3,
+            }),
+        ]);
+        expect(refundedCart.appliedDiscountSummary?.lineSummaries[0]).toMatchObject({
+            lineDiscountTotal: 1,
+            allocatedOrderDiscountTotal: 1.5,
+            lineTotalBeforeTax: 7.5,
+        });
+    });
 });

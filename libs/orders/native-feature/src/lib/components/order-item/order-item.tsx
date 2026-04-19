@@ -74,6 +74,7 @@ export const getStatusAccentColor = (
     colors: { accent: string; success: string; warning: string }
 ) => {
     if (status === 'PAID') return colors.success;
+    if (status === 'PARTIALLY_REFUNDED') return colors.warning;
     if (status === 'REFUNDED') return colors.warning;
     return colors.accent;
 };
@@ -176,7 +177,8 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
     const statusOwner =
         item.status === 'PAID'
             ? item?.paymentInfo?.employeeName
-            : item.status === 'REFUNDED'
+            : item.status === 'REFUNDED' ||
+                item.status === 'PARTIALLY_REFUNDED'
             ? item?.refundInfo?.employeeName
             : undefined;
 
@@ -269,7 +271,8 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                         onPress={openItem}
                     />
                 )}
-                {item.status === 'PAID' && (
+                {(item.status === 'PAID' ||
+                    item.status === 'PARTIALLY_REFUNDED') && (
                     <>
                         { employee?.roles.includes(Role.VoidOrder) &&
                         <Button

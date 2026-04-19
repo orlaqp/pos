@@ -30,6 +30,7 @@ interface SalesCatalogPaneProps {
     onProductSelected: (product: ButtonItemType) => void;
     onProductLongPress: (product: ButtonItemType) => void;
     onOpenBackOfficeForm: (screen: 'Products' | 'Categories', initialRouteName: string) => void;
+    onOpenCurrentDeals: () => void;
 }
 
 export function SalesCatalogPane({
@@ -53,6 +54,7 @@ export function SalesCatalogPane({
     onProductSelected,
     onProductLongPress,
     onOpenBackOfficeForm,
+    onOpenCurrentDeals,
 }: SalesCatalogPaneProps) {
     return (
         <>
@@ -81,28 +83,47 @@ export function SalesCatalogPane({
             </Animated.View>
             <UICard style={styles.productsCard} padding="md" radius="lg">
                 <View style={styles.productsHeader}>
-                    <View>
-                        <Text style={styles.sectionTitle}>Products</Text>
+                    <View style={styles.productsHeaderCopy}>
+                        <View style={styles.sectionTitleRow}>
+                            <Button
+                                testID="sales-toggle-categories"
+                                type="clear"
+                                onPress={onToggleCategories}
+                                accessibilityLabel={
+                                    showCategories ? 'Hide categories' : 'Show categories'
+                                }
+                                icon={{
+                                    name: showCategories ? 'dock-right' : 'dock-left',
+                                    type: 'material-community',
+                                    color: accentColor,
+                                    size: 20,
+                                }}
+                                buttonStyle={styles.toggleIconButton}
+                            />
+                            <Text style={styles.sectionTitle}>Products</Text>
+                        </View>
                         <Text style={styles.sectionSubtitle}>
                             {showCategories
                                 ? 'Choose a category, tap All Products, or search the catalog.'
                                 : 'Search the catalog or show categories again.'}
                         </Text>
                     </View>
-                    <Button
-                        testID="sales-toggle-categories"
-                        type="clear"
-                        title={showCategories ? 'Hide categories' : 'Show categories'}
-                        onPress={onToggleCategories}
-                        icon={{
-                            name: showCategories ? 'dock-right' : 'dock-left',
-                            type: 'material-community',
-                            color: accentColor,
-                            size: 18,
-                        }}
-                        titleStyle={styles.toggleTitle}
-                        buttonStyle={styles.toggleButton}
-                    />
+                    <View style={styles.productsHeaderActions}>
+                        <Button
+                            testID="sales-current-deals"
+                            type="outline"
+                            title="Current deals"
+                            onPress={onOpenCurrentDeals}
+                            icon={{
+                                name: 'tag-multiple-outline',
+                                type: 'material-community',
+                                color: accentColor,
+                                size: 18,
+                            }}
+                            titleStyle={styles.currentDealsTitle}
+                            buttonStyle={styles.currentDealsButton}
+                        />
+                    </View>
                 </View>
 
                 <Animated.View style={{ flex: 1, opacity: contentOpacity }}>

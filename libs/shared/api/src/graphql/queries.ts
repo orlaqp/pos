@@ -1120,6 +1120,222 @@ export const syncOrders = /* GraphQL */ `query SyncOrders(
   APITypes.SyncOrdersQueryVariables,
   APITypes.SyncOrdersQuery
 >;
+export const getOrderRefund = /* GraphQL */ `query GetOrderRefund($id: ID!) {
+  getOrderRefund(id: $id) {
+    id
+    tenantId
+    orderId
+    orderNo
+    refundDate
+    refundType
+    status
+    refundAmount
+    refundReason
+    createdByEmployeeId
+    createdByEmployeeName
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetOrderRefundQueryVariables,
+  APITypes.GetOrderRefundQuery
+>;
+export const listOrderRefunds = /* GraphQL */ `query ListOrderRefunds(
+  $filter: ModelOrderRefundFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listOrderRefunds(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      tenantId
+      orderId
+      orderNo
+      refundDate
+      refundType
+      status
+      refundAmount
+      refundReason
+      createdByEmployeeId
+      createdByEmployeeName
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListOrderRefundsQueryVariables,
+  APITypes.ListOrderRefundsQuery
+>;
+export const syncOrderRefunds = /* GraphQL */ `query SyncOrderRefunds(
+  $filter: ModelOrderRefundFilterInput
+  $limit: Int
+  $nextToken: String
+  $lastSync: AWSTimestamp
+) {
+  syncOrderRefunds(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    lastSync: $lastSync
+  ) {
+    items {
+      id
+      tenantId
+      orderId
+      orderNo
+      refundDate
+      refundType
+      status
+      refundAmount
+      refundReason
+      createdByEmployeeId
+      createdByEmployeeName
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.SyncOrderRefundsQueryVariables,
+  APITypes.SyncOrderRefundsQuery
+>;
+export const getOrderRefundLine = /* GraphQL */ `query GetOrderRefundLine($id: ID!) {
+  getOrderRefundLine(id: $id) {
+    id
+    tenantId
+    refundId
+    orderId
+    refundDate
+    orderLineIdentifier
+    productId
+    productName
+    unitOfMeasure
+    categoryId
+    quantityRefunded
+    unitRefundAmount
+    lineRefundAmount
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetOrderRefundLineQueryVariables,
+  APITypes.GetOrderRefundLineQuery
+>;
+export const listOrderRefundLines = /* GraphQL */ `query ListOrderRefundLines(
+  $filter: ModelOrderRefundLineFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listOrderRefundLines(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      tenantId
+      refundId
+      orderId
+      refundDate
+      orderLineIdentifier
+      productId
+      productName
+      unitOfMeasure
+      categoryId
+      quantityRefunded
+      unitRefundAmount
+      lineRefundAmount
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListOrderRefundLinesQueryVariables,
+  APITypes.ListOrderRefundLinesQuery
+>;
+export const syncOrderRefundLines = /* GraphQL */ `query SyncOrderRefundLines(
+  $filter: ModelOrderRefundLineFilterInput
+  $limit: Int
+  $nextToken: String
+  $lastSync: AWSTimestamp
+) {
+  syncOrderRefundLines(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    lastSync: $lastSync
+  ) {
+    items {
+      id
+      tenantId
+      refundId
+      orderId
+      refundDate
+      orderLineIdentifier
+      productId
+      productName
+      unitOfMeasure
+      categoryId
+      quantityRefunded
+      unitRefundAmount
+      lineRefundAmount
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.SyncOrderRefundLinesQueryVariables,
+  APITypes.SyncOrderRefundLinesQuery
+>;
 export const getProduct = /* GraphQL */ `query GetProduct($id: ID!) {
   getProduct(id: $id) {
     id

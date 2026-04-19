@@ -122,4 +122,54 @@ describe('order-void-form helpers', () => {
         expect(result[0].lineTotalBeforeTax).toBe(4);
         expect(result[0].lineDiscountTotal).toBe(1);
     });
+
+    it('removes already refunded units from the refundable EACH list', () => {
+        const lines = [
+            {
+                identifier: 'l1',
+                productId: 'p1',
+                barcode: null,
+                sku: null,
+                productName: 'Apple',
+                unitOfMeasure: EACH,
+                quantity: 3,
+                tax: 0,
+                price: 2.5,
+            },
+        ];
+
+        const result = spreadOrderLinesForVoid(
+            lines as any,
+            new Map([['l1', 2]])
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].quantity).toBe(1);
+    });
+
+    it('reduces weighted refundable quantity after prior refunds', () => {
+        const lines = [
+            {
+                identifier: 'l2',
+                productId: 'p2',
+                barcode: null,
+                sku: null,
+                productName: 'Rice',
+                unitOfMeasure: 'LB',
+                quantity: 2,
+                tax: 0,
+                price: 4,
+                lineTotalBeforeTax: 8,
+            },
+        ];
+
+        const result = spreadOrderLinesForVoid(
+            lines as any,
+            new Map([['l2', 0.5]])
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].quantity).toBe(1.5);
+        expect(result[0].lineTotalBeforeTax).toBe(6);
+    });
 });

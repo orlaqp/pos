@@ -1,4 +1,11 @@
-import { Order, PaymentType, Product, OrderStatus } from '@pos/shared/models';
+import {
+    Order,
+    OrderRefund,
+    OrderRefundLine,
+    OrderStatus,
+    PaymentType,
+    Product,
+} from '@pos/shared/models';
 
 const round = (value: number) => Math.round(value * 100) / 100;
 const money = (value: number) => `$${round(value).toFixed(2)}`;
@@ -178,30 +185,31 @@ export const buildDiscountReportRows = (orders: Order[]) => {
         .sort((a, b) => b.amount - a.amount);
 };
 
-export const buildRefundReportRows = (orders: Order[]) =>
-    orders
-        .filter((order) => order.status === OrderStatus.REFUNDED)
-        .map((order) => ({
-            orderNo: order.orderNo,
-            date: (order.updatedAt || order.orderDate || '').substring(0, 10),
-            employee: order.refundInfo?.employeeName || order.employeeName || 'Unknown',
-            amount: Number(order.total || 0),
-            reason: order.refundInfo?.comments || '-',
+export const buildRefundReportRows = (refunds: OrderRefund[]) =>
+    refunds
+        .map((refund) => ({
+            orderNo: refund.orderNo,
+            date: (refund.refundDate || '').substring(0, 10),
+            employee: refund.createdByEmployeeName || 'Unknown',
+            amount: Number(refund.refundAmount || 0),
+            reason: refund.refundReason || '-',
         }))
         .sort((a, b) => (a.date < b.date ? 1 : -1));
 
-export const buildRefundInsights = (orders: Order[]) => {
-    const refundedOrders = orders.filter((order) => order.status === OrderStatus.REFUNDED);
+export const buildRefundInsights = (
+    refunds: OrderRefund[],
+    refundLines: OrderRefundLine[]
+) => {
     const byEmployee = new Map<string, number>();
     const byProduct = new Map<string, number>();
     const byReason = new Map<string, number>();
 
     let totalAmount = 0;
 
-    refundedOrders.forEach((order) => {
-        const amount = Number(order.total || 0);
-        const employee = order.refundInfo?.employeeName || order.employeeName || 'Unknown';
-        const reason = (order.refundInfo?.comments || '').trim();
+    refunds.forEach((refund) => {
+        const amount = Number(refund.refundAmount || 0);
+        const employee = refund.createdByEmployeeName || 'Unknown';
+        const reason = (refund.refundReason || '').trim();
 
         totalAmount += amount;
         byEmployee.set(employee, (byEmployee.get(employee) || 0) + amount);
@@ -210,10 +218,14 @@ export const buildRefundInsights = (orders: Order[]) => {
             byReason.set(reason, (byReason.get(reason) || 0) + 1);
         }
 
-        (order.lines || []).forEach((line) => {
-            const product = line?.productName || 'Unknown';
-            byProduct.set(product, (byProduct.get(product) || 0) + getOrderLineSalesAmount(line));
-        });
+    });
+
+    refundLines.forEach((line) => {
+        const product = line?.productName || 'Unknown';
+        byProduct.set(
+            product,
+            (byProduct.get(product) || 0) + Number(line?.lineRefundAmount || 0)
+        );
     });
 
     const toRankedList = (map: Map<string, number>, formatter = money) =>
@@ -224,8 +236,8 @@ export const buildRefundInsights = (orders: Order[]) => {
 
     return {
         totalAmount,
-        totalOrders: refundedOrders.length,
-        averageAmount: refundedOrders.length ? totalAmount / refundedOrders.length : 0,
+        totalOrders: refunds.length,
+        averageAmount: refunds.length ? totalAmount / refunds.length : 0,
         topEmployees: toRankedList(byEmployee),
         topProducts: toRankedList(byProduct),
         reasons: Array.from(byReason.entries())

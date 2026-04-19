@@ -93,6 +93,16 @@ export enum InventoryApplyState {
   FAILED = "FAILED"
 }
 
+export enum RefundType {
+  PARTIAL = "PARTIAL",
+  FULL = "FULL"
+}
+
+export enum OrderRefundStatus {
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED"
+}
+
 export enum PaymentType {
   CASH = "CASH",
   CHECK = "CHECK",
@@ -102,6 +112,7 @@ export enum PaymentType {
 
 export enum OrderStatus {
   OPEN = "OPEN",
+  PARTIALLY_REFUNDED = "PARTIALLY_REFUNDED",
   REFUNDED = "REFUNDED",
   PAID = "PAID"
 }
@@ -514,6 +525,14 @@ type OrderMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
+type OrderRefundMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type OrderRefundLineMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
 type ProductMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
@@ -884,6 +903,94 @@ export declare type Order = LazyLoading extends LazyLoadingDisabled ? EagerOrder
 
 export declare const Order: (new (init: ModelInit<Order, OrderMetaData>) => Order) & {
   copyOf(source: Order, mutator: (draft: MutableModel<Order, OrderMetaData>) => MutableModel<Order, OrderMetaData> | void): Order;
+}
+
+type EagerOrderRefund = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly orderId: string;
+  readonly orderNo: string;
+  readonly refundDate: string;
+  readonly refundType: RefundType | keyof typeof RefundType;
+  readonly status: OrderRefundStatus | keyof typeof OrderRefundStatus;
+  readonly refundAmount: number;
+  readonly refundReason?: string | null;
+  readonly createdByEmployeeId: string;
+  readonly createdByEmployeeName: string;
+  readonly inventoryApplyState?: InventoryApplyState | keyof typeof InventoryApplyState | null;
+  readonly inventoryAppliedAt?: string | null;
+  readonly inventoryApplyOperationId?: string | null;
+  readonly inventoryApplyError?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyOrderRefund = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly orderId: string;
+  readonly orderNo: string;
+  readonly refundDate: string;
+  readonly refundType: RefundType | keyof typeof RefundType;
+  readonly status: OrderRefundStatus | keyof typeof OrderRefundStatus;
+  readonly refundAmount: number;
+  readonly refundReason?: string | null;
+  readonly createdByEmployeeId: string;
+  readonly createdByEmployeeName: string;
+  readonly inventoryApplyState?: InventoryApplyState | keyof typeof InventoryApplyState | null;
+  readonly inventoryAppliedAt?: string | null;
+  readonly inventoryApplyOperationId?: string | null;
+  readonly inventoryApplyError?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type OrderRefund = LazyLoading extends LazyLoadingDisabled ? EagerOrderRefund : LazyOrderRefund
+
+export declare const OrderRefund: (new (init: ModelInit<OrderRefund, OrderRefundMetaData>) => OrderRefund) & {
+  copyOf(source: OrderRefund, mutator: (draft: MutableModel<OrderRefund, OrderRefundMetaData>) => MutableModel<OrderRefund, OrderRefundMetaData> | void): OrderRefund;
+}
+
+type EagerOrderRefundLine = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly refundId: string;
+  readonly orderId: string;
+  readonly refundDate: string;
+  readonly orderLineIdentifier: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly unitOfMeasure: string;
+  readonly categoryId?: string | null;
+  readonly quantityRefunded: number;
+  readonly unitRefundAmount: number;
+  readonly lineRefundAmount: number;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyOrderRefundLine = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly refundId: string;
+  readonly orderId: string;
+  readonly refundDate: string;
+  readonly orderLineIdentifier: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly unitOfMeasure: string;
+  readonly categoryId?: string | null;
+  readonly quantityRefunded: number;
+  readonly unitRefundAmount: number;
+  readonly lineRefundAmount: number;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type OrderRefundLine = LazyLoading extends LazyLoadingDisabled ? EagerOrderRefundLine : LazyOrderRefundLine
+
+export declare const OrderRefundLine: (new (init: ModelInit<OrderRefundLine, OrderRefundLineMetaData>) => OrderRefundLine) & {
+  copyOf(source: OrderRefundLine, mutator: (draft: MutableModel<OrderRefundLine, OrderRefundLineMetaData>) => MutableModel<OrderRefundLine, OrderRefundLineMetaData> | void): OrderRefundLine;
 }
 
 type EagerProduct = {

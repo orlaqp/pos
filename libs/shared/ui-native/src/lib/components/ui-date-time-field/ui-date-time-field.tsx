@@ -13,6 +13,8 @@ type UIDateTimeFieldProps = {
   title?: string;
   rules?: RegisterOptions;
   disabled?: boolean;
+  clearable?: boolean;
+  clearLabel?: string;
 };
 
 const pad = (value: number) => `${value}`.padStart(2, '0');
@@ -73,6 +75,8 @@ export function UIDateTimeField({
   title,
   rules,
   disabled = false,
+  clearable = false,
+  clearLabel = 'Clear',
 }: UIDateTimeFieldProps) {
   const { control } = useFormContext();
   const sharedStyles = useSharedStyles();
@@ -91,6 +95,28 @@ export function UIDateTimeField({
           fontWeight: '600',
           marginBottom: 6,
           marginLeft: 10,
+        },
+        labelRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 6,
+        },
+        labelWrap: {
+          flex: 1,
+        },
+        clearButton: {
+          paddingHorizontal: 10,
+          paddingVertical: 4,
+          borderRadius: 999,
+        },
+        clearButtonDisabled: {
+          opacity: 0.45,
+        },
+        clearButtonText: {
+          color: theme.theme.colors.primary,
+          fontSize: 13,
+          fontWeight: '700',
         },
         field: {
           minHeight: 56,
@@ -137,10 +163,25 @@ export function UIDateTimeField({
           typeof value === 'string' ? value : value == null ? '' : String(value);
         const displayValue = formatDisplayValue(stringValue, mode);
         const pickerDate = parseStoredValue(stringValue, mode);
+        const canClear = clearable && !disabled && stringValue.trim().length > 0;
 
         return (
           <View style={styles.wrapper}>
-            <Text style={styles.label}>{label}</Text>
+            <View style={styles.labelRow}>
+              <View style={styles.labelWrap}>
+                <Text style={styles.label}>{label}</Text>
+              </View>
+              {clearable ? (
+                <Pressable
+                  testID={`ui-date-time-field-clear-${name}`}
+                  disabled={!canClear}
+                  style={[styles.clearButton, !canClear ? styles.clearButtonDisabled : undefined]}
+                  onPress={() => onChange('')}
+                >
+                  <Text style={styles.clearButtonText}>{clearLabel}</Text>
+                </Pressable>
+              ) : null}
+            </View>
             <Pressable
               testID={`ui-date-time-field-${name}`}
               disabled={disabled}

@@ -134,6 +134,7 @@ jest.mock('@pos/employees/data-access', () => ({
 }));
 
 jest.mock('@pos/categories/data-access', () => ({
+    selectCategoriesEntities: (state: any) => state.categoriesEntities || {},
     subscribeToCategoryChanges: () => ({ unsubscribe: mockCategoriesUnsubscribe }),
 }));
 
@@ -219,6 +220,7 @@ jest.mock('@pos/sales/data-access', () => ({
             quantity,
         }),
     },
+    selectCart: (state: any) => state.cart,
     selectActiveProduct: (state: any) => state.activeProduct,
 }));
 
@@ -244,6 +246,7 @@ jest.mock('./sales-catalog-pane', () => ({
         onProductLongPress,
         onToggleCategories,
         onOpenBackOfficeForm,
+        onOpenCurrentDeals,
     }: any) => {
         const { View, Pressable, Text } = require('react-native');
         if (searchRef) {
@@ -300,6 +303,9 @@ jest.mock('./sales-catalog-pane', () => ({
                 <Pressable testID="sales-toggle-categories" onPress={onToggleCategories}>
                     <Text>Toggle Categories</Text>
                 </Pressable>
+                <Pressable testID="sales-current-deals" onPress={onOpenCurrentDeals}>
+                    <Text>Current Deals</Text>
+                </Pressable>
                 {!hasCatalogProducts ? (
                     <>
                         <Text>No products yet</Text>
@@ -319,6 +325,23 @@ jest.mock('./sales-catalog-pane', () => ({
                 ) : null}
             </View>
         );
+    },
+}));
+
+jest.mock('./sales-current-deals-dialog', () => ({
+    SalesCurrentDealsDialog: ({ isVisible, rows, selectedProductName, onClose }: any) => {
+        const { Pressable, Text, View } = require('react-native');
+        return isVisible ? (
+            <View>
+                <Text testID="sales-current-deals-count">{rows.length}</Text>
+                <Text testID="sales-current-deals-selected-product">
+                    {selectedProductName ?? 'none'}
+                </Text>
+                <Pressable testID="sales-current-deals-close" onPress={onClose}>
+                    <Text>Close deals</Text>
+                </Pressable>
+            </View>
+        ) : null;
     },
 }));
 
@@ -473,6 +496,13 @@ describe('SalesScreen', () => {
         mockState = {
             activeProduct: undefined,
             allProducts: [mockProduct, mockLowInventoryProduct],
+            cart: {
+                definitions: [],
+                selected: undefined,
+            },
+            categoriesEntities: {
+                'c-1': { id: 'c-1', name: 'Fruit' },
+            },
             productsEntities: {
                 [mockProduct.id]: mockProduct,
                 [mockLowInventoryProduct.id]: mockLowInventoryProduct,
@@ -753,6 +783,50 @@ describe('SalesScreen', () => {
         flushDelayedSearchRestore();
 
         expect(mockSearchFocus).toHaveBeenCalledTimes(1);
+    });
+
+    it('opens current deals without disturbing the catalog flow', () => {
+        mockState.cart = {
+            definitions: [
+                {
+                    id: 'discount-1',
+                    name: 'Egg Special',
+                    status: 'ACTIVE',
+                    type: 'AUTOMATIC',
+                    scope: 'LINE',
+                    method: 'PERCENT',
+                    value: 30,
+                    stackMode: 'STACKABLE',
+                    applicableProductIds: [mockProduct.id],
+                },
+            ],
+            selected: {
+                identifier: 'line-1',
+                product: {
+                    id: mockProduct.id,
+                    name: mockProduct.name,
+                    price: mockProduct.price,
+                    categoryId: 'c-1',
+                    unitOfMeasure: 'ea',
+                },
+                quantity: 1,
+            },
+        };
+
+        const { getByTestId, queryByTestId } = renderSalesScreen();
+
+        expect(queryByTestId('sales-current-deals-count')).toBeNull();
+
+        fireEvent.press(getByTestId('sales-current-deals'));
+
+        expect(getByTestId('sales-current-deals-count').props.children).toBe(1);
+        expect(getByTestId('sales-current-deals-selected-product').props.children).toBe(
+            'Apple'
+        );
+
+        fireEvent.press(getByTestId('sales-current-deals-close'));
+
+        expect(queryByTestId('sales-current-deals-count')).toBeNull();
     });
 
     it('delays search refocus after cart interaction completion', () => {

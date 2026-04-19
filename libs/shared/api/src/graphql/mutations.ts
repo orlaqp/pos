@@ -869,6 +869,192 @@ export const deleteOrder = /* GraphQL */ `mutation DeleteOrder(
   APITypes.DeleteOrderMutationVariables,
   APITypes.DeleteOrderMutation
 >;
+export const createOrderRefund = /* GraphQL */ `mutation CreateOrderRefund(
+  $input: CreateOrderRefundInput!
+  $condition: ModelOrderRefundConditionInput
+) {
+  createOrderRefund(input: $input, condition: $condition) {
+    id
+    tenantId
+    orderId
+    orderNo
+    refundDate
+    refundType
+    status
+    refundAmount
+    refundReason
+    createdByEmployeeId
+    createdByEmployeeName
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateOrderRefundMutationVariables,
+  APITypes.CreateOrderRefundMutation
+>;
+export const updateOrderRefund = /* GraphQL */ `mutation UpdateOrderRefund(
+  $input: UpdateOrderRefundInput!
+  $condition: ModelOrderRefundConditionInput
+) {
+  updateOrderRefund(input: $input, condition: $condition) {
+    id
+    tenantId
+    orderId
+    orderNo
+    refundDate
+    refundType
+    status
+    refundAmount
+    refundReason
+    createdByEmployeeId
+    createdByEmployeeName
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateOrderRefundMutationVariables,
+  APITypes.UpdateOrderRefundMutation
+>;
+export const deleteOrderRefund = /* GraphQL */ `mutation DeleteOrderRefund(
+  $input: DeleteOrderRefundInput!
+  $condition: ModelOrderRefundConditionInput
+) {
+  deleteOrderRefund(input: $input, condition: $condition) {
+    id
+    tenantId
+    orderId
+    orderNo
+    refundDate
+    refundType
+    status
+    refundAmount
+    refundReason
+    createdByEmployeeId
+    createdByEmployeeName
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteOrderRefundMutationVariables,
+  APITypes.DeleteOrderRefundMutation
+>;
+export const createOrderRefundLine = /* GraphQL */ `mutation CreateOrderRefundLine(
+  $input: CreateOrderRefundLineInput!
+  $condition: ModelOrderRefundLineConditionInput
+) {
+  createOrderRefundLine(input: $input, condition: $condition) {
+    id
+    tenantId
+    refundId
+    orderId
+    refundDate
+    orderLineIdentifier
+    productId
+    productName
+    unitOfMeasure
+    categoryId
+    quantityRefunded
+    unitRefundAmount
+    lineRefundAmount
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateOrderRefundLineMutationVariables,
+  APITypes.CreateOrderRefundLineMutation
+>;
+export const updateOrderRefundLine = /* GraphQL */ `mutation UpdateOrderRefundLine(
+  $input: UpdateOrderRefundLineInput!
+  $condition: ModelOrderRefundLineConditionInput
+) {
+  updateOrderRefundLine(input: $input, condition: $condition) {
+    id
+    tenantId
+    refundId
+    orderId
+    refundDate
+    orderLineIdentifier
+    productId
+    productName
+    unitOfMeasure
+    categoryId
+    quantityRefunded
+    unitRefundAmount
+    lineRefundAmount
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateOrderRefundLineMutationVariables,
+  APITypes.UpdateOrderRefundLineMutation
+>;
+export const deleteOrderRefundLine = /* GraphQL */ `mutation DeleteOrderRefundLine(
+  $input: DeleteOrderRefundLineInput!
+  $condition: ModelOrderRefundLineConditionInput
+) {
+  deleteOrderRefundLine(input: $input, condition: $condition) {
+    id
+    tenantId
+    refundId
+    orderId
+    refundDate
+    orderLineIdentifier
+    productId
+    productName
+    unitOfMeasure
+    categoryId
+    quantityRefunded
+    unitRefundAmount
+    lineRefundAmount
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteOrderRefundLineMutationVariables,
+  APITypes.DeleteOrderRefundLineMutation
+>;
 export const createProduct = /* GraphQL */ `mutation CreateProduct(
   $input: CreateProductInput!
   $condition: ModelProductConditionInput

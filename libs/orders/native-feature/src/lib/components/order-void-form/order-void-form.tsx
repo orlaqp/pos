@@ -32,6 +32,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     const [refundAmount, setRefundAmount] = useState<number>(0);
     const [itemList, setItemList] = useState<OrderLineEntity[]>([]);
     const [newTotal, setNewTotal] = useState<number>(0);
+    const [existingRefundAmount, setExistingRefundAmount] = useState<number>(0);
     const [linesToRefund, setLinesToRefund] = useState<OrderLineEntity[]>([]);
     const [busy, setBusy] = useState<boolean>(false);
     const t = (key: string, fallback: string) =>
@@ -119,13 +120,45 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     };
 
     useEffect(() => {
-        const summary = calculateRefundSummary(order.total, linesToRefund);
+        const summary = calculateRefundSummary(
+            Math.max(0, order.total - existingRefundAmount),
+            linesToRefund
+        );
         setRefundAmount(-1 * summary.refundTotal);
         setNewTotal(summary.newTotal);
-    }, [order, linesToRefund]);
+    }, [existingRefundAmount, order, linesToRefund]);
 
     useEffect(() => {
-        setItemList(spreadOrderLinesForVoid(order.lines));
+        let cancelled = false;
+
+        OrderService.getRefundedQuantitiesForOrder(order.id)
+            .then((quantities) => {
+                if (cancelled) return;
+                setItemList(spreadOrderLinesForVoid(order.lines, quantities));
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setItemList(spreadOrderLinesForVoid(order.lines));
+            });
+
+        OrderService.getRefundRecordsForOrder(order.id)
+            .then((refunds) => {
+                if (cancelled) return;
+                setExistingRefundAmount(
+                    refunds.reduce(
+                        (sum, refund) => sum + Number(refund.refundAmount || 0),
+                        0
+                    )
+                );
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setExistingRefundAmount(0);
+            });
+
+        return () => {
+            cancelled = true;
+        };
     }, [order]);
 
     return (

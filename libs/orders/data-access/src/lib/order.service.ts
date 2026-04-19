@@ -1,13 +1,24 @@
 import { MutableModel } from '@aws-amplify/datastore';
 /* eslint-disable @nx/enforce-module-boundaries */
-import { Order, OrderLine, OrderMetaData, OrderStatus, Payment, PaymentInfo, Product, RefundInfo } from '@pos/shared/models';
+import {
+    Order,
+    OrderLine,
+    OrderMetaData,
+    OrderRefund,
+    OrderRefundLine,
+    OrderStatus,
+    Payment,
+    PaymentInfo,
+    Product,
+    RefundInfo,
+} from '@pos/shared/models';
 import { DataStore } from '@pos/shared/amplify';
 import { OrderEntity, OrderEntityMapper } from './order.entity';
 import { CartPayment, CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
 import moment from 'moment';
 import uuid from 'react-native-uuid';
-import { EmployeeEntity, EmployeeService } from '@pos/employees/data-access';
+import { EmployeeEntity } from '@pos/employees/data-access';
 import { StationService } from '@pos/settings/data-access';
 import { isOrderNumber, sortDescListBy, sortListBy } from '@pos/shared/utils';
 import {
@@ -44,6 +55,7 @@ export interface CloseOrderRequest extends UpdateOrderRequest {
 
 export interface RefundOrderRequest extends UpdateOrderRequest {
     refundedLines: { identifier: string; quantity: number }[]
+    comments?: string;
 }
 
 export interface UpsertOrderRequest extends CreateOrderRequest {
@@ -56,6 +68,17 @@ export interface CreatePaidOrderRequest extends CreateOrderRequest {
     payments: CartPayment[];
 }
 
+interface RefundLineComputation {
+    identifier: string;
+    productId: string;
+    productName: string;
+    unitOfMeasure: string;
+    categoryId?: string | null;
+    quantityRefunded: number;
+    unitRefundAmount: number;
+    lineRefundAmount: number;
+}
+
 const logOrderTiming = (step: string, details?: Record<string, unknown>) => {
     void step;
     void details;
@@ -65,6 +88,31 @@ const buildOrderInventoryOperationId = (
     orderId: string,
     status: 'PAID' | 'REFUNDED'
 ) => `ORDER:${orderId}:${status}`;
+
+const buildRefundInventoryOperationId = (
+    orderId: string,
+    refundId: string
+) => `ORDER_REFUND:${orderId}:${refundId}`;
+
+const REFUND_QUANTITY_EPSILON = 0.0001;
+
+const normalizeRefundRequests = (
+    refundedLines: Array<{ identifier: string; quantity: number }>
+) =>
+    refundedLines.reduce<Map<string, number>>((acc, line) => {
+        const identifier = String(line.identifier || '');
+        const quantity = Number(line.quantity || 0);
+
+        if (!identifier || quantity <= 0) {
+            return acc;
+        }
+
+        acc.set(identifier, roundMoney((acc.get(identifier) || 0) + quantity));
+        return acc;
+    }, new Map<string, number>());
+
+const isFullyRefundedQuantity = (original: number, refunded: number) =>
+    Math.abs(original - refunded) <= REFUND_QUANTITY_EPSILON;
 
 const toAppliedDiscountDetailSnapshot = (
     discount: AppliedDiscountDetail
@@ -411,103 +459,281 @@ export class OrderService {
             return null;
         }
 
-        const refundedOrder = Order.copyOf(existing, (o) => {
-            o.tenantId = existing.tenantId || requireCurrentTenantId();
-            o.status = 'REFUNDED';
-            o.inventoryApplyState = 'PENDING';
-            o.inventoryAppliedAt = null;
-            o.inventoryApplyOperationId = buildOrderInventoryOperationId(
-                existing.id,
-                'REFUNDED'
-            );
-            o.inventoryApplyError = null;
-            o.refundInfo = {
-                employeeId: request.by.id,
-                employeeName: `${request.by.firstName} ${request.by.lastName}`
-            }
-        });
-
-        const savedRefundedOrder = await DataStore.save(refundedOrder);
-
-        const hasCartItems = !!(request.order as unknown as CartState)?.items;
-        const cartOrder: CartState = hasCartItems
-            ? ({
-                  ...(request.order as unknown as CartState),
-                  id: request.id,
-              } as CartState)
-            : OrderEntityMapper.asCartState({
-                  id: request.id,
-                  orderNo: (request.order as unknown as Partial<OrderEntity>).orderNo || existing.orderNo,
-                  subtotal:
-                      (request.order as unknown as Partial<OrderEntity>).subtotal ??
-                      existing.subtotal,
-                  tax: (request.order as unknown as Partial<OrderEntity>).tax ?? existing.tax,
-                  total:
-                      (request.order as unknown as Partial<OrderEntity>).total ??
-                      existing.total,
-                  status:
-                      ((request.order as unknown as Partial<OrderEntity>).status as
-                          | OrderStatus
-                          | keyof typeof OrderStatus
-                          | undefined) || existing.status,
-                  employeeId:
-                      (request.order as unknown as Partial<OrderEntity>).employeeId ||
-                      existing.employeeId,
-                  employeeName:
-                      (request.order as unknown as Partial<OrderEntity>).employeeName ||
-                      existing.employeeName,
-                  lines:
-                      (request.order as unknown as Partial<OrderEntity>).lines ||
-                      OrderEntityMapper.fromModel(existing).lines,
-                  payments:
-                      (request.order as unknown as Partial<OrderEntity>).payments ||
-                      null,
-                  paymentInfo:
-                      (request.order as unknown as Partial<OrderEntity>).paymentInfo ||
-                      null,
-                  refundInfo:
-                      (request.order as unknown as Partial<OrderEntity>).refundInfo ||
-                      null,
-                  orderDate:
-                      (request.order as unknown as Partial<OrderEntity>).orderDate ||
-                      existing.orderDate,
-                  createdAt:
-                      (request.order as unknown as Partial<OrderEntity>).createdAt ||
-                      existing.createdAt,
-                  updatedAt:
-                      (request.order as unknown as Partial<OrderEntity>).updatedAt ||
-                      existing.updatedAt,
-              } as OrderEntity);
-
-        request.refundedLines.forEach((l) => {
-            const line = cartOrder.items.find(
-                (li) => li.identifier === l.identifier && li.quantity > 0
-            );
-
-            if (line) {
-                line.quantity -= l.quantity;
-            }
-        });
-
-        const newCart = await OrderEntityMapper.fromRefundedCart(
-            request.by,
-            cartOrder
+        const sourceOrder = OrderService.toOrderEntitySnapshot(existing, request.order);
+        const requestedRefunds = normalizeRefundRequests(request.refundedLines);
+        const previouslyRefunded = await OrderService.getRefundedQuantitiesForOrder(
+            existing.id
+        );
+        const refundLines = OrderService.buildRefundLineComputations(
+            sourceOrder,
+            requestedRefunds,
+            previouslyRefunded
         );
 
-        if (!newCart.items?.length) return savedRefundedOrder;
-        const createdBy = await EmployeeService.getById(refundedOrder.employeeId);
-
-        if  (!createdBy) {
-            Alert.alert(`Employee ${refundedOrder.employeeId} not found`);
-            return savedRefundedOrder;
+        if (!refundLines.length) {
+            throw new Error('No refundable items were selected');
         }
 
-        await OrderService.create({
-            by: createdBy,// get original employee
-            order: newCart
-        }) // .upsertOrder(employee, newCart, OrderStatus.PAID);
+        const isFullRefund = OrderService.isFullRefund(
+            sourceOrder,
+            requestedRefunds,
+            previouslyRefunded
+        );
+        const requestedRefundId = String(uuid.v4());
+        const refundDate = moment().toISOString();
+        const refundAmount = roundMoney(
+            refundLines.reduce((sum, line) => sum + line.lineRefundAmount, 0)
+        );
+        const updatedOrder = Order.copyOf(existing, (o) => {
+            o.tenantId = existing.tenantId || requireCurrentTenantId();
+            o.status = isFullRefund ? 'REFUNDED' : 'PARTIALLY_REFUNDED';
+            o.refundInfo = {
+                employeeId: request.by.id,
+                employeeName: `${request.by.firstName} ${request.by.lastName}`,
+                comments: request.comments || existing.refundInfo?.comments || null,
+            };
+        });
 
-        return savedRefundedOrder;
+        const savedOrder = await DataStore.save(updatedOrder);
+
+        const refundInventoryOperationId = buildRefundInventoryOperationId(
+            existing.id,
+            requestedRefundId
+        );
+
+        for (const line of refundLines) {
+            await DataStore.save(
+                new OrderRefundLine(
+                    stampTenant({
+                        id: String(uuid.v4()),
+                        refundId: requestedRefundId,
+                        orderId: existing.id,
+                        refundDate,
+                        orderLineIdentifier: line.identifier,
+                        productId: line.productId,
+                        productName: line.productName,
+                        unitOfMeasure: line.unitOfMeasure,
+                        categoryId: line.categoryId ?? null,
+                        quantityRefunded: line.quantityRefunded,
+                        unitRefundAmount: line.unitRefundAmount,
+                        lineRefundAmount: line.lineRefundAmount,
+                    }) as never
+                )
+            );
+        }
+
+        const refundRecord = new OrderRefund(
+            stampTenant({
+                id: requestedRefundId,
+                orderId: existing.id,
+                orderNo: existing.orderNo,
+                refundDate,
+                refundType: isFullRefund ? 'FULL' : 'PARTIAL',
+                status: 'COMPLETED',
+                refundAmount,
+                refundReason: request.comments || null,
+                createdByEmployeeId: request.by.id,
+                createdByEmployeeName: `${request.by.firstName} ${request.by.lastName}`,
+                inventoryApplyState: 'PENDING',
+                inventoryAppliedAt: null,
+                inventoryApplyOperationId: refundInventoryOperationId,
+                inventoryApplyError: null,
+            }) as never
+        );
+
+        await DataStore.save(refundRecord);
+
+        return savedOrder;
+    }
+
+    static async getRefundRecordsForOrder(orderId: string) {
+        const refunds = await DataStore.query(OrderRefund, (refund) =>
+            refund.orderId.eq(orderId)
+        );
+
+        return [...refunds].sort((left, right) =>
+            (left.refundDate || '').localeCompare(right.refundDate || '')
+        );
+    }
+
+    static async getRefundedQuantitiesForOrder(orderId: string) {
+        const refundLines = await DataStore.query(OrderRefundLine, (line) =>
+            line.orderId.eq(orderId)
+        );
+
+        return refundLines.reduce<Map<string, number>>((acc, line) => {
+            const identifier = String(line.orderLineIdentifier || '');
+            const nextQuantity = roundMoney(
+                (acc.get(identifier) || 0) + Number(line.quantityRefunded || 0)
+            );
+            acc.set(identifier, nextQuantity);
+            return acc;
+        }, new Map<string, number>());
+    }
+
+    static async getRefundRecordsForRange(
+        fromIso: string,
+        toIso: string
+    ) {
+        const refunds = await DataStore.query(OrderRefund, (refund) =>
+            refund.refundDate.between(fromIso, toIso)
+        );
+
+        return [...refunds].sort((left, right) =>
+            (right.refundDate || '').localeCompare(left.refundDate || '')
+        );
+    }
+
+    private static toOrderEntitySnapshot(
+        existing: Order,
+        requestOrder: RefundOrderRequest['order']
+    ): OrderEntity {
+        return {
+            id: existing.id,
+            orderNo:
+                (requestOrder as unknown as Partial<OrderEntity>).orderNo ||
+                existing.orderNo,
+            baseSubtotal:
+                (requestOrder as unknown as Partial<OrderEntity>).baseSubtotal ??
+                existing.baseSubtotal,
+            subtotal:
+                (requestOrder as unknown as Partial<OrderEntity>).subtotal ??
+                existing.subtotal,
+            lineDiscountTotal:
+                (requestOrder as unknown as Partial<OrderEntity>).lineDiscountTotal ??
+                existing.lineDiscountTotal,
+            orderDiscountTotal:
+                (requestOrder as unknown as Partial<OrderEntity>).orderDiscountTotal ??
+                existing.orderDiscountTotal,
+            discountTotal:
+                (requestOrder as unknown as Partial<OrderEntity>).discountTotal ??
+                existing.discountTotal,
+            savingsTotal:
+                (requestOrder as unknown as Partial<OrderEntity>).savingsTotal ??
+                existing.savingsTotal,
+            tax:
+                (requestOrder as unknown as Partial<OrderEntity>).tax ??
+                existing.tax,
+            total:
+                (requestOrder as unknown as Partial<OrderEntity>).total ??
+                existing.total,
+            status:
+                ((requestOrder as unknown as Partial<OrderEntity>).status as
+                    | OrderStatus
+                    | keyof typeof OrderStatus
+                    | undefined) || existing.status,
+            employeeId:
+                (requestOrder as unknown as Partial<OrderEntity>).employeeId ||
+                existing.employeeId,
+            employeeName:
+                (requestOrder as unknown as Partial<OrderEntity>).employeeName ||
+                existing.employeeName,
+            promoCodes:
+                (requestOrder as unknown as Partial<OrderEntity>).promoCodes ||
+                OrderEntityMapper.fromModel(existing).promoCodes ||
+                null,
+            pricingVersion:
+                (requestOrder as unknown as Partial<OrderEntity>).pricingVersion ||
+                existing.pricingVersion,
+            pricingSnapshotHash:
+                (requestOrder as unknown as Partial<OrderEntity>)
+                    .pricingSnapshotHash || existing.pricingSnapshotHash,
+            pricingSource:
+                (requestOrder as unknown as Partial<OrderEntity>).pricingSource ||
+                existing.pricingSource,
+            reconciliationStatus:
+                (requestOrder as unknown as Partial<OrderEntity>)
+                    .reconciliationStatus || existing.reconciliationStatus,
+            appliedDiscountSummary:
+                (requestOrder as unknown as Partial<OrderEntity>)
+                    .appliedDiscountSummary ||
+                OrderEntityMapper.fromModel(existing).appliedDiscountSummary ||
+                null,
+            lines:
+                (requestOrder as unknown as Partial<OrderEntity>).lines ||
+                OrderEntityMapper.fromModel(existing).lines,
+            payments:
+                (requestOrder as unknown as Partial<OrderEntity>).payments || null,
+            paymentInfo:
+                (requestOrder as unknown as Partial<OrderEntity>).paymentInfo ||
+                null,
+            refundInfo:
+                (requestOrder as unknown as Partial<OrderEntity>).refundInfo ||
+                null,
+            orderDate:
+                (requestOrder as unknown as Partial<OrderEntity>).orderDate ||
+                existing.orderDate,
+            createdAt:
+                (requestOrder as unknown as Partial<OrderEntity>).createdAt ||
+                existing.createdAt,
+            updatedAt:
+                (requestOrder as unknown as Partial<OrderEntity>).updatedAt ||
+                existing.updatedAt,
+        } as OrderEntity;
+    }
+
+    private static buildRefundLineComputations(
+        order: OrderEntity,
+        requestedRefunds: Map<string, number>,
+        previouslyRefunded: Map<string, number>
+    ): RefundLineComputation[] {
+        return Array.from(requestedRefunds.entries()).map(([identifier, quantityRefunded]) => {
+            const sourceLine = order.lines?.find((line) => line.identifier === identifier);
+            if (!sourceLine) {
+                throw new Error(`Order line ${identifier} was not found`);
+            }
+
+            const originalQuantity = Number(sourceLine.quantity || 0);
+            const priorRefundedQuantity = Number(previouslyRefunded.get(identifier) || 0);
+            const remainingRefundableQuantity = roundMoney(
+                originalQuantity - priorRefundedQuantity
+            );
+
+            if (
+                quantityRefunded - remainingRefundableQuantity >
+                REFUND_QUANTITY_EPSILON
+            ) {
+                throw new Error(
+                    `Line ${sourceLine.productName} only has ${remainingRefundableQuantity} refundable units remaining`
+                );
+            }
+
+            const unitRefundAmount =
+                originalQuantity > 0
+                    ? roundMoney(
+                          Number(
+                              sourceLine.lineTotalBeforeTax ??
+                                  sourceLine.lineTotalAfterTax ??
+                                  sourceLine.price * sourceLine.quantity
+                          ) / originalQuantity
+                      )
+                    : 0;
+
+            return {
+                identifier,
+                productId: sourceLine.productId,
+                productName: sourceLine.productName,
+                unitOfMeasure: sourceLine.unitOfMeasure,
+                categoryId: sourceLine.categoryId ?? null,
+                quantityRefunded: roundMoney(quantityRefunded),
+                unitRefundAmount,
+                lineRefundAmount: roundMoney(unitRefundAmount * quantityRefunded),
+            };
+        });
+    }
+
+    private static isFullRefund(
+        order: OrderEntity,
+        requestedRefunds: Map<string, number>,
+        previouslyRefunded: Map<string, number>
+    ) {
+        return (order.lines || []).every((item) => {
+            const totalRefunded = roundMoney(
+                Number(previouslyRefunded.get(item.identifier || '') || 0) +
+                    Number(requestedRefunds.get(item.identifier || '') || 0)
+            );
+            return isFullyRefundedQuantity(Number(item.quantity || 0), totalRefunded);
+        });
     }
 
 
@@ -854,6 +1080,6 @@ function buildPricingSnapshotHash(order: Omit<CartState, 'id'>) {
     return `pricing-${Math.abs(hash)}`;
 }
 
-function roundMoney(value: number) {
-    return Math.round((value + Number.EPSILON) * 100) / 100;
+function roundMoney(value: number | null | undefined) {
+    return Math.round(((value ?? 0) + Number.EPSILON) * 100) / 100;
 }

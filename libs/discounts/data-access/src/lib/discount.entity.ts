@@ -60,6 +60,8 @@ export interface EmployeeDiscountPolicyEntity {
 
 export class DiscountEntityMapper {
   static fromDefinition(model: DiscountDefinition): DiscountDefinitionEntity {
+    const normalizedActive = model.status === 'ACTIVE';
+
     return {
       id: model.id,
       name: model.name,
@@ -98,7 +100,7 @@ export class DiscountEntityMapper {
       excludeAlreadyDiscountedItems: model.excludeAlreadyDiscountedItems ?? false,
       appliesToAllProducts: model.appliesToAllProducts ?? false,
       stationIds: model.stationIds ? model.stationIds.filter(Boolean) as string[] : null,
-      active: model.active,
+      active: normalizedActive,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     };

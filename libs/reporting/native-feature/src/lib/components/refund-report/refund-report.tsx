@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
     buildRefundInsights,
     buildRefundReportRows,
-    getOrdersForStatuses,
+    getRefundLinesForRefundIds,
+    getRefundsForRange,
 } from '@pos/reporting/data-access';
-import { OrderStatus } from '@pos/shared/models';
 import {
     DateRange,
     UICard,
@@ -40,6 +40,15 @@ interface RefundRow {
     reason: string;
 }
 
+const emptyInsights = {
+    totalAmount: 0,
+    totalOrders: 0,
+    averageAmount: 0,
+    topEmployees: [] as Array<{ name: string; value: string }>,
+    topProducts: [] as Array<{ name: string; value: string }>,
+    reasons: [] as Array<{ name: string; value: string }>,
+};
+
 const toSafeFileSlug = (value: string) =>
     value
         .toLowerCase()
@@ -58,6 +67,7 @@ export function RefundReport() {
     });
     const [loading, setLoading] = useState(true);
     const [rows, setRows] = useState<RefundRow[]>([]);
+    const [insights, setInsights] = useState(emptyInsights);
     const [emptyOpacity] = useState(() => new Animated.Value(0));
     const [emptyTranslateY] = useState(() => new Animated.Value(12));
 
@@ -83,17 +93,22 @@ export function RefundReport() {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setLoading(true);
         const task = InteractionManager.runAfterInteractions(() => {
-            getOrdersForStatuses({
-                statuses: [OrderStatus.REFUNDED],
+            getRefundsForRange({
                 range: normalizeReportRange(dateRange),
             })
-                .then((orders) => {
+                .then(async (refunds) => {
                     if (cancelled) return;
-                    setRows(buildRefundReportRows(orders));
+                    const refundLines = await getRefundLinesForRefundIds(
+                        refunds.map((refund) => refund.id)
+                    );
+                    if (cancelled) return;
+                    setRows(buildRefundReportRows(refunds));
+                    setInsights(buildRefundInsights(refunds, refundLines));
                 })
                 .catch(() => {
                     if (!cancelled) {
                         setRows([]);
+                        setInsights(emptyInsights);
                     }
                 })
                 .finally(() => {
@@ -127,26 +142,6 @@ export function RefundReport() {
             }),
         ]).start();
     }, [emptyOpacity, emptyTranslateY, loading, rows.length]);
-
-    const insights = useMemo(
-        () =>
-            buildRefundInsights(
-                rows.map((row) => ({
-                    status: OrderStatus.REFUNDED,
-                    total: row.amount,
-                    employeeName: row.employee,
-                    refundInfo: {
-                        employeeName: row.employee,
-                        comments: row.reason === '-' ? null : row.reason,
-                    },
-                    orderNo: row.orderNo,
-                    updatedAt: row.date,
-                    orderDate: row.date,
-                    lines: [],
-                })) as any
-            ),
-        [rows]
-    );
 
     const exportToCsv = async () => {
         const title = t('REPORT_RefundReportTitle', 'Refund Report');

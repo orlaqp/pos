@@ -869,6 +869,192 @@ export const onDeleteOrder = /* GraphQL */ `subscription OnDeleteOrder(
   APITypes.OnDeleteOrderSubscriptionVariables,
   APITypes.OnDeleteOrderSubscription
 >;
+export const onCreateOrderRefund = /* GraphQL */ `subscription OnCreateOrderRefund(
+  $filter: ModelSubscriptionOrderRefundFilterInput
+  $tenantId: String
+) {
+  onCreateOrderRefund(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    orderId
+    orderNo
+    refundDate
+    refundType
+    status
+    refundAmount
+    refundReason
+    createdByEmployeeId
+    createdByEmployeeName
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateOrderRefundSubscriptionVariables,
+  APITypes.OnCreateOrderRefundSubscription
+>;
+export const onUpdateOrderRefund = /* GraphQL */ `subscription OnUpdateOrderRefund(
+  $filter: ModelSubscriptionOrderRefundFilterInput
+  $tenantId: String
+) {
+  onUpdateOrderRefund(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    orderId
+    orderNo
+    refundDate
+    refundType
+    status
+    refundAmount
+    refundReason
+    createdByEmployeeId
+    createdByEmployeeName
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateOrderRefundSubscriptionVariables,
+  APITypes.OnUpdateOrderRefundSubscription
+>;
+export const onDeleteOrderRefund = /* GraphQL */ `subscription OnDeleteOrderRefund(
+  $filter: ModelSubscriptionOrderRefundFilterInput
+  $tenantId: String
+) {
+  onDeleteOrderRefund(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    orderId
+    orderNo
+    refundDate
+    refundType
+    status
+    refundAmount
+    refundReason
+    createdByEmployeeId
+    createdByEmployeeName
+    inventoryApplyState
+    inventoryAppliedAt
+    inventoryApplyOperationId
+    inventoryApplyError
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteOrderRefundSubscriptionVariables,
+  APITypes.OnDeleteOrderRefundSubscription
+>;
+export const onCreateOrderRefundLine = /* GraphQL */ `subscription OnCreateOrderRefundLine(
+  $filter: ModelSubscriptionOrderRefundLineFilterInput
+  $tenantId: String
+) {
+  onCreateOrderRefundLine(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    refundId
+    orderId
+    refundDate
+    orderLineIdentifier
+    productId
+    productName
+    unitOfMeasure
+    categoryId
+    quantityRefunded
+    unitRefundAmount
+    lineRefundAmount
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateOrderRefundLineSubscriptionVariables,
+  APITypes.OnCreateOrderRefundLineSubscription
+>;
+export const onUpdateOrderRefundLine = /* GraphQL */ `subscription OnUpdateOrderRefundLine(
+  $filter: ModelSubscriptionOrderRefundLineFilterInput
+  $tenantId: String
+) {
+  onUpdateOrderRefundLine(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    refundId
+    orderId
+    refundDate
+    orderLineIdentifier
+    productId
+    productName
+    unitOfMeasure
+    categoryId
+    quantityRefunded
+    unitRefundAmount
+    lineRefundAmount
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateOrderRefundLineSubscriptionVariables,
+  APITypes.OnUpdateOrderRefundLineSubscription
+>;
+export const onDeleteOrderRefundLine = /* GraphQL */ `subscription OnDeleteOrderRefundLine(
+  $filter: ModelSubscriptionOrderRefundLineFilterInput
+  $tenantId: String
+) {
+  onDeleteOrderRefundLine(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    refundId
+    orderId
+    refundDate
+    orderLineIdentifier
+    productId
+    productName
+    unitOfMeasure
+    categoryId
+    quantityRefunded
+    unitRefundAmount
+    lineRefundAmount
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteOrderRefundLineSubscriptionVariables,
+  APITypes.OnDeleteOrderRefundLineSubscription
+>;
 export const onCreateProduct = /* GraphQL */ `subscription OnCreateProduct(
   $filter: ModelSubscriptionProductFilterInput
   $tenantId: String

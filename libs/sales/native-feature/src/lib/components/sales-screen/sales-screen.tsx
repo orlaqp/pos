@@ -7,6 +7,7 @@ import { Animated, View, Alert, InteractionManager, TextInput } from 'react-nati
 
 import {
     CategoryEntity,
+    selectCategoriesEntities,
 } from '@pos/categories/data-access';
 import { useSelector } from 'react-redux';
 import {
@@ -17,6 +18,7 @@ import {
     CartState,
     MINIMUM_INVENTORY_FOR_SALE,
     selectActiveProduct,
+    selectCart,
 } from '@pos/sales/data-access';
 import Cart from '../cart/cart';
 import {
@@ -68,6 +70,8 @@ import {
 import { useSalesScreenStyles } from './sales-screen.styles';
 import { SalesCatalogPane } from './sales-catalog-pane';
 import { SalesProductDialog } from './sales-product-dialog';
+import { buildSalesDiscountExplainerRows } from './current-deals.logic';
+import { SalesCurrentDealsDialog } from './sales-current-deals-dialog';
 
 export interface NavigationParamList {
     [key: string]: object | undefined;
@@ -117,10 +121,12 @@ export function SalesScreen({
     const dispatch = useAppDispatch();
     const searchRef = React.useRef<TextInput>(null);
     const product = useSelector(selectActiveProduct);
+    const cart = useSelector(selectCart);
     const storeInfo = useSelector(selectStore);
     const defaultPrinter = useSelector(getDefaultPrinter);
     const allProducts = useSelector(selectAllProducts);
     const productsEntities = useSelector(selectProductsEntities);
+    const categoriesEntities = useSelector(selectCategoriesEntities);
     const globalSettings = useSelector(getGlobalSettings);
     const payFromSalesScreen = useSelector(selectPayFromSalesScreen);
     const employee = useSelector(selectLoginEmployee);
@@ -139,6 +145,7 @@ export function SalesScreen({
     const [isSearchActive, setIsSearchActive] = useState(false);
     const [showCategories, setShowCategories] = useState(true);
     const [categoryRefreshToken, setCategoryRefreshToken] = useState(0);
+    const [showCurrentDeals, setShowCurrentDeals] = useState(false);
     const [categoryWidth] = useState(() => new Animated.Value(150));
     const [categoryOpacity] = useState(() => new Animated.Value(1));
     const [contentOpacity] = useState(() => new Animated.Value(1));
@@ -170,6 +177,26 @@ export function SalesScreen({
                 isSearchActive ? searchText : undefined
             ),
         [activeCategory, allProducts, browseMode, isSearchActive, searchText]
+    );
+    const currentDealRows = useMemo(
+        () =>
+            buildSalesDiscountExplainerRows({
+                definitions: cart.definitions || [],
+                now: new Date().toISOString(),
+                timezone: storeInfo?.timezone,
+                stationId: station?.stationNumber,
+                selectedItem: cart.selected,
+                productsById: productsEntities,
+                categoriesById: categoriesEntities,
+            }),
+        [
+            cart.definitions,
+            cart.selected,
+            categoriesEntities,
+            productsEntities,
+            station?.stationNumber,
+            storeInfo?.timezone,
+        ]
     );
 
     useEffect(() => {
@@ -935,6 +962,7 @@ export function SalesScreen({
                     onProductSelected={onProductSelected}
                     onProductLongPress={onProductLongPress}
                     onOpenBackOfficeForm={openBackOfficeForm}
+                    onOpenCurrentDeals={() => setShowCurrentDeals(true)}
                 />
                 <View style={styles.cartPanel}>
                     <Cart
@@ -955,6 +983,14 @@ export function SalesScreen({
                 enforceSalesBasedOnInventory={globalSettings?.enforceSalesBasedOnInventory}
                 onClose={closeProductDialog}
                 onUpsertCart={upsertCart}
+            />
+            <SalesCurrentDealsDialog
+                isVisible={showCurrentDeals}
+                rows={currentDealRows}
+                selectedProductName={cart.selected?.product.name}
+                overlayStyle={[styles.overlay, styles.dealsDialog]}
+                styles={styles}
+                onClose={() => setShowCurrentDeals(false)}
             />
         </UIScreen>
     );

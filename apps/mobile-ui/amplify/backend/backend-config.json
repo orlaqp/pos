@@ -174,38 +174,6 @@
           "resourceName": "getSales"
         }
       ]
-    },
-    "AMPLIFY_function_inventoryLifecycle_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "inventoryLifecycle"
-        }
-      ]
-    },
-    "AMPLIFY_function_inventoryLifecycle_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "inventoryLifecycle"
-        }
-      ]
-    },
-    "AMPLIFY_function_orderInventoryLifecycle_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "orderInventoryLifecycle"
-        }
-      ]
-    },
-    "AMPLIFY_function_orderInventoryLifecycle_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "orderInventoryLifecycle"
-        }
-      ]
     }
   },
   "storage": {

@@ -217,6 +217,7 @@ export function DiscountDefinitionFields({
                           placeholder="Select start date"
                           mode="date"
                           title="Select start date"
+                          clearable
                         />
                       </View>
                       <View style={styles.formColumn}>
@@ -226,6 +227,7 @@ export function DiscountDefinitionFields({
                           placeholder="Select end date"
                           mode="date"
                           title="Select end date"
+                          clearable
                         />
                       </View>
                     </View>
@@ -237,6 +239,7 @@ export function DiscountDefinitionFields({
                           placeholder="Select start time"
                           mode="time"
                           title="Select start time"
+                          clearable
                         />
                       </View>
                       <View style={styles.formColumn}>
@@ -246,6 +249,7 @@ export function DiscountDefinitionFields({
                           placeholder="Select end time"
                           mode="time"
                           title="Select end time"
+                          clearable
                         />
                       </View>
                     </View>

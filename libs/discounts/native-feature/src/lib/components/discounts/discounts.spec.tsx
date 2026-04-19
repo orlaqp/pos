@@ -182,15 +182,27 @@ jest.mock('@pos/shared/ui-native', () => {
       </Pressable>
     );
   };
-  const UIDateTimeField = ({ name, placeholder, mode }: any) => {
-    const { setValue } = useFormContext();
+  const UIDateTimeField = ({ name, placeholder, mode, clearable }: any) => {
+    const { setValue, watch } = useFormContext();
+    const value = watch(name);
     return (
-      <Pressable
-        testID={`date-time-${name}`}
-        onPress={() => setValue(name, mode === 'time' ? '08:30' : '2026-03-16T00:00:00.000Z')}
-      >
-        <Text>{placeholder}</Text>
-      </Pressable>
+      <View>
+        <Pressable
+          testID={`date-time-${name}`}
+          onPress={() => setValue(name, mode === 'time' ? '08:30' : '2026-03-16T00:00:00.000Z')}
+        >
+          <Text>{placeholder}</Text>
+          <Text>{value || ''}</Text>
+        </Pressable>
+        {clearable ? (
+          <Pressable
+            testID={`date-time-clear-${name}`}
+            onPress={() => setValue(name, '')}
+          >
+            <Text>Clear</Text>
+          </Pressable>
+        ) : null}
+      </View>
     );
   };
 
@@ -584,6 +596,31 @@ describe('DiscountEditor', () => {
     expect(
       getByText('Use Status in the Core section to control whether this discount is active.')
     ).toBeTruthy();
+  });
+
+  it('allows clearing previously selected schedule values', async () => {
+    mockSaveDefinition.mockResolvedValueOnce(undefined);
+
+    const { getByPlaceholderText, getByTestId } = render(
+      <DiscountEditor navigation={navigation} route={{ name: 'Discount Form', params: {} } as any} />
+    );
+
+    fireEvent.changeText(getByPlaceholderText('Name'), 'Scheduled discount');
+    fireEvent.press(getByTestId('date-time-startTime'));
+    fireEvent.press(getByTestId('date-time-startDate'));
+    fireEvent.press(getByTestId('date-time-clear-startTime'));
+    fireEvent.press(getByTestId('date-time-clear-startDate'));
+    fireEvent.press(getByTestId('ui-actions-submit'));
+
+    await waitFor(() =>
+      expect(mockSaveDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Scheduled discount',
+          startTime: null,
+          startDate: null,
+        })
+      )
+    );
   });
 
   it('loads an existing discount and updates it', async () => {

@@ -103,7 +103,6 @@ function ensureReasonIfRequired(
 }
 
 function isDefinitionActive(definition: DiscountDefinition, at: string): boolean {
-  if (definition.active === false) return false;
   if (definition.status !== 'ACTIVE') return false;
   if (definition.startDate && at < definition.startDate) return false;
   if (definition.endDate && at > definition.endDate) return false;

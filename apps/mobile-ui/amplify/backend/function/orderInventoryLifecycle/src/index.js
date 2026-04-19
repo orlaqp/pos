@@ -76,6 +76,24 @@ const UPDATE_ORDER_MUTATION = /* GraphQL */ `
   }
 `;
 
+const UPDATE_ORDER_REFUND_MUTATION = /* GraphQL */ `
+  mutation UpdateOrderRefundInventoryLifecycle(
+    $input: UpdateOrderRefundInput!
+    $condition: ModelOrderRefundConditionInput
+  ) {
+    updateOrderRefund(input: $input, condition: $condition) {
+      id
+      status
+      inventoryApplyState
+      inventoryAppliedAt
+      inventoryApplyOperationId
+      inventoryApplyError
+      _version
+      __typename
+    }
+  }
+`;
+
 exports.handler = async (event) => {
   console.log(`EVENT: ${JSON.stringify(event)}`);
 
@@ -89,10 +107,20 @@ async function processRecord(record) {
     return;
   }
 
-  const newOrder = converter.unmarshall(record.dynamodb.NewImage);
-  const oldOrder = record.dynamodb.OldImage
+  const newItem = converter.unmarshall(record.dynamodb.NewImage);
+  const oldItem = record.dynamodb.OldImage
     ? converter.unmarshall(record.dynamodb.OldImage)
     : null;
+
+  if (isRefundRecord(newItem)) {
+    await processRefundRecord(newItem, oldItem);
+    return;
+  }
+
+  await processOrderRecord(newItem, oldItem);
+}
+
+async function processOrderRecord(newOrder, oldOrder) {
 
   const eventInfo = getInventoryEvent(newOrder, oldOrder);
   if (!eventInfo) {
@@ -158,6 +186,82 @@ async function processRecord(record) {
   }
 }
 
+async function processRefundRecord(newRefund, oldRefund) {
+  const eventInfo = getRefundInventoryEvent(newRefund, oldRefund);
+  if (!eventInfo) {
+    return;
+  }
+
+  const refundId = newRefund.id;
+  const operationKey =
+    newRefund.inventoryApplyOperationId || `ORDER_REFUND:${newRefund.orderId}:${refundId}`;
+  const latestRefund = await getItem(process.env.API_POS_ORDERREFUNDTABLE_NAME, refundId);
+  if (!latestRefund) {
+    return;
+  }
+
+  await updateRefundState(latestRefund, {
+    inventoryApplyState: 'APPLYING',
+    inventoryApplyOperationId: operationKey,
+    inventoryApplyError: null,
+    inventoryAppliedAt: null,
+  });
+
+  try {
+    const refundLines = await getRefundLinesWithRetry(newRefund);
+    if (!refundLines.length) {
+      throw new Error(`Refund ${refundId} has no refund lines to apply`);
+    }
+    const lineSummary = summarizeRefundLines(refundLines);
+
+    for (const [productId, delta] of Object.entries(lineSummary)) {
+      const ledgerEntry = await getLedger(operationKey, productId);
+      if (ledgerEntry?.status === 'APPLIED') {
+        continue;
+      }
+
+      await applyProductDelta(productId, delta);
+      await putLedger(operationKey, {
+        productId,
+        appliedDelta: delta,
+        status: 'APPLIED',
+      });
+    }
+
+    const refreshedRefund = await getItem(
+      process.env.API_POS_ORDERREFUNDTABLE_NAME,
+      refundId
+    );
+    if (!refreshedRefund) {
+      return;
+    }
+
+    await updateRefundState(refreshedRefund, {
+      inventoryApplyState: 'APPLIED',
+      inventoryApplyOperationId: operationKey,
+      inventoryApplyError: null,
+      inventoryAppliedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    const refreshedRefund = await getItem(
+      process.env.API_POS_ORDERREFUNDTABLE_NAME,
+      refundId
+    );
+    if (refreshedRefund) {
+      await updateRefundState(refreshedRefund, {
+        inventoryApplyState: 'FAILED',
+        inventoryApplyOperationId: operationKey,
+        inventoryApplyError: getErrorMessage(error),
+        inventoryAppliedAt: null,
+      }).catch((updateError) => {
+        console.error('Unable to mark refund inventory failure', updateError);
+      });
+    }
+
+    throw error;
+  }
+}
+
 function getInventoryEvent(newOrder, oldOrder) {
   const newStatus = newOrder?.status;
   const oldStatus = oldOrder?.status;
@@ -169,14 +273,29 @@ function getInventoryEvent(newOrder, oldOrder) {
     };
   }
 
-  if (newStatus === 'REFUNDED' && oldStatus !== 'REFUNDED') {
+  return null;
+}
+
+function getRefundInventoryEvent(newRefund, oldRefund) {
+  if (!newRefund?.id) {
+    return null;
+  }
+
+  if (
+    newRefund.status === 'COMPLETED' &&
+    newRefund.inventoryApplyState !== 'APPLIED' &&
+    oldRefund?.inventoryApplyState !== 'APPLIED'
+  ) {
     return {
-      operation: 'REFUNDED',
-      multiplier: 1,
+      operation: 'REFUND',
     };
   }
 
   return null;
+}
+
+function isRefundRecord(item) {
+  return !!item?.refundAmount && !!item?.orderId && !!item?.refundDate;
 }
 
 function summarizeOrderLines(lines, multiplier) {
@@ -186,6 +305,18 @@ function summarizeOrderLines(lines, multiplier) {
     }
 
     summary[line.productId] = (summary[line.productId] || 0) + multiplier * Number(line.quantity || 0);
+    return summary;
+  }, {});
+}
+
+function summarizeRefundLines(lines) {
+  return (lines || []).reduce((summary, line) => {
+    if (!line?.productId) {
+      return summary;
+    }
+
+    summary[line.productId] =
+      (summary[line.productId] || 0) + Number(line.quantityRefunded || 0);
     return summary;
   }, {});
 }
@@ -235,6 +366,20 @@ async function updateOrderState(order, changes) {
   });
 }
 
+async function updateRefundState(refund, changes) {
+  await graphqlRequest(UPDATE_ORDER_REFUND_MUTATION, {
+    input: {
+      id: refund.id,
+      tenantId: refund.tenantId,
+      _version: refund._version,
+      inventoryApplyState: changes.inventoryApplyState,
+      inventoryApplyOperationId: changes.inventoryApplyOperationId,
+      inventoryApplyError: changes.inventoryApplyError,
+      inventoryAppliedAt: changes.inventoryAppliedAt,
+    },
+  });
+}
+
 async function getItem(tableName, id) {
   const result = await docClient
     .get({
@@ -246,6 +391,78 @@ async function getItem(tableName, id) {
     .promise();
 
   return result.Item || null;
+}
+
+async function getRefundLines(refundId) {
+  const result = await docClient
+    .query({
+      TableName: process.env.API_POS_ORDERREFUNDLINETABLE_NAME,
+      IndexName: 'byRefundId',
+      KeyConditionExpression: 'refundId = :refundId',
+      ExpressionAttributeValues: {
+        ':refundId': refundId,
+      },
+    })
+    .promise();
+
+  return result.Items || [];
+}
+
+async function getRefundLinesWithRetry(refund) {
+  const refundLookupIds = getRefundLookupIds(refund);
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    let lines = [];
+
+    for (const refundId of refundLookupIds) {
+      lines = await getRefundLines(refundId);
+      if (lines.length) {
+        return lines;
+      }
+    }
+
+    if (!lines.length && refund?.orderId && refund?.refundDate) {
+      lines = await getRefundLinesByOrderAndDate(refund.orderId, refund.refundDate);
+    }
+
+    if (lines.length) {
+      return lines;
+    }
+
+    await delay(1000);
+  }
+
+  return [];
+}
+
+function getRefundLookupIds(refund) {
+  const ids = new Set();
+  if (refund?.id) {
+    ids.add(refund.id);
+  }
+
+  const operationId = String(refund?.inventoryApplyOperationId || '');
+  const fallbackId = operationId.split(':').pop();
+  if (fallbackId) {
+    ids.add(fallbackId);
+  }
+
+  return [...ids];
+}
+
+async function getRefundLinesByOrderAndDate(orderId, refundDate) {
+  const result = await docClient
+    .query({
+      TableName: process.env.API_POS_ORDERREFUNDLINETABLE_NAME,
+      IndexName: 'byOrderIdByRefundDate',
+      KeyConditionExpression: 'orderId = :orderId AND refundDate = :refundDate',
+      ExpressionAttributeValues: {
+        ':orderId': orderId,
+        ':refundDate': refundDate,
+      },
+    })
+    .promise();
+
+  return result.Items || [];
 }
 
 async function getLedger(operationKey, productId) {
@@ -385,4 +602,10 @@ function getErrorMessage(error) {
   }
 
   return JSON.stringify(error);
+}
+
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }

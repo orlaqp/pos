@@ -2,11 +2,33 @@ import { OrderLineEntity } from '@pos/orders/data-access';
 import { EACH } from '@pos/unit-of-measures/data-access';
 
 export const spreadOrderLinesForVoid = (
-    lines: OrderLineEntity[] | null | undefined
+    lines: OrderLineEntity[] | null | undefined,
+    refundedQuantities?:
+        | Map<string, number>
+        | Record<string, number>
+        | null
 ) => {
     const spreadLines: OrderLineEntity[] = [];
+    const getRefundedQuantity = (identifier: string) => {
+        if (!refundedQuantities) return 0;
+        if (refundedQuantities instanceof Map) {
+            return Number(refundedQuantities.get(identifier) || 0);
+        }
+
+        return Number(refundedQuantities[identifier] || 0);
+    };
 
     lines?.forEach((line) => {
+        const refundedQuantity = getRefundedQuantity(line.identifier);
+        const remainingQuantity = Math.max(
+            0,
+            Number(line.quantity || 0) - refundedQuantity
+        );
+
+        if (remainingQuantity <= 0) {
+            return;
+        }
+
         if (line.unitOfMeasure === EACH) {
             const originalQuantity = line.quantity || 0;
             const unitPrice = originalQuantity > 0 ? line.price / originalQuantity : line.price;
@@ -47,7 +69,7 @@ export const spreadOrderLinesForVoid = (
                     ? line.nonEbtPaidAmount / originalQuantity
                     : line.nonEbtPaidAmount;
 
-            for (let i = 0; i < line.quantity; i++) {
+            for (let i = 0; i < remainingQuantity; i++) {
                 spreadLines.push({
                     ...line,
                     quantity: 1,
@@ -66,7 +88,41 @@ export const spreadOrderLinesForVoid = (
             return;
         }
 
-        spreadLines.push(line);
+        const ratio =
+            Number(line.quantity || 0) > 0
+                ? remainingQuantity / Number(line.quantity || 0)
+                : 0;
+
+        spreadLines.push({
+            ...line,
+            quantity: remainingQuantity,
+            lineSubtotalBeforeOrderDiscount:
+                line.lineSubtotalBeforeOrderDiscount == null
+                    ? line.lineSubtotalBeforeOrderDiscount
+                    : line.lineSubtotalBeforeOrderDiscount * ratio,
+            lineDiscountTotal:
+                line.lineDiscountTotal == null
+                    ? line.lineDiscountTotal
+                    : line.lineDiscountTotal * ratio,
+            allocatedOrderDiscountTotal:
+                line.allocatedOrderDiscountTotal == null
+                    ? line.allocatedOrderDiscountTotal
+                    : line.allocatedOrderDiscountTotal * ratio,
+            lineTotalBeforeTax:
+                line.lineTotalBeforeTax == null
+                    ? line.lineTotalBeforeTax
+                    : line.lineTotalBeforeTax * ratio,
+            lineTotalAfterTax:
+                line.lineTotalAfterTax == null
+                    ? line.lineTotalAfterTax
+                    : line.lineTotalAfterTax * ratio,
+            ebtPaidAmount:
+                line.ebtPaidAmount == null ? line.ebtPaidAmount : line.ebtPaidAmount * ratio,
+            nonEbtPaidAmount:
+                line.nonEbtPaidAmount == null
+                    ? line.nonEbtPaidAmount
+                    : line.nonEbtPaidAmount * ratio,
+        });
     });
 
     return spreadLines;

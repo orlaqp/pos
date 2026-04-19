@@ -59,7 +59,7 @@ describe('cart discount helpers', () => {
         'America/New_York',
         '01'
       )
-    ).toBe(false);
+    ).toBe(true);
     expect(
       isDefinitionActiveForContext(
         { ...activeDefinition, status: 'INACTIVE' },

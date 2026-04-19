@@ -45,7 +45,9 @@ const filterVisibleOrders = (items: Order[]) => {
 
         return (
             isRecentClosed &&
-            (order.status === 'PAID' || order.status === 'REFUNDED')
+            (order.status === 'PAID' ||
+                order.status === 'PARTIALLY_REFUNDED' ||
+                order.status === 'REFUNDED')
         );
     });
 };
@@ -62,12 +64,17 @@ export const mergeSyncedOrders = (...groups: Order[][]) => {
 
 const updateStoreOrders = (dispatch: Dispatch, items: Order[]) => {
     const paidOrders = items.filter((order) => order.status === 'PAID');
+    const partiallyRefundedOrders = items.filter(
+        (order) => order.status === 'PARTIALLY_REFUNDED'
+    );
     const refundedOrders = items.filter((order) => order.status === 'REFUNDED');
     logSyncDebug('orders', 'updateStoreOrders', {
         totalCount: items.length,
         paidCount: paidOrders.length,
+        partiallyRefundedCount: partiallyRefundedOrders.length,
         refundedCount: refundedOrders.length,
         paidSample: summarizeOrders(paidOrders),
+        partiallyRefundedSample: summarizeOrders(partiallyRefundedOrders),
         refundedSample: summarizeOrders(refundedOrders),
     });
 
@@ -125,6 +132,11 @@ export const syncOrders = async (dispatch: Dispatch) => {
         totalCount: visibleOrders.length,
         paidSample: summarizeOrders(
             visibleOrders.filter((order) => order.status === 'PAID')
+        ),
+        partiallyRefundedSample: summarizeOrders(
+            visibleOrders.filter(
+                (order) => order.status === 'PARTIALLY_REFUNDED'
+            )
         ),
         refundedSample: summarizeOrders(
             visibleOrders.filter((order) => order.status === 'REFUNDED')

@@ -278,8 +278,8 @@ describe('PricingEngine', () => {
         stackMode: 'STACKABLE',
       },
       {
-        id: 'disabled-flag',
-        name: 'Disabled flag',
+        id: 'legacy-disabled-flag',
+        name: 'Legacy disabled flag',
         status: 'ACTIVE',
         active: false,
         type: 'AUTOMATIC',
@@ -329,8 +329,9 @@ describe('PricingEngine', () => {
       definitions,
     });
 
-    expect(result.order.discountTotal).toBe(0);
-    expect(result.order.applications).toHaveLength(0);
+    expect(result.order.discountTotal).toBe(5);
+    expect(result.order.applications).toHaveLength(1);
+    expect(result.order.applications[0].name).toBe('Legacy disabled flag');
   });
 
   it('respects category applicability, exclusions, quantity thresholds, and discountable flags', () => {

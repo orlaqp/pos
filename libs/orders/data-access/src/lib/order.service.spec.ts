@@ -11,7 +11,6 @@ import { DataStore } from '@pos/shared/amplify';
 import { StationService } from '@pos/settings/data-access';
 import { stampTenant } from '@pos/auth/data-access';
 import { Alert } from 'react-native';
-import { EmployeeService } from '@pos/employees/data-access';
 
 jest.mock('@pos/shared/amplify', () => ({
   DataStore: {
@@ -78,6 +77,29 @@ jest.mock('@pos/shared/models', () => {
     }
   }
 
+  class MockOrderRefund {
+    constructor(init: Record<string, unknown>) {
+      Object.assign(this, init);
+    }
+  }
+
+  (MockOrderRefund as any).copyOf = (
+    existing: Record<string, unknown>,
+    mutator: (draft: Record<string, unknown>) => void
+  ) => {
+    const draft = {
+      ...existing,
+    };
+    mutator(draft);
+    return draft;
+  };
+
+  class MockOrderRefundLine {
+    constructor(init: Record<string, unknown>) {
+      Object.assign(this, init);
+    }
+  }
+
   (MockProduct as any).copyOf = (existing: Record<string, unknown>, mutator: (draft: Record<string, unknown>) => void) => {
     const draft = {
       ...existing,
@@ -90,6 +112,8 @@ jest.mock('@pos/shared/models', () => {
     ...actual,
     Order: MockOrder,
     OrderLine: MockOrderLine,
+    OrderRefund: MockOrderRefund,
+    OrderRefundLine: MockOrderRefundLine,
     Payment: MockPayment,
     Product: MockProduct,
   };
@@ -232,6 +256,9 @@ describe('order.service EBT helpers', () => {
 describe('OrderService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest
+      .mocked(DataStore.save)
+      .mockImplementation(async (value) => value as any);
     jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
   });
 
@@ -601,66 +628,9 @@ describe('OrderService', () => {
     );
   });
 
-  it('stamps tenantId when refunding an order missing tenant ownership metadata', async () => {
+  it('stamps tenant ownership and creates refund records for a partial refund', async () => {
     const queryMock = jest.mocked(DataStore.query);
     const saveMock = jest.mocked(DataStore.save);
-    const sharedModels = jest.requireMock('@pos/shared/models');
-
-    queryMock.mockResolvedValueOnce({
-      id: 'order-1',
-      tenantId: undefined,
-      status: 'PAID',
-      employeeId: 'employee-1',
-      orderNo: '51-25-260316-0001',
-      subtotal: 10,
-      tax: 0,
-      total: 10,
-      lines: [],
-      orderDate: '2026-03-16T12:00:00.000Z',
-      createdAt: '2026-03-16T12:00:00.000Z',
-      updatedAt: '2026-03-16T12:00:00.000Z',
-    } as any);
-
-    (sharedModels.Order as any).copyOf = (_existing: any, mutator: (draft: any) => void) => {
-      const draft = {
-        id: 'order-1',
-        tenantId: undefined,
-        status: 'PAID',
-        refundInfo: null,
-        lines: [],
-      };
-      mutator(draft);
-      return draft;
-    };
-
-    await OrderService.refund({
-      id: 'order-1',
-      by: {
-        id: 'employee-2',
-        firstName: 'Test',
-        lastName: 'Cashier',
-      } as any,
-      order: {
-        items: [],
-      } as any,
-      refundedLines: [],
-    });
-
-    expect(saveMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: 'order-1',
-        tenantId: 'test-tenant',
-        status: 'REFUNDED',
-        inventoryApplyState: 'PENDING',
-        inventoryApplyOperationId: 'ORDER:order-1:REFUNDED',
-      })
-    );
-  });
-
-  it('creates a replacement open order with a generated id when a refund leaves remaining items', async () => {
-    const queryMock = jest.mocked(DataStore.query);
-    const saveMock = jest.mocked(DataStore.save);
-    const employeeServiceMock = jest.mocked(EmployeeService.getById);
     const sharedModels = jest.requireMock('@pos/shared/models');
 
     queryMock.mockResolvedValueOnce({
@@ -688,17 +658,15 @@ describe('OrderService', () => {
       createdAt: '2026-03-16T12:00:00.000Z',
       updatedAt: '2026-03-16T12:00:00.000Z',
     } as any);
+    queryMock.mockResolvedValueOnce([]);
 
-    employeeServiceMock.mockResolvedValue({
-      id: 'employee-1',
-      firstName: 'Original',
-      lastName: 'Cashier',
-    } as any);
-
-    (sharedModels.Order as any).copyOf = (existing: any, mutator: (draft: any) => void) => {
+    (sharedModels.Order as any).copyOf = (_existing: any, mutator: (draft: any) => void) => {
       const draft = {
-        ...existing,
+        id: 'order-1',
+        tenantId: undefined,
+        status: 'PAID',
         refundInfo: null,
+        lines: [],
       };
       mutator(draft);
       return draft;
@@ -708,7 +676,7 @@ describe('OrderService', () => {
       id: 'order-1',
       by: {
         id: 'employee-2',
-        firstName: 'Refund',
+        firstName: 'Test',
         lastName: 'Cashier',
       } as any,
       order: {
@@ -719,7 +687,7 @@ describe('OrderService', () => {
         total: 10,
         status: 'PAID',
         employeeId: 'employee-1',
-        employeeName: 'Original Cashier',
+        employeeName: 'Test Cashier',
         orderDate: '2026-03-16T12:00:00.000Z',
         lines: [
           {
@@ -737,14 +705,416 @@ describe('OrderService', () => {
       refundedLines: [{ identifier: 'line-1', quantity: 1 }],
     });
 
-    expect(saveMock).toHaveBeenCalledTimes(2);
+    expect(saveMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        id: 'order-1',
+        tenantId: 'test-tenant',
+        status: 'PARTIALLY_REFUNDED',
+      })
+    );
     expect(saveMock).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
-        id: 'generated-order-id',
-        status: 'OPEN',
-        employeeId: 'employee-1',
+        refundId: 'generated-order-id',
+        orderId: 'order-1',
+        orderLineIdentifier: 'line-1',
+        quantityRefunded: 1,
+        lineRefundAmount: 5,
       })
     );
+    expect(saveMock).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        id: 'generated-order-id',
+        orderId: 'order-1',
+        orderNo: '51-25-260316-0001',
+        refundType: 'PARTIAL',
+        status: 'COMPLETED',
+        inventoryApplyState: 'PENDING',
+        inventoryApplyOperationId: 'ORDER_REFUND:order-1:generated-order-id',
+      })
+    );
+  });
+
+  it('preserves discounted refund amounts when creating a partial refund record', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const saveMock = jest.mocked(DataStore.save);
+    const sharedModels = jest.requireMock('@pos/shared/models');
+
+    queryMock.mockResolvedValueOnce({
+      id: 'order-2',
+      tenantId: 'test-tenant',
+      status: 'PAID',
+      employeeId: 'employee-1',
+      orderNo: '51-25-260316-0002',
+      baseSubtotal: 20,
+      subtotal: 15,
+      lineDiscountTotal: 2,
+      orderDiscountTotal: 3,
+      discountTotal: 5,
+      savingsTotal: 5,
+      tax: 0,
+      total: 15,
+      lines: [
+        {
+          identifier: 'line-1',
+          productId: 'product-1',
+          productName: 'Rice',
+          quantity: 2,
+          price: 10,
+          basePrice: 10,
+          unitOfMeasure: 'EA',
+          barcode: null,
+          sku: null,
+          lineDiscountTotal: 2,
+          allocatedOrderDiscountTotal: 3,
+          lineTotalBeforeTax: 15,
+        },
+      ],
+      promoCodes: ['SAVE5'],
+      orderDate: '2026-03-16T12:00:00.000Z',
+      createdAt: '2026-03-16T12:00:00.000Z',
+      updatedAt: '2026-03-16T12:00:00.000Z',
+    } as any);
+    queryMock.mockResolvedValueOnce([]);
+
+    (sharedModels.Order as any).copyOf = (existing: any, mutator: (draft: any) => void) => {
+      const draft = {
+        ...existing,
+        refundInfo: null,
+      };
+      mutator(draft);
+      return draft;
+    };
+
+    await OrderService.refund({
+      id: 'order-2',
+      by: {
+        id: 'employee-2',
+        firstName: 'Refund',
+        lastName: 'Cashier',
+      } as any,
+      order: {
+        id: 'order-2',
+        orderNo: '51-25-260316-0002',
+        subtotal: 15,
+        tax: 0,
+        total: 15,
+        status: 'PAID',
+        employeeId: 'employee-1',
+        employeeName: 'Original Cashier',
+        orderDate: '2026-04-18T00:00:00.000Z',
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 2,
+            productId: 'product-1',
+            productName: 'Rice',
+            price: 10,
+            basePrice: 10,
+            unitOfMeasure: 'EA',
+            barcode: null,
+            sku: null,
+            lineDiscountTotal: 2,
+            allocatedOrderDiscountTotal: 3,
+            lineTotalBeforeTax: 15,
+          },
+        ],
+      } as any,
+      refundedLines: [{ identifier: 'line-1', quantity: 1 }],
+    });
+
+    expect(saveMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        refundId: 'generated-order-id',
+        unitRefundAmount: 7.5,
+        lineRefundAmount: 7.5,
+      })
+    );
+    expect(saveMock).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        id: 'generated-order-id',
+        refundAmount: 7.5,
+        refundType: 'PARTIAL',
+        inventoryApplyOperationId: 'ORDER_REFUND:order-2:generated-order-id',
+      })
+    );
+  });
+
+  it('uses the generated refund id for refund lines and inventory operation metadata', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const saveMock = jest.mocked(DataStore.save);
+    const sharedModels = jest.requireMock('@pos/shared/models');
+
+    queryMock.mockResolvedValueOnce({
+      id: 'order-5',
+      tenantId: 'test-tenant',
+      status: 'PAID',
+      employeeId: 'employee-1',
+      orderNo: '51-25-260316-0005',
+      subtotal: 10,
+      tax: 0,
+      total: 10,
+      lines: [
+        {
+          identifier: 'line-1',
+          productId: 'product-1',
+          productName: 'Rice',
+          quantity: 2,
+          price: 5,
+          unitOfMeasure: 'EA',
+          barcode: null,
+          sku: null,
+          lineTotalBeforeTax: 10,
+        },
+      ],
+      orderDate: '2026-03-16T12:00:00.000Z',
+      createdAt: '2026-03-16T12:00:00.000Z',
+      updatedAt: '2026-03-16T12:00:00.000Z',
+    } as any);
+    queryMock.mockResolvedValueOnce([]);
+
+    (sharedModels.Order as any).copyOf = (existing: any, mutator: (draft: any) => void) => {
+      const draft = {
+        ...existing,
+        refundInfo: null,
+      };
+      mutator(draft);
+      return draft;
+    };
+
+    await OrderService.refund({
+      id: 'order-5',
+      by: {
+        id: 'employee-2',
+        firstName: 'Refund',
+        lastName: 'Cashier',
+      } as any,
+      order: {
+        id: 'order-5',
+        orderNo: '51-25-260316-0005',
+        subtotal: 10,
+        tax: 0,
+        total: 10,
+        status: 'PAID',
+        employeeId: 'employee-1',
+        employeeName: 'Original Cashier',
+        orderDate: '2026-03-16T12:00:00.000Z',
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 2,
+            productId: 'product-1',
+            productName: 'Rice',
+            price: 5,
+            unitOfMeasure: 'EA',
+            barcode: null,
+            sku: null,
+            lineTotalBeforeTax: 10,
+          },
+        ],
+      } as any,
+      refundedLines: [{ identifier: 'line-1', quantity: 1 }],
+    });
+
+    expect(saveMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        refundId: 'generated-order-id',
+        orderId: 'order-5',
+      })
+    );
+    expect(saveMock).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        id: 'generated-order-id',
+        inventoryApplyOperationId: 'ORDER_REFUND:order-5:generated-order-id',
+      })
+    );
+  });
+
+  it('marks an order fully refunded when the last refundable quantity is returned', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const saveMock = jest.mocked(DataStore.save);
+    const sharedModels = jest.requireMock('@pos/shared/models');
+
+    queryMock.mockResolvedValueOnce({
+      id: 'order-3',
+      tenantId: 'test-tenant',
+      status: 'PARTIALLY_REFUNDED',
+      employeeId: 'employee-1',
+      orderNo: '51-25-260316-0003',
+      subtotal: 10,
+      tax: 0,
+      total: 10,
+      lines: [
+        {
+          identifier: 'line-1',
+          productId: 'product-1',
+          productName: 'Rice',
+          quantity: 2,
+          price: 5,
+          unitOfMeasure: 'EA',
+          barcode: null,
+          sku: null,
+          lineTotalBeforeTax: 10,
+        },
+      ],
+      orderDate: '2026-03-16T12:00:00.000Z',
+      createdAt: '2026-03-16T12:00:00.000Z',
+      updatedAt: '2026-03-16T12:00:00.000Z',
+    } as any);
+    queryMock.mockResolvedValueOnce([
+      {
+        id: 'refund-line-1',
+        orderId: 'order-3',
+        orderLineIdentifier: 'line-1',
+        quantityRefunded: 1,
+      },
+    ] as any);
+
+    (sharedModels.Order as any).copyOf = (existing: any, mutator: (draft: any) => void) => {
+      const draft = {
+        ...existing,
+        refundInfo: null,
+      };
+      mutator(draft);
+      return draft;
+    };
+
+    await OrderService.refund({
+      id: 'order-3',
+      by: {
+        id: 'employee-2',
+        firstName: 'Refund',
+        lastName: 'Cashier',
+      } as any,
+      order: {
+        id: 'order-3',
+        orderNo: '51-25-260316-0003',
+        subtotal: 10,
+        tax: 0,
+        total: 10,
+        status: 'PARTIALLY_REFUNDED',
+        employeeId: 'employee-1',
+        employeeName: 'Original Cashier',
+        orderDate: '2026-03-16T12:00:00.000Z',
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 2,
+            productId: 'product-1',
+            productName: 'Rice',
+            price: 5,
+            unitOfMeasure: 'EA',
+            barcode: null,
+            sku: null,
+            lineTotalBeforeTax: 10,
+          },
+        ],
+      } as any,
+      refundedLines: [{ identifier: 'line-1', quantity: 1 }],
+    });
+
+    expect(saveMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        id: 'order-3',
+        status: 'REFUNDED',
+      })
+    );
+    expect(saveMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        refundId: 'generated-order-id',
+      })
+    );
+    expect(saveMock).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        refundType: 'FULL',
+      })
+    );
+  });
+
+  it('rejects refund quantities that exceed what remains refundable', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const saveMock = jest.mocked(DataStore.save);
+
+    queryMock.mockResolvedValueOnce({
+      id: 'order-4',
+      tenantId: 'test-tenant',
+      status: 'PARTIALLY_REFUNDED',
+      employeeId: 'employee-1',
+      orderNo: '51-25-260316-0004',
+      subtotal: 10,
+      tax: 0,
+      total: 10,
+      lines: [
+        {
+          identifier: 'line-1',
+          productId: 'product-1',
+          productName: 'Rice',
+          quantity: 2,
+          price: 5,
+          unitOfMeasure: 'EA',
+          barcode: null,
+          sku: null,
+          lineTotalBeforeTax: 10,
+        },
+      ],
+      orderDate: '2026-03-16T12:00:00.000Z',
+      createdAt: '2026-03-16T12:00:00.000Z',
+      updatedAt: '2026-03-16T12:00:00.000Z',
+    } as any);
+    queryMock.mockResolvedValueOnce([
+      {
+        id: 'refund-line-1',
+        orderId: 'order-4',
+        orderLineIdentifier: 'line-1',
+        quantityRefunded: 1,
+      },
+    ] as any);
+
+    await expect(
+      OrderService.refund({
+        id: 'order-4',
+        by: {
+          id: 'employee-2',
+          firstName: 'Refund',
+          lastName: 'Cashier',
+        } as any,
+        order: {
+          id: 'order-4',
+          orderNo: '51-25-260316-0004',
+          subtotal: 10,
+          tax: 0,
+          total: 10,
+          status: 'PARTIALLY_REFUNDED',
+          employeeId: 'employee-1',
+          employeeName: 'Original Cashier',
+          orderDate: '2026-03-16T12:00:00.000Z',
+          lines: [
+            {
+              identifier: 'line-1',
+              quantity: 2,
+              productId: 'product-1',
+              productName: 'Rice',
+              price: 5,
+              unitOfMeasure: 'EA',
+              barcode: null,
+              sku: null,
+              lineTotalBeforeTax: 10,
+            },
+          ],
+        } as any,
+        refundedLines: [{ identifier: 'line-1', quantity: 2 }],
+      })
+    ).rejects.toThrow('only has 1 refundable units remaining');
+
+    expect(saveMock).not.toHaveBeenCalled();
   });
 });

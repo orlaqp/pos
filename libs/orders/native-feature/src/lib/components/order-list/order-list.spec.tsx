@@ -35,6 +35,12 @@ let mockOrders = [
     },
 ];
 
+const mockI18next = {
+    isInitialized: false,
+    exists: jest.fn(() => false),
+    t: jest.fn((key: string) => key),
+};
+
 jest.mock('react-redux', () => ({
     useDispatch: () => mockDispatch,
     useSelector: (selector: () => unknown) => selector(),
@@ -54,6 +60,8 @@ jest.mock('@pos/theme/native/design-tokens', () => ({
         },
     }),
 }));
+
+jest.mock('i18next', () => mockI18next);
 
 jest.mock('@pos/shared/ui-native', () => ({
     UIScreen: ({
@@ -82,7 +90,13 @@ jest.mock('@pos/shared/ui-native', () => ({
     },
     UISearchInput: require('react').forwardRef(
         (
-            { onSubmit }: { onSubmit: (value: string) => void },
+            {
+                onSubmit,
+                editable = true,
+            }: {
+                onSubmit: (value: string) => void;
+                editable?: boolean;
+            },
             ref: React.Ref<{ focus: () => void; clear: () => void }>
         ) => {
             require('react').useImperativeHandle(ref, () => ({
@@ -93,16 +107,32 @@ jest.mock('@pos/shared/ui-native', () => ({
             return (
                 <Pressable
                     testID="order-list-search-input"
+                    accessibilityState={{ disabled: !editable }}
                     onPress={() => onSubmit(mockSearchInputValue.current)}
+                    disabled={!editable}
                 >
                     <Text>Search</Text>
                 </Pressable>
             );
         }
     ),
-    UIEmptyState: ({ text }: { text: string }) => {
+    UIEmptyState: ({
+        text,
+        title,
+        subtitle,
+    }: {
+        text?: string;
+        title?: string;
+        subtitle?: string;
+    }) => {
         const { Text } = require('react-native');
-        return <Text>{text}</Text>;
+        return (
+            <>
+                {title ? <Text>{title}</Text> : null}
+                {subtitle ? <Text>{subtitle}</Text> : null}
+                {text ? <Text>{text}</Text> : null}
+            </>
+        );
     },
 }));
 
@@ -165,6 +195,7 @@ jest.mock('@pos/shared/api', () => ({
     OrderStatus: {
         OPEN: 'OPEN',
         PAID: 'PAID',
+        PARTIALLY_REFUNDED: 'PARTIALLY_REFUNDED',
         REFUNDED: 'REFUNDED',
     },
 }));
@@ -219,6 +250,9 @@ describe('OrderList integration', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        mockI18next.isInitialized = false;
+        mockI18next.exists.mockImplementation(() => false);
+        mockI18next.t.mockImplementation((key: string) => key);
         mockSearchInputValue.current = '';
         mockOrders = [
             {
@@ -277,6 +311,24 @@ describe('OrderList integration', () => {
             getByTestId('order-list-flat-list').props.keyboardShouldPersistTaps
         ).toBe('handled');
         expect(getByText('51-OPEN-0001')).toBeTruthy();
+    });
+
+    it('falls back to a non-empty partial refund tab label when the translation value is blank', () => {
+        mockI18next.isInitialized = true;
+        mockI18next.exists.mockImplementation(
+            (key: string) => key === 'ORDERSTATUS_PartiallyRefunded'
+        );
+        mockI18next.t.mockImplementation((key: string) =>
+            key === 'ORDERSTATUS_PartiallyRefunded' ? '   ' : key
+        );
+
+        const { getByTestId, queryByTestId } = render(<OrderList />);
+        act(() => {
+            jest.runOnlyPendingTimers();
+        });
+
+        expect(getByTestId('status-PARTIAL')).toBeTruthy();
+        expect(queryByTestId('status-')).toBeNull();
     });
 
     it('filters list when selecting PAID tab', () => {
@@ -358,6 +410,25 @@ describe('OrderList integration', () => {
         });
 
         expect(getByText('No orders found')).toBeTruthy();
+    });
+
+    it('keeps the search input visible but disabled when the selected status has no orders', () => {
+        const { getByTestId, getByText } = render(<OrderList />);
+        act(() => {
+            jest.runOnlyPendingTimers();
+        });
+
+        fireEvent.press(getByTestId('status-REFUNDED'));
+        act(() => {
+            jest.runOnlyPendingTimers();
+        });
+
+        expect(getByTestId('order-list-search-input').props.accessibilityState).toEqual({
+            disabled: true,
+        });
+        expect(
+            getByText('Orders with the selected status will appear here.')
+        ).toBeTruthy();
     });
 
     it('opens void dialog when an order item requests void action', () => {

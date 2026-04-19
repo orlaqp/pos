@@ -42,7 +42,6 @@ export const isDefinitionActiveForContext = (
   timezone?: string | null,
   stationId?: string | null
 ) => {
-  if (definition.active === false) return false;
   if (definition.status !== 'ACTIVE') return false;
   if (definition.startDate && at < definition.startDate) return false;
   if (definition.endDate && at > definition.endDate) return false;
