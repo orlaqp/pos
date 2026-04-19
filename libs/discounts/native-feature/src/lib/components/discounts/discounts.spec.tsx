@@ -572,6 +572,20 @@ describe('DiscountEditor', () => {
     });
   });
 
+  it('uses status as the only active control for discount definitions', async () => {
+    const { queryByTestId, getByText } = render(
+      <DiscountEditor navigation={navigation} route={{ name: 'Discount Form', params: {} } as any} />
+    );
+
+    await waitFor(() => expect(getByText('Discount Form')).toBeTruthy());
+    expect(queryByTestId('switch-active')).toBeNull();
+    expect(queryByTestId('switch-approvalRequired')).toBeNull();
+    expect(queryByTestId('switch-reasonRequired')).toBeNull();
+    expect(
+      getByText('Use Status in the Core section to control whether this discount is active.')
+    ).toBeTruthy();
+  });
+
   it('loads an existing discount and updates it', async () => {
     mockGetDefinition.mockResolvedValueOnce({
       id: 'disc-1',
@@ -622,6 +636,30 @@ describe('DiscountEditor', () => {
           id: 'disc-1',
           name: 'Existing discount',
           stationIds: ['station-99'],
+        })
+      )
+    );
+  });
+
+  it('derives active from status and clears unsupported definition approval fields on save', async () => {
+    mockSaveDefinition.mockResolvedValueOnce(undefined);
+
+    const { getByPlaceholderText, getByTestId } = render(
+      <DiscountEditor navigation={navigation} route={{ name: 'Discount Form', params: {} } as any} />
+    );
+
+    fireEvent.changeText(getByPlaceholderText('Name'), 'Inactive discount');
+    fireEvent.press(getByTestId('select-status'));
+    fireEvent.press(getByTestId('ui-actions-submit'));
+
+    await waitFor(() =>
+      expect(mockSaveDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Inactive discount',
+          status: 'INACTIVE',
+          active: false,
+          approvalRequired: false,
+          reasonRequired: false,
         })
       )
     );

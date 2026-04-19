@@ -146,7 +146,7 @@ export const defaultDefinitionValues = (promoMode: boolean): DefinitionFormValue
   priority: '100',
   stackMode: 'STACKABLE',
   approvalRequired: false,
-  reasonRequired: true,
+  reasonRequired: false,
   startDate: '',
   endDate: '',
   daysOfWeek: [],
@@ -292,8 +292,8 @@ export function buildDefinitionEntity(
     value: parseRequiredNumber(values.value),
     priority: parseOptionalNumber(values.priority),
     stackMode: values.stackMode,
-    approvalRequired: values.approvalRequired,
-    reasonRequired: values.reasonRequired,
+    approvalRequired: false,
+    reasonRequired: false,
     startDate: values.startDate.trim() || null,
     endDate: values.endDate.trim() || null,
     daysOfWeek: values.daysOfWeek.length ? values.daysOfWeek : null,
@@ -325,7 +325,7 @@ export function buildDefinitionEntity(
       ? values.excludeAlreadyDiscountedItems
       : false,
     appliesToAllProducts,
-    active: values.active,
+    active: values.status === 'ACTIVE',
   };
 }
 

@@ -18,6 +18,7 @@ describe('discounts helpers', () => {
     expect(values.code).toBe('');
     expect(values.daysOfWeek).toEqual([]);
     expect(values.appliesToAllProducts).toBe(true);
+    expect(values.reasonRequired).toBe(false);
   });
 
   it('parses optional and required numeric values defensively', () => {
@@ -217,7 +218,25 @@ describe('discounts helpers', () => {
       excludedCategoryIds: ['category-2'],
       stationIds: null,
       appliesToAllProducts: false,
+      approvalRequired: false,
+      reasonRequired: false,
+      active: true,
     });
+  });
+
+  it('derives active from status when building a definition entity', () => {
+    const entity = buildDefinitionEntity(
+      {
+        ...defaultDefinitionValues(false),
+        name: 'Inactive discount',
+        status: 'INACTIVE',
+        active: true,
+      },
+      undefined,
+      false
+    );
+
+    expect(entity.active).toBe(false);
   });
 
   it('clears line-only and targeting-only fields when the scope is order', () => {

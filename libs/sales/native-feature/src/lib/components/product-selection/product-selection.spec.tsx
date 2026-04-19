@@ -121,4 +121,38 @@ describe('ProductSelection', () => {
         expect(mockOnSelected).toHaveBeenCalledWith(products[0]);
         expect(mockOnLongPress).toHaveBeenCalledWith(products[0]);
     });
+
+    it('highlights a product when its quantity changes', () => {
+        const products = [
+            {
+                id: 'p-1',
+                name: 'Apple',
+                description: 'fresh',
+                quantity: 10,
+                price: 2.5,
+                unitOfMeasure: 'EA',
+                isEBTEligible: true,
+            },
+        ] as any;
+
+        const { queryByTestId, rerender } = render(
+            <ProductSelection
+                products={products}
+                onSelected={mockOnSelected}
+                onLongPress={mockOnLongPress}
+            />
+        );
+
+        expect(queryByTestId('sales-product-update-p-1')).toBeNull();
+
+        rerender(
+            <ProductSelection
+                products={[{ ...products[0], quantity: 8 }]}
+                onSelected={mockOnSelected}
+                onLongPress={mockOnLongPress}
+            />
+        );
+
+        expect(queryByTestId('sales-product-update-p-1')).toBeTruthy();
+    });
 });

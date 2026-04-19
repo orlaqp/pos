@@ -40,35 +40,6 @@ const UPDATE_PRODUCT_MUTATION = /* GraphQL */ `
       reorderPoint
       reorderQuantity
       picture
-      Category {
-        id
-        tenantId
-        name
-        description
-        code
-        color
-        picture
-        discountable
-        discountPolicyMode
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        __typename
-      }
-      Brand {
-        id
-        tenantId
-        name
-        description
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        __typename
-      }
       isActive
       isEBTEligible
       discountable

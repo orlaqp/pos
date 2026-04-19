@@ -253,18 +253,9 @@ export function DiscountDefinitionFields({
 
                   <UICard style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Rules</Text>
-                    <View style={styles.toggleRow}>
-                      <Text style={styles.toggleLabel}>Active</Text>
-                      <UISwitch name="active" />
-                    </View>
-                    <View style={styles.toggleRow}>
-                      <Text style={styles.toggleLabel}>Approval required</Text>
-                      <UISwitch name="approvalRequired" />
-                    </View>
-                    <View style={styles.toggleRow}>
-                      <Text style={styles.toggleLabel}>Reason required</Text>
-                      <UISwitch name="reasonRequired" />
-                    </View>
+                    <Text style={styles.fieldHint}>
+                      Use Status in the Core section to control whether this discount is active.
+                    </Text>
                     <Pressable style={styles.advancedToggle} onPress={onToggleAdvanced}>
                       <Text style={styles.advancedToggleText}>
                         {showAdvanced ? 'Hide advanced rules' : 'Show advanced rules'}
