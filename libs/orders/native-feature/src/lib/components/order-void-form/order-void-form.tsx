@@ -14,7 +14,6 @@ import { useSelector } from 'react-redux';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { UICard } from '@pos/shared/ui-native';
 import {
-    calculateRefundSummary,
     spreadOrderLinesForVoid,
 } from './order-void-form.logic';
 import i18next from 'i18next';
@@ -120,12 +119,38 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     };
 
     useEffect(() => {
-        const summary = calculateRefundSummary(
-            Math.max(0, order.total - existingRefundAmount),
-            linesToRefund
-        );
-        setRefundAmount(-1 * summary.refundTotal);
-        setNewTotal(summary.newTotal);
+        let cancelled = false;
+
+        if (!linesToRefund.length) {
+            setRefundAmount(0);
+            setNewTotal(Math.max(0, order.total - existingRefundAmount));
+            return () => {
+                cancelled = true;
+            };
+        }
+
+        OrderService.previewRefund({
+            id: order.id,
+            order: order as any,
+            refundedLines: linesToRefund.map((line) => ({
+                identifier: line.identifier,
+                quantity: line.quantity,
+            })),
+        })
+            .then((summary) => {
+                if (cancelled) return;
+                setRefundAmount(-1 * Number(summary.refundTotal || 0));
+                setNewTotal(Number(summary.newTotal || 0));
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setRefundAmount(0);
+                setNewTotal(Math.max(0, order.total - existingRefundAmount));
+            });
+
+        return () => {
+            cancelled = true;
+        };
     }, [existingRefundAmount, order, linesToRefund]);
 
     useEffect(() => {

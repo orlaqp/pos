@@ -1,6 +1,8 @@
 import { MutableModel } from '@aws-amplify/datastore';
 /* eslint-disable @nx/enforce-module-boundaries */
 import {
+    DiscountDefinition,
+    GlobalSettings,
     Order,
     OrderLine,
     OrderMetaData,
@@ -33,6 +35,7 @@ import type {
     AppliedDiscountSummary,
     PricingApprovalEvent,
 } from '@pos/discounts/domain';
+import { PricingEngine } from '@pos/discounts/domain';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -77,6 +80,12 @@ interface RefundLineComputation {
     quantityRefunded: number;
     unitRefundAmount: number;
     lineRefundAmount: number;
+}
+
+interface RefundPricingComputation {
+    refundAmount: number;
+    refundLines: RefundLineComputation[];
+    newTotal: number;
 }
 
 const logOrderTiming = (step: string, details?: Record<string, unknown>) => {
@@ -464,11 +473,12 @@ export class OrderService {
         const previouslyRefunded = await OrderService.getRefundedQuantitiesForOrder(
             existing.id
         );
-        const refundLines = OrderService.buildRefundLineComputations(
+        const refundPricing = await OrderService.buildRefundPricingComputations(
             sourceOrder,
             requestedRefunds,
             previouslyRefunded
         );
+        const refundLines = refundPricing.refundLines;
 
         if (!refundLines.length) {
             throw new Error('No refundable items were selected');
@@ -481,9 +491,7 @@ export class OrderService {
         );
         const requestedRefundId = String(uuid.v4());
         const refundDate = moment().toISOString();
-        const refundAmount = roundMoney(
-            refundLines.reduce((sum, line) => sum + line.lineRefundAmount, 0)
-        );
+        const refundAmount = refundPricing.refundAmount;
         const updatedOrder = Order.copyOf(existing, (o) => {
             o.tenantId = existing.tenantId || requireCurrentTenantId();
             o.status = isFullRefund ? 'REFUNDED' : 'PARTIALLY_REFUNDED';
@@ -544,6 +552,46 @@ export class OrderService {
         await DataStore.save(refundRecord);
 
         return savedOrder;
+    }
+
+    static async previewRefund(request: Pick<RefundOrderRequest, 'id' | 'order' | 'refundedLines'>) {
+        const existing = await DataStore.query(Order, request.id);
+
+        if (!existing) {
+            return {
+                refundTotal: 0,
+                newTotal: 0,
+            };
+        }
+
+        const sourceOrder = OrderService.toOrderEntitySnapshot(existing, request.order);
+        const requestedRefunds = normalizeRefundRequests(request.refundedLines);
+
+        if (!requestedRefunds.size) {
+            const refunds = await OrderService.getRefundRecordsForOrder(existing.id);
+            const existingRefundAmount = roundMoney(
+                refunds.reduce((sum, refund) => sum + Number(refund.refundAmount || 0), 0)
+            );
+
+            return {
+                refundTotal: 0,
+                newTotal: roundMoney(Math.max(0, Number(sourceOrder.total || 0) - existingRefundAmount)),
+            };
+        }
+
+        const previouslyRefunded = await OrderService.getRefundedQuantitiesForOrder(
+            existing.id
+        );
+        const pricing = await OrderService.buildRefundPricingComputations(
+            sourceOrder,
+            requestedRefunds,
+            previouslyRefunded
+        );
+
+        return {
+            refundTotal: pricing.refundAmount,
+            newTotal: pricing.newTotal,
+        };
     }
 
     static async getRefundRecordsForOrder(orderId: string) {
@@ -672,7 +720,7 @@ export class OrderService {
         } as OrderEntity;
     }
 
-    private static buildRefundLineComputations(
+    private static buildHistoricalRefundLineComputations(
         order: OrderEntity,
         requestedRefunds: Map<string, number>,
         previouslyRefunded: Map<string, number>
@@ -720,6 +768,241 @@ export class OrderService {
                 lineRefundAmount: roundMoney(unitRefundAmount * quantityRefunded),
             };
         });
+    }
+
+    private static async buildRefundPricingComputations(
+        order: OrderEntity,
+        requestedRefunds: Map<string, number>,
+        previouslyRefunded: Map<string, number>
+    ): Promise<RefundPricingComputation> {
+        const historicalRefundLines = OrderService.buildHistoricalRefundLineComputations(
+            order,
+            requestedRefunds,
+            previouslyRefunded
+        );
+        const historicalRefundAmount = roundMoney(
+            historicalRefundLines.reduce((sum, line) => sum + line.lineRefundAmount, 0)
+        );
+
+        const definitionIds = Array.from(
+            new Set(
+                (order.appliedDiscountSummary?.applications || [])
+                    .filter((application) =>
+                        (application.applicationType === 'AUTOMATIC_DISCOUNT' ||
+                            application.applicationType === 'PROMO_CODE') &&
+                        !!application.discountDefinitionId
+                    )
+                    .map((application) => String(application.discountDefinitionId))
+            )
+        );
+
+        if (!definitionIds.length) {
+            return {
+                refundAmount: historicalRefundAmount,
+                refundLines: historicalRefundLines,
+                newTotal: roundMoney(Math.max(0, Number(order.total || 0) - historicalRefundAmount)),
+            };
+        }
+
+        const pricingDefinitions = (
+            await Promise.all(
+                definitionIds.map((id) => DataStore.query(DiscountDefinition, id))
+            )
+        ).filter(Boolean) as DiscountDefinition[];
+
+        if (!pricingDefinitions.length) {
+            return {
+                refundAmount: historicalRefundAmount,
+                refundLines: historicalRefundLines,
+                newTotal: roundMoney(Math.max(0, Number(order.total || 0) - historicalRefundAmount)),
+            };
+        }
+
+        const refundRecords = await OrderService.getRefundRecordsForOrder(order.id);
+        const existingRefundAmount = roundMoney(
+            refundRecords.reduce((sum, refund) => sum + Number(refund.refundAmount || 0), 0)
+        );
+        const pricingTimestamp =
+            order.appliedDiscountSummary?.pricingGeneratedAt ||
+            order.orderDate ||
+            order.createdAt ||
+            order.updatedAt ||
+            moment().toISOString();
+        const settings = await DataStore.query(GlobalSettings);
+        const timezone = settings?.[0]?.timezone || 'America/New_York';
+        const stationId = OrderService.extractStationId(order.orderNo);
+        const totalRefundedAfter = OrderService.mergeRefundQuantities(
+            previouslyRefunded,
+            requestedRefunds
+        );
+
+        const repricedAfter = OrderService.buildRepricedCartPreview(
+            order,
+            totalRefundedAfter,
+            pricingDefinitions,
+            pricingTimestamp,
+            timezone,
+            stationId
+        );
+        const currentOpenBalance = roundMoney(
+            Math.max(0, Number(order.total || 0) - existingRefundAmount)
+        );
+        const refundAmount = roundMoney(
+            Math.max(0, currentOpenBalance - repricedAfter.order.total)
+        );
+        const refundLines = OrderService.allocateRefundLines(
+            order,
+            requestedRefunds,
+            previouslyRefunded,
+            refundAmount,
+            historicalRefundLines
+        );
+
+        return {
+            refundAmount,
+            refundLines,
+            newTotal: roundMoney(Math.max(0, currentOpenBalance - refundAmount)),
+        };
+    }
+
+    private static mergeRefundQuantities(
+        base: Map<string, number>,
+        next: Map<string, number>
+    ) {
+        const merged = new Map(base);
+
+        next.forEach((quantity, identifier) => {
+            merged.set(identifier, roundMoney((merged.get(identifier) || 0) + quantity));
+        });
+
+        return merged;
+    }
+
+    private static buildRepricedCartPreview(
+        order: OrderEntity,
+        refundedQuantities: Map<string, number>,
+        definitions: DiscountDefinition[],
+        pricingTimestamp: string,
+        timezone: string,
+        stationId?: string | null
+    ) {
+        const cart = OrderEntityMapper.asCartState(order);
+        cart.items = cart.items
+            .map((item) => {
+                const identifier = String(item.identifier || '');
+                const refundedQuantity = Number(refundedQuantities.get(identifier) || 0);
+                return {
+                    ...item,
+                    quantity: roundMoney(Number(item.quantity || 0) - refundedQuantity),
+                };
+            })
+            .filter((item) => item.quantity > REFUND_QUANTITY_EPSILON);
+        cart.definitions = definitions as never;
+        cart.pricingContext = {
+            timezone,
+            stationId: stationId || null,
+        };
+
+        return PricingEngine.preview({
+            now: pricingTimestamp,
+            timezone,
+            stationId: stationId || null,
+            employee: {
+                employeeId: order.employeeId || 'system',
+                employeeName: order.employeeName || 'System',
+            },
+            policy: cart.policy,
+            definitions: cart.definitions,
+            lines: cart.items.map((item, index) => ({
+                lineId: item.identifier || `line-${index}`,
+                productId: item.product.id,
+                productName: item.product.name,
+                quantity: item.quantity,
+                baseUnitPrice: item.product.price,
+                unitOfMeasure: item.product.unitOfMeasure,
+                categoryId: item.product.categoryId,
+                discountable: item.product.discountable ?? true,
+                minAllowedPrice: item.product.minAllowedPrice,
+                maxManualDiscountPercent: item.product.maxManualDiscountPercent,
+                maxManualDiscountAmount: item.product.maxManualDiscountAmount,
+            })),
+            manualDiscounts: cart.manualDiscounts,
+            priceOverrides: cart.priceOverrides,
+            promoCodes: cart.promoCodes,
+            approvalEvents: cart.approvalEvents,
+            pricingSource: order.pricingSource,
+        });
+    }
+
+    private static allocateRefundLines(
+        order: OrderEntity,
+        requestedRefunds: Map<string, number>,
+        previouslyRefunded: Map<string, number>,
+        refundAmount: number,
+        fallbackLines: RefundLineComputation[]
+    ) {
+        if (refundAmount <= 0 || !fallbackLines.length) {
+            return fallbackLines.map((line) => ({
+                ...line,
+                unitRefundAmount: 0,
+                lineRefundAmount: 0,
+            }));
+        }
+
+        const weightedLines = fallbackLines.map((line) => {
+            const sourceLine = order.lines?.find((candidate) => candidate.identifier === line.identifier);
+            const originalQuantity = Number(sourceLine?.quantity || 0);
+            const priorRefundedQuantity = Number(previouslyRefunded.get(line.identifier) || 0);
+            const remainingBeforeRefund = roundMoney(originalQuantity - priorRefundedQuantity);
+            const baseRemainingTotal = roundMoney(
+                Number(sourceLine?.lineTotalBeforeTax ?? sourceLine?.lineTotalAfterTax ?? (sourceLine?.price || 0) * originalQuantity)
+            );
+            const effectiveUnitAmount =
+                remainingBeforeRefund > 0
+                    ? roundMoney(baseRemainingTotal / originalQuantity)
+                    : line.unitRefundAmount;
+            const weight = roundMoney(effectiveUnitAmount * Number(requestedRefunds.get(line.identifier) || 0));
+
+            return {
+                line,
+                weight: weight > 0 ? weight : line.lineRefundAmount,
+            };
+        });
+
+        const totalWeight = roundMoney(
+            weightedLines.reduce((sum, entry) => sum + Number(entry.weight || 0), 0)
+        );
+
+        if (totalWeight <= 0) {
+            return fallbackLines;
+        }
+
+        let allocated = 0;
+
+        return weightedLines.map((entry, index) => {
+            const remaining = roundMoney(refundAmount - allocated);
+            const lineRefundAmount =
+                index === weightedLines.length - 1
+                    ? remaining
+                    : roundMoney((refundAmount * entry.weight) / totalWeight);
+            allocated = roundMoney(allocated + lineRefundAmount);
+            const quantityRefunded = Number(entry.line.quantityRefunded || 0);
+
+            return {
+                ...entry.line,
+                lineRefundAmount,
+                unitRefundAmount:
+                    quantityRefunded > 0
+                        ? roundMoney(lineRefundAmount / quantityRefunded)
+                        : 0,
+            };
+        });
+    }
+
+    private static extractStationId(orderNo?: string | null) {
+        if (!orderNo) return null;
+        const [stationId] = String(orderNo).split('-');
+        return stationId?.trim() || null;
     }
 
     private static isFullRefund(

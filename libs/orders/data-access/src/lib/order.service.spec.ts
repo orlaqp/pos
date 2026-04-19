@@ -936,6 +936,411 @@ describe('OrderService', () => {
     );
   });
 
+  it('recalculates automatic discount refunds when the remaining quantity no longer qualifies', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const saveMock = jest.mocked(DataStore.save);
+    const sharedModels = jest.requireMock('@pos/shared/models');
+
+    const automaticSummary = {
+      applications: [
+        {
+          discountApplicationId: 'discount-1-line-1',
+          discountDefinitionId: 'discount-1',
+          applicationType: 'AUTOMATIC_DISCOUNT',
+          scope: 'LINE',
+          method: 'PERCENT',
+          name: 'Test 1%',
+          code: null,
+          stackMode: 'STACKABLE',
+          source: 'automatic',
+          value: 30,
+          originalAmount: 14.97,
+          discountAmount: 4.49,
+          finalAmount: 10.48,
+          quantityBasis: 3,
+          approvalRequired: false,
+          approvalStatus: 'NOT_REQUIRED',
+          appliedAt: '2026-04-19T12:00:00.000Z',
+        },
+      ],
+      approvalEvents: [],
+      lineSummaries: [
+        {
+          lineId: 'line-1',
+          discounts: [
+            {
+              discountApplicationId: 'discount-1-line-1',
+              discountDefinitionId: 'discount-1',
+              applicationType: 'AUTOMATIC_DISCOUNT',
+              scope: 'LINE',
+              method: 'PERCENT',
+              name: 'Test 1%',
+              code: null,
+              stackMode: 'STACKABLE',
+              source: 'automatic',
+              value: 30,
+              originalAmount: 14.97,
+              discountAmount: 4.49,
+              finalAmount: 10.48,
+              quantityBasis: 3,
+              approvalRequired: false,
+              approvalStatus: 'NOT_REQUIRED',
+              appliedAt: '2026-04-19T12:00:00.000Z',
+            },
+          ],
+          lineDiscountTotal: 4.49,
+          allocatedOrderDiscountTotal: 0,
+          lineTotalBeforeTax: 10.48,
+        },
+      ],
+      orderLevelAdjustments: [],
+      warnings: [],
+      pricingGeneratedAt: '2026-04-19T12:00:00.000Z',
+    };
+
+    queryMock.mockImplementation(async (model: any, arg?: any) => {
+      if (model === sharedModels.Order && arg === 'order-huevo') {
+        return {
+          id: 'order-huevo',
+          tenantId: 'test-tenant',
+          status: 'PAID',
+          employeeId: 'employee-1',
+          employeeName: 'Original Cashier',
+          orderNo: '51-OWNER-260419-0001',
+          baseSubtotal: 14.97,
+          subtotal: 10.48,
+          lineDiscountTotal: 4.49,
+          orderDiscountTotal: 0,
+          discountTotal: 4.49,
+          savingsTotal: 4.49,
+          tax: 0,
+          total: 10.48,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+          appliedDiscountSummary: automaticSummary,
+          promoCodes: [],
+          lines: [
+            {
+              identifier: 'line-1',
+              productId: 'huevo',
+              productName: 'Huevo',
+              quantity: 3,
+              price: 4.99,
+              basePrice: 4.99,
+              unitOfMeasure: 'EA',
+              barcode: null,
+              sku: null,
+              categoryId: 'cat-1',
+              discountable: true,
+              lineDiscountTotal: 4.49,
+              allocatedOrderDiscountTotal: 0,
+              lineTotalBeforeTax: 10.48,
+              lineTotalAfterTax: 10.48,
+              appliedDiscounts: automaticSummary.lineSummaries[0].discounts,
+            },
+          ],
+          orderDate: '2026-04-19T12:00:00.000Z',
+          createdAt: '2026-04-19T12:00:00.000Z',
+          updatedAt: '2026-04-19T12:00:00.000Z',
+        } as any;
+      }
+
+      if (model === sharedModels.OrderRefundLine) {
+        return [];
+      }
+
+      if (model === sharedModels.DiscountDefinition && arg === 'discount-1') {
+        return {
+          id: 'discount-1',
+          name: 'Test 1%',
+          status: 'ACTIVE',
+          type: 'AUTOMATIC',
+          method: 'PERCENT',
+          scope: 'LINE',
+          value: 30,
+          stackMode: 'STACKABLE',
+          minSubtotal: 12,
+          applicableProductIds: ['huevo'],
+          appliesToAllProducts: false,
+        } as any;
+      }
+
+      if (model === sharedModels.OrderRefund) {
+        return [];
+      }
+
+      if (model === sharedModels.GlobalSettings) {
+        return [
+          {
+            id: 'settings-1',
+            timezone: 'America/New_York',
+          },
+        ] as any;
+      }
+
+      return [];
+    });
+
+    (sharedModels.Order as any).copyOf = (existing: any, mutator: (draft: any) => void) => {
+      const draft = {
+        ...existing,
+        refundInfo: null,
+      };
+      mutator(draft);
+      return draft;
+    };
+
+    await OrderService.refund({
+      id: 'order-huevo',
+      by: {
+        id: 'employee-2',
+        firstName: 'Refund',
+        lastName: 'Cashier',
+      } as any,
+      order: {
+        id: 'order-huevo',
+        orderNo: '51-OWNER-260419-0001',
+        baseSubtotal: 14.97,
+        subtotal: 10.48,
+        total: 10.48,
+        status: 'PAID',
+        employeeId: 'employee-1',
+        employeeName: 'Original Cashier',
+        pricingSource: 'OFFLINE_LOCAL',
+        reconciliationStatus: 'PENDING',
+        appliedDiscountSummary: automaticSummary,
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 3,
+            productId: 'huevo',
+            productName: 'Huevo',
+            price: 4.99,
+            basePrice: 4.99,
+            unitOfMeasure: 'EA',
+            categoryId: 'cat-1',
+            barcode: null,
+            sku: null,
+            discountable: true,
+            lineDiscountTotal: 4.49,
+            allocatedOrderDiscountTotal: 0,
+            lineTotalBeforeTax: 10.48,
+            lineTotalAfterTax: 10.48,
+            appliedDiscounts: automaticSummary.lineSummaries[0].discounts,
+          },
+        ],
+        orderDate: '2026-04-19T12:00:00.000Z',
+      } as any,
+      refundedLines: [{ identifier: 'line-1', quantity: 2 }],
+    });
+
+    expect(saveMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        refundId: 'generated-order-id',
+        quantityRefunded: 2,
+        lineRefundAmount: 5.49,
+      })
+    );
+    expect(saveMock).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        id: 'generated-order-id',
+        refundAmount: 5.49,
+        refundType: 'PARTIAL',
+      })
+    );
+  });
+
+  it('previews the recalculated refund amount for threshold discounts', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const sharedModels = jest.requireMock('@pos/shared/models');
+
+    const automaticSummary = {
+      applications: [
+        {
+          discountApplicationId: 'discount-1-line-1',
+          discountDefinitionId: 'discount-1',
+          applicationType: 'AUTOMATIC_DISCOUNT',
+          scope: 'LINE',
+          method: 'PERCENT',
+          name: 'Test 1%',
+          code: null,
+          stackMode: 'STACKABLE',
+          source: 'automatic',
+          value: 30,
+          originalAmount: 14.97,
+          discountAmount: 4.49,
+          finalAmount: 10.48,
+          quantityBasis: 3,
+          approvalRequired: false,
+          approvalStatus: 'NOT_REQUIRED',
+          appliedAt: '2026-04-19T12:00:00.000Z',
+        },
+      ],
+      approvalEvents: [],
+      lineSummaries: [
+        {
+          lineId: 'line-1',
+          discounts: [
+            {
+              discountApplicationId: 'discount-1-line-1',
+              discountDefinitionId: 'discount-1',
+              applicationType: 'AUTOMATIC_DISCOUNT',
+              scope: 'LINE',
+              method: 'PERCENT',
+              name: 'Test 1%',
+              code: null,
+              stackMode: 'STACKABLE',
+              source: 'automatic',
+              value: 30,
+              originalAmount: 14.97,
+              discountAmount: 4.49,
+              finalAmount: 10.48,
+              quantityBasis: 3,
+              approvalRequired: false,
+              approvalStatus: 'NOT_REQUIRED',
+              appliedAt: '2026-04-19T12:00:00.000Z',
+            },
+          ],
+          lineDiscountTotal: 4.49,
+          allocatedOrderDiscountTotal: 0,
+          lineTotalBeforeTax: 10.48,
+        },
+      ],
+      orderLevelAdjustments: [],
+      warnings: [],
+      pricingGeneratedAt: '2026-04-19T12:00:00.000Z',
+    };
+
+    queryMock.mockImplementation(async (model: any, arg?: any) => {
+      if (model === sharedModels.Order && arg === 'order-huevo') {
+        return {
+          id: 'order-huevo',
+          tenantId: 'test-tenant',
+          status: 'PAID',
+          employeeId: 'employee-1',
+          employeeName: 'Original Cashier',
+          orderNo: '51-OWNER-260419-0001',
+          baseSubtotal: 14.97,
+          subtotal: 10.48,
+          lineDiscountTotal: 4.49,
+          orderDiscountTotal: 0,
+          discountTotal: 4.49,
+          savingsTotal: 4.49,
+          tax: 0,
+          total: 10.48,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+          appliedDiscountSummary: automaticSummary,
+          promoCodes: [],
+          lines: [
+            {
+              identifier: 'line-1',
+              productId: 'huevo',
+              productName: 'Huevo',
+              quantity: 3,
+              price: 4.99,
+              basePrice: 4.99,
+              unitOfMeasure: 'EA',
+              barcode: null,
+              sku: null,
+              categoryId: 'cat-1',
+              discountable: true,
+              lineDiscountTotal: 4.49,
+              allocatedOrderDiscountTotal: 0,
+              lineTotalBeforeTax: 10.48,
+              lineTotalAfterTax: 10.48,
+              appliedDiscounts: automaticSummary.lineSummaries[0].discounts,
+            },
+          ],
+          orderDate: '2026-04-19T12:00:00.000Z',
+          createdAt: '2026-04-19T12:00:00.000Z',
+          updatedAt: '2026-04-19T12:00:00.000Z',
+        } as any;
+      }
+
+      if (model === sharedModels.OrderRefundLine) {
+        return [];
+      }
+
+      if (model === sharedModels.DiscountDefinition && arg === 'discount-1') {
+        return {
+          id: 'discount-1',
+          name: 'Test 1%',
+          status: 'ACTIVE',
+          type: 'AUTOMATIC',
+          method: 'PERCENT',
+          scope: 'LINE',
+          value: 30,
+          stackMode: 'STACKABLE',
+          minSubtotal: 12,
+          applicableProductIds: ['huevo'],
+          appliesToAllProducts: false,
+        } as any;
+      }
+
+      if (model === sharedModels.OrderRefund) {
+        return [];
+      }
+
+      if (model === sharedModels.GlobalSettings) {
+        return [
+          {
+            id: 'settings-1',
+            timezone: 'America/New_York',
+          },
+        ] as any;
+      }
+
+      return [];
+    });
+
+    const preview = await OrderService.previewRefund({
+      id: 'order-huevo',
+      order: {
+        id: 'order-huevo',
+        orderNo: '51-OWNER-260419-0001',
+        baseSubtotal: 14.97,
+        subtotal: 10.48,
+        total: 10.48,
+        status: 'PAID',
+        employeeId: 'employee-1',
+        employeeName: 'Original Cashier',
+        pricingSource: 'OFFLINE_LOCAL',
+        reconciliationStatus: 'PENDING',
+        appliedDiscountSummary: automaticSummary,
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 3,
+            productId: 'huevo',
+            productName: 'Huevo',
+            price: 4.99,
+            basePrice: 4.99,
+            unitOfMeasure: 'EA',
+            categoryId: 'cat-1',
+            barcode: null,
+            sku: null,
+            discountable: true,
+            lineDiscountTotal: 4.49,
+            allocatedOrderDiscountTotal: 0,
+            lineTotalBeforeTax: 10.48,
+            lineTotalAfterTax: 10.48,
+            appliedDiscounts: automaticSummary.lineSummaries[0].discounts,
+          },
+        ],
+        orderDate: '2026-04-19T12:00:00.000Z',
+      } as any,
+      refundedLines: [{ identifier: 'line-1', quantity: 2 }],
+    });
+
+    expect(preview).toEqual({
+      refundTotal: 5.49,
+      newTotal: 4.99,
+    });
+  });
+
   it('marks an order fully refunded when the last refundable quantity is returned', async () => {
     const queryMock = jest.mocked(DataStore.query);
     const saveMock = jest.mocked(DataStore.save);
