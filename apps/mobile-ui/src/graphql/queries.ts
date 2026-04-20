@@ -1336,6 +1336,187 @@ export const syncOrderRefundLines = /* GraphQL */ `query SyncOrderRefundLines(
   APITypes.SyncOrderRefundLinesQueryVariables,
   APITypes.SyncOrderRefundLinesQuery
 >;
+export const getOrderDiscountDefinitionSnapshot = /* GraphQL */ `query GetOrderDiscountDefinitionSnapshot($id: ID!) {
+  getOrderDiscountDefinitionSnapshot(id: $id) {
+    id
+    tenantId
+    orderId
+    discountDefinitionId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    stationIds
+    active
+    pricingGeneratedAt
+    pricingTimezone
+    pricingStoreId
+    pricingStationId
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetOrderDiscountDefinitionSnapshotQueryVariables,
+  APITypes.GetOrderDiscountDefinitionSnapshotQuery
+>;
+export const listOrderDiscountDefinitionSnapshots = /* GraphQL */ `query ListOrderDiscountDefinitionSnapshots(
+  $filter: ModelOrderDiscountDefinitionSnapshotFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listOrderDiscountDefinitionSnapshots(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      tenantId
+      orderId
+      discountDefinitionId
+      name
+      code
+      description
+      status
+      type
+      method
+      scope
+      value
+      priority
+      stackMode
+      approvalRequired
+      reasonRequired
+      startDate
+      endDate
+      daysOfWeek
+      startTime
+      endTime
+      minSubtotal
+      minQuantity
+      usageLimitTotal
+      usageCountTotal
+      applicableProductIds
+      applicableCategoryIds
+      excludedProductIds
+      excludedCategoryIds
+      excludeAlreadyDiscountedItems
+      appliesToAllProducts
+      stationIds
+      active
+      pricingGeneratedAt
+      pricingTimezone
+      pricingStoreId
+      pricingStationId
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListOrderDiscountDefinitionSnapshotsQueryVariables,
+  APITypes.ListOrderDiscountDefinitionSnapshotsQuery
+>;
+export const syncOrderDiscountDefinitionSnapshots = /* GraphQL */ `query SyncOrderDiscountDefinitionSnapshots(
+  $filter: ModelOrderDiscountDefinitionSnapshotFilterInput
+  $limit: Int
+  $nextToken: String
+  $lastSync: AWSTimestamp
+) {
+  syncOrderDiscountDefinitionSnapshots(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    lastSync: $lastSync
+  ) {
+    items {
+      id
+      tenantId
+      orderId
+      discountDefinitionId
+      name
+      code
+      description
+      status
+      type
+      method
+      scope
+      value
+      priority
+      stackMode
+      approvalRequired
+      reasonRequired
+      startDate
+      endDate
+      daysOfWeek
+      startTime
+      endTime
+      minSubtotal
+      minQuantity
+      usageLimitTotal
+      usageCountTotal
+      applicableProductIds
+      applicableCategoryIds
+      excludedProductIds
+      excludedCategoryIds
+      excludeAlreadyDiscountedItems
+      appliesToAllProducts
+      stationIds
+      active
+      pricingGeneratedAt
+      pricingTimezone
+      pricingStoreId
+      pricingStationId
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.SyncOrderDiscountDefinitionSnapshotsQueryVariables,
+  APITypes.SyncOrderDiscountDefinitionSnapshotsQuery
+>;
 export const getProduct = /* GraphQL */ `query GetProduct($id: ID!) {
   getProduct(id: $id) {
     id

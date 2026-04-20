@@ -127,7 +127,7 @@ const InventoryReceiveStatus = {
   "COMPLETED": "COMPLETED"
 };
 
-const { Tenant, TenantUser, Store, Brand, Category, Customer, Employee, Order, OrderRefund, OrderRefundLine, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, DiscountDefinition, DiscountReasonCode, EmployeeDiscountPolicy, DiscountPreset, DiscountApplication, ApprovalEvent, DiscountReconciliationException, PaymentInfo, RefundInfo, ByEmployee, AppliedDiscountDetailSnapshot, PricingApprovalEventSnapshot, AppliedLineDiscountSummarySnapshot, AppliedDiscountSummarySnapshot, OrderLine, Payment, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary, SalesSummary, InventoryProductFinalizeResult, InventoryFinalizeResult } = initSchema(schema);
+const { Tenant, TenantUser, Store, Brand, Category, Customer, Employee, Order, OrderRefund, OrderRefundLine, OrderDiscountDefinitionSnapshot, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, DiscountDefinition, DiscountReasonCode, EmployeeDiscountPolicy, DiscountPreset, DiscountApplication, ApprovalEvent, DiscountReconciliationException, PaymentInfo, RefundInfo, ByEmployee, AppliedDiscountDetailSnapshot, PricingApprovalEventSnapshot, AppliedLineDiscountSummarySnapshot, AppliedDiscountSummarySnapshot, OrderLine, Payment, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary, SalesSummary, InventoryProductFinalizeResult, InventoryFinalizeResult } = initSchema(schema);
 
 export {
   Tenant,
@@ -140,6 +140,7 @@ export {
   Order,
   OrderRefund,
   OrderRefundLine,
+  OrderDiscountDefinitionSnapshot,
   Product,
   UnitOfMeasure,
   InventoryChanges,

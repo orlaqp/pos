@@ -100,6 +100,12 @@ jest.mock('@pos/shared/models', () => {
     }
   }
 
+  class MockOrderDiscountDefinitionSnapshot {
+    constructor(init: Record<string, unknown>) {
+      Object.assign(this, init);
+    }
+  }
+
   (MockProduct as any).copyOf = (existing: Record<string, unknown>, mutator: (draft: Record<string, unknown>) => void) => {
     const draft = {
       ...existing,
@@ -114,6 +120,7 @@ jest.mock('@pos/shared/models', () => {
     OrderLine: MockOrderLine,
     OrderRefund: MockOrderRefund,
     OrderRefundLine: MockOrderRefundLine,
+    OrderDiscountDefinitionSnapshot: MockOrderDiscountDefinitionSnapshot,
     Payment: MockPayment,
     Product: MockProduct,
   };
@@ -400,6 +407,191 @@ describe('OrderService', () => {
       expect.objectContaining({
         id: 'order-2',
         status: 'PAID',
+      })
+    );
+  });
+
+  it('snapshots only applied automatic and promo definitions when an order is paid', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+    const queryMock = jest.mocked(DataStore.query);
+    const sharedModels = jest.requireMock('@pos/shared/models');
+
+    queryMock.mockImplementation(async (model: any, arg?: any) => {
+      if (model === sharedModels.OrderDiscountDefinitionSnapshot) {
+        return null;
+      }
+      return null;
+    });
+
+    await OrderService.createPaidOrder({
+      by: {
+        id: 'employee-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+      } as any,
+      order: {
+        id: 'generated-cart-id',
+        orderNo: '51-25-260316-0007',
+        items: [
+          {
+            identifier: 'line-1',
+            quantity: 3,
+            product: {
+              id: 'huevo',
+              name: 'Huevo',
+              price: 4.99,
+              categoryId: 'cat-1',
+              unitOfMeasure: 'ea',
+              isEBTEligible: true,
+              discountable: true,
+            },
+          },
+        ],
+        footer: {
+          baseSubtotal: 14.97,
+          subtotal: 10.48,
+          total: 10.48,
+          lineDiscountTotal: 4.49,
+          orderDiscountTotal: 0,
+          discount: 4.49,
+          savingsTotal: 4.49,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+        },
+        pricingContext: {
+          timezone: 'America/New_York',
+          storeId: 'store-1',
+          stationId: '51',
+        },
+        promoCodes: [],
+        definitions: [
+          {
+            id: 'discount-1',
+            name: 'Test 1%',
+            status: 'ACTIVE',
+            type: 'AUTOMATIC',
+            method: 'PERCENT',
+            scope: 'LINE',
+            value: 30,
+            stackMode: 'STACKABLE',
+            minSubtotal: 12,
+            applicableProductIds: ['huevo'],
+            appliesToAllProducts: false,
+            active: true,
+          },
+          {
+            id: 'manual-1',
+            name: 'Manual',
+            status: 'ACTIVE',
+            type: 'MANUAL',
+            method: 'PERCENT',
+            scope: 'LINE',
+            value: 10,
+            stackMode: 'STACKABLE',
+            active: true,
+          },
+        ],
+        appliedDiscountSummary: {
+          applications: [
+            {
+              discountApplicationId: 'application-1',
+              discountDefinitionId: 'discount-1',
+              applicationType: 'AUTOMATIC_DISCOUNT',
+              scope: 'LINE',
+              method: 'PERCENT',
+              name: 'Test 1%',
+              code: null,
+              stackMode: 'STACKABLE',
+              source: 'automatic',
+              value: 30,
+              originalAmount: 14.97,
+              discountAmount: 4.49,
+              finalAmount: 10.48,
+              quantityBasis: 3,
+              approvalRequired: false,
+              approvalStatus: 'NOT_REQUIRED',
+              appliedAt: '2026-03-16T12:00:00.000Z',
+            },
+            {
+              discountApplicationId: 'application-2',
+              discountDefinitionId: null,
+              applicationType: 'MANUAL_LINE_DISCOUNT',
+              scope: 'LINE',
+              method: 'PERCENT',
+              name: 'Manual',
+              code: null,
+              stackMode: 'STACKABLE',
+              source: 'manual',
+              value: 10,
+              originalAmount: 10,
+              discountAmount: 1,
+              finalAmount: 9,
+              quantityBasis: 1,
+              approvalRequired: false,
+              approvalStatus: 'NOT_REQUIRED',
+              appliedAt: '2026-03-16T12:00:00.000Z',
+            },
+          ],
+          approvalEvents: [],
+          lineSummaries: [
+            {
+              lineId: 'line-1',
+              discounts: [
+                {
+                  discountApplicationId: 'application-1',
+                  discountDefinitionId: 'discount-1',
+                  applicationType: 'AUTOMATIC_DISCOUNT',
+                  scope: 'LINE',
+                  method: 'PERCENT',
+                  name: 'Test 1%',
+                  code: null,
+                  stackMode: 'STACKABLE',
+                  source: 'automatic',
+                  value: 30,
+                  originalAmount: 14.97,
+                  discountAmount: 4.49,
+                  finalAmount: 10.48,
+                  quantityBasis: 3,
+                  approvalRequired: false,
+                  approvalStatus: 'NOT_REQUIRED',
+                  appliedAt: '2026-03-16T12:00:00.000Z',
+                },
+              ],
+              lineDiscountTotal: 4.49,
+              allocatedOrderDiscountTotal: 0,
+              lineTotalBeforeTax: 10.48,
+            },
+          ],
+          orderLevelAdjustments: [],
+          warnings: [],
+          pricingGeneratedAt: '2026-03-16T12:00:00.000Z',
+        },
+      } as any,
+      payments: [{ type: 'cash', amount: 10.48 }],
+    });
+
+    expect(saveMock).toHaveBeenCalledTimes(2);
+    const savedOrder = saveMock.mock.calls[0][0] as any;
+    expect(savedOrder.appliedDiscountSummary.applications[0]).toEqual(
+      expect.objectContaining({
+        discountDefinitionId: 'discount-1',
+        orderDiscountSnapshotId: 'generated-cart-id:discount-1',
+      })
+    );
+    expect(savedOrder.appliedDiscountSummary.applications[1]).toEqual(
+      expect.not.objectContaining({
+        orderDiscountSnapshotId: expect.anything(),
+      })
+    );
+    expect(saveMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        id: 'generated-cart-id:discount-1',
+        orderId: 'generated-cart-id',
+        discountDefinitionId: 'discount-1',
+        pricingTimezone: 'America/New_York',
+        pricingStoreId: 'store-1',
+        pricingStationId: '51',
       })
     );
   });
@@ -946,6 +1138,7 @@ describe('OrderService', () => {
         {
           discountApplicationId: 'discount-1-line-1',
           discountDefinitionId: 'discount-1',
+          orderDiscountSnapshotId: 'order-huevo:discount-1',
           applicationType: 'AUTOMATIC_DISCOUNT',
           scope: 'LINE',
           method: 'PERCENT',
@@ -971,6 +1164,7 @@ describe('OrderService', () => {
             {
               discountApplicationId: 'discount-1-line-1',
               discountDefinitionId: 'discount-1',
+              orderDiscountSnapshotId: 'order-huevo:discount-1',
               applicationType: 'AUTOMATIC_DISCOUNT',
               scope: 'LINE',
               method: 'PERCENT',
@@ -1049,33 +1243,50 @@ describe('OrderService', () => {
         return [];
       }
 
-      if (model === sharedModels.DiscountDefinition && arg === 'discount-1') {
-        return {
-          id: 'discount-1',
-          name: 'Test 1%',
-          status: 'ACTIVE',
-          type: 'AUTOMATIC',
-          method: 'PERCENT',
-          scope: 'LINE',
-          value: 30,
-          stackMode: 'STACKABLE',
-          minSubtotal: 12,
-          applicableProductIds: ['huevo'],
-          appliesToAllProducts: false,
-        } as any;
+      if (model === sharedModels.OrderDiscountDefinitionSnapshot) {
+        return [
+          {
+            id: 'order-huevo:discount-1',
+            orderId: 'order-huevo',
+            discountDefinitionId: 'discount-1',
+            tenantId: 'test-tenant',
+            name: 'Test 1%',
+            status: 'ACTIVE',
+            type: 'AUTOMATIC',
+            method: 'PERCENT',
+            scope: 'LINE',
+            value: 30,
+            stackMode: 'STACKABLE',
+            minSubtotal: 12,
+            applicableProductIds: ['huevo'],
+            appliesToAllProducts: false,
+            pricingGeneratedAt: '2026-04-19T12:00:00.000Z',
+            pricingTimezone: 'America/New_York',
+            pricingStationId: '51',
+          },
+          {
+            id: 'order-huevo:discount-unrelated',
+            orderId: 'order-huevo',
+            discountDefinitionId: 'discount-unrelated',
+            tenantId: 'test-tenant',
+            name: 'Unrelated live-looking deal',
+            status: 'ACTIVE',
+            type: 'AUTOMATIC',
+            method: 'PERCENT',
+            scope: 'LINE',
+            value: 90,
+            stackMode: 'STACKABLE',
+            applicableProductIds: ['other-product'],
+            appliesToAllProducts: false,
+            pricingGeneratedAt: '2026-04-19T12:00:00.000Z',
+            pricingTimezone: 'America/New_York',
+            pricingStationId: '51',
+          },
+        ] as any;
       }
 
       if (model === sharedModels.OrderRefund) {
         return [];
-      }
-
-      if (model === sharedModels.GlobalSettings) {
-        return [
-          {
-            id: 'settings-1',
-            timezone: 'America/New_York',
-          },
-        ] as any;
       }
 
       return [];
@@ -1150,6 +1361,10 @@ describe('OrderService', () => {
         refundType: 'PARTIAL',
       })
     );
+    expect(queryMock).not.toHaveBeenCalledWith(
+      sharedModels.DiscountDefinition,
+      expect.anything()
+    );
   });
 
   it('previews the recalculated refund amount for threshold discounts', async () => {
@@ -1161,6 +1376,7 @@ describe('OrderService', () => {
         {
           discountApplicationId: 'discount-1-line-1',
           discountDefinitionId: 'discount-1',
+          orderDiscountSnapshotId: 'order-huevo:discount-1',
           applicationType: 'AUTOMATIC_DISCOUNT',
           scope: 'LINE',
           method: 'PERCENT',
@@ -1186,6 +1402,7 @@ describe('OrderService', () => {
             {
               discountApplicationId: 'discount-1-line-1',
               discountDefinitionId: 'discount-1',
+              orderDiscountSnapshotId: 'order-huevo:discount-1',
               applicationType: 'AUTOMATIC_DISCOUNT',
               scope: 'LINE',
               method: 'PERCENT',
@@ -1264,33 +1481,32 @@ describe('OrderService', () => {
         return [];
       }
 
-      if (model === sharedModels.DiscountDefinition && arg === 'discount-1') {
-        return {
-          id: 'discount-1',
-          name: 'Test 1%',
-          status: 'ACTIVE',
-          type: 'AUTOMATIC',
-          method: 'PERCENT',
-          scope: 'LINE',
-          value: 30,
-          stackMode: 'STACKABLE',
-          minSubtotal: 12,
-          applicableProductIds: ['huevo'],
-          appliesToAllProducts: false,
-        } as any;
+      if (model === sharedModels.OrderDiscountDefinitionSnapshot) {
+        return [
+          {
+            id: 'order-huevo:discount-1',
+            orderId: 'order-huevo',
+            discountDefinitionId: 'discount-1',
+            tenantId: 'test-tenant',
+            name: 'Test 1%',
+            status: 'ACTIVE',
+            type: 'AUTOMATIC',
+            method: 'PERCENT',
+            scope: 'LINE',
+            value: 30,
+            stackMode: 'STACKABLE',
+            minSubtotal: 12,
+            applicableProductIds: ['huevo'],
+            appliesToAllProducts: false,
+            pricingGeneratedAt: '2026-04-19T12:00:00.000Z',
+            pricingTimezone: 'America/New_York',
+            pricingStationId: '51',
+          },
+        ] as any;
       }
 
       if (model === sharedModels.OrderRefund) {
         return [];
-      }
-
-      if (model === sharedModels.GlobalSettings) {
-        return [
-          {
-            id: 'settings-1',
-            timezone: 'America/New_York',
-          },
-        ] as any;
       }
 
       return [];

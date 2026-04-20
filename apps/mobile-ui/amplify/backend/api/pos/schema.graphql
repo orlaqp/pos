@@ -179,6 +179,7 @@ type ByEmployee {
 type AppliedDiscountDetailSnapshot {
   discountApplicationId: String!
   discountDefinitionId: String
+  orderDiscountSnapshotId: String
   applicationType: DiscountApplicationType!
   scope: DiscountScope!
   method: DiscountMethod!
@@ -322,6 +323,46 @@ type OrderRefundLine @model @auth(rules: [{allow: owner, ownerField: "tenantId",
   quantityRefunded: Float!
   unitRefundAmount: Float!
   lineRefundAmount: Float!
+}
+
+type OrderDiscountDefinitionSnapshot @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam, operations: [read]}]) {
+  id: ID!
+  tenantId: ID!
+  orderId: ID! @index(name: "byOrderId", sortKeyFields: ["discountDefinitionId"])
+  discountDefinitionId: ID!
+  name: String!
+  code: String
+  description: String
+  status: DiscountDefinitionStatus!
+  type: DiscountDefinitionType!
+  method: DiscountMethod!
+  scope: DiscountScope!
+  value: Float!
+  priority: Int
+  stackMode: DiscountStackMode!
+  approvalRequired: Boolean
+  reasonRequired: Boolean
+  startDate: AWSDate
+  endDate: AWSDate
+  daysOfWeek: [String]
+  startTime: AWSTime
+  endTime: AWSTime
+  minSubtotal: Float
+  minQuantity: Float
+  usageLimitTotal: Int
+  usageCountTotal: Int
+  applicableProductIds: [ID]
+  applicableCategoryIds: [ID]
+  excludedProductIds: [ID]
+  excludedCategoryIds: [ID]
+  excludeAlreadyDiscountedItems: Boolean
+  appliesToAllProducts: Boolean
+  stationIds: [String]
+  active: Boolean
+  pricingGeneratedAt: AWSDateTime
+  pricingTimezone: String
+  pricingStoreId: String
+  pricingStationId: String
 }
 
 type OrderLine {

@@ -1055,6 +1055,177 @@ export const onDeleteOrderRefundLine = /* GraphQL */ `subscription OnDeleteOrder
   APITypes.OnDeleteOrderRefundLineSubscriptionVariables,
   APITypes.OnDeleteOrderRefundLineSubscription
 >;
+export const onCreateOrderDiscountDefinitionSnapshot = /* GraphQL */ `subscription OnCreateOrderDiscountDefinitionSnapshot(
+  $filter: ModelSubscriptionOrderDiscountDefinitionSnapshotFilterInput
+  $tenantId: String
+) {
+  onCreateOrderDiscountDefinitionSnapshot(
+    filter: $filter
+    tenantId: $tenantId
+  ) {
+    id
+    tenantId
+    orderId
+    discountDefinitionId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    stationIds
+    active
+    pricingGeneratedAt
+    pricingTimezone
+    pricingStoreId
+    pricingStationId
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateOrderDiscountDefinitionSnapshotSubscriptionVariables,
+  APITypes.OnCreateOrderDiscountDefinitionSnapshotSubscription
+>;
+export const onUpdateOrderDiscountDefinitionSnapshot = /* GraphQL */ `subscription OnUpdateOrderDiscountDefinitionSnapshot(
+  $filter: ModelSubscriptionOrderDiscountDefinitionSnapshotFilterInput
+  $tenantId: String
+) {
+  onUpdateOrderDiscountDefinitionSnapshot(
+    filter: $filter
+    tenantId: $tenantId
+  ) {
+    id
+    tenantId
+    orderId
+    discountDefinitionId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    stationIds
+    active
+    pricingGeneratedAt
+    pricingTimezone
+    pricingStoreId
+    pricingStationId
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateOrderDiscountDefinitionSnapshotSubscriptionVariables,
+  APITypes.OnUpdateOrderDiscountDefinitionSnapshotSubscription
+>;
+export const onDeleteOrderDiscountDefinitionSnapshot = /* GraphQL */ `subscription OnDeleteOrderDiscountDefinitionSnapshot(
+  $filter: ModelSubscriptionOrderDiscountDefinitionSnapshotFilterInput
+  $tenantId: String
+) {
+  onDeleteOrderDiscountDefinitionSnapshot(
+    filter: $filter
+    tenantId: $tenantId
+  ) {
+    id
+    tenantId
+    orderId
+    discountDefinitionId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    stationIds
+    active
+    pricingGeneratedAt
+    pricingTimezone
+    pricingStoreId
+    pricingStationId
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteOrderDiscountDefinitionSnapshotSubscriptionVariables,
+  APITypes.OnDeleteOrderDiscountDefinitionSnapshotSubscription
+>;
 export const onCreateProduct = /* GraphQL */ `subscription OnCreateProduct(
   $filter: ModelSubscriptionProductFilterInput
   $tenantId: String

@@ -83,6 +83,7 @@ export interface EmployeeDiscountPolicy {
 export interface AppliedDiscountDetail {
   discountApplicationId: string;
   discountDefinitionId?: string | null;
+  orderDiscountSnapshotId?: string | null;
   applicationType: DiscountApplicationType;
   scope: DiscountScope;
   method: DiscountMethod;

@@ -4,6 +4,7 @@ import {
     DiscountDefinition,
     GlobalSettings,
     Order,
+    OrderDiscountDefinitionSnapshot,
     OrderLine,
     OrderMetaData,
     OrderRefund,
@@ -88,6 +89,13 @@ interface RefundPricingComputation {
     newTotal: number;
 }
 
+interface OrderPricingSnapshotContext {
+    pricingGeneratedAt: string;
+    pricingTimezone: string;
+    pricingStoreId?: string | null;
+    pricingStationId?: string | null;
+}
+
 const logOrderTiming = (step: string, details?: Record<string, unknown>) => {
     void step;
     void details;
@@ -128,6 +136,7 @@ const toAppliedDiscountDetailSnapshot = (
 ): AppliedDiscountDetail => ({
     discountApplicationId: discount.discountApplicationId,
     discountDefinitionId: discount.discountDefinitionId ?? null,
+    orderDiscountSnapshotId: discount.orderDiscountSnapshotId ?? null,
     applicationType: discount.applicationType,
     scope: discount.scope,
     method: discount.method,
@@ -194,6 +203,37 @@ const toAppliedDiscountSummarySnapshot = (
               pricingGeneratedAt: summary.pricingGeneratedAt,
           }
         : null;
+
+const isSnapshotEligibleApplication = (discount: AppliedDiscountDetail) =>
+    (discount.applicationType === 'AUTOMATIC_DISCOUNT' ||
+        discount.applicationType === 'PROMO_CODE') &&
+    !!discount.discountDefinitionId;
+
+const buildOrderDiscountSnapshotId = (
+    orderId: string,
+    discountDefinitionId: string
+) => `${orderId}:${discountDefinitionId}`;
+
+const buildSnapshotIdMapForAppliedSummary = (
+    orderId: string,
+    summary?: AppliedDiscountSummary | null
+) => {
+    const snapshotIdByDefinitionId = new Map<string, string>();
+
+    (summary?.applications || [])
+        .filter(isSnapshotEligibleApplication)
+        .forEach((discount) => {
+            const discountDefinitionId = String(discount.discountDefinitionId);
+            if (!snapshotIdByDefinitionId.has(discountDefinitionId)) {
+                snapshotIdByDefinitionId.set(
+                    discountDefinitionId,
+                    buildOrderDiscountSnapshotId(orderId, discountDefinitionId)
+                );
+            }
+        });
+
+    return snapshotIdByDefinitionId;
+};
 
 export class OrderService {
 
@@ -315,31 +355,47 @@ export class OrderService {
         );
 
         const orderId = request.order.id || String(uuid.v4());
+        const snapshotIdByDefinitionId = buildSnapshotIdMapForAppliedSummary(
+            orderId,
+            request.order.appliedDiscountSummary
+        );
+        const orderSummaryWithSnapshots = request.order.appliedDiscountSummary
+            ? OrderService.withSnapshotIdsOnSummary(
+                  request.order.appliedDiscountSummary,
+                  snapshotIdByDefinitionId
+              )
+            : null;
+        const orderForPersistence = orderSummaryWithSnapshots
+            ? {
+                  ...request.order,
+                  appliedDiscountSummary: orderSummaryWithSnapshots,
+              }
+            : request.order;
         const order = new Order(stampTenant({
             id: orderId,
             orderNo:
-                request.order.orderNo ??
+                orderForPersistence.orderNo ??
                 (await StationService.getNextOrderNumber(request.by)),
             status: 'PAID',
-            baseSubtotal: request.order.footer.baseSubtotal,
-            subtotal: request.order.footer.subtotal,
+            baseSubtotal: orderForPersistence.footer.baseSubtotal,
+            subtotal: orderForPersistence.footer.subtotal,
             tax: 0,
-            total: request.order.footer.total,
-            lineDiscountTotal: request.order.footer.lineDiscountTotal,
-            orderDiscountTotal: request.order.footer.orderDiscountTotal,
-            discountTotal: request.order.footer.discount,
-            savingsTotal: request.order.footer.savingsTotal,
-            promoCodes: request.order.promoCodes.map((promo) => promo.code),
+            total: orderForPersistence.footer.total,
+            lineDiscountTotal: orderForPersistence.footer.lineDiscountTotal,
+            orderDiscountTotal: orderForPersistence.footer.orderDiscountTotal,
+            discountTotal: orderForPersistence.footer.discount,
+            savingsTotal: orderForPersistence.footer.savingsTotal,
+            promoCodes: orderForPersistence.promoCodes.map((promo) => promo.code),
             pricingVersion: 'discounts-v1',
             pricingSnapshotHash: buildPricingSnapshotHash(request.order),
-            pricingSource: request.order.footer.pricingSource,
-            reconciliationStatus: request.order.footer.reconciliationStatus,
+            pricingSource: orderForPersistence.footer.pricingSource,
+            reconciliationStatus: orderForPersistence.footer.reconciliationStatus,
             appliedDiscountSummary: toAppliedDiscountSummarySnapshot(
-                request.order.appliedDiscountSummary
+                orderForPersistence.appliedDiscountSummary
             ),
             employeeId: request.by.id!,
             employeeName: `${request.by.firstName} ${request.by.lastName}`,
-            lines: buildOrderLines(request.order, allocations),
+            lines: buildOrderLines(orderForPersistence, allocations),
             createdBy: {
                 id: request.by.id,
                 name: `${request.by.firstName} ${request.by.lastName}`
@@ -369,6 +425,11 @@ export class OrderService {
         }) as never);
 
         const savedOrder = await DataStore.save(order);
+        await OrderService.persistAppliedDiscountSnapshotsForPaidOrder(
+            savedOrder,
+            request.order,
+            snapshotIdByDefinitionId
+        );
         logOrderTiming('create-paid-order-save-complete', {
             orderId: savedOrder.id,
             durationMs: Date.now() - startedAt,
@@ -410,26 +471,43 @@ export class OrderService {
             request.payments
         );
 
+        const snapshotIdByDefinitionId = buildSnapshotIdMapForAppliedSummary(
+            order.id,
+            request.order.appliedDiscountSummary
+        );
+        const orderSummaryWithSnapshots = request.order.appliedDiscountSummary
+            ? OrderService.withSnapshotIdsOnSummary(
+                  request.order.appliedDiscountSummary,
+                  snapshotIdByDefinitionId
+              )
+            : null;
+        const orderForPersistence = orderSummaryWithSnapshots
+            ? {
+                  ...request.order,
+                  appliedDiscountSummary: orderSummaryWithSnapshots,
+              }
+            : request.order;
+
         const updatedOrder = Order.copyOf(order, (o) => {
             o.tenantId = order.tenantId || requireCurrentTenantId();
-            o.baseSubtotal = request.order.footer.baseSubtotal;
-            o.subtotal = request.order.footer.subtotal;
+            o.baseSubtotal = orderForPersistence.footer.baseSubtotal;
+            o.subtotal = orderForPersistence.footer.subtotal;
             o.tax = 0;
-            o.total = request.order.footer.total;
-            o.lineDiscountTotal = request.order.footer.lineDiscountTotal;
-            o.orderDiscountTotal = request.order.footer.orderDiscountTotal;
-            o.discountTotal = request.order.footer.discount;
-            o.savingsTotal = request.order.footer.savingsTotal;
-            o.promoCodes = request.order.promoCodes.map((promo) => promo.code);
+            o.total = orderForPersistence.footer.total;
+            o.lineDiscountTotal = orderForPersistence.footer.lineDiscountTotal;
+            o.orderDiscountTotal = orderForPersistence.footer.orderDiscountTotal;
+            o.discountTotal = orderForPersistence.footer.discount;
+            o.savingsTotal = orderForPersistence.footer.savingsTotal;
+            o.promoCodes = orderForPersistence.promoCodes.map((promo) => promo.code);
             o.pricingVersion = 'discounts-v1';
             o.pricingSnapshotHash = buildPricingSnapshotHash(request.order);
-            o.pricingSource = request.order.footer.pricingSource;
-            o.reconciliationStatus = request.order.footer.reconciliationStatus;
+            o.pricingSource = orderForPersistence.footer.pricingSource;
+            o.reconciliationStatus = orderForPersistence.footer.reconciliationStatus;
             o.appliedDiscountSummary = toAppliedDiscountSummarySnapshot(
-                request.order.appliedDiscountSummary
+                orderForPersistence.appliedDiscountSummary
             );
             o.status = 'PAID';
-            o.lines = buildOrderLines(request.order, allocations);
+            o.lines = buildOrderLines(orderForPersistence, allocations);
             o.updatedBy = {
                 id: request.by.id,
                 name: `${request.by.firstName} ${request.by.lastName}`
@@ -452,6 +530,11 @@ export class OrderService {
         });
 
         const closedOrder = await DataStore.save(updatedOrder);
+        await OrderService.persistAppliedDiscountSnapshotsForPaidOrder(
+            closedOrder,
+            request.order,
+            snapshotIdByDefinitionId
+        );
         logOrderTiming('close-existing-order-save-complete', {
             orderId: closedOrder.id,
             status: closedOrder.status,
@@ -592,6 +675,176 @@ export class OrderService {
             refundTotal: pricing.refundAmount,
             newTotal: pricing.newTotal,
         };
+    }
+
+    private static async persistAppliedDiscountSnapshotsForPaidOrder(
+        order: Order,
+        cart: Omit<CartState, 'id'>,
+        precomputedSnapshotIdByDefinitionId?: Map<string, string>
+    ) {
+        const summary = cart.appliedDiscountSummary;
+        if (!summary?.applications?.length) {
+            return;
+        }
+
+        const pricingContext = await OrderService.resolvePricingSnapshotContext(
+            order,
+            cart
+        );
+        const snapshotIdByDefinitionId =
+            precomputedSnapshotIdByDefinitionId ||
+            buildSnapshotIdMapForAppliedSummary(order.id, summary);
+
+        if (!snapshotIdByDefinitionId.size) {
+            return;
+        }
+
+        for (const [discountDefinitionId, snapshotId] of snapshotIdByDefinitionId) {
+
+            const existingSnapshot = await DataStore.query(
+                OrderDiscountDefinitionSnapshot,
+                snapshotId
+            );
+            if (existingSnapshot) {
+                continue;
+            }
+
+            const sourceDefinition = await OrderService.resolveAppliedDiscountDefinition(
+                discountDefinitionId,
+                cart
+            );
+            if (!sourceDefinition) {
+                continue;
+            }
+
+            await DataStore.save(
+                new OrderDiscountDefinitionSnapshot(
+                    stampTenant({
+                        id: snapshotId,
+                        orderId: order.id,
+                        discountDefinitionId,
+                        name: sourceDefinition.name,
+                        code: sourceDefinition.code ?? null,
+                        description: sourceDefinition.description ?? null,
+                        status: sourceDefinition.status,
+                        type: sourceDefinition.type,
+                        method: sourceDefinition.method,
+                        scope: sourceDefinition.scope,
+                        value: sourceDefinition.value,
+                        priority: sourceDefinition.priority ?? null,
+                        stackMode: sourceDefinition.stackMode,
+                        approvalRequired: sourceDefinition.approvalRequired ?? false,
+                        reasonRequired: sourceDefinition.reasonRequired ?? false,
+                        startDate: sourceDefinition.startDate ?? null,
+                        endDate: sourceDefinition.endDate ?? null,
+                        daysOfWeek: sourceDefinition.daysOfWeek ?? undefined,
+                        startTime: sourceDefinition.startTime ?? null,
+                        endTime: sourceDefinition.endTime ?? null,
+                        minSubtotal: sourceDefinition.minSubtotal ?? null,
+                        minQuantity: sourceDefinition.minQuantity ?? null,
+                        usageLimitTotal: sourceDefinition.usageLimitTotal ?? null,
+                        usageCountTotal: sourceDefinition.usageCountTotal ?? null,
+                        applicableProductIds:
+                            sourceDefinition.applicableProductIds ?? undefined,
+                        applicableCategoryIds:
+                            sourceDefinition.applicableCategoryIds ?? undefined,
+                        excludedProductIds:
+                            sourceDefinition.excludedProductIds ?? undefined,
+                        excludedCategoryIds:
+                            sourceDefinition.excludedCategoryIds ?? undefined,
+                        excludeAlreadyDiscountedItems:
+                            sourceDefinition.excludeAlreadyDiscountedItems ?? false,
+                        appliesToAllProducts:
+                            sourceDefinition.appliesToAllProducts ?? false,
+                        stationIds: sourceDefinition.stationIds ?? undefined,
+                        active: sourceDefinition.active ?? sourceDefinition.status === 'ACTIVE',
+                        pricingGeneratedAt: pricingContext.pricingGeneratedAt,
+                        pricingTimezone: pricingContext.pricingTimezone,
+                        pricingStoreId: pricingContext.pricingStoreId ?? null,
+                        pricingStationId: pricingContext.pricingStationId ?? null,
+                    }) as never
+                )
+            );
+        }
+    }
+
+    private static async resolveAppliedDiscountDefinition(
+        discountDefinitionId: string,
+        cart: Omit<CartState, 'id'>
+    ) {
+        const fromCart = (cart.definitions || []).find(
+            (definition) => definition.id === discountDefinitionId
+        );
+        if (fromCart) {
+            return fromCart as unknown as DiscountDefinition;
+        }
+
+        return await DataStore.query(DiscountDefinition, discountDefinitionId);
+    }
+
+    private static async resolvePricingSnapshotContext(
+        order: Order,
+        cart: Omit<CartState, 'id'>
+    ): Promise<OrderPricingSnapshotContext> {
+        let timezone = cart.pricingContext?.timezone || null;
+        if (!timezone) {
+            const settings = await DataStore.query(GlobalSettings);
+            timezone = settings?.[0]?.timezone || null;
+        }
+
+        return {
+            pricingGeneratedAt:
+                cart.appliedDiscountSummary?.pricingGeneratedAt ||
+                order.orderDate ||
+                moment().toISOString(),
+            pricingTimezone: timezone || 'America/New_York',
+            pricingStoreId: cart.pricingContext?.storeId ?? null,
+            pricingStationId:
+                cart.pricingContext?.stationId ??
+                OrderService.extractStationId(order.orderNo),
+        };
+    }
+
+    private static withSnapshotIdsOnSummary(
+        summary: AppliedDiscountSummary,
+        snapshotIdByDefinitionId: Map<string, string>
+    ): AppliedDiscountSummary {
+        return {
+            ...summary,
+            applications: OrderService.withSnapshotIdsOnDiscounts(
+                summary.applications,
+                snapshotIdByDefinitionId
+            ),
+            lineSummaries: summary.lineSummaries.map((lineSummary) => ({
+                ...lineSummary,
+                discounts: OrderService.withSnapshotIdsOnDiscounts(
+                    lineSummary.discounts,
+                    snapshotIdByDefinitionId
+                ),
+            })),
+            orderLevelAdjustments: OrderService.withSnapshotIdsOnDiscounts(
+                summary.orderLevelAdjustments,
+                snapshotIdByDefinitionId
+            ),
+        };
+    }
+
+    private static withSnapshotIdsOnDiscounts(
+        discounts: AppliedDiscountDetail[] | null | undefined,
+        snapshotIdByDefinitionId: Map<string, string>
+    ) {
+        return (discounts || []).map((discount) => {
+            if (!isSnapshotEligibleApplication(discount)) {
+                return discount;
+            }
+
+            const discountDefinitionId = String(discount.discountDefinitionId);
+            return {
+                ...discount,
+                orderDiscountSnapshotId:
+                    snapshotIdByDefinitionId.get(discountDefinitionId) || null,
+            };
+        });
     }
 
     static async getRefundRecordsForOrder(orderId: string) {
@@ -784,19 +1037,11 @@ export class OrderService {
             historicalRefundLines.reduce((sum, line) => sum + line.lineRefundAmount, 0)
         );
 
-        const definitionIds = Array.from(
-            new Set(
-                (order.appliedDiscountSummary?.applications || [])
-                    .filter((application) =>
-                        (application.applicationType === 'AUTOMATIC_DISCOUNT' ||
-                            application.applicationType === 'PROMO_CODE') &&
-                        !!application.discountDefinitionId
-                    )
-                    .map((application) => String(application.discountDefinitionId))
-            )
+        const appliedDiscountApplications = (order.appliedDiscountSummary?.applications || []).filter(
+            isSnapshotEligibleApplication
         );
 
-        if (!definitionIds.length) {
+        if (!appliedDiscountApplications.length) {
             return {
                 refundAmount: historicalRefundAmount,
                 refundLines: historicalRefundLines,
@@ -804,13 +1049,19 @@ export class OrderService {
             };
         }
 
-        const pricingDefinitions = (
-            await Promise.all(
-                definitionIds.map((id) => DataStore.query(DiscountDefinition, id))
-            )
-        ).filter(Boolean) as DiscountDefinition[];
+        const pricingSnapshots = await DataStore.query(
+            OrderDiscountDefinitionSnapshot,
+            (snapshot) => snapshot.orderId.eq(order.id)
+        );
+        const pricingDefinitions = OrderService.resolveRefundPricingDefinitions(
+            appliedDiscountApplications,
+            pricingSnapshots
+        );
 
-        if (!pricingDefinitions.length) {
+        if (
+            !pricingDefinitions.length ||
+            pricingDefinitions.length !== appliedDiscountApplications.length
+        ) {
             return {
                 refundAmount: historicalRefundAmount,
                 refundLines: historicalRefundLines,
@@ -822,15 +1073,10 @@ export class OrderService {
         const existingRefundAmount = roundMoney(
             refundRecords.reduce((sum, refund) => sum + Number(refund.refundAmount || 0), 0)
         );
-        const pricingTimestamp =
-            order.appliedDiscountSummary?.pricingGeneratedAt ||
-            order.orderDate ||
-            order.createdAt ||
-            order.updatedAt ||
-            moment().toISOString();
-        const settings = await DataStore.query(GlobalSettings);
-        const timezone = settings?.[0]?.timezone || 'America/New_York';
-        const stationId = OrderService.extractStationId(order.orderNo);
+        const snapshotPricingContext = OrderService.resolveRefundPricingContext(
+            order,
+            pricingSnapshots
+        );
         const totalRefundedAfter = OrderService.mergeRefundQuantities(
             previouslyRefunded,
             requestedRefunds
@@ -840,9 +1086,9 @@ export class OrderService {
             order,
             totalRefundedAfter,
             pricingDefinitions,
-            pricingTimestamp,
-            timezone,
-            stationId
+            snapshotPricingContext.pricingGeneratedAt,
+            snapshotPricingContext.pricingTimezone,
+            snapshotPricingContext.pricingStationId
         );
         const currentOpenBalance = roundMoney(
             Math.max(0, Number(order.total || 0) - existingRefundAmount)
@@ -862,6 +1108,97 @@ export class OrderService {
             refundAmount,
             refundLines,
             newTotal: roundMoney(Math.max(0, currentOpenBalance - refundAmount)),
+        };
+    }
+
+    private static resolveRefundPricingDefinitions(
+        applications: AppliedDiscountDetail[],
+        snapshots: OrderDiscountDefinitionSnapshot[]
+    ) {
+        const snapshotsById = new Map(
+            snapshots.map((snapshot) => [String(snapshot.id), snapshot] as const)
+        );
+        const snapshotsByDefinitionId = new Map(
+            snapshots.map((snapshot) => [
+                String(snapshot.discountDefinitionId),
+                snapshot,
+            ] as const)
+        );
+
+        return applications
+            .map((application) => {
+                const snapshot =
+                    (application.orderDiscountSnapshotId
+                        ? snapshotsById.get(String(application.orderDiscountSnapshotId))
+                        : undefined) ||
+                    snapshotsByDefinitionId.get(String(application.discountDefinitionId));
+
+                return snapshot
+                    ? OrderService.mapSnapshotToDiscountDefinition(snapshot)
+                    : null;
+            })
+            .filter(Boolean) as DiscountDefinition[];
+    }
+
+    private static resolveRefundPricingContext(
+        order: OrderEntity,
+        snapshots: OrderDiscountDefinitionSnapshot[]
+    ): OrderPricingSnapshotContext {
+        const firstSnapshot = snapshots[0];
+
+        return {
+            pricingGeneratedAt:
+                firstSnapshot?.pricingGeneratedAt ||
+                order.appliedDiscountSummary?.pricingGeneratedAt ||
+                order.orderDate ||
+                order.createdAt ||
+                order.updatedAt ||
+                moment().toISOString(),
+            pricingTimezone:
+                firstSnapshot?.pricingTimezone || 'America/New_York',
+            pricingStoreId: firstSnapshot?.pricingStoreId ?? null,
+            pricingStationId:
+                firstSnapshot?.pricingStationId ??
+                OrderService.extractStationId(order.orderNo),
+        };
+    }
+
+    private static mapSnapshotToDiscountDefinition(
+        snapshot: OrderDiscountDefinitionSnapshot
+    ): DiscountDefinition {
+        return {
+            id: snapshot.discountDefinitionId,
+            tenantId: snapshot.tenantId,
+            name: snapshot.name,
+            code: snapshot.code ?? null,
+            description: snapshot.description ?? null,
+            status: snapshot.status as DiscountDefinition['status'],
+            type: snapshot.type as DiscountDefinition['type'],
+            method: snapshot.method as DiscountDefinition['method'],
+            scope: snapshot.scope as DiscountDefinition['scope'],
+            value: Number(snapshot.value || 0),
+            priority: snapshot.priority ?? undefined,
+            stackMode: snapshot.stackMode as DiscountDefinition['stackMode'],
+            approvalRequired: snapshot.approvalRequired ?? false,
+            reasonRequired: snapshot.reasonRequired ?? false,
+            startDate: snapshot.startDate ?? null,
+            endDate: snapshot.endDate ?? null,
+            daysOfWeek: snapshot.daysOfWeek ?? null,
+            startTime: snapshot.startTime ?? null,
+            endTime: snapshot.endTime ?? null,
+            minSubtotal: snapshot.minSubtotal ?? null,
+            minQuantity: snapshot.minQuantity ?? null,
+            usageLimitTotal: snapshot.usageLimitTotal ?? null,
+            usageCountTotal: snapshot.usageCountTotal ?? null,
+            applicableProductIds: snapshot.applicableProductIds ?? null,
+            applicableCategoryIds: snapshot.applicableCategoryIds ?? null,
+            excludedProductIds: snapshot.excludedProductIds ?? null,
+            excludedCategoryIds: snapshot.excludedCategoryIds ?? null,
+            excludeAlreadyDiscountedItems:
+                snapshot.excludeAlreadyDiscountedItems ?? false,
+            appliesToAllProducts: snapshot.appliesToAllProducts ?? false,
+            stationIds: snapshot.stationIds ?? null,
+            active: snapshot.active ?? snapshot.status === 'ACTIVE',
         };
     }
 

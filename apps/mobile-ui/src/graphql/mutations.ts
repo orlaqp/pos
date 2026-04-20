@@ -1055,6 +1055,168 @@ export const deleteOrderRefundLine = /* GraphQL */ `mutation DeleteOrderRefundLi
   APITypes.DeleteOrderRefundLineMutationVariables,
   APITypes.DeleteOrderRefundLineMutation
 >;
+export const createOrderDiscountDefinitionSnapshot = /* GraphQL */ `mutation CreateOrderDiscountDefinitionSnapshot(
+  $input: CreateOrderDiscountDefinitionSnapshotInput!
+  $condition: ModelOrderDiscountDefinitionSnapshotConditionInput
+) {
+  createOrderDiscountDefinitionSnapshot(input: $input, condition: $condition) {
+    id
+    tenantId
+    orderId
+    discountDefinitionId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    stationIds
+    active
+    pricingGeneratedAt
+    pricingTimezone
+    pricingStoreId
+    pricingStationId
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateOrderDiscountDefinitionSnapshotMutationVariables,
+  APITypes.CreateOrderDiscountDefinitionSnapshotMutation
+>;
+export const updateOrderDiscountDefinitionSnapshot = /* GraphQL */ `mutation UpdateOrderDiscountDefinitionSnapshot(
+  $input: UpdateOrderDiscountDefinitionSnapshotInput!
+  $condition: ModelOrderDiscountDefinitionSnapshotConditionInput
+) {
+  updateOrderDiscountDefinitionSnapshot(input: $input, condition: $condition) {
+    id
+    tenantId
+    orderId
+    discountDefinitionId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    stationIds
+    active
+    pricingGeneratedAt
+    pricingTimezone
+    pricingStoreId
+    pricingStationId
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateOrderDiscountDefinitionSnapshotMutationVariables,
+  APITypes.UpdateOrderDiscountDefinitionSnapshotMutation
+>;
+export const deleteOrderDiscountDefinitionSnapshot = /* GraphQL */ `mutation DeleteOrderDiscountDefinitionSnapshot(
+  $input: DeleteOrderDiscountDefinitionSnapshotInput!
+  $condition: ModelOrderDiscountDefinitionSnapshotConditionInput
+) {
+  deleteOrderDiscountDefinitionSnapshot(input: $input, condition: $condition) {
+    id
+    tenantId
+    orderId
+    discountDefinitionId
+    name
+    code
+    description
+    status
+    type
+    method
+    scope
+    value
+    priority
+    stackMode
+    approvalRequired
+    reasonRequired
+    startDate
+    endDate
+    daysOfWeek
+    startTime
+    endTime
+    minSubtotal
+    minQuantity
+    usageLimitTotal
+    usageCountTotal
+    applicableProductIds
+    applicableCategoryIds
+    excludedProductIds
+    excludedCategoryIds
+    excludeAlreadyDiscountedItems
+    appliesToAllProducts
+    stationIds
+    active
+    pricingGeneratedAt
+    pricingTimezone
+    pricingStoreId
+    pricingStationId
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteOrderDiscountDefinitionSnapshotMutationVariables,
+  APITypes.DeleteOrderDiscountDefinitionSnapshotMutation
+>;
 export const createProduct = /* GraphQL */ `mutation CreateProduct(
   $input: CreateProductInput!
   $condition: ModelProductConditionInput
