@@ -336,14 +336,105 @@ describe('printing.service helpers', () => {
     );
 
     expect(receiptText).toContain('Aceite vegetal');
-    expect(receiptText).toContain('35.98');
+    expect(receiptText).toContain('49.98');
+    expect(receiptText).toContain('Discount       -$ 14.00');
     expect(receiptText).toContain('Subtotal');
     expect(receiptText).toContain('49.98');
     expect(receiptText).toContain('Discounts');
     expect(receiptText).toContain('-14.00');
-    expect(receiptText).toContain('Line · 20% Off Aceites');
-    expect(receiptText).toContain('Order · 10% Off 25');
+    expect(receiptText).not.toContain('Orig:');
+    expect(receiptText).not.toContain('Saved:');
+    expect(receiptText).not.toContain('20% Off Aceites');
+    expect(receiptText).not.toContain('10% Off 25');
     expect(receiptText).toContain('Promo · SAVE10');
+  });
+
+  it('uses refunded line amounts so partially refunded receipts show the active total correctly', () => {
+    const receiptText = buildReceiptPreviewText(
+      {
+        name: 'QA Store',
+      },
+      {
+        items: [
+          {
+            identifier: 'line-1',
+            quantity: 3,
+            product: {
+              name: 'Huevo',
+              price: 4.99,
+            },
+          },
+        ],
+        footer: {
+          baseSubtotal: 14.97,
+          discount: 4.49,
+          total: 10.48,
+        },
+        appliedDiscountSummary: {
+          applications: [],
+          approvalEvents: [],
+          pricingGeneratedAt: '2026-04-20T12:00:00.000Z',
+          warnings: [],
+          lineSummaries: [
+            {
+              lineId: 'line-1',
+              lineDiscountTotal: 4.49,
+              allocatedOrderDiscountTotal: 0,
+              lineTotalBeforeTax: 10.48,
+              discounts: [
+                {
+                  discountApplicationId: 'line-discount-1',
+                  applicationType: 'AUTOMATIC_DISCOUNT',
+                  scope: 'LINE',
+                  method: 'PERCENT',
+                  name: 'Test 1%',
+                  stackMode: 'STACKABLE',
+                  source: 'automatic',
+                  value: 30,
+                  originalAmount: 14.97,
+                  discountAmount: 4.49,
+                  finalAmount: 10.48,
+                  appliedAt: '2026-04-20T12:00:00.000Z',
+                },
+              ],
+            },
+          ],
+          orderLevelAdjustments: [],
+        },
+      },
+      {
+        id: 'order-4',
+        status: 'PARTIALLY_REFUNDED',
+        refundedQuantities: {
+          'line-1': 2,
+        },
+        refundedLineAmounts: {
+          'line-1': 5.49,
+        },
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 3,
+            productName: 'Huevo',
+            price: 4.99,
+            lineTotalBeforeTax: 10.48,
+          },
+        ],
+      }
+    );
+
+    expect(receiptText).toContain('Active Items');
+    expect(receiptText).toContain('Refunded Items');
+    expect(receiptText).toContain('1      Huevo');
+    expect(receiptText).toContain('4.99');
+    expect(receiptText).toContain('2      Huevo');
+    expect(receiptText).toContain('9.98');
+    expect(receiptText).toContain('Discount       -$ 4.49');
+    expect(receiptText).not.toContain('Orig:');
+    expect(receiptText).not.toContain('Saved:');
+    expect(receiptText).not.toContain('Test 1%');
+    expect(receiptText).toContain('Total');
+    expect(receiptText).toContain('4.99');
   });
 
   it('records the print job through the E2E printer spy without using hardware transport', async () => {

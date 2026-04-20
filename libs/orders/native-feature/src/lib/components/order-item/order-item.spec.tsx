@@ -81,7 +81,10 @@ jest.mock('@pos/sales/data-access', () => ({
 
 jest.mock('@pos/orders/data-access', () => ({
     ordersActions: { remove: jest.fn() },
-    OrderService: { delete: jest.fn() },
+    OrderService: {
+        delete: jest.fn(),
+        getRefundedLineAmountsForOrder: jest.fn(),
+    },
     OrderEntityMapper: { asCartState: jest.fn() },
     selectRefundedAmountForOrder: jest.fn(() => mockRefundedAmount),
     selectRefundedQuantitiesForOrder: jest.fn(() => mockRefundedQuantities),

@@ -155,6 +155,14 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
             return;
         }
 
+        const refundedLineAmounts =
+            item.id &&
+            (item.status === 'PARTIALLY_REFUNDED' || item.status === 'REFUNDED')
+                ? await OrderService.getRefundedLineAmountsForOrder(item.id)
+                      .then((amounts) => Object.fromEntries(amounts.entries()))
+                      .catch(() => undefined)
+                : undefined;
+
         printReceipt(
             fallbackStore,
             fallbackPrinter,
@@ -168,6 +176,14 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                         item.status === 'REFUNDED') &&
                     Object.keys(refundedQuantities).length > 0
                         ? refundedQuantities
+                        : undefined,
+                refundedLineAmounts:
+                    item.id &&
+                    (item.status === 'PARTIALLY_REFUNDED' ||
+                        item.status === 'REFUNDED') &&
+                    refundedLineAmounts &&
+                    Object.keys(refundedLineAmounts).length > 0
+                        ? refundedLineAmounts
                         : undefined,
             }
         );

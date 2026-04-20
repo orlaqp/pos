@@ -56,6 +56,7 @@ type ReceiptOrderEntity = {
     orderNo?: string;
     copyType?: 'CUSTOMER' | 'MERCHANT';
     refundedQuantities?: Record<string, number> | null;
+    refundedLineAmounts?: Record<string, number> | null;
     paymentInfo?: {
         payments?: Array<{
             type: string;
@@ -66,10 +67,45 @@ type ReceiptOrderEntity = {
         identifier?: string;
         quantity?: number;
         productName?: string;
+        price?: number;
         lineTotalBeforeTax?: number;
+        lineTotalAfterTax?: number;
         ebtPaidAmount?: number;
         nonEbtPaidAmount?: number;
     }>;
+};
+
+type ReceiptDiscountDetailRow = {
+    label: string;
+    amount: number;
+};
+
+type ReceiptLineDisplayRow = {
+    identifier: string;
+    quantity: number;
+    name: string;
+    originalAmount: number;
+    finalAmount: number;
+    discountDetails: ReceiptDiscountDetailRow[];
+};
+
+type ReceiptSection = {
+    title: string;
+    emptyLabel: string;
+    rows: ReceiptLineDisplayRow[];
+};
+
+type ReceiptTotalsSummary = {
+    subtotal: number;
+    discount: number;
+    tax: number;
+    total: number;
+    orderDiscountDetails: ReceiptDiscountDetailRow[];
+};
+
+type ReceiptRenderModel = {
+    sections: ReceiptSection[];
+    totals: ReceiptTotalsSummary;
 };
 
 export type ReceiptPreviewPayload = {
@@ -221,8 +257,9 @@ const printSingleReceipt = async (
     order?: ReceiptOrderEntity
 ) => {
     const date = new Date();
+    const renderModel = buildReceiptRenderModel(cart, order);
     const receiptLines = buildReceiptLines(cart, order);
-    const receiptTotalsBreakdown = buildReceiptTotalsBreakdownText(cart);
+    const receiptTotalsBreakdown = buildReceiptTotalsBreakdownText(cart, order);
     const totalPaymentsText = getReceiptPaymentsText(order);
     const copyLabel = getReceiptCopyLabel(order);
     const receiptText = buildReceiptPreviewText(store, cart, order, date);
@@ -235,7 +272,7 @@ const printSingleReceipt = async (
             orderNo: order?.orderNo,
             copyType: order?.copyType,
             copyLabel,
-            total: cart.footer.total,
+            total: renderModel.totals.total,
             paymentSummaryText: totalPaymentsText,
             receiptText,
         });
@@ -273,7 +310,7 @@ const printSingleReceipt = async (
                         new StarXpandCommand.MagnificationParameter(2, 2)
                     )
                     .actionPrintText(
-                        `${formatReceiptCurrency(cart.footer.total)}\n`
+                        `${formatReceiptCurrency(renderModel.totals.total)}\n`
                     )
             )
             .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
@@ -373,21 +410,20 @@ const getReceiptPaymentsText = (order?: ReceiptOrderEntity) =>
         ?.map((payment) => `${payment.type}: $ ${payment.amount.toFixed(2)}`)
         .join('\n') || '';
 
-const buildReceiptTotalsBreakdownText = (cart: ReceiptCartState) => {
+const buildReceiptTotalsBreakdownText = (
+    cart: ReceiptCartState,
+    order?: ReceiptOrderEntity
+) => {
+    const renderModel = buildReceiptRenderModel(cart, order);
     const rows: string[] = [];
-    const baseSubtotal =
-        cart.footer.baseSubtotal ?? cart.footer.subtotal ?? cart.footer.total;
-    const discountTotal =
-        cart.footer.discount ?? cart.footer.savingsTotal ?? 0;
-    const tax = cart.footer.tax ?? 0;
+    const baseSubtotal = renderModel.totals.subtotal;
+    const discountTotal = renderModel.totals.discount;
+    const tax = renderModel.totals.tax;
 
     rows.push(formatTotalRow('Subtotal', baseSubtotal));
 
     if (discountTotal > 0) {
         rows.push(formatTotalRow('Discounts', -discountTotal));
-        getReceiptDiscountDetails(cart).forEach((discount) => {
-            rows.push(formatTotalRow(discount.label, -discount.amount));
-        });
     }
 
     if (tax > 0) {
@@ -402,29 +438,14 @@ const formatTotalRow = (label: string, amount: number) =>
 
 const formatReceiptCurrency = (amount: number) => `$ ${amount.toFixed(2)}`;
 
-const getReceiptDiscountDetails = (cart: ReceiptCartState) => {
-    const lineDiscounts =
-        cart.appliedDiscountSummary?.lineSummaries.flatMap((line) =>
-            line.discounts.map((discount) => ({
-                label: `Line · ${discount.name}`,
-                amount: discount.discountAmount,
-            }))
-        ) ?? [];
-    const orderDiscounts =
-        cart.appliedDiscountSummary?.orderLevelAdjustments.map((discount) => ({
-            label: `Order · ${discount.name}`,
-            amount: discount.discountAmount,
-        })) ?? [];
-
-    return [...lineDiscounts, ...orderDiscounts].filter(
-        (discount) => discount.amount > 0
-    );
-};
-
-const buildReceiptTotalsText = (cart: ReceiptCartState) => {
-    const rows = [buildReceiptTotalsBreakdownText(cart)];
+const buildReceiptTotalsText = (
+    cart: ReceiptCartState,
+    order?: ReceiptOrderEntity
+) => {
+    const renderModel = buildReceiptRenderModel(cart, order);
+    const rows = [buildReceiptTotalsBreakdownText(cart, order)];
     rows.push('--------------------------------\n');
-    rows.push(formatTotalRow('Total', cart.footer.total));
+    rows.push(formatTotalRow('Total', renderModel.totals.total));
 
     if (cart.promoCodes?.length) {
         rows.push(
@@ -436,17 +457,15 @@ const buildReceiptTotalsText = (cart: ReceiptCartState) => {
     return rows.join('');
 };
 
-const getLineSummaryTotal = (
+const getLineSummary = (
     cart: ReceiptCartState,
     item: ReceiptCartState['items'][number],
     index: number
 ) => {
     const itemIdentifier = item.identifier ?? `line-${index}`;
-    const lineSummary = cart.appliedDiscountSummary?.lineSummaries.find(
+    return cart.appliedDiscountSummary?.lineSummaries.find(
         (summary) => summary.lineId === itemIdentifier
     );
-
-    return lineSummary?.lineTotalBeforeTax ?? item.product.price * item.quantity;
 };
 
 export const buildReceiptPreviewText = (
@@ -458,7 +477,7 @@ export const buildReceiptPreviewText = (
     const receiptLines = buildReceiptLines(cart, order);
     const totalPaymentsText = getReceiptPaymentsText(order);
     const copyLabel = getReceiptCopyLabel(order);
-    const totalText = buildReceiptTotalsText(cart);
+    const totalText = buildReceiptTotalsText(cart, order);
     const footerText = order?.id
         ? `${totalPaymentsText}\n\n${store.disclaimer ?? ''}\n${copyLabel}\n${order?.orderNo ?? ''}\n`
         : '*** NOT A RECEIPT ***\n';
@@ -487,18 +506,32 @@ export const getReceiptCopyLabel = (order?: ReceiptOrderEntity) =>
         ? '** Customer Copy **'
         : '** Merchant Copy **';
 
-const buildClassicLines = (cart: ReceiptCartState) => {
+const formatReceiptLineRow = (row: ReceiptLineDisplayRow) => {
+    const hasDiscount = roundMoney(row.originalAmount - row.finalAmount) > 0;
+    const lines = [
+        formatLine(
+            row.quantity,
+            row.name,
+            hasDiscount ? row.originalAmount : row.finalAmount
+        ),
+    ];
+
+    if (hasDiscount) {
+        lines.push(
+            `      ${'Discount'.padEnd(15, ' ')}-${formatReceiptCurrency(
+                roundMoney(row.originalAmount - row.finalAmount)
+            )}`
+        );
+    }
+
+    return lines.join('\n');
+};
+
+const buildClassicLines = (rows: ReceiptLineDisplayRow[]) => {
     return (
         'Qty    Description        Total\n' +
         '-------------------------------\n' +
-        cart.items
-            .map((i, index) =>
-                formatLine(
-                    i.quantity,
-                    i.product.name,
-                    getLineSummaryTotal(cart, i, index)
-                )
-            )
+        rows.map((row) => formatReceiptLineRow(row))
             .join('\n') +
         '\n\n' +
         '--------------------------------\n'
@@ -507,95 +540,16 @@ const buildClassicLines = (cart: ReceiptCartState) => {
 
 const buildRefundedSection = (
     title: string,
-    entries: Array<{ quantity: number; name: string; amount: number }>,
+    entries: ReceiptLineDisplayRow[],
     emptyLabel: string
 ) =>
     `${title}\n` +
     'Qty    Description        Total\n' +
     '-------------------------------\n' +
     (entries.length
-        ? entries
-              .map((entry) =>
-                  formatLine(entry.quantity, entry.name, entry.amount)
-              )
-              .join('\n')
+        ? entries.map((entry) => formatReceiptLineRow(entry)).join('\n')
         : emptyLabel) +
     '\n\n';
-
-const buildRefundSplitLines = (
-    cart: ReceiptCartState,
-    order: ReceiptOrderEntity
-) => {
-    const refundedQuantities = order.refundedQuantities || {};
-    const activeEntries: Array<{ quantity: number; name: string; amount: number }> = [];
-    const refundedEntries: Array<{ quantity: number; name: string; amount: number }> = [];
-
-    (order.lines || []).forEach((line, index) => {
-        const identifier = String(line.identifier || `line-${index}`);
-        const originalQuantity = Number(line.quantity || 0);
-        if (originalQuantity <= 0) {
-            return;
-        }
-
-        const refundedQuantity = Math.max(
-            0,
-            Math.min(
-                originalQuantity,
-                Number(refundedQuantities[identifier] || 0)
-            )
-        );
-        const activeQuantity = roundMoney(originalQuantity - refundedQuantity);
-        const fallbackItem = cart.items.find(
-            (item, itemIndex) =>
-                (item.identifier || `line-${itemIndex}`) === identifier
-        );
-        const lineTotal =
-            line.lineTotalBeforeTax ??
-            (fallbackItem
-                ? getLineSummaryTotal(
-                      cart,
-                      fallbackItem,
-                      cart.items.findIndex((item) => item === fallbackItem)
-                  )
-                : 0);
-        const refundedAmount =
-            originalQuantity > 0
-                ? roundMoney((lineTotal * refundedQuantity) / originalQuantity)
-                : 0;
-        const activeAmount = roundMoney(lineTotal - refundedAmount);
-        const name = line.productName || fallbackItem?.product.name || '';
-
-        if (activeQuantity > 0) {
-            activeEntries.push({
-                quantity: activeQuantity,
-                name,
-                amount: activeAmount,
-            });
-        }
-
-        if (refundedQuantity > 0) {
-            refundedEntries.push({
-                quantity: refundedQuantity,
-                name,
-                amount: refundedAmount,
-            });
-        }
-    });
-
-    return (
-        buildRefundedSection(
-            'Active Items',
-            activeEntries,
-            'No active items'
-        ) +
-        buildRefundedSection(
-            'Refunded Items',
-            refundedEntries,
-            'No refunded items'
-        ) +
-        '--------------------------------\n'
-    );
-};
 
 const buildEbtLines = (order: ReceiptOrderEntity) => {
     const lines = order.lines || [];
@@ -655,19 +609,342 @@ export const buildReceiptLines = (cart: ReceiptCartState, order?: ReceiptOrderEn
     const hasEbtPayment = !!order?.paymentInfo?.payments?.some(
         (payment) => payment.type?.toUpperCase() === 'EBT'
     );
+    const renderModel = buildReceiptRenderModel(cart, order);
+    const hasRefundSections = renderModel.sections.length > 1;
+
+    if (hasRefundSections) {
+        return (
+            renderModel.sections
+                .map((section) =>
+                    buildRefundedSection(
+                        section.title,
+                        section.rows,
+                        section.emptyLabel
+                    )
+                )
+                .join('') + '--------------------------------\n'
+        );
+    }
+
+    if (!hasEbtPayment || !order?.lines?.length) {
+        return buildClassicLines(renderModel.sections[0]?.rows || []);
+    }
+
+    return buildEbtLines(order);
+};
+
+const buildReceiptRenderModel = (
+    cart: ReceiptCartState,
+    order?: ReceiptOrderEntity
+): ReceiptRenderModel => {
     const hasRefundedQuantities = Object.values(order?.refundedQuantities || {}).some(
         (quantity) => Number(quantity || 0) > 0
     );
 
     if (order?.lines?.length && hasRefundedQuantities) {
-        return buildRefundSplitLines(cart, order);
+        return buildRefundSplitReceiptModel(cart, order);
     }
 
-    if (!hasEbtPayment || !order?.lines?.length) {
-        return buildClassicLines(cart);
+    const standardRows = buildStandardReceiptRows(cart);
+    return {
+        sections: [
+            {
+                title: 'Items',
+                emptyLabel: 'No items',
+                rows: standardRows,
+            },
+        ],
+        totals: {
+            subtotal:
+                cart.footer.baseSubtotal ?? cart.footer.subtotal ?? cart.footer.total,
+            discount: cart.footer.discount ?? cart.footer.savingsTotal ?? 0,
+            tax: cart.footer.tax ?? 0,
+            total: cart.footer.total,
+            orderDiscountDetails: getUnattributedOrderDiscountDetails(cart),
+        },
+    };
+};
+
+const buildStandardReceiptRows = (cart: ReceiptCartState): ReceiptLineDisplayRow[] =>
+    cart.items.map((item, index) => {
+        const identifier = item.identifier ?? `line-${index}`;
+        const lineSummary = getLineSummary(cart, item, index);
+        const originalAmount = roundMoney(item.product.price * item.quantity);
+        const finalAmount =
+            lineSummary?.lineTotalBeforeTax ?? originalAmount;
+
+        return {
+            identifier,
+            quantity: item.quantity,
+            name: item.product.name,
+            originalAmount,
+            finalAmount,
+            discountDetails: buildReceiptDiscountDetailsForSavings(
+                cart,
+                lineSummary,
+                roundMoney(originalAmount - finalAmount)
+            ),
+        };
+    });
+
+const buildRefundSplitReceiptModel = (
+    cart: ReceiptCartState,
+    order: ReceiptOrderEntity
+): ReceiptRenderModel => {
+    const refundedQuantities = order.refundedQuantities || {};
+    const refundedLineAmounts = order.refundedLineAmounts || {};
+    const activeRows: ReceiptLineDisplayRow[] = [];
+    const refundedRows: ReceiptLineDisplayRow[] = [];
+    let activeSubtotal = 0;
+    let activeTotal = 0;
+    let activeTax = 0;
+
+    (order.lines || []).forEach((line, index) => {
+        const identifier = String(line.identifier || `line-${index}`);
+        const originalQuantity = Number(line.quantity || 0);
+        if (originalQuantity <= 0) {
+            return;
+        }
+
+        const fallbackItem =
+            cart.items.find(
+                (item, itemIndex) =>
+                    (item.identifier || `line-${itemIndex}`) === identifier
+            ) || cart.items[index];
+        const lineSummary = fallbackItem
+            ? getLineSummary(
+                  cart,
+                  fallbackItem,
+                  cart.items.findIndex((item) => item === fallbackItem)
+              )
+            : undefined;
+        const baseUnitPrice = Number(
+            line.price ??
+                fallbackItem?.product.price ??
+                (originalQuantity > 0
+                    ? Number(line.lineTotalBeforeTax || 0) / originalQuantity
+                    : 0)
+        );
+        const originalAmount = roundMoney(baseUnitPrice * originalQuantity);
+        const originalFinalAmount = roundMoney(
+            Number(
+                line.lineTotalBeforeTax ??
+                    (lineSummary?.lineTotalBeforeTax ?? originalAmount)
+            )
+        );
+        const refundedQuantity = Math.max(
+            0,
+            Math.min(originalQuantity, Number(refundedQuantities[identifier] || 0))
+        );
+        const activeQuantity = roundMoney(originalQuantity - refundedQuantity);
+        const refundedFinalAmount =
+            refundedQuantity > 0
+                ? roundMoney(
+                      Number(refundedLineAmounts[identifier] || 0) ||
+                          (originalQuantity > 0
+                              ? (originalFinalAmount * refundedQuantity) /
+                                originalQuantity
+                              : 0)
+                  )
+                : 0;
+        const activeFinalAmount = roundMoney(
+            Math.max(0, originalFinalAmount - refundedFinalAmount)
+        );
+        const refundedOriginalAmount = roundMoney(baseUnitPrice * refundedQuantity);
+        const activeOriginalAmount = roundMoney(baseUnitPrice * activeQuantity);
+        const totalTaxAmount = roundMoney(
+            Math.max(
+                0,
+                Number(line.lineTotalAfterTax || 0) - originalFinalAmount
+            )
+        );
+        const activeLineTax =
+            originalFinalAmount > 0
+                ? roundMoney((totalTaxAmount * activeFinalAmount) / originalFinalAmount)
+                : 0;
+        const name = line.productName || fallbackItem?.product.name || '';
+
+        if (activeQuantity > 0) {
+            activeRows.push({
+                identifier,
+                quantity: activeQuantity,
+                name,
+                originalAmount: activeOriginalAmount,
+                finalAmount: activeFinalAmount,
+                discountDetails: buildReceiptDiscountDetailsForSavings(
+                    cart,
+                    lineSummary,
+                    roundMoney(activeOriginalAmount - activeFinalAmount)
+                ),
+            });
+            activeSubtotal = roundMoney(activeSubtotal + activeOriginalAmount);
+            activeTotal = roundMoney(activeTotal + activeFinalAmount);
+            activeTax = roundMoney(activeTax + activeLineTax);
+        }
+
+        if (refundedQuantity > 0) {
+            refundedRows.push({
+                identifier,
+                quantity: refundedQuantity,
+                name,
+                originalAmount: refundedOriginalAmount,
+                finalAmount: refundedFinalAmount,
+                discountDetails: buildReceiptDiscountDetailsForSavings(
+                    cart,
+                    lineSummary,
+                    roundMoney(refundedOriginalAmount - refundedFinalAmount)
+                ),
+            });
+        }
+    });
+
+    return {
+        sections: [
+            {
+                title: 'Active Items',
+                emptyLabel: 'No active items',
+                rows: activeRows,
+            },
+            {
+                title: 'Refunded Items',
+                emptyLabel: 'No refunded items',
+                rows: refundedRows,
+            },
+        ],
+        totals: {
+            subtotal: activeSubtotal,
+            discount: roundMoney(activeSubtotal - activeTotal),
+            tax: activeTax,
+            total: roundMoney(activeTotal + activeTax),
+            orderDiscountDetails: [],
+        },
+    };
+};
+
+const buildReceiptDiscountDetailsForSavings = (
+    cart: ReceiptCartState,
+    lineSummary:
+        | NonNullable<ReceiptCartState['appliedDiscountSummary']>['lineSummaries'][number]
+        | undefined,
+    targetSavings: number
+): ReceiptDiscountDetailRow[] => {
+    const roundedTargetSavings = roundMoney(Math.max(0, targetSavings));
+    if (!lineSummary || roundedTargetSavings <= 0) {
+        return [];
     }
 
-    return buildEbtLines(order);
+    const sourceDetails: ReceiptDiscountDetailRow[] = [
+        ...(lineSummary.discounts || []).map((discount) => ({
+            label: discount.code || discount.name,
+            amount: Number(discount.discountAmount || 0),
+        })),
+        ...buildAttributedOrderDiscountDetails(cart, lineSummary),
+    ].filter((detail) => detail.amount > 0);
+
+    const sourceTotal = roundMoney(
+        sourceDetails.reduce((sum, detail) => sum + detail.amount, 0)
+    );
+
+    if (sourceTotal <= 0) {
+        return [];
+    }
+
+    let remaining = roundedTargetSavings;
+    return sourceDetails.map((detail, index) => {
+        const isLast = index === sourceDetails.length - 1;
+        const scaledAmount = isLast
+            ? remaining
+            : roundMoney((detail.amount / sourceTotal) * roundedTargetSavings);
+
+        remaining = roundMoney(remaining - scaledAmount);
+
+        return {
+            label: detail.label,
+            amount: scaledAmount,
+        };
+    });
+};
+
+const buildAttributedOrderDiscountDetails = (
+    cart: ReceiptCartState,
+    lineSummary: NonNullable<
+        ReceiptCartState['appliedDiscountSummary']
+    >['lineSummaries'][number]
+): ReceiptDiscountDetailRow[] => {
+    const allocatedTotal = roundMoney(
+        Number(lineSummary.allocatedOrderDiscountTotal || 0)
+    );
+    const orderAdjustments =
+        cart.appliedDiscountSummary?.orderLevelAdjustments || [];
+    const sourceTotal = roundMoney(
+        orderAdjustments.reduce(
+            (sum, discount) => sum + Number(discount.discountAmount || 0),
+            0
+        )
+    );
+
+    if (allocatedTotal <= 0 || sourceTotal <= 0 || !orderAdjustments.length) {
+        return [];
+    }
+
+    let remaining = allocatedTotal;
+    return orderAdjustments.map((discount, index) => {
+        const isLast = index === orderAdjustments.length - 1;
+        const amount = isLast
+            ? remaining
+            : roundMoney(
+                  (Number(discount.discountAmount || 0) / sourceTotal) *
+                      allocatedTotal
+              );
+        remaining = roundMoney(remaining - amount);
+
+        return {
+            label: `Order · ${discount.code || discount.name}`,
+            amount,
+        };
+    });
+};
+
+const getUnattributedOrderDiscountDetails = (
+    cart: ReceiptCartState
+): ReceiptDiscountDetailRow[] => {
+    const orderAdjustments = cart.appliedDiscountSummary?.orderLevelAdjustments || [];
+    const totalOrderAdjustments = roundMoney(
+        orderAdjustments.reduce(
+            (sum, discount) => sum + Number(discount.discountAmount || 0),
+            0
+        )
+    );
+    const allocatedOrderAdjustments = roundMoney(
+        (cart.appliedDiscountSummary?.lineSummaries || []).reduce(
+            (sum, summary) => sum + Number(summary.allocatedOrderDiscountTotal || 0),
+            0
+        )
+    );
+    const unattributedTotal = roundMoney(
+        Math.max(0, totalOrderAdjustments - allocatedOrderAdjustments)
+    );
+
+    if (!orderAdjustments.length || unattributedTotal <= 0 || totalOrderAdjustments <= 0) {
+        return [];
+    }
+
+    let remaining = unattributedTotal;
+    return orderAdjustments.map((discount, index) => {
+        const isLast = index === orderAdjustments.length - 1;
+        const amount = isLast
+            ? remaining
+            : roundMoney(
+                  (Number(discount.discountAmount || 0) / totalOrderAdjustments) *
+                      unattributedTotal
+              );
+        remaining = roundMoney(remaining - amount);
+
+        return {
+            label: `Order · ${discount.code || discount.name}`,
+            amount,
+        };
+    });
 };
 
 export const buildData = (

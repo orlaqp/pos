@@ -956,6 +956,23 @@ export class OrderService {
         }, new Map<string, number>());
     }
 
+    static async getRefundedLineAmountsForOrder(orderId: string) {
+        const refundLines = await DataStore.query(OrderRefundLine, (line) =>
+            line.orderId.eq(orderId)
+        );
+
+        const normalizedRefundLines = Array.isArray(refundLines) ? refundLines : [];
+
+        return normalizedRefundLines.reduce<Map<string, number>>((acc, line) => {
+            const identifier = String(line.orderLineIdentifier || '');
+            const nextAmount = roundMoney(
+                (acc.get(identifier) || 0) + Number(line.lineRefundAmount || 0)
+            );
+            acc.set(identifier, nextAmount);
+            return acc;
+        }, new Map<string, number>());
+    }
+
     static async getRefundRecordsForRange(
         fromIso: string,
         toIso: string
