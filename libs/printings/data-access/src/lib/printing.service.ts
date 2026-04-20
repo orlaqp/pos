@@ -55,6 +55,7 @@ type ReceiptOrderEntity = {
     status?: 'OPEN' | 'PAID' | 'REFUNDED' | string;
     orderNo?: string;
     copyType?: 'CUSTOMER' | 'MERCHANT';
+    refundedQuantities?: Record<string, number> | null;
     paymentInfo?: {
         payments?: Array<{
             type: string;
@@ -62,8 +63,10 @@ type ReceiptOrderEntity = {
         }>;
     };
     lines?: Array<{
+        identifier?: string;
         quantity?: number;
         productName?: string;
+        lineTotalBeforeTax?: number;
         ebtPaidAmount?: number;
         nonEbtPaidAmount?: number;
     }>;
@@ -472,6 +475,9 @@ const formatQty = (quantity: number) =>
 const formatLine = (qty: number, name: string, amount: number) =>
     `${formatQty(qty).padEnd(5, ' ')}  ${name.substring(0, 15).padEnd(15, ' ')}  ${amount.toFixed(2).padStart(7, ' ')}`;
 
+const roundMoney = (amount: number) =>
+    Math.round((amount + Number.EPSILON) * 100) / 100;
+
 export const getReceiptCopyLabel = (order?: ReceiptOrderEntity) =>
     order?.copyType === 'CUSTOMER'
         ? '** Customer Copy **'
@@ -495,6 +501,98 @@ const buildClassicLines = (cart: ReceiptCartState) => {
             )
             .join('\n') +
         '\n\n' +
+        '--------------------------------\n'
+    );
+};
+
+const buildRefundedSection = (
+    title: string,
+    entries: Array<{ quantity: number; name: string; amount: number }>,
+    emptyLabel: string
+) =>
+    `${title}\n` +
+    'Qty    Description        Total\n' +
+    '-------------------------------\n' +
+    (entries.length
+        ? entries
+              .map((entry) =>
+                  formatLine(entry.quantity, entry.name, entry.amount)
+              )
+              .join('\n')
+        : emptyLabel) +
+    '\n\n';
+
+const buildRefundSplitLines = (
+    cart: ReceiptCartState,
+    order: ReceiptOrderEntity
+) => {
+    const refundedQuantities = order.refundedQuantities || {};
+    const activeEntries: Array<{ quantity: number; name: string; amount: number }> = [];
+    const refundedEntries: Array<{ quantity: number; name: string; amount: number }> = [];
+
+    (order.lines || []).forEach((line, index) => {
+        const identifier = String(line.identifier || `line-${index}`);
+        const originalQuantity = Number(line.quantity || 0);
+        if (originalQuantity <= 0) {
+            return;
+        }
+
+        const refundedQuantity = Math.max(
+            0,
+            Math.min(
+                originalQuantity,
+                Number(refundedQuantities[identifier] || 0)
+            )
+        );
+        const activeQuantity = roundMoney(originalQuantity - refundedQuantity);
+        const fallbackItem = cart.items.find(
+            (item, itemIndex) =>
+                (item.identifier || `line-${itemIndex}`) === identifier
+        );
+        const lineTotal =
+            line.lineTotalBeforeTax ??
+            (fallbackItem
+                ? getLineSummaryTotal(
+                      cart,
+                      fallbackItem,
+                      cart.items.findIndex((item) => item === fallbackItem)
+                  )
+                : 0);
+        const refundedAmount =
+            originalQuantity > 0
+                ? roundMoney((lineTotal * refundedQuantity) / originalQuantity)
+                : 0;
+        const activeAmount = roundMoney(lineTotal - refundedAmount);
+        const name = line.productName || fallbackItem?.product.name || '';
+
+        if (activeQuantity > 0) {
+            activeEntries.push({
+                quantity: activeQuantity,
+                name,
+                amount: activeAmount,
+            });
+        }
+
+        if (refundedQuantity > 0) {
+            refundedEntries.push({
+                quantity: refundedQuantity,
+                name,
+                amount: refundedAmount,
+            });
+        }
+    });
+
+    return (
+        buildRefundedSection(
+            'Active Items',
+            activeEntries,
+            'No active items'
+        ) +
+        buildRefundedSection(
+            'Refunded Items',
+            refundedEntries,
+            'No refunded items'
+        ) +
         '--------------------------------\n'
     );
 };
@@ -557,6 +655,13 @@ export const buildReceiptLines = (cart: ReceiptCartState, order?: ReceiptOrderEn
     const hasEbtPayment = !!order?.paymentInfo?.payments?.some(
         (payment) => payment.type?.toUpperCase() === 'EBT'
     );
+    const hasRefundedQuantities = Object.values(order?.refundedQuantities || {}).some(
+        (quantity) => Number(quantity || 0) > 0
+    );
+
+    if (order?.lines?.length && hasRefundedQuantities) {
+        return buildRefundSplitLines(cart, order);
+    }
 
     if (!hasEbtPayment || !order?.lines?.length) {
         return buildClassicLines(cart);

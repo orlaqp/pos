@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { View, Text, Alert, FlatList, StyleSheet } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
@@ -7,6 +7,8 @@ import {
     OrderEntity,
     OrderLineEntity,
     OrderService,
+    selectRefundedAmountForOrder,
+    selectRefundedQuantitiesForOrder,
 } from '@pos/orders/data-access';
 import OrderVoidableItem from '../order-voidable-item/order-voidable-item';
 import { Button, useTheme } from '@rneui/themed';
@@ -14,9 +16,10 @@ import { useSelector } from 'react-redux';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { UICard } from '@pos/shared/ui-native';
 import {
-    spreadOrderLinesForVoid,
+    groupOrderLinesForVoid,
 } from './order-void-form.logic';
 import i18next from 'i18next';
+import { RootState } from '@pos/store';
 
 export interface OrderItemProps {
     order: OrderEntity;
@@ -29,9 +32,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     const tokens = useDesignTokens();
     const local = useStyles(tokens);
     const [refundAmount, setRefundAmount] = useState<number>(0);
-    const [itemList, setItemList] = useState<OrderLineEntity[]>([]);
     const [newTotal, setNewTotal] = useState<number>(0);
-    const [existingRefundAmount, setExistingRefundAmount] = useState<number>(0);
     const [linesToRefund, setLinesToRefund] = useState<OrderLineEntity[]>([]);
     const [busy, setBusy] = useState<boolean>(false);
     const t = (key: string, fallback: string) =>
@@ -39,6 +40,22 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
             ? String(i18next.t(key))
             : fallback;
     const employee = useSelector(selectLoginEmployee);
+    const existingRefundAmount = useSelector((state: RootState) =>
+        selectRefundedAmountForOrder(state, order.id)
+    );
+    const refundedQuantitiesObject = useSelector((state: RootState) =>
+        selectRefundedQuantitiesForOrder(state, order.id)
+    );
+    const refundedQuantities = useMemo(
+        () => new Map(Object.entries(refundedQuantitiesObject)),
+        [refundedQuantitiesObject]
+    );
+    const groupedLines = useMemo(
+        () => groupOrderLinesForVoid(order.lines, refundedQuantities),
+        [order.lines, refundedQuantities]
+    );
+    const itemList = groupedLines.remainingItems;
+    const refundedItemList = groupedLines.refundedItems;
     const paymentSummary = (order.paymentInfo?.payments || []).reduce(
         (acc: Record<string, number>, payment) => {
             const type = String(payment.type || 'Unknown');
@@ -153,38 +170,10 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
         };
     }, [existingRefundAmount, order, linesToRefund]);
 
-    useEffect(() => {
-        let cancelled = false;
-
-        OrderService.getRefundedQuantitiesForOrder(order.id)
-            .then((quantities) => {
-                if (cancelled) return;
-                setItemList(spreadOrderLinesForVoid(order.lines, quantities));
-            })
-            .catch(() => {
-                if (cancelled) return;
-                setItemList(spreadOrderLinesForVoid(order.lines));
-            });
-
-        OrderService.getRefundRecordsForOrder(order.id)
-            .then((refunds) => {
-                if (cancelled) return;
-                setExistingRefundAmount(
-                    refunds.reduce(
-                        (sum, refund) => sum + Number(refund.refundAmount || 0),
-                        0
-                    )
-                );
-            })
-            .catch(() => {
-                if (cancelled) return;
-                setExistingRefundAmount(0);
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, [order]);
+    const currentTotal = Math.max(
+        0,
+        Number(order.total || 0) - existingRefundAmount
+    );
 
     return (
         <View style={[styles.pageBackground, local.container]}>
@@ -226,6 +215,9 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                 )}
             </UICard>
             <UICard tone="muted" padding="sm" radius="md" style={local.listCard}>
+                <Text style={local.sectionTitle}>
+                    {t('ORDERVOID_AvailableItems', 'Available to refund')}
+                </Text>
                 <FlatList
                     horizontal={false}
                     data={itemList}
@@ -241,8 +233,46 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         flex: 1,
                         flexDirection: 'column',
                     }}
+                    ListEmptyComponent={
+                        <Text style={local.emptyStateText}>
+                            {t(
+                                'ORDERVOID_NoRemainingItems',
+                                'No refundable items remain on this order.'
+                            )}
+                        </Text>
+                    }
                 />
             </UICard>
+            {refundedItemList.length > 0 && (
+                <UICard
+                    tone="default"
+                    padding="sm"
+                    radius="md"
+                    style={local.refundedListCard}
+                >
+                    <Text style={local.sectionTitle}>
+                        {t('ORDERVOID_AlreadyRefunded', 'Already refunded')}
+                    </Text>
+                    <FlatList
+                        horizontal={false}
+                        data={refundedItemList}
+                        keyExtractor={(item, index) =>
+                            `refunded-${item.identifier}-${index}`
+                        }
+                        renderItem={(data) => (
+                            <OrderVoidableItem
+                                key={data.index}
+                                line={data.item}
+                                onToggle={onItemToggle}
+                                readOnly
+                            />
+                        )}
+                        style={{
+                            flexDirection: 'column',
+                        }}
+                    />
+                </UICard>
+            )}
 
             <UICard tone="default" padding="sm" radius="md" style={local.summaryCard}>
                 <View style={local.summaryRow}>
@@ -250,7 +280,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         style={local.summaryCol}
                 >
                     <Text style={[styles.secondaryText, local.label]}>
-                        {t('ORDERVOID_OriginalAmount', 'Original Amount')}:
+                        {t('ORDERVOID_CurrentTotal', 'Current Total')}:
                     </Text>
                     <Text
                         style={[
@@ -259,7 +289,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                             local.value,
                         ]}
                     >
-                        $ {order.total.toFixed(2)}
+                        $ {currentTotal.toFixed(2)}
                     </Text>
                 </View>
                 <View
@@ -342,8 +372,26 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flex: 1,
             marginBottom: tokens.spacing.sm,
         },
+        refundedListCard: {
+            flexShrink: 0,
+            marginBottom: tokens.spacing.sm,
+            maxHeight: 200,
+        },
         referenceCard: {
             marginBottom: tokens.spacing.sm,
+        },
+        sectionTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 12,
+            fontWeight: '800',
+            letterSpacing: 0.5,
+            textTransform: 'uppercase',
+            marginBottom: tokens.spacing.xs,
+        },
+        emptyStateText: {
+            color: tokens.colors.textMuted,
+            fontSize: 13,
+            paddingVertical: tokens.spacing.sm,
         },
         referenceTitle: {
             color: tokens.colors.textPrimary,

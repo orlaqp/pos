@@ -2,11 +2,15 @@ import moment from 'moment';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from '@pos/shared/amplify';
 import { createSharedObserveQueryManager } from '@pos/shared/data-store';
-import { Order } from '@pos/shared/models';
+import { Order, OrderRefund, OrderRefundLine } from '@pos/shared/models';
 import { sortByCreatedAt } from '@pos/shared/utils';
 import { logSyncDebug, startSyncMeasure } from '@pos/shared/utils';
 import { OrderEntityMapper } from './order.entity';
-import { ordersActions } from './slices/orders.slice';
+import {
+    ordersActions,
+    OrderRefundLineRecordSnapshot,
+    OrderRefundRecordSnapshot,
+} from './slices/orders.slice';
 
 const LAST_CLOSED_ORDER_DAYS = 3;
 const ORDER_SYNC_MODEL = 'orders';
@@ -17,6 +21,12 @@ const getRecentClosedSince = () =>
 
 const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
     !!item && item._deleted !== true;
+
+const filterVisibleRefunds = (items: OrderRefund[]) =>
+    items.filter((refund) => isNotDeleted(refund as { _deleted?: boolean | null }));
+
+const filterVisibleRefundLines = (items: OrderRefundLine[]) =>
+    items.filter((line) => isNotDeleted(line as { _deleted?: boolean | null }));
 
 const summarizeOrders = (items: Order[]) =>
     items.slice(0, 5).map((order) => ({
@@ -84,6 +94,40 @@ const updateStoreOrders = (dispatch: Dispatch, items: Order[]) => {
     );
 };
 
+const updateOrderRefundStore = (dispatch: Dispatch, items: OrderRefund[]) => {
+    const visibleRefunds = filterVisibleRefunds(items);
+    const refundSnapshots: OrderRefundRecordSnapshot[] = visibleRefunds.map(
+        (refund) => ({
+            id: String(refund.id),
+            orderId: String(refund.orderId || ''),
+            refundAmount: Number(refund.refundAmount || 0),
+            refundDate: refund.refundDate ?? null,
+        })
+    );
+    logSyncDebug('orders.refunds', 'updateStore', {
+        itemCount: refundSnapshots.length,
+    });
+    dispatch(ordersActions.setRefundRecords(refundSnapshots));
+};
+
+const updateOrderRefundLineStore = (
+    dispatch: Dispatch,
+    items: OrderRefundLine[]
+) => {
+    const visibleRefundLines = filterVisibleRefundLines(items);
+    const refundLineSnapshots: OrderRefundLineRecordSnapshot[] =
+        visibleRefundLines.map((line) => ({
+            id: String(line.id),
+            orderId: String(line.orderId || ''),
+            orderLineIdentifier: String(line.orderLineIdentifier || ''),
+            quantityRefunded: Number(line.quantityRefunded || 0),
+        }));
+    logSyncDebug('orders.refundLines', 'updateStore', {
+        itemCount: refundLineSnapshots.length,
+    });
+    dispatch(ordersActions.setRefundLineRecords(refundLineSnapshots));
+};
+
 const orderSyncManager = createSharedObserveQueryManager<Order, Order[]>({
     model: ORDER_SYNC_MODEL,
     trackKey: 'orders.observeQuery',
@@ -102,6 +146,44 @@ const orderSyncManager = createSharedObserveQueryManager<Order, Order[]>({
     },
     publishSnapshot: (dispatch, items) => {
         updateStoreOrders(dispatch, items);
+    },
+});
+
+const orderRefundSyncManager = createSharedObserveQueryManager<
+    OrderRefund,
+    OrderRefund[]
+>({
+    model: 'orderRefunds',
+    trackKey: 'orders.refunds.observeQuery',
+    observeQuery: () => DataStore.observeQuery(OrderRefund),
+    mapSnapshot: ({ isSynced, items }) => {
+        logSyncDebug('orders.refunds.observeQuery', 'update', {
+            isSynced,
+            itemCount: items.length,
+        });
+        return items;
+    },
+    publishSnapshot: (dispatch, items) => {
+        updateOrderRefundStore(dispatch, items);
+    },
+});
+
+const orderRefundLineSyncManager = createSharedObserveQueryManager<
+    OrderRefundLine,
+    OrderRefundLine[]
+>({
+    model: 'orderRefundLines',
+    trackKey: 'orders.refundLines.observeQuery',
+    observeQuery: () => DataStore.observeQuery(OrderRefundLine),
+    mapSnapshot: ({ isSynced, items }) => {
+        logSyncDebug('orders.refundLines.observeQuery', 'update', {
+            isSynced,
+            itemCount: items.length,
+        });
+        return items;
+    },
+    publishSnapshot: (dispatch, items) => {
+        updateOrderRefundLineStore(dispatch, items);
     },
 });
 
@@ -149,3 +231,13 @@ export const subscribeToOrderChanges = (
     dispatch: Dispatch,
     tenantId?: string
 ) => orderSyncManager.subscribe(dispatch, tenantId);
+
+export const subscribeToOrderRefundChanges = (
+    dispatch: Dispatch,
+    tenantId?: string
+) => orderRefundSyncManager.subscribe(dispatch, tenantId);
+
+export const subscribeToOrderRefundLineChanges = (
+    dispatch: Dispatch,
+    tenantId?: string
+) => orderRefundLineSyncManager.subscribe(dispatch, tenantId);

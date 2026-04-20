@@ -7,12 +7,15 @@ import {
   validateEbtPayment,
 } from './ebt-allocation';
 import { getInventoryQuantityDelta, OrderService } from './order.service';
-import { DataStore } from '@pos/shared/amplify';
+import { API, DataStore } from '@pos/shared/amplify';
 import { StationService } from '@pos/settings/data-access';
 import { stampTenant } from '@pos/auth/data-access';
 import { Alert } from 'react-native';
 
 jest.mock('@pos/shared/amplify', () => ({
+  API: {
+    graphql: jest.fn(),
+  },
   DataStore: {
     save: jest.fn(async (value) => value),
     query: jest.fn(),
@@ -263,6 +266,7 @@ describe('order.service EBT helpers', () => {
 describe('OrderService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.mocked(API.graphql).mockResolvedValue({ data: {} } as any);
     jest
       .mocked(DataStore.save)
       .mockImplementation(async (value) => value as any);
@@ -929,6 +933,133 @@ describe('OrderService', () => {
     );
   });
 
+  it('uses the latest remote order version when persisting a refund status change', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const saveMock = jest.mocked(DataStore.save);
+    const graphqlMock = jest.mocked(API.graphql);
+
+    queryMock.mockResolvedValueOnce({
+      id: 'order-remote',
+      tenantId: 'test-tenant',
+      status: 'PAID',
+      employeeId: 'employee-1',
+      orderNo: '51-25-260316-0091',
+      subtotal: 10,
+      tax: 0,
+      total: 10,
+      lines: [
+        {
+          identifier: 'line-1',
+          productId: 'product-1',
+          productName: 'Rice',
+          quantity: 2,
+          price: 5,
+          unitOfMeasure: 'EA',
+          barcode: null,
+          sku: null,
+          lineTotalBeforeTax: 10,
+        },
+      ],
+      orderDate: '2026-03-16T12:00:00.000Z',
+      createdAt: '2026-03-16T12:00:00.000Z',
+      updatedAt: '2026-03-16T12:00:00.000Z',
+    } as any);
+    queryMock.mockResolvedValueOnce([]);
+
+    graphqlMock
+      .mockResolvedValueOnce({
+        data: {
+          getOrder: {
+            id: 'order-remote',
+            tenantId: 'test-tenant',
+            status: 'PAID',
+            _version: 7,
+          },
+        },
+      } as any)
+      .mockResolvedValueOnce({
+        data: {
+          updateOrder: {
+            id: 'order-remote',
+            tenantId: 'test-tenant',
+            status: 'PARTIALLY_REFUNDED',
+          },
+        },
+      } as any);
+
+    await OrderService.refund({
+      id: 'order-remote',
+      by: {
+        id: 'employee-2',
+        firstName: 'Refund',
+        lastName: 'Cashier',
+      } as any,
+      order: {
+        id: 'order-remote',
+        orderNo: '51-25-260316-0091',
+        subtotal: 10,
+        tax: 0,
+        total: 10,
+        status: 'PAID',
+        employeeId: 'employee-1',
+        employeeName: 'Original Cashier',
+        orderDate: '2026-03-16T12:00:00.000Z',
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 2,
+            productId: 'product-1',
+            productName: 'Rice',
+            price: 5,
+            unitOfMeasure: 'EA',
+            barcode: null,
+            sku: null,
+            lineTotalBeforeTax: 10,
+          },
+        ],
+      } as any,
+      refundedLines: [{ identifier: 'line-1', quantity: 1 }],
+    });
+
+    expect(graphqlMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: expect.stringContaining('query GetOrder'),
+        variables: { id: 'order-remote' },
+        authMode: 'userPool',
+      })
+    );
+    expect(graphqlMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        query: expect.stringContaining('mutation UpdateOrder'),
+        variables: {
+          input: expect.objectContaining({
+            id: 'order-remote',
+            tenantId: 'test-tenant',
+            status: 'PARTIALLY_REFUNDED',
+            _version: 7,
+          }),
+        },
+        authMode: 'userPool',
+      })
+    );
+    expect(saveMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        refundId: 'generated-order-id',
+        orderId: 'order-remote',
+      })
+    );
+    expect(saveMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        id: 'generated-order-id',
+        orderId: 'order-remote',
+        refundType: 'PARTIAL',
+      })
+    );
+    expect(saveMock).toHaveBeenCalledTimes(2);
+  });
+
   it('preserves discounted refund amounts when creating a partial refund record', async () => {
     const queryMock = jest.mocked(DataStore.query);
     const saveMock = jest.mocked(DataStore.save);
@@ -1557,6 +1688,160 @@ describe('OrderService', () => {
     });
   });
 
+  it('uses the current open balance for additional refunds when no applied discount snapshots exist', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const sharedModels = jest.requireMock('@pos/shared/models');
+
+    queryMock.mockImplementation(async (model: any, arg?: any) => {
+      if (model === sharedModels.Order && arg === 'order-current-balance') {
+        return {
+          id: 'order-current-balance',
+          tenantId: 'test-tenant',
+          status: 'PARTIALLY_REFUNDED',
+          employeeId: 'employee-1',
+          employeeName: 'Original Cashier',
+          orderNo: '1-OWNER-260420-0003',
+          subtotal: 110.97,
+          tax: 0,
+          total: 110.97,
+          lines: [
+            {
+              identifier: 'line-1',
+              productId: 'oil-1',
+              productName: 'Aceite cubt35 lb',
+              quantity: 1,
+              price: 39.99,
+              unitOfMeasure: 'EA',
+              barcode: null,
+              sku: null,
+              lineTotalBeforeTax: 39.99,
+            },
+            {
+              identifier: 'line-2',
+              productId: 'oil-2',
+              productName: 'Aceite vegetal',
+              quantity: 1,
+              price: 24.99,
+              unitOfMeasure: 'EA',
+              barcode: null,
+              sku: null,
+              lineTotalBeforeTax: 24.99,
+            },
+            {
+              identifier: 'line-3',
+              productId: 'lard-1',
+              productName: 'Manteca de cerdo [25 lb]',
+              quantity: 1,
+              price: 45.99,
+              unitOfMeasure: 'EA',
+              barcode: null,
+              sku: null,
+              lineTotalBeforeTax: 45.99,
+            },
+          ],
+          orderDate: '2026-04-20T12:00:00.000Z',
+          createdAt: '2026-04-20T12:00:00.000Z',
+          updatedAt: '2026-04-20T12:00:00.000Z',
+        } as any;
+      }
+
+      if (model === sharedModels.OrderRefundLine) {
+        return [
+          {
+            id: 'refund-line-1',
+            orderId: 'order-current-balance',
+            orderLineIdentifier: 'line-2',
+            quantityRefunded: 1,
+          },
+          {
+            id: 'refund-line-2',
+            orderId: 'order-current-balance',
+            orderLineIdentifier: 'line-3',
+            quantityRefunded: 1,
+          },
+        ] as any;
+      }
+
+      if (model === sharedModels.OrderRefund) {
+        return [
+          {
+            id: 'refund-1',
+            orderId: 'order-current-balance',
+            refundAmount: 24.99,
+          },
+          {
+            id: 'refund-2',
+            orderId: 'order-current-balance',
+            refundAmount: 45.99,
+          },
+        ] as any;
+      }
+
+      if (model === sharedModels.OrderDiscountDefinitionSnapshot) {
+        return [] as any;
+      }
+
+      return [];
+    });
+
+    const preview = await OrderService.previewRefund({
+      id: 'order-current-balance',
+      order: {
+        id: 'order-current-balance',
+        orderNo: '1-OWNER-260420-0003',
+        subtotal: 110.97,
+        tax: 0,
+        total: 110.97,
+        status: 'PARTIALLY_REFUNDED',
+        employeeId: 'employee-1',
+        employeeName: 'Original Cashier',
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 1,
+            productId: 'oil-1',
+            productName: 'Aceite cubt35 lb',
+            price: 39.99,
+            unitOfMeasure: 'EA',
+            barcode: null,
+            sku: null,
+            lineTotalBeforeTax: 39.99,
+          },
+          {
+            identifier: 'line-2',
+            quantity: 1,
+            productId: 'oil-2',
+            productName: 'Aceite vegetal',
+            price: 24.99,
+            unitOfMeasure: 'EA',
+            barcode: null,
+            sku: null,
+            lineTotalBeforeTax: 24.99,
+          },
+          {
+            identifier: 'line-3',
+            quantity: 1,
+            productId: 'lard-1',
+            productName: 'Manteca de cerdo [25 lb]',
+            price: 45.99,
+            unitOfMeasure: 'EA',
+            barcode: null,
+            sku: null,
+            lineTotalBeforeTax: 45.99,
+          },
+        ],
+        orderDate: '2026-04-20T12:00:00.000Z',
+      } as any,
+      refundedLines: [{ identifier: 'line-1', quantity: 1 }],
+    });
+
+    expect(preview).toEqual({
+      refundTotal: 39.99,
+      newTotal: 0,
+    });
+  });
+
+
   it('marks an order fully refunded when the last refundable quantity is returned', async () => {
     const queryMock = jest.mocked(DataStore.query);
     const saveMock = jest.mocked(DataStore.save);
@@ -1737,5 +2022,53 @@ describe('OrderService', () => {
     ).rejects.toThrow('only has 1 refundable units remaining');
 
     expect(saveMock).not.toHaveBeenCalled();
+  });
+
+  it('keeps partially refunded orders visible in the paid search results', () => {
+    const results = OrderService.search(
+      [
+        {
+          id: 'paid-1',
+          orderNo: '1-OWNER-260420-0001',
+          status: 'PAID',
+          total: 10.48,
+          subtotal: 10.48,
+          baseSubtotal: 14.97,
+          lineDiscountTotal: 4.49,
+          orderDiscountTotal: 0,
+          discountTotal: 4.49,
+          savingsTotal: 4.49,
+          tax: 0,
+          employeeId: 'employee-1',
+          employeeName: 'Cashier',
+          orderDate: '2026-04-20T10:00:00.000Z',
+          createdAt: '2026-04-20T10:00:00.000Z',
+          lines: [],
+        },
+        {
+          id: 'partial-1',
+          orderNo: '1-OWNER-260420-0002',
+          status: 'PARTIALLY_REFUNDED',
+          total: 10.48,
+          subtotal: 10.48,
+          baseSubtotal: 14.97,
+          lineDiscountTotal: 4.49,
+          orderDiscountTotal: 0,
+          discountTotal: 4.49,
+          savingsTotal: 4.49,
+          tax: 0,
+          employeeId: 'employee-1',
+          employeeName: 'Cashier',
+          orderDate: '2026-04-20T11:00:00.000Z',
+          createdAt: '2026-04-20T11:00:00.000Z',
+          lines: [],
+        },
+      ] as any,
+      {
+        status: 'PAID' as any,
+      }
+    );
+
+    expect(results.map((order) => order.id)).toEqual(['partial-1', 'paid-1']);
   });
 });

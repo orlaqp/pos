@@ -23,6 +23,7 @@ import {
 } from '../pending-order-journal';
 
 export const ORDER_FEATURE_KEY = 'orders';
+const EMPTY_REFUNDED_QUANTITIES: Record<string, number> = {};
 
 export interface CreateOrderRequest {
     storeInfo?: StoreInfoEntity;
@@ -39,6 +40,20 @@ export interface SubmitOrderResponse extends CreateOrderRequest {
     order: OrderEntity;
 }
 
+export interface OrderRefundRecordSnapshot {
+    id: string;
+    orderId: string;
+    refundAmount: number;
+    refundDate?: string | null;
+}
+
+export interface OrderRefundLineRecordSnapshot {
+    id: string;
+    orderId: string;
+    orderLineIdentifier: string;
+    quantityRefunded: number;
+}
+
 export interface OrdersState extends EntityState<OrderEntity, string> {
     loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
     submitStatus: 'not saved' | 'saving' | 'saved' | 'error';
@@ -50,6 +65,8 @@ export interface OrdersState extends EntityState<OrderEntity, string> {
     pendingStatusOverrides: Record<string, OrderStatus | keyof typeof OrderStatus | undefined>;
     pendingOrderSyncState: Record<string, PendingOrderSyncState>;
     pendingOrderLastError: Record<string, string | undefined>;
+    refundedAmountsByOrderId: Record<string, number>;
+    refundedQuantitiesByOrderId: Record<string, Record<string, number>>;
 }
 
 const ORDER_COMPARISON_FIELDS: Array<keyof OrderEntity> = [
@@ -113,6 +130,12 @@ const reconcileIncomingOrders = (
     const nextOrders = incoming.map((order) => {
         const pendingStatus = state.pendingStatusOverrides[order.id];
         if (pendingStatus && order.status === pendingStatus) {
+            delete state.pendingStatusOverrides[order.id];
+        } else if (
+            pendingStatus === 'PAID' &&
+            (order.status === 'PARTIALLY_REFUNDED' ||
+                order.status === 'REFUNDED')
+        ) {
             delete state.pendingStatusOverrides[order.id];
         }
 
@@ -312,6 +335,8 @@ export const initialOrdersState: OrdersState = ordersAdapter.getInitialState({
     pendingStatusOverrides: {},
     pendingOrderSyncState: {},
     pendingOrderLastError: {},
+    refundedAmountsByOrderId: {},
+    refundedQuantitiesByOrderId: {},
 });
 
 export const ordersSlice = createSlice({
@@ -421,6 +446,50 @@ export const ordersSlice = createSlice({
                 },
             });
             filterList(state, state.filterQuery);
+        },
+        setRefundRecords: (
+            state: OrdersState,
+            action: PayloadAction<OrderRefundRecordSnapshot[]>
+        ) => {
+            state.refundedAmountsByOrderId = action.payload.reduce<
+                Record<string, number>
+            >((acc, refund) => {
+                const orderId = String(refund.orderId || '');
+                if (!orderId) {
+                    return acc;
+                }
+
+                acc[orderId] =
+                    Number(
+                        (
+                            (acc[orderId] || 0) +
+                            Number(refund.refundAmount || 0)
+                        ).toFixed(2)
+                    );
+                return acc;
+            }, {});
+        },
+        setRefundLineRecords: (
+            state: OrdersState,
+            action: PayloadAction<OrderRefundLineRecordSnapshot[]>
+        ) => {
+            state.refundedQuantitiesByOrderId = action.payload.reduce<
+                Record<string, Record<string, number>>
+            >((acc, line) => {
+                const orderId = String(line.orderId || '');
+                const identifier = String(line.orderLineIdentifier || '');
+
+                if (!orderId || !identifier) {
+                    return acc;
+                }
+
+                const orderLines = acc[orderId] || {};
+                orderLines[identifier] =
+                    (orderLines[identifier] || 0) +
+                    Number(line.quantityRefunded || 0);
+                acc[orderId] = orderLines;
+                return acc;
+            }, {});
         },
     },
     extraReducers: (builder) => {
@@ -577,6 +646,31 @@ export const selectHasPendingUnsyncedOrders = createSelector(
     selectPendingUnsyncedOrderCount,
     (count) => count > 0
 );
+
+export const selectRefundedAmountForOrder = (
+    rootState: RootState,
+    orderId?: string
+) => {
+    if (!orderId) {
+        return 0;
+    }
+
+    return getOrdersState(rootState).refundedAmountsByOrderId[orderId] || 0;
+};
+
+export const selectRefundedQuantitiesForOrder = (
+    rootState: RootState,
+    orderId?: string
+) => {
+    if (!orderId) {
+        return EMPTY_REFUNDED_QUANTITIES;
+    }
+
+    return (
+        getOrdersState(rootState).refundedQuantitiesByOrderId[orderId] ||
+        EMPTY_REFUNDED_QUANTITIES
+    );
+};
 
 function filterList(state: OrdersState, options: FilterRequest) {
     state.filteredList = OrderService.search(

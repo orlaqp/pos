@@ -4,6 +4,8 @@ import {
     OrderService,
     selectAllOrders,
     subscribeToOrderChanges,
+    subscribeToOrderRefundChanges,
+    subscribeToOrderRefundLineChanges,
 } from '@pos/orders/data-access';
 import {
     UIScreen,
@@ -67,8 +69,18 @@ export function OrderList({ navigation }: OrderListProps) {
     useFocusEffect(
         React.useCallback(() => {
             const ordersSub = subscribeToOrderChanges(dispatch, currentTenantId);
+            const refundsSub = subscribeToOrderRefundChanges(
+                dispatch,
+                currentTenantId
+            );
+            const refundLinesSub = subscribeToOrderRefundLineChanges(
+                dispatch,
+                currentTenantId
+            );
             return () => {
                 ordersSub?.unsubscribe();
+                refundsSub?.unsubscribe();
+                refundLinesSub?.unsubscribe();
             };
         }, [currentTenantId, dispatch])
     );

@@ -8,6 +8,8 @@ import {
     OrderEntity,
     OrderService,
     OrderEntityMapper,
+    selectRefundedAmountForOrder,
+    selectRefundedQuantitiesForOrder,
 } from '@pos/orders/data-access';
 import { useDispatch, useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -27,6 +29,7 @@ import { Role } from '@pos/auth/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import i18next from 'i18next';
+import { RootState } from '@pos/store';
 
 export interface OrderItemProps {
     item: OrderEntity;
@@ -79,6 +82,14 @@ export const getStatusAccentColor = (
     return colors.accent;
 };
 
+export const getOrderStatusLabel = (status: OrderEntity['status']) => {
+    if (status === 'PARTIALLY_REFUNDED') {
+        return 'P. REFUNDED';
+    }
+
+    return status;
+};
+
 export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
     const theme = useTheme();
     const tokens = useDesignTokens();
@@ -88,6 +99,12 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
     const defaultPrinter = useSelector(getDefaultPrinter);
     const employee = useSelector(selectLoginEmployee);
     const store = useSelector(selectStore);
+    const refundedAmount = useSelector((state: RootState) =>
+        selectRefundedAmountForOrder(state, item.id)
+    );
+    const refundedQuantities = useSelector((state: RootState) =>
+        selectRefundedQuantitiesForOrder(state, item.id)
+    );
     const [busy, setBusy] = useState<boolean>(false);
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
@@ -145,6 +162,13 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
             {
                 ...item,
                 copyType: receiptCopyType,
+                refundedQuantities:
+                    item.id &&
+                    (item.status === 'PARTIALLY_REFUNDED' ||
+                        item.status === 'REFUNDED') &&
+                    Object.keys(refundedQuantities).length > 0
+                        ? refundedQuantities
+                        : undefined,
             }
         );
     };
@@ -181,6 +205,10 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                 item.status === 'PARTIALLY_REFUNDED'
             ? item?.refundInfo?.employeeName
             : undefined;
+    const hasRefundDisplay =
+        refundedAmount > 0 &&
+        (item.status === 'PARTIALLY_REFUNDED' || item.status === 'REFUNDED');
+    const activeTotal = Math.max(0, Number(item.total || 0) - refundedAmount);
 
     return (
         <View testID={`order-item-${item.id}`} style={[styles.dataRow, local.row]}>
@@ -244,11 +272,22 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
             <View style={local.amountBlock}>
                 <View style={[local.statusBadge, { borderColor: statusColor }]}>
                     <Text style={[styles.secondaryText, { color: statusColor }]}>
-                        {item.status}
+                        {getOrderStatusLabel(item.status)}
                     </Text>
                 </View>
-                <Text style={[styles.name, local.amountText]}>
-                    {`$ ${item.total.toFixed(2)}`}
+                {hasRefundDisplay && (
+                    <Text
+                        style={[styles.secondaryText, local.originalAmountText]}
+                        testID="order-item-original-total"
+                    >
+                        {`$ ${item.total.toFixed(2)}`}
+                    </Text>
+                )}
+                <Text
+                    style={[styles.name, local.amountText]}
+                    testID="order-item-active-total"
+                >
+                    {`$ ${(hasRefundDisplay ? activeTotal : item.total).toFixed(2)}`}
                 </Text>
             </View>
             <View style={local.actionsBlock}>
@@ -393,6 +432,12 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         amountText: {
             textAlign: 'right',
             marginBottom: 0,
+        },
+        originalAmountText: {
+            textAlign: 'right',
+            textDecorationLine: 'line-through',
+            opacity: 0.7,
+            marginBottom: 2,
         },
         actionsBlock: {
             minWidth: 250,

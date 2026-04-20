@@ -5,6 +5,9 @@ import { fireEvent, render } from '@testing-library/react-native';
 const mockDispatch = jest.fn();
 const mockNavigate = jest.fn();
 const mockUseSelector = jest.fn(() => undefined);
+const mockReduxState = {};
+let mockRefundedAmount = 0;
+let mockRefundedQuantities: Record<string, number> = {};
 
 jest.mock('@pos/theme/native', () => ({
     useSharedStyles: () => ({
@@ -43,7 +46,8 @@ jest.mock('@rneui/themed', () => ({
 
 jest.mock('react-redux', () => ({
     useDispatch: () => mockDispatch,
-    useSelector: (selector: unknown) => mockUseSelector(selector),
+    useSelector: (selector: (state: unknown) => unknown) =>
+        mockUseSelector(selector, mockReduxState),
 }));
 
 jest.mock('@pos/printings/data-access', () => ({
@@ -79,21 +83,26 @@ jest.mock('@pos/orders/data-access', () => ({
     ordersActions: { remove: jest.fn() },
     OrderService: { delete: jest.fn() },
     OrderEntityMapper: { asCartState: jest.fn() },
+    selectRefundedAmountForOrder: jest.fn(() => mockRefundedAmount),
+    selectRefundedQuantitiesForOrder: jest.fn(() => mockRefundedQuantities),
 }));
 
 const {
     OrderItem,
     getStatusAccentColor,
+    getOrderStatusLabel,
     parseOrderNoSegments,
 } = require('./order-item');
 const { printReceipt } = require('@pos/printings/data-access');
-const { OrderEntityMapper } = require('@pos/orders/data-access');
+const { OrderEntityMapper, OrderService } = require('@pos/orders/data-access');
 
 describe('OrderItem integration', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockUseSelector.mockReset();
-        mockUseSelector.mockImplementation(() => undefined);
+        mockUseSelector.mockImplementation((selector, state) => selector(state));
+        mockRefundedAmount = 0;
+        mockRefundedQuantities = {};
     });
 
     it('shows Payment action for OPEN orders and navigates to Sales payment mode', () => {
@@ -200,6 +209,11 @@ describe('OrderItem integration', () => {
         expect(getStatusAccentColor('REFUNDED', colors)).toBe('#c');
     });
 
+    it('shortens the partially refunded status label for display', () => {
+        expect(getOrderStatusLabel('PARTIALLY_REFUNDED')).toBe('P. REFUNDED');
+        expect(getOrderStatusLabel('PAID')).toBe('PAID');
+    });
+
     it('prints merchant copy for paid orders', () => {
         const item = {
             id: 'o-4',
@@ -240,6 +254,40 @@ describe('OrderItem integration', () => {
             expect.objectContaining({
                 copyType: 'MERCHANT',
             })
+        );
+    });
+
+    it('shows original total struck through and remaining total for partially refunded orders', () => {
+        const item = {
+            id: 'o-5',
+            orderNo: '51-EBTDEV01-260311-0005',
+            subtotal: 150.96,
+            tax: 0,
+            total: 150.96,
+            status: 'PARTIALLY_REFUNDED',
+            employeeId: 'emp-1',
+            employeeName: 'Cashier',
+            orderDate: '2026-03-12T12:00:00.000Z',
+            refundInfo: { employeeName: 'Manager' },
+            lines: [],
+        };
+
+        mockRefundedAmount = 50.32;
+
+        const { getByTestId, getByText } = render(
+            <OrderItem
+                item={item}
+                navigation={{ navigate: mockNavigate }}
+                onVoid={jest.fn()}
+            />
+        );
+
+        expect(getByText('$ 100.64')).toBeTruthy();
+        expect(getByTestId('order-item-original-total').props.children).toBe(
+            '$ 150.96'
+        );
+        expect(getByTestId('order-item-active-total').props.children).toBe(
+            '$ 100.64'
         );
     });
 });

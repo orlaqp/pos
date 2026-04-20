@@ -171,6 +171,92 @@ describe('printing.service helpers', () => {
     expect(text).not.toContain('\\n');
   });
 
+  it('splits partially refunded order receipts into active and refunded sections', () => {
+    const text = buildReceiptLines(
+      {
+        items: [
+          {
+            identifier: 'line-1',
+            quantity: 3,
+            product: {
+              name: 'Huevo',
+              price: 4.99,
+            },
+          },
+        ],
+        footer: {
+          baseSubtotal: 4.99,
+          total: 4.99,
+        },
+        appliedDiscountSummary: {
+          applications: [],
+          approvalEvents: [],
+          pricingGeneratedAt: '2026-04-20T12:00:00.000Z',
+          warnings: [],
+          lineSummaries: [
+            {
+              lineId: 'line-1',
+              lineDiscountTotal: 0,
+              allocatedOrderDiscountTotal: 0,
+              lineTotalBeforeTax: 14.97,
+              discounts: [],
+            },
+          ],
+          orderLevelAdjustments: [],
+        },
+      },
+      {
+        id: 'order-2',
+        status: 'PARTIALLY_REFUNDED',
+        refundedQuantities: {
+          'line-1': 2,
+        },
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 3,
+            productName: 'Huevo',
+            lineTotalBeforeTax: 14.97,
+          },
+        ],
+      }
+    );
+
+    expect(text).toContain('Active Items\n');
+    expect(text).toContain('Refunded Items\n');
+    expect(text).toContain('1      Huevo');
+    expect(text).toContain('2      Huevo');
+    expect(text).toContain('4.99');
+    expect(text).toContain('9.98');
+  });
+
+  it('shows fully refunded items under the refunded section only', () => {
+    const text = buildReceiptLines(
+      cart,
+      {
+        id: 'order-3',
+        status: 'REFUNDED',
+        refundedQuantities: {
+          'line-1': 1,
+        },
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 1,
+            productName: 'Coca Cola',
+            lineTotalBeforeTax: 8.99,
+          },
+        ],
+      }
+    );
+
+    expect(text).toContain('Active Items\n');
+    expect(text).toContain('No active items');
+    expect(text).toContain('Refunded Items\n');
+    expect(text).toContain('Coca Cola');
+    expect(text).toContain('8.99');
+  });
+
   it('prefers explicit customer and merchant copy labels over order status', () => {
     expect(
       getReceiptCopyLabel({

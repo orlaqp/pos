@@ -185,6 +185,65 @@ describe('orders reducer', () => {
         expect(state.entities['o2']).toBeUndefined();
     });
 
+    it('tracks refunded amounts and refunded quantities by order id', () => {
+        let state = ordersReducer(
+            undefined,
+            ordersActions.setRefundRecords([
+                {
+                    id: 'refund-1',
+                    orderId: 'order-1',
+                    refundAmount: 24.99,
+                },
+                {
+                    id: 'refund-2',
+                    orderId: 'order-1',
+                    refundAmount: 10,
+                },
+                {
+                    id: 'refund-3',
+                    orderId: 'order-2',
+                    refundAmount: 5,
+                },
+            ] as any)
+        );
+
+        expect(state.refundedAmountsByOrderId).toEqual({
+            'order-1': 34.99,
+            'order-2': 5,
+        });
+
+        state = ordersReducer(
+            state,
+            ordersActions.setRefundLineRecords([
+                {
+                    id: 'refund-line-1',
+                    orderId: 'order-1',
+                    orderLineIdentifier: 'line-1',
+                    quantityRefunded: 1,
+                },
+                {
+                    id: 'refund-line-2',
+                    orderId: 'order-1',
+                    orderLineIdentifier: 'line-1',
+                    quantityRefunded: 2,
+                },
+                {
+                    id: 'refund-line-3',
+                    orderId: 'order-1',
+                    orderLineIdentifier: 'line-2',
+                    quantityRefunded: 0.5,
+                },
+            ] as any)
+        );
+
+        expect(state.refundedQuantitiesByOrderId).toEqual({
+            'order-1': {
+                'line-1': 3,
+                'line-2': 0.5,
+            },
+        });
+    });
+
     it('reconciles incoming order snapshots without rebuilding unchanged rows', () => {
         let state = ordersReducer(
             undefined,
@@ -523,6 +582,44 @@ describe('orders reducer', () => {
                 status: 'PAID',
             })
         );
+    });
+
+    it('clears a stale PAID override when a synced order becomes partially refunded', () => {
+        let state = ordersReducer(
+            undefined,
+            ordersActions.setAll([
+                { id: 'o1', status: 'OPEN', orderNo: 'N1' } as any,
+            ])
+        );
+
+        state = ordersReducer(
+            state,
+            ordersActions.optimisticMarkPaid({
+                id: 'o1',
+                payments: [{ type: 'cash', amount: 5 }] as any,
+                employeeId: 'employee-1',
+                employeeName: 'Cashier',
+            })
+        );
+
+        state = ordersReducer(
+            state,
+            ordersActions.setAll([
+                {
+                    id: 'o1',
+                    status: 'PARTIALLY_REFUNDED',
+                    orderNo: 'N1',
+                } as any,
+            ])
+        );
+
+        expect(state.entities.o1).toEqual(
+            expect.objectContaining({
+                id: 'o1',
+                status: 'PARTIALLY_REFUNDED',
+            })
+        );
+        expect(state.pendingStatusOverrides.o1).toBeUndefined();
     });
 
     it('sets submit error on rejected pay without mutating order status', () => {

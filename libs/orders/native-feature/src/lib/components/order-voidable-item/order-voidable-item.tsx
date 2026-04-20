@@ -10,9 +10,14 @@ import { EACH } from '@pos/unit-of-measures/data-access';
 export interface CompactOrderItemProps {
     line: OrderLineEntity;
     onToggle: (line: OrderLineEntity, selected: boolean) => void;
+    readOnly?: boolean;
 }
 
-export function OrderVoidableItem({ line, onToggle }: CompactOrderItemProps) {
+export function OrderVoidableItem({
+    line,
+    onToggle,
+    readOnly = false,
+}: CompactOrderItemProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
@@ -20,6 +25,7 @@ export function OrderVoidableItem({ line, onToggle }: CompactOrderItemProps) {
     const [selected, setSelected] = useState<boolean>();
 
     const toggleSelection = () => {
+        if (readOnly) return;
         const newSelected = !selected;
         setSelected(newSelected);
         onToggle(line, newSelected);
@@ -31,25 +37,48 @@ export function OrderVoidableItem({ line, onToggle }: CompactOrderItemProps) {
             style={[
                 styles.dataRow,
                 local.container,
+                readOnly && local.readOnlyContainer,
                 selected && {
                     backgroundColor: `${theme.theme.colors.error}33`,
                     borderColor: `${theme.theme.colors.error}aa`,
                 },
             ]}
             onPress={toggleSelection}
+            disabled={readOnly}
             activeOpacity={0.85}
         >
             <View style={local.mainColumn}>
-                <Text style={[styles.name, local.centeredText]}>{line.productName}</Text>
+                <Text
+                    style={[
+                        styles.name,
+                        local.centeredText,
+                        readOnly && local.readOnlyText,
+                    ]}
+                >
+                    {line.productName}
+                </Text>
             </View>
             <View style={local.qtyColumn}>
-                <Text style={[styles.name, local.centeredText]}>
+                <Text
+                    style={[
+                        styles.name,
+                        local.centeredText,
+                        readOnly && local.readOnlyText,
+                    ]}
+                >
                     {line.quantity % 1 === 0 ? line.quantity.toString() : line.quantity.toFixed(2)}{' '}
                     {line.unitOfMeasure === EACH ? '' : line.unitOfMeasure}
                 </Text>
             </View>
             <View style={local.priceColumn}>
-                <Text style={[styles.name, styles.textRight, local.centeredText]}>
+                <Text
+                    style={[
+                        styles.name,
+                        styles.textRight,
+                        local.centeredText,
+                        readOnly && local.readOnlyText,
+                    ]}
+                >
                     {(line.price * line.quantity).toFixed(2)}
                 </Text>
             </View>
@@ -90,5 +119,13 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             marginBottom: 0,
             lineHeight: 24,
             textAlignVertical: 'center',
+        },
+        readOnlyContainer: {
+            backgroundColor: tokens.colors.surfaceMuted,
+            borderStyle: 'dashed',
+            opacity: 0.72,
+        },
+        readOnlyText: {
+            color: tokens.colors.textMuted,
         },
     });

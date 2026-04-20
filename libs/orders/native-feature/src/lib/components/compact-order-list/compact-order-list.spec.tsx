@@ -63,6 +63,12 @@ jest.mock('@pos/orders/data-access', () => ({
     subscribeToOrderChanges: () => ({
         unsubscribe: mockSubscribeUnsubscribe,
     }),
+    subscribeToOrderRefundChanges: () => ({
+        unsubscribe: mockSubscribeUnsubscribe,
+    }),
+    subscribeToOrderRefundLineChanges: () => ({
+        unsubscribe: mockSubscribeUnsubscribe,
+    }),
     OrderService: {
         search: (orders: typeof mockOpenOrders) => orders,
     },

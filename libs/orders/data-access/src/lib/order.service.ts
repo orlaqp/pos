@@ -15,7 +15,7 @@ import {
     Product,
     RefundInfo,
 } from '@pos/shared/models';
-import { DataStore } from '@pos/shared/amplify';
+import { API, DataStore } from '@pos/shared/amplify';
 import { OrderEntity, OrderEntityMapper } from './order.entity';
 import { CartPayment, CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
@@ -37,6 +37,10 @@ import type {
     PricingApprovalEvent,
 } from '@pos/discounts/domain';
 import { PricingEngine } from '@pos/discounts/domain';
+import {
+    getOrder,
+    updateOrder,
+} from '@pos/shared/api';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -127,6 +131,13 @@ const normalizeRefundRequests = (
         acc.set(identifier, roundMoney((acc.get(identifier) || 0) + quantity));
         return acc;
     }, new Map<string, number>());
+
+const getGraphqlErrorMessage = (result: unknown) => {
+    if (!result || typeof result !== 'object') return undefined;
+    if (!('errors' in result)) return undefined;
+    const errors = (result as { errors?: Array<{ message?: string }> }).errors || [];
+    return errors.map((error) => error?.message).filter(Boolean).join(' | ') || undefined;
+};
 
 const isFullyRefundedQuantity = (original: number, refunded: number) =>
     Math.abs(original - refunded) <= REFUND_QUANTITY_EPSILON;
@@ -236,6 +247,81 @@ const buildSnapshotIdMapForAppliedSummary = (
 };
 
 export class OrderService {
+    private static async fetchRemoteOrder(
+        id: string
+    ): Promise<(Order & { _version?: number | null }) | null> {
+        const response = await API.graphql<{
+            getOrder?: (Order & { _version?: number | null }) | null;
+        }>({
+            query: getOrder,
+            variables: { id },
+            authMode: 'userPool',
+        });
+
+        const message = getGraphqlErrorMessage(response);
+        if (message) {
+            throw new Error(message);
+        }
+
+        return response.data?.getOrder || null;
+    }
+
+    private static async saveRefundedOrderStatus(
+        existing: Order,
+        request: RefundOrderRequest,
+        isFullRefund: boolean
+    ) {
+        const tenantId = existing.tenantId || requireCurrentTenantId();
+        const nextStatus = isFullRefund ? 'REFUNDED' : 'PARTIALLY_REFUNDED';
+        const refundInfo = {
+            employeeId: request.by.id,
+            employeeName: `${request.by.firstName} ${request.by.lastName}`,
+            comments: request.comments || existing.refundInfo?.comments || null,
+        };
+
+        try {
+            const remoteOrder = await OrderService.fetchRemoteOrder(existing.id);
+            if (remoteOrder?.id && remoteOrder._version != null) {
+                const response = await API.graphql<{
+                    updateOrder?: Order | null;
+                }>({
+                    query: updateOrder,
+                    variables: {
+                        input: {
+                            id: remoteOrder.id,
+                            tenantId: remoteOrder.tenantId || tenantId,
+                            status: nextStatus,
+                            refundInfo,
+                            _version: remoteOrder._version,
+                        },
+                    },
+                    authMode: 'userPool',
+                });
+
+                const message = getGraphqlErrorMessage(response);
+                if (message) {
+                    throw new Error(message);
+                }
+
+                if (response.data?.updateOrder) {
+                    return response.data.updateOrder;
+                }
+            }
+        } catch (error) {
+            console.warn(
+                '[OrderService.refund] remote status update fallback to DataStore.save',
+                error
+            );
+        }
+
+        const updatedOrder = Order.copyOf(existing, (o) => {
+            o.tenantId = tenantId;
+            o.status = nextStatus;
+            o.refundInfo = refundInfo;
+        });
+
+        return await DataStore.save(updatedOrder);
+    }
 
     /**
      * Create a new order
@@ -575,17 +661,11 @@ export class OrderService {
         const requestedRefundId = String(uuid.v4());
         const refundDate = moment().toISOString();
         const refundAmount = refundPricing.refundAmount;
-        const updatedOrder = Order.copyOf(existing, (o) => {
-            o.tenantId = existing.tenantId || requireCurrentTenantId();
-            o.status = isFullRefund ? 'REFUNDED' : 'PARTIALLY_REFUNDED';
-            o.refundInfo = {
-                employeeId: request.by.id,
-                employeeName: `${request.by.firstName} ${request.by.lastName}`,
-                comments: request.comments || existing.refundInfo?.comments || null,
-            };
-        });
-
-        const savedOrder = await DataStore.save(updatedOrder);
+        const savedOrder = await OrderService.saveRefundedOrderStatus(
+            existing,
+            request,
+            isFullRefund
+        );
 
         const refundInventoryOperationId = buildRefundInventoryOperationId(
             existing.id,
@@ -852,7 +932,9 @@ export class OrderService {
             refund.orderId.eq(orderId)
         );
 
-        return [...refunds].sort((left, right) =>
+        const normalizedRefunds = Array.isArray(refunds) ? refunds : [];
+
+        return [...normalizedRefunds].sort((left, right) =>
             (left.refundDate || '').localeCompare(right.refundDate || '')
         );
     }
@@ -862,7 +944,9 @@ export class OrderService {
             line.orderId.eq(orderId)
         );
 
-        return refundLines.reduce<Map<string, number>>((acc, line) => {
+        const normalizedRefundLines = Array.isArray(refundLines) ? refundLines : [];
+
+        return normalizedRefundLines.reduce<Map<string, number>>((acc, line) => {
             const identifier = String(line.orderLineIdentifier || '');
             const nextQuantity = roundMoney(
                 (acc.get(identifier) || 0) + Number(line.quantityRefunded || 0)
@@ -1036,6 +1120,13 @@ export class OrderService {
         const historicalRefundAmount = roundMoney(
             historicalRefundLines.reduce((sum, line) => sum + line.lineRefundAmount, 0)
         );
+        const refundRecords = await OrderService.getRefundRecordsForOrder(order.id);
+        const existingRefundAmount = roundMoney(
+            refundRecords.reduce((sum, refund) => sum + Number(refund.refundAmount || 0), 0)
+        );
+        const currentOpenBalance = roundMoney(
+            Math.max(0, Number(order.total || 0) - existingRefundAmount)
+        );
 
         const appliedDiscountApplications = (order.appliedDiscountSummary?.applications || []).filter(
             isSnapshotEligibleApplication
@@ -1045,7 +1136,7 @@ export class OrderService {
             return {
                 refundAmount: historicalRefundAmount,
                 refundLines: historicalRefundLines,
-                newTotal: roundMoney(Math.max(0, Number(order.total || 0) - historicalRefundAmount)),
+                newTotal: roundMoney(Math.max(0, currentOpenBalance - historicalRefundAmount)),
             };
         }
 
@@ -1065,14 +1156,9 @@ export class OrderService {
             return {
                 refundAmount: historicalRefundAmount,
                 refundLines: historicalRefundLines,
-                newTotal: roundMoney(Math.max(0, Number(order.total || 0) - historicalRefundAmount)),
+                newTotal: roundMoney(Math.max(0, currentOpenBalance - historicalRefundAmount)),
             };
         }
-
-        const refundRecords = await OrderService.getRefundRecordsForOrder(order.id);
-        const existingRefundAmount = roundMoney(
-            refundRecords.reduce((sum, refund) => sum + Number(refund.refundAmount || 0), 0)
-        );
         const snapshotPricingContext = OrderService.resolveRefundPricingContext(
             order,
             pricingSnapshots
@@ -1089,9 +1175,6 @@ export class OrderService {
             snapshotPricingContext.pricingGeneratedAt,
             snapshotPricingContext.pricingTimezone,
             snapshotPricingContext.pricingStationId
-        );
-        const currentOpenBalance = roundMoney(
-            Math.max(0, Number(order.total || 0) - existingRefundAmount)
         );
         const refundAmount = roundMoney(
             Math.max(0, currentOpenBalance - repricedAfter.order.total)
@@ -1522,13 +1605,18 @@ export class OrderService {
         // const lowerQuery = options.filter?.toLowerCase() || '';
         let searchResult: OrderEntity[];
         const fullOrderNumber = options.filter && isOrderNumber(options.filter);
+        const matchesStatus = (status: OrderEntity['status']) =>
+            status === options.status ||
+            (options.status === 'PAID' && status === 'PARTIALLY_REFUNDED');
 
         if (fullOrderNumber) {
-            searchResult = items.filter(i => i.status === options.status && i.orderNo === options.filter)
+            searchResult = items.filter(
+                (i) => matchesStatus(i.status) && i.orderNo === options.filter
+            );
         } else {
             searchResult = items.filter((i) => {
                 return (
-                    i.status === options.status &&
+                    matchesStatus(i.status) &&
                     (!options.filter || i.orderNo?.indexOf(options.filter) !== -1)
                 );
             });

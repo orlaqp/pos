@@ -3,6 +3,8 @@ import {
     OrderService,
     selectOpenOrders,
     subscribeToOrderChanges,
+    subscribeToOrderRefundChanges,
+    subscribeToOrderRefundLineChanges,
 } from '@pos/orders/data-access';
 import { UICard, UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
@@ -37,8 +39,18 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
 
     useEffect(() => {
         const ordersSub = subscribeToOrderChanges(dispatch, currentTenantId);
+        const refundsSub = subscribeToOrderRefundChanges(
+            dispatch,
+            currentTenantId
+        );
+        const refundLinesSub = subscribeToOrderRefundLineChanges(
+            dispatch,
+            currentTenantId
+        );
         return () => {
             ordersSub?.unsubscribe();
+            refundsSub?.unsubscribe();
+            refundLinesSub?.unsubscribe();
         };
     }, [currentTenantId, dispatch]);
 

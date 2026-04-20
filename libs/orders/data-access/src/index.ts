@@ -13,6 +13,8 @@ export {
     selectHasPendingUnsyncedOrders,
     selectPendingOrderSyncState,
     selectPendingUnsyncedOrderCount,
+    selectRefundedAmountForOrder,
+    selectRefundedQuantitiesForOrder,
     upsertOrder,
     payOrder,
     submitOrderAndPay,

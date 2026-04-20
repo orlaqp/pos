@@ -1,5 +1,6 @@
 import {
     calculateRefundSummary,
+    groupOrderLinesForVoid,
     spreadOrderLinesForVoid,
 } from './order-void-form.logic';
 import { EACH } from '@pos/unit-of-measures/data-access';
@@ -171,5 +172,55 @@ describe('order-void-form helpers', () => {
         expect(result).toHaveLength(1);
         expect(result[0].quantity).toBe(1.5);
         expect(result[0].lineTotalBeforeTax).toBe(6);
+    });
+
+    it('keeps already refunded EACH items in a separate reference group', () => {
+        const lines = [
+            {
+                identifier: 'l1',
+                productId: 'p1',
+                barcode: null,
+                sku: null,
+                productName: 'Apple',
+                unitOfMeasure: EACH,
+                quantity: 3,
+                tax: 0,
+                price: 9,
+                lineTotalBeforeTax: 6,
+                lineDiscountTotal: 3,
+            },
+        ];
+
+        const result = groupOrderLinesForVoid(lines as any, new Map([['l1', 2]]));
+
+        expect(result.remainingItems).toHaveLength(1);
+        expect(result.refundedItems).toHaveLength(2);
+        expect(result.remainingItems[0].lineTotalBeforeTax).toBe(2);
+        expect(result.refundedItems[0].lineTotalBeforeTax).toBe(2);
+    });
+
+    it('keeps refunded weighted quantities as a separate reference row', () => {
+        const lines = [
+            {
+                identifier: 'l2',
+                productId: 'p2',
+                barcode: null,
+                sku: null,
+                productName: 'Rice',
+                unitOfMeasure: 'LB',
+                quantity: 2,
+                tax: 0,
+                price: 8,
+                lineTotalBeforeTax: 8,
+            },
+        ];
+
+        const result = groupOrderLinesForVoid(lines as any, new Map([['l2', 0.5]]));
+
+        expect(result.remainingItems).toHaveLength(1);
+        expect(result.remainingItems[0].quantity).toBe(1.5);
+        expect(result.refundedItems).toHaveLength(1);
+        expect(result.refundedItems[0].quantity).toBe(0.5);
+        expect(result.refundedItems[0].lineTotalBeforeTax).toBe(2);
     });
 });
