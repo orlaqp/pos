@@ -125,6 +125,39 @@ describe('ProductDetails', () => {
         );
     });
 
+    it('accepts keyboard quantity edits for EACH products and rejects decimals', () => {
+        const item = {
+            identifier: 'i-1b',
+            quantity: 2,
+            product: {
+                id: 'p-1',
+                name: 'Apple',
+                price: 2.5,
+                unitOfMeasure: EACH,
+                isEBTEligible: false,
+            },
+        } as any;
+
+        const { getByTestId, getByDisplayValue, queryByDisplayValue } = render(
+            <ProductDetails item={item} upsertCart={mockUpsert} enforceSalesBasedOnInventory={false} />
+        );
+
+        fireEvent.changeText(getByTestId('product-details-quantity-input'), '4');
+        expect(getByDisplayValue('4')).toBeTruthy();
+
+        fireEvent.changeText(getByTestId('product-details-quantity-input'), '4.5');
+        expect(queryByDisplayValue('4.5')).toBeNull();
+        expect(getByDisplayValue('4')).toBeTruthy();
+
+        fireEvent.press(getByTestId('product-details-submit'));
+        expect(mockUpsert).toHaveBeenCalledWith(
+            expect.objectContaining({
+                identifier: 'i-1b',
+                quantity: 4,
+            })
+        );
+    });
+
     it('accepts valid typed quantity for non-EACH and ignores invalid input', () => {
         const item = {
             identifier: 'i-2',

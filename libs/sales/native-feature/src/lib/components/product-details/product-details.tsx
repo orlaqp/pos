@@ -22,7 +22,8 @@ import {
     buildCartUpsertItem,
     calculateLinePrice,
     hasEnoughInventory,
-    isQuantityInputValid,
+    isQuantityInputValidForUnit,
+    toSanitizedQuantityNumber,
 } from './product-details.logic';
 
 /* eslint-disable-next-line */
@@ -46,23 +47,31 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
     const each = item.product.unitOfMeasure === EACH;
 
     const validateInfo = () => {
+        const normalizedQuantity = each && toSanitizedQuantityNumber(quantity, true) <= 0
+            ? '1'
+            : quantity;
+
+        if (normalizedQuantity !== quantity) {
+            setQuantity(normalizedQuantity);
+        }
+
         if (
             !hasEnoughInventory(
                 enforceSalesBasedOnInventory,
                 product?.quantity,
-                quantity
+                normalizedQuantity
             )
         ) {
             Alert.alert('Cannot sale this much', 'There is not enough inventory to fulfill your request');
             return;
         }
 
-        upsertCart(buildCartUpsertItem(item, quantity));
+        upsertCart(buildCartUpsertItem(item, normalizedQuantity));
     }
 
     useEffect(() => {
-        setPrice(calculateLinePrice(quantity, item.product.price));
-    }, [item, quantity]);
+        setPrice(calculateLinePrice(quantity, item.product.price, each));
+    }, [each, item, quantity]);
 
     useEffect(() => {
         if (!each) {
@@ -70,8 +79,8 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
         }
     }, [each]);
 
-    const numericQuantity = Number.isFinite(Number(quantity)) && Number(quantity) > 0
-        ? Number(quantity)
+    const numericQuantity = toSanitizedQuantityNumber(quantity, each) > 0
+        ? toSanitizedQuantityNumber(quantity, each)
         : 1;
 
     const decrementQuantity = () => {
@@ -125,7 +134,27 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
                             <Text style={styles.quantityButtonTextDark}>-</Text>
                         </Pressable>
                         <View style={styles.quantityValueWrap}>
-                            <Text style={styles.quantityValue}>{numericQuantity}</Text>
+                            <TextInput
+                                ref={ref}
+                                testID="product-details-quantity-input"
+                                value={quantity}
+                                keyboardType="number-pad"
+                                textAlign="center"
+                                selectTextOnFocus
+                                style={styles.quantityValueInput}
+                                onBlur={() => {
+                                    if (toSanitizedQuantityNumber(quantity, true) <= 0) {
+                                        setQuantity('1');
+                                    }
+                                }}
+                                onChangeText={(text) => {
+                                    if (!isQuantityInputValidForUnit(text, true)) {
+                                        return;
+                                    }
+
+                                    setQuantity(text);
+                                }}
+                            />
                             <Text style={styles.quantityLabel}>Quantity</Text>
                         </View>
                         <Pressable
@@ -141,13 +170,14 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
                     <View style={styles.weightRow}>
                         <Input
                             ref={ref as any}
+                            testID="product-details-quantity-input"
                             value={quantity.toString()}
                             placeholder="Weight ..."
                             keyboardType="decimal-pad"
                             style={{ fontSize: 32 }}
                             textAlign="center"
                             onChangeText={(text) => {
-                                if (!isQuantityInputValid(text))
+                                if (!isQuantityInputValidForUnit(text, false))
                                     return;
 
                                 setQuantity(text);
@@ -312,6 +342,13 @@ const useStyles = (windowWidth: number) => {
                 color: theme.theme.colors.grey0,
                 fontSize: compactLayout ? 32 : 38,
                 fontWeight: '700',
+            },
+            quantityValueInput: {
+                color: theme.theme.colors.grey0,
+                fontSize: compactLayout ? 32 : 38,
+                fontWeight: '700',
+                minWidth: compactLayout ? 72 : 88,
+                paddingVertical: 0,
             },
             quantityLabel: {
                 color: tokens.colors.textMuted,
