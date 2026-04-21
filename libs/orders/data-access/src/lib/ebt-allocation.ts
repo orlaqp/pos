@@ -8,6 +8,7 @@ export type EbtOrderLineInput = {
   quantity: number;
   price: number;
   isEBTEligible?: boolean;
+  lineTotal?: number;
 };
 
 export type EbtLineAllocation = {
@@ -30,7 +31,7 @@ export function sumEbtPayment(payments: EbtPaymentInput[]) {
 export function getEbtEligibleTotal(lines: EbtOrderLineInput[]) {
   return lines.reduce((acc, line) => {
     if (!line.isEBTEligible) return acc;
-    return acc + getLineTotal(line.quantity, line.price);
+    return acc + (line.lineTotal ?? getLineTotal(line.quantity, line.price));
   }, 0);
 }
 
@@ -56,7 +57,7 @@ export function buildEbtAllocations(
   let remainingEbt = +sumEbtPayment(payments).toFixed(2);
 
   lines.forEach((line, index) => {
-    const lineTotal = getLineTotal(line.quantity, line.price);
+    const lineTotal = line.lineTotal ?? getLineTotal(line.quantity, line.price);
     const isEligible = !!line.isEBTEligible;
     const identifier = line.identifier || `line-${index}`;
 

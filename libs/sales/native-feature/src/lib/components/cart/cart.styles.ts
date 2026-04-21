@@ -74,12 +74,34 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             alignItems: 'flex-start',
             gap: tokens.spacing.sm,
         },
+        discountHeaderMain: {
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            gap: tokens.spacing.sm,
+        },
         discountHeaderContent: {
             flex: 1,
         },
         discountHeaderMeta: {
             alignItems: 'flex-end',
             gap: tokens.spacing.xs,
+        },
+        discountCollapseButton: {
+            width: 28,
+            height: 28,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            backgroundColor: tokens.colors.surface,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginTop: 2,
+        },
+        discountCollapseButtonText: {
+            color: tokens.colors.textPrimary,
+            fontSize: 14,
+            fontWeight: '800',
         },
         discountActionTitle: {
             color: tokens.colors.textPrimary,
@@ -106,6 +128,11 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         expandButtonText: {
             color: tokens.colors.accent,
+            fontSize: 12,
+            fontWeight: '800',
+        },
+        discountCollapsedSummary: {
+            color: tokens.colors.success,
             fontSize: 12,
             fontWeight: '800',
         },

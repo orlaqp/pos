@@ -85,6 +85,28 @@ jest.mock('@pos/unit-of-measures/data-access', () => ({
     EACH: 'EA',
 }));
 
+jest.mock('react-native-dropdown-picker', () => {
+    const React = require('react');
+    const { Pressable, Text, View } = require('react-native');
+
+    return function MockDropDownPicker(props: any) {
+        return (
+            <View testID={props.testID}>
+                <Text>{props.value || props.placeholder}</Text>
+                {props.items?.map((item: any) => (
+                    <Pressable
+                        key={item.value}
+                        testID={`${props.testID}-option-${String(item.value).toLowerCase()}`}
+                        onPress={() => props.setValue(item.value)}
+                    >
+                        <Text>{item.label}</Text>
+                    </Pressable>
+                ))}
+            </View>
+        );
+    };
+});
+
 jest.mock('../order-voidable-item/order-voidable-item', () => ({
     __esModule: true,
     default: ({
@@ -121,7 +143,7 @@ describe('OrderVoidForm layout', () => {
     });
 
     it('renders the redesigned two-column layout with right-rail controls', async () => {
-        const { getByTestId, getByText, findByText } = render(
+        const { getByTestId, getByText, findByText, queryByText } = render(
             <OrderVoidForm
                 order={
                     {
@@ -154,6 +176,11 @@ describe('OrderVoidForm layout', () => {
         expect(getByText('Payment Reference')).toBeTruthy();
         expect(getByText('Refund Payment')).toBeTruthy();
         expect(getByText('Available to refund')).toBeTruthy();
+        expect(getByText('Cancel')).toBeTruthy();
+        expect(
+            getByTestId('order-void-refund-payment-amount-0').props.value
+        ).toBe('0.00');
+        expect(getByText('Select method')).toBeTruthy();
 
         await act(async () => {
             fireEvent.press(getByTestId('order-void-available-line-line-1'));
@@ -161,5 +188,34 @@ describe('OrderVoidForm layout', () => {
         });
 
         expect(await findByText('Refund Amount:')).toBeTruthy();
+        expect(
+            getByTestId('order-void-refund-payment-amount-0').props.value
+        ).toBe('4.99');
+        expect(
+            getByText('Refund payment total: $ 0.00 · Refund Amount: $ 4.99')
+        ).toBeTruthy();
+
+        fireEvent.press(
+            getByTestId('order-void-refund-payment-type-0-option-cash')
+        );
+
+        expect(
+            getByText('Refund payment total: $ 4.99 · Refund Amount: $ 4.99')
+        ).toBeTruthy();
+
+        fireEvent.press(getByTestId('order-void-add-payment-row-button'));
+        expect(getByTestId('order-void-refund-payment-amount-1').props.value).toBe(
+            '0.00'
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('order-void-available-line-line-1'));
+            await Promise.resolve();
+        });
+
+        expect(getByTestId('order-void-refund-payment-amount-0').props.value).toBe(
+            '4.99'
+        );
+        expect(queryByText('Cash')).toBeTruthy();
     });
 });

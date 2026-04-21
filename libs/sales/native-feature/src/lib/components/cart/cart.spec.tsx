@@ -467,6 +467,21 @@ describe('Cart', () => {
         expect(getByText('Show actions')).toBeTruthy();
     });
 
+    it('collapses the discounts section to a single header row', () => {
+        mockCartState.footer.discount = 14;
+        mockCartState.footer.savingsTotal = 14;
+
+        const { getByTestId, getByText, queryByText } = renderCart('order');
+
+        fireEvent.press(getByTestId('cart-discounts-collapse-toggle'));
+
+        expect(getByText('Discounts')).toBeTruthy();
+        expect(getByText('Saved $14.00')).toBeTruthy();
+        expect(queryByText('Show actions')).toBeFalsy();
+        expect(queryByText('Select a line for line-level actions.')).toBeFalsy();
+        expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
+    });
+
     it('shows both line and order discounts when stacked pricing applies', () => {
         mockCartState.footer.discount = 14;
         mockCartState.footer.savingsTotal = 14;

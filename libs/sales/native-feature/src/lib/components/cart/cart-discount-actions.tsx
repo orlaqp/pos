@@ -8,6 +8,7 @@ interface CartDiscountActionsProps {
     selectedItemName?: string;
     discountsLoading: boolean;
     actionsExpanded: boolean;
+    sectionCollapsed: boolean;
     hasDiscountSummary: boolean;
     savingsTotal: number;
     discountBreakdown: Array<{
@@ -22,6 +23,7 @@ interface CartDiscountActionsProps {
     disabledActionReason?: string | null;
     selectedLineHasManualAdjustment: boolean;
     hasOrderManualAdjustment: boolean;
+    onToggleSectionCollapsed: () => void;
     onToggleExpanded: () => void;
     onOpenPromo: () => void;
     onOpenManual: () => void;
@@ -36,6 +38,7 @@ export function CartDiscountActions({
     selectedItemName,
     discountsLoading,
     actionsExpanded,
+    sectionCollapsed,
     hasDiscountSummary,
     savingsTotal,
     discountBreakdown,
@@ -45,6 +48,7 @@ export function CartDiscountActions({
     disabledActionReason,
     selectedLineHasManualAdjustment,
     hasOrderManualAdjustment,
+    onToggleSectionCollapsed,
     onToggleExpanded,
     onOpenPromo,
     onOpenManual,
@@ -58,120 +62,144 @@ export function CartDiscountActions({
     return (
         <UICard style={styles.discountActionCard}>
             <View style={styles.discountActionHeader}>
-                <View style={styles.discountHeaderContent}>
-                    <Text style={styles.discountActionTitle}>Discounts</Text>
-                    <Text style={styles.discountActionHint}>
-                        {selectedItemName
-                            ? `Selected: ${selectedItemName}`
-                            : 'Select a line for line-level actions.'}
-                    </Text>
+                <View style={styles.discountHeaderMain}>
+                    <Pressable
+                        testID="cart-discounts-collapse-toggle"
+                        style={styles.discountCollapseButton}
+                        onPress={onToggleSectionCollapsed}
+                    >
+                        <Text style={styles.discountCollapseButtonText}>
+                            {sectionCollapsed ? '▸' : '▾'}
+                        </Text>
+                    </Pressable>
+                    <View style={styles.discountHeaderContent}>
+                        <Text style={styles.discountActionTitle}>Discounts</Text>
+                        {!sectionCollapsed ? (
+                            <Text style={styles.discountActionHint}>
+                                {selectedItemName
+                                    ? `Selected: ${selectedItemName}`
+                                    : 'Select a line for line-level actions.'}
+                            </Text>
+                        ) : null}
+                    </View>
                 </View>
                 <View style={styles.discountHeaderMeta}>
                     {discountsLoading ? (
                         <Text style={styles.discountActionStatus}>Loading rules…</Text>
                     ) : null}
-                    <Pressable style={styles.expandButton} onPress={onToggleExpanded}>
-                        <Text style={styles.expandButtonText}>
-                            {actionsExpanded ? 'Hide actions' : 'Show actions'}
-                        </Text>
-                    </Pressable>
-                </View>
-            </View>
-            {hasDiscountSummary ? (
-                <>
-                    <Text style={styles.summaryValue}>Saved ${savingsTotal.toFixed(2)}</Text>
-                    {discountBreakdown.length > 1 ? (
-                        <Text style={styles.actionMutedCopy}>
-                            {discountBreakdown.length} discounts applied
+                    {!sectionCollapsed ? (
+                        <Pressable style={styles.expandButton} onPress={onToggleExpanded}>
+                            <Text style={styles.expandButtonText}>
+                                {actionsExpanded ? 'Hide actions' : 'Show actions'}
+                            </Text>
+                        </Pressable>
+                    ) : hasDiscountSummary ? (
+                        <Text style={styles.discountCollapsedSummary}>
+                            Saved ${savingsTotal.toFixed(2)}
                         </Text>
                     ) : null}
-                    {discountBreakdown.map((adjustment) => (
-                        <Text
-                            key={adjustment.discountApplicationId}
-                            style={styles.summaryLine}
-                        >
-                            {adjustment.scope === 'LINE' ? 'Line' : 'Order'} · {adjustment.name}:{' '}
-                            -${adjustment.discountAmount.toFixed(2)}
+                </View>
+            </View>
+
+            {sectionCollapsed ? null : (
+                <>
+                    {hasDiscountSummary ? (
+                        <>
+                            <Text style={styles.summaryValue}>Saved ${savingsTotal.toFixed(2)}</Text>
+                            {discountBreakdown.length > 1 ? (
+                                <Text style={styles.actionMutedCopy}>
+                                    {discountBreakdown.length} discounts applied
+                                </Text>
+                            ) : null}
+                            {discountBreakdown.map((adjustment) => (
+                                <Text
+                                    key={adjustment.discountApplicationId}
+                                    style={styles.summaryLine}
+                                >
+                                    {adjustment.scope === 'LINE' ? 'Line' : 'Order'} · {adjustment.name}:{' '}
+                                    -${adjustment.discountAmount.toFixed(2)}
+                                </Text>
+                            ))}
+                            {promoCodes.length ? (
+                                <View style={styles.promoChipRow}>
+                                    {promoCodes.map((promo) => (
+                                        <Pressable
+                                            key={promo.code}
+                                            style={styles.promoChip}
+                                            onPress={() => onRemovePromo(promo.code)}
+                                        >
+                                            <Text style={styles.promoChipText}>{promo.code} ×</Text>
+                                        </Pressable>
+                                    ))}
+                                </View>
+                            ) : null}
+                        </>
+                    ) : null}
+                    {discountError ? (
+                        <Text style={styles.warningInline}>{discountError}</Text>
+                    ) : null}
+                    {disabledActionReason ? (
+                        <Text style={styles.actionMutedCopy}>{disabledActionReason}</Text>
+                    ) : null}
+                    {pricingWarnings.map((warning) => (
+                        <Text key={warning} style={styles.warningInline}>
+                            {warning}
                         </Text>
                     ))}
-                    {promoCodes.length ? (
-                        <View style={styles.promoChipRow}>
-                            {promoCodes.map((promo) => (
+                    {showClearActions ? (
+                        <View style={styles.discountActionRow}>
+                            {selectedLineHasManualAdjustment ? (
                                 <Pressable
-                                    key={promo.code}
-                                    style={styles.promoChip}
-                                    onPress={() => onRemovePromo(promo.code)}
+                                    style={styles.discountSecondaryButton}
+                                    onPress={onClearLinePricing}
                                 >
-                                    <Text style={styles.promoChipText}>{promo.code} ×</Text>
+                                    <Text style={styles.discountSecondaryButtonText}>
+                                        Clear line pricing
+                                    </Text>
                                 </Pressable>
-                            ))}
+                            ) : null}
+                            {hasOrderManualAdjustment ? (
+                                <Pressable
+                                    style={styles.discountSecondaryButton}
+                                    onPress={onClearOrderDiscount}
+                                >
+                                    <Text style={styles.discountSecondaryButtonText}>
+                                        Clear order discount
+                                    </Text>
+                                </Pressable>
+                            ) : null}
+                        </View>
+                    ) : null}
+                    {actionsExpanded ? (
+                        <View style={styles.discountActionRow}>
+                            <Pressable
+                                style={[styles.discountActionButton, styles.discountActionButtonPromo]}
+                                onPress={onOpenPromo}
+                                disabled={discountsLoading}
+                            >
+                                <Text style={styles.discountActionButtonEyebrow}>CODE</Text>
+                                <Text style={styles.discountActionButtonText}>Promo</Text>
+                            </Pressable>
+                            <Pressable
+                                style={[styles.discountActionButton, styles.discountActionButtonManual]}
+                                onPress={onOpenManual}
+                                disabled={discountsLoading}
+                            >
+                                <Text style={styles.discountActionButtonEyebrow}>ONE-TIME</Text>
+                                <Text style={styles.discountActionButtonText}>Manual</Text>
+                            </Pressable>
+                            <Pressable
+                                style={[styles.discountActionButton, styles.discountActionButtonOverride]}
+                                onPress={onOpenOverride}
+                                disabled={discountsLoading}
+                            >
+                                <Text style={styles.discountActionButtonEyebrow}>PRICE</Text>
+                                <Text style={styles.discountActionButtonText}>Override</Text>
+                            </Pressable>
                         </View>
                     ) : null}
                 </>
-            ) : null}
-            {discountError ? <Text style={styles.warningInline}>{discountError}</Text> : null}
-            {disabledActionReason ? (
-                <Text style={styles.actionMutedCopy}>{disabledActionReason}</Text>
-            ) : null}
-            {pricingWarnings.map((warning) => (
-                <Text key={warning} style={styles.warningInline}>
-                    {warning}
-                </Text>
-            ))}
-            {showClearActions ? (
-                <View style={styles.discountActionRow}>
-                    {selectedLineHasManualAdjustment ? (
-                        <Pressable
-                            style={styles.discountSecondaryButton}
-                            onPress={onClearLinePricing}
-                        >
-                            <Text style={styles.discountSecondaryButtonText}>
-                                Clear line pricing
-                            </Text>
-                        </Pressable>
-                    ) : null}
-                    {hasOrderManualAdjustment ? (
-                        <Pressable
-                            style={styles.discountSecondaryButton}
-                            onPress={onClearOrderDiscount}
-                        >
-                            <Text style={styles.discountSecondaryButtonText}>
-                                Clear order discount
-                            </Text>
-                        </Pressable>
-                    ) : null}
-                </View>
-            ) : null}
-            {actionsExpanded ? (
-                <>
-                    <View style={styles.discountActionRow}>
-                        <Pressable
-                            style={[styles.discountActionButton, styles.discountActionButtonPromo]}
-                            onPress={onOpenPromo}
-                            disabled={discountsLoading}
-                        >
-                            <Text style={styles.discountActionButtonEyebrow}>CODE</Text>
-                            <Text style={styles.discountActionButtonText}>Promo</Text>
-                        </Pressable>
-                        <Pressable
-                            style={[styles.discountActionButton, styles.discountActionButtonManual]}
-                            onPress={onOpenManual}
-                            disabled={discountsLoading}
-                        >
-                            <Text style={styles.discountActionButtonEyebrow}>ONE-TIME</Text>
-                            <Text style={styles.discountActionButtonText}>Manual</Text>
-                        </Pressable>
-                        <Pressable
-                            style={[styles.discountActionButton, styles.discountActionButtonOverride]}
-                            onPress={onOpenOverride}
-                            disabled={discountsLoading}
-                        >
-                            <Text style={styles.discountActionButtonEyebrow}>PRICE</Text>
-                            <Text style={styles.discountActionButtonText}>Override</Text>
-                        </Pressable>
-                    </View>
-                </>
-            ) : null}
+            )}
         </UICard>
     );
 }

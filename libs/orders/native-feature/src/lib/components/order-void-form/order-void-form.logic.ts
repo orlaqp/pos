@@ -7,92 +7,94 @@ export type RefundVoidLineGroup = {
     refundedItems: OrderLineEntity[];
 };
 
-export type RefundPaymentDraft = Record<'CC' | 'CASH' | 'CHECK' | 'EBT', string>;
+export const REFUND_PAYMENT_TYPES = ['CC', 'CASH', 'CHECK', 'EBT'] as const;
+
+export type RefundPaymentType = (typeof REFUND_PAYMENT_TYPES)[number];
+
+export type RefundPaymentRowDraft = {
+    id: string;
+    type: RefundPaymentType | null;
+    amountText: string;
+};
 
 const roundMoney = (value: number) => Math.round(value * 100) / 100;
-const REFUND_PAYMENT_TYPES = ['CC', 'CASH', 'CHECK', 'EBT'] as const;
+const DEFAULT_REFUND_PAYMENT_AMOUNT = '0.00';
 
-const emptyRefundPaymentDraft = (): RefundPaymentDraft => ({
-    CC: '',
-    CASH: '',
-    CHECK: '',
-    EBT: '',
+const formatRefundAmount = (amount: number) =>
+    roundMoney(Math.max(0, Number(amount || 0))).toFixed(2);
+
+export const createRefundPaymentRow = (
+    id: string,
+    amount = 0
+): RefundPaymentRowDraft => ({
+    id,
+    type: null,
+    amountText: formatRefundAmount(amount),
 });
+
+export const createEmptyRefundPaymentDraft = (): RefundPaymentRowDraft[] => [
+    createRefundPaymentRow('refund-payment-row-1'),
+];
 
 const normalizePaymentType = (type: string | undefined | null) => {
     const normalized = String(type || '').trim().toUpperCase();
     return REFUND_PAYMENT_TYPES.includes(
-        normalized as (typeof REFUND_PAYMENT_TYPES)[number]
+        normalized as RefundPaymentType
     )
-        ? (normalized as keyof RefundPaymentDraft)
+        ? (normalized as RefundPaymentType)
         : null;
 };
 
-export const buildRefundPaymentDraft = (
-    payments: Array<{ type?: string | null; amount?: number | null }> | null | undefined,
+export const syncSingleRefundPaymentRow = (
+    rows: RefundPaymentRowDraft[],
     refundAmount: number
 ) => {
-    const normalizedRefundAmount = roundMoney(Math.max(0, Number(refundAmount || 0)));
-    if (normalizedRefundAmount <= 0) {
-        return emptyRefundPaymentDraft();
+    if (rows.length !== 1) {
+        return rows;
     }
 
-    const draft = emptyRefundPaymentDraft();
-    const normalizedPayments = (payments || [])
-        .map((payment) => ({
-            type: normalizePaymentType(payment?.type),
-            amount: roundMoney(Math.max(0, Number(payment?.amount || 0))),
-        }))
-        .filter(
-            (payment): payment is { type: keyof RefundPaymentDraft; amount: number } =>
-                !!payment.type && payment.amount > 0
-        );
-
-    if (!normalizedPayments.length) {
-        draft.CASH = normalizedRefundAmount.toFixed(2);
-        return draft;
+    const nextAmountText = formatRefundAmount(refundAmount);
+    if (rows[0].amountText === nextAmountText) {
+        return rows;
     }
 
-    const totalPaid = roundMoney(
-        normalizedPayments.reduce((sum, payment) => sum + payment.amount, 0)
-    );
-    let remaining = Math.min(normalizedRefundAmount, totalPaid);
-
-    normalizedPayments.forEach((payment, index) => {
-        if (remaining <= 0) {
-            return;
-        }
-
-        const allocated =
-            index === normalizedPayments.length - 1
-                ? remaining
-                : roundMoney((payment.amount / totalPaid) * normalizedRefundAmount);
-        const capped = Math.min(payment.amount, allocated, remaining);
-        remaining = roundMoney(remaining - capped);
-
-        draft[payment.type] = capped > 0 ? capped.toFixed(2) : '';
-    });
-
-    if (
-        remaining > 0 &&
-        !normalizedPayments.some((payment) => payment.type === 'CASH')
-    ) {
-        draft.CASH = remaining.toFixed(2);
-    }
-
-    return draft;
+    return [{ ...rows[0], amountText: nextAmountText }];
 };
 
-export const parseRefundPayments = (draft: RefundPaymentDraft): CartPayment[] =>
-    REFUND_PAYMENT_TYPES.map((type) => ({
-        type,
-        amount: roundMoney(Math.max(0, Number(draft[type] || 0))),
-    })).filter((payment) => payment.amount > 0);
+export const parseRefundPayments = (
+    rows: RefundPaymentRowDraft[]
+): CartPayment[] =>
+    rows
+        .map((row) => ({
+            type: normalizePaymentType(row.type),
+            amount: roundMoney(Math.max(0, Number(row.amountText || 0))),
+        }))
+        .filter(
+            (payment): payment is CartPayment =>
+                !!payment.type && payment.amount > 0
+        );
 
 export const getRefundPaymentTotal = (payments: CartPayment[]) =>
     roundMoney(
         payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0)
     );
+
+export const getAvailableRefundPaymentTypes = (
+    rows: RefundPaymentRowDraft[],
+    rowId: string
+) => {
+    const selectedTypes = new Set(
+        rows
+            .filter((row) => row.id !== rowId)
+            .map((row) => normalizePaymentType(row.type))
+            .filter((type): type is RefundPaymentType => !!type)
+    );
+
+    return REFUND_PAYMENT_TYPES.filter((type) => !selectedTypes.has(type));
+};
+
+export const canAddRefundPaymentRow = (rows: RefundPaymentRowDraft[]) =>
+    rows.length < REFUND_PAYMENT_TYPES.length;
 
 const getRefundedQuantityValue = (
     refundedQuantities:

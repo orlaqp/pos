@@ -33,10 +33,19 @@ export interface OrderSummaryViewModel {
     ebtEligibleTotal: number;
 }
 
+const getLineFinalTotal = (cart: CartState, item: CartItem): number => {
+    const lineId = item.identifier || item.product.id;
+    const lineSummary = cart.appliedDiscountSummary?.lineSummaries?.find(
+        (summary) => summary.lineId === lineId
+    );
+
+    return lineSummary?.lineTotalBeforeTax ?? item.product.price * item.quantity;
+};
+
 export const getEbtEligibleTotal = (cart: CartState): number =>
     cart.items.reduce((acc, item) => {
         if (!item.product.isEBTEligible) return acc;
-        return acc + item.product.price * item.quantity;
+        return acc + getLineFinalTotal(cart, item);
     }, 0);
 
 export const isCartReady = (cart: CartState): boolean =>
@@ -76,7 +85,7 @@ export const buildOrderSummary = (cart: CartState): OrderSummaryViewModel => {
             const lineId = item.identifier || item.product.id;
             const lineSummary = lineSummaries.find((summary) => summary.lineId === lineId);
             const originalTotal = item.product.price * item.quantity;
-            const finalTotal = lineSummary?.lineTotalBeforeTax ?? originalTotal;
+            const finalTotal = getLineFinalTotal(cart, item);
             const savings =
                 (lineSummary?.lineDiscountTotal || 0) +
                 (lineSummary?.allocatedOrderDiscountTotal || 0);

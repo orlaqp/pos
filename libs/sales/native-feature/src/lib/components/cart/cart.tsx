@@ -117,6 +117,7 @@ export function Cart({
     const [discountsLoading, setDiscountsLoading] = useState(false);
     const [discountError, setDiscountError] = useState<string>();
     const [actionsExpanded, setActionsExpanded] = useState(false);
+    const [discountSectionCollapsed, setDiscountSectionCollapsed] = useState(false);
     const [orderSummaryVisible, setOrderSummaryVisible] = useState(false);
     const [promoVisible, setPromoVisible] = useState(false);
     const [manualVisible, setManualVisible] = useState(false);
@@ -610,6 +611,7 @@ export function Cart({
                         selectedItemName={selectedItem?.product.name}
                         discountsLoading={discountsLoading}
                         actionsExpanded={actionsExpanded}
+                        sectionCollapsed={discountSectionCollapsed}
                         hasDiscountSummary={hasDiscountSummary}
                         savingsTotal={cart.footer.savingsTotal}
                         discountBreakdown={discountBreakdown}
@@ -619,6 +621,10 @@ export function Cart({
                         disabledActionReason={disabledActionReason}
                         selectedLineHasManualAdjustment={selectedLineHasManualAdjustment}
                         hasOrderManualAdjustment={hasOrderManualAdjustment}
+                        onToggleSectionCollapsed={() => {
+                            setDiscountSectionCollapsed((current) => !current);
+                            onInteractionComplete();
+                        }}
                         onToggleExpanded={() => {
                             setActionsExpanded((current) => !current);
                             onInteractionComplete();

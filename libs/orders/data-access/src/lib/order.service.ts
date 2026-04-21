@@ -101,6 +101,14 @@ interface OrderPricingSnapshotContext {
     pricingStationId?: string | null;
 }
 
+type EbtPricingLineInput = {
+    identifier?: string;
+    quantity: number;
+    price: number;
+    isEBTEligible?: boolean;
+    lineTotal?: number;
+};
+
 const logOrderTiming = (step: string, details?: Record<string, unknown>) => {
     void step;
     void details;
@@ -233,6 +241,25 @@ const getGraphqlErrorMessage = (result: unknown) => {
 
 const isFullyRefundedQuantity = (original: number, refunded: number) =>
     Math.abs(original - refunded) <= REFUND_QUANTITY_EPSILON;
+
+const buildEbtPricingLines = (order: Omit<CartState, 'id'>): EbtPricingLineInput[] =>
+    order.items.map((item, index) => {
+        const identifier = item.identifier || getLineKey(item.identifier, index);
+        const lineSummary = order.appliedDiscountSummary?.lineSummaries?.find(
+            (summary) => summary.lineId === identifier
+        );
+
+        return {
+            identifier,
+            quantity: item.quantity,
+            price: item.product.price,
+            isEBTEligible: item.product.isEBTEligible ?? false,
+            lineTotal: roundMoney(
+                lineSummary?.lineTotalBeforeTax ??
+                    getLineTotal(item.quantity, item.product.price)
+            ),
+        };
+    });
 
 const toAppliedDiscountDetailSnapshot = (
     discount: AppliedDiscountDetail
@@ -505,12 +532,7 @@ export class OrderService {
             paymentCount: request.payments?.length || 0,
         });
         const validation = validateEbtPayment(
-            request.order.items.map((item) => ({
-                identifier: item.identifier,
-                quantity: item.quantity,
-                price: item.product.price,
-                isEBTEligible: item.product.isEBTEligible ?? false,
-            })),
+            buildEbtPricingLines(request.order),
             request.payments
         );
 
@@ -523,12 +545,7 @@ export class OrderService {
         }
 
         const allocations = buildEbtAllocations(
-            request.order.items.map((item) => ({
-                identifier: item.identifier,
-                quantity: item.quantity,
-                price: item.product.price,
-                isEBTEligible: item.product.isEBTEligible ?? false,
-            })),
+            buildEbtPricingLines(request.order),
             request.payments
         );
 
@@ -622,12 +639,7 @@ export class OrderService {
 
     static async closeExistingOrder(order: Order, request: Omit<CloseOrderRequest, 'id'>) {
         const validation = validateEbtPayment(
-            request.order.items.map((item) => ({
-                identifier: item.identifier,
-                quantity: item.quantity,
-                price: item.product.price,
-                isEBTEligible: item.product.isEBTEligible ?? false,
-            })),
+            buildEbtPricingLines(request.order),
             request.payments
         );
 
@@ -640,12 +652,7 @@ export class OrderService {
         }
 
         const allocations = buildEbtAllocations(
-            request.order.items.map((item) => ({
-                identifier: item.identifier,
-                quantity: item.quantity,
-                price: item.product.price,
-                isEBTEligible: item.product.isEBTEligible ?? false,
-            })),
+            buildEbtPricingLines(request.order),
             request.payments
         );
 

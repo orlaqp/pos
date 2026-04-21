@@ -415,6 +415,89 @@ describe('OrderService', () => {
     );
   });
 
+  it('blocks EBT overpayment against discounted eligible totals when creating a paid order', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+
+    const result = await OrderService.createPaidOrder({
+      by: {
+        id: 'employee-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+      } as any,
+      order: {
+        id: 'generated-cart-id',
+        orderNo: '51-25-260316-0008',
+        items: [
+          {
+            identifier: 'eligible-line',
+            quantity: 2,
+            product: {
+              id: 'product-1',
+              name: 'Eligible discounted item',
+              price: 10,
+              unitOfMeasure: 'ea',
+              isEBTEligible: true,
+            },
+          },
+          {
+            identifier: 'non-ebt-line',
+            quantity: 1,
+            product: {
+              id: 'product-2',
+              name: 'Non EBT item',
+              price: 20,
+              unitOfMeasure: 'ea',
+              isEBTEligible: false,
+            },
+          },
+        ],
+        footer: {
+          baseSubtotal: 40,
+          subtotal: 25.24,
+          total: 25.24,
+          lineDiscountTotal: 5,
+          orderDiscountTotal: 9.76,
+          discount: 14.76,
+          savingsTotal: 14.76,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+        },
+        promoCodes: [],
+        appliedDiscountSummary: {
+          applications: [],
+          approvalEvents: [],
+          lineSummaries: [
+            {
+              lineId: 'eligible-line',
+              discounts: [],
+              lineDiscountTotal: 5,
+              allocatedOrderDiscountTotal: 9.76,
+              lineTotalBeforeTax: 5.24,
+            },
+            {
+              lineId: 'non-ebt-line',
+              discounts: [],
+              lineDiscountTotal: 0,
+              allocatedOrderDiscountTotal: 0,
+              lineTotalBeforeTax: 20,
+            },
+          ],
+          orderLevelAdjustments: [],
+          warnings: [],
+          pricingGeneratedAt: '2026-04-21T19:30:00.000Z',
+        },
+      } as any,
+      payments: [{ type: 'EBT', amount: 25.24 }],
+    });
+
+    expect(result).toBeNull();
+    expect(Alert.alert).toHaveBeenCalledWith(
+      'EBT validation failed',
+      expect.stringContaining('$5.24')
+    );
+    expect(saveMock).not.toHaveBeenCalled();
+  });
+
   it('snapshots only applied automatic and promo definitions when an order is paid', async () => {
     const saveMock = jest.mocked(DataStore.save);
     const queryMock = jest.mocked(DataStore.query);

@@ -1,7 +1,13 @@
 import {
+    canAddRefundPaymentRow,
     calculateRefundSummary,
+    createEmptyRefundPaymentDraft,
+    createRefundPaymentRow,
+    getAvailableRefundPaymentTypes,
     groupOrderLinesForVoid,
+    parseRefundPayments,
     spreadOrderLinesForVoid,
+    syncSingleRefundPaymentRow,
 } from './order-void-form.logic';
 import { EACH } from '@pos/unit-of-measures/data-access';
 
@@ -249,5 +255,71 @@ describe('order-void-form helpers', () => {
         expect(result.refundedItems).toHaveLength(1);
         expect(result.refundedItems[0].quantity).toBe(0.5);
         expect(result.refundedItems[0].lineTotalBeforeTax).toBe(2);
+    });
+
+    it('starts refund payment draft with a single auto-sync row', () => {
+        expect(createEmptyRefundPaymentDraft()).toEqual([
+            {
+                id: 'refund-payment-row-1',
+                type: null,
+                amountText: '0.00',
+            },
+        ]);
+    });
+
+    it('syncs the single refund payment row to the refund amount', () => {
+        const synced = syncSingleRefundPaymentRow(
+            [createRefundPaymentRow('row-1')],
+            4.99
+        );
+
+        expect(synced).toEqual([
+            {
+                id: 'row-1',
+                type: null,
+                amountText: '4.99',
+            },
+        ]);
+    });
+
+    it('does not rewrite amounts automatically when multiple refund payment rows exist', () => {
+        const rows = [
+            { id: 'row-1', type: 'CASH' as const, amountText: '2.00' },
+            { id: 'row-2', type: 'CC' as const, amountText: '2.99' },
+        ];
+
+        expect(syncSingleRefundPaymentRow(rows, 10)).toBe(rows);
+    });
+
+    it('parses only selected refund payment rows with positive amounts', () => {
+        expect(
+            parseRefundPayments([
+                { id: 'row-1', type: 'CASH', amountText: '2.50' },
+                { id: 'row-2', type: null, amountText: '1.00' },
+                { id: 'row-3', type: 'CC', amountText: '0.00' },
+            ])
+        ).toEqual([{ type: 'CASH', amount: 2.5 }]);
+    });
+
+    it('filters duplicate payment method options per row and caps add at four rows', () => {
+        const rows = [
+            { id: 'row-1', type: 'CASH' as const, amountText: '1.00' },
+            { id: 'row-2', type: 'CC' as const, amountText: '1.00' },
+        ];
+
+        expect(getAvailableRefundPaymentTypes(rows, 'row-1')).toEqual([
+            'CASH',
+            'CHECK',
+            'EBT',
+        ]);
+        expect(canAddRefundPaymentRow(rows)).toBe(true);
+        expect(
+            canAddRefundPaymentRow([
+                { id: 'row-1', type: 'CASH' as const, amountText: '1.00' },
+                { id: 'row-2', type: 'CC' as const, amountText: '1.00' },
+                { id: 'row-3', type: 'CHECK' as const, amountText: '1.00' },
+                { id: 'row-4', type: 'EBT' as const, amountText: '1.00' },
+            ])
+        ).toBe(false);
     });
 });

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
     View,
@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     TextInput,
 } from 'react-native';
+import DropDownPicker from 'react-native-dropdown-picker';
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import {
@@ -24,11 +25,15 @@ import { useSelector } from 'react-redux';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { UICard } from '@pos/shared/ui-native';
 import {
-    buildRefundPaymentDraft,
+    canAddRefundPaymentRow,
+    createEmptyRefundPaymentDraft,
+    createRefundPaymentRow,
+    getAvailableRefundPaymentTypes,
     getRefundPaymentTotal,
     groupOrderLinesForVoid,
     parseRefundPayments,
-    RefundPaymentDraft,
+    RefundPaymentRowDraft,
+    syncSingleRefundPaymentRow,
 } from './order-void-form.logic';
 import i18next from 'i18next';
 import { RootState } from '@pos/store';
@@ -48,11 +53,13 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     const [linesToRefund, setLinesToRefund] = useState<OrderLineEntity[]>([]);
     const [busy, setBusy] = useState<boolean>(false);
     const [refundPaymentDraft, setRefundPaymentDraft] =
-        useState<RefundPaymentDraft>(() =>
-            buildRefundPaymentDraft(order.paymentInfo?.payments, 0)
+        useState<RefundPaymentRowDraft[]>(() =>
+            createEmptyRefundPaymentDraft()
         );
+    const [openPaymentRowId, setOpenPaymentRowId] = useState<string | null>(null);
     const [refundedTrayExpanded, setRefundedTrayExpanded] =
         useState<boolean>(false);
+    const paymentRowCounter = useRef(1);
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
@@ -92,6 +99,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
         [refundPayments]
     );
     const absoluteRefundAmount = Math.abs(refundAmount);
+    const canAddPaymentMethod = canAddRefundPaymentRow(refundPaymentDraft);
     const isRefundPaymentBalanced =
         Number(refundPaymentTotal.toFixed(2)) ===
         Number(absoluteRefundAmount.toFixed(2));
@@ -178,6 +186,12 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     };
 
     useEffect(() => {
+        setRefundPaymentDraft((current) =>
+            syncSingleRefundPaymentRow(current, absoluteRefundAmount)
+        );
+    }, [absoluteRefundAmount, refundPaymentDraft.length]);
+
+    useEffect(() => {
         let cancelled = false;
 
         if (!linesToRefund.length) {
@@ -212,16 +226,54 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
         };
     }, [existingRefundAmount, order, linesToRefund]);
 
-    useEffect(() => {
-        setRefundPaymentDraft(
-            buildRefundPaymentDraft(order.paymentInfo?.payments, absoluteRefundAmount)
-        );
-    }, [absoluteRefundAmount, order.paymentInfo?.payments]);
-
     const currentTotal = Math.max(
         0,
         Number(order.total || 0) - existingRefundAmount
     );
+
+    const paymentTypeOptions = useMemo(
+        () => ({
+            CC: t('PAYMENT_Method_CreditCard', 'Credit Card'),
+            CASH: t('PAYMENT_Method_Cash', 'Cash'),
+            CHECK: t('PAYMENT_Method_Check', 'Check'),
+            EBT: t('PAYMENT_Method_EBT', 'EBT'),
+        }),
+        [t]
+    );
+
+    const addRefundPaymentRow = () => {
+        if (!canAddPaymentMethod) {
+            return;
+        }
+
+        paymentRowCounter.current += 1;
+        setRefundPaymentDraft((current) => [
+            ...current,
+            createRefundPaymentRow(
+                `refund-payment-row-${paymentRowCounter.current}`
+            ),
+        ]);
+    };
+
+    const updateRefundPaymentRow = (
+        rowId: string,
+        updater: (row: RefundPaymentRowDraft) => RefundPaymentRowDraft
+    ) => {
+        setRefundPaymentDraft((current) =>
+            current.map((row) => (row.id === rowId ? updater(row) : row))
+        );
+    };
+
+    const removeRefundPaymentRow = (rowId: string) => {
+        setRefundPaymentDraft((current) => {
+            if (current.length === 1) {
+                return current;
+            }
+
+            return current.filter((row) => row.id !== rowId);
+        });
+        setOpenPaymentRowId((current) => (current === rowId ? null : current));
+    };
 
     return (
         <View style={[styles.pageBackground, local.container]}>
@@ -380,37 +432,127 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         <Text style={local.referenceTitle}>
                             {t('ORDERVOID_RefundPayment', 'Refund Payment')}
                         </Text>
-                        <Text style={local.referenceText}>
-                            {t(
-                                'ORDERVOID_RefundPaymentHelp',
-                                'Choose how the refund was returned. The total must match the refund amount.'
-                            )}
-                        </Text>
-                        <View style={local.refundPaymentsGrid}>
-                            {[
-                                ['CC', t('PAYMENT_Method_CreditCard', 'Credit Card')],
-                                ['CASH', t('PAYMENT_Method_Cash', 'Cash')],
-                                ['CHECK', t('PAYMENT_Method_Check', 'Check')],
-                                ['EBT', t('PAYMENT_Method_EBT', 'EBT')],
-                            ].map(([type, label]) => (
-                                <View key={type} style={local.refundPaymentCard}>
-                                    <Text style={local.paymentChipLabel}>{label}</Text>
-                                    <TextInput
-                                        value={refundPaymentDraft[type as keyof RefundPaymentDraft]}
-                                        onChangeText={(value) =>
-                                            setRefundPaymentDraft((current) => ({
-                                                ...current,
-                                                [type]: value.replace(/[^0-9.]/g, ''),
-                                            }))
-                                        }
-                                        keyboardType="decimal-pad"
-                                        placeholder="0.00"
-                                        placeholderTextColor={tokens.colors.textMuted}
-                                        style={local.refundPaymentInput}
-                                        testID={`order-void-refund-payment-${String(type).toLowerCase()}`}
-                                    />
-                                </View>
-                            ))}
+                        <View style={local.refundPaymentHeaderRow}>
+                            <Text style={local.referenceText}>
+                                {t(
+                                    'ORDERVOID_RefundPaymentHelp',
+                                    'Choose how the refund was returned. The total must match the refund amount.'
+                                )}
+                            </Text>
+                            <Button
+                                testID="order-void-add-payment-row-button"
+                                title={t('ORDERVOID_AddPaymentMethod', 'Add')}
+                                type="outline"
+                                disabled={!canAddPaymentMethod}
+                                onPress={addRefundPaymentRow}
+                                buttonStyle={local.addPaymentBtn}
+                                titleStyle={local.addPaymentBtnTitle}
+                                containerStyle={local.addPaymentBtnContainer}
+                            />
+                        </View>
+                        <View style={local.refundPaymentsList}>
+                            {refundPaymentDraft.map((row, index) => {
+                                const availableTypes = getAvailableRefundPaymentTypes(
+                                    refundPaymentDraft,
+                                    row.id
+                                );
+                                const dropdownItems = availableTypes.map((type) => ({
+                                    label: paymentTypeOptions[type],
+                                    value: type,
+                                }));
+
+                                return (
+                                    <View
+                                        key={row.id}
+                                        style={[
+                                            local.refundPaymentRow,
+                                            openPaymentRowId === row.id &&
+                                                local.refundPaymentRowOpen,
+                                            { zIndex: 1000 - index },
+                                        ]}
+                                    >
+                                        <TextInput
+                                            value={row.amountText}
+                                            onChangeText={(value) =>
+                                                updateRefundPaymentRow(row.id, (current) => ({
+                                                    ...current,
+                                                    amountText: value.replace(/[^0-9.]/g, ''),
+                                                }))
+                                            }
+                                            keyboardType="decimal-pad"
+                                            placeholder="0.00"
+                                            placeholderTextColor={tokens.colors.textMuted}
+                                            style={local.refundPaymentRowAmountInput}
+                                            testID={`order-void-refund-payment-amount-${index}`}
+                                        />
+                                        <View style={local.refundPaymentDropdownWrap}>
+                                            <DropDownPicker
+                                                open={openPaymentRowId === row.id}
+                                                value={row.type}
+                                                items={dropdownItems}
+                                                setOpen={(open) =>
+                                                    setOpenPaymentRowId(open ? row.id : null)
+                                                }
+                                                setValue={(callback) => {
+                                                    const nextValue =
+                                                        typeof callback === 'function'
+                                                            ? callback(row.type)
+                                                            : callback;
+                                                    updateRefundPaymentRow(
+                                                        row.id,
+                                                        (current) => ({
+                                                            ...current,
+                                                            type: nextValue || null,
+                                                        })
+                                                    );
+                                                }}
+                                                setItems={() => undefined}
+                                                placeholder={t(
+                                                    'ORDERVOID_SelectPaymentMethod',
+                                                    'Select method'
+                                                )}
+                                                listMode="SCROLLVIEW"
+                                                theme="DARK"
+                                                containerStyle={
+                                                    local.refundPaymentDropdownHost
+                                                }
+                                                style={local.refundPaymentDropdown}
+                                                dropDownContainerStyle={
+                                                    local.refundPaymentDropdownContainer
+                                                }
+                                                listItemContainerStyle={
+                                                    local.refundPaymentDropdownItemContainer
+                                                }
+                                                selectedItemContainerStyle={
+                                                    local.refundPaymentDropdownSelectedItemContainer
+                                                }
+                                                textStyle={local.refundPaymentDropdownText}
+                                                placeholderStyle={
+                                                    local.refundPaymentDropdownPlaceholder
+                                                }
+                                                listItemLabelStyle={
+                                                    local.refundPaymentDropdownText
+                                                }
+                                                arrowIconStyle={
+                                                    local.refundPaymentDropdownArrow
+                                                }
+                                                testID={`order-void-refund-payment-type-${index}`}
+                                            />
+                                        </View>
+                                        {refundPaymentDraft.length > 1 ? (
+                                            <TouchableOpacity
+                                                onPress={() => removeRefundPaymentRow(row.id)}
+                                                style={local.removePaymentRowButton}
+                                                testID={`order-void-remove-payment-row-${index}`}
+                                            >
+                                                <Text style={local.removePaymentRowText}>
+                                                    {t('ORDERVOID_Remove', 'Remove')}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        ) : null}
+                                    </View>
+                                );
+                            })}
                         </View>
                         <Text
                             style={[
@@ -497,6 +639,16 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         </View>
                         <View style={local.actionsWrap}>
                             <Button
+                                testID="order-void-cancel-button"
+                                title={t('ORDERVOID_Cancel', 'Cancel')}
+                                type="outline"
+                                disabled={busy}
+                                onPress={onRefundComplete}
+                                buttonStyle={local.cancelBtn}
+                                titleStyle={local.cancelBtnTitle}
+                                containerStyle={local.cancelBtnContainer}
+                            />
+                            <Button
                                 testID="order-void-process-button"
                                 title={t('ORDERVOID_Process', 'Process')}
                                 icon={{
@@ -507,7 +659,11 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                                             ? theme.theme.colors.grey2
                                             : styles.primaryText.color,
                                 }}
-                                disabled={refundAmount === 0 || !isRefundPaymentBalanced}
+                                disabled={
+                                    busy ||
+                                    refundAmount === 0 ||
+                                    !isRefundPaymentBalanced
+                                }
                                 loading={busy}
                                 onPress={confirmRefund}
                                 buttonStyle={local.processBtn}
@@ -617,27 +773,47 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontSize: 14,
             fontWeight: '800',
         },
-        refundPaymentsGrid: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            marginTop: tokens.spacing.sm,
-        },
         refundPaymentSection: {
             flexShrink: 0,
         },
-        refundPaymentCard: {
-            width: '48%',
+        refundPaymentHeaderRow: {
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+        },
+        addPaymentBtnContainer: {
+            marginLeft: tokens.spacing.sm,
+        },
+        addPaymentBtn: {
+            minHeight: 36,
+            borderRadius: tokens.radii.md,
+            borderColor: tokens.colors.border,
+            backgroundColor: 'transparent',
+            paddingHorizontal: tokens.spacing.sm,
+        },
+        addPaymentBtnTitle: {
+            color: tokens.colors.textPrimary,
+            fontWeight: '700',
+        },
+        refundPaymentsList: {
+            marginTop: tokens.spacing.sm,
+        },
+        refundPaymentRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
             borderRadius: tokens.radii.md,
             borderWidth: 1,
             borderColor: tokens.colors.border,
             backgroundColor: tokens.colors.surfaceMuted,
-            paddingVertical: tokens.spacing.xs,
             paddingHorizontal: tokens.spacing.sm,
-            marginRight: '2%',
-            marginBottom: tokens.spacing.xs,
+            paddingVertical: tokens.spacing.xs,
+            marginBottom: tokens.spacing.sm,
         },
-        refundPaymentInput: {
-            marginTop: 6,
+        refundPaymentRowOpen: {
+            zIndex: 1000,
+        },
+        refundPaymentRowAmountInput: {
+            width: 96,
             borderRadius: tokens.radii.sm,
             borderWidth: 1,
             borderColor: tokens.colors.border,
@@ -647,6 +823,67 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             paddingVertical: 8,
             fontSize: 16,
             fontWeight: '700',
+            marginRight: tokens.spacing.sm,
+        },
+        refundPaymentDropdownWrap: {
+            flex: 1,
+        },
+        refundPaymentDropdownHost: {
+            width: '100%',
+        },
+        refundPaymentDropdown: {
+            minHeight: 42,
+            borderRadius: tokens.radii.sm,
+            borderColor: tokens.colors.border,
+            backgroundColor: '#1d232c',
+        },
+        refundPaymentDropdownContainer: {
+            borderColor: tokens.colors.border,
+            backgroundColor: '#1d232c',
+            borderRadius: tokens.radii.sm,
+            marginTop: 2,
+            opacity: 1,
+            elevation: 12,
+            shadowColor: '#000000',
+            shadowOpacity: 0.35,
+            shadowRadius: 14,
+            shadowOffset: { width: 0, height: 8 },
+        },
+        refundPaymentDropdownItemContainer: {
+            backgroundColor: '#1d232c',
+        },
+        refundPaymentDropdownSelectedItemContainer: {
+            backgroundColor: '#2b3440',
+        },
+        refundPaymentDropdownText: {
+            color: tokens.colors.textPrimary,
+            fontSize: 14,
+            fontWeight: '600',
+        },
+        refundPaymentDropdownPlaceholder: {
+            color: tokens.colors.textMuted,
+            fontSize: 14,
+        },
+        refundPaymentDropdownArrow: {
+            tintColor: tokens.colors.textMuted,
+        },
+        removePaymentRowButton: {
+            marginLeft: tokens.spacing.sm,
+            minHeight: 40,
+            minWidth: 88,
+            borderRadius: tokens.radii.sm,
+            borderWidth: 1,
+            borderColor: `${tokens.colors.danger}99`,
+            backgroundColor: `${tokens.colors.danger}2a`,
+            paddingVertical: tokens.spacing.xs,
+            paddingHorizontal: tokens.spacing.sm,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        removePaymentRowText: {
+            color: tokens.colors.danger,
+            fontSize: 13,
+            fontWeight: '800',
         },
         trayHeader: {
             flexDirection: 'row',
@@ -677,7 +914,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontWeight: '700',
         },
         refundPaymentError: {
-            color: tokens.colors.error,
+            color: tokens.colors.danger,
             marginTop: tokens.spacing.xs,
         },
         summaryCard: {
@@ -716,12 +953,27 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         actionsWrap: {
             marginTop: tokens.spacing.sm,
+            flexDirection: 'row',
             alignItems: 'stretch',
+        },
+        cancelBtnContainer: {
+            flex: 0.7,
+            marginRight: tokens.spacing.sm,
+        },
+        cancelBtn: {
+            borderRadius: tokens.radii.lg,
+            minHeight: 52,
+            borderColor: tokens.colors.border,
+            backgroundColor: 'transparent',
+        },
+        cancelBtnTitle: {
+            color: tokens.colors.textPrimary,
+            fontWeight: '700',
         },
         processBtn: {
             borderRadius: tokens.radii.lg,
-            minWidth: 160,
             minHeight: 52,
+            flex: 1.3,
         },
     });
 
