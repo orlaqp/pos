@@ -1,6 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { View, Text, Alert, FlatList, StyleSheet } from 'react-native';
+import {
+    View,
+    Text,
+    Alert,
+    FlatList,
+    StyleSheet,
+    TouchableOpacity,
+} from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import {
@@ -35,6 +42,8 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     const [newTotal, setNewTotal] = useState<number>(0);
     const [linesToRefund, setLinesToRefund] = useState<OrderLineEntity[]>([]);
     const [busy, setBusy] = useState<boolean>(false);
+    const [refundedTrayExpanded, setRefundedTrayExpanded] =
+        useState<boolean>(false);
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
@@ -73,11 +82,11 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
 
     const onItemToggle = (line: OrderLineEntity, selected: boolean) => {
         if (selected) {
-            setLinesToRefund((list) => [...list, line]);
+            if (!linesToRefund.includes(line)) {
+                setLinesToRefund((list) => [...list, line]);
+            }
         } else {
-            const newItems = [...linesToRefund];
-            newItems.splice(newItems.indexOf(line), 1);
-            setLinesToRefund((list) => [...newItems]);
+            setLinesToRefund((list) => list.filter((item) => item !== line));
         }
     };
 
@@ -224,9 +233,10 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                     keyExtractor={(item, index) => `${item.identifier}-${index}`}
                     renderItem={(data) => (
                         <OrderVoidableItem
-                            key={data.index}
                             line={data.item}
                             onToggle={onItemToggle}
+                            selected={linesToRefund.includes(data.item)}
+                            testIDPrefix="order-void-available-line"
                         />
                     )}
                     style={{
@@ -243,36 +253,70 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                     }
                 />
             </UICard>
-            {refundedItemList.length > 0 && (
-                <UICard
-                    tone="default"
-                    padding="sm"
-                    radius="md"
-                    style={local.refundedListCard}
-                >
-                    <Text style={local.sectionTitle}>
-                        {t('ORDERVOID_AlreadyRefunded', 'Already refunded')}
-                    </Text>
-                    <FlatList
-                        horizontal={false}
-                        data={refundedItemList}
-                        keyExtractor={(item, index) =>
-                            `refunded-${item.identifier}-${index}`
-                        }
-                        renderItem={(data) => (
-                            <OrderVoidableItem
-                                key={data.index}
-                                line={data.item}
-                                onToggle={onItemToggle}
-                                readOnly
-                            />
+
+            <View style={local.bottomStack}>
+                {refundedItemList.length > 0 && (
+                    <UICard
+                        tone="default"
+                        padding="sm"
+                        radius="md"
+                        style={local.refundedTrayCard}
+                    >
+                        <TouchableOpacity
+                            onPress={() =>
+                                setRefundedTrayExpanded((expanded) => !expanded)
+                            }
+                            style={local.trayHeader}
+                            testID="order-void-refunded-tray-toggle"
+                            activeOpacity={0.8}
+                        >
+                            <View>
+                                <Text style={local.sectionTitle}>
+                                    {t(
+                                        'ORDERVOID_AlreadyRefunded',
+                                        'Already refunded'
+                                    )}
+                                </Text>
+                                <Text style={local.trayMeta}>
+                                    {t(
+                                        'ORDERVOID_AlreadyRefundedCount',
+                                        '{{count}} item(s) for reference'
+                                    ).replace(
+                                        '{{count}}',
+                                        refundedItemList.length.toString()
+                                    )}
+                                </Text>
+                            </View>
+                            <Text style={local.trayToggleText}>
+                                {refundedTrayExpanded
+                                    ? t('ORDERVOID_Hide', 'Hide')
+                                    : t('ORDERVOID_Show', 'Show')}
+                            </Text>
+                        </TouchableOpacity>
+                        {refundedTrayExpanded && (
+                            <View style={local.trayBody}>
+                                <FlatList
+                                    horizontal={false}
+                                    data={refundedItemList}
+                                    keyExtractor={(item, index) =>
+                                        `refunded-${item.identifier}-${index}`
+                                    }
+                                    renderItem={(data) => (
+                                        <OrderVoidableItem
+                                            line={data.item}
+                                            onToggle={onItemToggle}
+                                            readOnly
+                                            compact
+                                            testIDPrefix="order-void-refunded-line"
+                                        />
+                                    )}
+                                    style={local.trayList}
+                                />
+                            </View>
                         )}
-                        style={{
-                            flexDirection: 'column',
-                        }}
-                    />
-                </UICard>
-            )}
+                    </UICard>
+                )}
+            </View>
 
             <UICard tone="default" padding="sm" radius="md" style={local.summaryCard}>
                 <View style={local.summaryRow}>
@@ -372,10 +416,12 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flex: 1,
             marginBottom: tokens.spacing.sm,
         },
-        refundedListCard: {
+        bottomStack: {
             flexShrink: 0,
             marginBottom: tokens.spacing.sm,
-            maxHeight: 200,
+        },
+        refundedTrayCard: {
+            flexShrink: 0,
         },
         referenceCard: {
             marginBottom: tokens.spacing.sm,
@@ -429,6 +475,28 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             color: tokens.colors.textPrimary,
             fontSize: 14,
             fontWeight: '800',
+        },
+        trayHeader: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+        },
+        trayMeta: {
+            color: tokens.colors.textMuted,
+            fontSize: 12,
+            marginTop: 2,
+        },
+        trayToggleText: {
+            color: tokens.colors.primary,
+            fontSize: 13,
+            fontWeight: '700',
+        },
+        trayBody: {
+            marginTop: tokens.spacing.sm,
+            maxHeight: 164,
+        },
+        trayList: {
+            flexGrow: 0,
         },
         ebtHint: {
             marginTop: 2,

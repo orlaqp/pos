@@ -119,9 +119,36 @@ describe('order-void-form helpers', () => {
 
         expect(result).toHaveLength(2);
         expect(result[0].quantity).toBe(1);
-        expect(result[0].price).toBe(5);
+        expect(result[0].price).toBe(10);
         expect(result[0].lineTotalBeforeTax).toBe(4);
         expect(result[0].lineDiscountTotal).toBe(1);
+    });
+
+    it('keeps EACH item display prices at the original unit price', () => {
+        const lines = [
+            {
+                identifier: 'l1',
+                productId: 'p1',
+                barcode: null,
+                sku: null,
+                productName: 'Huevo',
+                unitOfMeasure: EACH,
+                quantity: 2,
+                tax: 0,
+                price: 4.99,
+                basePrice: 4.99,
+                lineTotalBeforeTax: 6.99,
+                lineDiscountTotal: 2.99,
+            },
+        ];
+
+        const result = spreadOrderLinesForVoid(lines as any);
+
+        expect(result).toHaveLength(2);
+        expect(result[0].quantity).toBe(1);
+        expect(result[0].price).toBe(4.99);
+        expect(result[0].basePrice).toBe(4.99);
+        expect(result[0].lineTotalBeforeTax).toBe(3.495);
     });
 
     it('removes already refunded units from the refundable EACH list', () => {

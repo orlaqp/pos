@@ -28,16 +28,9 @@ const scaleLineForQuantity = (
 ): OrderLineEntity => {
     if (line.unitOfMeasure === EACH) {
         const originalQuantity = line.quantity || 0;
-        const unitPrice =
-            originalQuantity > 0 ? line.price / originalQuantity : line.price;
-        const unitBasePrice =
-            originalQuantity > 0 && line.basePrice != null
-                ? line.basePrice / originalQuantity
-                : line.basePrice;
-        const unitNetUnitPrice =
-            originalQuantity > 0 && line.netUnitPrice != null
-                ? line.netUnitPrice / originalQuantity
-                : line.netUnitPrice;
+        const unitPrice = line.price;
+        const unitBasePrice = line.basePrice;
+        const unitNetUnitPrice = line.netUnitPrice;
         const unitLineSubtotalBeforeOrderDiscount =
             originalQuantity > 0 &&
             line.lineSubtotalBeforeOrderDiscount != null

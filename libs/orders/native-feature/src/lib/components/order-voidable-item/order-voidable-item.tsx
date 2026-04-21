@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
@@ -11,32 +11,39 @@ export interface CompactOrderItemProps {
     line: OrderLineEntity;
     onToggle: (line: OrderLineEntity, selected: boolean) => void;
     readOnly?: boolean;
+    selected?: boolean;
+    compact?: boolean;
+    testIDPrefix?: string;
 }
 
 export function OrderVoidableItem({
     line,
     onToggle,
     readOnly = false,
+    selected = false,
+    compact = false,
+    testIDPrefix = 'order-void-line',
 }: CompactOrderItemProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
     const local = useStyles(tokens);
-    const [selected, setSelected] = useState<boolean>();
 
     const toggleSelection = () => {
         if (readOnly) return;
-        const newSelected = !selected;
-        setSelected(newSelected);
-        onToggle(line, newSelected);
+        onToggle(line, !selected);
     };
+    const displayAmount = (
+        (line.basePrice ?? line.price) * line.quantity
+    ).toFixed(2);
 
     return (
         <TouchableOpacity
-            testID={`order-void-line-${line.identifier}`}
+            testID={`${testIDPrefix}-${line.identifier}`}
             style={[
                 styles.dataRow,
                 local.container,
+                compact && local.compactContainer,
                 readOnly && local.readOnlyContainer,
                 selected && {
                     backgroundColor: `${theme.theme.colors.error}33`,
@@ -52,6 +59,7 @@ export function OrderVoidableItem({
                     style={[
                         styles.name,
                         local.centeredText,
+                        compact && local.compactText,
                         readOnly && local.readOnlyText,
                     ]}
                 >
@@ -63,6 +71,7 @@ export function OrderVoidableItem({
                     style={[
                         styles.name,
                         local.centeredText,
+                        compact && local.compactText,
                         readOnly && local.readOnlyText,
                     ]}
                 >
@@ -76,10 +85,11 @@ export function OrderVoidableItem({
                         styles.name,
                         styles.textRight,
                         local.centeredText,
+                        compact && local.compactText,
                         readOnly && local.readOnlyText,
                     ]}
                 >
-                    {(line.price * line.quantity).toFixed(2)}
+                    {displayAmount}
                 </Text>
             </View>
         </TouchableOpacity>
@@ -101,6 +111,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             justifyContent: 'center',
             alignItems: 'center',
         },
+        compactContainer: {
+            minHeight: 52,
+            paddingVertical: tokens.spacing.xs,
+        },
         mainColumn: {
             flex: 3,
             justifyContent: 'center',
@@ -119,6 +133,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             marginBottom: 0,
             lineHeight: 24,
             textAlignVertical: 'center',
+        },
+        compactText: {
+            fontSize: 15,
+            lineHeight: 20,
         },
         readOnlyContainer: {
             backgroundColor: tokens.colors.surfaceMuted,
