@@ -1,14 +1,43 @@
 import React from 'react';
-import { getSalesForRange } from '@pos/reporting/data-access';
-import { OrderStatus } from '@pos/shared/models';
+import { getOrdersForStatuses, getRefundsForRange } from '@pos/reporting/data-access';
+import { Order, OrderRefund, OrderStatus } from '@pos/shared/models';
 import { DateRange } from '@pos/shared/ui-native';
 
 import ReportViewer, { ReportHeader } from '../report-viewer/report-viewer';
 import moment from 'moment';
 import i18next from 'i18next';
+import { normalizeReportRange } from '../report-utils';
 
 /* eslint-disable-next-line */
 export interface SalesProps {}
+
+export const buildSalesRows = (orders: Order[], refunds: OrderRefund[] = []) => {
+    const roundCurrency = (value: number) => Math.round(value * 100) / 100;
+    const refundedAmountsByOrderId = refunds.reduce<Record<string, number>>((acc, refund) => {
+        const orderId = String(refund.orderId || '').trim();
+        if (!orderId) {
+            return acc;
+        }
+
+        acc[orderId] = Number(acc[orderId] || 0) + Number(refund.refundAmount || 0);
+        return acc;
+    }, {});
+
+    return orders.map((order) => {
+        const refundedAmount = Number(
+            refundedAmountsByOrderId[String(order.id || '')] || 0
+        );
+
+        return {
+            orderNo: order.orderNo,
+            orderDate: moment(order.orderDate).format('YYYY-MM-DD hh:MM'),
+            employee: order.createdBy?.name || order.employeeName,
+            amount: roundCurrency(
+                Math.max(0, Number(order.total || 0) - refundedAmount)
+            ),
+        };
+    });
+};
 
 export function Sales(_props: SalesProps) {
     const t = (key: string, fallback: string) =>
@@ -21,21 +50,17 @@ export function Sales(_props: SalesProps) {
         { label: t('REPORT_Header_Amount', 'Amount'), field: 'amount', width: 1, format: 'money', align: 'right', sum: true },
     ];
 
-    const getData = (range: DateRange) => {
-        range.startDate = range.startDate.startOf('day');
-        range.endDate = range.endDate.endOf('day');
+    const getData = async (range: DateRange) => {
+        const normalizedRange = normalizeReportRange(range);
+        const [orders, refunds] = await Promise.all([
+            getOrdersForStatuses({
+                statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+                range: normalizedRange,
+            }),
+            getRefundsForRange({ range: normalizedRange }),
+        ]);
 
-        return getSalesForRange(
-            [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
-            range
-        ).then((sales) => {
-            return sales?.map((s) => ({
-                orderNo: s.orderNo,
-                orderDate: moment(s.orderDate).format('YYYY-MM-DD hh:MM'),
-                employee: s.employeeName,
-                amount: s.total,
-            }));
-        });
+        return buildSalesRows(orders, refunds);
     };
 
     return (
@@ -51,3 +76,5 @@ export function Sales(_props: SalesProps) {
         />
     );
 }
+
+export default Sales;

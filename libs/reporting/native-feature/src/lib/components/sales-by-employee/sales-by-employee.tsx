@@ -1,5 +1,7 @@
 import {
-    getSalesSummaryForRange,
+    buildSalesByEmployeeRows,
+    getOrdersForStatuses,
+    getRefundsForRange,
 } from '@pos/reporting/data-access';
 import { DateRange } from '@pos/shared/ui-native';
 import { sortDescListBy } from '@pos/shared/utils';
@@ -10,6 +12,7 @@ import i18next from 'i18next';
 
 import { View } from 'react-native';
 import ReportViewer, { ReportHeader } from '../report-viewer/report-viewer';
+import { normalizeReportRange } from '../report-utils';
 
 /* eslint-disable-next-line */
 export interface SalesByEmployeeProps {}
@@ -33,16 +36,20 @@ export function SalesByEmployee(props: SalesByEmployeeProps) {
         { label: t('REPORT_Header_Amount', 'Amount'), field: 'amount', width: 1, align: 'right', sum: true, format: 'money' },
     ];
 
-    const getData = (range: DateRange) => {
-        range.startDate = range.startDate.startOf('day');
-        range.endDate = range.endDate.endOf('day');
+    const getData = async (range: DateRange) => {
+        const normalizedRange = normalizeReportRange(range);
+        const [orders, refunds] = await Promise.all([
+            getOrdersForStatuses({
+                statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+                range: normalizedRange,
+            }),
+            getRefundsForRange({ range: normalizedRange }),
+        ]);
 
-        return getSalesSummaryForRange(
-            [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
-            range
-        ).then((summary) =>
-            toSalesByEmployeeRows(summary)
-        );
+        return buildSalesByEmployeeRows(orders, refunds).map((row) => ({
+            employee: row.employeeName,
+            amount: row.amount,
+        }));
     };
 
     return (

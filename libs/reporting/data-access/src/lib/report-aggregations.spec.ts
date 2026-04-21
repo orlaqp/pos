@@ -8,6 +8,8 @@ import {
     buildPaymentSummaryRows,
     buildRefundInsights,
     buildRefundReportRows,
+    buildSalesByEmployeeRows,
+    buildSalesByProductRows,
 } from './report-aggregations';
 import { OrderStatus } from '@pos/shared/models';
 
@@ -53,6 +55,27 @@ describe('report-aggregations', () => {
             },
         ],
     };
+    const partialRefund: any = {
+        id: 'refund-1',
+        orderId: 'order-1',
+        refundAmount: 5,
+        refundPayments: [{ type: 'CASH', amount: 5 }],
+    };
+    const partialRefundLines: any[] = [
+        {
+            refundId: 'refund-1',
+            orderId: 'order-1',
+            orderLineIdentifier: 'line-1',
+            quantityRefunded: 1,
+            lineRefundAmount: 5,
+            productName: 'Oil',
+        },
+    ];
+
+    beforeEach(() => {
+        paidOrder.lines[0].identifier = 'line-1';
+        paidOrder.lines[1].identifier = 'line-2';
+    });
 
     it('builds category, payment, discount, hourly, and ebt summaries', () => {
         expect(
@@ -77,8 +100,8 @@ describe('report-aggregations', () => {
 
         expect(buildEbtSummaryRows([paidOrder])).toEqual([
             { metric: 'EBT Eligible Sales', amount: 10 },
-            { metric: 'EBT Tendered', amount: 3 },
-            { metric: 'Non-EBT Tendered', amount: 12.5 },
+            { metric: 'EBT Tendered', amount: 0 },
+            { metric: 'Non-EBT Tendered', amount: 15.5 },
         ]);
     });
 
@@ -171,6 +194,89 @@ describe('report-aggregations', () => {
             { paymentType: 'Cash', amount: 4.79, count: 1, percent: '50%' },
             { paymentType: 'Cards', amount: 4.71, count: 1, percent: '50%' },
         ]);
+    });
+
+    it('nets partial refunds out of sales-facing aggregations', () => {
+        expect(buildSalesByEmployeeRows([paidOrder] as any, [partialRefund] as any)).toEqual([
+            { employeeName: 'Ada', amount: 10.5 },
+        ]);
+
+        expect(buildSalesByProductRows([paidOrder] as any, partialRefundLines as any)).toEqual([
+            { productId: 'p1', quantity: 1 },
+            { productId: 'p2', quantity: 1 },
+        ]);
+
+        expect(
+            buildCategoryPerformanceRows(
+                [paidOrder] as any,
+                { c1: 'Oils', c2: 'Baking' },
+                partialRefundLines as any
+            )
+        ).toEqual([
+            { category: 'Baking', sales: 5.5, units: 1 },
+            { category: 'Oils', sales: 5, units: 1 },
+        ]);
+
+        expect(buildHourlySalesRows([paidOrder] as any, [partialRefund] as any)).toEqual([
+            { hour: '09:00', sales: 10.5, orders: 1, averageTicket: 10.5 },
+        ]);
+
+        expect(
+            buildEbtSummaryRows(
+                [paidOrder] as any,
+                [partialRefund] as any,
+                partialRefundLines as any
+            )
+        ).toEqual([
+            { metric: 'EBT Eligible Sales', amount: 5 },
+            { metric: 'EBT Tendered', amount: 0 },
+            { metric: 'Non-EBT Tendered', amount: 10.5 },
+        ]);
+
+        expect(
+            buildLowSalesItemRows(
+                [paidOrder] as any,
+                [
+                    { id: 'p1', name: 'Oil' },
+                    { id: 'p2', name: 'Flour' },
+                ] as any,
+                partialRefundLines as any
+            )
+        ).toEqual([
+            { product: 'Flour', quantity: 1, sales: 5.5, status: 'Low sales' },
+            { product: 'Oil', quantity: 1, sales: 5, status: 'Low sales' },
+        ]);
+    });
+
+    it('scales discount totals for partially refunded orders and drops fully refunded ones', () => {
+        expect(
+            buildDiscountReportRows(
+                [paidOrder] as any,
+                [partialRefund] as any,
+                partialRefundLines as any
+            )
+        ).toEqual([{ discount: 'Oil Promo', amount: 0.85, orders: 1 }]);
+
+        expect(
+            buildDiscountReportRows(
+                [paidOrder] as any,
+                [{ ...partialRefund, refundAmount: 15.5 }] as any,
+                [
+                    {
+                        ...partialRefundLines[0],
+                        lineRefundAmount: 10,
+                        quantityRefunded: 2,
+                    },
+                    {
+                        refundId: 'refund-1',
+                        orderId: 'order-1',
+                        orderLineIdentifier: 'line-2',
+                        quantityRefunded: 1,
+                        lineRefundAmount: 5.5,
+                    },
+                ] as any
+            )
+        ).toEqual([]);
     });
 
     it('includes sold products even when they are missing from the loaded product catalog', () => {

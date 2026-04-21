@@ -1,6 +1,7 @@
 import {
     buildHourlySalesRows,
     getOrdersForStatuses,
+    getRefundsForRange,
 } from '@pos/reporting/data-access';
 import { OrderStatus } from '@pos/shared/models';
 import { DateRange } from '@pos/shared/ui-native';
@@ -44,12 +45,16 @@ export function HourlySales() {
     ];
 
     const getData = async (range: DateRange) => {
-        const orders = await getOrdersForStatuses({
-            statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
-            range: normalizeReportRange(range),
-        });
+        const normalizedRange = normalizeReportRange(range);
+        const [orders, refunds] = await Promise.all([
+            getOrdersForStatuses({
+                statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+                range: normalizedRange,
+            }),
+            getRefundsForRange({ range: normalizedRange }),
+        ]);
 
-        return buildHourlySalesRows(orders);
+        return buildHourlySalesRows(orders, refunds);
     };
 
     return (

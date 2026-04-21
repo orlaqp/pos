@@ -1,6 +1,8 @@
 import {
     buildLowSalesItemRows,
     getOrdersForStatuses,
+    getRefundLinesForRefundIds,
+    getRefundsForRange,
 } from '@pos/reporting/data-access';
 import { ProductService, selectAllProducts } from '@pos/products/data-access';
 import { OrderStatus } from '@pos/shared/models';
@@ -40,13 +42,17 @@ export function LowSalesItems() {
 
     const getData = async (range: DateRange) => {
         const normalizedRange = normalizeReportRange(range);
-        const [orders, loadedProducts] = await Promise.all([
+        const [orders, loadedProducts, refunds] = await Promise.all([
             getOrdersForStatuses({
                 statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
                 range: normalizedRange,
             }),
             ProductService.getAll(),
+            getRefundsForRange({ range: normalizedRange }),
         ]);
+        const refundLines = await getRefundLinesForRefundIds(
+            refunds.map((refund) => refund.id).filter(Boolean)
+        );
 
         const mergedProducts = [
             ...(loadedProducts as any[]),
@@ -57,7 +63,7 @@ export function LowSalesItems() {
                 list.findIndex((candidate) => candidate?.id === product.id) === index
         );
 
-        return buildLowSalesItemRows(orders, mergedProducts as any);
+        return buildLowSalesItemRows(orders, mergedProducts as any, refundLines);
     };
 
     return (

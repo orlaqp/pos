@@ -226,6 +226,10 @@ export const getSalesCustom = /* GraphQL */ `
       status
       employeeId
       employeeName
+      createdBy {
+        id
+        name
+      }
       lines {
         identifier
         productId
@@ -234,7 +238,10 @@ export const getSalesCustom = /* GraphQL */ `
         unitOfMeasure
         quantity
         price
+        lineDiscountTotal
+        allocatedOrderDiscountTotal
         lineTotalBeforeTax
+        lineTotalAfterTax
         isEBTEligible
         ebtPaidAmount
         nonEbtPaidAmount

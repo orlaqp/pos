@@ -161,9 +161,15 @@ describe('reporting.service', () => {
         expect(result).toHaveLength(1);
         expect(mockGraphql).toHaveBeenCalledWith(
             expect.objectContaining({
+                query: expect.stringContaining('createdBy'),
                 variables: expect.objectContaining({
                     statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
                 }),
+            })
+        );
+        expect(mockGraphql).toHaveBeenCalledWith(
+            expect.objectContaining({
+                query: expect.stringContaining('lineDiscountTotal'),
             })
         );
     });

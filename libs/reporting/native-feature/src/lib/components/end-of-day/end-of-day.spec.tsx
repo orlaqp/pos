@@ -35,6 +35,7 @@ jest.mock('@pos/shared/ui-native', () => {
 });
 
 import EndOfDay, {
+    buildRefundedLineAmountsForOrder,
     buildEndOfDayWidgets,
     buildEndOfDayFilterConfigs,
     buildDayRange,
@@ -223,6 +224,36 @@ describe('EndOfDay', () => {
             discounts: 4,
             refunds: 2.5,
             netSales: 27.5,
+        });
+    });
+
+    it('builds refunded line amounts keyed by order line identifier', () => {
+        expect(
+            buildRefundedLineAmountsForOrder('o-1', [
+                {
+                    orderId: 'o-1',
+                    orderLineIdentifier: 'line-1',
+                    lineRefundAmount: 2.5,
+                },
+                {
+                    orderId: 'o-1',
+                    orderLineIdentifier: 'line-1',
+                    lineRefundAmount: 1.5,
+                },
+                {
+                    orderId: 'o-1',
+                    orderLineIdentifier: 'line-2',
+                    lineRefundAmount: 4,
+                },
+                {
+                    orderId: 'other',
+                    orderLineIdentifier: 'line-1',
+                    lineRefundAmount: 99,
+                },
+            ] as any)
+        ).toEqual({
+            'line-1': 4,
+            'line-2': 4,
         });
     });
 

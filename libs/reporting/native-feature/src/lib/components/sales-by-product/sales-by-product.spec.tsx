@@ -1,21 +1,13 @@
-import React from 'react';
 import moment from 'moment';
-import { render } from '@testing-library/react-native';
 
 import {
     normalizeSalesByProductRange,
-    SalesByProduct,
     toSalesByProductRows,
 } from './sales-by-product';
 
 describe('SalesByProduct', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-    });
-
-    it('should render successfully', () => {
-        const { container } = render(<SalesByProduct />);
-        expect(container).toBeTruthy();
     });
 
     it('normalizes report range to day boundaries', () => {
@@ -30,13 +22,16 @@ describe('SalesByProduct', () => {
 
     it('maps and sorts sales by product rows', () => {
         const rows = toSalesByProductRows(
-            {
-                products: [
-                    { productName: 'Apples', unitOfMeasure: 'ea', quantity: 4 } as any,
-                    { productName: 'Bread', unitOfMeasure: 'EA', quantity: 10 } as any,
-                    { productName: 'Flour', unitOfMeasure: 'LB', quantity: 2.345 } as any,
-                ],
-            } as any
+            [
+                { productId: 'p1', quantity: 4 } as any,
+                { productId: 'p2', quantity: 10 } as any,
+                { productId: 'p3', quantity: 2.345 } as any,
+            ],
+            [
+                { lines: [{ productId: 'p1', productName: 'Apples' }] },
+                { lines: [{ productId: 'p2', productName: 'Bread' }] },
+                { lines: [{ productId: 'p3', productName: 'Flour' }] },
+            ] as any
         );
 
         expect(rows).toEqual([

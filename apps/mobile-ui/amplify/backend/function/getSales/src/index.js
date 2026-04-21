@@ -55,7 +55,7 @@ async function queryOrdersForStatus(status, range, tenantId) {
         KeyConditionExpression: '#status = :status AND #orderDate BETWEEN :from AND :to',
         FilterExpression: '#tenantId = :tenantId',
         ProjectionExpression:
-            '#id, #orderNo, #orderDate, #updatedAt, #subtotal, #tax, #total, #status, #employeeId, #employeeName, #lines, #discountTotal, #appliedDiscountSummary, #paymentInfo, #refundInfo, #tenantId, #deleted',
+            '#id, #orderNo, #orderDate, #updatedAt, #subtotal, #tax, #total, #status, #employeeId, #employeeName, #createdBy, #lines, #discountTotal, #appliedDiscountSummary, #paymentInfo, #refundInfo, #tenantId, #deleted',
         ExpressionAttributeValues: {
             ':status': status,
             ':from': range.from,
@@ -73,6 +73,7 @@ async function queryOrdersForStatus(status, range, tenantId) {
             '#total': 'total',
             '#employeeId': 'employeeId',
             '#employeeName': 'employeeName',
+            '#createdBy': 'createdBy',
             '#lines': 'lines',
             '#discountTotal': 'discountTotal',
             '#appliedDiscountSummary': 'appliedDiscountSummary',
@@ -106,6 +107,12 @@ function trimOrderForReports(order) {
         status: order.status,
         employeeId: order.employeeId,
         employeeName: order.employeeName,
+        createdBy: order.createdBy
+            ? {
+                id: order.createdBy.id,
+                name: order.createdBy.name,
+            }
+            : null,
         discountTotal: order.discountTotal,
         appliedDiscountSummary: order.appliedDiscountSummary,
         paymentInfo: order.paymentInfo
@@ -133,7 +140,10 @@ function trimOrderForReports(order) {
             unitOfMeasure: line?.unitOfMeasure,
             quantity: line?.quantity,
             price: line?.price,
+            lineDiscountTotal: line?.lineDiscountTotal,
+            allocatedOrderDiscountTotal: line?.allocatedOrderDiscountTotal,
             lineTotalBeforeTax: line?.lineTotalBeforeTax,
+            lineTotalAfterTax: line?.lineTotalAfterTax,
             isEBTEligible: line?.isEBTEligible,
             ebtPaidAmount: line?.ebtPaidAmount,
             nonEbtPaidAmount: line?.nonEbtPaidAmount,

@@ -12,12 +12,14 @@ export interface OrderDetailsProps {
     order: Order;
     productId: string | null;
     refundedAmount?: number;
+    refundedLineAmounts?: Record<string, number>;
 }
 
 export function OrderDetails({
     order,
     productId,
     refundedAmount = 0,
+    refundedLineAmounts = {},
 }: OrderDetailsProps) {
     const styles = useSharedStyles();
     const t = (key: string, fallback: string) =>
@@ -26,6 +28,7 @@ export function OrderDetails({
             : fallback;
     const discountAmount = Number(order.discountTotal || 0);
     const netSales = Math.max(0, Number(order.total || 0) - Number(refundedAmount || 0));
+    const createdByName = order.createdBy?.name || order.employeeName || 'Unknown';
 
     return (
         <View style={[styles.box, styles.column]}>
@@ -40,7 +43,7 @@ export function OrderDetails({
                     <Text style={styles.secondaryText}>
                         {t('EOD_CreatedBy', 'Created By')}
                     </Text>
-                    <Text style={styles.primaryText}>{order.createdBy?.name}</Text>
+                    <Text style={styles.primaryText}>{createdByName}</Text>
                 </View>
                 <View style={[styles.column, styles.centered, { flex: .15, marginRight: 45 }]}>
                     <Icon name='arrow-right' type='material-community' size={16} />
@@ -79,8 +82,10 @@ export function OrderDetails({
                     <Text style={styles.secondaryText}>
                         {t('EOD_Payments', 'Payments')}
                     </Text>
-                    {order.paymentInfo?.payments?.map(p => (
-                        <Text style={styles.primaryText}>{p?.type}: ${p?.amount.toFixed(2)}</Text>
+                    {order.paymentInfo?.payments?.map((p, index) => (
+                        <Text key={`${p?.type || 'payment'}-${index}`} style={styles.primaryText}>
+                            {p?.type}: ${p?.amount.toFixed(2)}
+                        </Text>
                     ))}
                 </View>
                 <View style={[styles.box, { flex: 6 }]}>
@@ -98,7 +103,18 @@ export function OrderDetails({
                             {t('EOD_Total', 'Total')}
                         </Text>
                     </View>
-                    {order.lines.map(l => !l ? null : <OrderLineDetails key={l.identifier} line={l} productId={productId} />)}
+                    {order.lines.map((l) =>
+                        !l ? null : (
+                            <OrderLineDetails
+                                key={l.identifier}
+                                line={l}
+                                productId={productId}
+                                refundedAmount={
+                                    refundedLineAmounts[String(l.identifier || '')] || 0
+                                }
+                            />
+                        )
+                    )}
                 </View>
             </View>
         </View>

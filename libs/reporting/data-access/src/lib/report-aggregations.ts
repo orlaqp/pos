@@ -26,6 +26,11 @@ type DiscountApplicationSummary = {
 
 type ParsedDiscountSummary = {
     applications?: DiscountApplicationSummary[];
+    lineSummaries?: Array<{
+        lineId?: string;
+        discounts?: DiscountApplicationSummary[];
+    }>;
+    orderLevelAdjustments?: DiscountApplicationSummary[];
 };
 
 const normalizeDiscountSummary = (value: unknown): ParsedDiscountSummary | undefined => {
@@ -66,7 +71,95 @@ const normalizeDiscountSummary = (value: unknown): ParsedDiscountSummary | undef
               .filter(Boolean) as DiscountApplicationSummary[])
         : [];
 
-    return { applications };
+    const lineSummaries = Array.isArray((value as { lineSummaries?: unknown }).lineSummaries)
+        ? ((value as { lineSummaries: unknown[] }).lineSummaries
+              .map((summary) => {
+                  if (!summary || typeof summary !== 'object') return undefined;
+                  const typed = summary as Record<string, unknown>;
+                  const discounts = Array.isArray(typed.discounts)
+                      ? (typed.discounts
+                            .map((app) => {
+                                if (!app || typeof app !== 'object') return undefined;
+                                const discount = app as Record<string, unknown>;
+                                return {
+                                    definitionId:
+                                        typeof discount.definitionId === 'string'
+                                            ? discount.definitionId
+                                            : typeof discount.discountDefinitionId === 'string'
+                                            ? discount.discountDefinitionId
+                                            : undefined,
+                                    definitionName:
+                                        typeof discount.definitionName === 'string'
+                                            ? discount.definitionName
+                                            : undefined,
+                                    name:
+                                        typeof discount.name === 'string'
+                                            ? discount.name
+                                            : undefined,
+                                    amount:
+                                        typeof discount.amount === 'number'
+                                            ? discount.amount
+                                            : typeof discount.discountAmount === 'number'
+                                            ? discount.discountAmount
+                                            : undefined,
+                                    discountAmount:
+                                        typeof discount.discountAmount === 'number'
+                                            ? discount.discountAmount
+                                            : undefined,
+                                };
+                            })
+                            .filter(Boolean) as DiscountApplicationSummary[])
+                      : [];
+
+                  return {
+                      lineId:
+                          typeof typed.lineId === 'string'
+                              ? typed.lineId
+                              : typeof typed.lineIdentifier === 'string'
+                              ? typed.lineIdentifier
+                              : undefined,
+                      discounts,
+                  };
+              })
+              .filter(Boolean) as ParsedDiscountSummary['lineSummaries'])
+        : [];
+
+    const orderLevelAdjustments = Array.isArray(
+        (value as { orderLevelAdjustments?: unknown }).orderLevelAdjustments
+    )
+        ? ((value as { orderLevelAdjustments: unknown[] }).orderLevelAdjustments
+              .map((app) => {
+                  if (!app || typeof app !== 'object') return undefined;
+                  const typed = app as Record<string, unknown>;
+                  return {
+                      definitionId:
+                          typeof typed.definitionId === 'string'
+                              ? typed.definitionId
+                              : typeof typed.discountDefinitionId === 'string'
+                              ? typed.discountDefinitionId
+                              : undefined,
+                      definitionName:
+                          typeof typed.definitionName === 'string'
+                              ? typed.definitionName
+                              : undefined,
+                      name:
+                          typeof typed.name === 'string' ? typed.name : undefined,
+                      amount:
+                          typeof typed.amount === 'number'
+                              ? typed.amount
+                              : typeof typed.discountAmount === 'number'
+                              ? typed.discountAmount
+                              : undefined,
+                      discountAmount:
+                          typeof typed.discountAmount === 'number'
+                              ? typed.discountAmount
+                              : undefined,
+                  };
+              })
+              .filter(Boolean) as DiscountApplicationSummary[])
+        : [];
+
+    return { applications, lineSummaries, orderLevelAdjustments };
 };
 
 const parseDiscountSummary = (value: unknown) => {
@@ -84,18 +177,183 @@ const parseDiscountSummary = (value: unknown) => {
 export const getOrderLineSalesAmount = (line: NonNullable<Order['lines']>[number]) =>
     Number(line?.lineTotalBeforeTax ?? Number(line?.price || 0) * Number(line?.quantity || 0));
 
+const getRefundAmountByOrderId = (refunds: OrderRefund[] = []) =>
+    refunds.reduce<Record<string, number>>((acc, refund) => {
+        const orderId = String(refund.orderId || '').trim();
+        if (!orderId) {
+            return acc;
+        }
+
+        acc[orderId] = round((acc[orderId] || 0) + Number(refund.refundAmount || 0));
+        return acc;
+    }, {});
+
+const getRefundLineKey = (orderId: string | undefined | null, lineIdentifier: string | undefined | null) =>
+    `${String(orderId || '').trim()}:${String(lineIdentifier || '').trim()}`;
+
+const buildRefundedLineMaps = (refundLines: OrderRefundLine[] = []) =>
+    refundLines.reduce(
+        (acc, refundLine) => {
+            const key = getRefundLineKey(refundLine.orderId, refundLine.orderLineIdentifier);
+            if (key === ':') {
+                return acc;
+            }
+
+            acc.quantity[key] = round(
+                Number(acc.quantity[key] || 0) + Number(refundLine.quantityRefunded || 0)
+            );
+            acc.amount[key] = round(
+                Number(acc.amount[key] || 0) + Number(refundLine.lineRefundAmount || 0)
+            );
+            return acc;
+        },
+        {
+            quantity: {} as Record<string, number>,
+            amount: {} as Record<string, number>,
+        }
+    );
+
+const getLineRefundedQuantity = (
+    orderId: string | undefined | null,
+    line: NonNullable<Order['lines']>[number],
+    refundedQuantitiesByLineKey: Record<string, number>
+) => Number(refundedQuantitiesByLineKey[getRefundLineKey(orderId, line?.identifier)] || 0);
+
+const getLineRefundedAmount = (
+    orderId: string | undefined | null,
+    line: NonNullable<Order['lines']>[number],
+    refundedAmountsByLineKey: Record<string, number>
+) => Number(refundedAmountsByLineKey[getRefundLineKey(orderId, line?.identifier)] || 0);
+
+const getActiveLineQuantity = (
+    orderId: string | undefined | null,
+    line: NonNullable<Order['lines']>[number],
+    refundedQuantitiesByLineKey: Record<string, number>
+) => Math.max(0, Number(line?.quantity || 0) - getLineRefundedQuantity(orderId, line, refundedQuantitiesByLineKey));
+
+const getActiveLineAmount = (
+    orderId: string | undefined | null,
+    line: NonNullable<Order['lines']>[number],
+    refundedQuantitiesByLineKey: Record<string, number>,
+    refundedAmountsByLineKey: Record<string, number>
+) => {
+    const originalAmount = getOrderLineSalesAmount(line);
+    const refundedAmount = getLineRefundedAmount(orderId, line, refundedAmountsByLineKey);
+
+    if (refundedAmount > 0) {
+        return Math.max(0, round(originalAmount - refundedAmount));
+    }
+
+    const originalQuantity = Number(line?.quantity || 0);
+    if (originalQuantity <= 0) {
+        return Math.max(0, round(originalAmount));
+    }
+
+    const activeQuantity = getActiveLineQuantity(orderId, line, refundedQuantitiesByLineKey);
+    return Math.max(0, round(originalAmount * (activeQuantity / originalQuantity)));
+};
+
+const getOrderNetAmount = (
+    order: Order,
+    refundedAmountsByOrderId: Record<string, number>
+) => Math.max(0, round(Number(order.total || 0) - Number(refundedAmountsByOrderId[String(order.id || '')] || 0)));
+
+const getOrderNetRatio = (
+    order: Order,
+    refundedAmountsByOrderId: Record<string, number>
+) => {
+    const total = Number(order.total || 0);
+    if (total <= 0) {
+        return 0;
+    }
+
+    return Math.max(0, Math.min(1, getOrderNetAmount(order, refundedAmountsByOrderId) / total));
+};
+
+export const buildSalesByEmployeeRows = (
+    orders: Order[],
+    refunds: OrderRefund[] = []
+) => {
+    const refundedAmountsByOrderId = getRefundAmountByOrderId(refunds);
+    const totals = new Map<string, number>();
+
+    orders.forEach((order) => {
+        const amount = getOrderNetAmount(order, refundedAmountsByOrderId);
+        if (amount <= 0) {
+            return;
+        }
+
+        const employee = order.createdBy?.name || order.employeeName || 'Unknown';
+        totals.set(employee, round((totals.get(employee) || 0) + amount));
+    });
+
+    return Array.from(totals.entries())
+        .map(([employeeName, amount]) => ({ employeeName, amount }))
+        .sort((a, b) => b.amount - a.amount);
+};
+
+export const buildSalesByProductRows = (
+    orders: Order[],
+    refundLines: OrderRefundLine[] = []
+) => {
+    const refundedLineMaps = buildRefundedLineMaps(refundLines);
+    const totals = new Map<string, number>();
+
+    orders.forEach((order) => {
+        (order.lines || []).forEach((line) => {
+            if (!line?.productId) {
+                return;
+            }
+
+            const activeQuantity = getActiveLineQuantity(
+                order.id,
+                line,
+                refundedLineMaps.quantity
+            );
+            if (activeQuantity <= 0) {
+                return;
+            }
+
+            const current = totals.get(line.productId) || 0;
+            totals.set(line.productId, round(current + activeQuantity));
+        });
+    });
+
+    return Array.from(totals.entries()).map(([productId, quantity]) => ({
+        productId,
+        quantity,
+    }));
+};
+
 export const buildCategoryPerformanceRows = (
     orders: Order[],
-    categoriesById: Record<string, string>
+    categoriesById: Record<string, string>,
+    refundLines: OrderRefundLine[] = []
 ) => {
+    const refundedLineMaps = buildRefundedLineMaps(refundLines);
     const totals = new Map<string, { sales: number; units: number }>();
 
     orders.forEach((order) => {
         (order.lines || []).forEach((line) => {
+            const activeQuantity = getActiveLineQuantity(
+                order.id,
+                line,
+                refundedLineMaps.quantity
+            );
+            const activeAmount = getActiveLineAmount(
+                order.id,
+                line,
+                refundedLineMaps.quantity,
+                refundedLineMaps.amount
+            );
+            if (activeQuantity <= 0 && activeAmount <= 0) {
+                return;
+            }
+
             const categoryId = line?.categoryId || 'unknown';
             const current = totals.get(categoryId) || { sales: 0, units: 0 };
-            current.sales += getOrderLineSalesAmount(line);
-            current.units += Number(line?.quantity || 0);
+            current.sales += activeAmount;
+            current.units += activeQuantity;
             totals.set(categoryId, current);
         });
     });
@@ -222,20 +480,79 @@ export const buildPaymentSummaryRows = (orders: Order[], refunds: OrderRefund[] 
         .sort((a, b) => b.amount - a.amount);
 };
 
-export const buildDiscountReportRows = (orders: Order[]) => {
+export const buildDiscountReportRows = (
+    orders: Order[],
+    refunds: OrderRefund[] = [],
+    refundLines: OrderRefundLine[] = []
+) => {
+    const refundedAmountsByOrderId = getRefundAmountByOrderId(refunds);
+    const refundedLineMaps = buildRefundedLineMaps(refundLines);
     const totals = new Map<string, { amount: number; orders: number }>();
 
     orders.forEach((order) => {
+        const netOrderAmount = getOrderNetAmount(order, refundedAmountsByOrderId);
+        if (netOrderAmount <= 0) {
+            return;
+        }
+
+        const netOrderRatio = getOrderNetRatio(order, refundedAmountsByOrderId);
         const summary = parseDiscountSummary(order.appliedDiscountSummary);
+        const lineSummaries = summary?.lineSummaries || [];
+        const orderLevelAdjustments = summary?.orderLevelAdjustments || [];
         const apps = summary?.applications || [];
 
-        if (apps.length) {
+        if (lineSummaries.length || orderLevelAdjustments.length) {
             const seen = new Set<string>();
-            apps.forEach((app) => {
+            lineSummaries.forEach((lineSummary) => {
+                const line = (order.lines || []).find(
+                    (candidate) => candidate?.identifier === lineSummary?.lineId
+                );
+                if (!line) {
+                    return;
+                }
+
+                const originalAmount = getOrderLineSalesAmount(line);
+                const activeAmount = getActiveLineAmount(
+                    order.id,
+                    line,
+                    refundedLineMaps.quantity,
+                    refundedLineMaps.amount
+                );
+                const lineRatio =
+                    originalAmount > 0 ? Math.max(0, Math.min(1, activeAmount / originalAmount)) : 0;
+
+                (lineSummary?.discounts || []).forEach((app) => {
+                    const name =
+                        app.name || app.definitionName || app.definitionId || 'Unknown discount';
+                    const scaledAmount = round(
+                        Number(app.amount ?? app.discountAmount ?? 0) * lineRatio
+                    );
+                    if (scaledAmount <= 0) {
+                        return;
+                    }
+
+                    const current = totals.get(name) || { amount: 0, orders: 0 };
+                    current.amount = round(current.amount + scaledAmount);
+                    if (!seen.has(name)) {
+                        current.orders += 1;
+                        seen.add(name);
+                    }
+                    totals.set(name, current);
+                });
+            });
+
+            orderLevelAdjustments.forEach((app) => {
                 const name =
                     app.name || app.definitionName || app.definitionId || 'Unknown discount';
+                const scaledAmount = round(
+                    Number(app.amount ?? app.discountAmount ?? 0) * netOrderRatio
+                );
+                if (scaledAmount <= 0) {
+                    return;
+                }
+
                 const current = totals.get(name) || { amount: 0, orders: 0 };
-                current.amount += Number(app.amount ?? app.discountAmount ?? 0);
+                current.amount = round(current.amount + scaledAmount);
                 if (!seen.has(name)) {
                     current.orders += 1;
                     seen.add(name);
@@ -245,11 +562,34 @@ export const buildDiscountReportRows = (orders: Order[]) => {
             return;
         }
 
-        const fallbackDiscount = Number(order.discountTotal || 0);
+        if (apps.length) {
+            const seen = new Set<string>();
+            apps.forEach((app) => {
+                const name =
+                    app.name || app.definitionName || app.definitionId || 'Unknown discount';
+                const scaledAmount = round(
+                    Number(app.amount ?? app.discountAmount ?? 0) * netOrderRatio
+                );
+                if (scaledAmount <= 0) {
+                    return;
+                }
+
+                const current = totals.get(name) || { amount: 0, orders: 0 };
+                current.amount = round(current.amount + scaledAmount);
+                if (!seen.has(name)) {
+                    current.orders += 1;
+                    seen.add(name);
+                }
+                totals.set(name, current);
+            });
+            return;
+        }
+
+        const fallbackDiscount = round(Number(order.discountTotal || 0) * netOrderRatio);
         if (fallbackDiscount > 0) {
             const key = 'Unclassified discount';
             const current = totals.get(key) || { amount: 0, orders: 0 };
-            current.amount += fallbackDiscount;
+            current.amount = round(current.amount + fallbackDiscount);
             current.orders += 1;
             totals.set(key, current);
         }
@@ -326,16 +666,25 @@ export const buildRefundInsights = (
     };
 };
 
-export const buildHourlySalesRows = (orders: Order[]) => {
+export const buildHourlySalesRows = (
+    orders: Order[],
+    refunds: OrderRefund[] = []
+) => {
+    const refundedAmountsByOrderId = getRefundAmountByOrderId(refunds);
     const totals = new Map<string, { amount: number; orders: number }>();
 
     orders.forEach((order) => {
+        const amount = getOrderNetAmount(order, refundedAmountsByOrderId);
+        if (amount <= 0) {
+            return;
+        }
+
         const source = order.updatedAt || order.orderDate;
         if (!source) return;
         const hour = source.substring(11, 13);
         const key = `${hour}:00`;
         const current = totals.get(key) || { amount: 0, orders: 0 };
-        current.amount += Number(order.total || 0);
+        current.amount += amount;
         current.orders += 1;
         totals.set(key, current);
     });
@@ -350,25 +699,68 @@ export const buildHourlySalesRows = (orders: Order[]) => {
         .sort((a, b) => (a.hour > b.hour ? 1 : -1));
 };
 
-export const buildEbtSummaryRows = (orders: Order[]) => {
+export const buildEbtSummaryRows = (
+    orders: Order[],
+    refunds: OrderRefund[] = [],
+    refundLines: OrderRefundLine[] = []
+) => {
+    const refundedLineMaps = buildRefundedLineMaps(refundLines);
+    const ordersById = new Map<string, Order>();
     let eligibleSales = 0;
     let ebtPaid = 0;
     let nonEbtPaid = 0;
 
     orders.forEach((order) => {
+        ordersById.set(String(order.id), order);
         (order.lines || []).forEach((line) => {
             if (line?.isEBTEligible) {
-                eligibleSales += getOrderLineSalesAmount(line);
+                eligibleSales += getActiveLineAmount(
+                    order.id,
+                    line,
+                    refundedLineMaps.quantity,
+                    refundedLineMaps.amount
+                );
             }
-            ebtPaid += Number(line?.ebtPaidAmount || 0);
-            nonEbtPaid += Number(line?.nonEbtPaidAmount || 0);
+        });
+
+        (order.paymentInfo?.payments || []).forEach((payment) => {
+            const amount = Number(payment?.amount || 0);
+            if (String(payment?.type || '').toUpperCase() === PaymentType.EBT) {
+                ebtPaid += amount;
+            } else {
+                nonEbtPaid += amount;
+            }
+        });
+    });
+
+    refunds.forEach((refund) => {
+        const explicitRefundPayments = (refund.refundPayments || [])
+            .map((payment) => ({
+                type: String(payment?.type || '').toUpperCase(),
+                amount: round(Math.max(0, Number(payment?.amount || 0))),
+            }))
+            .filter((payment) => payment.amount > 0);
+
+        const paymentsToSubtract = explicitRefundPayments.length
+            ? explicitRefundPayments
+            : allocateRefundAcrossOrderPayments(
+                  ordersById.get(String(refund.orderId || '')),
+                  Number(refund.refundAmount || 0)
+              );
+
+        paymentsToSubtract.forEach((payment) => {
+            if (payment.type === PaymentType.EBT) {
+                ebtPaid = round(ebtPaid - payment.amount);
+            } else {
+                nonEbtPaid = round(nonEbtPaid - payment.amount);
+            }
         });
     });
 
     return [
-        { metric: 'EBT Eligible Sales', amount: eligibleSales },
-        { metric: 'EBT Tendered', amount: ebtPaid },
-        { metric: 'Non-EBT Tendered', amount: nonEbtPaid },
+        { metric: 'EBT Eligible Sales', amount: round(eligibleSales) },
+        { metric: 'EBT Tendered', amount: round(Math.max(0, ebtPaid)) },
+        { metric: 'Non-EBT Tendered', amount: round(Math.max(0, nonEbtPaid)) },
     ];
 };
 
@@ -399,7 +791,12 @@ export const buildOpenOrdersAgingRows = (orders: Order[], now = new Date()) =>
         })
         .sort((a, b) => b.ageMinutes - a.ageMinutes);
 
-export const buildLowSalesItemRows = (orders: Order[], products: Product[]) => {
+export const buildLowSalesItemRows = (
+    orders: Order[],
+    products: Product[],
+    refundLines: OrderRefundLine[] = []
+) => {
+    const refundedLineMaps = buildRefundedLineMaps(refundLines);
     const sold = new Map<string, { quantity: number; amount: number }>();
     const catalog = new Map<string, { id: string; name: string }>();
 
@@ -422,8 +819,17 @@ export const buildLowSalesItemRows = (orders: Order[], products: Product[]) => {
                 });
             }
             const current = sold.get(productId) || { quantity: 0, amount: 0 };
-            current.quantity += Number(line?.quantity || 0);
-            current.amount += getOrderLineSalesAmount(line);
+            current.quantity += getActiveLineQuantity(
+                order.id,
+                line,
+                refundedLineMaps.quantity
+            );
+            current.amount += getActiveLineAmount(
+                order.id,
+                line,
+                refundedLineMaps.quantity,
+                refundedLineMaps.amount
+            );
             sold.set(productId, current);
         });
     });

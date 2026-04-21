@@ -1,6 +1,8 @@
 import {
     buildCategoryPerformanceRows,
     getOrdersForStatuses,
+    getRefundLinesForRefundIds,
+    getRefundsForRange,
 } from '@pos/reporting/data-access';
 import { OrderStatus } from '@pos/shared/models';
 import { DateRange } from '@pos/shared/ui-native';
@@ -40,17 +42,24 @@ export function CategoryPerformance() {
     ];
 
     const getData = async (range: DateRange) => {
+        const normalizedRange = normalizeReportRange(range);
         const resolvedCategories =
             categories?.length > 0 ? categories : await CategoryService.getAll();
         const resolvedCategoriesById = Object.fromEntries(
             (resolvedCategories || []).map((category) => [category.id, category.name])
         );
-        const orders = await getOrdersForStatuses({
-            statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
-            range: normalizeReportRange(range),
-        });
+        const [orders, refunds] = await Promise.all([
+            getOrdersForStatuses({
+                statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+                range: normalizedRange,
+            }),
+            getRefundsForRange({ range: normalizedRange }),
+        ]);
+        const refundLines = await getRefundLinesForRefundIds(
+            refunds.map((refund) => refund.id).filter(Boolean)
+        );
 
-        return buildCategoryPerformanceRows(orders, resolvedCategoriesById);
+        return buildCategoryPerformanceRows(orders, resolvedCategoriesById, refundLines);
     };
 
     return (

@@ -65,6 +65,26 @@ export const getPaymentMethodsTotal = (summary: PaymentMethodsSummary) =>
 export const formatPaymentAmount = (amount: number) =>
     `$${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 
+export const buildRefundedLineAmountsForOrder = (
+    orderId: string,
+    refundLines: OrderRefundLine[]
+) =>
+    refundLines.reduce<Record<string, number>>((acc, refundLine) => {
+        if (refundLine.orderId !== orderId) {
+            return acc;
+        }
+
+        const identifier = String(refundLine.orderLineIdentifier || '').trim();
+        if (!identifier) {
+            return acc;
+        }
+
+        acc[identifier] =
+            Number(acc[identifier] || 0) +
+            Number(refundLine.lineRefundAmount || 0);
+        return acc;
+    }, {});
+
 export const loadPaidSalesForRange = async (
     dateRange: { startDate: any; endDate: any },
     fetchSales: typeof getSalesForRange = getSalesForRange
@@ -554,6 +574,10 @@ export function EndOfDay(props: EndOfDayProps) {
                                                 0
                                             )
                                     }
+                                    refundedLineAmounts={buildRefundedLineAmountsForOrder(
+                                        item.id,
+                                        refundLines
+                                    )}
                                 />
                             )}
                         />

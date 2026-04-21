@@ -1,9 +1,14 @@
-import { getSalesSummaryForRange } from '@pos/reporting/data-access';
+import {
+    buildSalesByProductRows,
+    getOrdersForStatuses,
+    getRefundLinesForRefundIds,
+    getRefundsForRange,
+} from '@pos/reporting/data-access';
 import { DateRange } from '@pos/shared/ui-native';
 import { sortDescListBy } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
 import React from 'react';
-import { OrderStatus, SalesSummary } from '@pos/shared/models';
+import { OrderStatus } from '@pos/shared/models';
 import i18next from 'i18next';
 
 import { View } from 'react-native';
@@ -12,13 +17,25 @@ import ReportViewer, { ReportHeader } from '../report-viewer/report-viewer';
 /* eslint-disable-next-line */
 export interface SalesByProductProps {}
 
-export const toSalesByProductRows = (summary: SalesSummary | undefined) => {
-    const rows = [...(summary?.products || [])];
-    sortDescListBy(rows as any, 'quantity');
+export const toSalesByProductRows = (
+    rows: Array<{ productId: string; quantity: number }>,
+    orders: Array<{ lines?: Array<{ productId?: string; productName?: string | null } | null> | null }>
+) => {
+    const productNamesById = new Map<string, string>();
+    orders.forEach((order) => {
+        (order.lines || []).forEach((line) => {
+            if (line?.productId && line.productName && !productNamesById.has(line.productId)) {
+                productNamesById.set(line.productId, line.productName);
+            }
+        });
+    });
 
-    return rows.map((item) => ({
-        product: item?.productName || 'Unknown',
-        amount: Number(item?.quantity || 0).toFixed(2),
+    const items = [...rows];
+    sortDescListBy(items as any, 'quantity');
+
+    return items.map((item) => ({
+        product: productNamesById.get(item.productId) || 'Unknown',
+        amount: Number(item.quantity || 0).toFixed(2),
     }));
 };
 
@@ -42,12 +59,21 @@ export function SalesByProduct(props: SalesByProductProps) {
 
     const getData = async (range: DateRange) => {
         const normalizedRange = normalizeSalesByProductRange(range);
-        const summary = await getSalesSummaryForRange(
-            [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
-            normalizedRange
+        const [orders, refunds] = await Promise.all([
+            getOrdersForStatuses({
+                statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+                range: normalizedRange,
+            }),
+            getRefundsForRange({ range: normalizedRange }),
+        ]);
+        const refundLines = await getRefundLinesForRefundIds(
+            refunds.map((refund) => refund.id).filter(Boolean)
         );
 
-        return toSalesByProductRows(summary);
+        return toSalesByProductRows(
+            buildSalesByProductRows(orders, refundLines),
+            orders
+        );
     };
 
     return (

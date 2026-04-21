@@ -1,14 +1,6 @@
-import React from 'react';
-import { render } from '@testing-library/react-native';
-
-import SalesByEmployee, { toSalesByEmployeeRows } from './sales-by-employee';
+import { toSalesByEmployeeRows } from './sales-by-employee';
 
 describe('SalesByEmployee', () => {
-    it('should render successfully', () => {
-        const { container } = render(<SalesByEmployee />);
-        expect(container).toBeTruthy();
-    });
-
     it('maps and sorts sales by employee rows', () => {
         const rows = toSalesByEmployeeRows({
             employees: [

@@ -9,9 +9,14 @@ import { View, Text } from 'react-native';
 export interface OrderLineDetailsProps {
     line: OrderLine;
     productId: string | null;
+    refundedAmount?: number;
 }
 
-export function OrderLineDetails({ line, productId }: OrderLineDetailsProps) {
+export function OrderLineDetails({
+    line,
+    productId,
+    refundedAmount = 0,
+}: OrderLineDetailsProps) {
     const styles = useSharedStyles();
     const highlightProduct = !productId || line.productId === productId;
     const textStyle = highlightProduct ? styles.primaryText : styles.secondaryText;
@@ -24,7 +29,6 @@ export function OrderLineDetails({ line, productId }: OrderLineDetailsProps) {
         Number(line.lineDiscountTotal || 0) +
             Number(line.allocatedOrderDiscountTotal || 0)
     );
-
     return (
         <View>
             <View style={styles.row}>
@@ -43,17 +47,34 @@ export function OrderLineDetails({ line, productId }: OrderLineDetailsProps) {
             </View>
             {discountAmount > 0 && (
                 <View style={styles.row}>
-                    <Text style={[styles.secondaryText, { flex: 4 }]} />
-                    <Text style={[styles.secondaryText, { flex: 1, textAlign: 'right' }]}>
-                        Orig. $ {originalLineTotal.toFixed(2)}
+                    <Text style={[styles.secondaryText, { flex: 5, textAlign: 'right' }]}>
+                        Discount
                     </Text>
                     <Text
                         style={[
                             styles.secondaryText,
-                            { flex: 1, textAlign: 'right', color: '#8BC34A' },
+                            styles.textRight,
+                            { flex: 1, color: '#8BC34A' },
                         ]}
                     >
-                        Disc. $ {discountAmount.toFixed(2)}
+                        - $ {discountAmount.toFixed(2)}
+                    </Text>
+                </View>
+            )}
+            {refundedAmount > 0 && (
+                <View style={styles.row}>
+                    <Text style={[styles.secondaryText, { flex: 5, textAlign: 'right' }]}>
+                        Refund
+                    </Text>
+                    <Text
+                        style={[
+                            styles.secondaryText,
+                            styles.textRight,
+                            { color: '#f59e0b' },
+                            { flex: 1 },
+                        ]}
+                    >
+                        - $ {refundedAmount.toFixed(2)}
                     </Text>
                 </View>
             )}
