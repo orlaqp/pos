@@ -228,7 +228,9 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
 
     const currentTotal = Math.max(
         0,
-        Number(order.total || 0) - existingRefundAmount
+        order.currentTotal != null
+            ? Number(order.currentTotal || 0)
+            : Number(order.total || 0) - existingRefundAmount
     );
 
     const paymentTypeOptions = useMemo(

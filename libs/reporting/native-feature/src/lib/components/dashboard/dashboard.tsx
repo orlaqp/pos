@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Order,
     OrderRefund,
@@ -18,7 +18,15 @@ import {
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import moment from 'moment';
 
-import { Animated, InteractionManager, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+    Animated,
+    InteractionManager,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+} from 'react-native';
 import { LineChartComponent } from '../line-chart/line-chart';
 import ListWidget from '../list-widget/list-widget';
 import PieChart from '../pie-chart/pie-chart';
@@ -529,6 +537,7 @@ export function Dashboard(_props: DashboardProps) {
     const [orders, setOrders] = useState<Order[]>([]);
     const [refunds, setRefunds] = useState<OrderRefund[]>([]);
     const [refundLines, setRefundLines] = useState<OrderRefundLine[]>([]);
+    const [refreshNonce, setRefreshNonce] = useState(0);
     const [emptyOpacity] = useState(() => new Animated.Value(0));
     const [emptyTranslateY] = useState(() => new Animated.Value(12));
     const categories = useSelector(selectAllCategories);
@@ -587,6 +596,14 @@ export function Dashboard(_props: DashboardProps) {
                 : normalizedRange
         );
     };
+
+    const refreshDashboard = useCallback(() => {
+        if (loading) {
+            return;
+        }
+
+        setRefreshNonce((current) => current + 1);
+    }, [loading]);
 
     useEffect(() => {
         let cancelled = false;
@@ -649,7 +666,7 @@ export function Dashboard(_props: DashboardProps) {
             cancelled = true;
             interactionHandle?.cancel?.();
         };
-    }, [dateRange]);
+    }, [dateRange, refreshNonce]);
 
     useEffect(() => {
         if (loading || hasSalesData(salesSummary)) return;
@@ -693,14 +710,37 @@ export function Dashboard(_props: DashboardProps) {
                                     )}
                                 </Text>
                                 <View style={styles.heroMetaRow}>
-                                    <View style={styles.heroMetaPill}>
+                                    <Pressable
+                                        accessibilityRole="button"
+                                        disabled={loading}
+                                        onPress={refreshDashboard}
+                                        style={({ pressed }) => [
+                                            styles.heroMetaPill,
+                                            styles.refreshButton,
+                                            pressed && !loading
+                                                ? styles.refreshButtonPressed
+                                                : null,
+                                            loading
+                                                ? styles.refreshButtonDisabled
+                                                : null,
+                                        ]}
+                                        testID="dashboard-refresh-button"
+                                    >
                                         <Text style={styles.heroMetaLabel}>
-                                            {t('DASHBOARD_Status', 'Status')}
+                                            {t('DASHBOARD_Refresh', 'Refresh')}
                                         </Text>
                                         <Text style={styles.heroMetaValue}>
-                                            {t('DASHBOARD_PaidSales', 'Paid sales')}
+                                            {loading
+                                                ? t(
+                                                      'DASHBOARD_Refreshing',
+                                                      'Refreshing...'
+                                                  )
+                                                : t(
+                                                      'DASHBOARD_RefreshData',
+                                                      'Reload data'
+                                                  )}
                                         </Text>
-                                    </View>
+                                    </Pressable>
                                 </View>
                             </View>
                             <View style={styles.heroRangePanel}>
@@ -1066,6 +1106,16 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             paddingHorizontal: tokens.spacing.md,
             paddingVertical: tokens.spacing.sm,
             alignSelf: 'flex-start',
+        },
+        refreshButton: {
+            minWidth: 190,
+        },
+        refreshButtonPressed: {
+            backgroundColor: '#102036',
+            borderColor: '#35506F',
+        },
+        refreshButtonDisabled: {
+            opacity: 0.72,
         },
         heroMetaLabel: {
             color: '#7C8EA5',

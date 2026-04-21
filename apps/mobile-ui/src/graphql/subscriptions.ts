@@ -550,6 +550,10 @@ export const onCreateOrder = /* GraphQL */ `subscription OnCreateOrder(
     savingsTotal
     tax
     total
+    currentSubtotal
+    currentDiscountTotal
+    currentTax
+    currentTotal
     promoCodes
     pricingVersion
     pricingSnapshotHash
@@ -662,6 +666,10 @@ export const onUpdateOrder = /* GraphQL */ `subscription OnUpdateOrder(
     savingsTotal
     tax
     total
+    currentSubtotal
+    currentDiscountTotal
+    currentTax
+    currentTotal
     promoCodes
     pricingVersion
     pricingSnapshotHash
@@ -774,6 +782,10 @@ export const onDeleteOrder = /* GraphQL */ `subscription OnDeleteOrder(
     savingsTotal
     tax
     total
+    currentSubtotal
+    currentDiscountTotal
+    currentTax
+    currentTotal
     promoCodes
     pricingVersion
     pricingSnapshotHash

@@ -1426,6 +1426,16 @@ describe('OrderService', () => {
     });
 
     expect(saveMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        status: 'PARTIALLY_REFUNDED',
+        currentSubtotal: 10,
+        currentDiscountTotal: 0,
+        currentTax: 0,
+        currentTotal: 10,
+      })
+    );
+    expect(saveMock).toHaveBeenNthCalledWith(
       3,
       expect.objectContaining({
         id: 'generated-order-id',

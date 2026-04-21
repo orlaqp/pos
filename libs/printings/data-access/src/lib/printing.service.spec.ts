@@ -597,6 +597,168 @@ describe('printing.service helpers', () => {
     expect(receiptText).toContain('4.99');
   });
 
+  it('hides refunded-item discount detail lines on customer partial-refund receipts', () => {
+    const receiptText = buildReceiptPreviewText(
+      {
+        name: 'QA Store',
+      },
+      {
+        items: [
+          {
+            identifier: 'line-1',
+            quantity: 3,
+            product: {
+              name: 'Huevo',
+              price: 4.99,
+            },
+          },
+        ],
+        footer: {
+          baseSubtotal: 14.97,
+          discount: 4.49,
+          total: 10.48,
+        },
+        appliedDiscountSummary: {
+          applications: [],
+          approvalEvents: [],
+          pricingGeneratedAt: '2026-04-20T12:00:00.000Z',
+          warnings: [],
+          lineSummaries: [
+            {
+              lineId: 'line-1',
+              lineDiscountTotal: 4.49,
+              allocatedOrderDiscountTotal: 0,
+              lineTotalBeforeTax: 10.48,
+              discounts: [
+                {
+                  discountApplicationId: 'line-discount-1',
+                  applicationType: 'AUTOMATIC_DISCOUNT',
+                  scope: 'LINE',
+                  method: 'PERCENT',
+                  name: 'Test 1%',
+                  stackMode: 'STACKABLE',
+                  source: 'automatic',
+                  value: 30,
+                  originalAmount: 14.97,
+                  discountAmount: 4.49,
+                  finalAmount: 10.48,
+                  appliedAt: '2026-04-20T12:00:00.000Z',
+                },
+              ],
+            },
+          ],
+          orderLevelAdjustments: [],
+        },
+      },
+      {
+        id: 'order-5',
+        orderNo: '01-01-260325-0005',
+        copyType: 'CUSTOMER',
+        status: 'PARTIALLY_REFUNDED',
+        refundedQuantities: {
+          'line-1': 2,
+        },
+        refundedLineAmounts: {
+          'line-1': 5.49,
+        },
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 3,
+            productName: 'Huevo',
+            price: 4.99,
+            lineTotalBeforeTax: 10.48,
+          },
+        ],
+      }
+    );
+
+    const refundedSection = receiptText.split('Refunded Items')[1] ?? '';
+    const refundedSectionBody = refundedSection.split('Subtotal')[0] ?? refundedSection;
+
+    expect(receiptText).toContain('Active Items');
+    expect(refundedSectionBody).toContain('2      Huevo');
+    expect(refundedSectionBody).not.toContain('Discount');
+  });
+
+  it('uses persisted current totals and shows refund tenders as negative footer lines', () => {
+    const receiptText = buildReceiptPreviewText(
+      {
+        name: 'QA Store',
+      },
+      {
+        items: [
+          {
+            identifier: 'line-1',
+            quantity: 2,
+            product: {
+              name: 'Huevo',
+              price: 4.99,
+            },
+          },
+        ],
+        footer: {
+          baseSubtotal: 9.98,
+          discount: 2.99,
+          total: 6.99,
+        },
+        appliedDiscountSummary: {
+          applications: [],
+          approvalEvents: [],
+          pricingGeneratedAt: '2026-04-20T12:00:00.000Z',
+          warnings: [],
+          lineSummaries: [
+            {
+              lineId: 'line-1',
+              lineDiscountTotal: 2.99,
+              allocatedOrderDiscountTotal: 0,
+              lineTotalBeforeTax: 6.99,
+              discounts: [],
+            },
+          ],
+          orderLevelAdjustments: [],
+        },
+      },
+      {
+        id: 'order-6',
+        orderNo: '01-01-260325-0006',
+        copyType: 'CUSTOMER',
+        status: 'PARTIALLY_REFUNDED',
+        currentSubtotal: 4.99,
+        currentDiscountTotal: 0,
+        currentTax: 0,
+        currentTotal: 4.99,
+        refundedQuantities: {
+          'line-1': 1,
+        },
+        refundedLineAmounts: {
+          'line-1': 2,
+        },
+        paymentInfo: {
+          payments: [{ type: 'EBT', amount: 6.99 }],
+        },
+        refundPayments: [{ type: 'EBT', amount: 2 }],
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 2,
+            productName: 'Huevo',
+            price: 4.99,
+            lineTotalBeforeTax: 6.99,
+          },
+        ],
+      }
+    );
+
+    expect(receiptText).toContain('Subtotal');
+    expect(receiptText).toContain('4.99');
+    expect(receiptText).toContain('Total');
+    expect(receiptText).toContain('Original Payments');
+    expect(receiptText).toContain('EBT: $ 6.99');
+    expect(receiptText).toContain('Refund Payments');
+    expect(receiptText).toContain('EBT: -$ 2.00');
+  });
+
   it('records the print job through the E2E printer spy without using hardware transport', async () => {
     mockIsE2EPrinterSpyEnabled.mockReturnValue(true);
 

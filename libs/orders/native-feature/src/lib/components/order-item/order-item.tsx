@@ -162,6 +162,18 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                       .then((amounts) => Object.fromEntries(amounts.entries()))
                       .catch(() => undefined)
                 : undefined;
+        const refundPayments =
+            item.id &&
+            (item.status === 'PARTIALLY_REFUNDED' || item.status === 'REFUNDED')
+                ? await OrderService.getRefundPaymentTotalsForOrder(item.id)
+                      .then((payments) =>
+                          payments.map((payment) => ({
+                              type: payment.type,
+                              amount: payment.amount,
+                          }))
+                      )
+                      .catch(() => undefined)
+                : undefined;
 
         printReceipt(
             fallbackStore,
@@ -184,6 +196,10 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                     refundedLineAmounts &&
                     Object.keys(refundedLineAmounts).length > 0
                         ? refundedLineAmounts
+                        : undefined,
+                refundPayments:
+                    refundPayments && refundPayments.length > 0
+                        ? refundPayments
                         : undefined,
             }
         );
@@ -224,7 +240,10 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
     const hasRefundDisplay =
         refundedAmount > 0 &&
         (item.status === 'PARTIALLY_REFUNDED' || item.status === 'REFUNDED');
-    const activeTotal = Math.max(0, Number(item.total || 0) - refundedAmount);
+    const activeTotal =
+        hasRefundDisplay && item.currentTotal != null
+            ? Math.max(0, Number(item.currentTotal || 0))
+            : Math.max(0, Number(item.total || 0) - refundedAmount);
 
     return (
         <View testID={`order-item-${item.id}`} style={[styles.dataRow, local.row]}>

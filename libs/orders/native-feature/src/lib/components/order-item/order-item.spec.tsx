@@ -84,6 +84,7 @@ jest.mock('@pos/orders/data-access', () => ({
     OrderService: {
         delete: jest.fn(),
         getRefundedLineAmountsForOrder: jest.fn(),
+        getRefundPaymentTotalsForOrder: jest.fn(),
     },
     OrderEntityMapper: { asCartState: jest.fn() },
     selectRefundedAmountForOrder: jest.fn(() => mockRefundedAmount),
@@ -267,6 +268,7 @@ describe('OrderItem integration', () => {
             subtotal: 150.96,
             tax: 0,
             total: 150.96,
+            currentTotal: 99.25,
             status: 'PARTIALLY_REFUNDED',
             employeeId: 'emp-1',
             employeeName: 'Cashier',
@@ -285,12 +287,12 @@ describe('OrderItem integration', () => {
             />
         );
 
-        expect(getByText('$ 100.64')).toBeTruthy();
+        expect(getByText('$ 99.25')).toBeTruthy();
         expect(getByTestId('order-item-original-total').props.children).toBe(
             '$ 150.96'
         );
         expect(getByTestId('order-item-active-total').props.children).toBe(
-            '$ 100.64'
+            '$ 99.25'
         );
     });
 });

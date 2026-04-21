@@ -550,6 +550,10 @@ export const createOrder = /* GraphQL */ `mutation CreateOrder(
     savingsTotal
     tax
     total
+    currentSubtotal
+    currentDiscountTotal
+    currentTax
+    currentTotal
     promoCodes
     pricingVersion
     pricingSnapshotHash
@@ -662,6 +666,10 @@ export const updateOrder = /* GraphQL */ `mutation UpdateOrder(
     savingsTotal
     tax
     total
+    currentSubtotal
+    currentDiscountTotal
+    currentTax
+    currentTotal
     promoCodes
     pricingVersion
     pricingSnapshotHash
@@ -774,6 +782,10 @@ export const deleteOrder = /* GraphQL */ `mutation DeleteOrder(
     savingsTotal
     tax
     total
+    currentSubtotal
+    currentDiscountTotal
+    currentTax
+    currentTotal
     promoCodes
     pricingVersion
     pricingSnapshotHash

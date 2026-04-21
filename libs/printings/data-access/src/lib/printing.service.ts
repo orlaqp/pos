@@ -55,6 +55,10 @@ type ReceiptOrderEntity = {
     status?: 'OPEN' | 'PAID' | 'REFUNDED' | string;
     orderNo?: string;
     copyType?: 'CUSTOMER' | 'MERCHANT';
+    currentSubtotal?: number | null;
+    currentDiscountTotal?: number | null;
+    currentTax?: number | null;
+    currentTotal?: number | null;
     refundedQuantities?: Record<string, number> | null;
     refundedLineAmounts?: Record<string, number> | null;
     paymentInfo?: {
@@ -63,6 +67,10 @@ type ReceiptOrderEntity = {
             amount: number;
         }>;
     };
+    refundPayments?: Array<{
+        type: string;
+        amount: number;
+    }> | null;
     lines?: Array<{
         identifier?: string;
         quantity?: number;
@@ -574,9 +582,41 @@ export const print = async (
 };
 
 const getReceiptPaymentsText = (order?: ReceiptOrderEntity) =>
-    order?.paymentInfo?.payments
-        ?.map((payment) => `${payment.type}: $ ${payment.amount.toFixed(2)}`)
-        .join('\n') || '';
+    (() => {
+        const originalPayments = order?.paymentInfo?.payments || [];
+        const refundPayments = order?.refundPayments || [];
+        const hasRefundHistory =
+            (order?.status === 'PARTIALLY_REFUNDED' || order?.status === 'REFUNDED') &&
+            refundPayments.length > 0;
+
+        if (!hasRefundHistory) {
+            return originalPayments
+                .map((payment) => `${payment.type}: $ ${payment.amount.toFixed(2)}`)
+                .join('\n');
+        }
+
+        const rows: string[] = [];
+
+        if (originalPayments.length) {
+            rows.push('Original Payments');
+            rows.push(
+                ...originalPayments.map(
+                    (payment) => `${payment.type}: $ ${payment.amount.toFixed(2)}`
+                )
+            );
+        }
+
+        if (refundPayments.length) {
+            rows.push('Refund Payments');
+            rows.push(
+                ...refundPayments.map(
+                    (payment) => `${payment.type}: -$ ${payment.amount.toFixed(2)}`
+                )
+            );
+        }
+
+        return rows.join('\n');
+    })();
 
 const buildReceiptTotalsBreakdownText = (
     cart: ReceiptCartState,
@@ -704,8 +744,12 @@ const buildReceiptHeaderRow = (
 
 const formatReceiptLineRow = (
     row: ReceiptLineDisplayRow,
+    options: {
+        showDiscountLine?: boolean;
+    } = {},
     layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) => {
+    const { showDiscountLine = true } = options;
     const hasDiscount = roundMoney(row.originalAmount - row.finalAmount) > 0;
     const lines = [
         formatLine(
@@ -716,7 +760,7 @@ const formatReceiptLineRow = (
         ),
     ];
 
-    if (hasDiscount) {
+    if (hasDiscount && showDiscountLine) {
         const discountAmount = `-${formatReceiptCurrency(
             roundMoney(row.originalAmount - row.finalAmount)
         )}`;
@@ -739,7 +783,7 @@ const buildClassicLines = (
     return (
         `${buildReceiptHeaderRow(layoutProfile)}\n` +
         `${'-'.repeat(layoutProfile.totalColumns)}\n` +
-        rows.map((row) => formatReceiptLineRow(row, layoutProfile))
+        rows.map((row) => formatReceiptLineRow(row, {}, layoutProfile))
             .join('\n') +
         '\n\n' +
         `${'-'.repeat(layoutProfile.totalColumns)}\n`
@@ -750,13 +794,24 @@ const buildRefundedSection = (
     title: string,
     entries: ReceiptLineDisplayRow[],
     emptyLabel: string,
+    options: {
+        showDiscountLines?: boolean;
+    } = {},
     layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) =>
     `${title}\n` +
     `${buildReceiptHeaderRow(layoutProfile)}\n` +
     `${'-'.repeat(layoutProfile.totalColumns)}\n` +
     (entries.length
-        ? entries.map((entry) => formatReceiptLineRow(entry, layoutProfile)).join('\n')
+        ? entries
+              .map((entry) =>
+                  formatReceiptLineRow(
+                      entry,
+                      { showDiscountLine: options.showDiscountLines },
+                      layoutProfile
+                  )
+              )
+              .join('\n')
         : emptyLabel) +
     '\n\n';
 
@@ -776,6 +831,12 @@ export const buildReceiptLines = (
                         section.title,
                         section.rows,
                         section.emptyLabel,
+                        {
+                            showDiscountLines: !(
+                                order?.copyType === 'CUSTOMER' &&
+                                section.title === 'Refunded Items'
+                            ),
+                        },
                         layoutProfile
                     )
                 )
@@ -965,10 +1026,12 @@ const buildRefundSplitReceiptModel = (
             },
         ],
         totals: {
-            subtotal: activeSubtotal,
-            discount: roundMoney(activeSubtotal - activeTotal),
-            tax: activeTax,
-            total: roundMoney(activeTotal + activeTax),
+            subtotal: roundMoney(order.currentSubtotal ?? activeSubtotal),
+            discount: roundMoney(
+                order.currentDiscountTotal ?? roundMoney(activeSubtotal - activeTotal)
+            ),
+            tax: roundMoney(order.currentTax ?? activeTax),
+            total: roundMoney(order.currentTotal ?? roundMoney(activeTotal + activeTax)),
             orderDiscountDetails: [],
         },
     };

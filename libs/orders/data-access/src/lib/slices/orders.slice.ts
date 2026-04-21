@@ -83,6 +83,10 @@ const ORDER_COMPARISON_FIELDS: Array<keyof OrderEntity> = [
     'savingsTotal',
     'tax',
     'total',
+    'currentSubtotal',
+    'currentDiscountTotal',
+    'currentTax',
+    'currentTotal',
     'status',
     'employeeId',
     'employeeName',
@@ -719,6 +723,10 @@ function normalizeReceiptOrder(order?: OrderEntity) {
         id: order.id,
         status: order.status,
         orderNo: order.orderNo,
+        currentSubtotal: order.currentSubtotal ?? undefined,
+        currentDiscountTotal: order.currentDiscountTotal ?? undefined,
+        currentTax: order.currentTax ?? undefined,
+        currentTotal: order.currentTotal ?? undefined,
         paymentInfo: order.paymentInfo
             ? {
                   payments: order.paymentInfo.payments?.map((payment) => ({

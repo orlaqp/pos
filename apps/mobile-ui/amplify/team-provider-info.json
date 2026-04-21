@@ -163,7 +163,7 @@
         },
         "getSales": {
           "deploymentBucketName": "amplify-pos-uat-ff8a9-deployment",
-          "s3Key": "amplify-builds/getSales-7266574a666374537942-build.zip"
+          "s3Key": "amplify-builds/getSales-504e534f444f57644472-build.zip"
         },
         "getSalesSummaryQuery": {
           "deploymentBucketName": "amplify-pos-uat-ff8a9-deployment",

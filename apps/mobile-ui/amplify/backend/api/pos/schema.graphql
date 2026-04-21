@@ -270,6 +270,10 @@ type Order @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityC
   savingsTotal: Float
   tax: Float!
   total: Float!
+  currentSubtotal: Float
+  currentDiscountTotal: Float
+  currentTax: Float
+  currentTotal: Float
   promoCodes: [String]
   pricingVersion: String
   pricingSnapshotHash: String

@@ -844,6 +844,10 @@ type EagerOrder = {
   readonly savingsTotal?: number | null;
   readonly tax: number;
   readonly total: number;
+  readonly currentSubtotal?: number | null;
+  readonly currentDiscountTotal?: number | null;
+  readonly currentTax?: number | null;
+  readonly currentTotal?: number | null;
   readonly promoCodes?: (string | null)[] | null;
   readonly pricingVersion?: string | null;
   readonly pricingSnapshotHash?: string | null;
@@ -881,6 +885,10 @@ type LazyOrder = {
   readonly savingsTotal?: number | null;
   readonly tax: number;
   readonly total: number;
+  readonly currentSubtotal?: number | null;
+  readonly currentDiscountTotal?: number | null;
+  readonly currentTax?: number | null;
+  readonly currentTotal?: number | null;
   readonly promoCodes?: (string | null)[] | null;
   readonly pricingVersion?: string | null;
   readonly pricingSnapshotHash?: string | null;

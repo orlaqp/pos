@@ -850,6 +850,34 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "currentSubtotal": {
+                    "name": "currentSubtotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "currentDiscountTotal": {
+                    "name": "currentDiscountTotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "currentTax": {
+                    "name": "currentTax",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "currentTotal": {
+                    "name": "currentTotal",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "promoCodes": {
                     "name": "promoCodes",
                     "isArray": true,
@@ -5288,5 +5316,5 @@ export const schema = {
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "93be48b6f8ed431f73f946a1a8a74c34"
+    "version": "760fec79456738885bcb6c0d50c81263"
 };

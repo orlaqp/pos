@@ -36,6 +36,10 @@ export interface OrderEntity {
   savingsTotal: number;
   tax: number;
   total: number;
+  currentSubtotal?: number | null;
+  currentDiscountTotal?: number | null;
+  currentTax?: number | null;
+  currentTotal?: number | null;
   status: OrderStatus | keyof typeof OrderStatus;
   employeeId: string;
   employeeName: string;
@@ -286,6 +290,10 @@ export class OrderEntityMapper {
       savingsTotal: p.savingsTotal ?? p.discountTotal ?? 0,
       tax: p.tax,
       total: p.total,
+      currentSubtotal: p.currentSubtotal ?? null,
+      currentDiscountTotal: p.currentDiscountTotal ?? null,
+      currentTax: p.currentTax ?? null,
+      currentTotal: p.currentTotal ?? null,
       status: p.status,
       employeeId: p.employeeId,
       employeeName: p.employeeName,

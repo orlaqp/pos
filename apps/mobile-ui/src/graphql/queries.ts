@@ -22,6 +22,10 @@ export const getSales = /* GraphQL */ `query GetSales($statuses: [OrderStatus!]!
     savingsTotal
     tax
     total
+    currentSubtotal
+    currentDiscountTotal
+    currentTax
+    currentTotal
     promoCodes
     pricingVersion
     pricingSnapshotHash
@@ -930,6 +934,10 @@ export const getOrder = /* GraphQL */ `query GetOrder($id: ID!) {
     savingsTotal
     tax
     total
+    currentSubtotal
+    currentDiscountTotal
+    currentTax
+    currentTotal
     promoCodes
     pricingVersion
     pricingSnapshotHash
@@ -1041,6 +1049,10 @@ export const listOrders = /* GraphQL */ `query ListOrders(
       savingsTotal
       tax
       total
+      currentSubtotal
+      currentDiscountTotal
+      currentTax
+      currentTotal
       promoCodes
       pricingVersion
       pricingSnapshotHash
@@ -1095,6 +1107,10 @@ export const syncOrders = /* GraphQL */ `query SyncOrders(
       savingsTotal
       tax
       total
+      currentSubtotal
+      currentDiscountTotal
+      currentTax
+      currentTotal
       promoCodes
       pricingVersion
       pricingSnapshotHash

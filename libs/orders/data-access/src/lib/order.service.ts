@@ -91,6 +91,10 @@ interface RefundLineComputation {
 interface RefundPricingComputation {
     refundAmount: number;
     refundLines: RefundLineComputation[];
+    currentSubtotal: number;
+    currentDiscountTotal: number;
+    currentTax: number;
+    currentTotal: number;
     newTotal: number;
 }
 
@@ -388,7 +392,11 @@ export class OrderService {
     private static async saveRefundedOrderStatus(
         existing: Order,
         request: RefundOrderRequest,
-        isFullRefund: boolean
+        isFullRefund: boolean,
+        currentTotals: Pick<
+            RefundPricingComputation,
+            'currentSubtotal' | 'currentDiscountTotal' | 'currentTax' | 'currentTotal'
+        >
     ) {
         const tenantId = existing.tenantId || requireCurrentTenantId();
         const nextStatus = isFullRefund ? 'REFUNDED' : 'PARTIALLY_REFUNDED';
@@ -411,6 +419,10 @@ export class OrderService {
                             tenantId: remoteOrder.tenantId || tenantId,
                             status: nextStatus,
                             refundInfo,
+                            currentSubtotal: currentTotals.currentSubtotal,
+                            currentDiscountTotal: currentTotals.currentDiscountTotal,
+                            currentTax: currentTotals.currentTax,
+                            currentTotal: currentTotals.currentTotal,
                             _version: remoteOrder._version,
                         },
                     },
@@ -437,6 +449,10 @@ export class OrderService {
             o.tenantId = tenantId;
             o.status = nextStatus;
             o.refundInfo = refundInfo;
+            o.currentSubtotal = currentTotals.currentSubtotal;
+            o.currentDiscountTotal = currentTotals.currentDiscountTotal;
+            o.currentTax = currentTotals.currentTax;
+            o.currentTotal = currentTotals.currentTotal;
         });
 
         return await DataStore.save(updatedOrder);
@@ -462,6 +478,10 @@ export class OrderService {
             subtotal: request.order.footer.subtotal,
             tax: 0,
             total: request.order.footer.total,
+            currentSubtotal: request.order.footer.baseSubtotal,
+            currentDiscountTotal: request.order.footer.discount,
+            currentTax: 0,
+            currentTotal: request.order.footer.total,
             lineDiscountTotal: request.order.footer.lineDiscountTotal,
             orderDiscountTotal: request.order.footer.orderDiscountTotal,
             discountTotal: request.order.footer.discount,
@@ -576,6 +596,10 @@ export class OrderService {
             subtotal: orderForPersistence.footer.subtotal,
             tax: 0,
             total: orderForPersistence.footer.total,
+            currentSubtotal: orderForPersistence.footer.baseSubtotal,
+            currentDiscountTotal: orderForPersistence.footer.discount,
+            currentTax: 0,
+            currentTotal: orderForPersistence.footer.total,
             lineDiscountTotal: orderForPersistence.footer.lineDiscountTotal,
             orderDiscountTotal: orderForPersistence.footer.orderDiscountTotal,
             discountTotal: orderForPersistence.footer.discount,
@@ -679,6 +703,10 @@ export class OrderService {
             o.subtotal = orderForPersistence.footer.subtotal;
             o.tax = 0;
             o.total = orderForPersistence.footer.total;
+            o.currentSubtotal = orderForPersistence.footer.baseSubtotal;
+            o.currentDiscountTotal = orderForPersistence.footer.discount;
+            o.currentTax = 0;
+            o.currentTotal = orderForPersistence.footer.total;
             o.lineDiscountTotal = orderForPersistence.footer.lineDiscountTotal;
             o.orderDiscountTotal = orderForPersistence.footer.orderDiscountTotal;
             o.discountTotal = orderForPersistence.footer.discount;
@@ -784,7 +812,8 @@ export class OrderService {
         const savedOrder = await OrderService.saveRefundedOrderStatus(
             existing,
             request,
-            isFullRefund
+            isFullRefund,
+            refundPricing
         );
 
         const refundInventoryOperationId = buildRefundInventoryOperationId(
@@ -859,10 +888,19 @@ export class OrderService {
             const existingRefundAmount = roundMoney(
                 refunds.reduce((sum, refund) => sum + Number(refund.refundAmount || 0), 0)
             );
+            const currentTotal =
+                sourceOrder.currentTotal != null
+                    ? roundMoney(Math.max(0, Number(sourceOrder.currentTotal || 0)))
+                    : roundMoney(
+                          Math.max(
+                              0,
+                              Number(sourceOrder.total || 0) - existingRefundAmount
+                          )
+                      );
 
             return {
                 refundTotal: 0,
-                newTotal: roundMoney(Math.max(0, Number(sourceOrder.total || 0) - existingRefundAmount)),
+                newTotal: currentTotal,
             };
         }
 
@@ -1143,6 +1181,22 @@ export class OrderService {
             total:
                 (requestOrder as unknown as Partial<OrderEntity>).total ??
                 existing.total,
+            currentSubtotal:
+                (requestOrder as unknown as Partial<OrderEntity>).currentSubtotal ??
+                (existing as unknown as Partial<OrderEntity>).currentSubtotal ??
+                null,
+            currentDiscountTotal:
+                (requestOrder as unknown as Partial<OrderEntity>).currentDiscountTotal ??
+                (existing as unknown as Partial<OrderEntity>).currentDiscountTotal ??
+                null,
+            currentTax:
+                (requestOrder as unknown as Partial<OrderEntity>).currentTax ??
+                (existing as unknown as Partial<OrderEntity>).currentTax ??
+                null,
+            currentTotal:
+                (requestOrder as unknown as Partial<OrderEntity>).currentTotal ??
+                (existing as unknown as Partial<OrderEntity>).currentTotal ??
+                null,
             status:
                 ((requestOrder as unknown as Partial<OrderEntity>).status as
                     | OrderStatus
@@ -1265,8 +1319,20 @@ export class OrderService {
         const existingRefundAmount = roundMoney(
             refundRecords.reduce((sum, refund) => sum + Number(refund.refundAmount || 0), 0)
         );
-        const currentOpenBalance = roundMoney(
-            Math.max(0, Number(order.total || 0) - existingRefundAmount)
+        const currentOpenBalance =
+            order.currentTotal != null
+                ? roundMoney(Math.max(0, Number(order.currentTotal || 0)))
+                : roundMoney(
+                      Math.max(0, Number(order.total || 0) - existingRefundAmount)
+                  );
+        const totalRefundedAfter = OrderService.mergeRefundQuantities(
+            previouslyRefunded,
+            requestedRefunds
+        );
+        const historicalTotals = OrderService.buildHistoricalCurrentTotals(
+            order,
+            totalRefundedAfter,
+            roundMoney(Math.max(0, currentOpenBalance - historicalRefundAmount))
         );
 
         const appliedDiscountApplications = (order.appliedDiscountSummary?.applications || []).filter(
@@ -1277,6 +1343,10 @@ export class OrderService {
             return {
                 refundAmount: historicalRefundAmount,
                 refundLines: historicalRefundLines,
+                currentSubtotal: historicalTotals.currentSubtotal,
+                currentDiscountTotal: historicalTotals.currentDiscountTotal,
+                currentTax: historicalTotals.currentTax,
+                currentTotal: historicalTotals.currentTotal,
                 newTotal: roundMoney(Math.max(0, currentOpenBalance - historicalRefundAmount)),
             };
         }
@@ -1297,6 +1367,10 @@ export class OrderService {
             return {
                 refundAmount: historicalRefundAmount,
                 refundLines: historicalRefundLines,
+                currentSubtotal: historicalTotals.currentSubtotal,
+                currentDiscountTotal: historicalTotals.currentDiscountTotal,
+                currentTax: historicalTotals.currentTax,
+                currentTotal: historicalTotals.currentTotal,
                 newTotal: roundMoney(Math.max(0, currentOpenBalance - historicalRefundAmount)),
             };
         }
@@ -1304,11 +1378,6 @@ export class OrderService {
             order,
             pricingSnapshots
         );
-        const totalRefundedAfter = OrderService.mergeRefundQuantities(
-            previouslyRefunded,
-            requestedRefunds
-        );
-
         const repricedAfter = OrderService.buildRepricedCartPreview(
             order,
             totalRefundedAfter,
@@ -1331,8 +1400,90 @@ export class OrderService {
         return {
             refundAmount,
             refundLines,
+            currentSubtotal: roundMoney(repricedAfter.order.baseSubtotal || 0),
+            currentDiscountTotal: roundMoney(repricedAfter.order.discountTotal || 0),
+            currentTax: roundMoney(repricedAfter.order.tax || 0),
+            currentTotal: roundMoney(repricedAfter.order.total || 0),
             newTotal: roundMoney(Math.max(0, currentOpenBalance - refundAmount)),
         };
+    }
+
+    private static buildHistoricalCurrentTotals(
+        order: OrderEntity,
+        refundedQuantities: Map<string, number>,
+        currentTotal: number
+    ) {
+        const currentSubtotal = roundMoney(
+            (order.lines || []).reduce((sum, line) => {
+                const refundedQuantity = Number(
+                    refundedQuantities.get(String(line.identifier || '')) || 0
+                );
+                const remainingQuantity = roundMoney(
+                    Math.max(0, Number(line.quantity || 0) - refundedQuantity)
+                );
+                const unitBasePrice = Number(line.basePrice ?? line.price ?? 0);
+                return sum + roundMoney(unitBasePrice * remainingQuantity);
+            }, 0)
+        );
+
+        const currentTax = roundMoney(
+            (order.lines || []).reduce((sum, line) => {
+                const originalQuantity = Number(line.quantity || 0);
+                if (originalQuantity <= 0) {
+                    return sum;
+                }
+
+                const refundedQuantity = Number(
+                    refundedQuantities.get(String(line.identifier || '')) || 0
+                );
+                const remainingQuantity = roundMoney(
+                    Math.max(0, originalQuantity - refundedQuantity)
+                );
+                const totalLineTax = roundMoney(
+                    Math.max(
+                        0,
+                        Number(line.lineTotalAfterTax || 0) -
+                            Number(line.lineTotalBeforeTax || 0)
+                    )
+                );
+
+                return (
+                    sum +
+                    roundMoney((totalLineTax * remainingQuantity) / originalQuantity)
+                );
+            }, 0)
+        );
+
+        return {
+            currentSubtotal,
+            currentDiscountTotal: roundMoney(
+                Math.max(0, currentSubtotal + currentTax - currentTotal)
+            ),
+            currentTax,
+            currentTotal: roundMoney(Math.max(0, currentTotal)),
+        };
+    }
+
+    static async getRefundPaymentTotalsForOrder(orderId: string) {
+        const refunds = await OrderService.getRefundRecordsForOrder(orderId);
+        const totalsByType = refunds.reduce<Map<string, number>>((acc, refund) => {
+            (refund.refundPayments || []).forEach((payment) => {
+                const type = String(payment?.type || '').trim();
+                if (!type) {
+                    return;
+                }
+
+                acc.set(
+                    type,
+                    roundMoney((acc.get(type) || 0) + Number(payment?.amount || 0))
+                );
+            });
+            return acc;
+        }, new Map<string, number>());
+
+        return Array.from(totalsByType.entries())
+            .map(([type, amount]) => ({ type, amount }))
+            .filter((payment) => payment.amount > 0);
     }
 
     private static resolveRefundPricingDefinitions(
@@ -1597,6 +1748,10 @@ export class OrderService {
             o.subtotal = req.order.footer.subtotal;
             o.tax = 0;
             o.total = req.order.footer.total;
+            o.currentSubtotal = req.order.footer.baseSubtotal;
+            o.currentDiscountTotal = req.order.footer.discount;
+            o.currentTax = 0;
+            o.currentTotal = req.order.footer.total;
             o.lineDiscountTotal = req.order.footer.lineDiscountTotal;
             o.orderDiscountTotal = req.order.footer.orderDiscountTotal;
             o.discountTotal = req.order.footer.discount;
