@@ -23,12 +23,33 @@ async function getOrders(range, tenantId) {
         throw new Error('Missing tenant claim');
     }
 
-    const requestedStatus = range.status;
-    if (!requestedStatus) {
-        throw new Error('Missing status argument');
+    const requestedStatuses = Array.isArray(range.statuses)
+        ? range.statuses.filter(Boolean)
+        : range.status
+        ? [range.status]
+        : [];
+    if (!requestedStatuses.length) {
+        throw new Error('Missing statuses argument');
     }
+    const allOrders = await Promise.all(
+        requestedStatuses.map((status) => queryOrdersForStatus(status, range, tenantId))
+    );
 
-    var params = {
+    const deduped = new Map();
+    allOrders.flat().forEach((order) => {
+        if (!order?.id || order._deleted) return;
+        deduped.set(order.id, trimOrderForReports(order));
+    });
+
+    return Array.from(deduped.values()).sort((left, right) => {
+        const leftDate = left.updatedAt || left.orderDate || '';
+        const rightDate = right.updatedAt || right.orderDate || '';
+        return leftDate > rightDate ? -1 : leftDate < rightDate ? 1 : 0;
+    });
+}
+
+async function queryOrdersForStatus(status, range, tenantId) {
+    const params = {
         TableName: process.env.API_POS_ORDERTABLE_NAME,
         IndexName: 'byStatusByOrderDate',
         KeyConditionExpression: '#status = :status AND #orderDate BETWEEN :from AND :to',
@@ -36,7 +57,7 @@ async function getOrders(range, tenantId) {
         ProjectionExpression:
             '#id, #orderNo, #orderDate, #updatedAt, #subtotal, #tax, #total, #status, #employeeId, #employeeName, #lines, #discountTotal, #appliedDiscountSummary, #paymentInfo, #refundInfo, #tenantId, #deleted',
         ExpressionAttributeValues: {
-            ':status': requestedStatus,
+            ':status': status,
             ':from': range.from,
             ':to': range.to,
             ':tenantId': tenantId,
@@ -61,16 +82,16 @@ async function getOrders(range, tenantId) {
             '#deleted': '_deleted',
         },
     };
-    
+
     const scanResults = [];
     let data;
     do {
         data = await docClient.query(params).promise();
         data.Items.forEach((item) => scanResults.push(item));
-        params.ExclusiveStartKey  = data.LastEvaluatedKey;
-    } while(typeof data.LastEvaluatedKey !== "undefined");
-    
-    return scanResults.filter(i => !i._deleted).map(trimOrderForReports);
+        params.ExclusiveStartKey = data.LastEvaluatedKey;
+    } while (typeof data.LastEvaluatedKey !== 'undefined');
+
+    return scanResults;
 }
 
 function trimOrderForReports(order) {
@@ -105,6 +126,7 @@ function trimOrderForReports(order) {
             }
             : null,
         lines: (order.lines || []).map((line) => ({
+            identifier: line?.identifier,
             productId: line?.productId,
             productName: line?.productName,
             categoryId: line?.categoryId,

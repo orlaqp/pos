@@ -120,4 +120,55 @@ describe('end-of-day.service', () => {
         expect(onlyP2.summary).toEqual({ CASH: 0, CC: 3, CHECK: 0, EBT: 4 });
         expect(onlyP2.totalAmount).toBe(7);
     });
+
+    it('subtracts captured refund tenders from the payment summary for unfiltered reports', () => {
+        const orders: any[] = [
+            {
+                id: 'order-1',
+                total: 20,
+                discountTotal: 0,
+                paymentInfo: {
+                    payments: [
+                        { type: 'CC', amount: 12 },
+                        { type: 'CASH', amount: 8 },
+                    ],
+                },
+                lines: [
+                    {
+                        identifier: 'line-1',
+                        productId: 'p1',
+                        quantity: 2,
+                        price: 10,
+                        lineTotalBeforeTax: 20,
+                        ebtPaidAmount: 0,
+                        nonEbtPaidAmount: 20,
+                    },
+                ],
+            },
+        ];
+        const refunds: any[] = [
+            {
+                id: 'refund-1',
+                orderId: 'order-1',
+                refundAmount: 5,
+                refundPayments: [{ type: 'CASH', amount: 5 }],
+            },
+        ];
+
+        const result = filterOrders(orders as any, {}, refunds as any, []);
+
+        expect(result.summary).toEqual({
+            CASH: 3,
+            CC: 12,
+            CHECK: 0,
+            EBT: 0,
+        });
+        expect(result.totalAmount).toBe(15);
+        expect(result.references).toEqual({
+            grossSales: 20,
+            discounts: 0,
+            refunds: 5,
+            netSales: 15,
+        });
+    });
 });

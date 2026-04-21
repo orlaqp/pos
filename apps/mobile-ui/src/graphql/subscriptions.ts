@@ -883,6 +883,11 @@ export const onCreateOrderRefund = /* GraphQL */ `subscription OnCreateOrderRefu
     status
     refundAmount
     refundReason
+    refundPayments {
+      type
+      amount
+      __typename
+    }
     createdByEmployeeId
     createdByEmployeeName
     inventoryApplyState
@@ -915,6 +920,11 @@ export const onUpdateOrderRefund = /* GraphQL */ `subscription OnUpdateOrderRefu
     status
     refundAmount
     refundReason
+    refundPayments {
+      type
+      amount
+      __typename
+    }
     createdByEmployeeId
     createdByEmployeeName
     inventoryApplyState
@@ -947,6 +957,11 @@ export const onDeleteOrderRefund = /* GraphQL */ `subscription OnDeleteOrderRefu
     status
     refundAmount
     refundReason
+    refundPayments {
+      type
+      amount
+      __typename
+    }
     createdByEmployeeId
     createdByEmployeeName
     inventoryApplyState

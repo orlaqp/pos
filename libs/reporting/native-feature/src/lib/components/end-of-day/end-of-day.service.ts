@@ -1,6 +1,6 @@
 import { ProductEntity } from '@pos/products/data-access';
 import { EmployeeEntity } from '@pos/employees/data-access';
-import { Order } from '@pos/shared/models';
+import { Order, OrderRefund, OrderRefundLine } from '@pos/shared/models';
 
 export const getEmployeeItems = (employees: EmployeeEntity[]) => {
     if (!employees) return [];
@@ -37,7 +37,356 @@ export interface PaymentMethodsSummary {
     EBT: number;
 }
 
-export const filterOrders = (orders: Order[], request: OrdersFilterRequest) => {
+export interface EndOfDayReferenceSummary {
+    grossSales: number;
+    discounts: number;
+    refunds: number;
+    netSales: number;
+}
+
+const roundMoney = (value: number) => Math.round(value * 100) / 100;
+
+const getScopedRefundAmountForOrder = (
+    orderId: string | undefined,
+    request: OrdersFilterRequest,
+    refunds: OrderRefund[],
+    refundLines: OrderRefundLine[]
+) => {
+    const normalizedOrderId = String(orderId || '').trim();
+    if (!normalizedOrderId) {
+        return 0;
+    }
+
+    if (request.productId) {
+        return refundLines
+            .filter(
+                (line) =>
+                    line.orderId === normalizedOrderId &&
+                    line.productId === request.productId
+            )
+            .reduce((sum, line) => sum + Number(line.lineRefundAmount || 0), 0);
+    }
+
+    return refunds
+        .filter((refund) => refund.orderId === normalizedOrderId)
+        .reduce((sum, refund) => sum + Number(refund.refundAmount || 0), 0);
+};
+
+const getOrderDiscountReference = (order: Order) => {
+    const explicitDiscountTotal = Number(order.discountTotal || 0);
+    if (explicitDiscountTotal > 0) {
+        return explicitDiscountTotal;
+    }
+
+    return (order.lines || []).reduce((sum, line) => {
+        return (
+            sum +
+            Number(line?.lineDiscountTotal || 0) +
+            Number(line?.allocatedOrderDiscountTotal || 0)
+        );
+    }, 0);
+};
+
+const getKnownPaymentType = (type: string | undefined | null) => {
+    const normalized = String(type || '').toUpperCase() as keyof PaymentMethodsSummary;
+    return normalized === 'CC' ||
+        normalized === 'CASH' ||
+        normalized === 'CHECK' ||
+        normalized === 'EBT'
+        ? normalized
+        : null;
+};
+
+const allocateAmountAcrossPayments = (
+    payments: Array<{ type?: string | null; amount?: number | null }>,
+    targetAmount: number
+) => {
+    const normalizedTarget = roundMoney(Math.max(0, Number(targetAmount || 0)));
+    if (normalizedTarget <= 0) {
+        return [] as Array<{ type: keyof PaymentMethodsSummary; amount: number }>;
+    }
+
+    const normalizedPayments = (payments || [])
+        .map((payment) => ({
+            type: getKnownPaymentType(payment?.type),
+            amount: roundMoney(Math.max(0, Number(payment?.amount || 0))),
+        }))
+        .filter(
+            (payment): payment is { type: keyof PaymentMethodsSummary; amount: number } =>
+                payment.type != null && payment.amount > 0
+        );
+
+    const totalAvailable = normalizedPayments.reduce(
+        (sum, payment) => sum + payment.amount,
+        0
+    );
+    if (totalAvailable <= 0) {
+        return normalizedPayments;
+    }
+
+    let remainingAmount = Math.min(normalizedTarget, totalAvailable);
+
+    return normalizedPayments.map((payment, index) => {
+        if (remainingAmount <= 0) {
+            return {
+                ...payment,
+                amount: 0,
+            };
+        }
+
+        const allocatedAmount =
+            index === normalizedPayments.length - 1
+                ? remainingAmount
+                : roundMoney((payment.amount / totalAvailable) * normalizedTarget);
+        const cappedAmount = Math.min(payment.amount, allocatedAmount, remainingAmount);
+        remainingAmount = roundMoney(remainingAmount - cappedAmount);
+
+        return {
+            ...payment,
+            amount: cappedAmount,
+        };
+    });
+};
+
+const buildRefundedQuantityMap = (
+    orderId: string | undefined,
+    refundLines: OrderRefundLine[]
+) => {
+    const normalizedOrderId = String(orderId || '').trim();
+    return refundLines.reduce((acc, line) => {
+        if (String(line.orderId || '').trim() !== normalizedOrderId) {
+            return acc;
+        }
+
+        const identifier = String(line.orderLineIdentifier || '').trim();
+        if (!identifier) {
+            return acc;
+        }
+
+        acc.set(
+            identifier,
+            roundMoney((acc.get(identifier) || 0) + Number(line.quantityRefunded || 0))
+        );
+        return acc;
+    }, new Map<string, number>());
+};
+
+const getLineActiveRatio = (line: Order['lines'][number], refundedQuantity: number) => {
+    const originalQuantity = Number(line?.quantity || 0);
+    if (originalQuantity <= 0) {
+        return 0;
+    }
+
+    const remainingQuantity = Math.max(0, originalQuantity - Number(refundedQuantity || 0));
+    return remainingQuantity / originalQuantity;
+};
+
+const getLineTenderAmounts = (line: Order['lines'][number], ratio: number) => {
+    const lineTotalBeforeTax = Number(line?.lineTotalBeforeTax);
+    const lineTotalAfterTax = Number(line?.lineTotalAfterTax);
+    const linePriceTotal = Number(line?.price || 0) * Number(line?.quantity || 0);
+    const baseLineTotal = Number.isFinite(lineTotalBeforeTax)
+        ? lineTotalBeforeTax
+        : Number.isFinite(lineTotalAfterTax)
+        ? lineTotalAfterTax
+        : Number.isFinite(linePriceTotal)
+        ? linePriceTotal
+        : 0;
+    const originalEbt = Number(line?.ebtPaidAmount || 0);
+    const originalNonEbt =
+        line?.nonEbtPaidAmount != null
+            ? Number(line.nonEbtPaidAmount || 0)
+            : Math.max(0, baseLineTotal - originalEbt);
+
+    return {
+        ebt: roundMoney(originalEbt * ratio),
+        nonEbt: roundMoney(originalNonEbt * ratio),
+    };
+};
+
+const buildOrderPaymentSummary = (
+    order: Order,
+    request: OrdersFilterRequest,
+    refunds: OrderRefund[],
+    refundLines: OrderRefundLine[]
+) => {
+    const refundedQuantities = buildRefundedQuantityMap(order.id, refundLines);
+    const activeTenderTotals = (order.lines || []).reduce(
+        (acc, line) => {
+            if (request.productId && line?.productId !== request.productId) {
+                return acc;
+            }
+
+            const ratio = getLineActiveRatio(
+                line,
+                refundedQuantities.get(String(line?.identifier || '')) || 0
+            );
+            if (ratio <= 0) {
+                return acc;
+            }
+
+            const tenderAmounts = getLineTenderAmounts(line, ratio);
+            acc.ebt = roundMoney(acc.ebt + tenderAmounts.ebt);
+            acc.nonEbt = roundMoney(acc.nonEbt + tenderAmounts.nonEbt);
+            acc.hasLineEconomics =
+                acc.hasLineEconomics ||
+                tenderAmounts.ebt > 0 ||
+                tenderAmounts.nonEbt > 0 ||
+                Number(line?.lineTotalBeforeTax || 0) > 0 ||
+                Number(line?.lineTotalAfterTax || 0) > 0 ||
+                Number(line?.price || 0) > 0;
+            return acc;
+        },
+        { ebt: 0, nonEbt: 0, hasLineEconomics: false }
+    );
+
+    if (!activeTenderTotals.hasLineEconomics) {
+        const originalPaidAmount = roundMoney(
+            (order.paymentInfo?.payments || []).reduce(
+                (sum, payment) => sum + Number(payment?.amount || 0),
+                0
+            )
+        );
+        const orderTotal = Number(order.total || 0);
+        const activeAmount = Math.max(
+            0,
+            roundMoney(
+                (orderTotal > 0 ? orderTotal : originalPaidAmount) -
+                    getScopedRefundAmountForOrder(order.id, request, refunds, refundLines)
+            )
+        );
+
+        return allocateAmountAcrossPayments(
+            order.paymentInfo?.payments || [],
+            activeAmount
+        ).reduce(
+            (acc, payment) => {
+                acc[payment.type] = roundMoney(acc[payment.type] + payment.amount);
+                return acc;
+            },
+            { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+        );
+    }
+
+    const ebtPayments = (order.paymentInfo?.payments || []).filter(
+        (payment) => getKnownPaymentType(payment?.type) === 'EBT'
+    );
+    const nonEbtPayments = (order.paymentInfo?.payments || []).filter(
+        (payment) => {
+            const type = getKnownPaymentType(payment?.type);
+            return type === 'CC' || type === 'CASH' || type === 'CHECK';
+        }
+    );
+
+    const allocatedEbt = allocateAmountAcrossPayments(
+        ebtPayments,
+        activeTenderTotals.ebt
+    );
+    const allocatedNonEbt = allocateAmountAcrossPayments(
+        nonEbtPayments,
+        activeTenderTotals.nonEbt
+    );
+
+    return [...allocatedEbt, ...allocatedNonEbt].reduce(
+        (acc, payment) => {
+            acc[payment.type] = roundMoney(acc[payment.type] + payment.amount);
+            return acc;
+        },
+        { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+    );
+};
+
+const buildOriginalPaymentSummary = (order: Order) =>
+    (order.paymentInfo?.payments || []).reduce(
+        (acc, payment) => {
+            const type = getKnownPaymentType(payment?.type);
+            if (!type) {
+                return acc;
+            }
+
+            acc[type] = roundMoney(acc[type] + Number(payment?.amount || 0));
+            return acc;
+        },
+        { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+    );
+
+const buildCapturedRefundPaymentSummary = (
+    refund: OrderRefund,
+    request: OrdersFilterRequest,
+    refundLines: OrderRefundLine[]
+) => {
+    const refundPayments = (refund.refundPayments || [])
+        .map((payment) => ({
+            type: getKnownPaymentType(payment?.type),
+            amount: roundMoney(Math.max(0, Number(payment?.amount || 0))),
+        }))
+        .filter(
+            (payment): payment is { type: keyof PaymentMethodsSummary; amount: number } =>
+                !!payment.type && payment.amount > 0
+        );
+
+    if (!refundPayments.length) {
+        return { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary;
+    }
+
+    const scopedRefundAmount = request.productId
+        ? refundLines
+              .filter(
+                  (line) =>
+                      line.refundId === refund.id &&
+                      line.productId === request.productId
+              )
+              .reduce((sum, line) => sum + Number(line.lineRefundAmount || 0), 0)
+        : Number(refund.refundAmount || 0);
+    const refundAmount = Number(refund.refundAmount || 0);
+    const ratio =
+        refundAmount > 0 ? Math.min(1, roundMoney(scopedRefundAmount / refundAmount)) : 0;
+
+    return refundPayments.reduce(
+        (acc, payment) => {
+            acc[payment.type] = roundMoney(acc[payment.type] + payment.amount * ratio);
+            return acc;
+        },
+        { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+    );
+};
+
+export const buildEndOfDayReferenceSummary = (
+    orders: Order[],
+    refunds: OrderRefund[],
+    refundLines: OrderRefundLine[],
+    request: OrdersFilterRequest
+): EndOfDayReferenceSummary => {
+    const discounts = orders.reduce(
+        (sum, order) => sum + getOrderDiscountReference(order),
+        0
+    );
+    const grossSales = orders.reduce(
+        (sum, order) =>
+            sum + Number(order.total || 0) + getOrderDiscountReference(order),
+        0
+    );
+    const refundsTotal = orders.reduce(
+        (sum, order) =>
+            sum +
+            getScopedRefundAmountForOrder(order.id, request, refunds, refundLines),
+        0
+    );
+
+    return {
+        grossSales,
+        discounts,
+        refunds: roundMoney(refundsTotal),
+        netSales: roundMoney(grossSales - discounts - refundsTotal),
+    };
+};
+
+export const filterOrders = (
+    orders: Order[],
+    request: OrdersFilterRequest,
+    refunds: OrderRefund[] = [],
+    refundLines: OrderRefundLine[] = []
+) => {
     const filtered = orders.filter(o => {
         const openedById = o.createdBy?.id || o.employeeId;
         if (request.openedBy && openedById !== request.openedBy) return false;
@@ -50,10 +399,37 @@ export const filterOrders = (orders: Order[], request: OrdersFilterRequest) => {
 
     const summary = filtered.reduce(
         (acc, order) => {
-            order.paymentInfo?.payments?.forEach((payment) => {
-                const type = String(payment?.type || '').toUpperCase() as keyof PaymentMethodsSummary;
-                if (!(type in acc)) return;
-                acc[type] += Number(payment?.amount || 0);
+            const orderRefunds = refunds.filter((refund) => refund.orderId === order.id);
+            const hasExplicitRefundPayments = orderRefunds.every(
+                (refund) => (refund.refundPayments || []).length > 0
+            );
+            const paymentSummary =
+                !request.productId && orderRefunds.length > 0 && hasExplicitRefundPayments
+                    ? orderRefunds.reduce((summaryAcc, refund) => {
+                          const capturedRefundSummary =
+                              buildCapturedRefundPaymentSummary(
+                                  refund,
+                                  request,
+                                  refundLines
+                              );
+                          (Object.keys(capturedRefundSummary) as Array<
+                              keyof PaymentMethodsSummary
+                          >).forEach((type) => {
+                              summaryAcc[type] = roundMoney(
+                                  summaryAcc[type] - capturedRefundSummary[type]
+                              );
+                          });
+                          return summaryAcc;
+                      }, buildOriginalPaymentSummary(order))
+                    : buildOrderPaymentSummary(
+                          order,
+                          request,
+                          refunds,
+                          refundLines
+                      );
+
+            (Object.keys(paymentSummary) as Array<keyof PaymentMethodsSummary>).forEach((type) => {
+                acc[type] = roundMoney(acc[type] + paymentSummary[type]);
             });
 
             return acc;
@@ -61,11 +437,17 @@ export const filterOrders = (orders: Order[], request: OrdersFilterRequest) => {
         { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
     );
 
-    const totalAmount = filtered.reduce((sum, order) => sum + Number(order.total || 0), 0);
+    const references = buildEndOfDayReferenceSummary(
+        filtered,
+        refunds,
+        refundLines,
+        request
+    );
 
     return {
         orders: filtered,
         summary,
-        totalAmount,
+        totalAmount: references.netSales,
+        references,
     };
-}
+};

@@ -102,6 +102,10 @@ const updateOrderRefundStore = (dispatch: Dispatch, items: OrderRefund[]) => {
             orderId: String(refund.orderId || ''),
             refundAmount: Number(refund.refundAmount || 0),
             refundDate: refund.refundDate ?? null,
+            refundPayments: (refund.refundPayments || []).map((payment) => ({
+                type: String(payment?.type || ''),
+                amount: Number(payment?.amount || 0),
+            })),
         })
     );
     logSyncDebug('orders.refunds', 'updateStore', {

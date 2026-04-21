@@ -25,7 +25,10 @@ export function Sales(_props: SalesProps) {
         range.startDate = range.startDate.startOf('day');
         range.endDate = range.endDate.endOf('day');
 
-        return getSalesForRange(OrderStatus.PAID, range).then((sales) => {
+        return getSalesForRange(
+            [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+            range
+        ).then((sales) => {
             return sales?.map((s) => ({
                 orderNo: s.orderNo,
                 orderDate: moment(s.orderDate).format('YYYY-MM-DD hh:MM'),

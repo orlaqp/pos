@@ -13,6 +13,7 @@ import { OrderStatus } from '@pos/shared/models';
 
 describe('report-aggregations', () => {
     const paidOrder: any = {
+        id: 'order-1',
         orderNo: '1001',
         orderDate: '2026-03-16T09:00:00.000Z',
         updatedAt: '2026-03-16T09:05:00.000Z',
@@ -145,6 +146,30 @@ describe('report-aggregations', () => {
             { product: 'Sugar', quantity: 0, sales: 0, status: 'No sales' },
             { product: 'Flour', quantity: 1, sales: 5.5, status: 'Low sales' },
             { product: 'Oil', quantity: 2, sales: 10, status: 'Low sales' },
+        ]);
+    });
+
+    it('subtracts captured refund tenders from payment summaries and falls back for legacy refunds', () => {
+        const refunds: any[] = [
+            {
+                orderId: paidOrder.id,
+                refundAmount: 4,
+                refundPayments: [{ type: 'CC', amount: 4 }],
+            },
+            {
+                orderId: paidOrder.id,
+                refundAmount: 2,
+            },
+        ];
+
+        expect(
+            buildPaymentSummaryRows(
+                [paidOrder] as any,
+                refunds as any
+            )
+        ).toEqual([
+            { paymentType: 'Cash', amount: 4.79, count: 1, percent: '50%' },
+            { paymentType: 'Cards', amount: 4.71, count: 1, percent: '50%' },
         ]);
     });
 

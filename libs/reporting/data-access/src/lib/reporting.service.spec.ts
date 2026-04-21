@@ -112,9 +112,19 @@ describe('reporting.service', () => {
             },
         });
 
-        const summary = await getSalesSummaryForRange(OrderStatus.PAID, range);
+        const summary = await getSalesSummaryForRange(
+            [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+            range
+        );
         expect(summary?.totalAmount).toBe(20);
         expect(summary?.totalOrders).toBe(1);
+        expect(mockGraphql).toHaveBeenCalledWith(
+            expect.objectContaining({
+                variables: expect.objectContaining({
+                    statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+                }),
+            })
+        );
     });
 
     it('returns an empty remote summary payload when backend sends one', async () => {
@@ -124,7 +134,10 @@ describe('reporting.service', () => {
             },
         });
 
-        const summary = await getSalesSummaryForRange(OrderStatus.PAID, range);
+        const summary = await getSalesSummaryForRange(
+            [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+            range
+        );
         expect(summary).toEqual({ totalAmount: 0, totalOrders: 0 });
     });
 
@@ -140,15 +153,28 @@ describe('reporting.service', () => {
             },
         });
 
-        const result = await getSalesForRange(OrderStatus.PAID, range);
+        const result = await getSalesForRange(
+            [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+            range
+        );
         expect(Array.isArray(result)).toBe(true);
         expect(result).toHaveLength(1);
+        expect(mockGraphql).toHaveBeenCalledWith(
+            expect.objectContaining({
+                variables: expect.objectContaining({
+                    statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+                }),
+            })
+        );
     });
 
     it('returns an empty list when remote sales query fails', async () => {
         mockGraphql.mockRejectedValue(new Error('network'));
 
-        const result = await getSalesForRange(OrderStatus.PAID, range);
+        const result = await getSalesForRange(
+            [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+            range
+        );
         expect(Array.isArray(result)).toBe(true);
         expect(result).toHaveLength(0);
     });
@@ -181,7 +207,10 @@ describe('reporting.service', () => {
                 },
             });
 
-        const result = await getSalesForRange(OrderStatus.PAID, longRange);
+        const result = await getSalesForRange(
+            [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+            longRange
+        );
 
         expect(mockGraphql).toHaveBeenCalledTimes(3);
         expect(result.map((order) => order.id)).toEqual([
@@ -196,7 +225,10 @@ describe('reporting.service', () => {
     it('returns undefined on remote summary failure', async () => {
         mockGraphql.mockRejectedValue(new Error('network'));
 
-        const summary = await getSalesSummaryForRange(OrderStatus.PAID, range);
+        const summary = await getSalesSummaryForRange(
+            [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+            range
+        );
         expect(summary).toBeUndefined();
     });
 });

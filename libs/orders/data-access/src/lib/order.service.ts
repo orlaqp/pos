@@ -63,6 +63,7 @@ export interface CloseOrderRequest extends UpdateOrderRequest {
 
 export interface RefundOrderRequest extends UpdateOrderRequest {
     refundedLines: { identifier: string; quantity: number }[]
+    refundPayments?: CartPayment[];
     comments?: string;
 }
 
@@ -116,6 +117,7 @@ const buildRefundInventoryOperationId = (
 ) => `ORDER_REFUND:${orderId}:${refundId}`;
 
 const REFUND_QUANTITY_EPSILON = 0.0001;
+const PAYMENT_TYPES = new Set(['CASH', 'CHECK', 'CC', 'EBT']);
 
 const normalizeRefundRequests = (
     refundedLines: Array<{ identifier: string; quantity: number }>
@@ -131,6 +133,96 @@ const normalizeRefundRequests = (
         acc.set(identifier, roundMoney((acc.get(identifier) || 0) + quantity));
         return acc;
     }, new Map<string, number>());
+
+const normalizePaymentType = (type: string | null | undefined) => {
+    const normalized = String(type || '').trim().toUpperCase();
+    return PAYMENT_TYPES.has(normalized) ? normalized : null;
+};
+
+const sumPayments = (
+    payments: Array<{ amount?: number | null }> | null | undefined
+) =>
+    roundMoney(
+        (payments || []).reduce(
+            (sum, payment) => sum + Number(payment?.amount || 0),
+            0
+        )
+    );
+
+const allocatePaymentsToTotal = (
+    payments: Array<{ type?: string | null; amount?: number | null }> | null | undefined,
+    total: number
+) => {
+    const normalizedTotal = roundMoney(Math.max(0, Number(total || 0)));
+    if (normalizedTotal <= 0) {
+        return [] as CartPayment[];
+    }
+
+    const normalizedPayments = (payments || [])
+        .map((payment) => ({
+            type: normalizePaymentType(payment?.type),
+            amount: roundMoney(Math.max(0, Number(payment?.amount || 0))),
+        }))
+        .filter(
+            (payment): payment is { type: string; amount: number } =>
+                !!payment.type && payment.amount > 0
+        );
+
+    if (!normalizedPayments.length) {
+        return [];
+    }
+
+    const totalAvailable = sumPayments(normalizedPayments);
+    if (totalAvailable <= 0) {
+        return [];
+    }
+
+    let remaining = Math.min(normalizedTotal, totalAvailable);
+
+    return normalizedPayments
+        .map((payment, index) => {
+            if (remaining <= 0) {
+                return {
+                    type: payment.type,
+                    amount: 0,
+                };
+            }
+
+            const allocated =
+                index === normalizedPayments.length - 1
+                    ? remaining
+                    : roundMoney((payment.amount / totalAvailable) * normalizedTotal);
+            const capped = Math.min(payment.amount, allocated, remaining);
+            remaining = roundMoney(remaining - capped);
+
+            return {
+                type: payment.type,
+                amount: capped,
+            };
+        })
+        .filter((payment) => payment.amount > 0);
+};
+
+const normalizeRefundPayments = (
+    payments: Array<{ type?: string | null; amount?: number | null }> | null | undefined
+) => {
+    const byType = new Map<string, number>();
+
+    (payments || []).forEach((payment) => {
+        const type = normalizePaymentType(payment?.type);
+        const amount = roundMoney(Math.max(0, Number(payment?.amount || 0)));
+        if (!type || amount <= 0) {
+            return;
+        }
+
+        byType.set(type, roundMoney((byType.get(type) || 0) + amount));
+    });
+
+    return Array.from(byType.entries()).map(([type, amount]) => ({
+        type,
+        amount,
+    }));
+};
 
 const getGraphqlErrorMessage = (result: unknown) => {
     if (!result || typeof result !== 'object') return undefined;
@@ -661,6 +753,27 @@ export class OrderService {
         const requestedRefundId = String(uuid.v4());
         const refundDate = moment().toISOString();
         const refundAmount = refundPricing.refundAmount;
+        const hasExplicitRefundPayments = !!request.refundPayments?.length;
+        const refundPayments = normalizeRefundPayments(
+            hasExplicitRefundPayments
+                ? request.refundPayments
+                : allocatePaymentsToTotal(
+                      sourceOrder.paymentInfo?.payments ||
+                          request.order?.paymentInfo?.payments,
+                      refundAmount
+                  )
+        );
+        const normalizedRefundPaymentTotal = sumPayments(refundPayments);
+
+        if (
+            hasExplicitRefundPayments &&
+            refundAmount > 0 &&
+            roundMoney(normalizedRefundPaymentTotal) !== roundMoney(refundAmount)
+        ) {
+            throw new Error(
+                `Refund payment methods must add up to ${refundAmount.toFixed(2)}`
+            );
+        }
         const savedOrder = await OrderService.saveRefundedOrderStatus(
             existing,
             request,
@@ -703,6 +816,10 @@ export class OrderService {
                 status: 'COMPLETED',
                 refundAmount,
                 refundReason: request.comments || null,
+                refundPayments: refundPayments.map((payment) => ({
+                    type: payment.type as Payment['type'],
+                    amount: payment.amount,
+                })),
                 createdByEmployeeId: request.by.id,
                 createdByEmployeeName: `${request.by.firstName} ${request.by.lastName}`,
                 inventoryApplyState: 'PENDING',

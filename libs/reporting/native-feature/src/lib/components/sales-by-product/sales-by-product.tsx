@@ -3,7 +3,7 @@ import { DateRange } from '@pos/shared/ui-native';
 import { sortDescListBy } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
 import React from 'react';
-import { SalesSummary } from '@pos/shared/models';
+import { OrderStatus, SalesSummary } from '@pos/shared/models';
 import i18next from 'i18next';
 
 import { View } from 'react-native';
@@ -42,7 +42,10 @@ export function SalesByProduct(props: SalesByProductProps) {
 
     const getData = async (range: DateRange) => {
         const normalizedRange = normalizeSalesByProductRange(range);
-        const summary = await getSalesSummaryForRange('PAID', normalizedRange);
+        const summary = await getSalesSummaryForRange(
+            [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+            normalizedRange
+        );
 
         return toSalesByProductRows(summary);
     };

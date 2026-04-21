@@ -1170,6 +1170,16 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "refundPayments": {
+                    "name": "refundPayments",
+                    "isArray": true,
+                    "type": {
+                        "nonModel": "Payment"
+                    },
+                    "isRequired": true,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
                 "createdByEmployeeId": {
                     "name": "createdByEmployeeId",
                     "isArray": false,
@@ -5278,5 +5288,5 @@ export const schema = {
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "4a0a611d7bb53a4ff817e6387f86bfe0"
+    "version": "93be48b6f8ed431f73f946a1a8a74c34"
 };

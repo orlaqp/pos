@@ -12,11 +12,7 @@ export const getOrdersForStatuses = async ({
     statuses,
     range,
 }: OrdersForStatusesRequest) => {
-    const settled = await Promise.all(
-        statuses.map((status) => getSalesForRange(status, range).catch(() => []))
-    );
-
-    return settled.flat();
+    return getSalesForRange(statuses, range).catch(() => []);
 };
 
 export const getOpenOrders = async () =>

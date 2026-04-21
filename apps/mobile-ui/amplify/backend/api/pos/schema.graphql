@@ -301,6 +301,7 @@ type OrderRefund @model @auth(rules: [{allow: owner, ownerField: "tenantId", ide
   status: OrderRefundStatus!
   refundAmount: Float!
   refundReason: String
+  refundPayments: [Payment!]
   createdByEmployeeId: String!
   createdByEmployeeName: String!
   inventoryApplyState: InventoryApplyState
@@ -762,8 +763,8 @@ type InventoryFinalizeResult {
 }
 
 type Query {
-  getSales(status: OrderStatus!, from: String!, to: String!): [Order] @function (name: "getSales-${env}")
-  getSalesSummary(status: OrderStatus!, from: String!, to: String!): SalesSummary @function (name: "getSalesSummaryQuery-${env}")
+  getSales(statuses: [OrderStatus!]!, from: String!, to: String!): [Order] @function (name: "getSales-${env}")
+  getSalesSummary(statuses: [OrderStatus!]!, from: String!, to: String!): SalesSummary @function (name: "getSalesSummaryQuery-${env}")
   finalizeInventoryReceive(input: FinalizeInventoryReceiveInput!): InventoryFinalizeResult @function(name: "inventoryLifecycle-${env}")
   finalizeInventoryCount(input: FinalizeInventoryCountInput!): InventoryFinalizeResult @function(name: "inventoryLifecycle-${env}")
 }

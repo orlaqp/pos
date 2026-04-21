@@ -883,6 +883,11 @@ export const createOrderRefund = /* GraphQL */ `mutation CreateOrderRefund(
     status
     refundAmount
     refundReason
+    refundPayments {
+      type
+      amount
+      __typename
+    }
     createdByEmployeeId
     createdByEmployeeName
     inventoryApplyState
@@ -915,6 +920,11 @@ export const updateOrderRefund = /* GraphQL */ `mutation UpdateOrderRefund(
     status
     refundAmount
     refundReason
+    refundPayments {
+      type
+      amount
+      __typename
+    }
     createdByEmployeeId
     createdByEmployeeName
     inventoryApplyState
@@ -947,6 +957,11 @@ export const deleteOrderRefund = /* GraphQL */ `mutation DeleteOrderRefund(
     status
     refundAmount
     refundReason
+    refundPayments {
+      type
+      amount
+      __typename
+    }
     createdByEmployeeId
     createdByEmployeeName
     inventoryApplyState

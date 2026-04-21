@@ -1,5 +1,6 @@
 import {
     buildPaymentSummaryRows,
+    getRefundsForRange,
     getOrdersForStatuses,
 } from '@pos/reporting/data-access';
 import { OrderStatus } from '@pos/shared/models';
@@ -38,12 +39,16 @@ export function PaymentSummary() {
     ];
 
     const getData = async (range: DateRange) => {
-        const orders = await getOrdersForStatuses({
-            statuses: [OrderStatus.PAID],
-            range: normalizeReportRange(range),
-        });
+        const normalizedRange = normalizeReportRange(range);
+        const [orders, refunds] = await Promise.all([
+            getOrdersForStatuses({
+                statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+                range: normalizedRange,
+            }),
+            getRefundsForRange({ range: normalizedRange }),
+        ]);
 
-        return buildPaymentSummaryRows(orders);
+        return buildPaymentSummaryRows(orders, refunds);
     };
 
     return (

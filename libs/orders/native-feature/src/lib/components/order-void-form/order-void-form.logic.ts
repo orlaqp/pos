@@ -1,10 +1,98 @@
 import { OrderLineEntity } from '@pos/orders/data-access';
+import { CartPayment } from '@pos/sales/data-access';
 import { EACH } from '@pos/unit-of-measures/data-access';
 
 export type RefundVoidLineGroup = {
     remainingItems: OrderLineEntity[];
     refundedItems: OrderLineEntity[];
 };
+
+export type RefundPaymentDraft = Record<'CC' | 'CASH' | 'CHECK' | 'EBT', string>;
+
+const roundMoney = (value: number) => Math.round(value * 100) / 100;
+const REFUND_PAYMENT_TYPES = ['CC', 'CASH', 'CHECK', 'EBT'] as const;
+
+const emptyRefundPaymentDraft = (): RefundPaymentDraft => ({
+    CC: '',
+    CASH: '',
+    CHECK: '',
+    EBT: '',
+});
+
+const normalizePaymentType = (type: string | undefined | null) => {
+    const normalized = String(type || '').trim().toUpperCase();
+    return REFUND_PAYMENT_TYPES.includes(
+        normalized as (typeof REFUND_PAYMENT_TYPES)[number]
+    )
+        ? (normalized as keyof RefundPaymentDraft)
+        : null;
+};
+
+export const buildRefundPaymentDraft = (
+    payments: Array<{ type?: string | null; amount?: number | null }> | null | undefined,
+    refundAmount: number
+) => {
+    const normalizedRefundAmount = roundMoney(Math.max(0, Number(refundAmount || 0)));
+    if (normalizedRefundAmount <= 0) {
+        return emptyRefundPaymentDraft();
+    }
+
+    const draft = emptyRefundPaymentDraft();
+    const normalizedPayments = (payments || [])
+        .map((payment) => ({
+            type: normalizePaymentType(payment?.type),
+            amount: roundMoney(Math.max(0, Number(payment?.amount || 0))),
+        }))
+        .filter(
+            (payment): payment is { type: keyof RefundPaymentDraft; amount: number } =>
+                !!payment.type && payment.amount > 0
+        );
+
+    if (!normalizedPayments.length) {
+        draft.CASH = normalizedRefundAmount.toFixed(2);
+        return draft;
+    }
+
+    const totalPaid = roundMoney(
+        normalizedPayments.reduce((sum, payment) => sum + payment.amount, 0)
+    );
+    let remaining = Math.min(normalizedRefundAmount, totalPaid);
+
+    normalizedPayments.forEach((payment, index) => {
+        if (remaining <= 0) {
+            return;
+        }
+
+        const allocated =
+            index === normalizedPayments.length - 1
+                ? remaining
+                : roundMoney((payment.amount / totalPaid) * normalizedRefundAmount);
+        const capped = Math.min(payment.amount, allocated, remaining);
+        remaining = roundMoney(remaining - capped);
+
+        draft[payment.type] = capped > 0 ? capped.toFixed(2) : '';
+    });
+
+    if (
+        remaining > 0 &&
+        !normalizedPayments.some((payment) => payment.type === 'CASH')
+    ) {
+        draft.CASH = remaining.toFixed(2);
+    }
+
+    return draft;
+};
+
+export const parseRefundPayments = (draft: RefundPaymentDraft): CartPayment[] =>
+    REFUND_PAYMENT_TYPES.map((type) => ({
+        type,
+        amount: roundMoney(Math.max(0, Number(draft[type] || 0))),
+    })).filter((payment) => payment.amount > 0);
+
+export const getRefundPaymentTotal = (payments: CartPayment[]) =>
+    roundMoney(
+        payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0)
+    );
 
 const getRefundedQuantityValue = (
     refundedQuantities:

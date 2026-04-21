@@ -8,8 +8,8 @@ type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryOutput: OutputType;
 };
 
-export const getSales = /* GraphQL */ `query GetSales($status: OrderStatus!, $from: String!, $to: String!) {
-  getSales(status: $status, from: $from, to: $to) {
+export const getSales = /* GraphQL */ `query GetSales($statuses: [OrderStatus!]!, $from: String!, $to: String!) {
+  getSales(statuses: $statuses, from: $from, to: $to) {
     id
     tenantId
     orderNo
@@ -114,8 +114,12 @@ export const getSales = /* GraphQL */ `query GetSales($status: OrderStatus!, $fr
   }
 }
 ` as GeneratedQuery<APITypes.GetSalesQueryVariables, APITypes.GetSalesQuery>;
-export const getSalesSummary = /* GraphQL */ `query GetSalesSummary($status: OrderStatus!, $from: String!, $to: String!) {
-  getSalesSummary(status: $status, from: $from, to: $to) {
+export const getSalesSummary = /* GraphQL */ `query GetSalesSummary(
+  $statuses: [OrderStatus!]!
+  $from: String!
+  $to: String!
+) {
+  getSalesSummary(statuses: $statuses, from: $from, to: $to) {
     products {
       productId
       productName
@@ -1131,6 +1135,11 @@ export const getOrderRefund = /* GraphQL */ `query GetOrderRefund($id: ID!) {
     status
     refundAmount
     refundReason
+    refundPayments {
+      type
+      amount
+      __typename
+    }
     createdByEmployeeId
     createdByEmployeeName
     inventoryApplyState

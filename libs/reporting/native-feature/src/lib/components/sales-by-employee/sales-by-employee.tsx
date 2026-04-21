@@ -4,7 +4,7 @@ import {
 import { DateRange } from '@pos/shared/ui-native';
 import { sortDescListBy } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
-import { SalesSummary } from '@pos/shared/models';
+import { OrderStatus, SalesSummary } from '@pos/shared/models';
 import React from 'react';
 import i18next from 'i18next';
 
@@ -37,7 +37,10 @@ export function SalesByEmployee(props: SalesByEmployeeProps) {
         range.startDate = range.startDate.startOf('day');
         range.endDate = range.endDate.endOf('day');
 
-        return getSalesSummaryForRange('PAID', range).then((summary) =>
+        return getSalesSummaryForRange(
+            [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+            range
+        ).then((summary) =>
             toSalesByEmployeeRows(summary)
         );
     };

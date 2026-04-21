@@ -225,7 +225,7 @@ export function OrderList({ navigation }: OrderListProps) {
                 onBackdropPress={() => setOrderToVoid(undefined)}
                 supportedOrientations={['landscape']}
                 presentationStyle="overFullScreen"
-                overlayStyle={[styles.overlay, { width: 700 }]}
+                overlayStyle={[styles.overlay, { width: 1120, maxWidth: '94%' }]}
             >
                 {orderToVoid ? (
                     <OrderVoidForm

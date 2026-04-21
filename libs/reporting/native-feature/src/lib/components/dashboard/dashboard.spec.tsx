@@ -4,17 +4,16 @@ import { render, waitFor } from '@testing-library/react-native';
 import moment from 'moment';
 import * as mockReactNative from 'react-native';
 
-const mockGetSalesForRange = jest.fn();
-const mockGetSalesSummaryForRange = jest.fn();
+const mockGetOrdersForStatuses = jest.fn();
+const mockGetRefundsForRange = jest.fn();
+const mockGetRefundLinesForRefundIds = jest.fn();
 const mockProductsById: Record<string, { cost?: number | null }> = {};
 
 jest.mock('@pos/reporting/data-access', () => ({
-    buildSalesSummaryFromOrders: jest.requireActual(
-        '@pos/reporting/data-access'
-    ).buildSalesSummaryFromOrders,
-    getSalesForRange: (...args: unknown[]) => mockGetSalesForRange(...args),
-    getSalesSummaryForRange: (...args: unknown[]) =>
-        mockGetSalesSummaryForRange(...args),
+    getOrdersForStatuses: (...args: unknown[]) => mockGetOrdersForStatuses(...args),
+    getRefundsForRange: (...args: unknown[]) => mockGetRefundsForRange(...args),
+    getRefundLinesForRefundIds: (...args: unknown[]) =>
+        mockGetRefundLinesForRefundIds(...args),
 }));
 
 jest.mock('@pos/products/data-access', () => ({
@@ -60,6 +59,9 @@ jest.mock('../line-chart/line-chart', () => ({
 import {
     areDashboardRangesEqual,
     buildDashboardSupplemental,
+    buildDashboardSummaryFromOrders,
+    getDashboardNetAverageTicket,
+    getDashboardNetGrossIncome,
     buildRevenueOverTime,
     buildTopEmployeeItems,
     buildTopProductItems,
@@ -76,18 +78,13 @@ describe('Dashboard', () => {
         Object.keys(mockProductsById).forEach((key) => {
             delete mockProductsById[key];
         });
-        mockGetSalesForRange.mockResolvedValue([]);
-        mockGetSalesSummaryForRange.mockResolvedValue({
-            totalAmount: 0,
-            totalOrders: 0,
-            products: [],
-            employees: [],
-            dates: [],
-        });
+        mockGetOrdersForStatuses.mockResolvedValue([]);
+        mockGetRefundsForRange.mockResolvedValue([]);
+        mockGetRefundLinesForRefundIds.mockResolvedValue([]);
     });
 
     it('renders loading state', () => {
-        mockGetSalesForRange.mockReturnValue(new Promise(() => undefined));
+        mockGetOrdersForStatuses.mockReturnValue(new Promise(() => undefined));
         const { getByText } = render(<Dashboard />);
         expect(getByText('Loading...')).toBeTruthy();
     });
@@ -161,6 +158,10 @@ describe('Dashboard', () => {
             { label: '03-12', values: [15.5] },
         ]);
         expect(getDashboardAverageTicket(summary)).toBe(15.5);
+        expect(getDashboardNetGrossIncome(summary, [{ refundAmount: 3 }] as any)).toBe(15.5);
+        expect(getDashboardNetAverageTicket(summary, [{ refundAmount: 3 }] as any)).toBe(
+            15.5
+        );
 
         mockProductsById.p1 = { cost: 1.5 };
         mockProductsById.p2 = { cost: 2 };
@@ -194,7 +195,15 @@ describe('Dashboard', () => {
                 },
             ] as any,
             { c1: 'Produce', c2: 'Baking' },
-            mockProductsById
+            mockProductsById,
+            [
+                {
+                    productId: 'p1',
+                    quantityRefunded: 1,
+                    lineRefundAmount: 2.5,
+                },
+            ] as any,
+            [{ refundAmount: 2.5 }] as any
         );
 
         expect(supplemental.totalDiscounts).toBe(1.25);
@@ -204,21 +213,221 @@ describe('Dashboard', () => {
             { name: 'Produce', value: '$4.25' },
         ]);
         expect(supplemental.paymentMix).toEqual([
-            { name: 'Cards', value: 10 },
-            { name: 'Cash', value: 5.5 },
+            { name: 'Cards', value: 8.39 },
+            { name: 'Cash', value: 4.61 },
         ]);
         expect(supplemental.paymentMixBreakdown).toEqual([
-            { name: 'Cards', value: '$10.00' },
-            { name: 'Cash', value: '$5.50' },
+            { name: 'Cards', value: '$8.39' },
+            { name: 'Cash', value: '$4.61' },
         ]);
         expect(supplemental.paymentMixPercentages).toEqual([
-            { name: 'Cards', amount: '$10.00', percent: '65%', ratio: 10 / 15.5 },
-            { name: 'Cash', amount: '$5.50', percent: '35%', ratio: 5.5 / 15.5 },
+            {
+                name: 'Cards',
+                amount: '$8.39',
+                percent: '65%',
+                ratio: 8.39 / 13,
+            },
+            {
+                name: 'Cash',
+                amount: '$4.61',
+                percent: '35%',
+                ratio: 4.61 / 13,
+            },
         ]);
         expect(supplemental.estimatedGrossProfit).toBe(4.25);
         expect(supplemental.missingCostLineCount).toBe(0);
         expect(supplemental.missingCostProductCount).toBe(0);
         expect(supplemental.excludedSalesAmount).toBe(0);
+        expect(supplemental.refundAmountTotal).toBe(2.5);
+        expect(supplemental.refundedGrossProfitOffset).toBe(1);
+    });
+
+    it('subtracts captured refund tenders from dashboard payment mix', () => {
+        const supplemental = buildDashboardSupplemental(
+            [
+                {
+                    id: 'order-1',
+                    discountTotal: 0,
+                    paymentInfo: {
+                        payments: [
+                            { type: 'CC', amount: 12 },
+                            { type: 'CASH', amount: 8 },
+                        ],
+                    },
+                    lines: [],
+                },
+            ] as any,
+            {},
+            {},
+            [] as any,
+            [
+                {
+                    orderId: 'order-1',
+                    refundAmount: 5,
+                    refundPayments: [{ type: 'CASH', amount: 5 }],
+                },
+            ] as any
+        );
+
+        expect(supplemental.paymentMix).toEqual([
+            { name: 'Cards', value: 12 },
+            { name: 'Cash', value: 3 },
+        ]);
+        expect(supplemental.paymentMixBreakdown).toEqual([
+            { name: 'Cards', value: '$12.00' },
+            { name: 'Cash', value: '$3.00' },
+        ]);
+    });
+
+    it('builds dashboard summary from paid and partially refunded orders using order date', () => {
+        const summary = buildDashboardSummaryFromOrders([
+            {
+                orderDate: '2026-04-20T10:00:00.000Z',
+                total: 20,
+                employeeId: 'emp-1',
+                employeeName: 'Ada',
+                lines: [
+                    {
+                        productId: 'p1',
+                        productName: 'Huevo',
+                        unitOfMeasure: 'EA',
+                        quantity: 2,
+                        price: 4.99,
+                        lineTotalBeforeTax: 6.99,
+                    },
+                ],
+            },
+            {
+                orderDate: '2026-04-20T12:00:00.000Z',
+                total: 15,
+                employeeId: 'emp-2',
+                employeeName: 'Bob',
+                lines: [
+                    {
+                        productId: 'p2',
+                        productName: 'Leche',
+                        unitOfMeasure: 'EA',
+                        quantity: 1,
+                        price: 3.5,
+                        lineTotalBeforeTax: 3.5,
+                    },
+                ],
+            },
+        ] as any);
+
+        expect(summary.totalAmount).toBe(35);
+        expect(summary.totalOrders).toBe(2);
+        expect(summary.dates).toEqual([
+            { datePart: '2026-04-20', orders: 2, amount: 35 },
+        ]);
+        expect(summary.products).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ productId: 'p1', amount: 6.99 }),
+                expect.objectContaining({ productId: 'p2', amount: 3.5 }),
+            ])
+        );
+    });
+
+    it('nets dashboard summary totals with refunds by order and product', () => {
+        const summary = buildDashboardSummaryFromOrders(
+            [
+                {
+                    id: 'o-1',
+                    orderDate: '2026-04-21T10:00:00.000Z',
+                    total: 58.96,
+                    employeeId: 'emp-1',
+                    employeeName: 'Ada',
+                    lines: [
+                        {
+                            productId: 'p1',
+                            productName: 'Huevo',
+                            unitOfMeasure: 'EA',
+                            quantity: 2,
+                            price: 29.48,
+                            lineTotalBeforeTax: 58.96,
+                        },
+                    ],
+                },
+                {
+                    id: 'o-2',
+                    orderDate: '2026-04-21T11:00:00.000Z',
+                    total: 148.95,
+                    employeeId: 'emp-1',
+                    employeeName: 'Ada',
+                    lines: [
+                        {
+                            productId: 'p2',
+                            productName: 'Aceite',
+                            unitOfMeasure: 'EA',
+                            quantity: 1,
+                            price: 148.95,
+                            lineTotalBeforeTax: 148.95,
+                        },
+                    ],
+                },
+                {
+                    id: 'o-3',
+                    orderDate: '2026-04-21T12:00:00.000Z',
+                    total: 78.96,
+                    employeeId: 'emp-1',
+                    employeeName: 'Ada',
+                    lines: [
+                        {
+                            productId: 'p3',
+                            productName: 'Leche',
+                            unitOfMeasure: 'EA',
+                            quantity: 2,
+                            price: 39.48,
+                            lineTotalBeforeTax: 78.96,
+                        },
+                    ],
+                },
+            ] as any,
+            [
+                { id: 'r-1', orderId: 'o-1', refundAmount: 33.98 },
+                { id: 'r-2', orderId: 'o-3', refundAmount: 61.98 },
+            ] as any,
+            [
+                {
+                    refundId: 'r-1',
+                    orderId: 'o-1',
+                    productId: 'p1',
+                    quantityRefunded: 1,
+                    lineRefundAmount: 33.98,
+                },
+                {
+                    refundId: 'r-2',
+                    orderId: 'o-3',
+                    productId: 'p3',
+                    quantityRefunded: 1,
+                    lineRefundAmount: 61.98,
+                },
+            ] as any
+        );
+
+        expect(summary.totalAmount).toBe(190.91);
+        expect(summary.totalOrders).toBe(3);
+        expect(summary.dates).toEqual([
+            { datePart: '2026-04-21', orders: 3, amount: 190.91 },
+        ]);
+        expect(summary.employees).toEqual([
+            expect.objectContaining({ employeeId: 'emp-1', amount: 190.91, orders: 3 }),
+        ]);
+        expect(summary.products).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    productId: 'p1',
+                    amount: expect.closeTo(24.98, 2),
+                    quantity: 1,
+                }),
+                expect.objectContaining({ productId: 'p2', amount: 148.95, quantity: 1 }),
+                expect.objectContaining({
+                    productId: 'p3',
+                    amount: expect.closeTo(16.98, 2),
+                    quantity: 1,
+                }),
+            ])
+        );
     });
 
     it('returns empty helper outputs for missing summary sections', () => {
@@ -272,18 +481,13 @@ describe('Dashboard', () => {
     it('renders the estimated gross profit card value', async () => {
         mockProductsById.p1 = { cost: 1.5 };
         mockProductsById.p2 = { cost: 2 };
-        mockGetSalesSummaryForRange.mockResolvedValue({
-            totalAmount: 42.5,
-            totalOrders: 3,
-            products: [
-                { productName: 'Apples', unitOfMeasure: 'EA', quantity: 2, amount: 12 },
-                { productName: 'Flour', unitOfMeasure: 'LB', quantity: 1, amount: 30.5 },
-            ],
-            employees: [],
-            dates: [],
-        });
-        mockGetSalesForRange.mockResolvedValue([
+        mockGetOrdersForStatuses.mockResolvedValue([
             {
+                id: 'o-1',
+                orderDate: '2026-04-20T08:00:00.000Z',
+                total: 25,
+                employeeId: 'emp-1',
+                employeeName: 'Ada',
                 lines: [
                     {
                         productId: 'p1',
@@ -301,14 +505,41 @@ describe('Dashboard', () => {
                     },
                 ],
             },
+            {
+                id: 'o-2',
+                orderDate: '2026-04-20T09:00:00.000Z',
+                total: 17.5,
+                employeeId: 'emp-2',
+                employeeName: 'Bob',
+                lines: [],
+            },
+        ]);
+        mockGetRefundsForRange.mockResolvedValue([
+            {
+                id: 'refund-1',
+                orderId: 'o-1',
+                refundAmount: 5,
+            },
+        ]);
+        mockGetRefundLinesForRefundIds.mockResolvedValue([
+            {
+                refundId: 'refund-1',
+                productId: 'p1',
+                quantityRefunded: 1,
+                lineRefundAmount: 4.25,
+            },
         ]);
 
         const { toJSON } = render(<Dashboard />);
 
         await waitFor(() => {
             const rendered = JSON.stringify(toJSON());
+            expect(rendered).toContain('Gross Income');
+            expect(rendered).toContain('$ 37.50');
+            expect(rendered).toContain('Average Ticket');
+            expect(rendered).toContain('$ 18.75');
             expect(rendered).toContain('Est. Gross Profit');
-            expect(rendered).toContain('$ 4.25');
+            expect(rendered).toContain('$ 1.50');
             expect(rendered).not.toContain('Estimated profit excludes');
         });
     });
@@ -316,15 +547,12 @@ describe('Dashboard', () => {
     it('renders the missing-cost disclosure note only when profit excludes sold lines', async () => {
         mockProductsById.p1 = { cost: 1.5 };
         mockProductsById.p2 = { cost: null };
-        mockGetSalesSummaryForRange.mockResolvedValue({
-            totalAmount: 20,
-            totalOrders: 2,
-            products: [{ productName: 'Apples', unitOfMeasure: 'EA', quantity: 2, amount: 20 }],
-            employees: [],
-            dates: [],
-        });
-        mockGetSalesForRange.mockResolvedValue([
+        mockGetOrdersForStatuses.mockResolvedValue([
             {
+                orderDate: '2026-04-20T08:00:00.000Z',
+                total: 20,
+                employeeId: 'emp-1',
+                employeeName: 'Ada',
                 lines: [
                     {
                         productId: 'p1',

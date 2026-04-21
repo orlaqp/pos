@@ -6,11 +6,21 @@ import { Animated, InteractionManager, View, Text, FlatList, StyleSheet } from '
 import { useSelector } from 'react-redux';
 import { selectAllEmployees } from '@pos/employees/data-access';
 import { selectAllProducts } from '@pos/products/data-access';
-import { filterOrders, getEmployeeItems, getProductItems, PaymentMethodsSummary } from './end-of-day.service';
+import {
+    buildEndOfDayReferenceSummary,
+    filterOrders,
+    getEmployeeItems,
+    getProductItems,
+    PaymentMethodsSummary,
+} from './end-of-day.service';
 import { Button } from '@rneui/themed';
-import { getSalesForRange } from '@pos/reporting/data-access';
+import {
+    getRefundLinesForRefundIds,
+    getRefundsForRange,
+    getSalesForRange,
+} from '@pos/reporting/data-access';
 import moment from 'moment';
-import { Order } from '@pos/shared/models';
+import { Order, OrderRefund, OrderRefundLine, OrderStatus } from '@pos/shared/models';
 import { UIDatePickerModal, UISpinner } from '@pos/shared/ui-native';
 import OrderDetails from './order-details';
 import Widget from '../widget/widget';
@@ -24,6 +34,12 @@ export interface EndOfDayWidget {
     value: string;
     backgroundColor: string;
     flex?: number;
+}
+
+export interface EndOfDayLoadedData {
+    orders: Order[];
+    refunds: OrderRefund[];
+    refundLines: OrderRefundLine[];
 }
 
 export interface EndOfDayFilterConfig {
@@ -53,25 +69,58 @@ export const loadPaidSalesForRange = async (
     dateRange: { startDate: any; endDate: any },
     fetchSales: typeof getSalesForRange = getSalesForRange
 ) => {
-    const items = await fetchSales('PAID', dateRange as any);
+    const items = await fetchSales(
+        [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+        dateRange as any
+    );
     return items || [];
+};
+
+export const loadEndOfDayDataForRange = async (
+    dateRange: { startDate: any; endDate: any },
+    fetchSales: typeof getSalesForRange = getSalesForRange,
+    fetchRefunds: typeof getRefundsForRange = getRefundsForRange,
+    fetchRefundLines: typeof getRefundLinesForRefundIds = getRefundLinesForRefundIds
+): Promise<EndOfDayLoadedData> => {
+    const [orders, refunds] = await Promise.all([
+        loadPaidSalesForRange(dateRange, fetchSales),
+        fetchRefunds({ range: dateRange as any }),
+    ]);
+    const refundLines = await fetchRefundLines(
+        (refunds || []).map((refund) => refund.id).filter(Boolean)
+    );
+
+    return {
+        orders: orders || [],
+        refunds: refunds || [],
+        refundLines: refundLines || [],
+    };
 };
 
 export const buildEndOfDayWidgets = (
     ordersCount: number,
-    totalAmount: number,
+    grossSales: number,
+    discounts: number,
+    refunds: number,
+    netSales: number,
     summary: PaymentMethodsSummary,
     defaultBackgroundColor: string,
     labels: {
         sales: string;
-        total: string;
+        grossSales: string;
+        discounts: string;
+        refunds: string;
+        netSales: string;
         creditCard: string;
         cash: string;
         checks: string;
         ebt: string;
     } = {
         sales: 'Sales',
-        total: 'Total',
+        grossSales: 'Gross Sales',
+        discounts: 'Discounts',
+        refunds: 'Refunds',
+        netSales: 'Collected Sales',
         creditCard: 'Credit Card',
         cash: 'Cash',
         checks: 'Checks',
@@ -85,8 +134,26 @@ export const buildEndOfDayWidgets = (
         flex: 0.7,
     },
     {
-        text: labels.total,
-        value: formatPaymentAmount(totalAmount),
+        text: labels.grossSales,
+        value: formatPaymentAmount(grossSales),
+        backgroundColor: defaultBackgroundColor,
+        flex: 1,
+    },
+    {
+        text: labels.discounts,
+        value: formatPaymentAmount(discounts),
+        backgroundColor: '#5d4037',
+        flex: 1,
+    },
+    {
+        text: labels.refunds,
+        value: formatPaymentAmount(refunds),
+        backgroundColor: '#8e24aa',
+        flex: 1,
+    },
+    {
+        text: labels.netSales,
+        value: formatPaymentAmount(netSales),
         backgroundColor: defaultBackgroundColor,
         flex: 1,
     },
@@ -115,6 +182,14 @@ export const buildEndOfDayWidgets = (
         flex: 1,
     },
 ];
+
+const chunkWidgets = (widgets: EndOfDayWidget[], size = 5) => {
+    const rows: EndOfDayWidget[][] = [];
+    for (let index = 0; index < widgets.length; index += size) {
+        rows.push(widgets.slice(index, index + size));
+    }
+    return rows;
+};
 
 export const buildEndOfDayFilterConfigs = (params: {
     employeesOpen: boolean;
@@ -176,18 +251,21 @@ export const createDateUpdater = (
     setLoading: (value: boolean) => void,
     setOrders: (orders: Order[]) => void,
     setFilteredOrders: (orders: Order[]) => void,
+    setRefunds?: (refunds: OrderRefund[]) => void,
+    setRefundLines?: (lines: OrderRefundLine[]) => void,
     loadForRange: (
-        dateRange: { startDate: any; endDate: any },
-        fetchSales?: typeof getSalesForRange
-    ) => Promise<Order[]> = loadPaidSalesForRange
+        dateRange: { startDate: any; endDate: any }
+    ) => Promise<EndOfDayLoadedData> = loadEndOfDayDataForRange
 ) => (date: Date) => {
     setDate(date);
     const dateRange = buildDayRange(date);
     setLoading(true);
     InteractionManager.runAfterInteractions(() => {
-        loadForRange(dateRange).then((items) => {
-            setOrders(items);
-            setFilteredOrders(items);
+        loadForRange(dateRange).then((data) => {
+            setOrders(data.orders);
+            setFilteredOrders(data.orders);
+            setRefunds?.(data.refunds);
+            setRefundLines?.(data.refundLines);
             setLoading(false);
         });
     });
@@ -206,9 +284,14 @@ export function EndOfDay(props: EndOfDayProps) {
     const [loading, setLoading] = useState(true);
     const [orders, setOrders] = useState<Order[]>([]);
     const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+    const [refunds, setRefunds] = useState<OrderRefund[]>([]);
+    const [refundLines, setRefundLines] = useState<OrderRefundLine[]>([]);
     const [paymentMethodsSummary, setPaymentMethodsSummary] = useState<PaymentMethodsSummary>({
         CC: 0, CASH: 0, CHECK: 0, EBT: 0
     });
+    const [referenceSummary, setReferenceSummary] = useState(() =>
+        buildEndOfDayReferenceSummary([], [], [], {})
+    );
     
     const [employeesOpen, setEmployeesOpen] = useState(false);
     const [employeeValue, setEmployeeValue] = useState(null);
@@ -253,12 +336,18 @@ export function EndOfDay(props: EndOfDayProps) {
     });
     const widgets = buildEndOfDayWidgets(
         filteredOrders.length,
-        filteredOrders.reduce((sum, order) => sum + Number(order.total || 0), 0),
+        referenceSummary.grossSales,
+        referenceSummary.discounts,
+        referenceSummary.refunds,
+        referenceSummary.netSales,
         paymentMethodsSummary,
         styles.dataRow.backgroundColor,
         {
             sales: t('EOD_Sales', 'Sales'),
-            total: t('EOD_Total', 'Total'),
+            grossSales: t('EOD_GrossSales', 'Gross Sales'),
+            discounts: t('EOD_Discounts', 'Discounts'),
+            refunds: t('EOD_Refunds', 'Refunds'),
+            netSales: t('EOD_NetSales', 'Collected Sales'),
             creditCard: t('EOD_CreditCard', 'Credit Card'),
             cash: t('EOD_Cash', 'Cash'),
             checks: t('EOD_Checks', 'Checks'),
@@ -270,7 +359,9 @@ export function EndOfDay(props: EndOfDayProps) {
         setDate,
         setLoading,
         setOrders,
-        setFilteredOrders
+        setFilteredOrders,
+        setRefunds,
+        setRefundLines
     );
 
     useEffect(() => {
@@ -278,11 +369,12 @@ export function EndOfDay(props: EndOfDayProps) {
             openedBy: employeeValue,
             closedBy: closedByValue,
             productId: productValue
-        });
+        }, refunds, refundLines);
         setFilteredOrders(filterResponse.orders);
         setPaymentMethodsSummary(filterResponse.summary);
+        setReferenceSummary(filterResponse.references);
         
-    }, [orders, employeeValue, closedByValue, productValue])
+    }, [orders, refunds, refundLines, employeeValue, closedByValue, productValue])
 
     useEffect(() => {
         setEmployeeItems(getEmployeeItems(employees));
@@ -298,10 +390,12 @@ export function EndOfDay(props: EndOfDayProps) {
         setLoading(true);
 
         const task = InteractionManager.runAfterInteractions(() => {
-            loadPaidSalesForRange(dateRange).then((items) => {
+            loadEndOfDayDataForRange(dateRange).then((data) => {
                 if (cancelled) return;
-                setOrders(items);
-                setFilteredOrders(items);
+                setOrders(data.orders);
+                setFilteredOrders(data.orders);
+                setRefunds(data.refunds);
+                setRefundLines(data.refundLines);
                 setLoading(false);
             });
         });
@@ -417,26 +511,50 @@ export function EndOfDay(props: EndOfDayProps) {
                 {!loading && hasFilteredData && (
                     <>
                         <View style={{ flexDirection: 'row' }}>
-                            {widgets.map((widget) => (
-                                <View key={widget.text} style={{ flex: widget.flex || 1 }}>
-                                    <Widget
-                                        height={80}
-                                        backgroundColor={widget.backgroundColor}
-                                        text={widget.text}
-                                        value={widget.value}
-                                        primaryTextSize={16}
-                                        secondaryTextSize={12}
-                                    />
-                                </View>
-                            ))}
-                        </View>  
+                            <View style={{ flex: 1 }}>
+                                {chunkWidgets(widgets).map((row, index) => (
+                                    <View
+                                        key={`row-${index}`}
+                                        style={{ flexDirection: 'row' }}
+                                    >
+                                        {row.map((widget) => (
+                                            <View
+                                                key={widget.text}
+                                                style={{ flex: widget.flex || 1 }}
+                                            >
+                                                <Widget
+                                                    height={80}
+                                                    backgroundColor={widget.backgroundColor}
+                                                    text={widget.text}
+                                                    value={widget.value}
+                                                    primaryTextSize={16}
+                                                    secondaryTextSize={12}
+                                                />
+                                            </View>
+                                        ))}
+                                    </View>
+                                ))}
+                            </View>
+                        </View>
 
                         <FlatList
                             style={{ marginTop: 10 }}
                             data={filteredOrders}
                             keyExtractor={(item) => item.id}
                             renderItem={({ item }) => (
-                                <OrderDetails order={item} productId={productValue} />
+                                <OrderDetails
+                                    order={item}
+                                    productId={productValue}
+                                    refundedAmount={
+                                        refunds
+                                            .filter((refund) => refund.orderId === item.id)
+                                            .reduce(
+                                                (sum, refund) =>
+                                                    sum + Number(refund.refundAmount || 0),
+                                                0
+                                            )
+                                    }
+                                />
                             )}
                         />
                     </>

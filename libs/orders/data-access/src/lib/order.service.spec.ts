@@ -1259,6 +1259,164 @@ describe('OrderService', () => {
     );
   });
 
+  it('persists explicit refund payment breakdowns on the refund record', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const saveMock = jest.mocked(DataStore.save);
+    const sharedModels = jest.requireMock('@pos/shared/models');
+
+    queryMock.mockResolvedValueOnce({
+      id: 'order-6',
+      tenantId: 'test-tenant',
+      status: 'PAID',
+      employeeId: 'employee-1',
+      orderNo: '51-25-260316-0006',
+      subtotal: 20,
+      tax: 0,
+      total: 20,
+      paymentInfo: {
+        payments: [
+          { type: 'CC', amount: 12 },
+          { type: 'CASH', amount: 8 },
+        ],
+      },
+      lines: [
+        {
+          identifier: 'line-1',
+          productId: 'product-1',
+          productName: 'Rice',
+          quantity: 2,
+          price: 10,
+          unitOfMeasure: 'EA',
+          lineTotalBeforeTax: 20,
+        },
+      ],
+      orderDate: '2026-03-16T12:00:00.000Z',
+    } as any);
+    queryMock.mockResolvedValueOnce([]);
+
+    (sharedModels.Order as any).copyOf = (existing: any, mutator: (draft: any) => void) => {
+      const draft = {
+        ...existing,
+        refundInfo: null,
+      };
+      mutator(draft);
+      return draft;
+    };
+
+    await OrderService.refund({
+      id: 'order-6',
+      by: {
+        id: 'employee-2',
+        firstName: 'Refund',
+        lastName: 'Cashier',
+      } as any,
+      order: {
+        id: 'order-6',
+        orderNo: '51-25-260316-0006',
+        subtotal: 20,
+        tax: 0,
+        total: 20,
+        status: 'PAID',
+        paymentInfo: {
+          payments: [
+            { type: 'CC', amount: 12 },
+            { type: 'CASH', amount: 8 },
+          ],
+        },
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 2,
+            productId: 'product-1',
+            productName: 'Rice',
+            price: 10,
+            unitOfMeasure: 'EA',
+            lineTotalBeforeTax: 20,
+          },
+        ],
+      } as any,
+      refundedLines: [{ identifier: 'line-1', quantity: 1 }],
+      refundPayments: [
+        { type: 'CC', amount: 6 },
+        { type: 'CASH', amount: 4 },
+      ],
+    });
+
+    expect(saveMock).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        id: 'generated-order-id',
+        refundAmount: 10,
+        refundPayments: [
+          { type: 'CC', amount: 6 },
+          { type: 'CASH', amount: 4 },
+        ],
+      })
+    );
+  });
+
+  it('rejects refund payment breakdowns that do not match the refund total', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+
+    queryMock.mockResolvedValueOnce({
+      id: 'order-7',
+      tenantId: 'test-tenant',
+      status: 'PAID',
+      employeeId: 'employee-1',
+      orderNo: '51-25-260316-0007',
+      subtotal: 20,
+      tax: 0,
+      total: 20,
+      lines: [
+        {
+          identifier: 'line-1',
+          productId: 'product-1',
+          productName: 'Rice',
+          quantity: 2,
+          price: 10,
+          unitOfMeasure: 'EA',
+          lineTotalBeforeTax: 20,
+        },
+      ],
+      orderDate: '2026-03-16T12:00:00.000Z',
+    } as any);
+    queryMock.mockResolvedValueOnce([]);
+
+    await expect(
+      OrderService.refund({
+        id: 'order-7',
+        by: {
+          id: 'employee-2',
+          firstName: 'Refund',
+          lastName: 'Cashier',
+        } as any,
+        order: {
+          id: 'order-7',
+          orderNo: '51-25-260316-0007',
+          subtotal: 20,
+          tax: 0,
+          total: 20,
+          status: 'PAID',
+          lines: [
+            {
+              identifier: 'line-1',
+              quantity: 2,
+              productId: 'product-1',
+              productName: 'Rice',
+              price: 10,
+              unitOfMeasure: 'EA',
+              lineTotalBeforeTax: 20,
+            },
+          ],
+        } as any,
+        refundedLines: [{ identifier: 'line-1', quantity: 1 }],
+        refundPayments: [{ type: 'CC', amount: 3 }],
+      })
+    ).rejects.toThrow(
+      'Refund payment methods must add up to 10.00'
+    );
+  });
+
   it('recalculates automatic discount refunds when the remaining quantity no longer qualifies', async () => {
     const queryMock = jest.mocked(DataStore.query);
     const saveMock = jest.mocked(DataStore.save);

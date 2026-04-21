@@ -46,7 +46,7 @@ export function CategoryPerformance() {
             (resolvedCategories || []).map((category) => [category.id, category.name])
         );
         const orders = await getOrdersForStatuses({
-            statuses: [OrderStatus.PAID],
+            statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
             range: normalizeReportRange(range),
         });
 

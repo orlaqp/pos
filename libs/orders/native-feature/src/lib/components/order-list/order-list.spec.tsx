@@ -7,6 +7,7 @@ const mockDispatch = jest.fn();
 const mockSearch = jest.fn();
 const mockSubscribeUnsubscribe = jest.fn();
 const mockSearchInputValue = { current: '' };
+const mockDialogProps = { overlayStyle: undefined as unknown };
 
 let mockOrders = [
     {
@@ -162,11 +163,14 @@ jest.mock('@rneui/themed', () => ({
     Dialog: ({
         children,
         isVisible,
+        overlayStyle,
     }: {
         children: React.ReactNode;
         isVisible: boolean;
+        overlayStyle?: unknown;
     }) => {
         const { View } = require('react-native');
+        mockDialogProps.overlayStyle = overlayStyle;
         return isVisible ? <View testID="order-void-dialog">{children}</View> : null;
     },
 }));
@@ -256,6 +260,7 @@ describe('OrderList integration', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        mockDialogProps.overlayStyle = undefined;
         mockI18next.isInitialized = false;
         mockI18next.exists.mockImplementation(() => false);
         mockI18next.t.mockImplementation((key: string) => key);
@@ -449,5 +454,18 @@ describe('OrderList integration', () => {
         });
 
         expect(getByTestId('order-void-dialog')).toBeTruthy();
+    });
+
+    it('uses a wider overlay for the redesigned void dialog', () => {
+        render(<OrderList />);
+        act(() => {
+            jest.runOnlyPendingTimers();
+        });
+
+        expect(mockDialogProps.overlayStyle).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ width: 1120, maxWidth: '94%' }),
+            ])
+        );
     });
 });

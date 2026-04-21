@@ -921,6 +921,7 @@ type EagerOrderRefund = {
   readonly status: OrderRefundStatus | keyof typeof OrderRefundStatus;
   readonly refundAmount: number;
   readonly refundReason?: string | null;
+  readonly refundPayments?: Payment[] | null;
   readonly createdByEmployeeId: string;
   readonly createdByEmployeeName: string;
   readonly inventoryApplyState?: InventoryApplyState | keyof typeof InventoryApplyState | null;
@@ -941,6 +942,7 @@ type LazyOrderRefund = {
   readonly status: OrderRefundStatus | keyof typeof OrderRefundStatus;
   readonly refundAmount: number;
   readonly refundReason?: string | null;
+  readonly refundPayments?: Payment[] | null;
   readonly createdByEmployeeId: string;
   readonly createdByEmployeeName: string;
   readonly inventoryApplyState?: InventoryApplyState | keyof typeof InventoryApplyState | null;

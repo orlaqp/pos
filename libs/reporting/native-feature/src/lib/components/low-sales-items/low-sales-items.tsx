@@ -42,7 +42,7 @@ export function LowSalesItems() {
         const normalizedRange = normalizeReportRange(range);
         const [orders, loadedProducts] = await Promise.all([
             getOrdersForStatuses({
-                statuses: [OrderStatus.PAID],
+                statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
                 range: normalizedRange,
             }),
             ProductService.getAll(),

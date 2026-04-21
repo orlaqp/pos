@@ -38,13 +38,36 @@ async function getOrders(range, tenantId) {
         throw new Error('Missing tenant claim');
     }
 
-    var params = {
+    const requestedStatuses = Array.isArray(range.statuses)
+        ? range.statuses.filter(Boolean)
+        : range.status
+        ? [range.status]
+        : [];
+    if (!requestedStatuses.length) {
+        throw new Error('Missing statuses argument');
+    }
+
+    const allOrders = await Promise.all(
+        requestedStatuses.map((status) => queryOrdersForStatus(status, range, tenantId))
+    );
+    const deduped = new Map();
+
+    allOrders.flat().forEach((order) => {
+        if (!order?.id || order._deleted) return;
+        deduped.set(order.id, order);
+    });
+
+    return Array.from(deduped.values());
+}
+
+async function queryOrdersForStatus(status, range, tenantId) {
+    const params = {
         TableName: process.env.API_POS_ORDERTABLE_NAME,
         IndexName: 'byStatusByOrderDate',
         KeyConditionExpression: '#status = :status AND #orderDate BETWEEN :from AND :to',
         FilterExpression: '#tenantId = :tenantId',
         ExpressionAttributeValues: {
-            ':status': 'PAID',
+            ':status': status,
             ':from': range.from,
             ':to': range.to,
             ':tenantId': tenantId,
@@ -55,16 +78,16 @@ async function getOrders(range, tenantId) {
             '#tenantId': 'tenantId',
         },
     };
-    
+
     const scanResults = [];
     let data;
     do {
         data = await docClient.query(params).promise();
         data.Items.forEach((item) => scanResults.push(item));
-        params.ExclusiveStartKey  = data.LastEvaluatedKey;
-    } while(typeof data.LastEvaluatedKey !== "undefined");
-    
-    return scanResults.filter(i => !i._deleted);
+        params.ExclusiveStartKey = data.LastEvaluatedKey;
+    } while (typeof data.LastEvaluatedKey !== 'undefined');
+
+    return scanResults;
 }
 
 function processGroups(orders, range) {

@@ -45,7 +45,7 @@ export function HourlySales() {
 
     const getData = async (range: DateRange) => {
         const orders = await getOrdersForStatuses({
-            statuses: [OrderStatus.PAID],
+            statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
             range: normalizeReportRange(range),
         });
 

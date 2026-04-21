@@ -45,6 +45,10 @@ export interface OrderRefundRecordSnapshot {
     orderId: string;
     refundAmount: number;
     refundDate?: string | null;
+    refundPayments?: Array<{
+        type: string;
+        amount: number;
+    }>;
 }
 
 export interface OrderRefundLineRecordSnapshot {

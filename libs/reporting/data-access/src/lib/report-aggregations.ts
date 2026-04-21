@@ -9,6 +9,12 @@ import {
 
 const round = (value: number) => Math.round(value * 100) / 100;
 const money = (value: number) => `$${round(value).toFixed(2)}`;
+const PAYMENT_TYPE_LABELS: Record<string, string> = {
+    [PaymentType.CC]: 'Cards',
+    [PaymentType.CASH]: 'Cash',
+    [PaymentType.EBT]: 'EBT',
+    [PaymentType.CHECK]: 'Checks',
+};
 
 type DiscountApplicationSummary = {
     definitionId?: string;
@@ -108,26 +114,99 @@ export const buildCategoryPerformanceRows = (
         }));
 };
 
-export const buildPaymentSummaryRows = (orders: Order[]) => {
+const toPaymentLabel = (type: string | undefined | null) => {
+    const rawType = String(type || '').toUpperCase();
+    return PAYMENT_TYPE_LABELS[rawType] || rawType || 'Other';
+};
+
+const addPaymentAmount = (
+    totals: Map<string, { amount: number; count: number }>,
+    type: string | undefined | null,
+    amount: number,
+    countDelta: number
+) => {
+    const label = toPaymentLabel(type);
+    if (!label || amount === 0) {
+        return;
+    }
+
+    const current = totals.get(label) || { amount: 0, count: 0 };
+    current.amount = round(current.amount + amount);
+    current.count += countDelta;
+    totals.set(label, current);
+};
+
+const allocateRefundAcrossOrderPayments = (
+    order: Order | undefined,
+    refundAmount: number
+) => {
+    const payments = (order?.paymentInfo?.payments || [])
+        .map((payment) => ({
+            type: String(payment?.type || '').toUpperCase(),
+            amount: round(Math.max(0, Number(payment?.amount || 0))),
+        }))
+        .filter((payment) => payment.amount > 0);
+
+    const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+    if (refundAmount <= 0 || totalPaid <= 0) {
+        return [] as Array<{ type: string; amount: number }>;
+    }
+
+    let remaining = Math.min(round(refundAmount), round(totalPaid));
+
+    return payments
+        .map((payment, index) => {
+            if (remaining <= 0) {
+                return { ...payment, amount: 0 };
+            }
+
+            const allocated =
+                index === payments.length - 1
+                    ? remaining
+                    : round((payment.amount / totalPaid) * refundAmount);
+            const capped = Math.min(payment.amount, allocated, remaining);
+            remaining = round(remaining - capped);
+            return {
+                type: payment.type,
+                amount: capped,
+            };
+        })
+        .filter((payment) => payment.amount > 0);
+};
+
+export const buildPaymentSummaryRows = (orders: Order[], refunds: OrderRefund[] = []) => {
     const totals = new Map<string, { amount: number; count: number }>();
+    const ordersById = new Map<string, Order>();
 
     orders.forEach((order) => {
+        ordersById.set(String(order.id), order);
         (order.paymentInfo?.payments || []).forEach((payment) => {
-            const rawType = String(payment?.type || '').toUpperCase();
-            const type =
-                rawType === PaymentType.CC
-                    ? 'Cards'
-                    : rawType === PaymentType.CASH
-                    ? 'Cash'
-                    : rawType === PaymentType.EBT
-                    ? 'EBT'
-                    : rawType === PaymentType.CHECK
-                    ? 'Checks'
-                    : rawType || 'Other';
-            const current = totals.get(type) || { amount: 0, count: 0 };
-            current.amount += Number(payment?.amount || 0);
-            current.count += 1;
-            totals.set(type, current);
+            addPaymentAmount(
+                totals,
+                payment?.type,
+                Number(payment?.amount || 0),
+                1
+            );
+        });
+    });
+
+    refunds.forEach((refund) => {
+        const explicitRefundPayments = (refund.refundPayments || [])
+            .map((payment) => ({
+                type: String(payment?.type || '').toUpperCase(),
+                amount: round(Math.max(0, Number(payment?.amount || 0))),
+            }))
+            .filter((payment) => payment.amount > 0);
+
+        const paymentsToSubtract = explicitRefundPayments.length
+            ? explicitRefundPayments
+            : allocateRefundAcrossOrderPayments(
+                  ordersById.get(String(refund.orderId || '')),
+                  Number(refund.refundAmount || 0)
+              );
+
+        paymentsToSubtract.forEach((payment) => {
+            addPaymentAmount(totals, payment.type, -1 * payment.amount, 0);
         });
     });
 

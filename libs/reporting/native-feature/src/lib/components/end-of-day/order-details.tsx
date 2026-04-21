@@ -11,14 +11,21 @@ import { OrderLineDetails } from './order-line-details';
 export interface OrderDetailsProps {
     order: Order;
     productId: string | null;
+    refundedAmount?: number;
 }
 
-export function OrderDetails({ order, productId }: OrderDetailsProps) {
+export function OrderDetails({
+    order,
+    productId,
+    refundedAmount = 0,
+}: OrderDetailsProps) {
     const styles = useSharedStyles();
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
             : fallback;
+    const discountAmount = Number(order.discountTotal || 0);
+    const netSales = Math.max(0, Number(order.total || 0) - Number(refundedAmount || 0));
 
     return (
         <View style={[styles.box, styles.column]}>
@@ -47,10 +54,25 @@ export function OrderDetails({ order, productId }: OrderDetailsProps) {
                 <View style={{ flex: .5 }}></View>
                 <View style={[styles.column, { marginRight: 45 }]}>
                     <Text style={[styles.secondaryText, styles.textRight ]}>
-                        {t('EOD_Total', 'Total')}
+                        {t('EOD_NetSales', 'Collected Sales')}
                     </Text>
-                    <Text style={[styles.primaryText, styles.textWarning, styles.textBold ]}>$ {order.total.toFixed(2)}</Text>
+                    <Text style={[styles.primaryText, styles.textWarning, styles.textBold ]}>$ {netSales.toFixed(2)}</Text>
                 </View>
+            </View>
+            <View style={[styles.row, { marginTop: 10, marginRight: 26 }]}>
+                <View style={{ flex: 1.5, marginRight: 45 }}>
+                    <Text style={styles.secondaryText}>
+                        {t('EOD_Discounts', 'Discounts')}
+                    </Text>
+                    <Text style={styles.primaryText}>$ {discountAmount.toFixed(2)}</Text>
+                </View>
+                <View style={{ flex: 1.5, marginRight: 45 }}>
+                    <Text style={styles.secondaryText}>
+                        {t('EOD_Refunds', 'Refunds')}
+                    </Text>
+                    <Text style={styles.primaryText}>$ {refundedAmount.toFixed(2)}</Text>
+                </View>
+                <View style={{ flex: 3 }} />
             </View>
             <View style={[styles.row, { marginRight: 26, marginTop: 10 }]}>
                 <View style={{ flex: 2 }}>

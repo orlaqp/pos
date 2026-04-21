@@ -1036,6 +1036,7 @@ export type CreateOrderRefundInput = {
   status: OrderRefundStatus,
   refundAmount: number,
   refundReason?: string | null,
+  refundPayments?: Array< PaymentInput > | null,
   createdByEmployeeId: string,
   createdByEmployeeName: string,
   inventoryApplyState?: InventoryApplyState | null,
@@ -1101,6 +1102,7 @@ export type OrderRefund = {
   status: OrderRefundStatus,
   refundAmount: number,
   refundReason?: string | null,
+  refundPayments?:  Array<Payment > | null,
   createdByEmployeeId: string,
   createdByEmployeeName: string,
   inventoryApplyState?: InventoryApplyState | null,
@@ -1124,6 +1126,7 @@ export type UpdateOrderRefundInput = {
   status?: OrderRefundStatus | null,
   refundAmount?: number | null,
   refundReason?: string | null,
+  refundPayments?: Array< PaymentInput > | null,
   createdByEmployeeId?: string | null,
   createdByEmployeeName?: string | null,
   inventoryApplyState?: InventoryApplyState | null,
@@ -5195,6 +5198,11 @@ export type CreateOrderRefundMutation = {
     status: OrderRefundStatus,
     refundAmount: number,
     refundReason?: string | null,
+    refundPayments?:  Array< {
+      __typename: "Payment",
+      type: PaymentType,
+      amount: number,
+    } > | null,
     createdByEmployeeId: string,
     createdByEmployeeName: string,
     inventoryApplyState?: InventoryApplyState | null,
@@ -5226,6 +5234,11 @@ export type UpdateOrderRefundMutation = {
     status: OrderRefundStatus,
     refundAmount: number,
     refundReason?: string | null,
+    refundPayments?:  Array< {
+      __typename: "Payment",
+      type: PaymentType,
+      amount: number,
+    } > | null,
     createdByEmployeeId: string,
     createdByEmployeeName: string,
     inventoryApplyState?: InventoryApplyState | null,
@@ -5257,6 +5270,11 @@ export type DeleteOrderRefundMutation = {
     status: OrderRefundStatus,
     refundAmount: number,
     refundReason?: string | null,
+    refundPayments?:  Array< {
+      __typename: "Payment",
+      type: PaymentType,
+      amount: number,
+    } > | null,
     createdByEmployeeId: string,
     createdByEmployeeName: string,
     inventoryApplyState?: InventoryApplyState | null,
@@ -7255,7 +7273,7 @@ export type DeleteDiscountReconciliationExceptionMutation = {
 };
 
 export type GetSalesQueryVariables = {
-  status: OrderStatus,
+  statuses: Array< OrderStatus >,
   from: string,
   to: string,
 };
@@ -7367,7 +7385,7 @@ export type GetSalesQuery = {
 };
 
 export type GetSalesSummaryQueryVariables = {
-  status: OrderStatus,
+  statuses: Array< OrderStatus >,
   from: string,
   to: string,
 };
@@ -8336,6 +8354,11 @@ export type GetOrderRefundQuery = {
     status: OrderRefundStatus,
     refundAmount: number,
     refundReason?: string | null,
+    refundPayments?:  Array< {
+      __typename: "Payment",
+      type: PaymentType,
+      amount: number,
+    } > | null,
     createdByEmployeeId: string,
     createdByEmployeeName: string,
     inventoryApplyState?: InventoryApplyState | null,
@@ -11284,6 +11307,11 @@ export type OnCreateOrderRefundSubscription = {
     status: OrderRefundStatus,
     refundAmount: number,
     refundReason?: string | null,
+    refundPayments?:  Array< {
+      __typename: "Payment",
+      type: PaymentType,
+      amount: number,
+    } > | null,
     createdByEmployeeId: string,
     createdByEmployeeName: string,
     inventoryApplyState?: InventoryApplyState | null,
@@ -11315,6 +11343,11 @@ export type OnUpdateOrderRefundSubscription = {
     status: OrderRefundStatus,
     refundAmount: number,
     refundReason?: string | null,
+    refundPayments?:  Array< {
+      __typename: "Payment",
+      type: PaymentType,
+      amount: number,
+    } > | null,
     createdByEmployeeId: string,
     createdByEmployeeName: string,
     inventoryApplyState?: InventoryApplyState | null,
@@ -11346,6 +11379,11 @@ export type OnDeleteOrderRefundSubscription = {
     status: OrderRefundStatus,
     refundAmount: number,
     refundReason?: string | null,
+    refundPayments?:  Array< {
+      __typename: "Payment",
+      type: PaymentType,
+      amount: number,
+    } > | null,
     createdByEmployeeId: string,
     createdByEmployeeName: string,
     inventoryApplyState?: InventoryApplyState | null,

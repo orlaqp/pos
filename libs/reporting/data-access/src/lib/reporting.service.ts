@@ -1,5 +1,4 @@
 import { GraphQLResult } from '@aws-amplify/api-graphql';
-import { getSalesSummary } from '@pos/shared/api';
 import { Order, OrderStatus, SalesSummary } from '@pos/shared/models';
 import { DateRange } from '@pos/shared/ui-native';
 import { API } from '@pos/shared/amplify';
@@ -9,6 +8,15 @@ const toIsoRange = (range: DateRange) => ({
     from: range?.startDate.toISOString(),
     to: range?.endDate.toISOString(),
 });
+
+const toStatusList = (
+    statuses:
+        | (OrderStatus | keyof typeof OrderStatus)
+        | (OrderStatus | keyof typeof OrderStatus)[]
+) => {
+    const normalized = Array.isArray(statuses) ? statuses : [statuses];
+    return normalized.filter(Boolean);
+};
 
 const isTransformationTooLargeError = (error: unknown) => {
     const message = JSON.stringify(error);
@@ -54,14 +62,17 @@ const mergeOrdersById = (orders: Order[][]) => {
 };
 
 const fetchSalesChunk = async (
-    status: OrderStatus | keyof typeof OrderStatus,
+    statuses:
+        | (OrderStatus | keyof typeof OrderStatus)
+        | (OrderStatus | keyof typeof OrderStatus)[],
     range: DateRange
 ) => {
     const { from, to } = toIsoRange(range);
+    const normalizedStatuses = toStatusList(statuses);
     const promise = API.graphql<{ getSales: Order[] }>({
         query: getSalesCustom,
         variables: {
-            status,
+            statuses: normalizedStatuses,
             from,
             to,
         },
@@ -144,14 +155,17 @@ export const buildSalesSummaryFromOrders = (
 };
 
 export const getSalesSummaryForRange = (
-    status: OrderStatus | keyof typeof OrderStatus,
+    statuses:
+        | (OrderStatus | keyof typeof OrderStatus)
+        | (OrderStatus | keyof typeof OrderStatus)[],
     range: DateRange
 ) => {
     const { from, to } = toIsoRange(range);
+    const normalizedStatuses = toStatusList(statuses);
     const promise = API.graphql<{ getSalesSummary: SalesSummary }>({
-        query: getSalesSummary,
+        query: getSalesSummaryCustom,
         variables: {
-            status,
+            statuses: normalizedStatuses,
             from,
             to,
         },
@@ -161,7 +175,7 @@ export const getSalesSummaryForRange = (
         .then((r) => r.data?.getSalesSummary)
         .catch(async (error) => {
             console.error('getSalesSummaryForRange failed', {
-                status,
+                statuses: normalizedStatuses,
                 from,
                 to,
                 error,
@@ -171,15 +185,18 @@ export const getSalesSummaryForRange = (
 };
 
 export const getSalesForRange = (
-    status: OrderStatus | keyof typeof OrderStatus,
+    statuses:
+        | (OrderStatus | keyof typeof OrderStatus)
+        | (OrderStatus | keyof typeof OrderStatus)[],
     range: DateRange
 ) => {
-    return fetchSalesChunk(status, range).catch(async (error) => {
+    const normalizedStatuses = toStatusList(statuses);
+    return fetchSalesChunk(normalizedStatuses, range).catch(async (error) => {
         if (isTransformationTooLargeError(error) && canSplitSalesRange(range)) {
             const [left, right] = splitDateRangeForSales(range);
             const [leftOrders, rightOrders] = await Promise.all([
-                getSalesForRange(status, left),
-                getSalesForRange(status, right),
+                getSalesForRange(normalizedStatuses, left),
+                getSalesForRange(normalizedStatuses, right),
             ]);
 
             return mergeOrdersById([leftOrders, rightOrders]);
@@ -187,7 +204,7 @@ export const getSalesForRange = (
 
         const { from, to } = toIsoRange(range);
         console.error('getSalesForRange failed', {
-            status,
+            statuses: normalizedStatuses,
             from,
             to,
             error,
@@ -197,8 +214,8 @@ export const getSalesForRange = (
 };
 
 export const getSalesCustom = /* GraphQL */ `
-  query GetSales($status: OrderStatus!, $from: String!, $to: String!) {
-    getSales(status: $status, from: $from, to: $to) {
+  query GetSales($statuses: [OrderStatus!]!, $from: String!, $to: String!) {
+    getSales(statuses: $statuses, from: $from, to: $to) {
       id
       orderNo
       orderDate
@@ -210,6 +227,7 @@ export const getSalesCustom = /* GraphQL */ `
       employeeId
       employeeName
       lines {
+        identifier
         productId
         productName
         categoryId
@@ -338,6 +356,33 @@ export const getSalesCustom = /* GraphQL */ `
         employeeName
         comments
       }
+    }
+  }
+`;
+
+export const getSalesSummaryCustom = /* GraphQL */ `
+  query GetSalesSummary($statuses: [OrderStatus!]!, $from: String!, $to: String!) {
+    getSalesSummary(statuses: $statuses, from: $from, to: $to) {
+      products {
+        productId
+        productName
+        unitOfMeasure
+        quantity
+        amount
+      }
+      employees {
+        employeeId
+        employeeName
+        orders
+        amount
+      }
+      dates {
+        datePart
+        orders
+        amount
+      }
+      totalAmount
+      totalOrders
     }
   }
 `;

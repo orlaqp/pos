@@ -1,5 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Order, PaymentType, SalesSummary } from '@pos/shared/models';
+import {
+    Order,
+    OrderRefund,
+    OrderRefundLine,
+    OrderStatus,
+    PaymentType,
+    SalesSummary,
+} from '@pos/shared/models';
 import {
     DateRange,
     UICard,
@@ -18,8 +25,9 @@ import PieChart from '../pie-chart/pie-chart';
 import Widget from '../widget/widget';
 
 import {
-    getSalesForRange,
-    getSalesSummaryForRange,
+    getOrdersForStatuses,
+    getRefundLinesForRefundIds,
+    getRefundsForRange,
 } from '@pos/reporting/data-access';
 import { sortDescListBy } from '@pos/shared/utils';
 import { EACH } from '@pos/unit-of-measures/data-access';
@@ -42,6 +50,8 @@ interface DashboardSupplemental {
     missingCostLineCount: number;
     missingCostProductCount: number;
     excludedSalesAmount: number;
+    refundAmountTotal: number;
+    refundedGrossProfitOffset: number;
 }
 
 export const areDashboardRangesEqual = (left: DateRange, right: DateRange) =>
@@ -49,6 +59,80 @@ export const areDashboardRangesEqual = (left: DateRange, right: DateRange) =>
 
 const getDashboardLineAmount = (line: NonNullable<Order['lines']>[number]) =>
     Number(line?.lineTotalBeforeTax ?? Number(line?.price || 0) * Number(line?.quantity || 0));
+const roundMoney = (value: number) => Math.round(value * 100) / 100;
+
+const allocateRefundAcrossOrderPayments = (
+    order: Order | undefined,
+    refundAmount: number
+) => {
+    const payments = (order?.paymentInfo?.payments || [])
+        .map((payment) => ({
+            type: String(payment?.type || '').toUpperCase(),
+            amount: roundMoney(Math.max(0, Number(payment?.amount || 0))),
+        }))
+        .filter((payment) => payment.amount > 0);
+
+    const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+    if (refundAmount <= 0 || totalPaid <= 0) {
+        return [] as Array<{ type: string; amount: number }>;
+    }
+
+    let remaining = Math.min(roundMoney(refundAmount), roundMoney(totalPaid));
+
+    return payments
+        .map((payment, index) => {
+            if (remaining <= 0) {
+                return { ...payment, amount: 0 };
+            }
+
+            const allocated =
+                index === payments.length - 1
+                    ? remaining
+                    : roundMoney((payment.amount / totalPaid) * refundAmount);
+            const capped = Math.min(payment.amount, allocated, remaining);
+            remaining = roundMoney(remaining - capped);
+            return {
+                type: payment.type,
+                amount: capped,
+            };
+        })
+        .filter((payment) => payment.amount > 0);
+};
+
+const buildRefundAmountByOrderId = (refunds: OrderRefund[] = []) =>
+    refunds.reduce<Record<string, number>>((acc, refund) => {
+        const orderId = String(refund?.orderId || '').trim();
+        if (!orderId) {
+            return acc;
+        }
+
+        acc[orderId] = (acc[orderId] || 0) + Number(refund.refundAmount || 0);
+        return acc;
+    }, {});
+
+const buildRefundLineTotalsByOrderProduct = (refundLines: OrderRefundLine[] = []) =>
+    refundLines.reduce<
+        Record<string, { amount: number; quantity: number; categoryId?: string | null }>
+    >((acc, line) => {
+        const orderId = String(line?.orderId || '').trim();
+        const productId = String(line?.productId || '').trim();
+        if (!orderId || !productId) {
+            return acc;
+        }
+
+        const key = `${orderId}:${productId}`;
+        acc[key] = acc[key] || {
+            amount: 0,
+            quantity: 0,
+            categoryId: line?.categoryId,
+        };
+        acc[key].amount += Number(line?.lineRefundAmount || 0);
+        acc[key].quantity += Number(line?.quantityRefunded || 0);
+        if (!acc[key].categoryId && line?.categoryId) {
+            acc[key].categoryId = line.categoryId;
+        }
+        return acc;
+    }, {});
 
 export const hasSalesData = (summary?: SalesSummary) =>
     !!summary && summary.totalAmount > 0;
@@ -92,12 +176,42 @@ export const getDashboardAverageTicket = (summary?: SalesSummary) => {
     return totalAmount / totalOrders;
 };
 
+export const getDashboardRefundTotal = (refunds: OrderRefund[] = []) =>
+    refunds.reduce((sum, refund) => sum + Number(refund.refundAmount || 0), 0);
+
+export const getDashboardNetGrossIncome = (
+    summary?: SalesSummary,
+    _refunds: OrderRefund[] = []
+) => Number(summary?.totalAmount || 0);
+
+export const getDashboardNetAverageTicket = (
+    summary?: SalesSummary,
+    _refunds: OrderRefund[] = []
+) => {
+    const totalOrders =
+        Number(summary?.totalOrders || 0) ||
+        Number(
+            (summary?.employees || []).reduce(
+                (sum, employee) => sum + Number(employee?.orders || 0),
+                0
+            )
+        );
+    if (!totalOrders) {
+        return 0;
+    }
+
+    return Number(summary?.totalAmount || 0) / totalOrders;
+};
+
 export const buildDashboardSupplemental = (
     orders: Order[],
     categoriesById: Record<string, string>,
-    productsById: Record<string, { cost?: number | null } | undefined>
+    productsById: Record<string, { cost?: number | null } | undefined>,
+    refundLines: OrderRefundLine[] = [],
+    refunds: OrderRefund[] = []
 ): DashboardSupplemental => {
     const categoryTotals: Record<string, number> = {};
+    const ordersById = new Map<string, Order>();
     const paymentTotals: Record<string, number> = {
         [PaymentType.CASH]: 0,
         [PaymentType.CC]: 0,
@@ -111,8 +225,11 @@ export const buildDashboardSupplemental = (
     let missingCostLineCount = 0;
     let excludedSalesAmount = 0;
     const missingCostProductIds = new Set<string>();
+    let refundedGrossProfitOffset = 0;
+    const refundedCategoryTotals: Record<string, number> = {};
 
     orders.forEach((order) => {
+        ordersById.set(String(order.id || ''), order);
         const discountTotal = Number(order.discountTotal || 0);
         if (discountTotal > 0) {
             totalDiscounts += discountTotal;
@@ -151,7 +268,61 @@ export const buildDashboardSupplemental = (
         });
     });
 
+    refunds.forEach((refund) => {
+        const capturedRefundPayments = (refund.refundPayments || [])
+            .map((payment) => ({
+                type: String(payment?.type || '').toUpperCase(),
+                amount: roundMoney(Math.max(0, Number(payment?.amount || 0))),
+            }))
+            .filter((payment) => payment.amount > 0);
+        const paymentsToSubtract = capturedRefundPayments.length
+            ? capturedRefundPayments
+            : allocateRefundAcrossOrderPayments(
+                  ordersById.get(String(refund.orderId || '')),
+                  Number(refund.refundAmount || 0)
+              );
+
+        paymentsToSubtract.forEach((payment) => {
+            if (!payment.type) return;
+            paymentTotals[payment.type] = roundMoney(
+                (paymentTotals[payment.type] || 0) - payment.amount
+            );
+        });
+    });
+
+    refundLines.forEach((line) => {
+        const productId = String(line?.productId || '').trim();
+        if (!productId) {
+            return;
+        }
+
+        const categoryId = String(line?.categoryId || '').trim();
+        if (categoryId) {
+            refundedCategoryTotals[categoryId] =
+                (refundedCategoryTotals[categoryId] || 0) +
+                Number(line?.lineRefundAmount || 0);
+        }
+
+        const rawCost = productsById[productId]?.cost;
+        const resolvedCost =
+            rawCost === null || rawCost === undefined ? null : Number(rawCost);
+
+        if (resolvedCost === null || Number.isNaN(resolvedCost)) {
+            return;
+        }
+
+        const refundedQuantity = Number(line?.quantityRefunded || 0);
+        const refundedAmount = Number(line?.lineRefundAmount || 0);
+        refundedGrossProfitOffset +=
+            refundedAmount - resolvedCost * refundedQuantity;
+    });
+
     const topCategories = Object.entries(categoryTotals)
+        .map(([categoryId, amount]) => [
+            categoryId,
+            Math.max(0, amount - Number(refundedCategoryTotals[categoryId] || 0)),
+        ] as const)
+        .filter(([, amount]) => amount > 0)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
         .map(([categoryId, amount]) => ({
@@ -193,6 +364,8 @@ export const buildDashboardSupplemental = (
         missingCostLineCount,
         missingCostProductCount: missingCostProductIds.size,
         excludedSalesAmount,
+        refundAmountTotal: getDashboardRefundTotal(refunds),
+        refundedGrossProfitOffset,
     };
 };
 
@@ -201,6 +374,105 @@ export const buildRevenueOverTime = (summary?: SalesSummary) =>
         label: i?.datePart.substring(5),
         values: [i?.amount],
     }));
+
+export const buildDashboardSummaryFromOrders = (
+    orders: Order[] = [],
+    refunds: OrderRefund[] = [],
+    refundLines: OrderRefundLine[] = []
+): SalesSummary => {
+    const byEmployee: Record<
+        string,
+        { employeeId: string; employeeName: string; orders: number; amount: number }
+    > = {};
+    const byProduct: Record<
+        string,
+        {
+            productId: string;
+            productName: string;
+            unitOfMeasure: string;
+            quantity: number;
+            amount: number;
+        }
+    > = {};
+    const byDate: Record<string, { datePart: string; orders: number; amount: number }> =
+        {};
+    const refundAmountByOrderId = buildRefundAmountByOrderId(refunds);
+    const refundLineTotalsByOrderProduct = buildRefundLineTotalsByOrderProduct(refundLines);
+
+    orders.forEach((order) => {
+        const employeeId = order.createdBy?.id || order.employeeId || 'unknown';
+        const employeeName = order.createdBy?.name || order.employeeName || 'Unknown';
+        const orderId = String(order.id || '').trim();
+        const total = Math.max(
+            0,
+            Number(order.total || 0) - Number(refundAmountByOrderId[orderId] || 0)
+        );
+        const datePart = String(order.orderDate || '').substring(0, 10);
+
+        if (datePart) {
+            byDate[datePart] = byDate[datePart] || {
+                datePart,
+                orders: 0,
+                amount: 0,
+            };
+            byDate[datePart].orders += 1;
+            byDate[datePart].amount += total;
+        }
+
+        byEmployee[employeeId] = byEmployee[employeeId] || {
+            employeeId,
+            employeeName,
+            orders: 0,
+            amount: 0,
+        };
+        byEmployee[employeeId].orders += 1;
+        byEmployee[employeeId].amount += total;
+
+        (order.lines || []).forEach((line) => {
+            if (!line?.productId) return;
+            const refundEntry =
+                refundLineTotalsByOrderProduct[`${orderId}:${line.productId}`] || null;
+            const lineAmount = Math.max(
+                0,
+                getDashboardLineAmount(line) - Number(refundEntry?.amount || 0)
+            );
+            const lineQuantity = Math.max(
+                0,
+                Number(line.quantity || 0) - Number(refundEntry?.quantity || 0)
+            );
+            if (lineAmount <= 0 && lineQuantity <= 0) {
+                return;
+            }
+
+            byProduct[line.productId] = byProduct[line.productId] || {
+                productId: line.productId,
+                productName: line.productName || 'Unknown',
+                unitOfMeasure: line.unitOfMeasure || '',
+                quantity: 0,
+                amount: 0,
+            };
+            byProduct[line.productId].quantity += lineQuantity;
+            byProduct[line.productId].amount += lineAmount;
+        });
+    });
+
+    return {
+        employees: Object.values(byEmployee) as unknown as SalesSummary['employees'],
+        products: Object.values(byProduct) as unknown as SalesSummary['products'],
+        dates: Object.values(byDate)
+            .sort((a, b) =>
+                a.datePart > b.datePart ? 1 : a.datePart < b.datePart ? -1 : 0
+            ) as unknown as SalesSummary['dates'],
+        totalAmount: Object.values(byEmployee).reduce(
+            (sum, employee) => sum + employee.amount,
+            0
+        ),
+        totalOrders: Object.values(byEmployee).reduce(
+            (sum, employee) => sum + employee.orders,
+            0
+        ),
+    };
+};
 
 export const normalizeDashboardRange = (range?: DateRange): DateRange => {
     const resolved = range || {
@@ -232,8 +504,17 @@ export const formatDashboardDateRange = (range: DateRange) => {
 
 export const loadDashboardSummary = async (range?: DateRange) => {
     const normalizedRange = normalizeDashboardRange(range);
-    const summary = await getSalesSummaryForRange('PAID', normalizedRange);
-    return sortDashboardSummary(summary);
+    const [orders, refunds] = await Promise.all([
+        getOrdersForStatuses({
+            statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+            range: normalizedRange,
+        }),
+        getRefundsForRange({ range: normalizedRange }),
+    ]);
+    const refundLines = await getRefundLinesForRefundIds(
+        refunds.map((refund) => refund.id).filter(Boolean)
+    );
+    return sortDashboardSummary(buildDashboardSummaryFromOrders(orders, refunds, refundLines));
 };
 
 export function Dashboard(_props: DashboardProps) {
@@ -246,6 +527,8 @@ export function Dashboard(_props: DashboardProps) {
     });
     const [salesSummary, setSalesSummary] = useState<SalesSummary>();
     const [orders, setOrders] = useState<Order[]>([]);
+    const [refunds, setRefunds] = useState<OrderRefund[]>([]);
+    const [refundLines, setRefundLines] = useState<OrderRefundLine[]>([]);
     const [emptyOpacity] = useState(() => new Animated.Value(0));
     const [emptyTranslateY] = useState(() => new Animated.Value(12));
     const categories = useSelector(selectAllCategories);
@@ -271,8 +554,29 @@ export function Dashboard(_props: DashboardProps) {
         [categories]
     );
     const supplemental = useMemo(
-        () => buildDashboardSupplemental(orders, categoriesById, productsById || {}),
-        [categoriesById, orders, productsById]
+        () =>
+            buildDashboardSupplemental(
+                orders,
+                categoriesById,
+                productsById || {},
+                refundLines,
+                refunds
+            ),
+        [categoriesById, orders, productsById, refundLines, refunds]
+    );
+    const netGrossIncome = useMemo(
+        () => getDashboardNetGrossIncome(salesSummary, refunds),
+        [salesSummary, refunds]
+    );
+    const netAverageTicket = useMemo(
+        () => getDashboardNetAverageTicket(salesSummary, refunds),
+        [salesSummary, refunds]
+    );
+    const netEstimatedGrossProfit = useMemo(
+        () =>
+            Number(supplemental?.estimatedGrossProfit || 0) -
+            Number(supplemental?.refundedGrossProfitOffset || 0),
+        [supplemental]
     );
 
     const updateDateRange = (range: DateRange) => {
@@ -290,27 +594,51 @@ export function Dashboard(_props: DashboardProps) {
         setLoading(true);
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setOrders([]);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setRefunds([]);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setRefundLines([]);
 
         const interactionHandle = InteractionManager.runAfterInteractions(() => {
             (async () => {
                 try {
                     const normalizedRange = normalizeDashboardRange(dateRange);
-                    const [summary, paidOrders] = await Promise.all([
-                        loadDashboardSummary(normalizedRange),
-                        getSalesForRange('PAID', normalizedRange),
+                    const [salesOrders, refundsForRange] = await Promise.all([
+                        getOrdersForStatuses({
+                            statuses: [
+                                OrderStatus.PAID,
+                                OrderStatus.PARTIALLY_REFUNDED,
+                            ],
+                            range: normalizedRange,
+                        }),
+                        getRefundsForRange({ range: normalizedRange }),
                     ]);
+                    const refundLinesForRange = await getRefundLinesForRefundIds(
+                        refundsForRange.map((refund) => refund.id).filter(Boolean)
+                    );
+                    const summary = sortDashboardSummary(
+                        buildDashboardSummaryFromOrders(
+                            salesOrders || [],
+                            refundsForRange || [],
+                            refundLinesForRange || []
+                        )
+                    );
 
                     if (cancelled) {
                         return;
                     }
 
                     setSalesSummary(summary);
-                    setOrders(paidOrders || []);
+                    setOrders(salesOrders || []);
+                    setRefunds(refundsForRange || []);
+                    setRefundLines(refundLinesForRange || []);
                     setLoading(false);
                 } catch {
                     if (!cancelled) {
                         setSalesSummary(undefined);
                         setOrders([]);
+                        setRefunds([]);
+                        setRefundLines([]);
                         setLoading(false);
                     }
                 }
@@ -437,9 +765,7 @@ export function Dashboard(_props: DashboardProps) {
                                                 backgroundColor="#0E2233"
                                                 icon="trending-up"
                                                 text={t('DASHBOARD_GrossIncome', 'Gross Income')}
-                                                value={`$ ${salesSummary.totalAmount.toFixed(
-                                                    2
-                                                )}`}
+                                                value={`$ ${netGrossIncome.toFixed(2)}`}
                                                 primaryTextColor="#EAF4FF"
                                                 primaryTextSize={24}
                                             />
@@ -466,9 +792,7 @@ export function Dashboard(_props: DashboardProps) {
                                                     'DASHBOARD_AverageTicket',
                                                     'Average Ticket'
                                                 )}
-                                                value={`$ ${getDashboardAverageTicket(
-                                                    salesSummary
-                                                ).toFixed(2)}`}
+                                                value={`$ ${netAverageTicket.toFixed(2)}`}
                                                 primaryTextColor="#E9FFF3"
                                                 primaryTextSize={24}
                                             />
@@ -483,9 +807,7 @@ export function Dashboard(_props: DashboardProps) {
                                                     'DASHBOARD_EstGrossProfit',
                                                     'Est. Gross Profit'
                                                 )}
-                                                value={`$ ${Number(
-                                                    supplemental?.estimatedGrossProfit || 0
-                                                ).toFixed(2)}`}
+                                                value={`$ ${netEstimatedGrossProfit.toFixed(2)}`}
                                                 primaryTextColor="#F5E9FF"
                                                 primaryTextSize={24}
                                             />
