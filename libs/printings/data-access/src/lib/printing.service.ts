@@ -108,6 +108,17 @@ type ReceiptRenderModel = {
     totals: ReceiptTotalsSummary;
 };
 
+type ReceiptLayoutProfile = {
+    paperWidthMm: number;
+    totalColumns: number;
+    qtyWidth: number;
+    descriptionWidth: number;
+    amountWidth: number;
+    detailIndent: number;
+    totalLabelWidth: number;
+    totalAmountWidth: number;
+};
+
 export type ReceiptPreviewPayload = {
     copyType?: 'CUSTOMER' | 'MERCHANT';
     orderNo?: string;
@@ -118,6 +129,30 @@ let starManager: StarDeviceDiscoveryManager;
 let receiptPreviewHandler:
     | ((payload: ReceiptPreviewPayload) => void)
     | null = null;
+
+const NARROW_RECEIPT_LAYOUT_PROFILE: ReceiptLayoutProfile = {
+    paperWidthMm: 58,
+    totalColumns: 32,
+    qtyWidth: 5,
+    descriptionWidth: 15,
+    amountWidth: 8,
+    detailIndent: 6,
+    totalLabelWidth: 20,
+    totalAmountWidth: 12,
+};
+
+const WIDE_RECEIPT_LAYOUT_PROFILE: ReceiptLayoutProfile = {
+    paperWidthMm: 80,
+    totalColumns: 42,
+    qtyWidth: 5,
+    descriptionWidth: 25,
+    amountWidth: 8,
+    detailIndent: 8,
+    totalLabelWidth: 28,
+    totalAmountWidth: 14,
+};
+
+const DEFAULT_RECEIPT_LAYOUT_PROFILE = NARROW_RECEIPT_LAYOUT_PROFILE;
 
 const logReceiptTiming = (step: string, details?: Record<string, unknown>) => {
     void step;
@@ -141,6 +176,119 @@ const buildStoreHeaderText = (store: ReceiptStoreInfo) => {
     }
 
     return `${lines.join('\n')}\n\n`;
+};
+
+const isFiniteNumber = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isFinite(value);
+
+const resolveReceiptLayoutProfileFromDetectedWidth = (
+    detectedPaperWidth?: number | null
+): ReceiptLayoutProfile | undefined => {
+    if (!isFiniteNumber(detectedPaperWidth)) {
+        return undefined;
+    }
+
+    const width = Math.abs(detectedPaperWidth);
+
+    if (width >= 500) {
+        return WIDE_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    if (width >= 300) {
+        return NARROW_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    if (width >= 70) {
+        return WIDE_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    if (width >= 45) {
+        return NARROW_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    if (width >= 3) {
+        return WIDE_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    if (width >= 2) {
+        return NARROW_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    return undefined;
+};
+
+const resolveReceiptLayoutProfileFromModel = (
+    model?: string | null
+): ReceiptLayoutProfile | undefined => {
+    const normalizedModel = String(model || '').trim();
+
+    if (!normalizedModel) {
+        return undefined;
+    }
+
+    const wideModels = new Set(['mC_Print3', 'TSP800II', 'SK1_3xx']);
+    const narrowModels = new Set(['mC_Print2', 'SM_S210i', 'SM_S230i', 'SM_L200']);
+
+    if (wideModels.has(normalizedModel)) {
+        return WIDE_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    if (narrowModels.has(normalizedModel)) {
+        return NARROW_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    return undefined;
+};
+
+export const resolveReceiptLayoutProfile = ({
+    detectedPaperWidth,
+    model,
+}: {
+    detectedPaperWidth?: number | null;
+    model?: string | null;
+} = {}): ReceiptLayoutProfile =>
+    resolveReceiptLayoutProfileFromDetectedWidth(detectedPaperWidth) ||
+    resolveReceiptLayoutProfileFromModel(model) ||
+    DEFAULT_RECEIPT_LAYOUT_PROFILE;
+
+const detectReceiptLayoutProfile = async (
+    printerInfo: PrinterEntity
+): Promise<ReceiptLayoutProfile> => {
+    const settings = new StarConnectionSettings();
+    settings.interfaceType = InterfaceType.Lan;
+    settings.identifier = printerInfo.identifier;
+
+    const printer = new StarPrinter(settings);
+    let detectedPaperWidth: number | undefined;
+    let model = printerInfo.model;
+
+    try {
+        await printer.open();
+        model = String(printer.information?.model || model || '');
+
+        try {
+            const status = await printer.getStatus();
+            detectedPaperWidth = status?.detail?.detectedPaperWidth;
+        } catch {
+            // Fall back to model/default if runtime width cannot be read.
+        }
+    } catch {
+        return resolveReceiptLayoutProfile({ model });
+    } finally {
+        try {
+            await printer.close();
+        } catch {
+            // Ignore close errors during capability detection fallback.
+        }
+
+        try {
+            await printer.dispose();
+        } catch {
+            // Ignore disposal errors during capability detection fallback.
+        }
+    }
+
+    return resolveReceiptLayoutProfile({ detectedPaperWidth, model });
 };
 
 
@@ -217,7 +365,13 @@ export const printReceipt = async (
         receiptPreviewHandler({
             copyType: order?.copyType,
             orderNo: order?.orderNo,
-            receiptText: buildReceiptPreviewText(store, cart, order),
+            receiptText: buildReceiptPreviewText(
+                store,
+                cart,
+                order,
+                undefined,
+                DEFAULT_RECEIPT_LAYOUT_PROFILE
+            ),
         });
         return;
     }
@@ -257,12 +411,26 @@ const printSingleReceipt = async (
     order?: ReceiptOrderEntity
 ) => {
     const date = new Date();
+    const layoutProfile = isE2EPrinterSpyEnabled()
+        ? resolveReceiptLayoutProfile({ model: printerInfo.model })
+        : await detectReceiptLayoutProfile(printerInfo);
+    const separatorLine = `${'-'.repeat(layoutProfile.totalColumns)}\n`;
     const renderModel = buildReceiptRenderModel(cart, order);
-    const receiptLines = buildReceiptLines(cart, order);
-    const receiptTotalsBreakdown = buildReceiptTotalsBreakdownText(cart, order);
+    const receiptLines = buildReceiptLines(cart, order, layoutProfile);
+    const receiptTotalsBreakdown = buildReceiptTotalsBreakdownText(
+        cart,
+        order,
+        layoutProfile
+    );
     const totalPaymentsText = getReceiptPaymentsText(order);
     const copyLabel = getReceiptCopyLabel(order);
-    const receiptText = buildReceiptPreviewText(store, cart, order, date);
+    const receiptText = buildReceiptPreviewText(
+        store,
+        cart,
+        order,
+        date,
+        layoutProfile
+    );
 
     if (isE2EPrinterSpyEnabled()) {
         recordE2EPrintJob({
@@ -299,7 +467,7 @@ const printSingleReceipt = async (
             .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
             .actionPrintText(receiptLines)
             .actionPrintText(receiptTotalsBreakdown)
-            .actionPrintText('--------------------------------\n')
+            .actionPrintText(separatorLine)
             .styleBold(true)
             .actionPrintText('Total\n')
             .add(
@@ -412,7 +580,8 @@ const getReceiptPaymentsText = (order?: ReceiptOrderEntity) =>
 
 const buildReceiptTotalsBreakdownText = (
     cart: ReceiptCartState,
-    order?: ReceiptOrderEntity
+    order?: ReceiptOrderEntity,
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) => {
     const renderModel = buildReceiptRenderModel(cart, order);
     const rows: string[] = [];
@@ -420,32 +589,39 @@ const buildReceiptTotalsBreakdownText = (
     const discountTotal = renderModel.totals.discount;
     const tax = renderModel.totals.tax;
 
-    rows.push(formatTotalRow('Subtotal', baseSubtotal));
+    rows.push(formatTotalRow('Subtotal', baseSubtotal, layoutProfile));
 
     if (discountTotal > 0) {
-        rows.push(formatTotalRow('Discounts', -discountTotal));
+        rows.push(formatTotalRow('Discounts', -discountTotal, layoutProfile));
     }
 
     if (tax > 0) {
-        rows.push(formatTotalRow('Tax', tax));
+        rows.push(formatTotalRow('Tax', tax, layoutProfile));
     }
 
     return rows.join('');
 };
 
-const formatTotalRow = (label: string, amount: number) =>
-    `${label.padEnd(18, ' ')}${amount.toFixed(2).padStart(14, ' ')}\n`;
+const formatTotalRow = (
+    label: string,
+    amount: number,
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) =>
+    `${label.padEnd(layoutProfile.totalLabelWidth, ' ')}${amount
+        .toFixed(2)
+        .padStart(layoutProfile.totalAmountWidth, ' ')}\n`;
 
 const formatReceiptCurrency = (amount: number) => `$ ${amount.toFixed(2)}`;
 
 const buildReceiptTotalsText = (
     cart: ReceiptCartState,
-    order?: ReceiptOrderEntity
+    order?: ReceiptOrderEntity,
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) => {
     const renderModel = buildReceiptRenderModel(cart, order);
-    const rows = [buildReceiptTotalsBreakdownText(cart, order)];
-    rows.push('--------------------------------\n');
-    rows.push(formatTotalRow('Total', renderModel.totals.total));
+    const rows = [buildReceiptTotalsBreakdownText(cart, order, layoutProfile)];
+    rows.push(`${'-'.repeat(layoutProfile.totalColumns)}\n`);
+    rows.push(formatTotalRow('Total', renderModel.totals.total, layoutProfile));
 
     if (cart.promoCodes?.length) {
         rows.push(
@@ -472,12 +648,13 @@ export const buildReceiptPreviewText = (
     store: ReceiptStoreInfo,
     cart: ReceiptCartState,
     order?: ReceiptOrderEntity,
-    date = new Date()
+    date = new Date(),
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) => {
-    const receiptLines = buildReceiptLines(cart, order);
+    const receiptLines = buildReceiptLines(cart, order, layoutProfile);
     const totalPaymentsText = getReceiptPaymentsText(order);
     const copyLabel = getReceiptCopyLabel(order);
-    const totalText = buildReceiptTotalsText(cart, order);
+    const totalText = buildReceiptTotalsText(cart, order, layoutProfile);
     const footerText = order?.id
         ? `${totalPaymentsText}\n\n${store.disclaimer ?? ''}\n${copyLabel}\n${order?.orderNo ?? ''}\n`
         : '*** NOT A RECEIPT ***\n';
@@ -491,8 +668,17 @@ export const buildReceiptPreviewText = (
 const formatQty = (quantity: number) =>
     quantity % 1 === 0 ? quantity.toString() : quantity.toFixed(2);
 
-const formatLine = (qty: number, name: string, amount: number) =>
-    `${formatQty(qty).padEnd(5, ' ')}  ${name.substring(0, 15).padEnd(15, ' ')}  ${amount.toFixed(2).padStart(7, ' ')}`;
+const formatLine = (
+    qty: number,
+    name: string,
+    amount: number,
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) =>
+    `${formatQty(qty).padEnd(layoutProfile.qtyWidth, ' ')}  ${name
+        .substring(0, layoutProfile.descriptionWidth)
+        .padEnd(layoutProfile.descriptionWidth, ' ')}  ${amount
+        .toFixed(2)
+        .padStart(layoutProfile.amountWidth, ' ')}`;
 
 const roundMoney = (amount: number) =>
     Math.round((amount + Number.EPSILON) * 100) / 100;
@@ -506,109 +692,79 @@ export const getReceiptCopyLabel = (order?: ReceiptOrderEntity) =>
         ? '** Customer Copy **'
         : '** Merchant Copy **';
 
-const formatReceiptLineRow = (row: ReceiptLineDisplayRow) => {
+const buildReceiptHeaderRow = (
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) =>
+    `${'Qty'.padEnd(layoutProfile.qtyWidth, ' ')}  ${'Description'
+        .substring(0, layoutProfile.descriptionWidth)
+        .padEnd(layoutProfile.descriptionWidth, ' ')}  ${'Total'.padStart(
+        layoutProfile.amountWidth,
+        ' '
+    )}`;
+
+const formatReceiptLineRow = (
+    row: ReceiptLineDisplayRow,
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) => {
     const hasDiscount = roundMoney(row.originalAmount - row.finalAmount) > 0;
     const lines = [
         formatLine(
             row.quantity,
             row.name,
-            hasDiscount ? row.originalAmount : row.finalAmount
+            hasDiscount ? row.originalAmount : row.finalAmount,
+            layoutProfile
         ),
     ];
 
     if (hasDiscount) {
+        const discountAmount = `-${formatReceiptCurrency(
+            roundMoney(row.originalAmount - row.finalAmount)
+        )}`;
+        const prefix = `${' '.repeat(layoutProfile.detailIndent)}Discount`;
         lines.push(
-            `      ${'Discount'.padEnd(15, ' ')}-${formatReceiptCurrency(
-                roundMoney(row.originalAmount - row.finalAmount)
-            )}`
+            `${prefix.padEnd(
+                Math.max(layoutProfile.totalColumns - discountAmount.length, prefix.length),
+                ' '
+            )}${discountAmount}`
         );
     }
 
     return lines.join('\n');
 };
 
-const buildClassicLines = (rows: ReceiptLineDisplayRow[]) => {
+const buildClassicLines = (
+    rows: ReceiptLineDisplayRow[],
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) => {
     return (
-        'Qty    Description        Total\n' +
-        '-------------------------------\n' +
-        rows.map((row) => formatReceiptLineRow(row))
+        `${buildReceiptHeaderRow(layoutProfile)}\n` +
+        `${'-'.repeat(layoutProfile.totalColumns)}\n` +
+        rows.map((row) => formatReceiptLineRow(row, layoutProfile))
             .join('\n') +
         '\n\n' +
-        '--------------------------------\n'
+        `${'-'.repeat(layoutProfile.totalColumns)}\n`
     );
 };
 
 const buildRefundedSection = (
     title: string,
     entries: ReceiptLineDisplayRow[],
-    emptyLabel: string
+    emptyLabel: string,
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) =>
     `${title}\n` +
-    'Qty    Description        Total\n' +
-    '-------------------------------\n' +
+    `${buildReceiptHeaderRow(layoutProfile)}\n` +
+    `${'-'.repeat(layoutProfile.totalColumns)}\n` +
     (entries.length
-        ? entries.map((entry) => formatReceiptLineRow(entry)).join('\n')
+        ? entries.map((entry) => formatReceiptLineRow(entry, layoutProfile)).join('\n')
         : emptyLabel) +
     '\n\n';
 
-const buildEbtLines = (order: ReceiptOrderEntity) => {
-    const lines = order.lines || [];
-    const ebtLines = lines.filter((line) => (line?.ebtPaidAmount || 0) > 0);
-    const nonEbtLines = lines.filter((line) => (line?.nonEbtPaidAmount || 0) > 0);
-
-    const ebtTotal = ebtLines.reduce((acc, line) => acc + (line?.ebtPaidAmount || 0), 0);
-    const nonEbtTotal = nonEbtLines.reduce(
-        (acc, line) => acc + (line?.nonEbtPaidAmount || 0),
-        0
-    );
-
-    return (
-        'EBT Items\n' +
-        'Qty    Description        Total\n' +
-        '-------------------------------\n' +
-        (ebtLines.length
-            ? ebtLines
-                  .map((line) => {
-                      const isPartial =
-                          (line?.ebtPaidAmount || 0) > 0 &&
-                          (line?.nonEbtPaidAmount || 0) > 0;
-                      const suffix = isPartial ? ' (partial)' : '';
-                      return formatLine(
-                          line?.quantity || 0,
-                          `${line?.productName || ''}${suffix}`,
-                          line?.ebtPaidAmount || 0
-                      );
-                  })
-                  .join('\n')
-            : 'No EBT-paid items') +
-        `\nEBT Paid Total: $ ${ebtTotal.toFixed(2)}\n\n` +
-        'Non-EBT Items\n' +
-        'Qty    Description        Total\n' +
-        '-------------------------------\n' +
-        (nonEbtLines.length
-            ? nonEbtLines
-                  .map((line) => {
-                      const isPartial =
-                          (line?.ebtPaidAmount || 0) > 0 &&
-                          (line?.nonEbtPaidAmount || 0) > 0;
-                      const suffix = isPartial ? ' (partial)' : '';
-                      return formatLine(
-                          line?.quantity || 0,
-                          `${line?.productName || ''}${suffix}`,
-                          line?.nonEbtPaidAmount || 0
-                      );
-                  })
-                  .join('\n')
-            : 'No non-EBT-paid items') +
-        `\nNon-EBT Paid Total: $ ${nonEbtTotal.toFixed(2)}\n\n` +
-        '--------------------------------\n'
-    );
-};
-
-export const buildReceiptLines = (cart: ReceiptCartState, order?: ReceiptOrderEntity) => {
-    const hasEbtPayment = !!order?.paymentInfo?.payments?.some(
-        (payment) => payment.type?.toUpperCase() === 'EBT'
-    );
+export const buildReceiptLines = (
+    cart: ReceiptCartState,
+    order?: ReceiptOrderEntity,
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) => {
     const renderModel = buildReceiptRenderModel(cart, order);
     const hasRefundSections = renderModel.sections.length > 1;
 
@@ -619,18 +775,15 @@ export const buildReceiptLines = (cart: ReceiptCartState, order?: ReceiptOrderEn
                     buildRefundedSection(
                         section.title,
                         section.rows,
-                        section.emptyLabel
+                        section.emptyLabel,
+                        layoutProfile
                     )
                 )
-                .join('') + '--------------------------------\n'
+                .join('') + `${'-'.repeat(layoutProfile.totalColumns)}\n`
         );
     }
 
-    if (!hasEbtPayment || !order?.lines?.length) {
-        return buildClassicLines(renderModel.sections[0]?.rows || []);
-    }
-
-    return buildEbtLines(order);
+    return buildClassicLines(renderModel.sections[0]?.rows || [], layoutProfile);
 };
 
 const buildReceiptRenderModel = (

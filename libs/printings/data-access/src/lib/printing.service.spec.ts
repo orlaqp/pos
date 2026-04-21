@@ -4,6 +4,7 @@ import {
   getReceiptCopyLabel,
   printReceipt,
   registerReceiptPreviewHandler,
+  resolveReceiptLayoutProfile,
   stopDiscovery,
 } from './printing.service';
 
@@ -134,15 +135,66 @@ describe('printing.service helpers', () => {
     mockGetDefaultPrinter.mockResolvedValue(undefined);
   });
 
+  it('resolves receipt layout from detected paper width and model fallback', () => {
+    expect(
+      resolveReceiptLayoutProfile({ detectedPaperWidth: 576 }).paperWidthMm
+    ).toBe(80);
+    expect(
+      resolveReceiptLayoutProfile({ detectedPaperWidth: 48 }).paperWidthMm
+    ).toBe(58);
+    expect(resolveReceiptLayoutProfile({ model: 'mC_Print3' }).paperWidthMm).toBe(
+      80
+    );
+    expect(resolveReceiptLayoutProfile({ model: 'Unknown' }).paperWidthMm).toBe(
+      58
+    );
+  });
+
   it('builds classic receipt lines using real newline characters', () => {
     const text = buildReceiptLines(cart);
 
-    expect(text).toContain('Qty    Description        Total\n');
+    expect(text).toContain('Qty    Description');
+    expect(text).toContain('Total\n');
     expect(text).toContain('Coca Cola');
     expect(text).not.toContain('\\n');
   });
 
-  it('builds EBT receipt sections using real newline characters', () => {
+  it('uses a wider receipt profile to show more description space', () => {
+    const wideCart = {
+      items: [
+        {
+          identifier: 'line-1',
+          quantity: 1,
+          product: {
+            name: '123456789012345678901234567890',
+            price: 8.99,
+          },
+        },
+      ],
+      footer: {
+        baseSubtotal: 8.99,
+        total: 8.99,
+      },
+    };
+
+    const narrowText = buildReceiptLines(
+      wideCart,
+      undefined,
+      resolveReceiptLayoutProfile({ model: 'mC_Print2' })
+    );
+    const wideText = buildReceiptLines(
+      wideCart,
+      undefined,
+      resolveReceiptLayoutProfile({ model: 'mC_Print3' })
+    );
+
+    expect(narrowText).toContain('-'.repeat(32));
+    expect(wideText).toContain('-'.repeat(42));
+    expect(narrowText).not.toContain('12345678901234567890');
+    expect(wideText).toContain('12345678901234567890');
+  });
+
+  it('keeps merchant EBT receipts on the shared item-line renderer', () => {
     const text = buildReceiptLines(cart, {
       id: 'order-1',
       copyType: 'MERCHANT',
@@ -165,10 +217,116 @@ describe('printing.service helpers', () => {
       ],
     });
 
-    expect(text).toContain('EBT Items\n');
-    expect(text).toContain('Non-EBT Items\n');
-    expect(text).toContain('EBT Paid Total: $ 5.00\n');
+    expect(text).toContain('Qty');
+    expect(text).toContain('Coca Cola');
+    expect(text).not.toContain('Aceite Oliva');
+    expect(text).not.toContain('EBT Items\n');
+    expect(text).not.toContain('Non-EBT Items\n');
     expect(text).not.toContain('\\n');
+  });
+
+  it('renders merchant discounted receipts with the same item-line format as customer receipts', () => {
+    const text = buildReceiptLines(
+      {
+        items: [
+          {
+            identifier: 'line-1',
+            quantity: 2,
+            product: {
+              name: 'Huevo',
+              price: 4.99,
+            },
+          },
+          {
+            identifier: 'line-2',
+            quantity: 1,
+            product: {
+              name: 'Color huevo',
+              price: 11.99,
+            },
+          },
+        ],
+        footer: {
+          baseSubtotal: 21.97,
+          discount: 2.99,
+          total: 18.98,
+        },
+        appliedDiscountSummary: {
+          applications: [],
+          approvalEvents: [],
+          pricingGeneratedAt: '2026-04-20T15:48:55.000Z',
+          warnings: [],
+          lineSummaries: [
+            {
+              lineId: 'line-1',
+              lineDiscountTotal: 2.99,
+              allocatedOrderDiscountTotal: 0,
+              lineTotalBeforeTax: 6.99,
+              discounts: [
+                {
+                  discountApplicationId: 'line-discount-1',
+                  applicationType: 'AUTOMATIC_DISCOUNT',
+                  scope: 'LINE',
+                  method: 'PERCENT',
+                  name: 'Test 1%',
+                  stackMode: 'STACKABLE',
+                  source: 'automatic',
+                  value: 30,
+                  originalAmount: 9.98,
+                  discountAmount: 2.99,
+                  finalAmount: 6.99,
+                  appliedAt: '2026-04-20T15:48:55.000Z',
+                },
+              ],
+            },
+            {
+              lineId: 'line-2',
+              lineDiscountTotal: 0,
+              allocatedOrderDiscountTotal: 0,
+              lineTotalBeforeTax: 11.99,
+              discounts: [],
+            },
+          ],
+          orderLevelAdjustments: [],
+        },
+      },
+      {
+        id: 'order-ebt-1',
+        copyType: 'MERCHANT',
+        paymentInfo: {
+          payments: [{ type: 'EBT', amount: 9.98 }],
+        },
+        lines: [
+          {
+            identifier: 'line-1',
+            quantity: 2,
+            productName: 'Huevo',
+            ebtPaidAmount: 6.99,
+            nonEbtPaidAmount: 0,
+            lineTotalBeforeTax: 6.99,
+          },
+          {
+            identifier: 'line-2',
+            quantity: 1,
+            productName: 'Color huevo',
+            ebtPaidAmount: 9,
+            nonEbtPaidAmount: 2.99,
+            lineTotalBeforeTax: 11.99,
+          },
+        ],
+      }
+    );
+
+    expect(text).toContain('2      Huevo');
+    expect(text).toContain('1      Color huevo');
+    expect(text).toContain('9.98');
+    expect(text).toContain('11.99');
+    expect(text).toContain('Discount');
+    expect(text).toContain('-$ 2.99');
+    expect(text).not.toContain('partial');
+    expect(text).not.toContain('Test 1%');
+    expect(text).not.toContain('Orig:');
+    expect(text).not.toContain('Saved:');
   });
 
   it('splits partially refunded order receipts into active and refunded sections', () => {
@@ -337,7 +495,8 @@ describe('printing.service helpers', () => {
 
     expect(receiptText).toContain('Aceite vegetal');
     expect(receiptText).toContain('49.98');
-    expect(receiptText).toContain('Discount       -$ 14.00');
+    expect(receiptText).toContain('Discount');
+    expect(receiptText).toContain('-$ 14.00');
     expect(receiptText).toContain('Subtotal');
     expect(receiptText).toContain('49.98');
     expect(receiptText).toContain('Discounts');
@@ -429,7 +588,8 @@ describe('printing.service helpers', () => {
     expect(receiptText).toContain('4.99');
     expect(receiptText).toContain('2      Huevo');
     expect(receiptText).toContain('9.98');
-    expect(receiptText).toContain('Discount       -$ 4.49');
+    expect(receiptText).toContain('Discount');
+    expect(receiptText).toContain('-$ 4.49');
     expect(receiptText).not.toContain('Orig:');
     expect(receiptText).not.toContain('Saved:');
     expect(receiptText).not.toContain('Test 1%');
