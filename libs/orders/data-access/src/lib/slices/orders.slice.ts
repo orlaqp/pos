@@ -518,10 +518,13 @@ export const ordersSlice = createSlice({
                     filterList(state, state.filterQuery);
                     state.submitStatus = 'saved';
                     if (!action.payload.skipAutoPrint) {
-                        const ticket = OrderService.buildPrintTicketPreview(
-                            action.payload.cart,
-                            'CUSTOMER'
-                        );
+                        const ticket =
+                            OrderService.buildPrintTicketForOrderEntitySnapshot(
+                                action.payload.order,
+                                {
+                                    copyType: 'CUSTOMER',
+                                }
+                            );
                         printReceipt(
                             normalizeReceiptStoreInfo(action.payload.storeInfo),
                             action.payload.defaultPrinter!,
