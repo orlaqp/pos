@@ -1,5 +1,5 @@
 /* eslint-disable */
-const basePreset = require('../../../jest.preset.js');
+import basePreset from '../../../jest.preset.js';
 
 export default {
     displayName: 'orders-data-access',

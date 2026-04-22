@@ -118,6 +118,7 @@ export interface OrderTicketPrintSection {
     title: string;
     emptyLabel: string;
     rows: OrderTicketPrintRow[];
+    postItemDetailRows?: OrderTicketPrintDetailRow[];
 }
 
 export interface OrderTicketPrintTotals {
@@ -293,14 +294,11 @@ const getLineOriginalAmount = (line: {
             Number(line.allocatedOrderDiscountTotal || 0)
     );
 
-const getLineDiscountAmount = (line: {
-    lineDiscountTotal?: number | null;
-    allocatedOrderDiscountTotal?: number | null;
-}) =>
-    roundMoney(
-        Number(line.lineDiscountTotal || 0) +
-            Number(line.allocatedOrderDiscountTotal || 0)
-    );
+const getLineDiscountAmount = (line: { lineDiscountTotal?: number | null }) =>
+    roundMoney(Number(line.lineDiscountTotal || 0));
+
+const getOrderLevelDiscountAmount = (discountTotal: number, lineDiscountTotal: number) =>
+    roundMoney(Math.max(0, Number(discountTotal || 0) - Number(lineDiscountTotal || 0)));
 
 const getGraphqlErrorMessage = (result: unknown) => {
     if (!result || typeof result !== 'object') return undefined;
@@ -997,22 +995,30 @@ export class OrderService {
             const originalAmount = roundMoney(
                 Number(item.product.price || 0) * Number(item.quantity || 0)
             );
-            const finalAmount = roundMoney(
-                Number(lineSummary?.lineTotalBeforeTax || originalAmount)
+            const discountAmount = roundMoney(
+                Math.max(0, Number(lineSummary?.lineDiscountTotal || 0))
             );
-            const discountAmount = roundMoney(Math.max(0, originalAmount - finalAmount));
 
             return {
                 identifier,
                 quantity: Number(item.quantity || 0),
                 name: item.product.name,
-                amount: discountAmount > 0 ? originalAmount : finalAmount,
+                amount: originalAmount,
                 detailRows:
                     discountAmount > 0
                         ? [{ label: 'Discount', amount: -discountAmount }]
                         : [],
             };
         });
+        const orderLevelDiscountAmount = getOrderLevelDiscountAmount(
+            Number(cart.footer.discount ?? cart.footer.savingsTotal ?? 0),
+            roundMoney(
+                (cart.appliedDiscountSummary?.lineSummaries || []).reduce(
+                    (sum, lineSummary) => sum + Number(lineSummary?.lineDiscountTotal || 0),
+                    0
+                )
+            )
+        );
 
         return {
             isReceipt: false,
@@ -1022,6 +1028,10 @@ export class OrderService {
                     title: 'Items',
                     emptyLabel: 'No items',
                     rows,
+                    postItemDetailRows:
+                        orderLevelDiscountAmount > 0
+                            ? [{ label: 'Order Discount', amount: -orderLevelDiscountAmount }]
+                            : [],
                 },
             ],
             totals: {
@@ -1138,6 +1148,15 @@ export class OrderService {
         const rows = (order.lines || []).map((line) =>
             OrderService.buildTicketRowFromOrderLine(line)
         );
+        const orderLevelDiscountAmount = getOrderLevelDiscountAmount(
+            Number(order.discountTotal || 0),
+            roundMoney(
+                (order.lines || []).reduce(
+                    (sum, line) => sum + Number(line?.lineDiscountTotal || 0),
+                    0
+                )
+            )
+        );
 
         return {
             isReceipt: true,
@@ -1149,6 +1168,10 @@ export class OrderService {
                     title: 'Items',
                     emptyLabel: 'No items',
                     rows,
+                    postItemDetailRows:
+                        orderLevelDiscountAmount > 0
+                            ? [{ label: 'Order Discount', amount: -orderLevelDiscountAmount }]
+                            : [],
                 },
             ],
             totals: {
@@ -1190,6 +1213,43 @@ export class OrderService {
             options.refundedQuantities,
             options.refundedLineAmounts
         );
+        const activeLineDiscountTotal = currentBasket
+            ? roundMoney(
+                  currentBasket.order.lines.reduce(
+                      (sum, line) => sum + Number(line?.lineDiscountTotal || 0),
+                      0
+                  )
+              )
+            : roundMoney(
+                  (order.lines || []).reduce((sum, line) => {
+                      const originalQuantity = Number(line?.quantity || 0);
+                      const refundedQuantity = Math.max(
+                          0,
+                          Math.min(
+                              originalQuantity,
+                              Number(
+                                  options.refundedQuantities[String(line?.identifier || '')] || 0
+                              )
+                          )
+                      );
+                      const activeQuantity = roundMoney(originalQuantity - refundedQuantity);
+                      if (activeQuantity <= 0 || originalQuantity <= 0) {
+                          return sum;
+                      }
+
+                      return (
+                          sum +
+                          (Number(line?.lineDiscountTotal || 0) * activeQuantity) /
+                              originalQuantity
+                      );
+                  }, 0)
+              );
+        const activeOrderLevelDiscountAmount = currentBasket
+            ? roundMoney(Number(currentBasket.order.orderDiscountTotal || 0))
+            : getOrderLevelDiscountAmount(
+                  Number(order.currentDiscountTotal || 0),
+                  activeLineDiscountTotal
+              );
 
         return {
             isReceipt: true,
@@ -1201,11 +1261,21 @@ export class OrderService {
                     title: 'Active Items',
                     emptyLabel: 'No active items',
                     rows: activeRows,
+                    postItemDetailRows:
+                        activeOrderLevelDiscountAmount > 0
+                            ? [
+                                  {
+                                      label: 'Order Discount',
+                                      amount: -activeOrderLevelDiscountAmount,
+                                  },
+                              ]
+                            : [],
                 },
                 {
                     title: 'Refunded Items',
                     emptyLabel: 'No refunded items',
                     rows: refundedRows,
+                    postItemDetailRows: [],
                 },
             ],
             totals: {
@@ -1245,13 +1315,12 @@ export class OrderService {
     ): OrderTicketPrintRow {
         const discountAmount = getLineDiscountAmount(line);
         const originalAmount = getLineOriginalAmount(line);
-        const finalAmount = roundMoney(Number(line.lineTotalBeforeTax || 0));
 
         return {
             identifier: String(line.identifier || ''),
             quantity: Number(line.quantity || 0),
             name: line.productName,
-            amount: discountAmount > 0 ? originalAmount : finalAmount,
+            amount: originalAmount,
             detailRows:
                 discountAmount > 0
                     ? [{ label: 'Discount', amount: -discountAmount }]
@@ -1264,13 +1333,12 @@ export class OrderService {
     ): OrderTicketPrintRow {
         const discountAmount = getLineDiscountAmount(line);
         const originalAmount = getLineOriginalAmount(line);
-        const finalAmount = roundMoney(Number(line.lineTotalBeforeTax || 0));
 
         return {
             identifier: String(line.lineId || ''),
             quantity: Number(line.quantity || 0),
             name: line.productName,
-            amount: discountAmount > 0 ? originalAmount : finalAmount,
+            amount: originalAmount,
             detailRows:
                 discountAmount > 0
                     ? [{ label: 'Discount', amount: -discountAmount }]
@@ -1299,7 +1367,6 @@ export class OrderService {
                 }
 
                 const originalAmount = getLineOriginalAmount(line);
-                const finalAmount = roundMoney(Number(line.lineTotalBeforeTax || 0));
                 const refundedAmount = roundMoney(
                     Number(refundedLineAmounts[String(line.identifier || '')] || 0)
                 );
@@ -1310,21 +1377,22 @@ export class OrderService {
                                   (originalAmount * refundedQuantity) / originalQuantity
                           )
                         : 0;
-                const activeFinalAmount = roundMoney(
-                    Math.max(0, finalAmount - refundedAmount)
-                );
                 const activeDiscountAmount = roundMoney(
-                    Math.max(0, activeOriginalAmount - activeFinalAmount)
+                    Math.max(
+                        0,
+                        originalQuantity > 0
+                            ? (Number(line.lineDiscountTotal || 0) *
+                                  activeQuantity) /
+                                  originalQuantity
+                            : 0
+                    )
                 );
 
                 return {
                     identifier: String(line.identifier || ''),
                     quantity: activeQuantity,
                     name: line.productName,
-                    amount:
-                        activeDiscountAmount > 0
-                            ? activeOriginalAmount
-                            : activeFinalAmount,
+                    amount: activeOriginalAmount,
                     detailRows:
                         activeDiscountAmount > 0
                             ? [{ label: 'Discount', amount: -activeDiscountAmount }]

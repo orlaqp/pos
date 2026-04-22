@@ -529,6 +529,7 @@ const formatTotalRow = (
         .padStart(layoutProfile.totalAmountWidth, ' ')}\n`;
 
 const formatReceiptCurrency = (amount: number) => `$ ${amount.toFixed(2)}`;
+const formatReceiptDetailAmount = (amount: number) => amount.toFixed(2);
 const formatPaymentCurrency = (amount: number) =>
     amount < 0
         ? `-$ ${Math.abs(amount).toFixed(2)}`
@@ -615,8 +616,8 @@ const formatReceiptLineRow = (
         const detailAmount = Number(detailRow.amount || 0);
         const amountText =
             detailAmount < 0
-                ? `-${formatReceiptCurrency(Math.abs(detailAmount))}`
-                : formatReceiptCurrency(detailAmount);
+                ? `-${formatReceiptDetailAmount(Math.abs(detailAmount))}`
+                : formatReceiptDetailAmount(detailAmount);
         const prefix = `${' '.repeat(layoutProfile.detailIndent)}${detailRow.label}`;
         lines.push(
             `${prefix.padEnd(
@@ -629,14 +630,41 @@ const formatReceiptLineRow = (
     return lines.join('\n');
 };
 
-const buildClassicLines = (
-    rows: OrderTicketPrintModel['sections'][number]['rows'],
+const formatReceiptDetailRow = (
+    detailRow: OrderTicketPrintModel['sections'][number]['postItemDetailRows'][number],
     layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) => {
+    const detailAmount = Number(detailRow.amount || 0);
+    const amountText =
+        detailAmount < 0
+            ? `-${formatReceiptDetailAmount(Math.abs(detailAmount))}`
+            : formatReceiptDetailAmount(detailAmount);
+    const prefix = `${' '.repeat(layoutProfile.detailIndent)}${detailRow.label}`;
+
+    return `${prefix.padEnd(
+        Math.max(layoutProfile.totalColumns - amountText.length, prefix.length),
+        ' '
+    )}${amountText}`;
+};
+
+const buildClassicLines = (
+    section: OrderTicketPrintModel['sections'][number],
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) => {
+    const body = section.rows.length
+        ? section.rows.map((row) => formatReceiptLineRow(row, layoutProfile)).join('\n')
+        : section.emptyLabel;
+    const postItemDetails = (section.postItemDetailRows || []).length
+        ? `\n${section.postItemDetailRows
+              ?.map((detailRow) => formatReceiptDetailRow(detailRow, layoutProfile))
+              .join('\n')}`
+        : '';
+
     return (
         `${buildReceiptHeaderRow(layoutProfile)}\n` +
         `${'-'.repeat(layoutProfile.totalColumns)}\n` +
-        rows.map((row) => formatReceiptLineRow(row, layoutProfile)).join('\n') +
+        body +
+        postItemDetails +
         '\n\n' +
         `${'-'.repeat(layoutProfile.totalColumns)}\n`
     );
@@ -645,16 +673,25 @@ const buildClassicLines = (
 const buildReceiptSection = (
     section: OrderTicketPrintModel['sections'][number],
     layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
-) =>
-    `${section.title}\n` +
-    `${buildReceiptHeaderRow(layoutProfile)}\n` +
-    `${'-'.repeat(layoutProfile.totalColumns)}\n` +
-    (section.rows.length
-        ? section.rows
-              .map((entry) => formatReceiptLineRow(entry, layoutProfile))
-              .join('\n')
-        : section.emptyLabel) +
-    '\n\n';
+) => {
+    const body = section.rows.length
+        ? section.rows.map((entry) => formatReceiptLineRow(entry, layoutProfile)).join('\n')
+        : section.emptyLabel;
+    const postItemDetails = (section.postItemDetailRows || []).length
+        ? `\n${section.postItemDetailRows
+              ?.map((detailRow) => formatReceiptDetailRow(detailRow, layoutProfile))
+              .join('\n')}`
+        : '';
+
+    return (
+        `${section.title}\n` +
+        `${buildReceiptHeaderRow(layoutProfile)}\n` +
+        `${'-'.repeat(layoutProfile.totalColumns)}\n` +
+        body +
+        postItemDetails +
+        '\n\n'
+    );
+};
 
 export const buildReceiptLines = (
     ticket: OrderTicketPrintModel,
@@ -670,7 +707,10 @@ export const buildReceiptLines = (
         );
     }
 
-    return buildClassicLines(ticket.sections[0]?.rows || [], layoutProfile);
+    return buildClassicLines(
+        ticket.sections[0] || { title: '', emptyLabel: 'No items', rows: [] },
+        layoutProfile
+    );
 };
 
 export const buildData = (

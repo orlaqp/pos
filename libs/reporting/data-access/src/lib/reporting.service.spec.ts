@@ -148,6 +148,7 @@ describe('reporting.service', () => {
                     {
                         id: 'o1',
                         status: 'PAID',
+                        createdAt: '2026-03-10T10:00:00.000Z',
                     },
                 ],
             },
@@ -170,6 +171,13 @@ describe('reporting.service', () => {
         expect(mockGraphql).toHaveBeenCalledWith(
             expect.objectContaining({
                 query: expect.stringContaining('lineDiscountTotal'),
+            })
+        );
+        expect(mockGraphql).toHaveBeenCalledWith(
+            expect.objectContaining({
+                query: expect.not.stringContaining(`orderDate
+      createdAt
+      updatedAt`),
             })
         );
     });
@@ -198,17 +206,43 @@ describe('reporting.service', () => {
             })
             .mockResolvedValueOnce({
                 data: {
-                    getSales: [{ id: 'o1', updatedAt: '2026-04-03T10:00:00.000Z' }],
+                    getSales: [
+                        {
+                            id: 'o1',
+                            orderDate: '2026-04-03T10:00:00.000Z',
+                            updatedAt: '2026-04-16T10:00:00.000Z',
+                        },
+                    ],
                 },
             })
             .mockResolvedValueOnce({
                 data: {
                     getSales: [
-                        { id: 'o2', updatedAt: '2026-04-06T10:00:00.000Z' },
-                        { id: 'o3', updatedAt: '2026-04-09T10:00:00.000Z' },
-                        { id: 'o4', updatedAt: '2026-04-12T10:00:00.000Z' },
-                        { id: 'o5', updatedAt: '2026-04-15T10:00:00.000Z' },
-                        { id: 'o5', updatedAt: '2026-04-15T10:00:00.000Z' },
+                        {
+                            id: 'o2',
+                            orderDate: '2026-04-06T10:00:00.000Z',
+                            updatedAt: '2026-04-20T10:00:00.000Z',
+                        },
+                        {
+                            id: 'o3',
+                            orderDate: '2026-04-09T10:00:00.000Z',
+                            updatedAt: '2026-04-19T10:00:00.000Z',
+                        },
+                        {
+                            id: 'o4',
+                            orderDate: '2026-04-12T10:00:00.000Z',
+                            updatedAt: '2026-04-18T10:00:00.000Z',
+                        },
+                        {
+                            id: 'o5',
+                            orderDate: '2026-04-15T10:00:00.000Z',
+                            updatedAt: '2026-04-17T10:00:00.000Z',
+                        },
+                        {
+                            id: 'o5',
+                            orderDate: '2026-04-15T10:00:00.000Z',
+                            updatedAt: '2026-04-21T10:00:00.000Z',
+                        },
                     ],
                 },
             });

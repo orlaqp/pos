@@ -662,7 +662,7 @@ describe('Cart', () => {
         fireEvent.press(getByText('Show actions'));
         fireEvent.press(getByText('Manual'));
         fireEvent.press(getByText('Amount'));
-        fireEvent.changeText(getByPlaceholderText('5.00'), '4.25');
+        fireEvent.changeText(getByPlaceholderText('0'), '4.25');
         fireEvent.press(getByText('Apply'));
 
         await waitFor(() => {
@@ -696,7 +696,7 @@ describe('Cart', () => {
 
         fireEvent.press(getByText('Show actions'));
         fireEvent.press(getByText('Manual'));
-        fireEvent.changeText(getByPlaceholderText('10'), '10');
+        fireEvent.changeText(getByPlaceholderText('0'), '10');
         fireEvent.press(getByText('Apply'));
 
         await waitFor(() => {
@@ -711,6 +711,18 @@ describe('Cart', () => {
             );
         });
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
+    });
+
+    it('uses a neutral zero placeholder for manual discount values', () => {
+        mockCartState.selected = mockCartState.items[0];
+        const { getByText, getByPlaceholderText } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Manual'));
+        expect(getByPlaceholderText('0')).toBeTruthy();
+
+        fireEvent.press(getByText('Amount'));
+        expect(getByPlaceholderText('0')).toBeTruthy();
     });
 
     it('applies a saved manual discount definition for the selected line', async () => {

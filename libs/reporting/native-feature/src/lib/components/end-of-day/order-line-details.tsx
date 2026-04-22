@@ -22,13 +22,10 @@ export function OrderLineDetails({
     const textStyle = highlightProduct ? styles.primaryText : styles.secondaryText;
     const originalLineTotal = Number(line.quantity || 0) * Number(line.price || 0);
     const finalLineTotal = Number(
-        line.lineTotalAfterTax ?? line.lineTotalBeforeTax ?? originalLineTotal
-    );
-    const discountAmount = Math.max(
-        0,
-        Number(line.lineDiscountTotal || 0) +
+        (line.lineTotalBeforeTax ?? line.lineTotalAfterTax ?? originalLineTotal) +
             Number(line.allocatedOrderDiscountTotal || 0)
     );
+    const discountAmount = Math.max(0, Number(line.lineDiscountTotal || 0));
     return (
         <View>
             <View style={styles.row}>

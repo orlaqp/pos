@@ -2123,6 +2123,7 @@ describe('OrderService', () => {
           detailRows: [],
         },
       ],
+      postItemDetailRows: [],
     });
     expect(ticket.sections[1]).toEqual({
       title: 'Refunded Items',
@@ -2136,6 +2137,7 @@ describe('OrderService', () => {
           detailRows: [],
         },
       ],
+      postItemDetailRows: [],
     });
     expect(ticket.totals).toEqual({
       subtotal: 4.99,
@@ -2149,6 +2151,58 @@ describe('OrderService', () => {
       { kind: 'heading', label: 'Refund Payments' },
       { kind: 'payment', label: 'CC', amount: -5.49 },
     ]);
+  });
+
+  it('keeps order-level discounts out of product discount rows on standard tickets', () => {
+    const ticket = OrderService.buildPrintTicketForOrderEntitySnapshot(
+      {
+        id: 'order-ticket-order-discount',
+        orderNo: '1-OWNER-260422-0001',
+        status: 'PAID',
+        baseSubtotal: 20,
+        subtotal: 15,
+        discountTotal: 5,
+        tax: 0,
+        total: 15,
+        lines: [
+          {
+            identifier: 'line-1',
+            productId: 'product-1',
+            productName: 'Rice',
+            quantity: 2,
+            price: 10,
+            unitOfMeasure: 'EA',
+            lineDiscountTotal: 2,
+            allocatedOrderDiscountTotal: 3,
+            lineTotalBeforeTax: 15,
+          },
+        ],
+        paymentInfo: {
+          payments: [{ type: 'CASH', amount: 15 }],
+        },
+        promoCodes: [],
+      } as any,
+      { copyType: 'CUSTOMER' }
+    );
+
+    expect(ticket.sections[0].rows).toEqual([
+      {
+        identifier: 'line-1',
+        quantity: 2,
+        name: 'Rice',
+        amount: 20,
+        detailRows: [{ label: 'Discount', amount: -2 }],
+      },
+    ]);
+    expect(ticket.sections[0].postItemDetailRows).toEqual([
+      { label: 'Order Discount', amount: -3 },
+    ]);
+    expect(ticket.totals).toEqual({
+      subtotal: 20,
+      discount: 5,
+      tax: 0,
+      total: 15,
+    });
   });
 
   it('uses the current open balance for additional refunds when no applied discount snapshots exist', async () => {

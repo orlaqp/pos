@@ -83,6 +83,7 @@ describe('printing.service ticket rendering', () => {
             detailRows: [],
           },
         ],
+        postItemDetailRows: [{ label: 'Order Discount', amount: -1.25 }],
       },
     ],
     totals: {
@@ -120,6 +121,7 @@ describe('printing.service ticket rendering', () => {
             detailRows: [],
           },
         ],
+        postItemDetailRows: [{ label: 'Order Discount', amount: -2.5 }],
       },
       {
         title: 'Refunded Items',
@@ -133,13 +135,14 @@ describe('printing.service ticket rendering', () => {
             detailRows: [],
           },
         ],
+        postItemDetailRows: [],
       },
     ],
     totals: {
       subtotal: 49.98,
-      discount: 0,
+      discount: 2.5,
       tax: 0,
-      total: 49.98,
+      total: 47.48,
     },
     paymentRows: [
       { kind: 'heading' as const, label: 'Original Payments' },
@@ -204,7 +207,9 @@ describe('printing.service ticket rendering', () => {
     expect(text).toContain('Qty    Description');
     expect(text).toContain('Huevo');
     expect(text).toContain('Discount');
-    expect(text).toContain('-$ 2.99');
+    expect(text).toContain('-2.99');
+    expect(text).toContain('Order Discount');
+    expect(text).toContain('-1.25');
     expect(text).not.toContain('\\n');
   });
 
@@ -244,11 +249,14 @@ describe('printing.service ticket rendering', () => {
 
   it('renders refund tickets from the provided sections without recomputing discounts', () => {
     const text = buildReceiptLines(partialRefundTicket);
+    const refundedSection = text.split('Refunded Items')[1] || '';
 
     expect(text).toContain('Active Items');
     expect(text).toContain('Refunded Items');
     expect(text).toContain('Manteca de cerd');
-    expect(text).not.toContain('Discount\n');
+    expect(text).toContain('Order Discount');
+    expect(text).toContain('-2.50');
+    expect(refundedSection).not.toContain('Order Discount');
   });
 
   it('derives copy labels from the canonical ticket model', () => {
@@ -274,7 +282,8 @@ describe('printing.service ticket rendering', () => {
     expect(receiptText).toContain('EBT: $ 97.96');
     expect(receiptText).toContain('Refund Payments');
     expect(receiptText).toContain('CC: -$ 47.98');
-    expect(receiptText).toContain('49.98');
+    expect(receiptText).toContain('47.48');
+    expect(receiptText).toContain('Discounts');
     expect(receiptText).toContain('** Merchant Copy **');
   });
 

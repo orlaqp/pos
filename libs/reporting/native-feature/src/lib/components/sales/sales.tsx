@@ -23,20 +23,29 @@ export const buildSalesRows = (orders: Order[], refunds: OrderRefund[] = []) => 
         return acc;
     }, {});
 
-    return orders.map((order) => {
-        const refundedAmount = Number(
-            refundedAmountsByOrderId[String(order.id || '')] || 0
-        );
+    return [...orders]
+        .sort((left, right) => {
+            const leftCreated =
+                String(left.createdAt || left.orderDate || left.updatedAt || '');
+            const rightCreated =
+                String(right.createdAt || right.orderDate || right.updatedAt || '');
+            return rightCreated.localeCompare(leftCreated);
+        })
+        .map((order) => {
+            const refundedAmount = Number(
+                refundedAmountsByOrderId[String(order.id || '')] || 0
+            );
 
-        return {
-            orderNo: order.orderNo,
-            orderDate: moment(order.orderDate).format('YYYY-MM-DD hh:MM'),
-            employee: order.createdBy?.name || order.employeeName,
-            amount: roundCurrency(
-                Math.max(0, Number(order.total || 0) - refundedAmount)
-            ),
-        };
-    });
+            return {
+                orderNo: order.orderNo,
+                orderDate: moment(order.orderDate).format('YYYY-MM-DD hh:MM'),
+                createdAt: order.createdAt || order.orderDate || order.updatedAt,
+                employee: order.createdBy?.name || order.employeeName,
+                amount: roundCurrency(
+                    Math.max(0, Number(order.total || 0) - refundedAmount)
+                ),
+            };
+        });
 };
 
 export function Sales(_props: SalesProps) {

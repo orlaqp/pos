@@ -52,6 +52,16 @@ const getLineFinalTotal = (cart: CartState, item: CartItem): number => {
     return lineSummary?.lineTotalBeforeTax ?? item.product.price * item.quantity;
 };
 
+const getLineDisplayTotal = (cart: CartState, item: CartItem): number => {
+    const lineId = item.identifier || item.product.id;
+    const lineSummary = cart.appliedDiscountSummary?.lineSummaries?.find(
+        (summary) => summary.lineId === lineId
+    );
+    const chargedTotal = lineSummary?.lineTotalBeforeTax ?? item.product.price * item.quantity;
+
+    return chargedTotal + (lineSummary?.allocatedOrderDiscountTotal || 0);
+};
+
 export const getEbtEligibleTotal = (cart: CartState): number =>
     cart.items.reduce((acc, item) => {
         if (!item.product.isEBTEligible) return acc;
@@ -95,10 +105,8 @@ export const buildOrderSummary = (cart: CartState): OrderSummaryViewModel => {
             const lineId = item.identifier || item.product.id;
             const lineSummary = lineSummaries.find((summary) => summary.lineId === lineId);
             const originalTotal = item.product.price * item.quantity;
-            const finalTotal = getLineFinalTotal(cart, item);
-            const savings =
-                (lineSummary?.lineDiscountTotal || 0) +
-                (lineSummary?.allocatedOrderDiscountTotal || 0);
+            const finalTotal = getLineDisplayTotal(cart, item);
+            const savings = lineSummary?.lineDiscountTotal || 0;
 
             return {
                 id: lineId,

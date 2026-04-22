@@ -62,4 +62,40 @@ describe('OrderDetails', () => {
         expect(getByText('Discount')).toBeTruthy();
         expect(getByText('Refund')).toBeTruthy();
     });
+
+    it('renders refund payment rows when reconciled payment details are provided', () => {
+        const order: any = {
+            orderNo: 'ORD-2',
+            total: 25,
+            createdBy: { name: 'User A' },
+            paymentInfo: {
+                employeeName: 'Cashier B',
+                payments: [{ type: 'EBT', amount: 25 }],
+            },
+            lines: [
+                {
+                    identifier: 'line-1',
+                    productId: 'prod-1',
+                    productName: 'Item 1',
+                    unitOfMeasure: EACH,
+                    quantity: 1,
+                    price: 25,
+                },
+            ],
+        };
+
+        const { getByText } = render(
+            <OrderDetails
+                order={order}
+                productId={null}
+                paymentDetails={[
+                    { type: 'EBT', amount: 25, kind: 'payment' },
+                    { type: 'CC', amount: 5, kind: 'refund' },
+                ]}
+            />
+        );
+
+        expect(getByText('EBT: $25.00')).toBeTruthy();
+        expect(getByText('Refund CC: -$5.00')).toBeTruthy();
+    });
 });

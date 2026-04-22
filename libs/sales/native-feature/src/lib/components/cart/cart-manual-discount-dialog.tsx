@@ -177,7 +177,7 @@ export function CartManualDiscountDialog({
                                 current.method === 'AMOUNT' ? nextValue : current.amountValue,
                         }))
                     }
-                    placeholder={draft.method === 'PERCENT' ? '10' : '5.00'}
+                    placeholder="0"
                     placeholderTextColor={placeholderTextColor}
                     keyboardType="decimal-pad"
                     style={[styles.dialogInput, styles.dialogInputLarge]}

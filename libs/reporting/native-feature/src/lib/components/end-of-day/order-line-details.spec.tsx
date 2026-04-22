@@ -39,8 +39,9 @@ describe('OrderLine', () => {
         );
 
         expect(getByText('Discount')).toBeTruthy();
-        expect(getByText('- $ 3.00')).toBeTruthy();
+        expect(getByText('- $ 2.00')).toBeTruthy();
         expect(getByText('Refund')).toBeTruthy();
         expect(getByText('- $ 4.25')).toBeTruthy();
+        expect(getByText('$ 10.50')).toBeTruthy();
     });
 });

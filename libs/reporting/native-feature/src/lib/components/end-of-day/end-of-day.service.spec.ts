@@ -1,4 +1,9 @@
-import { filterOrders, getEmployeeItems, getProductItems } from './end-of-day.service';
+import {
+    buildOrderPaymentDetailRows,
+    filterOrders,
+    getEmployeeItems,
+    getProductItems,
+} from './end-of-day.service';
 
 describe('end-of-day.service', () => {
     it('builds employee dropdown items with All option first', () => {
@@ -97,12 +102,14 @@ describe('end-of-day.service', () => {
         const orders: any[] = [
             {
                 createdBy: { id: 'x' },
+                createdAt: '2026-04-21T12:00:00.000Z',
                 total: 2,
                 paymentInfo: { payments: [{ type: 'CASH', amount: 2 }] },
                 lines: [{ productId: 'p1' }],
             },
             {
                 createdBy: { id: 'y' },
+                createdAt: '2026-04-21T13:00:00.000Z',
                 total: 7,
                 paymentInfo: { payments: [{ type: 'CC', amount: 3 }, { type: 'EBT', amount: 4 }] },
                 lines: [{ productId: 'p2' }],
@@ -119,6 +126,32 @@ describe('end-of-day.service', () => {
         expect(onlyP2.orders[0].lines[0].productId).toBe('p2');
         expect(onlyP2.summary).toEqual({ CASH: 0, CC: 3, CHECK: 0, EBT: 4 });
         expect(onlyP2.totalAmount).toBe(7);
+    });
+
+    it('sorts filtered orders by ticket creation time descending', () => {
+        const orders: any[] = [
+            {
+                id: 'older-order',
+                createdAt: '2026-04-21T12:00:00.000Z',
+                updatedAt: '2026-04-21T18:00:00.000Z',
+                paymentInfo: { payments: [] },
+                lines: [],
+            },
+            {
+                id: 'newer-order',
+                createdAt: '2026-04-21T13:00:00.000Z',
+                updatedAt: '2026-04-21T17:00:00.000Z',
+                paymentInfo: { payments: [] },
+                lines: [],
+            },
+        ];
+
+        const result = filterOrders(orders as any, {});
+
+        expect(result.orders.map((order) => order.id)).toEqual([
+            'newer-order',
+            'older-order',
+        ]);
     });
 
     it('subtracts captured refund tenders from the payment summary for unfiltered reports', () => {
@@ -170,5 +203,111 @@ describe('end-of-day.service', () => {
             refunds: 5,
             netSales: 15,
         });
+    });
+
+    it('combines captured and fallback refund tenders for mixed refund histories', () => {
+        const orders: any[] = [
+            {
+                id: 'order-1',
+                total: 100,
+                paymentInfo: {
+                    payments: [
+                        { type: 'CC', amount: 60 },
+                        { type: 'CASH', amount: 40 },
+                    ],
+                },
+                lines: [
+                    {
+                        identifier: 'line-card',
+                        productId: 'p-1',
+                        quantity: 1,
+                        lineTotalBeforeTax: 60,
+                        ebtPaidAmount: 0,
+                        nonEbtPaidAmount: 60,
+                    },
+                    {
+                        identifier: 'line-cash',
+                        productId: 'p-2',
+                        quantity: 1,
+                        lineTotalBeforeTax: 40,
+                        ebtPaidAmount: 0,
+                        nonEbtPaidAmount: 40,
+                    },
+                ],
+            },
+        ];
+        const refunds: any[] = [
+            {
+                id: 'refund-explicit',
+                orderId: 'order-1',
+                refundAmount: 15,
+                refundPayments: [{ type: 'CC', amount: 15 }],
+            },
+            {
+                id: 'refund-legacy',
+                orderId: 'order-1',
+                refundAmount: 40,
+            },
+        ];
+        const refundLines: any[] = [
+            {
+                refundId: 'refund-legacy',
+                orderId: 'order-1',
+                orderLineIdentifier: 'line-cash',
+                productId: 'p-2',
+                quantityRefunded: 1,
+                lineRefundAmount: 40,
+            },
+        ];
+
+        const result = filterOrders(
+            orders as any,
+            {},
+            refunds as any,
+            refundLines as any
+        );
+
+        expect(result.summary).toEqual({
+            CC: 21,
+            CASH: 24,
+            CHECK: 0,
+            EBT: 0,
+        });
+        expect(result.totalAmount).toBe(45);
+    });
+
+    it('builds payment detail rows with original and refund tenders reconciled', () => {
+        const order: any = {
+            id: 'order-1',
+            paymentInfo: {
+                payments: [
+                    { type: 'EBT', amount: 50 },
+                    { type: 'CC', amount: 20 },
+                ],
+            },
+            lines: [
+                {
+                    identifier: 'line-1',
+                    quantity: 1,
+                    lineTotalBeforeTax: 20,
+                    ebtPaidAmount: 0,
+                    nonEbtPaidAmount: 20,
+                },
+            ],
+        };
+        const refunds: any[] = [
+            {
+                id: 'refund-1',
+                orderId: 'order-1',
+                refundAmount: 5,
+                refundPayments: [{ type: 'CC', amount: 5 }],
+            },
+        ];
+
+        expect(buildOrderPaymentDetailRows(order, refunds as any, [])).toEqual([
+            { type: 'EBT', amount: 50, kind: 'payment' },
+            { type: 'CC', amount: 20, kind: 'payment' },
+            { type: 'CC', amount: 5, kind: 'refund' },
+        ]);
     });
 });

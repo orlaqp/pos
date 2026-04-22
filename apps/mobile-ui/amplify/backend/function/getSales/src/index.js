@@ -55,7 +55,7 @@ async function queryOrdersForStatus(status, range, tenantId) {
         KeyConditionExpression: '#status = :status AND #orderDate BETWEEN :from AND :to',
         FilterExpression: '#tenantId = :tenantId',
         ProjectionExpression:
-            '#id, #orderNo, #orderDate, #updatedAt, #subtotal, #tax, #total, #status, #employeeId, #employeeName, #createdBy, #lines, #discountTotal, #appliedDiscountSummary, #paymentInfo, #refundInfo, #tenantId, #deleted',
+            '#id, #orderNo, #orderDate, #createdAt, #updatedAt, #subtotal, #tax, #total, #status, #employeeId, #employeeName, #createdBy, #lines, #discountTotal, #appliedDiscountSummary, #paymentInfo, #refundInfo, #tenantId, #deleted',
         ExpressionAttributeValues: {
             ':status': status,
             ':from': range.from,
@@ -67,6 +67,7 @@ async function queryOrdersForStatus(status, range, tenantId) {
             '#orderNo': 'orderNo',
             '#status': 'status',
             '#orderDate': 'orderDate',
+            '#createdAt': 'createdAt',
             '#updatedAt': 'updatedAt',
             '#subtotal': 'subtotal',
             '#tax': 'tax',
@@ -96,10 +97,13 @@ async function queryOrdersForStatus(status, range, tenantId) {
 }
 
 function trimOrderForReports(order) {
+    const createdAt = order.createdAt || order.orderDate || order.updatedAt || null;
+
     return {
         id: order.id,
         orderNo: order.orderNo,
         orderDate: order.orderDate,
+        createdAt,
         updatedAt: order.updatedAt,
         subtotal: order.subtotal,
         tax: order.tax,

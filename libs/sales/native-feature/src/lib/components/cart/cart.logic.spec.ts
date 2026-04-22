@@ -1,4 +1,5 @@
 import {
+    buildOrderSummary,
     getEbtEligibleTotal,
     getUnavailableProductMessages,
     isCartReady,
@@ -50,6 +51,52 @@ describe('cart.logic', () => {
         } as any;
 
         expect(getEbtEligibleTotal(discountedCart)).toBe(5.24);
+    });
+
+    it('keeps order-level discounts out of line savings display', () => {
+        const discountedCart = {
+            items: [
+                {
+                    identifier: 'line-1',
+                    product: {
+                        id: 'p1',
+                        name: 'Huevo',
+                        price: 10,
+                        unitOfMeasure: 'EA',
+                        isEBTEligible: true,
+                    },
+                    quantity: 2,
+                },
+            ],
+            appliedDiscountSummary: {
+                lineSummaries: [
+                    {
+                        lineId: 'line-1',
+                        discounts: [],
+                        lineDiscountTotal: 2,
+                        allocatedOrderDiscountTotal: 3,
+                        lineTotalBeforeTax: 15,
+                    },
+                ],
+                warnings: [],
+            },
+            promoCodes: [],
+            footer: {
+                subtotal: 20,
+                discount: 5,
+                tax: 0,
+                total: 15,
+                savingsTotal: 5,
+            },
+        } as any;
+
+        const summary = buildOrderSummary(discountedCart);
+
+        expect(summary.lines[0]).toMatchObject({
+            originalTotal: 20,
+            finalTotal: 18,
+            savings: 2,
+        });
     });
 
     it('checks cart readiness', () => {

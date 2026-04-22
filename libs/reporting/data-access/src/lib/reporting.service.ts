@@ -46,6 +46,9 @@ const splitDateRangeForSales = (range: DateRange): [DateRange, DateRange] => {
     ];
 };
 
+const getOrderCreatedSortValue = (order: Partial<Order>) =>
+    order.orderDate || order.createdAt || order.updatedAt || '';
+
 const mergeOrdersById = (orders: Order[][]) => {
     const byId = new Map<string, Order>();
 
@@ -55,8 +58,8 @@ const mergeOrdersById = (orders: Order[][]) => {
     });
 
     return Array.from(byId.values()).sort((a, b) => {
-        const left = a.updatedAt || a.orderDate || '';
-        const right = b.updatedAt || b.orderDate || '';
+        const left = getOrderCreatedSortValue(a);
+        const right = getOrderCreatedSortValue(b);
         return left > right ? -1 : left < right ? 1 : 0;
     });
 };

@@ -6,6 +6,7 @@ import i18next from 'i18next';
 
 import { View, Text } from 'react-native';
 import { OrderLineDetails } from './order-line-details';
+import { OrderPaymentDetailRow } from './end-of-day.service';
 
 /* eslint-disable-next-line */
 export interface OrderDetailsProps {
@@ -13,6 +14,7 @@ export interface OrderDetailsProps {
     productId: string | null;
     refundedAmount?: number;
     refundedLineAmounts?: Record<string, number>;
+    paymentDetails?: OrderPaymentDetailRow[];
 }
 
 export function OrderDetails({
@@ -20,6 +22,7 @@ export function OrderDetails({
     productId,
     refundedAmount = 0,
     refundedLineAmounts = {},
+    paymentDetails = [],
 }: OrderDetailsProps) {
     const styles = useSharedStyles();
     const t = (key: string, fallback: string) =>
@@ -29,6 +32,15 @@ export function OrderDetails({
     const discountAmount = Number(order.discountTotal || 0);
     const netSales = Math.max(0, Number(order.total || 0) - Number(refundedAmount || 0));
     const createdByName = order.createdBy?.name || order.employeeName || 'Unknown';
+    const resolvedPaymentDetails = paymentDetails.length
+        ? paymentDetails
+        : (order.paymentInfo?.payments || [])
+              .map((payment) => ({
+                  type: String(payment?.type || '').toUpperCase() as OrderPaymentDetailRow['type'],
+                  amount: Number(payment?.amount || 0),
+                  kind: 'payment' as const,
+              }))
+              .filter((payment) => payment.amount > 0);
 
     return (
         <View style={[styles.box, styles.column]}>
@@ -82,9 +94,14 @@ export function OrderDetails({
                     <Text style={styles.secondaryText}>
                         {t('EOD_Payments', 'Payments')}
                     </Text>
-                    {order.paymentInfo?.payments?.map((p, index) => (
-                        <Text key={`${p?.type || 'payment'}-${index}`} style={styles.primaryText}>
-                            {p?.type}: ${p?.amount.toFixed(2)}
+                    {resolvedPaymentDetails.map((payment, index) => (
+                        <Text
+                            key={`${payment.kind}-${payment.type}-${index}`}
+                            style={styles.primaryText}
+                        >
+                            {payment.kind === 'refund'
+                                ? `${t('EOD_RefundPayment', 'Refund')} ${payment.type}: -$${payment.amount.toFixed(2)}`
+                                : `${payment.type}: $${payment.amount.toFixed(2)}`}
                         </Text>
                     ))}
                 </View>

@@ -9,6 +9,7 @@ describe('Sales', () => {
                     id: 'order-1',
                     orderNo: '001',
                     orderDate: '2026-04-21T12:00:00.000Z',
+                    createdAt: '2026-04-21T12:00:00.000Z',
                     total: 58.96,
                     createdBy: { name: 'Cashier A' },
                 },
@@ -16,6 +17,7 @@ describe('Sales', () => {
                     id: 'order-2',
                     orderNo: '002',
                     orderDate: '2026-04-21T13:00:00.000Z',
+                    createdAt: '2026-04-21T13:00:00.000Z',
                     total: 148.95,
                     employeeName: 'Cashier B',
                 },
@@ -36,17 +38,45 @@ describe('Sales', () => {
 
         expect(rows[0]).toEqual(
             expect.objectContaining({
-                orderNo: '001',
-                employee: 'Cashier A',
-                amount: 24.98,
-            })
-        );
-        expect(rows[1]).toEqual(
-            expect.objectContaining({
                 orderNo: '002',
                 employee: 'Cashier B',
                 amount: 148.95,
             })
         );
+        expect(rows[1]).toEqual(
+            expect.objectContaining({
+                orderNo: '001',
+                employee: 'Cashier A',
+                amount: 24.98,
+            })
+        );
+    });
+
+    it('sorts sale rows by ticket creation date descending, not by later updates', () => {
+        const rows = buildSalesRows(
+            [
+                {
+                    id: 'order-older',
+                    orderNo: '001',
+                    orderDate: '2026-04-21T12:00:00.000Z',
+                    createdAt: '2026-04-21T12:00:00.000Z',
+                    updatedAt: '2026-04-21T16:00:00.000Z',
+                    total: 58.96,
+                    createdBy: { name: 'Cashier A' },
+                },
+                {
+                    id: 'order-newer',
+                    orderNo: '002',
+                    orderDate: '2026-04-21T13:00:00.000Z',
+                    createdAt: '2026-04-21T13:00:00.000Z',
+                    updatedAt: '2026-04-21T15:00:00.000Z',
+                    total: 148.95,
+                    employeeName: 'Cashier B',
+                },
+            ] as any,
+            [] as any
+        );
+
+        expect(rows.map((row) => row.orderNo)).toEqual(['002', '001']);
     });
 });

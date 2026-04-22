@@ -8,6 +8,7 @@ import { selectAllEmployees } from '@pos/employees/data-access';
 import { selectAllProducts } from '@pos/products/data-access';
 import {
     buildEndOfDayReferenceSummary,
+    buildOrderPaymentDetailRows,
     filterOrders,
     getEmployeeItems,
     getProductItems,
@@ -565,6 +566,11 @@ export function EndOfDay(props: EndOfDayProps) {
                                 <OrderDetails
                                     order={item}
                                     productId={productValue}
+                                    paymentDetails={buildOrderPaymentDetailRows(
+                                        item,
+                                        refunds.filter((refund) => refund.orderId === item.id),
+                                        refundLines
+                                    )}
                                     refundedAmount={
                                         refunds
                                             .filter((refund) => refund.orderId === item.id)
