@@ -12,7 +12,6 @@ import {
 } from '@pos/orders/data-access';
 import { useDispatch, useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { cartActions } from '@pos/sales/data-access';
 import {
     getDefaultPrinter,
     printReceipt,
@@ -34,6 +33,7 @@ export interface OrderItemProps {
     item: OrderEntity;
     navigation?: NativeStackNavigationProp<any>;
     onVoid: (order: OrderEntity) => void;
+    onPay?: (order: OrderEntity) => void;
 }
 
 export interface ParsedOrderNoSegments {
@@ -89,7 +89,7 @@ export const getOrderStatusLabel = (status: OrderEntity['status']) => {
     return status;
 };
 
-export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
+export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
     const theme = useTheme();
     const tokens = useDesignTokens();
     const styles = useSharedStyles();
@@ -117,11 +117,6 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
         await OrderService.delete(item.id);
         setBusy(false);
         dispatch(ordersActions.remove(item.id));
-    };
-
-    const openItem = async () => {
-        dispatch(cartActions.set({...item}));
-        navigation?.navigate('Sales', { mode: 'payment' });
     };
 
     const printItem = async () => {
@@ -308,7 +303,7 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
                             paddingHorizontal: tokens.spacing.sm,
                         }}
                         titleStyle={{ paddingRight: 10, color: theme.theme.colors.grey0 }}
-                        onPress={openItem}
+                        onPress={() => onPay?.(item)}
                     />
                 )}
                 {(item.status === 'PAID' ||

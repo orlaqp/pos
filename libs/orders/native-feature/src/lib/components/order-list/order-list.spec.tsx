@@ -8,6 +8,7 @@ const mockSearch = jest.fn();
 const mockSubscribeUnsubscribe = jest.fn();
 const mockSearchInputValue = { current: '' };
 const mockDialogProps = { overlayStyle: undefined as unknown };
+const mockOpenOrderPaymentDialog = jest.fn(() => null);
 
 let mockOrders = [
     {
@@ -227,9 +228,11 @@ jest.mock('../order-item/order-item', () => ({
     default: ({
         item,
         onVoid,
+        onPay,
     }: {
         item: { id: string; orderNo: string };
         onVoid: (order: { id: string }) => void;
+        onPay: (order: { id: string }) => void;
     }) => {
         const { View, Text, Pressable } = require('react-native');
         return (
@@ -237,6 +240,9 @@ jest.mock('../order-item/order-item', () => ({
                 <Text>{item.orderNo}</Text>
                 <Pressable testID={`order-void-${item.id}`} onPress={() => onVoid(item)}>
                     <Text>Void</Text>
+                </Pressable>
+                <Pressable testID={`order-pay-${item.id}`} onPress={() => onPay(item)}>
+                    <Text>Pay</Text>
                 </Pressable>
             </View>
         );
@@ -251,6 +257,11 @@ jest.mock('../order-void-form/order-void-form', () => ({
     },
 }));
 
+jest.mock('../open-order-payment-dialog/open-order-payment-dialog', () => ({
+    __esModule: true,
+    default: (props: unknown) => mockOpenOrderPaymentDialog(props),
+}));
+
 const { OrderList } = require('./order-list');
 
 describe('OrderList integration', () => {
@@ -261,6 +272,7 @@ describe('OrderList integration', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockDialogProps.overlayStyle = undefined;
+        mockOpenOrderPaymentDialog.mockReturnValue(null);
         mockI18next.isInitialized = false;
         mockI18next.exists.mockImplementation(() => false);
         mockI18next.t.mockImplementation((key: string) => key);
@@ -454,6 +466,30 @@ describe('OrderList integration', () => {
         });
 
         expect(getByTestId('order-void-dialog')).toBeTruthy();
+    });
+
+    it('opens the direct payment dialog when an order item requests payment', () => {
+        render(<OrderList />);
+        act(() => {
+            jest.runOnlyPendingTimers();
+        });
+
+        const view = render(<OrderList />);
+        act(() => {
+            jest.runOnlyPendingTimers();
+        });
+
+        fireEvent.press(view.getByTestId('order-pay-open-1'));
+        act(() => {
+            jest.runOnlyPendingTimers();
+        });
+
+        expect(mockOpenOrderPaymentDialog).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                visible: true,
+                order: expect.objectContaining({ id: 'open-1' }),
+            })
+        );
     });
 
     it('uses a wider overlay for the redesigned void dialog', () => {

@@ -3,13 +3,12 @@ import { PaymentType } from '@pos/shared/api';
 import {
     UICard,
     UINumericInput,
-    UISwitch,
     UIVerticalSpacer,
 } from '@pos/shared/ui-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button } from '@rneui/themed';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import i18next from 'i18next';
 import {
@@ -20,7 +19,7 @@ import {
     toNumber,
 } from './cart-payment.logic';
 
-import { View, Text, Alert, StyleSheet } from 'react-native';
+import { View, Text, Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
 
 const round2Dec = (value: number) => +value.toFixed(2);
 
@@ -30,6 +29,11 @@ const PaymentMethod = {
     check: { labelKey: 'PAYMENT_Method_Check', label: 'Check', type: PaymentType.CHECK },
     ebt: { labelKey: 'PAYMENT_Method_EBT', label: 'EBT', type: PaymentType.EBT },
 } as const;
+
+const PAYMENT_METHOD_ROWS: PaymentKey[][] = [
+    ['cc', 'cash'],
+    ['check', 'ebt'],
+];
 
 interface PaymentInfo {
     withcash: boolean;
@@ -48,17 +52,28 @@ export interface CartPaymentProps {
     ebtEligibleTotal: number;
     canReceiveChecks: boolean;
     onPaymentEntered: (payments: ICartPayment[]) => void;
+    footerActions?: React.ReactNode;
+    disableSubmit?: boolean;
+    layout?: 'default' | 'compact';
 }
 
-export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPaymentEntered }: CartPaymentProps) {
+export function CartPayment({
+    total,
+    ebtEligibleTotal,
+    canReceiveChecks,
+    onPaymentEntered,
+    footerActions,
+    disableSubmit = false,
+    layout = 'default',
+}: CartPaymentProps) {
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
     const local = useStyles(tokens);
-    const [formValue, setFormValue] = useState<PaymentInfo>();
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
             : fallback;
+    const isCompact = layout === 'compact';
     const previousValues = useRef<Partial<Record<PaymentKey, number>>>({});
     const form = useForm<PaymentInfo>({
         mode: 'onChange',
@@ -79,7 +94,13 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
             (x) => x !== 'check' || canReceiveChecks
         );
     }, [canReceiveChecks]);
-    const watchedValues = form.watch();
+    const paymentMethodRows = useMemo(() => {
+        return PAYMENT_METHOD_ROWS.map((row) =>
+            row.filter((method) => paymentMethods.includes(method))
+        ).filter((row) => row.length > 0);
+    }, [paymentMethods]);
+    const watchedValues = form.watch() as PaymentInfo;
+    const formValue = watchedValues;
     const receivedTotal = paymentMethods.reduce(
         (acc, method) => acc + toNumber((watchedValues as unknown as Record<string, unknown>)[method]),
         0
@@ -95,6 +116,58 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
         const currentValue = form.getValues(method);
         if (!shouldRestoreValue(currentValue)) return;
         form.setValue(method, getRestoredValue(previousValues.current[method]));
+    };
+
+    const getMethodEnabledKey = (method: PaymentKey) =>
+        `with${method}` as keyof PaymentInfo;
+
+    const isMethodActive = (
+        method: PaymentKey,
+        value: PaymentInfo = form.getValues() as PaymentInfo
+    ) => !!value[getMethodEnabledKey(method)];
+
+    const setMethodActive = (
+        method: PaymentKey,
+        active: boolean
+    ) => {
+        const currentValues = form.getValues() as PaymentInfo;
+        const enabledKey = getMethodEnabledKey(method);
+
+        form.setValue(enabledKey, active as PaymentInfo[typeof enabledKey], {
+            shouldDirty: true,
+            shouldTouch: true,
+        });
+
+        if (!active) {
+            form.setValue(method, 0 as PaymentInfo[typeof method], {
+                shouldDirty: true,
+                shouldTouch: true,
+            });
+            return;
+        }
+
+        const currentAmount = +(currentValues[method] || 0);
+        if (currentAmount > 0) {
+            return;
+        }
+
+        form.setValue(
+            method,
+            getAutoFillAmount(
+                method,
+                {
+                    ...currentValues,
+                    [enabledKey]: true,
+                },
+                paymentMethods,
+                total,
+                ebtEligibleTotal
+            ) as PaymentInfo[typeof method],
+            {
+                shouldDirty: true,
+                shouldTouch: true,
+            }
+        );
     };
 
     const completeOrder = (info: PaymentInfo) => {
@@ -140,39 +213,6 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
 
     useEffect(() => {
         const subscription = form.watch((value, { name }) => {
-            if (!name?.startsWith('with')) return;
-
-            const paymentType = name.replace('with', '') as PaymentKey;
-            const values = value as PaymentInfo;
-            setFormValue(values);
-
-            const selected = !!values[name as keyof PaymentInfo];
-            const currentAmount = +(values[paymentType] || 0);
-
-            if (!selected) {
-                form.setValue(paymentType, 0);
-                return;
-            }
-
-            if (currentAmount > 0) return;
-
-            form.setValue(
-                paymentType,
-                getAutoFillAmount(
-                    paymentType,
-                    values,
-                    paymentMethods,
-                    total,
-                    ebtEligibleTotal
-                )
-            );
-        });
-
-        return () => subscription.unsubscribe();
-    }, [ebtEligibleTotal, form, paymentMethods, total]);
-
-    useEffect(() => {
-        const subscription = form.watch((value, { name }) => {
             if (!name) return;
 
             const paymentKey = name as PaymentKey;
@@ -189,7 +229,7 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
     }, [form, paymentMethods]);
 
     return (
-        <View>
+        <View style={local.shell}>
             <FormProvider {...form}>
                 <UICard tone="muted" padding="md" radius="lg">
                     <Text style={[styles.secondaryText, local.totalLabel]}>
@@ -213,107 +253,218 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
                         </View>
                     </View>
                 </UICard>
-                <UIVerticalSpacer size="small" />
-                {paymentMethods.map((m) => (
-                    <UICard key={m} tone="default" padding="sm" radius="md" style={local.methodCard}>
-                        <View style={local.methodRow}>
-                            <UISwitch
-                                name={`with${m}`}
-                                testID={`payment-switch-${m}`}
-                            />
-                            <View style={local.methodLabelWrap}>
-                            <Text
-                                style={[
-                                    formValue && formValue[`with${m}` as keyof PaymentInfo]
-                                        ? styles.primaryText
-                                        : styles.veryLightText,
-                                        local.methodLabel,
-                                ]}
-                            >
-                                {t(PaymentMethod[m].labelKey, PaymentMethod[m].label)}
-                            </Text>
+                <View style={local.zoneSpacer}>
+                    <UIVerticalSpacer size="small" />
+                </View>
+                <ScrollView
+                    style={local.methodsScroll}
+                    contentContainerStyle={local.methodsScrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={local.methodsGrid}>
+                        {paymentMethodRows.map((row, rowIndex) => (
+                            <View key={`payment-row-${rowIndex}`} style={local.methodGridRow}>
+                                {row.map((m) => {
+                                    const isSingleCard = row.length === 1;
+                                    const isActive = isMethodActive(m, formValue);
+
+                                    return (
+                                        <Pressable
+                                            key={m}
+                                            testID={`payment-card-${m}`}
+                                            onPress={() =>
+                                                setMethodActive(m, !isActive)
+                                            }
+                                            style={[
+                                                isSingleCard
+                                                    ? local.methodCardSingle
+                                                    : local.methodCardHalf,
+                                            ]}
+                                        >
+                                            <UICard
+                                                tone="default"
+                                                padding={isCompact ? 'xs' : 'sm'}
+                                                radius="md"
+                                                style={[
+                                                    local.methodCard,
+                                                    isCompact &&
+                                                        local.methodCardCompact,
+                                                    isActive
+                                                        ? local.methodCardActive
+                                                        : local.methodCardInactive,
+                                                ]}
+                                            >
+                                                <View style={local.methodBody}>
+                                                    <Text
+                                                        style={[
+                                                            local.methodCaption,
+                                                            isActive
+                                                                ? local.methodCaptionActive
+                                                                : local.methodCaptionInactive,
+                                                        ]}
+                                                    >
+                                                        {t(
+                                                            PaymentMethod[m].labelKey,
+                                                            PaymentMethod[m].label
+                                                        )}
+                                                    </Text>
+                                                    <View
+                                                        style={local.methodInputWrap}
+                                                    >
+                                                        <UINumericInput
+                                                            testID={`payment-input-${m}`}
+                                                            keyboardType="decimal-pad"
+                                                            name={m}
+                                                            allowDecimals={true}
+                                                            textAlign="right"
+                                                            lIcon="currency-usd"
+                                                            clearTextOnFocus={false}
+                                                            selectTextOnFocus={true}
+                                                            onFocus={() => {
+                                                                const wasActive =
+                                                                    isMethodActive(
+                                                                        m
+                                                                    );
+                                                                if (!wasActive) {
+                                                                    setMethodActive(
+                                                                        m,
+                                                                        true
+                                                                    );
+                                                                    return;
+                                                                }
+
+                                                                previousValues.current[
+                                                                    m
+                                                                ] = toNumber(
+                                                                    form.getValues(
+                                                                        m
+                                                                    )
+                                                                );
+                                                                form.setValue(
+                                                                    m,
+                                                                    '' as any
+                                                                );
+                                                            }}
+                                                            onBlur={() =>
+                                                                setTimeout(
+                                                                    () =>
+                                                                        restoreIfEmpty(
+                                                                            m
+                                                                        ),
+                                                                    0
+                                                                )
+                                                            }
+                                                            onEndEditing={() =>
+                                                                setTimeout(
+                                                                    () =>
+                                                                        restoreIfEmpty(
+                                                                            m
+                                                                        ),
+                                                                    0
+                                                                )
+                                                            }
+                                                            containerStyle={
+                                                                isCompact
+                                                                    ? local.methodInputContainerCompact
+                                                                    : local.methodInputContainer
+                                                            }
+                                                            inputContainerStyle={
+                                                                isCompact
+                                                                    ? local.methodInputInnerCompact
+                                                                    : local.methodInputInner
+                                                            }
+                                                            inputStyle={[
+                                                                styles.inputStyle,
+                                                                local.methodInputText,
+                                                                isCompact &&
+                                                                    local.methodInputTextCompact,
+                                                                !isActive &&
+                                                                    local.methodInputTextInactive,
+                                                            ]}
+                                                        />
+                                                    </View>
+                                                </View>
+                                            </UICard>
+                                        </Pressable>
+                                    );
+                                })}
                             </View>
-                            <View style={local.methodInputWrap}>
-                            <UINumericInput
-                                testID={`payment-input-${m}`}
-                                keyboardType="decimal-pad"
-                                name={m}
-                                allowDecimals={true}
-                                textAlign="right"
-                                lIcon="currency-usd"
-                                clearTextOnFocus={false}
-                                selectTextOnFocus={true}
-                                onFocus={() => {
-                                    previousValues.current[m] = toNumber(form.getValues(m));
-                                    form.setValue(m, '' as any);
-                                }}
-                                onBlur={() => setTimeout(() => restoreIfEmpty(m), 0)}
-                                onEndEditing={() => setTimeout(() => restoreIfEmpty(m), 0)}
-                                disabled={!formValue || !formValue[`with${m}` as keyof PaymentInfo]}
-                            />
-                            </View>
-                        </View>
-                    </UICard>
-                ))}
-                <UIVerticalSpacer size="medium" />
-                <UICard tone="muted" padding="sm" radius="md" style={local.footerCard}>
-                    <View
-                        style={[
-                            local.summaryFooterRow,
-                            isExactPayment && local.summaryFooterRowComplete,
-                        ]}
-                    >
-                        <Text style={local.summaryFooterLabel}>
-                            {t('PAYMENT_Received', 'Received')}
-                        </Text>
-                        <Text
+                        ))}
+                    </View>
+                </ScrollView>
+                <View style={local.footerRail}>
+                    <UICard tone="muted" padding="sm" radius="md" style={local.footerCard}>
+                        <View
                             style={[
-                                local.summaryFooterValue,
-                                isExactPayment && local.summaryFooterValueComplete,
+                                local.summaryFooterRow,
+                                isExactPayment && local.summaryFooterRowComplete,
                             ]}
                         >
-                            $ {roundedReceivedTotal.toFixed(2)}
-                        </Text>
+                            <Text style={local.summaryFooterLabel}>
+                                {t('PAYMENT_Received', 'Received')}
+                            </Text>
+                            <Text
+                                style={[
+                                    local.summaryFooterValue,
+                                    isExactPayment &&
+                                        local.summaryFooterValueComplete,
+                                ]}
+                            >
+                                $ {roundedReceivedTotal.toFixed(2)}
+                            </Text>
+                        </View>
+                        {isExactPayment && (
+                            <Text style={local.completeHint}>
+                                {t(
+                                    'PAYMENT_ReadyToFinalize',
+                                    'Ready to finalize payment'
+                                )}
+                            </Text>
+                        )}
+                        {!isExactPayment && !isOverPayment && (
+                            <Text style={local.pendingHint}>
+                                {t(
+                                    'PAYMENT_EnterRemaining',
+                                    'Enter remaining amount to continue'
+                                )}
+                            </Text>
+                        )}
+                        {isOverPayment && (
+                            <Text style={local.pendingHint}>
+                                {t(
+                                    'PAYMENT_AdjustToMatchTotal',
+                                    'Adjust payments to match the amount due'
+                                )}
+                            </Text>
+                        )}
+                    </UICard>
+                    <View style={local.footerSectionSpacer}>
+                        <UIVerticalSpacer size="small" />
                     </View>
-                    {isExactPayment && (
-                        <Text style={local.completeHint}>
-                            {t(
-                                'PAYMENT_ReadyToFinalize',
-                                'Ready to finalize payment'
-                            )}
-                        </Text>
-                    )}
-                    {!isExactPayment && !isOverPayment && (
-                        <Text style={local.pendingHint}>
-                            {t(
-                                'PAYMENT_EnterRemaining',
-                                'Enter remaining amount to continue'
-                            )}
-                        </Text>
-                    )}
-                    {isOverPayment && (
-                        <Text style={local.pendingHint}>
-                            {t(
-                                'PAYMENT_AdjustToMatchTotal',
-                                'Adjust payments to match the amount due'
-                            )}
-                        </Text>
-                    )}
-                </UICard>
-                <UIVerticalSpacer size="small" />
-                <View style={local.ctaWrap}>
-                    <Button
-                        testID="payment-submit-button"
-                        title={`${t('PAYMENT_ReceivePayment', 'Receive Payment')} ($${total.toFixed(2)})`}
-                        buttonStyle={local.ctaButton}
-                        disabled={!isExactPayment}
-                        icon={{
-                            name: 'check',
-                            type: 'material-community',
-                            color: styles.primaryText.color,
-                        }}
-                        onPress={() => completeOrder(form.getValues())}
-                    />
+                    <View style={local.ctaWrap}>
+                        <Button
+                            testID="payment-submit-button"
+                            title={`${t('PAYMENT_ReceivePayment', 'Receive Payment')} ($${total.toFixed(2)})`}
+                            buttonStyle={local.ctaButton}
+                            disabled={!isExactPayment || disableSubmit}
+                            icon={{
+                                name: 'check',
+                                type: 'material-community',
+                                color: styles.primaryText.color,
+                            }}
+                            onPress={() => completeOrder(form.getValues())}
+                        />
+                    </View>
+                    {footerActions ? (
+                        <>
+                            <View style={local.footerSectionSpacer}>
+                                <UIVerticalSpacer size="small" />
+                            </View>
+                            <View style={local.footerActionsWrap}>
+                                {footerActions}
+                            </View>
+                        </>
+                    ) : null}
                 </View>
             </FormProvider>
         </View>
@@ -322,6 +473,10 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
 
 const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     StyleSheet.create({
+        shell: {
+            flex: 1,
+            minHeight: 0,
+        },
         totalLabel: {
             textAlign: 'center',
             textTransform: 'uppercase',
@@ -337,6 +492,9 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         summaryRow: {
             flexDirection: 'row',
             justifyContent: 'space-between',
+        },
+        zoneSpacer: {
+            marginBottom: 0,
         },
         summaryPill: {
             flex: 1,
@@ -363,26 +521,98 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontSize: 16,
             fontWeight: '800',
         },
+        methodsScroll: {
+            flex: 1,
+            minHeight: 0,
+        },
+        methodsScrollContent: {
+            paddingBottom: tokens.spacing.xs,
+        },
+        methodsGrid: {
+            gap: tokens.spacing.sm,
+        },
+        methodGridRow: {
+            flexDirection: 'row',
+            gap: tokens.spacing.sm,
+        },
         methodCard: {
+            minHeight: 118,
+        },
+        methodCardCompact: {
+            minHeight: 102,
+        },
+        methodCardHalf: {
+            flex: 1,
+        },
+        methodCardSingle: {
+            width: '100%',
+        },
+        methodCardActive: {
+            borderColor: '#4EA3FF',
+            backgroundColor: '#122033',
+        },
+        methodCardInactive: {
+            borderColor: `${tokens.colors.border}`,
+            backgroundColor: '#11161D',
+        },
+        methodBody: {
+            flex: 1,
+        },
+        methodCaption: {
+            textTransform: 'uppercase',
+            letterSpacing: 0.5,
+            fontWeight: '700',
+            fontSize: 11,
             marginBottom: tokens.spacing.xs,
         },
-        methodRow: {
-            flexDirection: 'row',
-            alignItems: 'center',
+        methodCaptionActive: {
+            color: '#A8CBFF',
         },
-        methodLabelWrap: {
-            flex: 1.2,
-            paddingLeft: tokens.spacing.xs,
-        },
-        methodLabel: {
-            fontWeight: '800',
-            fontSize: 18,
+        methodCaptionInactive: {
+            color: tokens.colors.textMuted,
         },
         methodInputWrap: {
-            flex: 1.8,
+            width: '100%',
+            justifyContent: 'center',
+            paddingHorizontal: tokens.spacing.sm,
+        },
+        methodInputContainer: {
+            paddingHorizontal: 0,
+            marginTop: 0,
+            marginBottom: 0,
+        },
+        methodInputContainerCompact: {
+            paddingHorizontal: 0,
+            marginTop: 0,
+            marginBottom: 0,
+        },
+        methodInputInner: {
+            marginTop: 0,
+        },
+        methodInputInnerCompact: {
+            marginTop: 0,
+            minHeight: 44,
+            borderRadius: 14,
+            paddingLeft: 10,
+            paddingRight: 10,
+        },
+        methodInputTextCompact: {
+            fontSize: 16,
+        },
+        methodInputText: {
+            width: '100%',
+        },
+        methodInputTextInactive: {
+            color: tokens.colors.textMuted,
+        },
+        footerRail: {
+            borderTopWidth: 1,
+            borderTopColor: `${tokens.colors.border}88`,
+            paddingTop: tokens.spacing.sm,
+            backgroundColor: '#05080C',
         },
         footerCard: {
-            marginTop: tokens.spacing.xs,
+            marginTop: 0,
         },
         summaryFooterRow: {
             flexDirection: 'row',
@@ -426,11 +656,18 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontSize: 12,
             textAlign: 'right',
         },
+        footerSectionSpacer: {
+            marginBottom: 0,
+        },
         ctaWrap: {
-            marginBottom: tokens.spacing.xs,
+            marginBottom: 0,
         },
         ctaButton: {
             borderRadius: tokens.radii.lg,
+            minHeight: 52,
+        },
+        footerActionsWrap: {
+            gap: tokens.spacing.sm,
         },
     });
 

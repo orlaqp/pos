@@ -25,6 +25,7 @@ import { ProductEntity } from '@pos/products/data-access';
 import { selectStore } from '@pos/store-info/data-access';
 import { selectStation } from '@pos/settings/data-access';
 import {
+    buildDiscountBreakdown,
     buildOrderSummary,
     getEbtEligibleTotal,
     getUnavailableProductMessages,
@@ -130,29 +131,8 @@ export function Cart({
     const invalidItemCount = cart.items.filter((item) => item.quantity === 0).length;
     const pricingWarnings = cart.appliedDiscountSummary?.warnings || [];
     const discountBreakdown = useMemo(
-        () => [
-            ...((cart.appliedDiscountSummary?.lineSummaries || []).flatMap((summary) =>
-                summary.discounts.map((discount) => ({
-                    discountApplicationId: discount.discountApplicationId,
-                    name:
-                        discount.applicationType === 'PRICE_OVERRIDE'
-                            ? 'Price override'
-                            : discount.code || discount.name,
-                    discountAmount: discount.discountAmount,
-                    scope: 'LINE' as const,
-                }))
-            )),
-            ...((cart.appliedDiscountSummary?.orderLevelAdjustments || []).map((discount) => ({
-                discountApplicationId: discount.discountApplicationId,
-                name: discount.name,
-                discountAmount: discount.discountAmount,
-                scope: 'ORDER' as const,
-            }))),
-        ],
-        [
-            cart.appliedDiscountSummary?.lineSummaries,
-            cart.appliedDiscountSummary?.orderLevelAdjustments,
-        ]
+        () => buildDiscountBreakdown(cart.appliedDiscountSummary),
+        [cart.appliedDiscountSummary]
     );
     const orderSummary = useMemo(() => buildOrderSummary(cart), [cart]);
     const selectedItem = cart.selected;
@@ -732,7 +712,10 @@ export function Cart({
                 }}
                 supportedOrientations={['landscape']}
                 presentationStyle="fullScreen"
-                overlayStyle={[styles.overlay, { width: 450 }]}
+                overlayStyle={[
+                    styles.overlay,
+                    localStyles.paymentDialog,
+                ]}
             >
                 <CartPayment
                     total={cart.footer.total}

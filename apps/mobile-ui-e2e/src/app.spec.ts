@@ -356,6 +356,10 @@ describe('MobileUi release gate', () => {
       .withTimeout(10000);
     await element(by.id('order-item-pay-button')).atIndex(0).tap();
 
+    await waitFor(element(by.id('open-order-payment-dialog')))
+      .toBeVisible()
+      .withTimeout(5000);
+
     await waitFor(element(by.id('payment-switch-cash')))
       .toBeVisible()
       .withTimeout(5000);

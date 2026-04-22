@@ -1,5 +1,8 @@
 import every from 'lodash/every';
-import { AppliedDiscountDetail } from '@pos/discounts/domain';
+import {
+    AppliedDiscountDetail,
+    AppliedDiscountSummary,
+} from '@pos/discounts/domain';
 import { CartItem, CartState } from '@pos/sales/data-access';
 import { ProductEntity } from '@pos/products/data-access';
 
@@ -31,6 +34,13 @@ export interface OrderSummaryViewModel {
     total: number;
     savingsTotal: number;
     ebtEligibleTotal: number;
+}
+
+export interface SummaryDiscountBreakdownItem {
+    discountApplicationId: string;
+    name: string;
+    discountAmount: number;
+    scope: 'LINE' | 'ORDER';
 }
 
 const getLineFinalTotal = (cart: CartState, item: CartItem): number => {
@@ -112,3 +122,25 @@ export const buildOrderSummary = (cart: CartState): OrderSummaryViewModel => {
         ebtEligibleTotal: getEbtEligibleTotal(cart),
     };
 };
+
+export const buildDiscountBreakdown = (
+    summary?: AppliedDiscountSummary | null
+): SummaryDiscountBreakdownItem[] => [
+    ...((summary?.lineSummaries || []).flatMap((lineSummary) =>
+        lineSummary.discounts.map((discount) => ({
+            discountApplicationId: discount.discountApplicationId,
+            name:
+                discount.applicationType === 'PRICE_OVERRIDE'
+                    ? 'Price override'
+                    : discount.code || discount.name,
+            discountAmount: discount.discountAmount,
+            scope: 'LINE' as const,
+        }))
+    )),
+    ...((summary?.orderLevelAdjustments || []).map((discount) => ({
+        discountApplicationId: discount.discountApplicationId,
+        name: discount.name,
+        discountAmount: discount.discountAmount,
+        scope: 'ORDER' as const,
+    }))),
+];

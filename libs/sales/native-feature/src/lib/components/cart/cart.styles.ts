@@ -272,6 +272,12 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         compactDialog: {
             width: 360,
         },
+        paymentDialog: {
+            width: 760,
+            maxWidth: '94%',
+            maxHeight: 640,
+            minHeight: 560,
+        },
         summaryDialog: {
             width: 560,
             maxHeight: 560,

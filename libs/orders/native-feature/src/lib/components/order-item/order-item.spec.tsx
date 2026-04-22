@@ -108,7 +108,7 @@ describe('OrderItem integration', () => {
         mockRefundedQuantities = {};
     });
 
-    it('shows Payment action for OPEN orders and navigates to Sales payment mode', () => {
+    it('shows Payment action for OPEN orders and delegates to the pay handler', () => {
         const item = {
             id: 'o-1',
             orderNo: '51-EBTDEV01-260311-0001',
@@ -121,24 +121,23 @@ describe('OrderItem integration', () => {
             orderDate: '2026-03-12T12:00:00.000Z',
             lines: [],
         };
+        const onPay = jest.fn();
 
         const { getByTestId, queryByText } = render(
             <OrderItem
                 item={item}
                 navigation={{ navigate: mockNavigate }}
                 onVoid={jest.fn()}
+                onPay={onPay}
             />
         );
 
         expect(queryByText('Payment')).toBeTruthy();
         fireEvent.press(getByTestId('order-item-pay-button'));
 
-        expect(mockSetAction).toHaveBeenCalledWith(item);
-        expect(mockDispatch).toHaveBeenCalledWith({
-            type: 'cart/set',
-            payload: item,
-        });
-        expect(mockNavigate).toHaveBeenCalledWith('Sales', { mode: 'payment' });
+        expect(onPay).toHaveBeenCalledWith(item);
+        expect(mockSetAction).not.toHaveBeenCalled();
+        expect(mockNavigate).not.toHaveBeenCalled();
     });
 
     it('renders segmented order chips and metadata for parseable order number', () => {

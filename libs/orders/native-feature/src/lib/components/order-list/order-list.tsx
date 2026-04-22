@@ -24,6 +24,7 @@ import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import i18next from 'i18next';
 import { logSyncDebug } from '@pos/shared/utils';
 import { RootState } from '@pos/store';
+import OpenOrderPaymentDialog from '../open-order-payment-dialog/open-order-payment-dialog';
 
 export interface OrderListProps {
     navigation?: NativeStackNavigationProp<any>;
@@ -43,6 +44,7 @@ export function OrderList({ navigation }: OrderListProps) {
     const searchRef = useRef<TextInput>(null);
     const [filterText, setFilterText] = useState<string>();
     const [orderToVoid, setOrderToVoid] = useState<OrderEntity | undefined>();
+    const [orderToPay, setOrderToPay] = useState<OrderEntity | undefined>();
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
     const allOrders = useSelector(selectAllOrders);
     const currentTenantId = useSelector(
@@ -213,6 +215,7 @@ export function OrderList({ navigation }: OrderListProps) {
                                     navigation={navigation}
                                     item={item}
                                     onVoid={(order) => setOrderToVoid(order)}
+                                    onPay={(order) => setOrderToPay(order)}
                                 />
                             )}
                         />
@@ -234,6 +237,12 @@ export function OrderList({ navigation }: OrderListProps) {
                     />
                 ) : null}
             </Dialog>
+            <OpenOrderPaymentDialog
+                visible={!!orderToPay}
+                order={orderToPay}
+                navigation={navigation}
+                onClose={() => setOrderToPay(undefined)}
+            />
         </UIScreen>
     );
 }

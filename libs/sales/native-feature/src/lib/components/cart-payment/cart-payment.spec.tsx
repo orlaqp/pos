@@ -64,25 +64,8 @@ jest.mock('@rneui/themed', () => ({
 }));
 
 jest.mock('@pos/shared/ui-native', () => {
-    const { View, TextInput, Switch } = require('react-native');
+    const { View, TextInput } = require('react-native');
     const { Controller, useFormContext } = require('react-hook-form');
-
-    const UISwitch = ({ name, testID }: { name: string; testID?: string }) => {
-        const { control } = useFormContext();
-        return (
-            <Controller
-                control={control}
-                name={name}
-                render={({ field: { onChange, value } }) => (
-                    <Switch
-                        testID={testID || `switch-${name}`}
-                        value={!!value}
-                        onValueChange={onChange}
-                    />
-                )}
-            />
-        );
-    };
 
     const UINumericInput = ({
         name,
@@ -121,7 +104,6 @@ jest.mock('@pos/shared/ui-native', () => {
 
     return {
         UICard: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-        UISwitch,
         UINumericInput,
         UIVerticalSpacer: () => <View />,
     };
@@ -151,10 +133,10 @@ describe('CartPayment integration', () => {
             />
         );
 
-        fireEvent(getByTestId('payment-switch-ebt'), 'valueChange', true);
+        fireEvent.press(getByTestId('payment-card-ebt'));
         expect(getByTestId('payment-input-ebt')).toHaveProp('value', '24.9');
 
-        fireEvent(getByTestId('payment-switch-cash'), 'valueChange', true);
+        fireEvent.press(getByTestId('payment-card-cash'));
         expect(getByTestId('payment-input-cash')).toHaveProp('value', '65');
 
         fireEvent.press(getByTestId('payment-submit-button'));
@@ -176,7 +158,7 @@ describe('CartPayment integration', () => {
             />
         );
 
-        fireEvent(getByTestId('payment-switch-ebt'), 'valueChange', true);
+        fireEvent.press(getByTestId('payment-card-ebt'));
         const ebtInput = getByTestId('payment-input-ebt');
         expect(ebtInput).toHaveProp('value', '24.9');
 
@@ -206,7 +188,7 @@ describe('CartPayment integration', () => {
             />
         );
 
-        fireEvent(getByTestId('payment-switch-cash'), 'valueChange', true);
+        fireEvent.press(getByTestId('payment-card-cash'));
 
         expect(getByTestId('payment-submit-button')).toHaveProp('accessibilityState', {
             disabled: false,
@@ -234,7 +216,7 @@ describe('CartPayment integration', () => {
             />
         );
 
-        fireEvent(getByTestId('payment-switch-cash'), 'valueChange', true);
+        fireEvent.press(getByTestId('payment-card-cash'));
         fireEvent.changeText(getByTestId('payment-input-cash'), '25');
 
         expect(getByTestId('payment-submit-button')).toHaveProp('accessibilityState', {
@@ -254,9 +236,9 @@ describe('CartPayment integration', () => {
             />
         );
 
-        fireEvent(getByTestId('payment-switch-ebt'), 'valueChange', true);
+        fireEvent.press(getByTestId('payment-card-ebt'));
         fireEvent.changeText(getByTestId('payment-input-ebt'), '50');
-        fireEvent(getByTestId('payment-switch-cash'), 'valueChange', true);
+        fireEvent.press(getByTestId('payment-card-cash'));
         fireEvent.changeText(getByTestId('payment-input-cash'), '50');
         fireEvent.press(getByTestId('payment-submit-button'));
 
@@ -278,7 +260,47 @@ describe('CartPayment integration', () => {
             />
         );
 
-        expect(getByTestId('payment-switch-check')).toBeTruthy();
+        expect(getByTestId('payment-card-check')).toBeTruthy();
         expect(getByTestId('payment-input-check')).toBeTruthy();
+    });
+
+    it('deactivates an active payment card and resets its amount to zero', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId } = render(
+            <CartPayment
+                total={20}
+                ebtEligibleTotal={0}
+                canReceiveChecks={false}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-cash'));
+        expect(getByTestId('payment-input-cash')).toHaveProp('value', '20');
+
+        fireEvent.press(getByTestId('payment-card-cash'));
+        expect(getByTestId('payment-input-cash')).toHaveProp('value', '0');
+        expect(getByTestId('payment-submit-button')).toHaveProp('accessibilityState', {
+            disabled: true,
+        });
+    });
+
+    it('activates and autofills a payment method when the amount input is focused', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId } = render(
+            <CartPayment
+                total={20}
+                ebtEligibleTotal={0}
+                canReceiveChecks={false}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent(getByTestId('payment-input-cash'), 'focus');
+
+        expect(getByTestId('payment-input-cash')).toHaveProp('value', '20');
+        expect(getByTestId('payment-submit-button')).toHaveProp('accessibilityState', {
+            disabled: false,
+        });
     });
 });
