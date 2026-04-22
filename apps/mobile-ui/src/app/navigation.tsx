@@ -11,6 +11,7 @@ import {
     CompactOrderList,
     Orders,
 } from '@pos/orders/native-feature';
+import { OrderService } from '@pos/orders/data-access';
 import { Button, Dialog, useTheme } from '@rneui/themed';
 import { Alert, View } from 'react-native';
 import { cartActions, selectCart } from '@pos/sales/data-access';
@@ -72,7 +73,11 @@ export function Navigation() {
     const [showSalesActions, setShowSalesActions] = useState<boolean>(false);
 
     const print = () => {
-        printReceipt(store, defaultPrinter, cart);
+        printReceipt(
+            store,
+            defaultPrinter,
+            OrderService.buildPrintTicketPreview(cart)
+        );
     };
 
     const confirmResetCart = () => {

@@ -37,6 +37,24 @@ jest.mock('../order.service', () => ({
         update: jest.fn(),
         closeOrder: jest.fn(),
         closeExistingOrder: jest.fn(),
+        buildPrintTicketPreview: jest.fn((cart: any, copyType: string) => ({
+            isReceipt: false,
+            copyType,
+            sections: [{ title: 'Items', emptyLabel: 'No items', rows: [] }],
+            totals: { subtotal: 0, discount: 0, tax: 0, total: 0 },
+            paymentRows: [],
+            promoCodes: [],
+        })),
+        buildPrintTicketForOrderEntitySnapshot: jest.fn((order: any, options?: any) => ({
+            isReceipt: true,
+            orderId: order?.id,
+            orderNo: order?.orderNo,
+            copyType: options?.copyType ?? 'MERCHANT',
+            sections: [{ title: 'Items', emptyLabel: 'No items', rows: [] }],
+            totals: { subtotal: 0, discount: 0, tax: 0, total: 0 },
+            paymentRows: [],
+            promoCodes: [],
+        })),
         search: jest.fn((items: any[], options: { status: string; filter?: string }) =>
             items.filter((item) => {
                 const statusMatch = item.status === options.status;
@@ -307,7 +325,6 @@ describe('orders reducer', () => {
         expect(printReceipt).toHaveBeenCalledWith(
             expect.objectContaining({ name: 'Test Store' }),
             expect.objectContaining({ id: 'printer-1' }),
-            expect.anything(),
             expect.objectContaining({ copyType: 'CUSTOMER' })
         );
     });
@@ -375,7 +392,6 @@ describe('orders reducer', () => {
         expect(printReceipt).toHaveBeenCalledWith(
             expect.objectContaining({ name: 'Test Store' }),
             expect.objectContaining({ id: 'printer-1' }),
-            expect.anything(),
             expect.objectContaining({ copyType: 'MERCHANT' })
         );
     });

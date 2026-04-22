@@ -7,7 +7,6 @@ import {
     ordersActions,
     OrderEntity,
     OrderService,
-    OrderEntityMapper,
     selectRefundedAmountForOrder,
     selectRefundedQuantitiesForOrder,
 } from '@pos/orders/data-access';
@@ -155,53 +154,20 @@ export function OrderItem({ item, navigation, onVoid }: OrderItemProps) {
             return;
         }
 
-        const refundedLineAmounts =
-            item.id &&
-            (item.status === 'PARTIALLY_REFUNDED' || item.status === 'REFUNDED')
-                ? await OrderService.getRefundedLineAmountsForOrder(item.id)
-                      .then((amounts) => Object.fromEntries(amounts.entries()))
-                      .catch(() => undefined)
-                : undefined;
-        const refundPayments =
-            item.id &&
-            (item.status === 'PARTIALLY_REFUNDED' || item.status === 'REFUNDED')
-                ? await OrderService.getRefundPaymentTotalsForOrder(item.id)
-                      .then((payments) =>
-                          payments.map((payment) => ({
-                              type: payment.type,
-                              amount: payment.amount,
-                          }))
-                      )
-                      .catch(() => undefined)
-                : undefined;
+        const ticket = await OrderService.buildPrintTicketForOrder(item, {
+            copyType: receiptCopyType,
+            refundedQuantities:
+                item.id &&
+                (item.status === 'PARTIALLY_REFUNDED' || item.status === 'REFUNDED') &&
+                Object.keys(refundedQuantities).length > 0
+                    ? refundedQuantities
+                    : undefined,
+        });
 
         printReceipt(
             fallbackStore,
             fallbackPrinter,
-            OrderEntityMapper.asCartState(item),
-            {
-                ...item,
-                copyType: receiptCopyType,
-                refundedQuantities:
-                    item.id &&
-                    (item.status === 'PARTIALLY_REFUNDED' ||
-                        item.status === 'REFUNDED') &&
-                    Object.keys(refundedQuantities).length > 0
-                        ? refundedQuantities
-                        : undefined,
-                refundedLineAmounts:
-                    item.id &&
-                    (item.status === 'PARTIALLY_REFUNDED' ||
-                        item.status === 'REFUNDED') &&
-                    refundedLineAmounts &&
-                    Object.keys(refundedLineAmounts).length > 0
-                        ? refundedLineAmounts
-                        : undefined,
-                refundPayments:
-                    refundPayments && refundPayments.length > 0
-                        ? refundPayments
-                        : undefined,
-            }
+            ticket
         );
     };
 

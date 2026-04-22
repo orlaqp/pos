@@ -518,14 +518,14 @@ export const ordersSlice = createSlice({
                     filterList(state, state.filterQuery);
                     state.submitStatus = 'saved';
                     if (!action.payload.skipAutoPrint) {
+                        const ticket = OrderService.buildPrintTicketPreview(
+                            action.payload.cart,
+                            'CUSTOMER'
+                        );
                         printReceipt(
                             normalizeReceiptStoreInfo(action.payload.storeInfo),
                             action.payload.defaultPrinter!,
-                            action.payload.cart,
-                            {
-                                ...normalizeReceiptOrder(action.payload.order),
-                                copyType: 'CUSTOMER',
-                            }
+                            ticket
                         );
                     }
                 }
@@ -553,14 +553,17 @@ export const ordersSlice = createSlice({
                     filterList(state, state.filterQuery);
                     state.submitStatus = 'saved';
                     if (!action.payload.skipAutoPrint) {
+                        const ticket =
+                            OrderService.buildPrintTicketForOrderEntitySnapshot(
+                                action.payload.order,
+                                {
+                                    copyType: 'MERCHANT',
+                                }
+                            );
                         printReceipt(
                             normalizeReceiptStoreInfo(action.payload.storeInfo),
                             action.payload.defaultPrinter!,
-                            action.payload.cart,
-                            {
-                                ...normalizeReceiptOrder(action.payload.order),
-                                copyType: 'MERCHANT',
-                            }
+                            ticket
                         );
                     }
                 }
@@ -714,33 +717,5 @@ function applyPendingOverride(
     return {
         ...order,
         status: pendingStatus,
-    };
-}
-
-function normalizeReceiptOrder(order?: OrderEntity) {
-    if (!order) return undefined;
-    return {
-        id: order.id,
-        status: order.status,
-        orderNo: order.orderNo,
-        currentSubtotal: order.currentSubtotal ?? undefined,
-        currentDiscountTotal: order.currentDiscountTotal ?? undefined,
-        currentTax: order.currentTax ?? undefined,
-        currentTotal: order.currentTotal ?? undefined,
-        paymentInfo: order.paymentInfo
-            ? {
-                  payments: order.paymentInfo.payments?.map((payment) => ({
-                      type: String(payment.type),
-                      amount: payment.amount,
-                  })),
-              }
-            : undefined,
-        lines:
-            order.lines?.map((line) => ({
-                quantity: line.quantity,
-                productName: line.productName,
-                ebtPaidAmount: line.ebtPaidAmount ?? undefined,
-                nonEbtPaidAmount: line.nonEbtPaidAmount ?? undefined,
-            })) ?? undefined,
     };
 }

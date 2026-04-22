@@ -37,6 +37,7 @@ import {
     PrinterService,
 } from '@pos/printings/data-access';
 import {
+    OrderService,
     ordersActions,
     payOrder,
     submitOrderAndPay,
@@ -694,31 +695,30 @@ export function SalesScreen({
                         return;
                     }
 
-                    const cartForPayment: CartState = {
-                        ...cartForOrder,
-                        id: submitResult.payload.order.id,
-                        orderNo:
-                            submitResult.payload.order.orderNo ?? cartForOrder.orderNo,
-                    };
-
                     if (storeInfo) {
+                        const customerTicket =
+                            OrderService.buildPrintTicketForOrderEntitySnapshot(
+                                submitResult.payload.order,
+                                {
+                                    copyType: 'CUSTOMER',
+                                }
+                            );
+                        const merchantTicket =
+                            OrderService.buildPrintTicketForOrderEntitySnapshot(
+                                submitResult.payload.order,
+                                {
+                                    copyType: 'MERCHANT',
+                                }
+                            );
                         await printReceipt(
                             storeInfo,
                             defaultPrinter,
-                            cartForPayment,
-                            {
-                                ...submitResult.payload.order,
-                                copyType: 'CUSTOMER',
-                            }
+                            customerTicket
                         );
                         await printReceipt(
                             storeInfo,
                             defaultPrinter,
-                            cartForPayment,
-                            {
-                                ...submitResult.payload.order,
-                                copyType: 'MERCHANT',
-                            }
+                            merchantTicket
                         );
                     }
 

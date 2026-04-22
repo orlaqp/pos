@@ -191,6 +191,18 @@ jest.mock('@pos/printings/data-access', () => ({
 jest.mock('@pos/orders/data-access', () => ({
     buildEbtAllocations: jest.fn(() => ({})),
     getLineTotal: jest.fn((quantity: number, price: number) => +(quantity * price).toFixed(2)),
+    OrderService: {
+        buildPrintTicketForOrderEntitySnapshot: jest.fn((order: any, options?: any) => ({
+            isReceipt: true,
+            orderId: order?.id,
+            orderNo: order?.orderNo,
+            copyType: options?.copyType ?? 'MERCHANT',
+            sections: [{ title: 'Items', emptyLabel: 'No items', rows: [] }],
+            totals: { subtotal: 0, discount: 0, tax: 0, total: 0 },
+            paymentRows: [],
+            promoCodes: [],
+        })),
+    },
     ordersActions: {
         optimisticMarkPaid: (payload: unknown) => ({
             type: 'orders/optimisticMarkPaid',
@@ -1125,12 +1137,10 @@ describe('SalesScreen', () => {
             1,
             expect.anything(),
             expect.anything(),
-            expect.anything(),
             expect.objectContaining({ copyType: 'CUSTOMER' })
         );
         expect(mockPrintReceipt).toHaveBeenNthCalledWith(
             2,
-            expect.anything(),
             expect.anything(),
             expect.anything(),
             expect.objectContaining({ copyType: 'MERCHANT' })

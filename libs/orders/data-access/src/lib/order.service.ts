@@ -16,7 +16,7 @@ import {
     RefundInfo,
 } from '@pos/shared/models';
 import { API, DataStore } from '@pos/shared/amplify';
-import { OrderEntity, OrderEntityMapper } from './order.entity';
+import { OrderEntity, OrderEntityMapper, OrderLineEntity } from './order.entity';
 import { CartPayment, CartState } from '@pos/sales/data-access';
 import { Alert } from 'react-native';
 import moment from 'moment';
@@ -35,6 +35,7 @@ import type {
     AppliedDiscountDetail,
     AppliedDiscountSummary,
     PricingApprovalEvent,
+    PricingPreviewResult,
 } from '@pos/discounts/domain';
 import { PricingEngine } from '@pos/discounts/domain';
 import {
@@ -96,6 +97,51 @@ interface RefundPricingComputation {
     currentTax: number;
     currentTotal: number;
     newTotal: number;
+}
+
+export type OrderTicketCopyType = 'CUSTOMER' | 'MERCHANT';
+
+export interface OrderTicketPrintDetailRow {
+    label: string;
+    amount: number;
+}
+
+export interface OrderTicketPrintRow {
+    identifier: string;
+    quantity: number;
+    name: string;
+    amount: number;
+    detailRows?: OrderTicketPrintDetailRow[];
+}
+
+export interface OrderTicketPrintSection {
+    title: string;
+    emptyLabel: string;
+    rows: OrderTicketPrintRow[];
+}
+
+export interface OrderTicketPrintTotals {
+    subtotal: number;
+    discount: number;
+    tax: number;
+    total: number;
+}
+
+export interface OrderTicketPrintPaymentRow {
+    kind: 'heading' | 'payment';
+    label: string;
+    amount?: number;
+}
+
+export interface OrderTicketPrintModel {
+    isReceipt: boolean;
+    orderId?: string;
+    orderNo?: string;
+    copyType?: OrderTicketCopyType;
+    sections: OrderTicketPrintSection[];
+    totals: OrderTicketPrintTotals;
+    paymentRows: OrderTicketPrintPaymentRow[];
+    promoCodes?: string[];
 }
 
 interface OrderPricingSnapshotContext {
@@ -235,6 +281,26 @@ const normalizeRefundPayments = (
         amount,
     }));
 };
+
+const getLineOriginalAmount = (line: {
+    lineTotalBeforeTax?: number | null;
+    lineDiscountTotal?: number | null;
+    allocatedOrderDiscountTotal?: number | null;
+}) =>
+    roundMoney(
+        Number(line.lineTotalBeforeTax || 0) +
+            Number(line.lineDiscountTotal || 0) +
+            Number(line.allocatedOrderDiscountTotal || 0)
+    );
+
+const getLineDiscountAmount = (line: {
+    lineDiscountTotal?: number | null;
+    allocatedOrderDiscountTotal?: number | null;
+}) =>
+    roundMoney(
+        Number(line.lineDiscountTotal || 0) +
+            Number(line.allocatedOrderDiscountTotal || 0)
+    );
 
 const getGraphqlErrorMessage = (result: unknown) => {
     if (!result || typeof result !== 'object') return undefined;
@@ -917,6 +983,496 @@ export class OrderService {
             refundTotal: pricing.refundAmount,
             newTotal: pricing.newTotal,
         };
+    }
+
+    static buildPrintTicketPreview(
+        cart: CartState,
+        copyType: OrderTicketCopyType = 'CUSTOMER'
+    ): OrderTicketPrintModel {
+        const rows = (cart.items || []).map((item, index) => {
+            const identifier = String(item.identifier || `line-${index}`);
+            const lineSummary = cart.appliedDiscountSummary?.lineSummaries?.find(
+                (summary) => summary.lineId === identifier
+            );
+            const originalAmount = roundMoney(
+                Number(item.product.price || 0) * Number(item.quantity || 0)
+            );
+            const finalAmount = roundMoney(
+                Number(lineSummary?.lineTotalBeforeTax || originalAmount)
+            );
+            const discountAmount = roundMoney(Math.max(0, originalAmount - finalAmount));
+
+            return {
+                identifier,
+                quantity: Number(item.quantity || 0),
+                name: item.product.name,
+                amount: discountAmount > 0 ? originalAmount : finalAmount,
+                detailRows:
+                    discountAmount > 0
+                        ? [{ label: 'Discount', amount: -discountAmount }]
+                        : [],
+            };
+        });
+
+        return {
+            isReceipt: false,
+            copyType,
+            sections: [
+                {
+                    title: 'Items',
+                    emptyLabel: 'No items',
+                    rows,
+                },
+            ],
+            totals: {
+                subtotal: roundMoney(
+                    Number(
+                        cart.footer.baseSubtotal ??
+                            cart.footer.subtotal ??
+                            cart.footer.total ??
+                            0
+                    )
+                ),
+                discount: roundMoney(
+                    Number(cart.footer.discount ?? cart.footer.savingsTotal ?? 0)
+                ),
+                tax: roundMoney(Number(cart.footer.tax || 0)),
+                total: roundMoney(Number(cart.footer.total || 0)),
+            },
+            paymentRows: [],
+            promoCodes: (cart.promoCodes || []).map((promo) => promo.code),
+        };
+    }
+
+    static async buildPrintTicketForOrder(
+        orderOrId: string | OrderEntity,
+        options: {
+            copyType?: OrderTicketCopyType;
+            refundedQuantities?: Record<string, number>;
+            refundedLineAmounts?: Record<string, number>;
+            refundPayments?: Array<{ type: string; amount: number }>;
+        } = {}
+    ): Promise<OrderTicketPrintModel> {
+        const order =
+            typeof orderOrId === 'string'
+                ? await DataStore.query(Order, orderOrId).then((result) =>
+                      result ? OrderEntityMapper.fromModel(result) : null
+                  )
+                : orderOrId;
+
+        if (!order) {
+            throw new Error('Order was not found');
+        }
+
+        const refundedQuantities =
+            options.refundedQuantities ??
+            (order.status === 'PARTIALLY_REFUNDED' || order.status === 'REFUNDED'
+                ? Object.fromEntries(
+                      (await OrderService.getRefundedQuantitiesForOrder(order.id)).entries()
+                  )
+                : undefined);
+        const refundedLineAmounts =
+            options.refundedLineAmounts ??
+            (order.status === 'PARTIALLY_REFUNDED' || order.status === 'REFUNDED'
+                ? Object.fromEntries(
+                      (await OrderService.getRefundedLineAmountsForOrder(order.id)).entries()
+                  )
+                : undefined);
+        const refundPayments =
+            options.refundPayments ??
+            (order.status === 'PARTIALLY_REFUNDED' || order.status === 'REFUNDED'
+                ? await OrderService.getRefundPaymentTotalsForOrder(order.id)
+                : undefined);
+
+        const currentBasket =
+            refundedQuantities &&
+            Object.values(refundedQuantities).some((quantity) => Number(quantity || 0) > 0)
+                ? await OrderService.buildCurrentBasketForTicket(
+                      order,
+                      refundedQuantities
+                  )
+                : null;
+
+        return OrderService.buildPrintTicketForOrderEntitySnapshot(order, {
+            copyType: options.copyType,
+            refundedQuantities,
+            refundedLineAmounts,
+            refundPayments,
+            currentBasket,
+        });
+    }
+
+    static buildPrintTicketForOrderEntitySnapshot(
+        order: OrderEntity,
+        options: {
+            copyType?: OrderTicketCopyType;
+            refundedQuantities?: Record<string, number>;
+            refundedLineAmounts?: Record<string, number>;
+            refundPayments?: Array<{ type: string; amount: number }>;
+            currentBasket?: PricingPreviewResult | null;
+        } = {}
+    ): OrderTicketPrintModel {
+        const copyType = options.copyType ?? 'MERCHANT';
+        const refundedQuantities = options.refundedQuantities || {};
+        const refundedLineAmounts = options.refundedLineAmounts || {};
+        const hasRefundHistory = Object.values(refundedQuantities).some(
+            (quantity) => Number(quantity || 0) > 0
+        );
+
+        if (!hasRefundHistory) {
+            return OrderService.buildStandardOrderTicket(order, copyType);
+        }
+
+        return OrderService.buildRefundOrderTicket(order, copyType, {
+            refundedQuantities,
+            refundedLineAmounts,
+            refundPayments: options.refundPayments || [],
+            currentBasket: options.currentBasket || null,
+        });
+    }
+
+    private static buildStandardOrderTicket(
+        order: OrderEntity,
+        copyType: OrderTicketCopyType
+    ): OrderTicketPrintModel {
+        const rows = (order.lines || []).map((line) =>
+            OrderService.buildTicketRowFromOrderLine(line)
+        );
+
+        return {
+            isReceipt: true,
+            orderId: order.id,
+            orderNo: order.orderNo,
+            copyType,
+            sections: [
+                {
+                    title: 'Items',
+                    emptyLabel: 'No items',
+                    rows,
+                },
+            ],
+            totals: {
+                subtotal: roundMoney(Number(order.baseSubtotal ?? order.subtotal ?? order.total)),
+                discount: roundMoney(Number(order.discountTotal || 0)),
+                tax: roundMoney(Number(order.tax || 0)),
+                total: roundMoney(Number(order.total || 0)),
+            },
+            paymentRows: OrderService.buildTicketPaymentRows(
+                order.paymentInfo?.payments,
+                []
+            ),
+            promoCodes: order.promoCodes || [],
+        };
+    }
+
+    private static buildRefundOrderTicket(
+        order: OrderEntity,
+        copyType: OrderTicketCopyType,
+        options: {
+            refundedQuantities: Record<string, number>;
+            refundedLineAmounts: Record<string, number>;
+            refundPayments: Array<{ type: string; amount: number }>;
+            currentBasket: PricingPreviewResult | null;
+        }
+    ): OrderTicketPrintModel {
+        const currentBasket = options.currentBasket;
+        const activeRows = currentBasket
+            ? currentBasket.order.lines.map((line) =>
+                  OrderService.buildTicketRowFromPricingLine(line)
+              )
+            : OrderService.buildHistoricalActiveTicketRows(
+                  order,
+                  options.refundedQuantities,
+                  options.refundedLineAmounts
+              );
+        const refundedRows = OrderService.buildRefundedTicketRows(
+            order,
+            options.refundedQuantities,
+            options.refundedLineAmounts
+        );
+
+        return {
+            isReceipt: true,
+            orderId: order.id,
+            orderNo: order.orderNo,
+            copyType,
+            sections: [
+                {
+                    title: 'Active Items',
+                    emptyLabel: 'No active items',
+                    rows: activeRows,
+                },
+                {
+                    title: 'Refunded Items',
+                    emptyLabel: 'No refunded items',
+                    rows: refundedRows,
+                },
+            ],
+            totals: {
+                subtotal: roundMoney(
+                    Number(
+                        order.currentSubtotal ??
+                            currentBasket?.order.baseSubtotal ??
+                            activeRows.reduce((sum, row) => sum + row.amount, 0)
+                    )
+                ),
+                discount: roundMoney(
+                    Number(
+                        order.currentDiscountTotal ??
+                            currentBasket?.order.discountTotal ??
+                            0
+                    )
+                ),
+                tax: roundMoney(
+                    Number(order.currentTax ?? currentBasket?.order.tax ?? 0)
+                ),
+                total: roundMoney(
+                    Number(
+                        order.currentTotal ?? currentBasket?.order.total ?? 0
+                    )
+                ),
+            },
+            paymentRows: OrderService.buildTicketPaymentRows(
+                order.paymentInfo?.payments,
+                options.refundPayments
+            ),
+            promoCodes: order.promoCodes || [],
+        };
+    }
+
+    private static buildTicketRowFromOrderLine(
+        line: OrderLineEntity
+    ): OrderTicketPrintRow {
+        const discountAmount = getLineDiscountAmount(line);
+        const originalAmount = getLineOriginalAmount(line);
+        const finalAmount = roundMoney(Number(line.lineTotalBeforeTax || 0));
+
+        return {
+            identifier: String(line.identifier || ''),
+            quantity: Number(line.quantity || 0),
+            name: line.productName,
+            amount: discountAmount > 0 ? originalAmount : finalAmount,
+            detailRows:
+                discountAmount > 0
+                    ? [{ label: 'Discount', amount: -discountAmount }]
+                    : [],
+        };
+    }
+
+    private static buildTicketRowFromPricingLine(
+        line: PricingPreviewResult['order']['lines'][number]
+    ): OrderTicketPrintRow {
+        const discountAmount = getLineDiscountAmount(line);
+        const originalAmount = getLineOriginalAmount(line);
+        const finalAmount = roundMoney(Number(line.lineTotalBeforeTax || 0));
+
+        return {
+            identifier: String(line.lineId || ''),
+            quantity: Number(line.quantity || 0),
+            name: line.productName,
+            amount: discountAmount > 0 ? originalAmount : finalAmount,
+            detailRows:
+                discountAmount > 0
+                    ? [{ label: 'Discount', amount: -discountAmount }]
+                    : [],
+        };
+    }
+
+    private static buildHistoricalActiveTicketRows(
+        order: OrderEntity,
+        refundedQuantities: Record<string, number>,
+        refundedLineAmounts: Record<string, number>
+    ): OrderTicketPrintRow[] {
+        return (order.lines || [])
+            .map((line) => {
+                const originalQuantity = Number(line.quantity || 0);
+                const refundedQuantity = Math.max(
+                    0,
+                    Math.min(
+                        originalQuantity,
+                        Number(refundedQuantities[String(line.identifier || '')] || 0)
+                    )
+                );
+                const activeQuantity = roundMoney(originalQuantity - refundedQuantity);
+                if (activeQuantity <= 0) {
+                    return null;
+                }
+
+                const originalAmount = getLineOriginalAmount(line);
+                const finalAmount = roundMoney(Number(line.lineTotalBeforeTax || 0));
+                const refundedAmount = roundMoney(
+                    Number(refundedLineAmounts[String(line.identifier || '')] || 0)
+                );
+                const activeOriginalAmount =
+                    originalQuantity > 0
+                        ? roundMoney(
+                              originalAmount -
+                                  (originalAmount * refundedQuantity) / originalQuantity
+                          )
+                        : 0;
+                const activeFinalAmount = roundMoney(
+                    Math.max(0, finalAmount - refundedAmount)
+                );
+                const activeDiscountAmount = roundMoney(
+                    Math.max(0, activeOriginalAmount - activeFinalAmount)
+                );
+
+                return {
+                    identifier: String(line.identifier || ''),
+                    quantity: activeQuantity,
+                    name: line.productName,
+                    amount:
+                        activeDiscountAmount > 0
+                            ? activeOriginalAmount
+                            : activeFinalAmount,
+                    detailRows:
+                        activeDiscountAmount > 0
+                            ? [{ label: 'Discount', amount: -activeDiscountAmount }]
+                            : [],
+                } as OrderTicketPrintRow;
+            })
+            .filter(Boolean) as OrderTicketPrintRow[];
+    }
+
+    private static buildRefundedTicketRows(
+        order: OrderEntity,
+        refundedQuantities: Record<string, number>,
+        refundedLineAmounts: Record<string, number>
+    ): OrderTicketPrintRow[] {
+        return (order.lines || [])
+            .map((line) => {
+                const originalQuantity = Number(line.quantity || 0);
+                const refundedQuantity = Math.max(
+                    0,
+                    Math.min(
+                        originalQuantity,
+                        Number(refundedQuantities[String(line.identifier || '')] || 0)
+                    )
+                );
+                if (refundedQuantity <= 0) {
+                    return null;
+                }
+
+                const refundedAmount =
+                    Number(refundedLineAmounts[String(line.identifier || '')] || 0) > 0
+                        ? roundMoney(
+                              Number(
+                                  refundedLineAmounts[String(line.identifier || '')] || 0
+                              )
+                          )
+                        : originalQuantity > 0
+                        ? roundMoney(
+                              (Number(line.lineTotalBeforeTax || 0) * refundedQuantity) /
+                                  originalQuantity
+                          )
+                        : 0;
+
+                return {
+                    identifier: String(line.identifier || ''),
+                    quantity: refundedQuantity,
+                    name: line.productName,
+                    amount: refundedAmount,
+                    detailRows: [],
+                } as OrderTicketPrintRow;
+            })
+            .filter(Boolean) as OrderTicketPrintRow[];
+    }
+
+    private static buildTicketPaymentRows(
+        originalPayments:
+            | Array<{ type?: string | null; amount?: number | null }>
+            | null
+            | undefined,
+        refundPayments:
+            | Array<{ type?: string | null; amount?: number | null }>
+            | null
+            | undefined
+    ): OrderTicketPrintPaymentRow[] {
+        const originalRows = (originalPayments || [])
+            .map((payment) => ({
+                kind: 'payment' as const,
+                label: String(payment?.type || '').trim(),
+                amount: roundMoney(Number(payment?.amount || 0)),
+            }))
+            .filter((payment) => payment.label && payment.amount > 0);
+        const refundRows = (refundPayments || [])
+            .map((payment) => ({
+                kind: 'payment' as const,
+                label: String(payment?.type || '').trim(),
+                amount: roundMoney(-Math.abs(Number(payment?.amount || 0))),
+            }))
+            .filter((payment) => payment.label && payment.amount < 0);
+
+        if (!refundRows.length) {
+            return originalRows;
+        }
+
+        const rows: OrderTicketPrintPaymentRow[] = [];
+
+        if (originalRows.length) {
+            rows.push({ kind: 'heading', label: 'Original Payments' });
+            rows.push(...originalRows);
+        }
+
+        rows.push({ kind: 'heading', label: 'Refund Payments' });
+        rows.push(...refundRows);
+
+        return rows;
+    }
+
+    private static buildCurrentBasketForTicket(
+        order: OrderEntity,
+        refundedQuantitiesRecord: Record<string, number>
+    ): Promise<PricingPreviewResult | null> {
+        const refundedQuantities = new Map<string, number>(
+            Object.entries(refundedQuantitiesRecord || {}).map(([identifier, quantity]) => [
+                identifier,
+                roundMoney(Number(quantity || 0)),
+            ])
+        );
+
+        if (!refundedQuantities.size) {
+            return Promise.resolve(null);
+        }
+
+        const appliedDiscountApplications =
+            (order.appliedDiscountSummary?.applications || []).filter(
+                isSnapshotEligibleApplication
+            );
+        if (!appliedDiscountApplications.length) {
+            return Promise.resolve(null);
+        }
+
+        return DataStore.query(
+            OrderDiscountDefinitionSnapshot,
+            (snapshot) => snapshot.orderId.eq(order.id)
+        ).then((pricingSnapshots) => {
+            const pricingDefinitions = OrderService.resolveRefundPricingDefinitions(
+                appliedDiscountApplications,
+                pricingSnapshots
+            );
+
+            if (
+                !pricingDefinitions.length ||
+                pricingDefinitions.length !== appliedDiscountApplications.length
+            ) {
+                return null;
+            }
+
+            const snapshotPricingContext = OrderService.resolveRefundPricingContext(
+                order,
+                pricingSnapshots
+            );
+
+            return OrderService.buildRepricedCartPreview(
+                order,
+                refundedQuantities,
+                pricingDefinitions,
+                snapshotPricingContext.pricingGeneratedAt,
+                snapshotPricingContext.pricingTimezone,
+                snapshotPricingContext.pricingStationId
+            );
+        });
     }
 
     private static async persistAppliedDiscountSnapshotsForPaidOrder(

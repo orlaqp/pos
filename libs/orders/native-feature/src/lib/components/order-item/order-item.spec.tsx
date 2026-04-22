@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
+import { act } from 'react-test-renderer';
 
 const mockDispatch = jest.fn();
 const mockNavigate = jest.fn();
@@ -83,10 +84,8 @@ jest.mock('@pos/orders/data-access', () => ({
     ordersActions: { remove: jest.fn() },
     OrderService: {
         delete: jest.fn(),
-        getRefundedLineAmountsForOrder: jest.fn(),
-        getRefundPaymentTotalsForOrder: jest.fn(),
+        buildPrintTicketForOrder: jest.fn(),
     },
-    OrderEntityMapper: { asCartState: jest.fn() },
     selectRefundedAmountForOrder: jest.fn(() => mockRefundedAmount),
     selectRefundedQuantitiesForOrder: jest.fn(() => mockRefundedQuantities),
 }));
@@ -98,7 +97,7 @@ const {
     parseOrderNoSegments,
 } = require('./order-item');
 const { printReceipt } = require('@pos/printings/data-access');
-const { OrderEntityMapper, OrderService } = require('@pos/orders/data-access');
+const { OrderService } = require('@pos/orders/data-access');
 
 describe('OrderItem integration', () => {
     beforeEach(() => {
@@ -218,7 +217,7 @@ describe('OrderItem integration', () => {
         expect(getOrderStatusLabel('PAID')).toBe('PAID');
     });
 
-    it('prints merchant copy for paid orders', () => {
+    it('prints merchant copy for paid orders', async () => {
         const item = {
             id: 'o-4',
             orderNo: '51-EBTDEV01-260311-0004',
@@ -233,13 +232,21 @@ describe('OrderItem integration', () => {
         };
         const printer = { identifier: 'printer-1' };
         const store = { name: 'Test Store' };
-        const cartState = { items: [], footer: { total: 20 } };
+        const ticket = {
+            isReceipt: true,
+            orderId: item.id,
+            orderNo: item.orderNo,
+            copyType: 'MERCHANT',
+            sections: [{ title: 'Items', emptyLabel: 'No items', rows: [] }],
+            totals: { subtotal: 20, discount: 0, tax: 0, total: 20 },
+            paymentRows: [],
+        };
 
         mockUseSelector
             .mockImplementationOnce(() => printer)
             .mockImplementationOnce(() => undefined)
             .mockImplementationOnce(() => store);
-        OrderEntityMapper.asCartState.mockReturnValue(cartState);
+        OrderService.buildPrintTicketForOrder.mockResolvedValue(ticket);
 
         const { getByTestId } = render(
             <OrderItem
@@ -249,15 +256,15 @@ describe('OrderItem integration', () => {
             />
         );
 
-        fireEvent.press(getByTestId('order-item-print-button'));
+        await act(async () => {
+            fireEvent.press(getByTestId('order-item-print-button'));
+            await Promise.resolve();
+        });
 
         expect(printReceipt).toHaveBeenCalledWith(
             store,
             printer,
-            cartState,
-            expect.objectContaining({
-                copyType: 'MERCHANT',
-            })
+            ticket
         );
     });
 

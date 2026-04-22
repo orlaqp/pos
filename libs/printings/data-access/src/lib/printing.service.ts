@@ -14,7 +14,7 @@ import {
     isE2EPrinterSpyEnabled,
     recordE2EPrintJob,
 } from '@pos/shared/utils';
-import type { AppliedDiscountSummary } from '@pos/discounts/domain';
+import type { OrderTicketPrintModel } from '@pos/orders/data-access';
 import { PrinterService } from './slices/printer.service';
 
 type ReceiptStoreInfo = {
@@ -27,93 +27,6 @@ type ReceiptStoreInfo = {
     fax?: string;
     email?: string;
     disclaimer?: string;
-};
-
-type ReceiptCartState = {
-    items: Array<{
-        identifier?: string;
-        quantity: number;
-        product: {
-            name: string;
-            price: number;
-        };
-    }>;
-    footer: {
-        baseSubtotal?: number;
-        subtotal?: number;
-        discount?: number;
-        tax?: number;
-        savingsTotal?: number;
-        total: number;
-    };
-    promoCodes?: Array<{ code: string }>;
-    appliedDiscountSummary?: AppliedDiscountSummary;
-};
-
-type ReceiptOrderEntity = {
-    id?: string;
-    status?: 'OPEN' | 'PAID' | 'REFUNDED' | string;
-    orderNo?: string;
-    copyType?: 'CUSTOMER' | 'MERCHANT';
-    currentSubtotal?: number | null;
-    currentDiscountTotal?: number | null;
-    currentTax?: number | null;
-    currentTotal?: number | null;
-    refundedQuantities?: Record<string, number> | null;
-    refundedLineAmounts?: Record<string, number> | null;
-    paymentInfo?: {
-        payments?: Array<{
-            type: string;
-            amount: number;
-        }>;
-    };
-    refundPayments?: Array<{
-        type: string;
-        amount: number;
-    }> | null;
-    lines?: Array<{
-        identifier?: string;
-        quantity?: number;
-        productName?: string;
-        price?: number;
-        lineTotalBeforeTax?: number;
-        lineTotalAfterTax?: number;
-        ebtPaidAmount?: number;
-        nonEbtPaidAmount?: number;
-    }>;
-};
-
-type ReceiptDiscountDetailRow = {
-    label: string;
-    amount: number;
-};
-
-type ReceiptLineDisplayRow = {
-    identifier: string;
-    quantity: number;
-    name: string;
-    originalAmount: number;
-    finalAmount: number;
-    discountDetails: ReceiptDiscountDetailRow[];
-};
-
-type ReceiptSection = {
-    title: string;
-    emptyLabel: string;
-    rows: ReceiptLineDisplayRow[];
-};
-
-type ReceiptTotalsSummary = {
-    subtotal: number;
-    discount: number;
-    tax: number;
-    total: number;
-    orderDiscountDetails: ReceiptDiscountDetailRow[];
-};
-
-type ReceiptRenderModel = {
-    sections: ReceiptSection[];
-    totals: ReceiptTotalsSummary;
 };
 
 type ReceiptLayoutProfile = {
@@ -353,8 +266,7 @@ export const stopDiscovery = () => {
 export const printReceipt = async (
     store: ReceiptStoreInfo,
     printerInfo: PrinterEntity | undefined,
-    cart: ReceiptCartState,
-    order?: ReceiptOrderEntity,
+    ticket: OrderTicketPrintModel
 ) => {
     const startedAt = Date.now();
     if (!store) {
@@ -371,12 +283,11 @@ export const printReceipt = async (
         }
 
         receiptPreviewHandler({
-            copyType: order?.copyType,
-            orderNo: order?.orderNo,
+            copyType: ticket.copyType,
+            orderNo: ticket.orderNo,
             receiptText: buildReceiptPreviewText(
                 store,
-                cart,
-                order,
+                ticket,
                 undefined,
                 DEFAULT_RECEIPT_LAYOUT_PROFILE
             ),
@@ -385,16 +296,16 @@ export const printReceipt = async (
     }
 
     logReceiptTiming('print-receipt-start', {
-        orderId: order?.id,
-        orderNo: order?.orderNo,
-        copyType: order?.copyType,
+        orderId: ticket.orderId,
+        orderNo: ticket.orderNo,
+        copyType: ticket.copyType,
         printerIdentifier: resolvedPrinterInfo.identifier,
     });
-    await printSingleReceipt(store, resolvedPrinterInfo as PrinterEntity, cart, order);
+    await printSingleReceipt(store, resolvedPrinterInfo as PrinterEntity, ticket);
     logReceiptTiming('print-receipt-end', {
-        orderId: order?.id,
-        orderNo: order?.orderNo,
-        copyType: order?.copyType,
+        orderId: ticket.orderId,
+        orderNo: ticket.orderNo,
+        copyType: ticket.copyType,
         printerIdentifier: resolvedPrinterInfo.identifier,
         durationMs: Date.now() - startedAt,
     });
@@ -415,27 +326,23 @@ export const registerReceiptPreviewHandler = (
 const printSingleReceipt = async (
     store: ReceiptStoreInfo,
     printerInfo: PrinterEntity,
-    cart: ReceiptCartState,
-    order?: ReceiptOrderEntity
+    ticket: OrderTicketPrintModel
 ) => {
     const date = new Date();
     const layoutProfile = isE2EPrinterSpyEnabled()
         ? resolveReceiptLayoutProfile({ model: printerInfo.model })
         : await detectReceiptLayoutProfile(printerInfo);
     const separatorLine = `${'-'.repeat(layoutProfile.totalColumns)}\n`;
-    const renderModel = buildReceiptRenderModel(cart, order);
-    const receiptLines = buildReceiptLines(cart, order, layoutProfile);
+    const receiptLines = buildReceiptLines(ticket, layoutProfile);
     const receiptTotalsBreakdown = buildReceiptTotalsBreakdownText(
-        cart,
-        order,
+        ticket,
         layoutProfile
     );
-    const totalPaymentsText = getReceiptPaymentsText(order);
-    const copyLabel = getReceiptCopyLabel(order);
+    const totalPaymentsText = getReceiptPaymentsText(ticket);
+    const copyLabel = getReceiptCopyLabel(ticket);
     const receiptText = buildReceiptPreviewText(
         store,
-        cart,
-        order,
+        ticket,
         date,
         layoutProfile
     );
@@ -444,11 +351,11 @@ const printSingleReceipt = async (
         recordE2EPrintJob({
             timestamp: date.toISOString(),
             printerIdentifier: printerInfo.identifier,
-            orderId: order?.id,
-            orderNo: order?.orderNo,
-            copyType: order?.copyType,
+            orderId: ticket.orderId,
+            orderNo: ticket.orderNo,
+            copyType: ticket.copyType,
             copyLabel,
-            total: renderModel.totals.total,
+            total: ticket.totals.total,
             paymentSummaryText: totalPaymentsText,
             receiptText,
         });
@@ -486,23 +393,23 @@ const printSingleReceipt = async (
                         new StarXpandCommand.MagnificationParameter(2, 2)
                     )
                     .actionPrintText(
-                        `${formatReceiptCurrency(renderModel.totals.total)}\n`
+                        `${formatReceiptCurrency(ticket.totals.total)}\n`
                     )
             )
             .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
             .styleBold(true)
             .actionPrintText(
-                cart.promoCodes?.length
-                    ? cart.promoCodes
-                          .map((promo) => `Promo · ${promo.code}`)
+                ticket.promoCodes?.length
+                    ? ticket.promoCodes
+                          .map((promo) => `Promo · ${promo}`)
                           .join('\n') + '\n'
                     : ''
             )
             
-        if (order?.id) {
+        if (ticket.isReceipt && ticket.orderId) {
             printerBuilder
                 .styleAlignment(StarXpandCommand.Printer.Alignment.Right)
-                .actionPrintText(totalPaymentsText)
+                .actionPrintText(totalPaymentsText ? `${totalPaymentsText}\n` : '')
                 .actionFeedLine(2)
                 .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
                 .add(
@@ -516,14 +423,14 @@ const printSingleReceipt = async (
                 .actionFeedLine(1)
                 .actionPrintQRCode(
                     new StarXpandCommand.Printer.QRCodeParameter(
-                        `${order?.orderNo}\n`
+                        `${ticket.orderNo}\n`
                     )
                         .setModel(StarXpandCommand.Printer.QRCodeModel.Model2)
                         .setLevel(StarXpandCommand.Printer.QRCodeLevel.L)
                         .setCellSize(8)
                 )
                 .actionFeedLine(1)
-                .actionPrintText(`${order?.orderNo}\n`)
+                .actionPrintText(`${ticket.orderNo}\n`)
                 .actionFeedLine(1);
         } else {
             printerBuilder
@@ -581,53 +488,23 @@ export const print = async (
     }
 };
 
-const getReceiptPaymentsText = (order?: ReceiptOrderEntity) =>
-    (() => {
-        const originalPayments = order?.paymentInfo?.payments || [];
-        const refundPayments = order?.refundPayments || [];
-        const hasRefundHistory =
-            (order?.status === 'PARTIALLY_REFUNDED' || order?.status === 'REFUNDED') &&
-            refundPayments.length > 0;
-
-        if (!hasRefundHistory) {
-            return originalPayments
-                .map((payment) => `${payment.type}: $ ${payment.amount.toFixed(2)}`)
-                .join('\n');
-        }
-
-        const rows: string[] = [];
-
-        if (originalPayments.length) {
-            rows.push('Original Payments');
-            rows.push(
-                ...originalPayments.map(
-                    (payment) => `${payment.type}: $ ${payment.amount.toFixed(2)}`
-                )
-            );
-        }
-
-        if (refundPayments.length) {
-            rows.push('Refund Payments');
-            rows.push(
-                ...refundPayments.map(
-                    (payment) => `${payment.type}: -$ ${payment.amount.toFixed(2)}`
-                )
-            );
-        }
-
-        return rows.join('\n');
-    })();
+const getReceiptPaymentsText = (ticket: OrderTicketPrintModel) =>
+    (ticket.paymentRows || [])
+        .map((row) =>
+            row.kind === 'heading'
+                ? row.label
+                : `${row.label}: ${formatPaymentCurrency(Number(row.amount || 0))}`
+        )
+        .join('\n');
 
 const buildReceiptTotalsBreakdownText = (
-    cart: ReceiptCartState,
-    order?: ReceiptOrderEntity,
+    ticket: OrderTicketPrintModel,
     layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) => {
-    const renderModel = buildReceiptRenderModel(cart, order);
     const rows: string[] = [];
-    const baseSubtotal = renderModel.totals.subtotal;
-    const discountTotal = renderModel.totals.discount;
-    const tax = renderModel.totals.tax;
+    const baseSubtotal = ticket.totals.subtotal;
+    const discountTotal = ticket.totals.discount;
+    const tax = ticket.totals.tax;
 
     rows.push(formatTotalRow('Subtotal', baseSubtotal, layoutProfile));
 
@@ -652,51 +529,40 @@ const formatTotalRow = (
         .padStart(layoutProfile.totalAmountWidth, ' ')}\n`;
 
 const formatReceiptCurrency = (amount: number) => `$ ${amount.toFixed(2)}`;
+const formatPaymentCurrency = (amount: number) =>
+    amount < 0
+        ? `-$ ${Math.abs(amount).toFixed(2)}`
+        : `$ ${amount.toFixed(2)}`;
 
 const buildReceiptTotalsText = (
-    cart: ReceiptCartState,
-    order?: ReceiptOrderEntity,
+    ticket: OrderTicketPrintModel,
     layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) => {
-    const renderModel = buildReceiptRenderModel(cart, order);
-    const rows = [buildReceiptTotalsBreakdownText(cart, order, layoutProfile)];
+    const rows = [buildReceiptTotalsBreakdownText(ticket, layoutProfile)];
     rows.push(`${'-'.repeat(layoutProfile.totalColumns)}\n`);
-    rows.push(formatTotalRow('Total', renderModel.totals.total, layoutProfile));
+    rows.push(formatTotalRow('Total', ticket.totals.total, layoutProfile));
 
-    if (cart.promoCodes?.length) {
+    if (ticket.promoCodes?.length) {
         rows.push(
-            cart.promoCodes.map((promo) => `Promo · ${promo.code}`).join('\n') +
-                '\n'
+            ticket.promoCodes.map((promo) => `Promo · ${promo}`).join('\n') + '\n'
         );
     }
 
     return rows.join('');
 };
 
-const getLineSummary = (
-    cart: ReceiptCartState,
-    item: ReceiptCartState['items'][number],
-    index: number
-) => {
-    const itemIdentifier = item.identifier ?? `line-${index}`;
-    return cart.appliedDiscountSummary?.lineSummaries.find(
-        (summary) => summary.lineId === itemIdentifier
-    );
-};
-
 export const buildReceiptPreviewText = (
     store: ReceiptStoreInfo,
-    cart: ReceiptCartState,
-    order?: ReceiptOrderEntity,
+    ticket: OrderTicketPrintModel,
     date = new Date(),
     layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) => {
-    const receiptLines = buildReceiptLines(cart, order, layoutProfile);
-    const totalPaymentsText = getReceiptPaymentsText(order);
-    const copyLabel = getReceiptCopyLabel(order);
-    const totalText = buildReceiptTotalsText(cart, order, layoutProfile);
-    const footerText = order?.id
-        ? `${totalPaymentsText}\n\n${store.disclaimer ?? ''}\n${copyLabel}\n${order?.orderNo ?? ''}\n`
+    const receiptLines = buildReceiptLines(ticket, layoutProfile);
+    const totalPaymentsText = getReceiptPaymentsText(ticket);
+    const copyLabel = getReceiptCopyLabel(ticket);
+    const totalText = buildReceiptTotalsText(ticket, layoutProfile);
+    const footerText = ticket.isReceipt && ticket.orderId
+        ? `${totalPaymentsText ? `${totalPaymentsText}\n\n` : ''}${store.disclaimer ?? ''}\n${copyLabel}\n${ticket.orderNo ?? ''}\n`
         : '*** NOT A RECEIPT ***\n';
 
     return `${store.name ?? ''}\n${buildStoreHeaderText({
@@ -720,15 +586,12 @@ const formatLine = (
         .toFixed(2)
         .padStart(layoutProfile.amountWidth, ' ')}`;
 
-const roundMoney = (amount: number) =>
-    Math.round((amount + Number.EPSILON) * 100) / 100;
-
-export const getReceiptCopyLabel = (order?: ReceiptOrderEntity) =>
-    order?.copyType === 'CUSTOMER'
+export const getReceiptCopyLabel = (ticket?: OrderTicketPrintModel) =>
+    ticket?.copyType === 'CUSTOMER'
         ? '** Customer Copy **'
-        : order?.copyType === 'MERCHANT'
+        : ticket?.copyType === 'MERCHANT'
         ? '** Merchant Copy **'
-        : order?.status === 'OPEN'
+        : !ticket?.isReceipt
         ? '** Customer Copy **'
         : '** Merchant Copy **';
 
@@ -743,33 +606,23 @@ const buildReceiptHeaderRow = (
     )}`;
 
 const formatReceiptLineRow = (
-    row: ReceiptLineDisplayRow,
-    options: {
-        showDiscountLine?: boolean;
-    } = {},
+    row: OrderTicketPrintModel['sections'][number]['rows'][number],
     layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) => {
-    const { showDiscountLine = true } = options;
-    const hasDiscount = roundMoney(row.originalAmount - row.finalAmount) > 0;
-    const lines = [
-        formatLine(
-            row.quantity,
-            row.name,
-            hasDiscount ? row.originalAmount : row.finalAmount,
-            layoutProfile
-        ),
-    ];
+    const lines = [formatLine(row.quantity, row.name, row.amount, layoutProfile)];
 
-    if (hasDiscount && showDiscountLine) {
-        const discountAmount = `-${formatReceiptCurrency(
-            roundMoney(row.originalAmount - row.finalAmount)
-        )}`;
-        const prefix = `${' '.repeat(layoutProfile.detailIndent)}Discount`;
+    for (const detailRow of row.detailRows || []) {
+        const detailAmount = Number(detailRow.amount || 0);
+        const amountText =
+            detailAmount < 0
+                ? `-${formatReceiptCurrency(Math.abs(detailAmount))}`
+                : formatReceiptCurrency(detailAmount);
+        const prefix = `${' '.repeat(layoutProfile.detailIndent)}${detailRow.label}`;
         lines.push(
             `${prefix.padEnd(
-                Math.max(layoutProfile.totalColumns - discountAmount.length, prefix.length),
+                Math.max(layoutProfile.totalColumns - amountText.length, prefix.length),
                 ' '
-            )}${discountAmount}`
+            )}${amountText}`
         );
     }
 
@@ -777,390 +630,47 @@ const formatReceiptLineRow = (
 };
 
 const buildClassicLines = (
-    rows: ReceiptLineDisplayRow[],
+    rows: OrderTicketPrintModel['sections'][number]['rows'],
     layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) => {
     return (
         `${buildReceiptHeaderRow(layoutProfile)}\n` +
         `${'-'.repeat(layoutProfile.totalColumns)}\n` +
-        rows.map((row) => formatReceiptLineRow(row, {}, layoutProfile))
-            .join('\n') +
+        rows.map((row) => formatReceiptLineRow(row, layoutProfile)).join('\n') +
         '\n\n' +
         `${'-'.repeat(layoutProfile.totalColumns)}\n`
     );
 };
 
-const buildRefundedSection = (
-    title: string,
-    entries: ReceiptLineDisplayRow[],
-    emptyLabel: string,
-    options: {
-        showDiscountLines?: boolean;
-    } = {},
+const buildReceiptSection = (
+    section: OrderTicketPrintModel['sections'][number],
     layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) =>
-    `${title}\n` +
+    `${section.title}\n` +
     `${buildReceiptHeaderRow(layoutProfile)}\n` +
     `${'-'.repeat(layoutProfile.totalColumns)}\n` +
-    (entries.length
-        ? entries
-              .map((entry) =>
-                  formatReceiptLineRow(
-                      entry,
-                      { showDiscountLine: options.showDiscountLines },
-                      layoutProfile
-                  )
-              )
+    (section.rows.length
+        ? section.rows
+              .map((entry) => formatReceiptLineRow(entry, layoutProfile))
               .join('\n')
-        : emptyLabel) +
+        : section.emptyLabel) +
     '\n\n';
 
 export const buildReceiptLines = (
-    cart: ReceiptCartState,
-    order?: ReceiptOrderEntity,
+    ticket: OrderTicketPrintModel,
     layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
 ) => {
-    const renderModel = buildReceiptRenderModel(cart, order);
-    const hasRefundSections = renderModel.sections.length > 1;
+    const hasMultipleSections = ticket.sections.length > 1;
 
-    if (hasRefundSections) {
+    if (hasMultipleSections) {
         return (
-            renderModel.sections
-                .map((section) =>
-                    buildRefundedSection(
-                        section.title,
-                        section.rows,
-                        section.emptyLabel,
-                        {
-                            showDiscountLines: !(
-                                order?.copyType === 'CUSTOMER' &&
-                                section.title === 'Refunded Items'
-                            ),
-                        },
-                        layoutProfile
-                    )
-                )
+            ticket.sections
+                .map((section) => buildReceiptSection(section, layoutProfile))
                 .join('') + `${'-'.repeat(layoutProfile.totalColumns)}\n`
         );
     }
 
-    return buildClassicLines(renderModel.sections[0]?.rows || [], layoutProfile);
-};
-
-const buildReceiptRenderModel = (
-    cart: ReceiptCartState,
-    order?: ReceiptOrderEntity
-): ReceiptRenderModel => {
-    const hasRefundedQuantities = Object.values(order?.refundedQuantities || {}).some(
-        (quantity) => Number(quantity || 0) > 0
-    );
-
-    if (order?.lines?.length && hasRefundedQuantities) {
-        return buildRefundSplitReceiptModel(cart, order);
-    }
-
-    const standardRows = buildStandardReceiptRows(cart);
-    return {
-        sections: [
-            {
-                title: 'Items',
-                emptyLabel: 'No items',
-                rows: standardRows,
-            },
-        ],
-        totals: {
-            subtotal:
-                cart.footer.baseSubtotal ?? cart.footer.subtotal ?? cart.footer.total,
-            discount: cart.footer.discount ?? cart.footer.savingsTotal ?? 0,
-            tax: cart.footer.tax ?? 0,
-            total: cart.footer.total,
-            orderDiscountDetails: getUnattributedOrderDiscountDetails(cart),
-        },
-    };
-};
-
-const buildStandardReceiptRows = (cart: ReceiptCartState): ReceiptLineDisplayRow[] =>
-    cart.items.map((item, index) => {
-        const identifier = item.identifier ?? `line-${index}`;
-        const lineSummary = getLineSummary(cart, item, index);
-        const originalAmount = roundMoney(item.product.price * item.quantity);
-        const finalAmount =
-            lineSummary?.lineTotalBeforeTax ?? originalAmount;
-
-        return {
-            identifier,
-            quantity: item.quantity,
-            name: item.product.name,
-            originalAmount,
-            finalAmount,
-            discountDetails: buildReceiptDiscountDetailsForSavings(
-                cart,
-                lineSummary,
-                roundMoney(originalAmount - finalAmount)
-            ),
-        };
-    });
-
-const buildRefundSplitReceiptModel = (
-    cart: ReceiptCartState,
-    order: ReceiptOrderEntity
-): ReceiptRenderModel => {
-    const refundedQuantities = order.refundedQuantities || {};
-    const refundedLineAmounts = order.refundedLineAmounts || {};
-    const activeRows: ReceiptLineDisplayRow[] = [];
-    const refundedRows: ReceiptLineDisplayRow[] = [];
-    let activeSubtotal = 0;
-    let activeTotal = 0;
-    let activeTax = 0;
-
-    (order.lines || []).forEach((line, index) => {
-        const identifier = String(line.identifier || `line-${index}`);
-        const originalQuantity = Number(line.quantity || 0);
-        if (originalQuantity <= 0) {
-            return;
-        }
-
-        const fallbackItem =
-            cart.items.find(
-                (item, itemIndex) =>
-                    (item.identifier || `line-${itemIndex}`) === identifier
-            ) || cart.items[index];
-        const lineSummary = fallbackItem
-            ? getLineSummary(
-                  cart,
-                  fallbackItem,
-                  cart.items.findIndex((item) => item === fallbackItem)
-              )
-            : undefined;
-        const baseUnitPrice = Number(
-            line.price ??
-                fallbackItem?.product.price ??
-                (originalQuantity > 0
-                    ? Number(line.lineTotalBeforeTax || 0) / originalQuantity
-                    : 0)
-        );
-        const originalAmount = roundMoney(baseUnitPrice * originalQuantity);
-        const originalFinalAmount = roundMoney(
-            Number(
-                line.lineTotalBeforeTax ??
-                    (lineSummary?.lineTotalBeforeTax ?? originalAmount)
-            )
-        );
-        const refundedQuantity = Math.max(
-            0,
-            Math.min(originalQuantity, Number(refundedQuantities[identifier] || 0))
-        );
-        const activeQuantity = roundMoney(originalQuantity - refundedQuantity);
-        const refundedFinalAmount =
-            refundedQuantity > 0
-                ? roundMoney(
-                      Number(refundedLineAmounts[identifier] || 0) ||
-                          (originalQuantity > 0
-                              ? (originalFinalAmount * refundedQuantity) /
-                                originalQuantity
-                              : 0)
-                  )
-                : 0;
-        const activeFinalAmount = roundMoney(
-            Math.max(0, originalFinalAmount - refundedFinalAmount)
-        );
-        const refundedOriginalAmount = roundMoney(baseUnitPrice * refundedQuantity);
-        const activeOriginalAmount = roundMoney(baseUnitPrice * activeQuantity);
-        const totalTaxAmount = roundMoney(
-            Math.max(
-                0,
-                Number(line.lineTotalAfterTax || 0) - originalFinalAmount
-            )
-        );
-        const activeLineTax =
-            originalFinalAmount > 0
-                ? roundMoney((totalTaxAmount * activeFinalAmount) / originalFinalAmount)
-                : 0;
-        const name = line.productName || fallbackItem?.product.name || '';
-
-        if (activeQuantity > 0) {
-            activeRows.push({
-                identifier,
-                quantity: activeQuantity,
-                name,
-                originalAmount: activeOriginalAmount,
-                finalAmount: activeFinalAmount,
-                discountDetails: buildReceiptDiscountDetailsForSavings(
-                    cart,
-                    lineSummary,
-                    roundMoney(activeOriginalAmount - activeFinalAmount)
-                ),
-            });
-            activeSubtotal = roundMoney(activeSubtotal + activeOriginalAmount);
-            activeTotal = roundMoney(activeTotal + activeFinalAmount);
-            activeTax = roundMoney(activeTax + activeLineTax);
-        }
-
-        if (refundedQuantity > 0) {
-            refundedRows.push({
-                identifier,
-                quantity: refundedQuantity,
-                name,
-                originalAmount: refundedOriginalAmount,
-                finalAmount: refundedFinalAmount,
-                discountDetails: buildReceiptDiscountDetailsForSavings(
-                    cart,
-                    lineSummary,
-                    roundMoney(refundedOriginalAmount - refundedFinalAmount)
-                ),
-            });
-        }
-    });
-
-    return {
-        sections: [
-            {
-                title: 'Active Items',
-                emptyLabel: 'No active items',
-                rows: activeRows,
-            },
-            {
-                title: 'Refunded Items',
-                emptyLabel: 'No refunded items',
-                rows: refundedRows,
-            },
-        ],
-        totals: {
-            subtotal: roundMoney(order.currentSubtotal ?? activeSubtotal),
-            discount: roundMoney(
-                order.currentDiscountTotal ?? roundMoney(activeSubtotal - activeTotal)
-            ),
-            tax: roundMoney(order.currentTax ?? activeTax),
-            total: roundMoney(order.currentTotal ?? roundMoney(activeTotal + activeTax)),
-            orderDiscountDetails: [],
-        },
-    };
-};
-
-const buildReceiptDiscountDetailsForSavings = (
-    cart: ReceiptCartState,
-    lineSummary:
-        | NonNullable<ReceiptCartState['appliedDiscountSummary']>['lineSummaries'][number]
-        | undefined,
-    targetSavings: number
-): ReceiptDiscountDetailRow[] => {
-    const roundedTargetSavings = roundMoney(Math.max(0, targetSavings));
-    if (!lineSummary || roundedTargetSavings <= 0) {
-        return [];
-    }
-
-    const sourceDetails: ReceiptDiscountDetailRow[] = [
-        ...(lineSummary.discounts || []).map((discount) => ({
-            label: discount.code || discount.name,
-            amount: Number(discount.discountAmount || 0),
-        })),
-        ...buildAttributedOrderDiscountDetails(cart, lineSummary),
-    ].filter((detail) => detail.amount > 0);
-
-    const sourceTotal = roundMoney(
-        sourceDetails.reduce((sum, detail) => sum + detail.amount, 0)
-    );
-
-    if (sourceTotal <= 0) {
-        return [];
-    }
-
-    let remaining = roundedTargetSavings;
-    return sourceDetails.map((detail, index) => {
-        const isLast = index === sourceDetails.length - 1;
-        const scaledAmount = isLast
-            ? remaining
-            : roundMoney((detail.amount / sourceTotal) * roundedTargetSavings);
-
-        remaining = roundMoney(remaining - scaledAmount);
-
-        return {
-            label: detail.label,
-            amount: scaledAmount,
-        };
-    });
-};
-
-const buildAttributedOrderDiscountDetails = (
-    cart: ReceiptCartState,
-    lineSummary: NonNullable<
-        ReceiptCartState['appliedDiscountSummary']
-    >['lineSummaries'][number]
-): ReceiptDiscountDetailRow[] => {
-    const allocatedTotal = roundMoney(
-        Number(lineSummary.allocatedOrderDiscountTotal || 0)
-    );
-    const orderAdjustments =
-        cart.appliedDiscountSummary?.orderLevelAdjustments || [];
-    const sourceTotal = roundMoney(
-        orderAdjustments.reduce(
-            (sum, discount) => sum + Number(discount.discountAmount || 0),
-            0
-        )
-    );
-
-    if (allocatedTotal <= 0 || sourceTotal <= 0 || !orderAdjustments.length) {
-        return [];
-    }
-
-    let remaining = allocatedTotal;
-    return orderAdjustments.map((discount, index) => {
-        const isLast = index === orderAdjustments.length - 1;
-        const amount = isLast
-            ? remaining
-            : roundMoney(
-                  (Number(discount.discountAmount || 0) / sourceTotal) *
-                      allocatedTotal
-              );
-        remaining = roundMoney(remaining - amount);
-
-        return {
-            label: `Order · ${discount.code || discount.name}`,
-            amount,
-        };
-    });
-};
-
-const getUnattributedOrderDiscountDetails = (
-    cart: ReceiptCartState
-): ReceiptDiscountDetailRow[] => {
-    const orderAdjustments = cart.appliedDiscountSummary?.orderLevelAdjustments || [];
-    const totalOrderAdjustments = roundMoney(
-        orderAdjustments.reduce(
-            (sum, discount) => sum + Number(discount.discountAmount || 0),
-            0
-        )
-    );
-    const allocatedOrderAdjustments = roundMoney(
-        (cart.appliedDiscountSummary?.lineSummaries || []).reduce(
-            (sum, summary) => sum + Number(summary.allocatedOrderDiscountTotal || 0),
-            0
-        )
-    );
-    const unattributedTotal = roundMoney(
-        Math.max(0, totalOrderAdjustments - allocatedOrderAdjustments)
-    );
-
-    if (!orderAdjustments.length || unattributedTotal <= 0 || totalOrderAdjustments <= 0) {
-        return [];
-    }
-
-    let remaining = unattributedTotal;
-    return orderAdjustments.map((discount, index) => {
-        const isLast = index === orderAdjustments.length - 1;
-        const amount = isLast
-            ? remaining
-            : roundMoney(
-                  (Number(discount.discountAmount || 0) / totalOrderAdjustments) *
-                      unattributedTotal
-              );
-        remaining = roundMoney(remaining - amount);
-
-        return {
-            label: `Order · ${discount.code || discount.name}`,
-            amount,
-        };
-    });
+    return buildClassicLines(ticket.sections[0]?.rows || [], layoutProfile);
 };
 
 export const buildData = (
