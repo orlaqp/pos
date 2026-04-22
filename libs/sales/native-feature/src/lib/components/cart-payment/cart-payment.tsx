@@ -84,8 +84,12 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
         (acc, method) => acc + toNumber((watchedValues as unknown as Record<string, unknown>)[method]),
         0
     );
-    const remainingTotal = Math.max(0, round2Dec(total - receivedTotal));
-    const isFullyPaid = round2Dec(receivedTotal) >= round2Dec(total);
+    const roundedReceivedTotal = round2Dec(receivedTotal);
+    const roundedTotal = round2Dec(total);
+    const balanceDelta = round2Dec(roundedTotal - roundedReceivedTotal);
+    const remainingTotal = Math.max(0, balanceDelta);
+    const isExactPayment = roundedReceivedTotal === roundedTotal;
+    const isOverPayment = roundedReceivedTotal > roundedTotal;
 
     const restoreIfEmpty = (method: PaymentKey) => {
         const currentValue = form.getValues(method);
@@ -110,11 +114,11 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
             }
         });
 
-        if (round2Dec(received) < round2Dec(total)) {
+        if (round2Dec(received) !== round2Dec(total)) {
             Alert.alert(
                 t(
-                    'PAYMENT_ReceivedCannotBeLess',
-                    'Received payment cannot be less than the total'
+                    'PAYMENT_ReceivedMustMatchTotal',
+                    'Received payment must match the total exactly'
                 )
             );
             return;
@@ -256,7 +260,7 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
                     <View
                         style={[
                             local.summaryFooterRow,
-                            isFullyPaid && local.summaryFooterRowComplete,
+                            isExactPayment && local.summaryFooterRowComplete,
                         ]}
                     >
                         <Text style={local.summaryFooterLabel}>
@@ -265,13 +269,13 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
                         <Text
                             style={[
                                 local.summaryFooterValue,
-                                isFullyPaid && local.summaryFooterValueComplete,
+                                isExactPayment && local.summaryFooterValueComplete,
                             ]}
                         >
-                            $ {round2Dec(receivedTotal).toFixed(2)}
+                            $ {roundedReceivedTotal.toFixed(2)}
                         </Text>
                     </View>
-                    {isFullyPaid && (
+                    {isExactPayment && (
                         <Text style={local.completeHint}>
                             {t(
                                 'PAYMENT_ReadyToFinalize',
@@ -279,11 +283,19 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
                             )}
                         </Text>
                     )}
-                    {!isFullyPaid && (
+                    {!isExactPayment && !isOverPayment && (
                         <Text style={local.pendingHint}>
                             {t(
                                 'PAYMENT_EnterRemaining',
                                 'Enter remaining amount to continue'
+                            )}
+                        </Text>
+                    )}
+                    {isOverPayment && (
+                        <Text style={local.pendingHint}>
+                            {t(
+                                'PAYMENT_AdjustToMatchTotal',
+                                'Adjust payments to match the amount due'
                             )}
                         </Text>
                     )}
@@ -294,6 +306,7 @@ export function CartPayment({ total, ebtEligibleTotal, canReceiveChecks, onPayme
                         testID="payment-submit-button"
                         title={`${t('PAYMENT_ReceivePayment', 'Receive Payment')} ($${total.toFixed(2)})`}
                         buttonStyle={local.ctaButton}
+                        disabled={!isExactPayment}
                         icon={{
                             name: 'check',
                             type: 'material-community',

@@ -41,15 +41,22 @@ jest.mock('@rneui/themed', () => ({
         title,
         onPress,
         testID,
+        disabled,
     }: {
         title: string;
         onPress: () => void;
         testID?: string;
+        disabled?: boolean;
     }) =>
         (() => {
             const { Pressable, Text } = require('react-native');
             return (
-                <Pressable onPress={onPress} testID={testID || 'submit-payment'}>
+                <Pressable
+                    onPress={onPress}
+                    testID={testID || 'submit-payment'}
+                    disabled={disabled}
+                    accessibilityState={{ disabled: !!disabled }}
+                >
                     <Text>{title}</Text>
                 </Pressable>
             );
@@ -160,7 +167,6 @@ describe('CartPayment integration', () => {
 
     it('restores prior amount when field is focused/cleared and blurred empty', () => {
         const onPaymentEntered = jest.fn();
-        const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
         const { getByTestId } = render(
             <CartPayment
                 total={89.9}
@@ -184,11 +190,56 @@ describe('CartPayment integration', () => {
         });
 
         expect(getByTestId('payment-input-ebt')).toHaveProp('value', '24.9');
+        expect(getByTestId('payment-submit-button')).toHaveProp('accessibilityState', {
+            disabled: true,
+        });
+    });
 
-        fireEvent.press(getByTestId('payment-submit-button'));
-        expect(alertSpy).toHaveBeenCalledWith(
-            'Received payment cannot be less than the total'
+    it('keeps receive payment disabled until the entered amount matches exactly', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId } = render(
+            <CartPayment
+                total={20}
+                ebtEligibleTotal={0}
+                canReceiveChecks={false}
+                onPaymentEntered={onPaymentEntered}
+            />
         );
+
+        fireEvent(getByTestId('payment-switch-cash'), 'valueChange', true);
+
+        expect(getByTestId('payment-submit-button')).toHaveProp('accessibilityState', {
+            disabled: false,
+        });
+
+        fireEvent.changeText(getByTestId('payment-input-cash'), '15');
+        expect(getByTestId('payment-submit-button')).toHaveProp('accessibilityState', {
+            disabled: true,
+        });
+
+        fireEvent.changeText(getByTestId('payment-input-cash'), '20');
+        expect(getByTestId('payment-submit-button')).toHaveProp('accessibilityState', {
+            disabled: false,
+        });
+    });
+
+    it('keeps receive payment disabled when entered payments exceed the amount due', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId } = render(
+            <CartPayment
+                total={20}
+                ebtEligibleTotal={0}
+                canReceiveChecks={false}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent(getByTestId('payment-switch-cash'), 'valueChange', true);
+        fireEvent.changeText(getByTestId('payment-input-cash'), '25');
+
+        expect(getByTestId('payment-submit-button')).toHaveProp('accessibilityState', {
+            disabled: true,
+        });
     });
 
     it('validates EBT cannot exceed eligible total', () => {
