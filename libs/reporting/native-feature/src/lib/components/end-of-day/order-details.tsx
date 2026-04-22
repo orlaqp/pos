@@ -4,7 +4,7 @@ import { Icon } from '@rneui/themed';
 import React from 'react';
 import i18next from 'i18next';
 
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { OrderLineDetails } from './order-line-details';
 import { OrderPaymentDetailRow } from './end-of-day.service';
 
@@ -16,6 +16,43 @@ export interface OrderDetailsProps {
     refundedLineAmounts?: Record<string, number>;
     paymentDetails?: OrderPaymentDetailRow[];
 }
+
+interface ParsedOrderNoSegments {
+    store: string;
+    station: string;
+    date: string;
+    sequence: string;
+}
+
+const parseOrderNoSegments = (
+    orderNo?: string | null
+): ParsedOrderNoSegments | null => {
+    if (!orderNo) return null;
+
+    const parts = orderNo.split('-');
+    if (parts.length !== 4) return null;
+
+    const [store, station, yymmdd, sequence] = parts;
+    if (!/^\d{6}$/.test(yymmdd)) return null;
+
+    const yy = Number(yymmdd.slice(0, 2));
+    const month = Number(yymmdd.slice(2, 4));
+    const day = Number(yymmdd.slice(4, 6));
+
+    if (month < 1 || month > 12 || day < 1 || day > 31) {
+        return null;
+    }
+
+    return {
+        store,
+        station,
+        date: `${String(month).padStart(2, '0')}/${String(day).padStart(
+            2,
+            '0'
+        )}/${String(yy).padStart(2, '0')}`,
+        sequence,
+    };
+};
 
 export function OrderDetails({
     order,
@@ -30,8 +67,14 @@ export function OrderDetails({
             ? String(i18next.t(key))
             : fallback;
     const discountAmount = Number(order.discountTotal || 0);
+    const lineDiscountAmount = (order.lines || []).reduce(
+        (sum, line) => sum + Number(line?.lineDiscountTotal || 0),
+        0
+    );
+    const orderLevelDiscountAmount = Math.max(0, discountAmount - lineDiscountAmount);
     const netSales = Math.max(0, Number(order.total || 0) - Number(refundedAmount || 0));
     const createdByName = order.createdBy?.name || order.employeeName || 'Unknown';
+    const parsedOrderNo = parseOrderNoSegments(order.orderNo);
     const resolvedPaymentDetails = paymentDetails.length
         ? paymentDetails
         : (order.paymentInfo?.payments || [])
@@ -45,28 +88,50 @@ export function OrderDetails({
     return (
         <View style={[styles.box, styles.column]}>
             <View style={styles.row}>
-                <View style={[styles.column, { flex: 1.50, marginRight: 45 }]}>
-                    <Text style={styles.secondaryText}>
-                        {t('EOD_OrderNo', 'Order No.')}
-                    </Text>
-                    <Text style={styles.primaryText}>{order.orderNo}</Text>
+                <View style={[styles.column, { flex: 2.35, marginRight: 28 }]}>
+                    {parsedOrderNo ? (
+                        <View style={local.chipsRow}>
+                            <View style={local.chip}>
+                                <Text style={[styles.secondaryText, local.chipValue]}>
+                                    {parsedOrderNo.store}
+                                </Text>
+                            </View>
+                            <View style={local.chip}>
+                                <Text style={[styles.secondaryText, local.chipValue]}>
+                                    {parsedOrderNo.station}
+                                </Text>
+                            </View>
+                            <View style={local.chip}>
+                                <Text style={[styles.secondaryText, local.chipValue]}>
+                                    {parsedOrderNo.date}
+                                </Text>
+                            </View>
+                            <View style={local.chip}>
+                                <Text style={[styles.secondaryText, local.chipValue]}>
+                                    {parsedOrderNo.sequence}
+                                </Text>
+                            </View>
+                        </View>
+                    ) : (
+                        <Text style={styles.secondaryText}>{order.orderNo}</Text>
+                    )}
                 </View>
-                <View style={[styles.column, { flex: 1.5, marginRight: 45 }]}>
+                <View style={[styles.column, { flex: 1.15, marginRight: 28 }]}>
                     <Text style={styles.secondaryText}>
                         {t('EOD_CreatedBy', 'Created By')}
                     </Text>
                     <Text style={styles.primaryText}>{createdByName}</Text>
                 </View>
-                <View style={[styles.column, styles.centered, { flex: .15, marginRight: 45 }]}>
+                <View style={[styles.column, styles.centered, { flex: .12, marginRight: 20 }]}>
                     <Icon name='arrow-right' type='material-community' size={16} />
                 </View>
-                <View style={[styles.column, { flex: 1.5, marginRight: 45 }]}>
+                <View style={[styles.column, { flex: 1.15, marginRight: 28 }]}>
                     <Text style={styles.secondaryText}>
                         {t('EOD_ClosedBy', 'Closed By')}
                     </Text>
                     <Text style={styles.primaryText}>{order.paymentInfo?.employeeName}</Text>
                 </View>
-                <View style={{ flex: .5 }}></View>
+                <View style={{ flex: .2 }}></View>
                 <View style={[styles.column, { marginRight: 45 }]}>
                     <Text style={[styles.secondaryText, styles.textRight ]}>
                         {t('EOD_NetSales', 'Collected Sales')}
@@ -132,10 +197,56 @@ export function OrderDetails({
                             />
                         )
                     )}
+                    {orderLevelDiscountAmount > 0 && (
+                        <View style={styles.row}>
+                            <Text
+                                style={[
+                                    styles.secondaryText,
+                                    { flex: 5, textAlign: 'right' },
+                                ]}
+                            >
+                                {t('EOD_OrderDiscount', 'Order Discount')}
+                            </Text>
+                            <Text
+                                style={[
+                                    styles.secondaryText,
+                                    styles.textRight,
+                                    { flex: 1, color: '#8BC34A' },
+                                ]}
+                            >
+                                - $ {orderLevelDiscountAmount.toFixed(2)}
+                            </Text>
+                        </View>
+                    )}
                 </View>
             </View>
         </View>
     );
 }
+
+const local = StyleSheet.create({
+    chipsRow: {
+        flexDirection: 'row',
+        flexWrap: 'nowrap',
+        alignItems: 'center',
+        gap: 6,
+        marginTop: 0,
+    },
+    chip: {
+        minWidth: 0,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 8,
+        paddingVertical: 9,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#2f374288',
+        backgroundColor: '#2f37422a',
+    },
+    chipValue: {
+        fontWeight: '700',
+        fontSize: 12,
+    },
+});
 
 export default OrderDetails;

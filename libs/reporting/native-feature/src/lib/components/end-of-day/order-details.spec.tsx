@@ -7,7 +7,7 @@ import { EACH } from '@pos/unit-of-measures/data-access';
 describe('OrderDetails', () => {
     it('should render successfully', () => {
         const order: any = {
-            orderNo: 'ORD-1',
+            orderNo: '1-OWNER-260422-0006',
             total: 12.5,
             createdBy: { name: 'User A' },
             paymentInfo: { employeeName: 'Cashier B', payments: [{ type: 'CASH', amount: 12.5 }] },
@@ -26,11 +26,36 @@ describe('OrderDetails', () => {
         expect(toJSON()).toBeTruthy();
     });
 
+    it('renders compact order number chips when the order number matches the standard format', () => {
+        const order: any = {
+            orderNo: '1-OWNER-260422-0006',
+            total: 12.5,
+            createdBy: { name: 'User A' },
+            paymentInfo: { employeeName: 'Cashier B', payments: [{ type: 'CASH', amount: 12.5 }] },
+            lines: [
+                {
+                    identifier: 'line-1',
+                    productId: 'prod-1',
+                    productName: 'Item 1',
+                    unitOfMeasure: EACH,
+                    quantity: 1,
+                    price: 12.5,
+                },
+            ],
+        };
+
+        const { getByText } = render(<OrderDetails order={order} productId={null} />);
+
+        expect(getByText('OWNER')).toBeTruthy();
+        expect(getByText('04/22/26')).toBeTruthy();
+        expect(getByText('0006')).toBeTruthy();
+    });
+
     it('uses createdBy when present and passes refunded line amounts into line details', () => {
         const order: any = {
             orderNo: 'ORD-1',
             total: 12.5,
-            discountTotal: 1.5,
+            discountTotal: 3.5,
             createdBy: { name: 'User A' },
             paymentInfo: {
                 employeeName: 'Cashier B',
@@ -60,6 +85,8 @@ describe('OrderDetails', () => {
 
         expect(getByText('User A')).toBeTruthy();
         expect(getByText('Discount')).toBeTruthy();
+        expect(getByText('Order Discount')).toBeTruthy();
+        expect(getByText('- $ 2.50')).toBeTruthy();
         expect(getByText('Refund')).toBeTruthy();
     });
 
