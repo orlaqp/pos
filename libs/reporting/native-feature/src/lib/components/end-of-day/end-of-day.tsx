@@ -3,7 +3,14 @@ import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import React, { useEffect, useRef, useState } from 'react';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
-import { Animated, InteractionManager, View, Text, FlatList, StyleSheet } from 'react-native';
+import {
+    Animated,
+    InteractionManager,
+    View,
+    Text,
+    FlatList,
+    StyleSheet,
+} from 'react-native';
 import { useSelector } from 'react-redux';
 import { selectAllEmployees } from '@pos/employees/data-access';
 import { selectAllProducts } from '@pos/products/data-access';
@@ -22,7 +29,12 @@ import {
     getSalesForRange,
 } from '@pos/reporting/data-access';
 import moment from 'moment';
-import { Order, OrderRefund, OrderRefundLine, OrderStatus } from '@pos/shared/models';
+import {
+    Order,
+    OrderRefund,
+    OrderRefundLine,
+    OrderStatus,
+} from '@pos/shared/models';
 import { UIDatePickerModal, UISpinner } from '@pos/shared/ui-native';
 import OrderDetails from './order-details';
 import Widget from '../widget/widget';
@@ -69,7 +81,7 @@ export const formatPaymentAmount = (amount: number) =>
 
 export const buildRefundedLineAmountsForOrder = (
     orderId: string,
-    refundLines: OrderRefundLine[]
+    refundLines: OrderRefundLine[],
 ) =>
     refundLines.reduce<Record<string, number>>((acc, refundLine) => {
         if (refundLine.orderId !== orderId) {
@@ -89,11 +101,11 @@ export const buildRefundedLineAmountsForOrder = (
 
 export const loadPaidSalesForRange = async (
     dateRange: { startDate: any; endDate: any },
-    fetchSales: typeof getSalesForRange = getSalesForRange
+    fetchSales: typeof getSalesForRange = getSalesForRange,
 ) => {
     const items = await fetchSales(
         [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
-        dateRange as any
+        dateRange as any,
     );
     return items || [];
 };
@@ -102,14 +114,14 @@ export const loadEndOfDayDataForRange = async (
     dateRange: { startDate: any; endDate: any },
     fetchSales: typeof getSalesForRange = getSalesForRange,
     fetchRefunds: typeof getRefundsForRange = getRefundsForRange,
-    fetchRefundLines: typeof getRefundLinesForRefundIds = getRefundLinesForRefundIds
+    fetchRefundLines: typeof getRefundLinesForRefundIds = getRefundLinesForRefundIds,
 ): Promise<EndOfDayLoadedData> => {
     const [orders, refunds] = await Promise.all([
         loadPaidSalesForRange(dateRange, fetchSales),
         fetchRefunds({ range: dateRange as any }),
     ]);
     const refundLines = await fetchRefundLines(
-        (refunds || []).map((refund) => refund.id).filter(Boolean)
+        (refunds || []).map((refund) => refund.id).filter(Boolean),
     );
 
     return {
@@ -147,7 +159,7 @@ export const buildEndOfDayWidgets = (
         cash: 'Cash',
         checks: 'Checks',
         ebt: 'EBT',
-    }
+    },
 ): EndOfDayWidget[] => [
     {
         text: labels.sales,
@@ -268,30 +280,33 @@ export const buildEndOfDayFilterConfigs = (params: {
     },
 ];
 
-export const createDateUpdater = (
-    setDate: (date: Date) => void,
-    setLoading: (value: boolean) => void,
-    setOrders: (orders: Order[]) => void,
-    setFilteredOrders: (orders: Order[]) => void,
-    setRefunds?: (refunds: OrderRefund[]) => void,
-    setRefundLines?: (lines: OrderRefundLine[]) => void,
-    loadForRange: (
-        dateRange: { startDate: any; endDate: any }
-    ) => Promise<EndOfDayLoadedData> = loadEndOfDayDataForRange
-) => (date: Date) => {
-    setDate(date);
-    const dateRange = buildDayRange(date);
-    setLoading(true);
-    InteractionManager.runAfterInteractions(() => {
-        loadForRange(dateRange).then((data) => {
-            setOrders(data.orders);
-            setFilteredOrders(data.orders);
-            setRefunds?.(data.refunds);
-            setRefundLines?.(data.refundLines);
-            setLoading(false);
+export const createDateUpdater =
+    (
+        setDate: (date: Date) => void,
+        setLoading: (value: boolean) => void,
+        setOrders: (orders: Order[]) => void,
+        setFilteredOrders: (orders: Order[]) => void,
+        setRefunds?: (refunds: OrderRefund[]) => void,
+        setRefundLines?: (lines: OrderRefundLine[]) => void,
+        loadForRange: (dateRange: {
+            startDate: any;
+            endDate: any;
+        }) => Promise<EndOfDayLoadedData> = loadEndOfDayDataForRange,
+    ) =>
+    (date: Date) => {
+        setDate(date);
+        const dateRange = buildDayRange(date);
+        setLoading(true);
+        InteractionManager.runAfterInteractions(() => {
+            loadForRange(dateRange).then((data) => {
+                setOrders(data.orders);
+                setFilteredOrders(data.orders);
+                setRefunds?.(data.refunds);
+                setRefundLines?.(data.refundLines);
+                setLoading(false);
+            });
         });
-    });
-};
+    };
 
 export function EndOfDay(props: EndOfDayProps) {
     const styles = useSharedStyles();
@@ -309,29 +324,35 @@ export function EndOfDay(props: EndOfDayProps) {
     const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
     const [refunds, setRefunds] = useState<OrderRefund[]>([]);
     const [refundLines, setRefundLines] = useState<OrderRefundLine[]>([]);
-    const [paymentMethodsSummary, setPaymentMethodsSummary] = useState<PaymentMethodsSummary>({
-        CC: 0, CASH: 0, CHECK: 0, EBT: 0
-    });
+    const [paymentMethodsSummary, setPaymentMethodsSummary] =
+        useState<PaymentMethodsSummary>({
+            CC: 0,
+            CASH: 0,
+            CHECK: 0,
+            EBT: 0,
+        });
     const [referenceSummary, setReferenceSummary] = useState(() =>
-        buildEndOfDayReferenceSummary([], [], [], {})
+        buildEndOfDayReferenceSummary([], [], [], {}),
     );
-    
+
     const [employeesOpen, setEmployeesOpen] = useState(false);
     const [employeeValue, setEmployeeValue] = useState(null);
     const employees = useSelector(selectAllEmployees);
     const [employeeItems, setEmployeeItems] = useState<ItemType<string>[]>(
-        getEmployeeItems(employees)
-    )
-    
+        getEmployeeItems(employees),
+    );
+
     const [productsOpen, setProductsOpen] = useState(false);
     const [productValue, setProductValue] = useState<string | null>(null);
     const products = useSelector(selectAllProducts);
     const [productItems, setProductItems] = useState<ItemType<string>[]>(
-        getProductItems(products)
-    )
+        getProductItems(products),
+    );
 
     const [closedByOpen, setClosedByOpen] = useState(false);
     const [closedByValue, setClosedByValue] = useState(null);
+    const [filtersCollapsed, setFiltersCollapsed] = useState(false);
+    const [summaryCollapsed, setSummaryCollapsed] = useState(false);
     const emptyOpacity = useRef(new Animated.Value(0)).current;
     const emptyTranslateY = useRef(new Animated.Value(12)).current;
     const filterConfigs = buildEndOfDayFilterConfigs({
@@ -375,7 +396,7 @@ export function EndOfDay(props: EndOfDayProps) {
             cash: t('EOD_Cash', 'Cash'),
             checks: t('EOD_Checks', 'Checks'),
             ebt: t('EOD_EBT', 'EBT'),
-        }
+        },
     );
     const hasFilteredData = filteredOrders.length > 0;
     const updateDate = createDateUpdater(
@@ -384,20 +405,31 @@ export function EndOfDay(props: EndOfDayProps) {
         setOrders,
         setFilteredOrders,
         setRefunds,
-        setRefundLines
+        setRefundLines,
     );
 
     useEffect(() => {
-        const filterResponse = filterOrders(orders, {
-            openedBy: employeeValue,
-            closedBy: closedByValue,
-            productId: productValue
-        }, refunds, refundLines);
+        const filterResponse = filterOrders(
+            orders,
+            {
+                openedBy: employeeValue,
+                closedBy: closedByValue,
+                productId: productValue,
+            },
+            refunds,
+            refundLines,
+        );
         setFilteredOrders(filterResponse.orders);
         setPaymentMethodsSummary(filterResponse.summary);
         setReferenceSummary(filterResponse.references);
-        
-    }, [orders, refunds, refundLines, employeeValue, closedByValue, productValue])
+    }, [
+        orders,
+        refunds,
+        refundLines,
+        employeeValue,
+        closedByValue,
+        productValue,
+    ]);
 
     useEffect(() => {
         setEmployeeItems(getEmployeeItems(employees));
@@ -451,70 +483,115 @@ export function EndOfDay(props: EndOfDayProps) {
     return (
         <View style={styles.page}>
             <View style={[styles.box, local.reportShell]}>
-                <View style={local.filterBar}>
-                    <View style={[local.filterField, local.dateFilterField]}>
-                        <Text style={local.filterLabel}>
-                            {t('EOD_Date', 'Date')}
-                        </Text>
+                <View style={local.reportToolbar}>
+                    <Text style={local.reportToolbarTitle}>
+                        {t('SIDEBAR_EndOfDay', 'End of Day')}
+                    </Text>
+                    <View style={local.reportToolbarActions}>
                         <Button
-                            title={date.toLocaleDateString()}
-                            onPress={() => setDrOpen(true)}
-                            buttonStyle={local.dateButton}
-                            titleStyle={local.dateButtonText}
+                            type="outline"
+                            title={
+                                filtersCollapsed
+                                    ? t('EOD_ShowFilters', 'Show Filters')
+                                    : t('EOD_HideFilters', 'Hide Filters')
+                            }
+                            onPress={() =>
+                                setFiltersCollapsed((value) => !value)
+                            }
+                            buttonStyle={local.toolbarButton}
+                            titleStyle={local.toolbarButtonText}
                         />
-                        <UIDatePickerModal
-                            mode="date"
-                            open={drOpen}
-                            date={date}
-                            title={t('EOD_Date', 'Date')}
-                            onConfirm={(date) => {
-                                setDrOpen(false);
-                                updateDate(date);
-                            }}
-                            onCancel={() => {
-                                setDrOpen(false)
-                            }}
+                        <Button
+                            type="outline"
+                            title={
+                                summaryCollapsed
+                                    ? t('EOD_ShowSummary', 'Show Summary')
+                                    : t('EOD_HideSummary', 'Hide Summary')
+                            }
+                            onPress={() =>
+                                setSummaryCollapsed((value) => !value)
+                            }
+                            buttonStyle={local.toolbarButton}
+                            titleStyle={local.toolbarButtonText}
                         />
                     </View>
-                    {filterConfigs.map((config) => (
-                        <View
-                            key={config.label}
-                            style={local.filterField}
-                        >
-                            <Text style={local.filterLabel}>
-                                {config.label}
-                            </Text>
-                            <DropDownPicker
-                                style={local.dropdown}
-                                dropDownContainerStyle={local.dropdownMenu}
-                                textStyle={local.dropdownText}
-                                placeholderStyle={local.dropdownPlaceholder}
-                                labelStyle={local.dropdownText}
-                                listItemLabelStyle={local.dropdownText}
-                                selectedItemLabelStyle={local.dropdownSelectedText}
-                                searchTextInputStyle={local.dropdownSearchInput}
-                                searchPlaceholderTextColor={tokens.colors.textMuted}
-                                searchable={config.searchable}
-                                open={config.open}
-                                value={config.value}
-                                items={config.items}
-                                setOpen={config.setOpen}
-                                setValue={config.setValue}
-                                setItems={config.setItems}
-                                theme="DARK"
-                            />
-                        </View>
-                    ))}
                 </View>
 
-                {loading && 
+                {!filtersCollapsed && (
+                    <View style={local.filterBar}>
+                        <View
+                            style={[local.filterField, local.dateFilterField]}
+                        >
+                            <Text style={local.filterLabel}>
+                                {t('EOD_Date', 'Date')}
+                            </Text>
+                            <Button
+                                title={date.toLocaleDateString()}
+                                titleProps={{
+                                    numberOfLines: 1,
+                                    ellipsizeMode: 'clip',
+                                }}
+                                onPress={() => setDrOpen(true)}
+                                buttonStyle={local.dateButton}
+                                titleStyle={local.dateButtonText}
+                            />
+                            <UIDatePickerModal
+                                mode="date"
+                                open={drOpen}
+                                date={date}
+                                title={t('EOD_Date', 'Date')}
+                                onConfirm={(date) => {
+                                    setDrOpen(false);
+                                    updateDate(date);
+                                }}
+                                onCancel={() => {
+                                    setDrOpen(false);
+                                }}
+                            />
+                        </View>
+                        {filterConfigs.map((config) => (
+                            <View key={config.label} style={local.filterField}>
+                                <Text style={local.filterLabel}>
+                                    {config.label}
+                                </Text>
+                                <DropDownPicker
+                                    style={local.dropdown}
+                                    dropDownContainerStyle={local.dropdownMenu}
+                                    textStyle={local.dropdownText}
+                                    placeholderStyle={local.dropdownPlaceholder}
+                                    labelStyle={local.dropdownText}
+                                    listItemLabelStyle={local.dropdownText}
+                                    selectedItemLabelStyle={
+                                        local.dropdownSelectedText
+                                    }
+                                    searchTextInputStyle={
+                                        local.dropdownSearchInput
+                                    }
+                                    searchPlaceholderTextColor={
+                                        tokens.colors.textMuted
+                                    }
+                                    searchable={config.searchable}
+                                    open={config.open}
+                                    value={config.value}
+                                    items={config.items}
+                                    setOpen={config.setOpen}
+                                    setValue={config.setValue}
+                                    setItems={config.setItems}
+                                    theme="DARK"
+                                />
+                            </View>
+                        ))}
+                    </View>
+                )}
+
+                {loading && (
                     <View style={[styles.centered, { paddingTop: 50 }]}>
                         <UISpinner
                             size="small"
                             message={t('COMMON_Loading', 'Loading...')}
                         />
                     </View>
-                }
+                )}
 
                 {!loading && !hasFilteredData && (
                     <Animated.View
@@ -527,12 +604,15 @@ export function EndOfDay(props: EndOfDayProps) {
                         ]}
                     >
                         <Text style={local.emptyTitle}>
-                            {t('EOD_NoDataForRange', 'No data found for this date range')}
+                            {t(
+                                'EOD_NoDataForRange',
+                                'No data found for this date range',
+                            )}
                         </Text>
                         <Text style={local.emptySubtitle}>
                             {t(
                                 'EOD_NoDataForRangeHelp',
-                                'Completed sales matching the selected filters will appear here.'
+                                'Completed sales matching the selected filters will appear here.',
                             )}
                         </Text>
                     </Animated.View>
@@ -540,35 +620,41 @@ export function EndOfDay(props: EndOfDayProps) {
 
                 {!loading && hasFilteredData && (
                     <>
-                        <View style={{ flexDirection: 'row' }}>
-                            <View style={{ flex: 1 }}>
-                                {chunkWidgets(widgets).map((row, index) => (
-                                    <View
-                                        key={`row-${index}`}
-                                        style={{ flexDirection: 'row' }}
-                                    >
-                                        {row.map((widget) => (
-                                            <View
-                                                key={widget.text}
-                                                style={{ flex: widget.flex || 1 }}
-                                            >
-                                                <Widget
-                                                    height={80}
-                                                    backgroundColor={widget.backgroundColor}
-                                                    text={widget.text}
-                                                    value={widget.value}
-                                                    primaryTextSize={16}
-                                                    secondaryTextSize={12}
-                                                />
-                                            </View>
-                                        ))}
-                                    </View>
-                                ))}
+                        {!summaryCollapsed && (
+                            <View style={local.widgetSection}>
+                                <View style={{ flex: 1 }}>
+                                    {chunkWidgets(widgets).map((row, index) => (
+                                        <View
+                                            key={`row-${index}`}
+                                            style={local.widgetRow}
+                                        >
+                                            {row.map((widget) => (
+                                                <View
+                                                    key={widget.text}
+                                                    style={{
+                                                        flex: widget.flex || 1,
+                                                    }}
+                                                >
+                                                    <Widget
+                                                        height={68}
+                                                        backgroundColor={
+                                                            widget.backgroundColor
+                                                        }
+                                                        text={widget.text}
+                                                        value={widget.value}
+                                                        primaryTextSize={14}
+                                                        secondaryTextSize={11}
+                                                    />
+                                                </View>
+                                            ))}
+                                        </View>
+                                    ))}
+                                </View>
                             </View>
-                        </View>
+                        )}
 
                         <FlatList
-                            style={{ marginTop: 10 }}
+                            style={local.ordersList}
                             data={filteredOrders}
                             keyExtractor={(item) => item.id}
                             renderItem={({ item }) => (
@@ -577,21 +663,28 @@ export function EndOfDay(props: EndOfDayProps) {
                                     productId={productValue}
                                     paymentDetails={buildOrderPaymentDetailRows(
                                         item,
-                                        refunds.filter((refund) => refund.orderId === item.id),
-                                        refundLines
+                                        refunds.filter(
+                                            (refund) =>
+                                                refund.orderId === item.id,
+                                        ),
+                                        refundLines,
                                     )}
-                                    refundedAmount={
-                                        refunds
-                                            .filter((refund) => refund.orderId === item.id)
-                                            .reduce(
-                                                (sum, refund) =>
-                                                    sum + Number(refund.refundAmount || 0),
-                                                0
-                                            )
-                                    }
+                                    refundedAmount={refunds
+                                        .filter(
+                                            (refund) =>
+                                                refund.orderId === item.id,
+                                        )
+                                        .reduce(
+                                            (sum, refund) =>
+                                                sum +
+                                                Number(
+                                                    refund.refundAmount || 0,
+                                                ),
+                                            0,
+                                        )}
                                     refundedLineAmounts={buildRefundedLineAmountsForOrder(
                                         item.id,
-                                        refundLines
+                                        refundLines,
                                     )}
                                 />
                             )}
@@ -635,18 +728,46 @@ const useEndOfDayStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             borderColor: '#C7D0DB22',
             borderRadius: 26,
             backgroundColor: '#05070B',
-            paddingHorizontal: tokens.spacing.xl,
-            paddingTop: tokens.spacing.xl,
+            paddingHorizontal: tokens.spacing.lg,
+            paddingTop: tokens.spacing.lg,
             paddingBottom: tokens.spacing.lg,
+        },
+        reportToolbar: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginBottom: tokens.spacing.sm,
+            minHeight: 44,
+        },
+        reportToolbarTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 18,
+            fontWeight: '800',
+        },
+        reportToolbarActions: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            gap: tokens.spacing.sm,
+        },
+        toolbarButton: {
+            borderColor: `${tokens.colors.accent}66`,
+            borderRadius: 18,
+            minHeight: 36,
+            paddingHorizontal: tokens.spacing.md,
+        },
+        toolbarButtonText: {
+            color: tokens.colors.accent,
+            fontSize: 12,
+            fontWeight: '800',
         },
         filterBar: {
             zIndex: 1000,
             flexDirection: 'row',
             alignItems: 'flex-end',
-            gap: tokens.spacing.md,
-            marginBottom: tokens.spacing.lg,
-            padding: tokens.spacing.md,
-            borderRadius: 22,
+            gap: tokens.spacing.sm,
+            marginBottom: tokens.spacing.sm,
+            padding: tokens.spacing.sm,
+            borderRadius: 18,
             borderWidth: 1,
             borderColor: '#243145',
             backgroundColor: '#090D14',
@@ -656,7 +777,7 @@ const useEndOfDayStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flexDirection: 'column',
         },
         dateFilterField: {
-            flex: 0.55,
+            flex: 0.68,
         },
         filterLabel: {
             color: '#7C8EA5',
@@ -667,21 +788,21 @@ const useEndOfDayStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             textTransform: 'uppercase',
         },
         dateButton: {
-            minHeight: 48,
+            minHeight: 42,
             borderRadius: 16,
             borderWidth: 1,
             borderColor: `${tokens.colors.accent}66`,
             backgroundColor: `${tokens.colors.accent}33`,
-            paddingHorizontal: tokens.spacing.md,
+            paddingHorizontal: tokens.spacing.sm,
         },
         dateButtonText: {
             color: tokens.colors.textPrimary,
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: '800',
             letterSpacing: 0.2,
         },
         dropdown: {
-            minHeight: 48,
+            minHeight: 42,
             borderRadius: 16,
             borderWidth: 1,
             borderColor: `${tokens.colors.border}ee`,
@@ -697,17 +818,17 @@ const useEndOfDayStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         dropdownText: {
             color: tokens.colors.textPrimary,
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: '600',
         },
         dropdownPlaceholder: {
             color: tokens.colors.textMuted,
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: '600',
         },
         dropdownSelectedText: {
             color: '#D7E8FF',
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: '800',
         },
         dropdownSearchInput: {
@@ -717,6 +838,17 @@ const useEndOfDayStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             backgroundColor: '#0B1018',
             color: tokens.colors.textPrimary,
             fontSize: 15,
+        },
+        widgetSection: {
+            flexDirection: 'row',
+            marginBottom: tokens.spacing.xs,
+        },
+        widgetRow: {
+            flexDirection: 'row',
+        },
+        ordersList: {
+            flex: 1,
+            marginTop: tokens.spacing.xs,
         },
     });
 

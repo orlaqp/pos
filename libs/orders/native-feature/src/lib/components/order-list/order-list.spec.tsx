@@ -1,4 +1,3 @@
-
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -9,6 +8,7 @@ const mockSubscribeUnsubscribe = jest.fn();
 const mockSearchInputValue = { current: '' };
 const mockDialogProps = { overlayStyle: undefined as unknown };
 const mockOpenOrderPaymentDialog = jest.fn(() => null);
+const mockRefundedDetailsDialog = jest.fn(() => null);
 
 let mockOrders = [
     {
@@ -99,7 +99,7 @@ jest.mock('@pos/shared/ui-native', () => ({
                 onSubmit: (value: string) => void;
                 editable?: boolean;
             },
-            ref: React.Ref<{ focus: () => void; clear: () => void }>
+            ref: React.Ref<{ focus: () => void; clear: () => void }>,
         ) => {
             require('react').useImperativeHandle(ref, () => ({
                 focus: jest.fn(),
@@ -116,7 +116,7 @@ jest.mock('@pos/shared/ui-native', () => ({
                     <Text>Search</Text>
                 </Pressable>
             );
-        }
+        },
     ),
     UIEmptyState: ({
         text,
@@ -172,7 +172,9 @@ jest.mock('@rneui/themed', () => ({
     }) => {
         const { View } = require('react-native');
         mockDialogProps.overlayStyle = overlayStyle;
-        return isVisible ? <View testID="order-void-dialog">{children}</View> : null;
+        return isVisible ? (
+            <View testID="order-void-dialog">{children}</View>
+        ) : null;
     },
 }));
 
@@ -190,6 +192,7 @@ jest.mock('@pos/shared/data-store', () => ({
 
 jest.mock('@pos/shared/utils', () => ({
     logSyncDebug: jest.fn(),
+    translateWithFallback: (_key: string, fallback: string) => fallback,
 }));
 
 jest.mock('react-native-uuid', () => ({
@@ -218,8 +221,10 @@ jest.mock('@pos/orders/data-access', () => ({
         unsubscribe: mockSubscribeUnsubscribe,
     }),
     OrderService: {
-        search: (orders: typeof mockOrders, options: { status: string; filter?: string }) =>
-            mockSearch(orders, options),
+        search: (
+            orders: typeof mockOrders,
+            options: { status: string; filter?: string },
+        ) => mockSearch(orders, options),
     },
 }));
 
@@ -229,20 +234,34 @@ jest.mock('../order-item/order-item', () => ({
         item,
         onVoid,
         onPay,
+        onOpenDetails,
     }: {
         item: { id: string; orderNo: string };
         onVoid: (order: { id: string }) => void;
         onPay: (order: { id: string }) => void;
+        onOpenDetails?: (order: { id: string }) => void;
     }) => {
         const { View, Text, Pressable } = require('react-native');
         return (
             <View>
                 <Text>{item.orderNo}</Text>
-                <Pressable testID={`order-void-${item.id}`} onPress={() => onVoid(item)}>
+                <Pressable
+                    testID={`order-void-${item.id}`}
+                    onPress={() => onVoid(item)}
+                >
                     <Text>Void</Text>
                 </Pressable>
-                <Pressable testID={`order-pay-${item.id}`} onPress={() => onPay(item)}>
+                <Pressable
+                    testID={`order-pay-${item.id}`}
+                    onPress={() => onPay(item)}
+                >
                     <Text>Pay</Text>
+                </Pressable>
+                <Pressable
+                    testID={`order-open-${item.id}`}
+                    onPress={() => onOpenDetails?.(item)}
+                >
+                    <Text>Open</Text>
                 </Pressable>
             </View>
         );
@@ -262,6 +281,14 @@ jest.mock('../open-order-payment-dialog/open-order-payment-dialog', () => ({
     default: (props: unknown) => mockOpenOrderPaymentDialog(props),
 }));
 
+jest.mock(
+    '../order-refunded-details-dialog/order-refunded-details-dialog',
+    () => ({
+        __esModule: true,
+        default: (props: unknown) => mockRefundedDetailsDialog(props),
+    }),
+);
+
 const { OrderList } = require('./order-list');
 
 describe('OrderList integration', () => {
@@ -273,6 +300,7 @@ describe('OrderList integration', () => {
         jest.clearAllMocks();
         mockDialogProps.overlayStyle = undefined;
         mockOpenOrderPaymentDialog.mockReturnValue(null);
+        mockRefundedDetailsDialog.mockReturnValue(null);
         mockI18next.isInitialized = false;
         mockI18next.exists.mockImplementation(() => false);
         mockI18next.t.mockImplementation((key: string) => key);
@@ -302,15 +330,33 @@ describe('OrderList integration', () => {
                 orderDate: '2026-03-12T13:00:00.000Z',
                 lines: [],
             },
+            {
+                id: 'refunded-1',
+                orderNo: '51-REFUNDED-0001',
+                subtotal: 40,
+                tax: 0,
+                total: 40,
+                status: 'REFUNDED',
+                employeeId: 'emp-3',
+                employeeName: 'Cashier',
+                orderDate: '2026-03-12T14:00:00.000Z',
+                lines: [],
+            },
         ];
         mockSearch.mockImplementation(
-            (orders: typeof mockOrders, options: { status: string; filter?: string }) =>
+            (
+                orders: typeof mockOrders,
+                options: { status: string; filter?: string },
+            ) =>
                 orders.filter((order) => {
                     const statusMatch = order.status === options.status;
                     const filter = options.filter?.trim().toLowerCase();
                     if (!filter) return statusMatch;
-                    return statusMatch && order.orderNo.toLowerCase().includes(filter);
-                })
+                    return (
+                        statusMatch &&
+                        order.orderNo.toLowerCase().includes(filter)
+                    );
+                }),
         );
     });
 
@@ -331,7 +377,7 @@ describe('OrderList integration', () => {
         expect(getByTestId('order-list-filters-card')).toBeTruthy();
         expect(getByTestId('order-list-results-card')).toBeTruthy();
         expect(
-            getByTestId('order-list-flat-list').props.keyboardShouldPersistTaps
+            getByTestId('order-list-flat-list').props.keyboardShouldPersistTaps,
         ).toBe('handled');
         expect(getByText('51-OPEN-0001')).toBeTruthy();
     });
@@ -339,10 +385,10 @@ describe('OrderList integration', () => {
     it('falls back to a non-empty partial refund tab label when the translation value is blank', () => {
         mockI18next.isInitialized = true;
         mockI18next.exists.mockImplementation(
-            (key: string) => key === 'ORDERSTATUS_PartiallyRefunded'
+            (key: string) => key === 'ORDERSTATUS_PartiallyRefunded',
         );
         mockI18next.t.mockImplementation((key: string) =>
-            key === 'ORDERSTATUS_PartiallyRefunded' ? '   ' : key
+            key === 'ORDERSTATUS_PartiallyRefunded' ? '   ' : key,
         );
 
         const { getByTestId, queryByTestId } = render(<OrderList />);
@@ -441,16 +487,18 @@ describe('OrderList integration', () => {
             jest.runOnlyPendingTimers();
         });
 
-        fireEvent.press(getByTestId('status-REFUNDED'));
+        fireEvent.press(getByTestId('status-PARTIAL'));
         act(() => {
             jest.runOnlyPendingTimers();
         });
 
-        expect(getByTestId('order-list-search-input').props.accessibilityState).toEqual({
+        expect(
+            getByTestId('order-list-search-input').props.accessibilityState,
+        ).toEqual({
             disabled: true,
         });
         expect(
-            getByText('Orders with the selected status will appear here.')
+            getByText('Orders with the selected status will appear here.'),
         ).toBeTruthy();
     });
 
@@ -488,7 +536,7 @@ describe('OrderList integration', () => {
             expect.objectContaining({
                 visible: true,
                 order: expect.objectContaining({ id: 'open-1' }),
-            })
+            }),
         );
     });
 
@@ -501,7 +549,31 @@ describe('OrderList integration', () => {
         expect(mockDialogProps.overlayStyle).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({ width: 1120, maxWidth: '94%' }),
-            ])
+            ]),
+        );
+    });
+
+    it('opens the refunded order details dialog when a refunded order requests details', () => {
+        const view = render(<OrderList />);
+        act(() => {
+            jest.runOnlyPendingTimers();
+        });
+
+        fireEvent.press(view.getByTestId('status-REFUNDED'));
+        act(() => {
+            jest.runOnlyPendingTimers();
+        });
+
+        fireEvent.press(view.getByTestId('order-open-refunded-1'));
+        act(() => {
+            jest.runOnlyPendingTimers();
+        });
+
+        expect(mockRefundedDetailsDialog).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                visible: true,
+                order: expect.objectContaining({ id: 'refunded-1' }),
+            }),
         );
     });
 });

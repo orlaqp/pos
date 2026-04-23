@@ -8,7 +8,6 @@ import {
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, Dialog } from '@rneui/themed';
 import React, { useEffect, useMemo, useState } from 'react';
-import i18next from 'i18next';
 
 import { View, Alert, Text, Image } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -24,6 +23,7 @@ import { Role } from '@pos/auth/data-access';
 import { ProductEntity } from '@pos/products/data-access';
 import { selectStore } from '@pos/store-info/data-access';
 import { selectStation } from '@pos/settings/data-access';
+import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
 import {
     buildDiscountBreakdown,
     buildOrderSummary,
@@ -65,7 +65,7 @@ export interface CartProps {
         payments?: ICartPayment[],
         options?: {
             intent?: 'save_open_order' | 'receive_payment';
-        }
+        },
     ) => void;
     products: ProductEntity[];
     onInteractionComplete: () => void;
@@ -118,58 +118,70 @@ export function Cart({
     const [discountsLoading, setDiscountsLoading] = useState(false);
     const [discountError, setDiscountError] = useState<string>();
     const [actionsExpanded, setActionsExpanded] = useState(false);
-    const [discountSectionCollapsed, setDiscountSectionCollapsed] = useState(false);
+    const [discountSectionCollapsed, setDiscountSectionCollapsed] =
+        useState(false);
     const [orderSummaryVisible, setOrderSummaryVisible] = useState(false);
     const [promoVisible, setPromoVisible] = useState(false);
     const [manualVisible, setManualVisible] = useState(false);
     const [overrideVisible, setOverrideVisible] = useState(false);
     const [promoCodeInput, setPromoCodeInput] = useState('');
-    const [manualDraft, setManualDraft] = useState<ManualDraft>(defaultManualDraft);
-    const [overrideDraft, setOverrideDraft] = useState<OverrideDraft>(defaultOverrideDraft);
+    const [manualDraft, setManualDraft] =
+        useState<ManualDraft>(defaultManualDraft);
+    const [overrideDraft, setOverrideDraft] =
+        useState<OverrideDraft>(defaultOverrideDraft);
     const ready = isCartReady(cart);
     const ebtEligibleTotal = getEbtEligibleTotal(cart);
-    const invalidItemCount = cart.items.filter((item) => item.quantity === 0).length;
+    const invalidItemCount = cart.items.filter(
+        (item) => item.quantity === 0,
+    ).length;
     const pricingWarnings = cart.appliedDiscountSummary?.warnings || [];
     const discountBreakdown = useMemo(
         () => buildDiscountBreakdown(cart.appliedDiscountSummary),
-        [cart.appliedDiscountSummary]
+        [cart.appliedDiscountSummary],
     );
     const orderSummary = useMemo(() => buildOrderSummary(cart), [cart]);
     const selectedItem = cart.selected;
     const selectedLineSummary = cart.appliedDiscountSummary?.lineSummaries.find(
-        (summary) => summary.lineId === selectedItem?.identifier
+        (summary) => summary.lineId === selectedItem?.identifier,
     );
     const selectedLineTotal =
         selectedLineSummary?.lineSubtotalBeforeOrderDiscount ??
         (selectedItem ? selectedItem.quantity * selectedItem.product.price : 0);
     const manualDraftValue =
-        manualDraft.method === 'PERCENT' ? manualDraft.percentValue : manualDraft.amountValue;
+        manualDraft.method === 'PERCENT'
+            ? manualDraft.percentValue
+            : manualDraft.amountValue;
     const approvalTargetName = selectedItem?.product.name || 'this order';
-    const t = (key: string, fallback: string) =>
-        i18next.isInitialized && i18next.exists(key)
-            ? String(i18next.t(key))
-            : fallback;
+    const t = translateWithFallback;
 
     const hasDiscountSummary =
-        cart.footer.discount > 0 || cart.promoCodes.length > 0 || pricingWarnings.length > 0;
+        cart.footer.discount > 0 ||
+        cart.promoCodes.length > 0 ||
+        pricingWarnings.length > 0;
     const hasDiscountAccess = (employee?.roles || []).includes(Role.Discounts);
     const canUsePromoCodes = hasDiscountAccess;
     const canApplyOrderDiscount = hasDiscountAccess;
     const canOverridePrice = hasDiscountAccess;
-    const canViewDiscountControls = DISCOUNT_CONTROLS_ENABLED && hasDiscountAccess;
+    const canViewDiscountControls =
+        DISCOUNT_CONTROLS_ENABLED && hasDiscountAccess;
     const payFromSalesScreen = mode === 'order' && preferPayFromSalesScreen;
     const selectedLineHasManualAdjustment =
         !!selectedItem?.identifier &&
         (cart.manualDiscounts.some(
-            (discount) => discount.scope === 'LINE' && discount.lineId === selectedItem.identifier
+            (discount) =>
+                discount.scope === 'LINE' &&
+                discount.lineId === selectedItem.identifier,
         ) ||
-            cart.priceOverrides.some((override) => override.lineId === selectedItem.identifier));
+            cart.priceOverrides.some(
+                (override) => override.lineId === selectedItem.identifier,
+            ));
     const hasOrderManualAdjustment = cart.manualDiscounts.some(
-        (discount) => discount.scope === 'ORDER'
+        (discount) => discount.scope === 'ORDER',
     );
     const availableManualDefinitions = useMemo(() => {
         const currentTimestamp = new Date().toISOString();
-        const orderSubtotal = cart.footer.baseSubtotal || cart.footer.subtotal || 0;
+        const orderSubtotal =
+            cart.footer.baseSubtotal || cart.footer.subtotal || 0;
         const selectedLineSubtotal = selectedLineTotal || 0;
 
         return getAvailableManualDefinitions({
@@ -179,7 +191,8 @@ export function Cart({
             selectedLineSubtotal,
             selectedItem,
             selectedLineHasManualAdjustment,
-            selectedLineDiscountCount: selectedLineSummary?.discounts?.length || 0,
+            selectedLineDiscountCount:
+                selectedLineSummary?.discounts?.length || 0,
             timestamp: currentTimestamp,
             timezone: storeInfo?.timezone,
             stationId: stationInfo?.stationNumber,
@@ -203,8 +216,8 @@ export function Cart({
             cartActions.setPolicy(
                 hasDiscountAccess
                     ? ROLE_BASED_DISCOUNT_POLICY
-                    : RESTRICTED_DISCOUNT_POLICY
-            )
+                    : RESTRICTED_DISCOUNT_POLICY,
+            ),
         );
     }, [dispatch, hasDiscountAccess]);
 
@@ -217,8 +230,8 @@ export function Cart({
                 cartActions.setDefinitions(
                     definitions
                         .map((definition) => mapDefinitionToPricing(definition))
-                        .filter(isDefinitionEnabledForPricing)
-                )
+                        .filter(isDefinitionEnabledForPricing),
+                ),
             );
         };
 
@@ -248,7 +261,9 @@ export function Cart({
 
                 dispatch(cartActions.setDefinitions([]));
                 setDiscountError(
-                    error instanceof Error ? error.message : 'Unable to load discount rules.'
+                    error instanceof Error
+                        ? error.message
+                        : 'Unable to load discount rules.',
                 );
             } finally {
                 if (active) {
@@ -295,9 +310,14 @@ export function Cart({
                 storeId: storeInfo?.id,
                 // Discount definitions are authored against the configured station number.
                 stationId: stationInfo?.stationNumber,
-            })
+            }),
         );
-    }, [dispatch, stationInfo?.stationNumber, storeInfo?.id, storeInfo?.timezone]);
+    }, [
+        dispatch,
+        stationInfo?.stationNumber,
+        storeInfo?.id,
+        storeInfo?.timezone,
+    ]);
 
     const onSelect = (item: CartItem) => {
         if (cart.selected?.identifier === item.identifier) {
@@ -316,7 +336,7 @@ export function Cart({
                 identifier: item.identifier,
                 product: item.product,
                 quantity: item.quantity,
-            })
+            }),
         );
     };
 
@@ -331,7 +351,7 @@ export function Cart({
                 identifier: item.identifier,
                 product: item.product,
                 quantity: item.quantity + 1,
-            })
+            }),
         );
         onInteractionComplete();
     };
@@ -348,7 +368,7 @@ export function Cart({
                 identifier: item.identifier,
                 product: item.product,
                 quantity: item.quantity - 1,
-            })
+            }),
         );
         onInteractionComplete();
     };
@@ -378,16 +398,19 @@ export function Cart({
     const validateProductInventory = () => {
         const notAvailableProducts = getUnavailableProductMessages(
             cart.items,
-            products
+            products,
         );
 
         if (notAvailableProducts.length) {
             Alert.alert(
-                t('CART_InventoryNotAvailableTitle', 'Product(s) not available'),
+                t(
+                    'CART_InventoryNotAvailableTitle',
+                    'Product(s) not available',
+                ),
                 `${t(
                     'CART_InventoryNotAvailableMessage',
-                    'You do not have enough of these product(s) in inventory:'
-                )}\n${notAvailableProducts}`
+                    'You do not have enough of these product(s) in inventory:',
+                )}\n${notAvailableProducts}`,
             );
         }
 
@@ -395,8 +418,10 @@ export function Cart({
     };
 
     const disabledActionReason = useMemo(() => {
-        if (!selectedItem) return 'Select a cart line for line-level adjustments.';
-        if (selectedItem.quantity === 0) return 'Resolve the item weight before applying pricing actions.';
+        if (!selectedItem)
+            return 'Select a cart line for line-level adjustments.';
+        if (selectedItem.quantity === 0)
+            return 'Resolve the item weight before applying pricing actions.';
         return null;
     }, [selectedItem]);
 
@@ -430,7 +455,9 @@ export function Cart({
     };
 
     const selectManualDefinition = (definitionId: string) => {
-        const definition = availableManualDefinitions.find((item) => item.id === definitionId);
+        const definition = availableManualDefinitions.find(
+            (item) => item.id === definitionId,
+        );
         if (!definition) {
             return;
         }
@@ -474,10 +501,14 @@ export function Cart({
             method: manualDraft.method,
             value,
             definitionId: manualDraft.selectedDefinitionId,
-            lineId: manualDraft.scope === 'LINE' ? selectedItem?.identifier : undefined,
+            lineId:
+                manualDraft.scope === 'LINE'
+                    ? selectedItem?.identifier
+                    : undefined,
             name:
                 availableManualDefinitions.find(
-                    (definition) => definition.id === manualDraft.selectedDefinitionId
+                    (definition) =>
+                        definition.id === manualDraft.selectedDefinitionId,
                 )?.name ||
                 (manualDraft.scope === 'ORDER'
                     ? 'Manual order discount'
@@ -558,19 +589,23 @@ export function Cart({
                     contentContainerStyle={localStyles.linesContent}
                 >
                     {cart.items.map((i) => {
-                        const lineSummary = cart.appliedDiscountSummary?.lineSummaries.find(
-                            (summary) => summary.lineId === i.identifier
-                        );
+                        const lineSummary =
+                            cart.appliedDiscountSummary?.lineSummaries.find(
+                                (summary) => summary.lineId === i.identifier,
+                            );
 
                         return (
                             <CartLine
                                 key={i.identifier || i.product.id}
                                 item={i}
-                                selected={cart.selected?.identifier === i.identifier}
+                                selected={
+                                    cart.selected?.identifier === i.identifier
+                                }
                                 appliedDiscounts={lineSummary?.discounts}
                                 lineDiscountTotal={
                                     (lineSummary?.lineDiscountTotal || 0) +
-                                    (lineSummary?.allocatedOrderDiscountTotal || 0)
+                                    (lineSummary?.allocatedOrderDiscountTotal ||
+                                        0)
                                 }
                                 lineTotal={lineSummary?.lineTotalBeforeTax}
                                 onOpenDetails={onOpenDetails}
@@ -599,7 +634,9 @@ export function Cart({
                         pricingWarnings={pricingWarnings}
                         discountError={discountError}
                         disabledActionReason={disabledActionReason}
-                        selectedLineHasManualAdjustment={selectedLineHasManualAdjustment}
+                        selectedLineHasManualAdjustment={
+                            selectedLineHasManualAdjustment
+                        }
                         hasOrderManualAdjustment={hasOrderManualAdjustment}
                         onToggleSectionCollapsed={() => {
                             setDiscountSectionCollapsed((current) => !current);
@@ -620,7 +657,7 @@ export function Cart({
                             dispatch(
                                 cartActions.removePricingAdjustment({
                                     lineId: selectedItem?.identifier,
-                                })
+                                }),
                             );
                             onInteractionComplete();
                         }}
@@ -628,7 +665,7 @@ export function Cart({
                             dispatch(
                                 cartActions.removePricingAdjustment({
                                     scope: 'ORDER',
-                                })
+                                }),
                             );
                             onInteractionComplete();
                         }}
@@ -654,7 +691,9 @@ export function Cart({
                         }}
                         buttonStyle={localStyles.checkoutSecondaryButton}
                         titleStyle={localStyles.checkoutSecondaryButtonTitle}
-                        containerStyle={localStyles.checkoutSecondaryButtonContainer}
+                        containerStyle={
+                            localStyles.checkoutSecondaryButtonContainer
+                        }
                     />
                 ) : null}
                 <Button
@@ -665,8 +704,8 @@ export function Cart({
                             : payFromSalesScreen || mode === 'payment'
                               ? `${t('CART_ReceivePayment', 'Receive Payment')}  •  $${cart.footer.total.toFixed(2)}`
                               : mode === 'order'
-                              ? `${t('CART_PrintOrder', 'Print Order')}  •  $${cart.footer.total.toFixed(2)}`
-                              : `${t('CART_ReceivePayment', 'Receive Payment')}  •  $${cart.footer.total.toFixed(2)}`
+                                ? `${t('CART_PrintOrder', 'Print Order')}  •  $${cart.footer.total.toFixed(2)}`
+                                : `${t('CART_ReceivePayment', 'Receive Payment')}  •  $${cart.footer.total.toFixed(2)}`
                     }
                     icon={{
                         name:
@@ -712,15 +751,14 @@ export function Cart({
                 }}
                 supportedOrientations={['landscape']}
                 presentationStyle="fullScreen"
-                overlayStyle={[
-                    styles.overlay,
-                    localStyles.paymentDialog,
-                ]}
+                overlayStyle={[styles.overlay, localStyles.paymentDialog]}
             >
                 <CartPayment
                     total={cart.footer.total}
                     ebtEligibleTotal={ebtEligibleTotal}
-                    canReceiveChecks={employee?.roles?.includes(Role.Checks) || false}
+                    canReceiveChecks={
+                        employee?.roles?.includes(Role.Checks) || false
+                    }
                     onPaymentEntered={paymentEntered}
                 />
             </Dialog>
@@ -730,7 +768,10 @@ export function Cart({
                     <CartPromoDialog
                         visible={promoVisible}
                         styles={localStyles}
-                        overlayStyle={[styles.overlay, localStyles.compactDialog]}
+                        overlayStyle={[
+                            styles.overlay,
+                            localStyles.compactDialog,
+                        ]}
                         promoCodeInput={promoCodeInput}
                         placeholderTextColor={tokens.colors.textSecondary}
                         onChangePromoCode={setPromoCodeInput}
@@ -744,17 +785,26 @@ export function Cart({
                     <CartManualDiscountDialog
                         visible={manualVisible}
                         styles={localStyles}
-                        overlayStyle={[styles.overlay, localStyles.mediumDialog]}
+                        overlayStyle={[
+                            styles.overlay,
+                            localStyles.mediumDialog,
+                        ]}
                         draft={manualDraft}
-                        availableDefinitions={availableManualDefinitions.map((definition) => ({
-                            id: definition.id,
-                            name: definition.name,
-                            method: definition.method,
-                            value: definition.value,
-                            scope: definition.scope,
-                        }))}
+                        availableDefinitions={availableManualDefinitions.map(
+                            (definition) => ({
+                                id: definition.id,
+                                name: definition.name,
+                                method: definition.method,
+                                value: definition.value,
+                                scope: definition.scope,
+                            }),
+                        )}
                         approvalTargetName={approvalTargetName}
-                        baseAmount={baseAmountForDisplay(manualDraft.scope, cart, selectedLineTotal)}
+                        baseAmount={baseAmountForDisplay(
+                            manualDraft.scope,
+                            cart,
+                            selectedLineTotal,
+                        )}
                         placeholderTextColor={tokens.colors.textSecondary}
                         onClose={() => {
                             setManualVisible(false);
@@ -770,7 +820,10 @@ export function Cart({
                     <CartPriceOverrideDialog
                         visible={overrideVisible}
                         styles={localStyles}
-                        overlayStyle={[styles.overlay, localStyles.mediumDialog]}
+                        overlayStyle={[
+                            styles.overlay,
+                            localStyles.mediumDialog,
+                        ]}
                         draft={overrideDraft}
                         selectedItemName={selectedItem?.product.name}
                         basePrice={selectedItem?.product.price || 0}

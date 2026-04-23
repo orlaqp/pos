@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 
 import {
@@ -13,11 +13,27 @@ import {
     shouldShowPrinterItems,
 } from './printer-list';
 
+jest.mock('@pos/theme/native', () => ({
+    useTheme: () => 'dark',
+    useSharedStyles: () => ({
+        page: {},
+        darkBackground: {},
+    }),
+    getThemeColors: () => ({
+        primary: '#4aa3eb',
+        grey0: '#ffffff',
+        grey5: '#6b7280',
+    }),
+}));
+
 describe('PrinterList', () => {
-    it('should render successfully', () => {
+    it('should render successfully', async () => {
         const navigation: any = { navigate: jest.fn() };
-        const { container } = render(<PrinterList navigation={navigation} />);
-        expect(container).toBeTruthy();
+        const { getByText } = render(<PrinterList navigation={navigation} />);
+        expect(getByText('Printer setup')).toBeTruthy();
+        await waitFor(() =>
+            expect(getByText('No printers were found')).toBeTruthy(),
+        );
     });
 
     it('maps discovered star printers into printer entities', () => {
@@ -54,7 +70,11 @@ describe('PrinterList', () => {
         const setDefault = jest.fn(() => Promise.resolve());
         const printer: any = { identifier: 'tcp:10.0.0.20' };
 
-        const handler = createSetDefaultPrinterHandler(dispatch, printer, setDefault);
+        const handler = createSetDefaultPrinterHandler(
+            dispatch,
+            printer,
+            setDefault,
+        );
         await handler();
 
         expect(setDefault).toHaveBeenCalledWith(dispatch, printer);
@@ -64,13 +84,19 @@ describe('PrinterList', () => {
         const dispatch = jest.fn();
         const setDefault = jest.fn(() => Promise.reject(new Error('failed')));
         const printer: any = { identifier: 'tcp:10.0.0.20' };
-        const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
+        const alertSpy = jest
+            .spyOn(Alert, 'alert')
+            .mockImplementation(jest.fn());
 
-        const handler = createSetDefaultPrinterHandler(dispatch, printer, setDefault);
+        const handler = createSetDefaultPrinterHandler(
+            dispatch,
+            printer,
+            setDefault,
+        );
         await handler();
 
         expect(alertSpy).toHaveBeenCalledWith(
-            'There was an error setting the default printer'
+            'There was an error setting the default printer',
         );
 
         alertSpy.mockRestore();
@@ -90,7 +116,9 @@ describe('PrinterList', () => {
             },
         ]);
 
-        await expect(discoverAndMapPrinters(discover, 'device-2')).resolves.toEqual([
+        await expect(
+            discoverAndMapPrinters(discover, 'device-2'),
+        ).resolves.toEqual([
             {
                 deviceId: 'device-2',
                 identifier: 'usb:1',
@@ -108,10 +136,10 @@ describe('PrinterList', () => {
         });
 
         await expect(
-            discoverPrintersSafely(failingDiscover, 'device-3')
+            discoverPrintersSafely(failingDiscover, 'device-3'),
         ).resolves.toEqual([]);
         expect(alertSpy).toHaveBeenCalledWith(
-            'There was an error looking for available printers'
+            'There was an error looking for available printers',
         );
     });
 
@@ -120,7 +148,11 @@ describe('PrinterList', () => {
         expect(shouldShowEmptyPrinterState(true, [])).toBe(false);
         expect(shouldShowBusyPrinterState(true)).toBe(true);
         expect(shouldShowBusyPrinterState(false)).toBe(false);
-        expect(shouldShowPrinterItems(false, [{ identifier: 'p1' } as any])).toBe(true);
-        expect(shouldShowPrinterItems(true, [{ identifier: 'p1' } as any])).toBe(false);
+        expect(
+            shouldShowPrinterItems(false, [{ identifier: 'p1' } as any]),
+        ).toBe(true);
+        expect(
+            shouldShowPrinterItems(true, [{ identifier: 'p1' } as any]),
+        ).toBe(false);
     });
 });

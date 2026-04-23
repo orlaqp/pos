@@ -17,7 +17,7 @@ import {
     Text,
     View,
 } from 'react-native';
-import i18next from 'i18next';
+import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
 import { useSelector } from 'react-redux';
 
 export interface OrderJournalListProps {
@@ -51,10 +51,7 @@ const toSearchText = (entry: PendingOrderJournalEntry) =>
         .join(' ')
         .toLowerCase();
 
-export function OrderJournalList({
-    tenantId,
-    onClose,
-}: OrderJournalListProps) {
+export function OrderJournalList({ tenantId, onClose }: OrderJournalListProps) {
     const tokens = useDesignTokens();
     const local = useLocalStyles(tokens);
     const employee = useSelector(selectLoginEmployee);
@@ -64,10 +61,7 @@ export function OrderJournalList({
     const [retryingOrderIds, setRetryingOrderIds] = useState<
         Record<string, boolean>
     >({});
-    const t = (key: string, fallback: string) =>
-        i18next.isInitialized && i18next.exists(key)
-            ? String(i18next.t(key))
-            : fallback;
+    const t = translateWithFallback;
 
     useEffect(() => {
         let cancelled = false;
@@ -111,7 +105,7 @@ export function OrderJournalList({
 
         return t(
             'ORDERS_OrderJournalRetryFailedMessage',
-            'The order could not be prepared for sync. Please try again.'
+            'The order could not be prepared for sync. Please try again.',
         );
     };
 
@@ -120,12 +114,12 @@ export function OrderJournalList({
             Alert.alert(
                 t(
                     'ORDERS_OrderJournalTenantUnavailableTitle',
-                    'Tenant not ready'
+                    'Tenant not ready',
                 ),
                 t(
                     'ORDERS_OrderJournalTenantUnavailable',
-                    'Tenant context is not ready yet.'
-                )
+                    'Tenant context is not ready yet.',
+                ),
             );
             return;
         }
@@ -134,12 +128,12 @@ export function OrderJournalList({
             Alert.alert(
                 t(
                     'ORDERS_OrderJournalEmployeeUnavailableTitle',
-                    'Employee required'
+                    'Employee required',
                 ),
                 t(
                     'ORDERS_OrderJournalEmployeeUnavailable',
-                    'Sign in as an employee before retrying sync.'
-                )
+                    'Sign in as an employee before retrying sync.',
+                ),
             );
             return;
         }
@@ -156,7 +150,7 @@ export function OrderJournalList({
                     syncState: 'sync_pending',
                     lastError: undefined,
                 },
-                { tenantId }
+                { tenantId },
             );
             updateEntries(pendingEntries);
 
@@ -172,7 +166,7 @@ export function OrderJournalList({
                     syncState: 'local_only',
                     lastError: undefined,
                 },
-                { tenantId }
+                { tenantId },
             );
             updateEntries(refreshedEntries);
         } catch (error) {
@@ -183,15 +177,12 @@ export function OrderJournalList({
                     syncState: 'sync_failed',
                     lastError: message,
                 },
-                { tenantId }
+                { tenantId },
             );
             updateEntries(failedEntries);
             Alert.alert(
-                t(
-                    'ORDERS_OrderJournalRetryFailedTitle',
-                    'Retry sync failed'
-                ),
-                message
+                t('ORDERS_OrderJournalRetryFailedTitle', 'Retry sync failed'),
+                message,
             );
         } finally {
             setRetryingOrderIds((current) => ({
@@ -208,7 +199,7 @@ export function OrderJournalList({
         }
 
         return entries.filter((entry) =>
-            toSearchText(entry).includes(normalizedSearchTerm)
+            toSearchText(entry).includes(normalizedSearchTerm),
         );
     }, [entries, searchTerm]);
 
@@ -224,13 +215,15 @@ export function OrderJournalList({
                             {t('ORDERS_OrderJournal', 'Order Journal')}
                         </Text>
                         <View style={local.countBadge}>
-                            <Text style={local.countText}>{filteredEntries.length}</Text>
+                            <Text style={local.countText}>
+                                {filteredEntries.length}
+                            </Text>
                         </View>
                     </View>
                     <Text style={local.subtitle}>
                         {t(
                             'ORDERS_OrderJournalSubtitle',
-                            'Latest device-saved orders for the current tenant (up to 500).'
+                            'Latest device-saved orders for the current tenant (up to 500).',
                         )}
                     </Text>
                 </View>
@@ -239,7 +232,9 @@ export function OrderJournalList({
                     onPress={onClose}
                     style={local.closeButton}
                 >
-                    <Text style={local.closeText}>{t('COMMON_Close', 'X')}</Text>
+                    <Text style={local.closeText}>
+                        {t('COMMON_Close', 'X')}
+                    </Text>
                 </Pressable>
             </View>
             {!tenantId ? (
@@ -247,15 +242,21 @@ export function OrderJournalList({
                     <UIEmptyState
                         text={t(
                             'ORDERS_OrderJournalTenantUnavailable',
-                            'Tenant context is not ready yet.'
+                            'Tenant context is not ready yet.',
                         )}
                     />
                 </View>
             ) : loading ? (
                 <View style={local.loadingWrap}>
-                    <ActivityIndicator size="large" color={tokens.colors.accent} />
+                    <ActivityIndicator
+                        size="large"
+                        color={tokens.colors.accent}
+                    />
                     <Text style={local.loadingText}>
-                        {t('ORDERS_OrderJournalLoading', 'Loading device journal...')}
+                        {t(
+                            'ORDERS_OrderJournalLoading',
+                            'Loading device journal...',
+                        )}
                     </Text>
                 </View>
             ) : entries.length === 0 ? (
@@ -263,19 +264,24 @@ export function OrderJournalList({
                     <UIEmptyState
                         text={t(
                             'ORDERS_OrderJournalEmpty',
-                            'No device-saved orders found for this tenant.'
+                            'No device-saved orders found for this tenant.',
                         )}
                     />
                 </View>
             ) : (
                 <>
-                    <UICard tone="muted" padding="sm" radius="md" style={local.searchCard}>
+                    <UICard
+                        tone="muted"
+                        padding="sm"
+                        radius="md"
+                        style={local.searchCard}
+                    >
                         <UISearchInput
                             debounceTime={250}
                             value={searchTerm}
                             placeholder={t(
                                 'ORDERS_SearchOrderJournal',
-                                'Search device journal...'
+                                'Search device journal...',
                             )}
                             onChangeText={setSearchTerm}
                             onSubmit={setSearchTerm}
@@ -285,7 +291,9 @@ export function OrderJournalList({
                         testID="order-journal-list-flat-list"
                         keyboardShouldPersistTaps="handled"
                         data={filteredEntries}
-                        keyExtractor={(item) => `${item.tenantId || 'tenantless'}:${item.orderId}`}
+                        keyExtractor={(item) =>
+                            `${item.tenantId || 'tenantless'}:${item.orderId}`
+                        }
                         contentContainerStyle={local.listContent}
                         style={local.list}
                         renderItem={({ item }) => (
@@ -296,7 +304,9 @@ export function OrderJournalList({
                                             {item.orderNo || item.orderId}
                                         </Text>
                                         <Text style={local.orderMetaText}>
-                                            {new Date(item.createdAt).toLocaleString()}
+                                            {new Date(
+                                                item.createdAt,
+                                            ).toLocaleString()}
                                         </Text>
                                     </View>
                                     <View style={local.badgesColumn}>
@@ -310,20 +320,27 @@ export function OrderJournalList({
                                                 local.syncBadge,
                                                 item.syncState === 'sync_failed'
                                                     ? local.syncBadgeError
-                                                    : item.syncState === 'synced'
+                                                    : item.syncState ===
+                                                        'synced'
                                                       ? local.syncBadgeSuccess
                                                       : null,
                                             ]}
                                         >
                                             <Text style={local.syncBadgeText}>
-                                                {item.syncState.replace(/_/g, ' ')}
+                                                {item.syncState.replace(
+                                                    /_/g,
+                                                    ' ',
+                                                )}
                                             </Text>
                                         </View>
                                     </View>
                                 </View>
                                 <View style={local.metaRow}>
                                     <Text style={local.metaLabel}>
-                                        {t('ORDERS_OrderJournalEmployee', 'Employee')}
+                                        {t(
+                                            'ORDERS_OrderJournalEmployee',
+                                            'Employee',
+                                        )}
                                     </Text>
                                     <Text style={local.metaValue}>
                                         {getEmployeeName(item)}
@@ -333,7 +350,9 @@ export function OrderJournalList({
                                     <Text style={local.metaLabel}>
                                         {t('ORDERS_OrderJournalItems', 'Items')}
                                     </Text>
-                                    <Text style={local.metaValue}>{getItemCount(item)}</Text>
+                                    <Text style={local.metaValue}>
+                                        {getItemCount(item)}
+                                    </Text>
                                 </View>
                                 <View style={local.metaRow}>
                                     <Text style={local.metaLabel}>
@@ -344,7 +363,9 @@ export function OrderJournalList({
                                     </Text>
                                 </View>
                                 {item.lastError ? (
-                                    <Text style={local.errorText}>{item.lastError}</Text>
+                                    <Text style={local.errorText}>
+                                        {item.lastError}
+                                    </Text>
                                 ) : null}
                                 {canRetrySync(item) ? (
                                     <Pressable
@@ -356,17 +377,19 @@ export function OrderJournalList({
                                                 : null,
                                         ]}
                                         onPress={() => void onRetrySync(item)}
-                                        disabled={!!retryingOrderIds[item.orderId]}
+                                        disabled={
+                                            !!retryingOrderIds[item.orderId]
+                                        }
                                     >
                                         <Text style={local.retryButtonText}>
                                             {retryingOrderIds[item.orderId]
                                                 ? t(
                                                       'ORDERS_OrderJournalRetrying',
-                                                      'Retrying...'
+                                                      'Retrying...',
                                                   )
                                                 : t(
                                                       'ORDERS_OrderJournalRetry',
-                                                      'Retry Sync'
+                                                      'Retry Sync',
                                                   )}
                                         </Text>
                                     </Pressable>
@@ -378,7 +401,7 @@ export function OrderJournalList({
                                 <UIEmptyState
                                     text={t(
                                         'ORDERS_OrderJournalSearchEmpty',
-                                        'No device journal orders match your search.'
+                                        'No device journal orders match your search.',
                                     )}
                                 />
                             </View>

@@ -24,6 +24,9 @@ jest.mock('@pos/theme/native/design-tokens', () => ({
             textPrimary: '#fff',
             textSecondary: '#aab6c2',
             textMuted: '#8491a2',
+            accent: '#4aa3eb',
+            border: '#223044',
+            surfaceAccent: '#101826',
         },
     }),
 }));
@@ -49,6 +52,7 @@ describe('LogList', () => {
     it('should render successfully', () => {
         const { getByText } = render(<LogList />);
         expect(getByText('Order search')).toBeTruthy();
+        expect(getByText('Events')).toBeTruthy();
         expect(getByText('System Logs')).toBeTruthy();
     });
 });

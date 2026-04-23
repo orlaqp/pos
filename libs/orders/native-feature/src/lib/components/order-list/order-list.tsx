@@ -7,11 +7,7 @@ import {
     subscribeToOrderRefundChanges,
     subscribeToOrderRefundLineChanges,
 } from '@pos/orders/data-access';
-import {
-    UIScreen,
-    UISearchInput,
-    UIEmptyState,
-} from '@pos/shared/ui-native';
+import { UIScreen, UISearchInput, UIEmptyState } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import OrderItem from '../order-item/order-item';
@@ -21,10 +17,11 @@ import { ButtonGroup, Dialog } from '@rneui/themed';
 import { OrderStatus } from '@pos/shared/api';
 import OrderVoidForm from '../order-void-form/order-void-form';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-import i18next from 'i18next';
 import { logSyncDebug } from '@pos/shared/utils';
+import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
 import { RootState } from '@pos/store';
 import OpenOrderPaymentDialog from '../open-order-payment-dialog/open-order-payment-dialog';
+import OrderRefundedDetailsDialog from '../order-refunded-details-dialog/order-refunded-details-dialog';
 
 export interface OrderListProps {
     navigation?: NativeStackNavigationProp<any>;
@@ -45,19 +42,15 @@ export function OrderList({ navigation }: OrderListProps) {
     const [filterText, setFilterText] = useState<string>();
     const [orderToVoid, setOrderToVoid] = useState<OrderEntity | undefined>();
     const [orderToPay, setOrderToPay] = useState<OrderEntity | undefined>();
+    const [orderToOpenDetails, setOrderToOpenDetails] = useState<
+        OrderEntity | undefined
+    >();
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
     const allOrders = useSelector(selectAllOrders);
     const currentTenantId = useSelector(
-        (state: RootState) => state?.tenantSession?.currentTenantId
+        (state: RootState) => state?.tenantSession?.currentTenantId,
     );
-    const t = (key: string, fallback: string) => {
-        if (!(i18next.isInitialized && i18next.exists(key))) {
-            return fallback;
-        }
-
-        const translated = String(i18next.t(key)).trim();
-        return translated.length > 0 ? translated : fallback;
-    };
+    const t = translateWithFallback;
     const orderStatusTabs = useMemo(
         () => [
             t('ORDERSTATUS_Open', 'OPEN'),
@@ -65,26 +58,29 @@ export function OrderList({ navigation }: OrderListProps) {
             t('ORDERSTATUS_PartiallyRefunded', 'PARTIAL'),
             t('ORDERSTATUS_Refunded', 'REFUNDED'),
         ],
-        [t]
+        [t],
     );
-    
+
     useFocusEffect(
         React.useCallback(() => {
-            const ordersSub = subscribeToOrderChanges(dispatch, currentTenantId);
+            const ordersSub = subscribeToOrderChanges(
+                dispatch,
+                currentTenantId,
+            );
             const refundsSub = subscribeToOrderRefundChanges(
                 dispatch,
-                currentTenantId
+                currentTenantId,
             );
             const refundLinesSub = subscribeToOrderRefundLineChanges(
                 dispatch,
-                currentTenantId
+                currentTenantId,
             );
             return () => {
                 ordersSub?.unsubscribe();
                 refundsSub?.unsubscribe();
                 refundLinesSub?.unsubscribe();
             };
-        }, [currentTenantId, dispatch])
+        }, [currentTenantId, dispatch]),
     );
 
     const filteredOrders = useMemo(
@@ -93,7 +89,7 @@ export function OrderList({ navigation }: OrderListProps) {
                 status: orderStatusList[selectedIndex],
                 filter: filterText,
             }),
-        [allOrders, selectedIndex, filterText]
+        [allOrders, selectedIndex, filterText],
     );
 
     useEffect(() => {
@@ -146,14 +142,20 @@ export function OrderList({ navigation }: OrderListProps) {
     return (
         <UIScreen padded testID="order-list-screen">
             <View style={styles.container}>
-                <View style={styles.filtersRow} testID="order-list-filters-card">
+                <View
+                    style={styles.filtersRow}
+                    testID="order-list-filters-card"
+                >
                     <View style={styles.tabsColumn}>
                         <View style={styles.filtersIntro}>
                             <Text style={styles.filtersEyebrow}>
                                 {t('ORDERS_FilterEyebrow', 'Order status')}
                             </Text>
                             <Text style={styles.filtersTitle}>
-                                {t('ORDERS_FilterTitle', 'Track payments and refunds')}
+                                {t(
+                                    'ORDERS_FilterTitle',
+                                    'Track payments and refunds',
+                                )}
                             </Text>
                         </View>
                         <ButtonGroup
@@ -173,7 +175,11 @@ export function OrderList({ navigation }: OrderListProps) {
                         <Text style={styles.searchLabel}>
                             {t('ORDERS_SearchLabel', 'Search')}
                         </Text>
-                        <View style={!hasStatusOrders ? styles.searchDisabled : null}>
+                        <View
+                            style={
+                                !hasStatusOrders ? styles.searchDisabled : null
+                            }
+                        >
                             <UISearchInput
                                 testID="order-list-search-input"
                                 ref={searchRef}
@@ -188,14 +194,20 @@ export function OrderList({ navigation }: OrderListProps) {
                     </View>
                 </View>
 
-                <View style={styles.resultsCard} testID="order-list-results-card">
+                <View
+                    style={styles.resultsCard}
+                    testID="order-list-results-card"
+                >
                     {!hasStatusOrders && (
                         <View style={styles.emptyStateWrap}>
                             <UIEmptyState
-                                title={t('ORDERS_NoOrdersFound', 'No orders found')}
+                                title={t(
+                                    'ORDERS_NoOrdersFound',
+                                    'No orders found',
+                                )}
                                 subtitle={t(
                                     'ORDERS_NoOrdersFoundSubtitle',
-                                    'Orders with the selected status will appear here.'
+                                    'Orders with the selected status will appear here.',
                                 )}
                             />
                         </View>
@@ -203,10 +215,13 @@ export function OrderList({ navigation }: OrderListProps) {
                     {hasStatusOrders && !hasFilteredOrders && (
                         <View style={styles.emptyStateWrap}>
                             <UIEmptyState
-                                title={t('ORDERS_NoOrdersFound', 'No orders found')}
+                                title={t(
+                                    'ORDERS_NoOrdersFound',
+                                    'No orders found',
+                                )}
                                 subtitle={t(
                                     'ORDERS_NoOrdersFoundSearchSubtitle',
-                                    'Try another search term or switch to a different status.'
+                                    'Try another search term or switch to a different status.',
                                 )}
                             />
                         </View>
@@ -227,6 +242,9 @@ export function OrderList({ navigation }: OrderListProps) {
                                     item={item}
                                     onVoid={(order) => setOrderToVoid(order)}
                                     onPay={(order) => setOrderToPay(order)}
+                                    onOpenDetails={(order) =>
+                                        setOrderToOpenDetails(order)
+                                    }
                                 />
                             )}
                         />
@@ -239,7 +257,10 @@ export function OrderList({ navigation }: OrderListProps) {
                 onBackdropPress={() => setOrderToVoid(undefined)}
                 supportedOrientations={['landscape']}
                 presentationStyle="overFullScreen"
-                overlayStyle={[styles.overlay, { width: 1120, maxWidth: '94%' }]}
+                overlayStyle={[
+                    styles.overlay,
+                    { width: 1120, maxWidth: '94%' },
+                ]}
             >
                 {orderToVoid ? (
                     <OrderVoidForm
@@ -253,6 +274,11 @@ export function OrderList({ navigation }: OrderListProps) {
                 order={orderToPay}
                 navigation={navigation}
                 onClose={() => setOrderToPay(undefined)}
+            />
+            <OrderRefundedDetailsDialog
+                visible={!!orderToOpenDetails}
+                order={orderToOpenDetails}
+                onClose={() => setOrderToOpenDetails(undefined)}
             />
         </UIScreen>
     );

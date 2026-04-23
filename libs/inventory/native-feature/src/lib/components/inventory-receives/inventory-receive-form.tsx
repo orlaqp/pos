@@ -1,8 +1,21 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Alert, FlatList, Keyboard, StyleSheet, TextInput, View, Text } from 'react-native';
+import {
+    Alert,
+    FlatList,
+    Keyboard,
+    StyleSheet,
+    TextInput,
+    View,
+    Text,
+} from 'react-native';
 import { getThemeColors, useSharedStyles } from '@pos/theme/native';
-import { UIActions, UICard, UIScreen, UISearchInput } from '@pos/shared/ui-native';
+import {
+    UIActions,
+    UICard,
+    UIScreen,
+    UISearchInput,
+} from '@pos/shared/ui-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';
 import {
@@ -44,7 +57,7 @@ type PendingAction = 'save' | 'submit' | null;
 
 export const appendReceiveLineIfMissing = (
     lines: InventoryReceiveLineDTO[],
-    product: ProductEntity
+    product: ProductEntity,
 ) => {
     if (lines.find((line) => line.productId === product.id)) {
         return { added: false, nextLines: lines };
@@ -58,7 +71,7 @@ export const appendReceiveLineIfMissing = (
 
 export const applyReceiveLineUpdate = (
     lines: InventoryReceiveLineDTO[],
-    item: InventoryReceiveLineDTO
+    item: InventoryReceiveLineDTO,
 ) => {
     const idx = lines.findIndex((line) => line.productId === item.productId);
     if (idx === -1) return lines;
@@ -80,7 +93,7 @@ export function InventoryReceiveForm({
     'Inventory Receive Form'
 >) {
     const inventoryReceive = useSelector(
-        (state: RootState) => state.inventoryReceive.selected
+        (state: RootState) => state.inventoryReceive.selected,
     );
     const dispatch = useAppDispatch();
     const theme = useTheme();
@@ -100,12 +113,18 @@ export function InventoryReceiveForm({
     const syncLinesState = (
         updater:
             | InventoryReceiveLineDTO[]
-            | ((current: InventoryReceiveLineDTO[]) => InventoryReceiveLineDTO[])
+            | ((
+                  current: InventoryReceiveLineDTO[],
+              ) => InventoryReceiveLineDTO[]),
     ) => {
         setLines((current) => {
             const next =
                 typeof updater === 'function'
-                    ? (updater as (current: InventoryReceiveLineDTO[]) => InventoryReceiveLineDTO[])(current)
+                    ? (
+                          updater as (
+                              current: InventoryReceiveLineDTO[],
+                          ) => InventoryReceiveLineDTO[]
+                      )(current)
                     : updater;
             linesRef.current = next;
             return next;
@@ -121,7 +140,10 @@ export function InventoryReceiveForm({
         syncLinesState(inventoryReceive.lines.map((l) => ({ ...l })));
     }, [inventoryReceive]);
 
-    const save = async (updateInv: boolean, action: Exclude<PendingAction, null>) => {
+    const save = async (
+        updateInv: boolean,
+        action: Exclude<PendingAction, null>,
+    ) => {
         if (busy) return;
         setPendingAction(action);
         setBusy(true);
@@ -137,12 +159,14 @@ export function InventoryReceiveForm({
                     id: inventoryReceive.id,
                     createdBy: {
                         id: employee?.id,
-                        name: `${employee?.firstName} ${employee?.lastName}`
-                    }
+                        name: `${employee?.firstName} ${employee?.lastName}`,
+                    },
                 };
             } else {
                 if (!employee) {
-                    Alert.alert('The system could not find the details of the logged in employee');
+                    Alert.alert(
+                        'The system could not find the details of the logged in employee',
+                    );
                     return;
                 }
 
@@ -154,7 +178,11 @@ export function InventoryReceiveForm({
                 inv.status = 'COMPLETED';
             }
 
-            const saved = await InventoryReceiveService.save(dispatch, inv, updateInv);
+            const saved = await InventoryReceiveService.save(
+                dispatch,
+                inv,
+                updateInv,
+            );
             if (!saved) {
                 return;
             }
@@ -173,7 +201,7 @@ export function InventoryReceiveForm({
         confirm(
             '',
             'This action will adjust your inventory based on this receive. You will no be able to undo this operation',
-            () => save(true, 'submit')
+            () => save(true, 'submit'),
         );
     };
 
@@ -190,7 +218,7 @@ export function InventoryReceiveForm({
                         navigation.goBack();
                     },
                 },
-            ]
+            ],
         );
     };
 
@@ -205,7 +233,9 @@ export function InventoryReceiveForm({
     };
 
     const deleteItem = (item: InventoryReceiveLineDTO) => {
-        syncLinesState((res) => res.filter((i) => i.productId !== item.productId));
+        syncLinesState((res) =>
+            res.filter((i) => i.productId !== item.productId),
+        );
     };
 
     const addItem = (product: ProductEntity) => {
@@ -234,125 +264,154 @@ export function InventoryReceiveForm({
 
     return (
         <UIScreen>
-        <View style={[styles.page]}>
-            <UICard tone="muted" style={local.headerCard}>
-            <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-                {route.params?.readOnly && (
-                    <View style={local.readOnlyBanner}>
-                        <View style={local.readOnlyIconWrap}>
-                            <Icon
-                                name="lock-check-outline"
-                                size={20}
-                                color={colors.warning}
-                            />
-                        </View>
-                        <View style={local.readOnlyCopy}>
-                            <Text style={local.readOnlyTitle}>
-                                Completed receive
-                            </Text>
-                            <Text style={local.readOnlyText}>
-                                This inventory receive is read-only and cannot be changed.
-                            </Text>
-                        </View>
+            <View style={[styles.page]}>
+                <UICard tone="muted" style={local.headerCard}>
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        {route.params?.readOnly && (
+                            <View style={local.readOnlyBanner}>
+                                <View style={local.readOnlyIconWrap}>
+                                    <Icon
+                                        name="lock-check-outline"
+                                        size={20}
+                                        color={colors.warning}
+                                    />
+                                </View>
+                                <View style={local.readOnlyCopy}>
+                                    <Text style={local.readOnlyTitle}>
+                                        Completed receive
+                                    </Text>
+                                    <Text style={local.readOnlyText}>
+                                        This inventory receive is read-only and
+                                        cannot be changed.
+                                    </Text>
+                                </View>
+                            </View>
+                        )}
+                        {!route.params?.readOnly && (
+                            <View style={local.searchWrap}>
+                                <View style={local.formHeaderRow}>
+                                    <View>
+                                        <Text style={local.formEyebrow}>
+                                            Inventory receive
+                                        </Text>
+                                        <Text style={local.formTitle}>
+                                            Receive workspace
+                                        </Text>
+                                    </View>
+                                    <View style={local.formMetricPill}>
+                                        <Text style={local.formMetricValue}>
+                                            {lines.length}
+                                        </Text>
+                                        <Text style={local.formMetricLabel}>
+                                            Lines
+                                        </Text>
+                                    </View>
+                                </View>
+                                <UISearchInput
+                                    ref={ref}
+                                    testID="inventory-receive-search-input"
+                                    value={filter}
+                                    editable={!busy}
+                                    placeholder="Search for products ..."
+                                    debounceTime={700}
+                                    onChangeText={setFilter}
+                                    onSubmit={searchSubmit}
+                                    onClear={() => ref.current?.focus()}
+                                />
+                                {/* <TextInput onSubmitEditing={(e) => setFilter(e.nativeEvent.text)} style={{ borderColor: 'blue', borderWidth: 1 }} /> */}
+                            </View>
+                        )}
                     </View>
-                )}
+                </UICard>
                 {!route.params?.readOnly && (
-                    <View style={local.searchWrap}>
-                        <UISearchInput
-                            ref={ref}
-                            testID="inventory-receive-search-input"
-                            value={filter}
-                            editable={!busy}
-                            placeholder="Search for products ..."
-                            debounceTime={700}
-                            onChangeText={setFilter}
-                            onSubmit={searchSubmit}
-                            onClear={() => ref.current?.focus()}
-                        />
-                        {/* <TextInput onSubmitEditing={(e) => setFilter(e.nativeEvent.text)} style={{ borderColor: 'blue', borderWidth: 1 }} /> */}
-                    </View>
+                    <CompactProductList
+                        visible={!busy && !!filter}
+                        products={filteredProducts}
+                        onAdd={addItem}
+                        onClose={() => setFilter('')}
+                    />
                 )}
-            </View>
-            </UICard>
-            {!route.params?.readOnly && (
-                <CompactProductList
-                    visible={!busy && !!filter}
-                    products={filteredProducts}
-                    onAdd={addItem}
-                    onClose={() => setFilter('')}
-                />
-            )}
 
-            <View style={local.listWrap}>
-                <FlatList
-                    horizontal={false}
-                    data={lines}
-                    renderItem={(data) => (
-                        <InventoryReceiveLine
-                            readOnly={route.params?.readOnly || busy}
-                            item={data.item}
-                            key={data.index}
-                            onUpdate={updateItem}
-                            onDelete={deleteItem}
-                        />
+                <View style={local.listWrap}>
+                    <FlatList
+                        horizontal={false}
+                        data={lines}
+                        renderItem={(data) => (
+                            <InventoryReceiveLine
+                                readOnly={route.params?.readOnly || busy}
+                                item={data.item}
+                                key={data.index}
+                                onUpdate={updateItem}
+                                onDelete={deleteItem}
+                            />
+                        )}
+                        style={local.list}
+                        contentContainerStyle={local.listContent}
+                    />
+                </View>
+
+                <View style={local.footerRow}>
+                    {!route.params?.readOnly && (
+                        <UICard tone="muted" style={local.footerCard}>
+                            <View style={local.footerButtons}>
+                                <UIActions
+                                    busy={busy}
+                                    submitLoading={pendingAction === 'save'}
+                                    submitAction={() => save(false, 'save')}
+                                    cancelAction={confirmCancel}
+                                />
+                                <View style={{ marginLeft: 10 }}>
+                                    <Button
+                                        color="success"
+                                        title="Update Inventory"
+                                        testID="inventory-receive-update-inventory-button"
+                                        onPress={updateInventory}
+                                        loading={
+                                            busy && pendingAction === 'submit'
+                                        }
+                                        icon={{
+                                            name: 'scale-balance',
+                                            type: 'material-community',
+                                            color: theme.theme.colors.grey0,
+                                        }}
+                                        titleStyle={{
+                                            paddingRight: 20,
+                                        }}
+                                        buttonStyle={
+                                            local.updateInventoryButton
+                                        }
+                                        disabledStyle={styles.darkBackground}
+                                        disabledTitleStyle={{
+                                            color: theme.theme.colors.grey5,
+                                        }}
+                                        disabled={busy}
+                                    />
+                                </View>
+                            </View>
+                        </UICard>
                     )}
-                    style={local.list}
-                    contentContainerStyle={local.listContent}
-                />
+                </View>
             </View>
-
-            <View
-                style={local.footerRow}
-            >
-                {!route.params?.readOnly && (
-                    <UICard tone="muted" style={local.footerCard}>
-                    <View style={local.footerButtons}>
-                        <UIActions
-                            busy={busy}
-                            submitLoading={pendingAction === 'save'}
-                            submitAction={() => save(false, 'save')}
-                            cancelAction={confirmCancel}
-                        />
-                        <View style={{ marginLeft: 10 }}>
-                            <Button
-                                color="success"
-                                title="Update Inventory"
-                                testID="inventory-receive-update-inventory-button"
-                                onPress={updateInventory}
-                                loading={busy && pendingAction === 'submit'}
-                                icon={{
-                                    name: 'scale-balance',
-                                    type: 'material-community',
-                                    color: theme.theme.colors.grey0,
-                                }}
-                                titleStyle={{
-                                    paddingRight: 20,
-                                }}
-                                disabledStyle={styles.darkBackground}
-                                disabledTitleStyle={{
-                                    color: theme.theme.colors.grey5,
-                                }}
-                                disabled={busy}
-                            />
-                        </View>
-                    </View>
-                    </UICard>
-                )}
-            </View>
-        </View>
         </UIScreen>
     );
 }
 
 const useStyles = (
     tokens: ReturnType<typeof useDesignTokens>,
-    colors: Record<string, string>
+    colors: Record<string, string>,
 ) =>
     StyleSheet.create({
         headerCard: {
             marginHorizontal: tokens.spacing.md,
-            marginTop: tokens.spacing.md,
-            marginBottom: tokens.spacing.sm,
+            marginTop: tokens.spacing.sm,
+            marginBottom: tokens.spacing.xs,
+            paddingHorizontal: tokens.spacing.lg,
+            paddingVertical: tokens.spacing.md,
         },
         readOnlyBanner: {
             alignItems: 'center',
@@ -397,11 +456,52 @@ const useStyles = (
         },
         searchWrap: {
             flex: 3,
-            padding: 10,
+            padding: 0,
+        },
+        formHeaderRow: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginBottom: tokens.spacing.xs,
+        },
+        formEyebrow: {
+            color: tokens.colors.textMuted,
+            fontSize: 11,
+            fontWeight: '800',
+            letterSpacing: 1.2,
+            textTransform: 'uppercase',
+        },
+        formTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 18,
+            fontWeight: '800',
+            marginTop: 2,
+        },
+        formMetricPill: {
+            alignItems: 'center',
+            backgroundColor: `${colors.primary}18`,
+            borderColor: `${colors.primary}55`,
+            borderRadius: 18,
+            borderWidth: 1,
+            minWidth: 82,
+            paddingHorizontal: tokens.spacing.sm,
+            paddingVertical: tokens.spacing.xs,
+        },
+        formMetricValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 18,
+            fontWeight: '800',
+        },
+        formMetricLabel: {
+            color: tokens.colors.textSecondary,
+            fontSize: 10,
+            fontWeight: '800',
+            letterSpacing: 0.8,
+            textTransform: 'uppercase',
         },
         footerRow: {
             marginHorizontal: tokens.spacing.md,
-            marginBottom: tokens.spacing.md,
+            marginBottom: tokens.spacing.sm,
         },
         listWrap: {
             flex: 1,
@@ -416,12 +516,18 @@ const useStyles = (
             paddingBottom: tokens.spacing.sm,
         },
         footerCard: {
-            paddingVertical: tokens.spacing.sm,
+            paddingVertical: tokens.spacing.xs,
             paddingHorizontal: tokens.spacing.md,
         },
         footerButtons: {
+            alignItems: 'center',
             flexDirection: 'row',
             justifyContent: 'flex-end',
+        },
+        updateInventoryButton: {
+            borderRadius: 22,
+            minHeight: 44,
+            paddingHorizontal: tokens.spacing.md,
         },
     });
 

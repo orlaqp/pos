@@ -10,7 +10,7 @@ import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button } from '@rneui/themed';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import i18next from 'i18next';
+import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
 import {
     getAutoFillAmount,
     getRestoredValue,
@@ -19,15 +19,38 @@ import {
     toNumber,
 } from './cart-payment.logic';
 
-import { View, Text, Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
+import {
+    View,
+    Text,
+    Alert,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+} from 'react-native';
 
 const round2Dec = (value: number) => +value.toFixed(2);
 
 const PaymentMethod = {
-    cc: { labelKey: 'PAYMENT_Method_CreditCard', label: 'Credit Card', type: PaymentType.CC },
-    cash: { labelKey: 'PAYMENT_Method_Cash', label: 'Cash', type: PaymentType.CASH },
-    check: { labelKey: 'PAYMENT_Method_Check', label: 'Check', type: PaymentType.CHECK },
-    ebt: { labelKey: 'PAYMENT_Method_EBT', label: 'EBT', type: PaymentType.EBT },
+    cc: {
+        labelKey: 'PAYMENT_Method_CreditCard',
+        label: 'Credit Card',
+        type: PaymentType.CC,
+    },
+    cash: {
+        labelKey: 'PAYMENT_Method_Cash',
+        label: 'Cash',
+        type: PaymentType.CASH,
+    },
+    check: {
+        labelKey: 'PAYMENT_Method_Check',
+        label: 'Check',
+        type: PaymentType.CHECK,
+    },
+    ebt: {
+        labelKey: 'PAYMENT_Method_EBT',
+        label: 'EBT',
+        type: PaymentType.EBT,
+    },
 } as const;
 
 const PAYMENT_METHOD_ROWS: PaymentKey[][] = [
@@ -69,10 +92,7 @@ export function CartPayment({
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
     const local = useStyles(tokens);
-    const t = (key: string, fallback: string) =>
-        i18next.isInitialized && i18next.exists(key)
-            ? String(i18next.t(key))
-            : fallback;
+    const t = translateWithFallback;
     const isCompact = layout === 'compact';
     const previousValues = useRef<Partial<Record<PaymentKey, number>>>({});
     const form = useForm<PaymentInfo>({
@@ -91,19 +111,23 @@ export function CartPayment({
 
     const paymentMethods = useMemo(() => {
         return (Object.keys(PaymentMethod) as PaymentKey[]).filter(
-            (x) => x !== 'check' || canReceiveChecks
+            (x) => x !== 'check' || canReceiveChecks,
         );
     }, [canReceiveChecks]);
     const paymentMethodRows = useMemo(() => {
         return PAYMENT_METHOD_ROWS.map((row) =>
-            row.filter((method) => paymentMethods.includes(method))
+            row.filter((method) => paymentMethods.includes(method)),
         ).filter((row) => row.length > 0);
     }, [paymentMethods]);
     const watchedValues = form.watch() as PaymentInfo;
     const formValue = watchedValues;
     const receivedTotal = paymentMethods.reduce(
-        (acc, method) => acc + toNumber((watchedValues as unknown as Record<string, unknown>)[method]),
-        0
+        (acc, method) =>
+            acc +
+            toNumber(
+                (watchedValues as unknown as Record<string, unknown>)[method],
+            ),
+        0,
     );
     const roundedReceivedTotal = round2Dec(receivedTotal);
     const roundedTotal = round2Dec(total);
@@ -123,13 +147,10 @@ export function CartPayment({
 
     const isMethodActive = (
         method: PaymentKey,
-        value: PaymentInfo = form.getValues() as PaymentInfo
+        value: PaymentInfo = form.getValues() as PaymentInfo,
     ) => !!value[getMethodEnabledKey(method)];
 
-    const setMethodActive = (
-        method: PaymentKey,
-        active: boolean
-    ) => {
+    const setMethodActive = (method: PaymentKey, active: boolean) => {
         const currentValues = form.getValues() as PaymentInfo;
         const enabledKey = getMethodEnabledKey(method);
 
@@ -161,12 +182,12 @@ export function CartPayment({
                 },
                 paymentMethods,
                 total,
-                ebtEligibleTotal
+                ebtEligibleTotal,
             ) as PaymentInfo[typeof method],
             {
                 shouldDirty: true,
                 shouldTouch: true,
-            }
+            },
         );
     };
 
@@ -191,8 +212,8 @@ export function CartPayment({
             Alert.alert(
                 t(
                     'PAYMENT_ReceivedMustMatchTotal',
-                    'Received payment must match the total exactly'
-                )
+                    'Received payment must match the total exactly',
+                ),
             );
             return;
         }
@@ -202,14 +223,14 @@ export function CartPayment({
                 t('PAYMENT_EBTValidationTitle', 'EBT validation failed'),
                 `${t(
                     'PAYMENT_EBTValidationMessage',
-                    'EBT amount cannot exceed EBT-eligible amount.'
-                )}\n$${ebtReceived.toFixed(2)} > $${ebtEligibleTotal.toFixed(2)}`
+                    'EBT amount cannot exceed EBT-eligible amount.',
+                )}\n$${ebtReceived.toFixed(2)} > $${ebtEligibleTotal.toFixed(2)}`,
             );
             return;
         }
 
         onPaymentEntered(result);
-    }
+    };
 
     useEffect(() => {
         const subscription = form.watch((value, { name }) => {
@@ -235,9 +256,14 @@ export function CartPayment({
                     tone="muted"
                     padding={isCompact ? 'sm' : 'md'}
                     radius="lg"
-                    style={[local.summaryCard, isCompact && local.summaryCardCompact]}
+                    style={[
+                        local.summaryCard,
+                        isCompact && local.summaryCardCompact,
+                    ]}
                 >
-                    {!isCompact ? <Text style={local.summaryEyebrow}>Checkout</Text> : null}
+                    {!isCompact ? (
+                        <Text style={local.summaryEyebrow}>Checkout</Text>
+                    ) : null}
                     <Text
                         style={[
                             styles.secondaryText,
@@ -259,10 +285,16 @@ export function CartPayment({
                     </Text>
                     {!isCompact ? (
                         <Text style={local.summaryHint}>
-                            Activate the methods you need below and keep the received amount matched exactly.
+                            Activate the methods you need below and keep the
+                            received amount matched exactly.
                         </Text>
                     ) : null}
-                    <View style={[local.summaryRow, isCompact && local.summaryRowCompact]}>
+                    <View
+                        style={[
+                            local.summaryRow,
+                            isCompact && local.summaryRowCompact,
+                        ]}
+                    >
                         <View
                             style={[
                                 local.summaryPill,
@@ -302,7 +334,12 @@ export function CartPayment({
                         </View>
                     </View>
                 </UICard>
-                <View style={[local.zoneSpacer, isCompact && local.zoneSpacerCompact]}>
+                <View
+                    style={[
+                        local.zoneSpacer,
+                        isCompact && local.zoneSpacerCompact,
+                    ]}
+                >
                     <UIVerticalSpacer size="small" />
                 </View>
                 <ScrollView
@@ -312,10 +349,16 @@ export function CartPayment({
                 >
                     <View style={local.methodsGrid}>
                         {paymentMethodRows.map((row, rowIndex) => (
-                            <View key={`payment-row-${rowIndex}`} style={local.methodGridRow}>
+                            <View
+                                key={`payment-row-${rowIndex}`}
+                                style={local.methodGridRow}
+                            >
                                 {row.map((m) => {
                                     const isSingleCard = row.length === 1;
-                                    const isActive = isMethodActive(m, formValue);
+                                    const isActive = isMethodActive(
+                                        m,
+                                        formValue,
+                                    );
 
                                     return (
                                         <Pressable
@@ -331,11 +374,17 @@ export function CartPayment({
                                             ]}
                                         >
                                             {isActive ? (
-                                                <View style={local.methodCardActiveAccent} />
+                                                <View
+                                                    style={
+                                                        local.methodCardActiveAccent
+                                                    }
+                                                />
                                             ) : null}
                                             <UICard
                                                 tone="default"
-                                                padding={isCompact ? 'xs' : 'sm'}
+                                                padding={
+                                                    isCompact ? 'xs' : 'sm'
+                                                }
                                                 radius="md"
                                                 style={[
                                                     local.methodCard,
@@ -356,12 +405,16 @@ export function CartPayment({
                                                         ]}
                                                     >
                                                         {t(
-                                                            PaymentMethod[m].labelKey,
-                                                            PaymentMethod[m].label
+                                                            PaymentMethod[m]
+                                                                .labelKey,
+                                                            PaymentMethod[m]
+                                                                .label,
                                                         )}
                                                     </Text>
                                                     <View
-                                                        style={local.methodInputWrap}
+                                                        style={
+                                                            local.methodInputWrap
+                                                        }
                                                     >
                                                         <UINumericInput
                                                             testID={`payment-input-${m}`}
@@ -370,17 +423,23 @@ export function CartPayment({
                                                             allowDecimals={true}
                                                             textAlign="right"
                                                             lIcon="currency-usd"
-                                                            clearTextOnFocus={false}
-                                                            selectTextOnFocus={true}
+                                                            clearTextOnFocus={
+                                                                false
+                                                            }
+                                                            selectTextOnFocus={
+                                                                true
+                                                            }
                                                             onFocus={() => {
                                                                 const wasActive =
                                                                     isMethodActive(
-                                                                        m
+                                                                        m,
                                                                     );
-                                                                if (!wasActive) {
+                                                                if (
+                                                                    !wasActive
+                                                                ) {
                                                                     setMethodActive(
                                                                         m,
-                                                                        true
+                                                                        true,
                                                                     );
                                                                     return;
                                                                 }
@@ -389,30 +448,30 @@ export function CartPayment({
                                                                     m
                                                                 ] = toNumber(
                                                                     form.getValues(
-                                                                        m
-                                                                    )
+                                                                        m,
+                                                                    ),
                                                                 );
                                                                 form.setValue(
                                                                     m,
-                                                                    '' as any
+                                                                    '' as any,
                                                                 );
                                                             }}
                                                             onBlur={() =>
                                                                 setTimeout(
                                                                     () =>
                                                                         restoreIfEmpty(
-                                                                            m
+                                                                            m,
                                                                         ),
-                                                                    0
+                                                                    0,
                                                                 )
                                                             }
                                                             onEndEditing={() =>
                                                                 setTimeout(
                                                                     () =>
                                                                         restoreIfEmpty(
-                                                                            m
+                                                                            m,
                                                                         ),
-                                                                    0
+                                                                    0,
                                                                 )
                                                             }
                                                             containerStyle={
@@ -449,12 +508,16 @@ export function CartPayment({
                         tone="muted"
                         padding={isCompact ? 'xs' : 'sm'}
                         radius="md"
-                        style={[local.footerCard, isCompact && local.footerCardCompact]}
+                        style={[
+                            local.footerCard,
+                            isCompact && local.footerCardCompact,
+                        ]}
                     >
                         <View
                             style={[
                                 local.summaryFooterRow,
-                                isExactPayment && local.summaryFooterRowComplete,
+                                isExactPayment &&
+                                    local.summaryFooterRowComplete,
                                 isCompact && local.summaryFooterRowCompact,
                             ]}
                         >
@@ -466,7 +529,8 @@ export function CartPayment({
                                     local.summaryFooterValue,
                                     isExactPayment &&
                                         local.summaryFooterValueComplete,
-                                    isCompact && local.summaryFooterValueCompact,
+                                    isCompact &&
+                                        local.summaryFooterValueCompact,
                                 ]}
                             >
                                 $ {roundedReceivedTotal.toFixed(2)}
@@ -476,7 +540,7 @@ export function CartPayment({
                             <Text style={local.completeHint}>
                                 {t(
                                     'PAYMENT_ReadyToFinalize',
-                                    'Ready to finalize payment'
+                                    'Ready to finalize payment',
                                 )}
                             </Text>
                         )}
@@ -484,7 +548,7 @@ export function CartPayment({
                             <Text style={local.pendingHint}>
                                 {t(
                                     'PAYMENT_EnterRemaining',
-                                    'Enter remaining amount to continue'
+                                    'Enter remaining amount to continue',
                                 )}
                             </Text>
                         )}
@@ -492,7 +556,7 @@ export function CartPayment({
                             <Text style={local.pendingHint}>
                                 {t(
                                     'PAYMENT_AdjustToMatchTotal',
-                                    'Adjust payments to match the amount due'
+                                    'Adjust payments to match the amount due',
                                 )}
                             </Text>
                         )}
@@ -527,7 +591,8 @@ export function CartPayment({
                             <View
                                 style={[
                                     local.footerSectionSpacer,
-                                    isCompact && local.footerSectionSpacerCompact,
+                                    isCompact &&
+                                        local.footerSectionSpacerCompact,
                                 ]}
                             >
                                 <UIVerticalSpacer size="small" />

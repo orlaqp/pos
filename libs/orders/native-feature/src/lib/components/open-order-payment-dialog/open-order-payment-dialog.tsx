@@ -33,7 +33,7 @@ import { selectLoginEmployee } from '@pos/employees/data-access';
 import { Role } from '@pos/auth/data-access';
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-import i18next from 'i18next';
+import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
 
 interface OpenOrderPaymentDialogProps {
     visible: boolean;
@@ -57,22 +57,19 @@ export function OpenOrderPaymentDialog({
     const store = useSelector(selectStore);
     const employee = useSelector(selectLoginEmployee);
     const [busy, setBusy] = useState(false);
-    const t = (key: string, fallback: string) =>
-        i18next.isInitialized && i18next.exists(key)
-            ? String(i18next.t(key))
-            : fallback;
+    const t = translateWithFallback;
 
     const cart = useMemo(
         () => (order ? OrderEntityMapper.asCartState(order) : undefined),
-        [order]
+        [order],
     );
     const orderSummary = useMemo(
         () => (cart ? buildOrderSummary(cart) : undefined),
-        [cart]
+        [cart],
     );
     const discountBreakdown = useMemo(
         () => buildDiscountBreakdown(cart?.appliedDiscountSummary),
-        [cart?.appliedDiscountSummary]
+        [cart?.appliedDiscountSummary],
     );
     const canReceiveChecks = !!employee?.roles?.includes(Role.Checks);
 
@@ -106,7 +103,9 @@ export function OpenOrderPaymentDialog({
             defaultPrinter ||
             (await PrinterService.getDefaultPrinter()
                 .then((printer) =>
-                    printer ? PrinterEntityMapper.fromModel(printer) : undefined
+                    printer
+                        ? PrinterEntityMapper.fromModel(printer)
+                        : undefined,
                 )
                 .catch(() => undefined));
 
@@ -114,8 +113,8 @@ export function OpenOrderPaymentDialog({
             Alert.alert(
                 t(
                     'ORDERPAYMENT_PrintRequirements',
-                    'Store info and printer setup need to be ready before printing a reference.'
-                )
+                    'Store info and printer setup need to be ready before printing a reference.',
+                ),
             );
             return;
         }
@@ -123,12 +122,12 @@ export function OpenOrderPaymentDialog({
         await printReceipt(
             resolvedStore,
             resolvedPrinter,
-            OrderService.buildPrintTicketPreview(cart, 'CUSTOMER')
+            OrderService.buildPrintTicketPreview(cart, 'CUSTOMER'),
         );
     };
 
     const receivePayment = async (
-        payments: Array<{ type: string; amount: number }>
+        payments: Array<{ type: string; amount: number }>,
     ) => {
         if (!cart || busy) return;
 
@@ -141,19 +140,19 @@ export function OpenOrderPaymentDialog({
                     defaultPrinter,
                     storeInfo: store,
                     skipAutoPrint: !store,
-                }) as any
+                }) as any,
             );
 
             if (!payOrder.fulfilled.match(result) || !result.payload) {
                 Alert.alert(
                     t(
                         'ORDERPAYMENT_FailedTitle',
-                        'Payment could not be completed'
+                        'Payment could not be completed',
                     ),
                     t(
                         'ORDERPAYMENT_FailedMessage',
-                        'The order is still open. Please try again.'
-                    )
+                        'The order is still open. Please try again.',
+                    ),
                 );
                 return;
             }
@@ -183,10 +182,13 @@ export function OpenOrderPaymentDialog({
                             styles={summaryStyles}
                             orderSummary={orderSummary}
                             discountBreakdown={discountBreakdown}
-                            title={t('ORDERPAYMENT_SummaryTitle', 'Order summary')}
+                            title={t(
+                                'ORDERPAYMENT_SummaryTitle',
+                                'Order summary',
+                            )}
                             hint={t(
                                 'ORDERPAYMENT_SummaryHint',
-                                'Review the order details before receiving payment.'
+                                'Review the order details before receiving payment.',
                             )}
                             scrollStyle={styles.summaryScroll}
                             scrollContentStyle={styles.summaryScrollContent}
@@ -194,25 +196,43 @@ export function OpenOrderPaymentDialog({
                             plain={true}
                             footer={
                                 <View style={summaryStyles.summaryFooter}>
-                                    <View style={summaryStyles.summaryFooterTotalBlock}>
-                                        <Text style={summaryStyles.summaryFooterLabel}>
+                                    <View
+                                        style={
+                                            summaryStyles.summaryFooterTotalBlock
+                                        }
+                                    >
+                                        <Text
+                                            style={
+                                                summaryStyles.summaryFooterLabel
+                                            }
+                                        >
                                             {t('ORDERPAYMENT_Total', 'Total')}
                                         </Text>
-                                        <Text style={summaryStyles.summaryFooterValue}>
+                                        <Text
+                                            style={
+                                                summaryStyles.summaryFooterValue
+                                            }
+                                        >
                                             ${orderSummary.total.toFixed(2)}
                                         </Text>
                                     </View>
-                                    <View style={summaryStyles.summaryFooterActions}>
+                                    <View
+                                        style={
+                                            summaryStyles.summaryFooterActions
+                                        }
+                                    >
                                         <Button
                                             testID="open-order-payment-print-button"
                                             onPress={printReference}
                                             type="clear"
                                             title={t(
                                                 'ORDERPAYMENT_PrintReference',
-                                                'Print reference'
+                                                'Print reference',
                                             )}
                                             disabled={busy}
-                                            buttonStyle={summaryStyles.summarySecondaryButton}
+                                            buttonStyle={
+                                                summaryStyles.summarySecondaryButton
+                                            }
                                             titleStyle={
                                                 summaryStyles.summarySecondaryButtonTitle
                                             }
@@ -237,22 +257,29 @@ export function OpenOrderPaymentDialog({
                                         <Button
                                             testID="open-order-payment-cancel-button"
                                             type="outline"
-                                            title={t('ORDERPAYMENT_Close', 'Close')}
+                                            title={t(
+                                                'ORDERPAYMENT_Close',
+                                                'Close',
+                                            )}
                                             disabled={busy}
                                             onPress={closeDialog}
                                             buttonStyle={styles.secondaryButton}
-                                            titleStyle={styles.secondaryButtonTitle}
+                                            titleStyle={
+                                                styles.secondaryButtonTitle
+                                            }
                                         />
                                         <Button
                                             testID="open-order-payment-open-in-sales-button"
                                             type="clear"
                                             title={t(
                                                 'ORDERPAYMENT_OpenInSales',
-                                                'Open in Sales'
+                                                'Open in Sales',
                                             )}
                                             disabled={busy}
                                             onPress={openInSales}
-                                            titleStyle={styles.openInSalesButtonTitle}
+                                            titleStyle={
+                                                styles.openInSalesButtonTitle
+                                            }
                                         />
                                     </View>
                                 }

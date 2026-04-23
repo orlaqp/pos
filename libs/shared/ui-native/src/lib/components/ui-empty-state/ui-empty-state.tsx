@@ -1,6 +1,13 @@
-import { useTheme, Button } from '@rneui/themed';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { Button } from '@rneui/themed';
 import React from 'react';
-import { Image, ImageSourcePropType, StyleSheet, Text, View } from 'react-native';
+import {
+    Image,
+    ImageSourcePropType,
+    StyleSheet,
+    Text,
+    View,
+} from 'react-native';
 
 import EmptyBox from '../../assets/empty-box.png';
 
@@ -46,9 +53,8 @@ export function UIEmptyState({
     action,
     icon,
 }: EmptyStateProps) {
-    const theme = useTheme();
-    const colors = theme?.theme?.colors || { primary: '#4aa3eb', grey3: '#8491a2' };
-    const styles = useStyles(colors.primary, colors.grey3);
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const resolvedTitle = title || text || '';
     const resolvedActions =
         actions ||
@@ -61,7 +67,7 @@ export function UIEmptyState({
                       icon: {
                           name: icon || 'plus',
                           type: 'material-community',
-                          color: colors.primary,
+                          color: tokens.colors.accent,
                           size: 18,
                       },
                   },
@@ -80,7 +86,9 @@ export function UIEmptyState({
                     />
                 ) : null}
                 <Text style={styles.title}>{resolvedTitle}</Text>
-                {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+                {subtitle ? (
+                    <Text style={styles.subtitle}>{subtitle}</Text>
+                ) : null}
                 {resolvedActions.length ? (
                     <View style={styles.actions}>
                         {resolvedActions.map((item) => {
@@ -94,7 +102,9 @@ export function UIEmptyState({
                                     type={isOutline ? 'outline' : 'solid'}
                                     onPress={item.onPress}
                                     buttonStyle={
-                                        isOutline ? styles.secondaryAction : styles.primaryAction
+                                        isOutline
+                                            ? styles.secondaryAction
+                                            : styles.primaryAction
                                     }
                                     titleStyle={
                                         isOutline
@@ -107,7 +117,9 @@ export function UIEmptyState({
                                                   ...item.icon,
                                                   color:
                                                       item.icon.color ||
-                                                      (isOutline ? colors.primary : '#ffffff'),
+                                                      (isOutline
+                                                          ? tokens.colors.accent
+                                                          : '#ffffff'),
                                               }
                                             : undefined
                                     }
@@ -121,14 +133,14 @@ export function UIEmptyState({
     );
 }
 
-const useStyles = (accent: string, secondaryText: string) =>
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     StyleSheet.create({
         container: {
             flex: 1,
             alignItems: 'center',
             justifyContent: 'center',
-            paddingHorizontal: 24,
-            paddingVertical: 16,
+            paddingHorizontal: tokens.spacing.xl,
+            paddingVertical: tokens.spacing.lg,
         },
         content: {
             alignItems: 'center',
@@ -136,14 +148,14 @@ const useStyles = (accent: string, secondaryText: string) =>
             maxWidth: 520,
         },
         title: {
-            color: '#ffffff',
+            color: tokens.colors.textPrimary,
             fontSize: 24,
             fontWeight: '700',
             marginBottom: 6,
             textAlign: 'center',
         },
         subtitle: {
-            color: secondaryText,
+            color: tokens.colors.textSecondary,
             fontSize: 15,
             lineHeight: 22,
             textAlign: 'center',
@@ -156,7 +168,7 @@ const useStyles = (accent: string, secondaryText: string) =>
             gap: 12,
         },
         primaryAction: {
-            backgroundColor: accent,
+            backgroundColor: tokens.colors.accent,
             borderRadius: 24,
             paddingHorizontal: 16,
             minHeight: 46,
@@ -168,12 +180,12 @@ const useStyles = (accent: string, secondaryText: string) =>
         },
         secondaryAction: {
             borderRadius: 24,
-            borderColor: accent,
+            borderColor: tokens.colors.accent,
             paddingHorizontal: 16,
             minHeight: 46,
         },
         secondaryActionTitle: {
-            color: accent,
+            color: tokens.colors.accent,
             fontWeight: '700',
             marginLeft: 8,
         },

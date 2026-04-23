@@ -25,6 +25,7 @@ export * from './lib/components/ui-info/ui-info';
 export * from './lib/components/ui-screen/ui-screen';
 export * from './lib/components/ui-stack/ui-stack';
 export * from './lib/components/ui-card/ui-card';
+export * from './lib/components/ui-order-summary/ui-order-summary';
 
 export * from './lib/hocs/with-page/with-page';
 export * from './lib/hocs/with-centered-page/with-centered-page';

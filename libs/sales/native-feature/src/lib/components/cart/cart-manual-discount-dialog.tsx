@@ -183,30 +183,36 @@ export function CartManualDiscountDialog({
                     style={[styles.dialogInput, styles.dialogInputLarge]}
                 />
             </View>
-            <TextInput
-                value={draft.reasonCode}
-                onChangeText={(reasonCode) =>
-                    onChange((current) => ({
-                        ...current,
-                        reasonCode,
-                    }))
-                }
-                placeholder="Reason code (optional)"
-                placeholderTextColor={placeholderTextColor}
-                style={styles.dialogInput}
-            />
-            <TextInput
-                value={draft.reasonNote}
-                onChangeText={(reasonNote) =>
-                    onChange((current) => ({
-                        ...current,
-                        reasonNote,
-                    }))
-                }
-                placeholder="Reason note (optional)"
-                placeholderTextColor={placeholderTextColor}
-                style={styles.dialogInput}
-            />
+            <View style={styles.dialogSectionCard}>
+                <Text style={styles.dialogSubheading}>Approval notes</Text>
+                <Text style={styles.dialogFieldHint}>
+                    Add an optional reason code or note for manager review.
+                </Text>
+                <TextInput
+                    value={draft.reasonCode}
+                    onChangeText={(reasonCode) =>
+                        onChange((current) => ({
+                            ...current,
+                            reasonCode,
+                        }))
+                    }
+                    placeholder="Reason code (optional)"
+                    placeholderTextColor={placeholderTextColor}
+                    style={styles.dialogInput}
+                />
+                <TextInput
+                    value={draft.reasonNote}
+                    onChangeText={(reasonNote) =>
+                        onChange((current) => ({
+                            ...current,
+                            reasonNote,
+                        }))
+                    }
+                    placeholder="Reason note (optional)"
+                    placeholderTextColor={placeholderTextColor}
+                    style={styles.dialogInput}
+                />
+            </View>
             <View style={styles.dialogActionRow}>
                 <Button
                     type="clear"

@@ -1,8 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { Alert, FlatList, Keyboard, StyleSheet, TextInput, View, Text } from 'react-native';
+import {
+    Alert,
+    FlatList,
+    Keyboard,
+    StyleSheet,
+    TextInput,
+    View,
+    Text,
+} from 'react-native';
 import { getThemeColors, useSharedStyles } from '@pos/theme/native';
-import { UIActions, UICard, UIScreen, UISearchInput } from '@pos/shared/ui-native';
+import {
+    UIActions,
+    UICard,
+    UIScreen,
+    UISearchInput,
+} from '@pos/shared/ui-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';
 import {
@@ -15,7 +28,11 @@ import {
     selectInventoryCountSelected,
 } from '@pos/inventory/data-access';
 import { InventoryCount } from '@pos/shared/models';
-import { ProductEntity, ProductService, selectAllProducts } from '@pos/products/data-access';
+import {
+    ProductEntity,
+    ProductService,
+    selectAllProducts,
+} from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import InventoryCountLine from '../inventory-counts/inventory-count-line';
@@ -42,10 +59,10 @@ type PendingAction = 'save' | 'submit' | null;
 
 export const asFullCountLines = (
     existingLines: InventoryCountLineDTO[],
-    products: ProductEntity[]
+    products: ProductEntity[],
 ) => {
     const existingByProduct = new Map(
-        existingLines.map((line) => [line.productId, line])
+        existingLines.map((line) => [line.productId, line]),
     );
 
     const eligibleProducts = dedupeProducts(products)
@@ -58,7 +75,8 @@ export const asFullCountLines = (
     });
 
     const manualOnly = existingLines.filter(
-        (line) => !eligibleProducts.some((product) => product.id === line.productId)
+        (line) =>
+            !eligibleProducts.some((product) => product.id === line.productId),
     );
 
     return [...merged, ...manualOnly];
@@ -80,7 +98,7 @@ export const isExactCodeMatch = (product: ProductEntity, query: string) => {
 
 export const appendCountLineIfMissing = (
     lines: InventoryCountLineDTO[],
-    product: ProductEntity
+    product: ProductEntity,
 ) => {
     if (lines.find((line) => line.productId === product.id)) {
         return { added: false, nextLines: lines };
@@ -94,7 +112,7 @@ export const appendCountLineIfMissing = (
 
 export const applyCountLineUpdate = (
     lines: InventoryCountLineDTO[],
-    item: InventoryCountLineDTO
+    item: InventoryCountLineDTO,
 ) => {
     const index = lines.findIndex((line) => line.productId === item.productId);
     if (index === -1) return lines;
@@ -111,7 +129,10 @@ export const applyCountLineUpdate = (
 export function InventoryCountForm({
     navigation,
     route,
-}: NativeStackScreenProps<InventoryCountNavigationParamList, 'Inventory Count Form'>) {
+}: NativeStackScreenProps<
+    InventoryCountNavigationParamList,
+    'Inventory Count Form'
+>) {
     const dispatch = useAppDispatch();
     const theme = useTheme();
     const colors = getThemeColors(theme);
@@ -123,21 +144,21 @@ export function InventoryCountForm({
     const [filter, setFilter] = useState<string>();
     const inventoryCount = useSelector(selectInventoryCountSelected);
     const [lines, setLines] = useState<InventoryCountLineDTO[]>(
-        inventoryCount ? inventoryCount.lines.map(l => ({...l})) : []
+        inventoryCount ? inventoryCount.lines.map((l) => ({ ...l })) : [],
     );
     const linesRef = useRef<InventoryCountLineDTO[]>(
-        inventoryCount ? inventoryCount.lines.map((l) => ({ ...l })) : []
+        inventoryCount ? inventoryCount.lines.map((l) => ({ ...l })) : [],
     );
     const ref = useRef<TextInput>(null);
     const products = useSelector(selectAllProducts);
     const [filteredProducts, setFilteredProducts] = useState<ProductEntity[]>(
-        []
+        [],
     );
     const [countMode, setCountMode] = useState<CountMode>('quick');
     const [fullCountInitialized, setFullCountInitialized] = useState(false);
-    const [quickModeLines, setQuickModeLines] = useState<InventoryCountLineDTO[]>(
-        inventoryCount ? inventoryCount.lines.map((l) => ({ ...l })) : []
-    );
+    const [quickModeLines, setQuickModeLines] = useState<
+        InventoryCountLineDTO[]
+    >(inventoryCount ? inventoryCount.lines.map((l) => ({ ...l })) : []);
     const employee = useSelector(selectLoginEmployee);
 
     const runAfterInputCommit = (action: () => void) => {
@@ -148,12 +169,16 @@ export function InventoryCountForm({
     const syncLinesState = (
         updater:
             | InventoryCountLineDTO[]
-            | ((current: InventoryCountLineDTO[]) => InventoryCountLineDTO[])
+            | ((current: InventoryCountLineDTO[]) => InventoryCountLineDTO[]),
     ) => {
         setLines((current) => {
             const next =
                 typeof updater === 'function'
-                    ? (updater as (current: InventoryCountLineDTO[]) => InventoryCountLineDTO[])(current)
+                    ? (
+                          updater as (
+                              current: InventoryCountLineDTO[],
+                          ) => InventoryCountLineDTO[]
+                      )(current)
                     : updater;
             linesRef.current = next;
             return next;
@@ -195,13 +220,18 @@ export function InventoryCountForm({
         });
     };
 
-    const save = async (updateInv: boolean, action: Exclude<PendingAction, null>) => {
+    const save = async (
+        updateInv: boolean,
+        action: Exclude<PendingAction, null>,
+    ) => {
         if (busy) return;
         const currentLines = linesRef.current;
-        const missingQuantity = currentLines.some(x => x.newCount === undefined || x.newCount === null);
+        const missingQuantity = currentLines.some(
+            (x) => x.newCount === undefined || x.newCount === null,
+        );
 
         if (missingQuantity) {
-            Alert.alert('Make sure all products have a new count value')
+            Alert.alert('Make sure all products have a new count value');
             return;
         }
 
@@ -218,7 +248,7 @@ export function InventoryCountForm({
                     id: inventoryCount.id,
                     createdBy: {
                         id: employee?.id,
-                        name: `${employee?.firstName} ${employee?.lastName}`
+                        name: `${employee?.firstName} ${employee?.lastName}`,
                     },
                     createdAt: inventoryCount.createdAt,
                 };
@@ -236,7 +266,11 @@ export function InventoryCountForm({
                 inv.status = 'COMPLETED';
             }
 
-            const saved = await InventoryCountService.save(dispatch, inv, updateInv);
+            const saved = await InventoryCountService.save(
+                dispatch,
+                inv,
+                updateInv,
+            );
             if (!saved) {
                 return;
             }
@@ -253,7 +287,7 @@ export function InventoryCountForm({
         confirm(
             '',
             'This action will adjust your inventory based on this count. You will no be able to undo this operation',
-            () => save(true, 'submit')
+            () => save(true, 'submit'),
         );
     };
 
@@ -270,7 +304,7 @@ export function InventoryCountForm({
                         navigation.goBack();
                     },
                 },
-            ]
+            ],
         );
     };
 
@@ -332,7 +366,7 @@ export function InventoryCountForm({
     const lineItems = lines;
     const totalItems = lineItems.length;
     const countedItems = lineItems.filter(
-        (line) => line.newCount !== undefined && line.newCount !== null
+        (line) => line.newCount !== undefined && line.newCount !== null,
     ).length;
     const progress = totalItems > 0 ? countedItems / totalItems : 0;
 
@@ -392,7 +426,7 @@ export function InventoryCountForm({
     //     if (inv.status === 'COMPLETED') {
     //         dispatch(productsActions.updateQuantities(inv.lines));
     //     }
-        
+
     //     navigation.goBack();
     //     setBusy(false);
     // };
@@ -441,7 +475,7 @@ export function InventoryCountForm({
 
     // useEffect(() => {
     //     console.log('Running search');
-        
+
     //     if (!filter) {
     //         setFilteredLines(lines);
     //         return;
@@ -449,10 +483,10 @@ export function InventoryCountForm({
 
     //     const searchResult = ProductService.search(productList, { text: filter });
     //     const filteredResult: Dictionary<Selectable<InventoryCountLineDTO>> = {};
-        
+
     //     searchResult.items.reduce((res, p) => {
     //         if (!lines[p.id]) return res;
-            
+
     //         res[p.id!] = lines[p.id];
     //         return res;
     //     }, filteredResult);
@@ -462,132 +496,186 @@ export function InventoryCountForm({
 
     return (
         <UIScreen>
-        <View style={[styles.page]}>
-            <UICard tone="muted" style={local.headerCard}>
-            <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-                {route.params?.readOnly && (
-                    <View style={local.readOnlyBanner}>
-                        <View style={local.readOnlyIconWrap}>
-                            <Icon
-                                name="lock-check-outline"
-                                size={20}
-                                color={colors.warning}
-                            />
-                        </View>
-                        <View style={local.readOnlyCopy}>
-                            <Text style={local.readOnlyTitle}>
-                                Completed count
-                            </Text>
-                            <Text style={local.readOnlyText}>
-                                This inventory count is read-only and cannot be changed.
-                            </Text>
-                        </View>
-                    </View>
-                )}
-              
-                {!route.params?.readOnly && (
-                    <View style={local.searchWrap}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <View style={local.searchInputWrap}>
-                                <UISearchInput
-                                    ref={ref}
-                                    value={filter}
-                                    editable={!busy}
-                                    placeholder="Search for products ..."
-                                    debounceTime={700}
-                                    onChangeText={setFilter}
-                                    onSubmit={searchSubmit}
-                                    onClear={() => ref.current?.focus()}
-                                />
-                            </View>
-                            {!inventoryCount && (
-                                <View style={local.modeButtonsRow}>
-                                    <Button
-                                        type={countMode === 'quick' ? 'solid' : 'outline'}
-                                        title="Quick"
-                                        testID="inventory-count-mode-quick"
-                                        onPress={enableQuickCountMode}
-                                        buttonStyle={local.modeButton}
-                                        disabled={busy}
+            <View style={[styles.page]}>
+                <UICard tone="muted" style={local.headerCard}>
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        {route.params?.readOnly && (
+                            <View style={local.readOnlyBanner}>
+                                <View style={local.readOnlyIconWrap}>
+                                    <Icon
+                                        name="lock-check-outline"
+                                        size={20}
+                                        color={colors.warning}
                                     />
-                                    <View style={{ marginLeft: 8 }}>
-                                        <Button
-                                            type={countMode === 'full' ? 'solid' : 'outline'}
-                                            title="Full"
-                                            testID="inventory-count-mode-full"
-                                            onPress={enableFullCountMode}
-                                            buttonStyle={local.modeButton}
-                                            disabled={busy}
+                                </View>
+                                <View style={local.readOnlyCopy}>
+                                    <Text style={local.readOnlyTitle}>
+                                        Completed count
+                                    </Text>
+                                    <Text style={local.readOnlyText}>
+                                        This inventory count is read-only and
+                                        cannot be changed.
+                                    </Text>
+                                </View>
+                            </View>
+                        )}
+
+                        {!route.params?.readOnly && (
+                            <View style={local.searchWrap}>
+                                <View style={local.formHeaderRow}>
+                                    <View>
+                                        <Text style={local.formEyebrow}>
+                                            Inventory count
+                                        </Text>
+                                        <Text style={local.formTitle}>
+                                            {countMode === 'quick'
+                                                ? 'Quick count workspace'
+                                                : 'Full count workspace'}
+                                        </Text>
+                                    </View>
+                                    <View style={local.formMetricPill}>
+                                        <Text style={local.formMetricValue}>
+                                            {lineItems.length}
+                                        </Text>
+                                        <Text style={local.formMetricLabel}>
+                                            Lines
+                                        </Text>
+                                    </View>
+                                </View>
+                                <View
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <View style={local.searchInputWrap}>
+                                        <UISearchInput
+                                            ref={ref}
+                                            value={filter}
+                                            editable={!busy}
+                                            placeholder="Search for products ..."
+                                            debounceTime={700}
+                                            onChangeText={setFilter}
+                                            onSubmit={searchSubmit}
+                                            onClear={() => ref.current?.focus()}
                                         />
                                     </View>
-                                    {countMode === 'full' && (
-                                        <View style={{ marginLeft: 8 }}>
+                                    {!inventoryCount && (
+                                        <View style={local.modeButtonsRow}>
                                             <Button
-                                                type="outline"
-                                                title="Reload"
-                                                testID="inventory-count-mode-reload"
-                                                onPress={regenerateFullCount}
+                                                type={
+                                                    countMode === 'quick'
+                                                        ? 'solid'
+                                                        : 'outline'
+                                                }
+                                                title="Quick"
+                                                testID="inventory-count-mode-quick"
+                                                onPress={enableQuickCountMode}
                                                 buttonStyle={local.modeButton}
                                                 disabled={busy}
                                             />
+                                            <View style={{ marginLeft: 8 }}>
+                                                <Button
+                                                    type={
+                                                        countMode === 'full'
+                                                            ? 'solid'
+                                                            : 'outline'
+                                                    }
+                                                    title="Full"
+                                                    testID="inventory-count-mode-full"
+                                                    onPress={
+                                                        enableFullCountMode
+                                                    }
+                                                    buttonStyle={
+                                                        local.modeButton
+                                                    }
+                                                    disabled={busy}
+                                                />
+                                            </View>
+                                            {countMode === 'full' && (
+                                                <View style={{ marginLeft: 8 }}>
+                                                    <Button
+                                                        type="outline"
+                                                        title="Reload"
+                                                        testID="inventory-count-mode-reload"
+                                                        onPress={
+                                                            regenerateFullCount
+                                                        }
+                                                        buttonStyle={
+                                                            local.modeButton
+                                                        }
+                                                        disabled={busy}
+                                                    />
+                                                </View>
+                                            )}
                                         </View>
                                     )}
                                 </View>
-                            )}
-                        </View>
 
-                        <View style={local.progressBlock}>
-                            {!inventoryCount && (
-                                <Text style={[styles.secondaryText, { fontSize: 12 }]}>
-                                    {countMode === 'quick'
-                                        ? 'Quick: search/scan and add only what you count.'
-                                        : 'Full: preload all active stock-tracked products.'}
-                                </Text>
-                            )}
-                            <Text style={styles.secondaryText}>
-                                Count Progress: {countedItems} / {totalItems}
-                            </Text>
-                            <View style={local.progressTrack}>
-                                <View
-                                    style={{
-                                        height: 8,
-                                        width: `${Math.round(progress * 100)}%`,
-                                        backgroundColor: theme.theme.colors.primary,
-                                    }}
-                                />
+                                <View style={local.progressBlock}>
+                                    {!inventoryCount && (
+                                        <Text
+                                            style={[
+                                                styles.secondaryText,
+                                                { fontSize: 12 },
+                                            ]}
+                                        >
+                                            {countMode === 'quick'
+                                                ? 'Quick: search/scan and add only what you count.'
+                                                : 'Full: preload all active stock-tracked products.'}
+                                        </Text>
+                                    )}
+                                    <Text style={styles.secondaryText}>
+                                        Count Progress: {countedItems} /{' '}
+                                        {totalItems}
+                                    </Text>
+                                    <View style={local.progressTrack}>
+                                        <View
+                                            style={{
+                                                height: 8,
+                                                width: `${Math.round(progress * 100)}%`,
+                                                backgroundColor:
+                                                    theme.theme.colors.primary,
+                                            }}
+                                        />
+                                    </View>
+                                </View>
                             </View>
-                        </View>
+                        )}
                     </View>
+                </UICard>
+                {!route.params?.readOnly && (
+                    <CompactProductList
+                        visible={!busy && !!filter?.trim()}
+                        products={filteredProducts}
+                        onAdd={addItem}
+                        onClose={() => setFilter('')}
+                    />
                 )}
-            </View>
-            </UICard>
-            {!route.params?.readOnly && (
-                <CompactProductList
-                    visible={!busy && !!filter?.trim()}
-                    products={filteredProducts}
-                    onAdd={addItem}
-                    onClose={() => setFilter('')}
-                />
-            )}
 
-            <View style={local.listWrap}>
-                <FlatList
-                    horizontal={false}
-                    data={lineItems}
-                    keyExtractor={(item) => item.productId}
-                    renderItem={(data) => (
-                        <InventoryCountLine
-                            readOnly={route.params?.readOnly || busy}
-                            item={data.item}
-                            onUpdate={updateItem}
-                            onDelete={deleteItem}
-                        />
-                    )}
-                    style={local.list}
-                    contentContainerStyle={local.listContent}
-                />
-            </View>
-            {/* <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                <View style={local.listWrap}>
+                    <FlatList
+                        horizontal={false}
+                        data={lineItems}
+                        keyExtractor={(item) => item.productId}
+                        renderItem={(data) => (
+                            <InventoryCountLine
+                                readOnly={route.params?.readOnly || busy}
+                                item={data.item}
+                                onUpdate={updateItem}
+                                onDelete={deleteItem}
+                            />
+                        )}
+                        style={local.list}
+                        contentContainerStyle={local.listContent}
+                    />
+                </View>
+                {/* <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                 {route.params?.readOnly && (
                     <View
                         style={{
@@ -640,58 +728,69 @@ export function InventoryCountForm({
                 }}
             /> */}
 
-            <View
-                style={local.footerRow}
-            >
-                {!route.params?.readOnly && (
-                    <UICard tone="muted" style={local.footerCard}>
-                    <View style={local.footerButtons}>
-                        <UIActions
-                            busy={busy}
-                            submitLoading={pendingAction === 'save'}
-                            submitAction={() => runAfterInputCommit(() => save(false, 'save'))}
-                            cancelAction={confirmCancel}
-                        />
-                        <View style={{ marginLeft: 10 }}>
-                            <Button
-                                color="success"
-                                title="Update Inventory"
-                                testID="inventory-count-update-inventory-button"
-                                onPress={() => runAfterInputCommit(updateInventory)}
-                                loading={busy && pendingAction === 'submit'}
-                                icon={{
-                                    name: 'scale-balance',
-                                    type: 'material-community',
-                                    color: theme.theme.colors.grey0,
-                                }}
-                                titleStyle={{
-                                    paddingRight: 20,
-                                }}
-                                disabledStyle={styles.darkBackground}
-                                disabledTitleStyle={{
-                                    color: theme.theme.colors.grey5,
-                                }}
-                                disabled={busy}
-                            />
-                        </View>
-                    </View>
-                    </UICard>
-                )}
+                <View style={local.footerRow}>
+                    {!route.params?.readOnly && (
+                        <UICard tone="muted" style={local.footerCard}>
+                            <View style={local.footerButtons}>
+                                <UIActions
+                                    busy={busy}
+                                    submitLoading={pendingAction === 'save'}
+                                    submitAction={() =>
+                                        runAfterInputCommit(() =>
+                                            save(false, 'save'),
+                                        )
+                                    }
+                                    cancelAction={confirmCancel}
+                                />
+                                <View style={{ marginLeft: 10 }}>
+                                    <Button
+                                        color="success"
+                                        title="Update Inventory"
+                                        testID="inventory-count-update-inventory-button"
+                                        onPress={() =>
+                                            runAfterInputCommit(updateInventory)
+                                        }
+                                        loading={
+                                            busy && pendingAction === 'submit'
+                                        }
+                                        icon={{
+                                            name: 'scale-balance',
+                                            type: 'material-community',
+                                            color: theme.theme.colors.grey0,
+                                        }}
+                                        titleStyle={{
+                                            paddingRight: 20,
+                                        }}
+                                        buttonStyle={
+                                            local.updateInventoryButton
+                                        }
+                                        disabledStyle={styles.darkBackground}
+                                        disabledTitleStyle={{
+                                            color: theme.theme.colors.grey5,
+                                        }}
+                                        disabled={busy}
+                                    />
+                                </View>
+                            </View>
+                        </UICard>
+                    )}
+                </View>
             </View>
-        </View>
         </UIScreen>
     );
 }
 
 const useStyles = (
     tokens: ReturnType<typeof useDesignTokens>,
-    colors: Record<string, string>
+    colors: Record<string, string>,
 ) =>
     StyleSheet.create({
         headerCard: {
             marginHorizontal: tokens.spacing.md,
-            marginTop: tokens.spacing.md,
-            marginBottom: tokens.spacing.sm,
+            marginTop: tokens.spacing.sm,
+            marginBottom: tokens.spacing.xs,
+            paddingHorizontal: tokens.spacing.lg,
+            paddingVertical: tokens.spacing.md,
         },
         readOnlyBanner: {
             alignItems: 'center',
@@ -736,7 +835,48 @@ const useStyles = (
         },
         searchWrap: {
             flex: 3,
-            padding: 10,
+            padding: 0,
+        },
+        formHeaderRow: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginBottom: tokens.spacing.xs,
+        },
+        formEyebrow: {
+            color: tokens.colors.textMuted,
+            fontSize: 11,
+            fontWeight: '800',
+            letterSpacing: 1.2,
+            textTransform: 'uppercase',
+        },
+        formTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 18,
+            fontWeight: '800',
+            marginTop: 2,
+        },
+        formMetricPill: {
+            alignItems: 'center',
+            backgroundColor: `${colors.primary}18`,
+            borderColor: `${colors.primary}55`,
+            borderRadius: 18,
+            borderWidth: 1,
+            minWidth: 82,
+            paddingHorizontal: tokens.spacing.sm,
+            paddingVertical: tokens.spacing.xs,
+        },
+        formMetricValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 18,
+            fontWeight: '800',
+        },
+        formMetricLabel: {
+            color: tokens.colors.textSecondary,
+            fontSize: 10,
+            fontWeight: '800',
+            letterSpacing: 0.8,
+            textTransform: 'uppercase',
         },
         searchInputWrap: {
             flex: 1,
@@ -752,11 +892,11 @@ const useStyles = (
             borderRadius: 18,
         },
         progressBlock: {
-            marginTop: 6,
+            marginTop: tokens.spacing.xs,
         },
         progressTrack: {
-            marginTop: 6,
-            height: 8,
+            marginTop: tokens.spacing.xs,
+            height: 6,
             width: '100%',
             borderRadius: 8,
             backgroundColor: colors.grey5,
@@ -764,7 +904,7 @@ const useStyles = (
         },
         footerRow: {
             marginHorizontal: tokens.spacing.md,
-            marginBottom: tokens.spacing.md,
+            marginBottom: tokens.spacing.sm,
         },
         listWrap: {
             flex: 1,
@@ -779,12 +919,18 @@ const useStyles = (
             paddingBottom: tokens.spacing.sm,
         },
         footerCard: {
-            paddingVertical: tokens.spacing.sm,
+            paddingVertical: tokens.spacing.xs,
             paddingHorizontal: tokens.spacing.md,
         },
         footerButtons: {
+            alignItems: 'center',
             flexDirection: 'row',
             justifyContent: 'flex-end',
+        },
+        updateInventoryButton: {
+            borderRadius: 22,
+            minHeight: 44,
+            paddingHorizontal: tokens.spacing.md,
         },
     });
 

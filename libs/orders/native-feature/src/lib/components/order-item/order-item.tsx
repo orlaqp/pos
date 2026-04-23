@@ -26,7 +26,7 @@ import {
 import { Role } from '@pos/auth/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-import i18next from 'i18next';
+import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
 import { RootState } from '@pos/store';
 
 export interface OrderItemProps {
@@ -34,6 +34,7 @@ export interface OrderItemProps {
     navigation?: NativeStackNavigationProp<any>;
     onVoid: (order: OrderEntity) => void;
     onPay?: (order: OrderEntity) => void;
+    onOpenDetails?: (order: OrderEntity) => void;
 }
 
 export interface ParsedOrderNoSegments {
@@ -44,7 +45,7 @@ export interface ParsedOrderNoSegments {
 }
 
 export const parseOrderNoSegments = (
-    orderNo?: string | null
+    orderNo?: string | null,
 ): ParsedOrderNoSegments | null => {
     if (!orderNo) return null;
     const parts = orderNo.split('-');
@@ -60,7 +61,7 @@ export const parseOrderNoSegments = (
 
     const fullYear = 2000 + yy;
     const date = `${fullYear}-${String(month).padStart(2, '0')}-${String(
-        day
+        day,
     ).padStart(2, '0')}`;
 
     return {
@@ -73,7 +74,7 @@ export const parseOrderNoSegments = (
 
 export const getStatusAccentColor = (
     status: OrderEntity['status'],
-    colors: { accent: string; success: string; warning: string }
+    colors: { accent: string; success: string; warning: string },
 ) => {
     if (status === 'PAID') return colors.success;
     if (status === 'PARTIALLY_REFUNDED') return colors.warning;
@@ -89,7 +90,13 @@ export const getOrderStatusLabel = (status: OrderEntity['status']) => {
     return status;
 };
 
-export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
+export function OrderItem({
+    item,
+    navigation,
+    onVoid,
+    onPay,
+    onOpenDetails,
+}: OrderItemProps) {
     const theme = useTheme();
     const tokens = useDesignTokens();
     const styles = useSharedStyles();
@@ -99,16 +106,13 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
     const employee = useSelector(selectLoginEmployee);
     const store = useSelector(selectStore);
     const refundedAmount = useSelector((state: RootState) =>
-        selectRefundedAmountForOrder(state, item.id)
+        selectRefundedAmountForOrder(state, item.id),
     );
     const refundedQuantities = useSelector((state: RootState) =>
-        selectRefundedQuantitiesForOrder(state, item.id)
+        selectRefundedQuantitiesForOrder(state, item.id),
     );
     const [busy, setBusy] = useState<boolean>(false);
-    const t = (key: string, fallback: string) =>
-        i18next.isInitialized && i18next.exists(key)
-            ? String(i18next.t(key))
-            : fallback;
+    const t = translateWithFallback;
 
     const deleteItem = async () => {
         if (!item.id) return;
@@ -120,7 +124,8 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
     };
 
     const printItem = async () => {
-        const receiptCopyType = item.status === 'PAID' ? 'MERCHANT' : 'CUSTOMER';
+        const receiptCopyType =
+            item.status === 'PAID' ? 'MERCHANT' : 'CUSTOMER';
         const fallbackStore =
             store ||
             (await StoreInfoService.getStore()
@@ -135,7 +140,9 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
             defaultPrinter ||
             (await PrinterService.getDefaultPrinter()
                 .then((printer) =>
-                    printer ? PrinterEntityMapper.fromModel(printer) : undefined
+                    printer
+                        ? PrinterEntityMapper.fromModel(printer)
+                        : undefined,
                 )
                 .catch(() => undefined));
 
@@ -143,8 +150,8 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
             Alert.alert(
                 t(
                     'ORDERITEM_PrintRequirements',
-                    'Store info and printer setup needs ro be ready before closing an order'
-                )
+                    'Store info and printer setup needs ro be ready before closing an order',
+                ),
             );
             return;
         }
@@ -153,17 +160,14 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
             copyType: receiptCopyType,
             refundedQuantities:
                 item.id &&
-                (item.status === 'PARTIALLY_REFUNDED' || item.status === 'REFUNDED') &&
+                (item.status === 'PARTIALLY_REFUNDED' ||
+                    item.status === 'REFUNDED') &&
                 Object.keys(refundedQuantities).length > 0
                     ? refundedQuantities
                     : undefined,
         });
 
-        printReceipt(
-            fallbackStore,
-            fallbackPrinter,
-            ticket
-        );
+        printReceipt(fallbackStore, fallbackPrinter, ticket);
     };
 
     const confirmDeletion = () => {
@@ -171,19 +175,22 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
             t('ORDERITEM_ConfirmTitle', 'Are you sure?'),
             t(
                 'ORDERITEM_DeleteMessage',
-                'You will not be able to undo this operation'
+                'You will not be able to undo this operation',
             ),
             [
                 { text: t('ORDERITEM_No', 'No') },
-                { text: t('ORDERITEM_Yes', 'Yes'), onPress: () => deleteItem() },
-            ]
+                {
+                    text: t('ORDERITEM_Yes', 'Yes'),
+                    onPress: () => deleteItem(),
+                },
+            ],
         );
     };
 
     const orderDate = new Date(item.orderDate!);
     const orderDateString = `${orderDate.toLocaleDateString()} ${orderDate.toLocaleTimeString(
         [],
-        { hour: '2-digit', minute: '2-digit', second: '2-digit' }
+        { hour: '2-digit', minute: '2-digit', second: '2-digit' },
     )}`;
     const parsedOrderNo = parseOrderNoSegments(item.orderNo);
     const statusColor = getStatusAccentColor(item.status, {
@@ -194,10 +201,9 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
     const statusOwner =
         item.status === 'PAID'
             ? item?.paymentInfo?.employeeName
-            : item.status === 'REFUNDED' ||
-                item.status === 'PARTIALLY_REFUNDED'
-            ? item?.refundInfo?.employeeName
-            : undefined;
+            : item.status === 'REFUNDED' || item.status === 'PARTIALLY_REFUNDED'
+              ? item?.refundInfo?.employeeName
+              : undefined;
     const hasRefundDisplay =
         refundedAmount > 0 &&
         (item.status === 'PARTIALLY_REFUNDED' || item.status === 'REFUNDED');
@@ -207,9 +213,14 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
             : Math.max(0, Number(item.total || 0) - refundedAmount);
 
     return (
-        <View testID={`order-item-${item.id}`} style={[styles.dataRow, local.row]}>
+        <View
+            testID={`order-item-${item.id}`}
+            style={[styles.dataRow, local.row]}
+        >
             {busy && <ActivityIndicator size="small" />}
-            <View style={[local.statusRail, { backgroundColor: statusColor }]} />
+            <View
+                style={[local.statusRail, { backgroundColor: statusColor }]}
+            />
             <View style={local.infoBlock}>
                 <View style={local.orderNoColumn}>
                     <Text style={local.orderEyebrow}>
@@ -222,7 +233,12 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
                                     <Text style={local.chipLabel}>
                                         {t('ORDERITEM_Store', 'Store')}
                                     </Text>
-                                    <Text style={[styles.primaryText, local.chipValue]}>
+                                    <Text
+                                        style={[
+                                            styles.primaryText,
+                                            local.chipValue,
+                                        ]}
+                                    >
                                         {parsedOrderNo.store}
                                     </Text>
                                 </View>
@@ -230,7 +246,12 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
                                     <Text style={local.chipLabel}>
                                         {t('ORDERITEM_Station', 'Station')}
                                     </Text>
-                                    <Text style={[styles.primaryText, local.chipValue]}>
+                                    <Text
+                                        style={[
+                                            styles.primaryText,
+                                            local.chipValue,
+                                        ]}
+                                    >
                                         {parsedOrderNo.station}
                                     </Text>
                                 </View>
@@ -238,13 +259,23 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
                                     <Text style={local.chipLabel}>
                                         {t('ORDERITEM_Date', 'Date')}
                                     </Text>
-                                    <Text style={[styles.primaryText, local.chipValue]}>
+                                    <Text
+                                        style={[
+                                            styles.primaryText,
+                                            local.chipValue,
+                                        ]}
+                                    >
                                         {parsedOrderNo.date}
                                     </Text>
                                 </View>
                                 <View style={local.chip}>
                                     <Text style={local.chipLabel}>#</Text>
-                                    <Text style={[styles.primaryText, local.chipValue]}>
+                                    <Text
+                                        style={[
+                                            styles.primaryText,
+                                            local.chipValue,
+                                        ]}
+                                    >
                                         {parsedOrderNo.sequence}
                                     </Text>
                                 </View>
@@ -261,11 +292,17 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
                         {t('ORDERITEM_Cashier', 'Cashier')}
                     </Text>
                     <Text style={styles.primaryText}>{item.employeeName}</Text>
-                    <Text numberOfLines={1} style={[styles.secondaryText, local.metaTop]}>
+                    <Text
+                        numberOfLines={1}
+                        style={[styles.secondaryText, local.metaTop]}
+                    >
                         {orderDateString}
                     </Text>
                     {!!statusOwner && (
-                        <Text numberOfLines={1} style={[styles.secondaryText, local.metaTop]}>
+                        <Text
+                            numberOfLines={1}
+                            style={[styles.secondaryText, local.metaTop]}
+                        >
                             {t('ORDERITEM_By', 'By')}: {statusOwner}
                         </Text>
                     )}
@@ -273,7 +310,9 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
             </View>
             <View style={local.amountBlock}>
                 <View style={[local.statusBadge, { borderColor: statusColor }]}>
-                    <Text style={[styles.secondaryText, { color: statusColor }]}>
+                    <Text
+                        style={[styles.secondaryText, { color: statusColor }]}
+                    >
                         {getOrderStatusLabel(item.status)}
                     </Text>
                 </View>
@@ -293,6 +332,22 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
                 </Text>
             </View>
             <View style={local.actionsBlock}>
+                {item.status === 'REFUNDED' && (
+                    <Button
+                        testID="order-item-open-details-button"
+                        type="solid"
+                        title={t('COMMON_Open', 'Open')}
+                        color={theme.theme.colors.primary}
+                        buttonStyle={{
+                            borderRadius: tokens.radii.md,
+                            paddingHorizontal: tokens.spacing.sm,
+                        }}
+                        titleStyle={{
+                            color: theme.theme.colors.grey0,
+                        }}
+                        onPress={() => onOpenDetails?.(item)}
+                    />
+                )}
                 {item.status === 'OPEN' && (
                     <Button
                         testID="order-item-pay-button"
@@ -308,29 +363,34 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
                             borderRadius: tokens.radii.md,
                             paddingHorizontal: tokens.spacing.sm,
                         }}
-                        titleStyle={{ paddingRight: 10, color: theme.theme.colors.grey0 }}
+                        titleStyle={{
+                            paddingRight: 10,
+                            color: theme.theme.colors.grey0,
+                        }}
                         onPress={() => onPay?.(item)}
                     />
                 )}
                 {(item.status === 'PAID' ||
                     item.status === 'PARTIALLY_REFUNDED') && (
                     <>
-                        { employee?.roles.includes(Role.VoidOrder) &&
+                        {employee?.roles.includes(Role.VoidOrder) && (
+                            <Button
+                                type="clear"
+                                title={t('ORDERITEM_Void', 'Void')}
+                                icon={{
+                                    name: 'close-circle-outline',
+                                    type: 'material-community',
+                                    color: theme.theme.colors.primary,
+                                }}
+                                buttonStyle={{
+                                    paddingHorizontal: tokens.spacing.sm,
+                                }}
+                                titleStyle={{ paddingRight: 10 }}
+                                onPress={() => onVoid(item)}
+                            />
+                        )}
                         <Button
-                            type="clear"
-                            title={t('ORDERITEM_Void', 'Void')}
-                        icon={{
-                            name: 'close-circle-outline',
-                            type: 'material-community',
-                            color: theme.theme.colors.primary,
-                        }}
-                            buttonStyle={{ paddingHorizontal: tokens.spacing.sm }}
-                            titleStyle={{ paddingRight: 10 }}
-                            onPress={() => onVoid(item)}
-                        />
-                        }
-                        <Button
-                        testID="order-item-print-button"
+                            testID="order-item-print-button"
                             type="clear"
                             title={t('ORDERITEM_Print', 'Print')}
                             icon={{
@@ -338,23 +398,25 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
                                 type: 'material-community',
                                 color: theme.theme.colors.primary,
                             }}
-                            buttonStyle={{ paddingHorizontal: tokens.spacing.sm }}
+                            buttonStyle={{
+                                paddingHorizontal: tokens.spacing.sm,
+                            }}
                             titleStyle={{ paddingRight: 10 }}
                             onPress={printItem}
                         />
                     </>
                 )}
-                { employee?.roles.includes(Role.RemoveSale) &&
-                <Button
-                    type="clear"
-                    icon={{
-                        name: 'trash-can',
-                        type: 'material-community',
-                        color: theme.theme.colors.error,
-                    }}
-                    onPress={confirmDeletion}
-                />
-                }
+                {employee?.roles.includes(Role.RemoveSale) && (
+                    <Button
+                        type="clear"
+                        icon={{
+                            name: 'trash-can',
+                            type: 'material-community',
+                            color: theme.theme.colors.error,
+                        }}
+                        onPress={confirmDeletion}
+                    />
+                )}
             </View>
         </View>
     );

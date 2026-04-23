@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import { render } from '@testing-library/react-native';
@@ -16,7 +15,11 @@ describe('PrinterItem', () => {
     it('shows default printer badge when current item is default', () => {
         const navigation: any = { navigate: jest.fn() };
         const { getByText, queryByText } = render(
-            <PrinterItem item={item} navigation={navigation} defaultPrinter={item} />
+            <PrinterItem
+                item={item}
+                navigation={navigation}
+                defaultPrinter={item}
+            />,
         );
 
         expect(getByText('Default Printer')).toBeTruthy();
@@ -25,15 +28,16 @@ describe('PrinterItem', () => {
 
     it('renders successfully when current item is not the default', () => {
         const navigation: any = { navigate: jest.fn() };
-        const { container } = render(
+        const { getByText } = render(
             <PrinterItem
                 item={item}
                 navigation={navigation}
                 defaultPrinter={{ ...item, identifier: 'printer-2' }}
                 setAsDefault={jest.fn()}
-            />
+            />,
         );
-        expect(container).toBeTruthy();
+        expect(getByText('TSP100')).toBeTruthy();
+        expect(getByText('printer-1')).toBeTruthy();
     });
 
     it('invokes setAsDefault action when not default', () => {
@@ -51,7 +55,7 @@ describe('PrinterItem', () => {
                 navigation={navigation}
                 defaultPrinter={{ ...item, identifier: 'printer-2' }}
                 setAsDefault={setAsDefault}
-            />
+            />,
         );
 
         const touchables = UNSAFE_getAllByType(TouchableOpacity);

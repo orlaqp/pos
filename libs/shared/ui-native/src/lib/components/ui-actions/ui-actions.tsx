@@ -17,7 +17,7 @@ export interface UiActionBarProps {
 }
 
 export function UIActions(props: UiActionBarProps) {
-    const theme = useTheme()
+    const theme = useTheme();
     const colors = theme?.theme?.colors || {
         grey5: '#444444',
         grey0: '#ffffff',
@@ -26,7 +26,13 @@ export function UIActions(props: UiActionBarProps) {
     const sharedStyles = useSharedStyles();
 
     return (
-        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+        <View
+            style={{
+                flexDirection: 'row',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+            }}
+        >
             <Button
                 title={props.cancelTitle || 'Cancel'}
                 type="clear"
@@ -39,15 +45,15 @@ export function UIActions(props: UiActionBarProps) {
                 style={{ marginRight: 20 }}
                 buttonStyle={[
                     {
-                        borderRadius: 18,
-                        minHeight: 48,
+                        borderRadius: 22,
+                        minHeight: 44,
                         paddingHorizontal: 18,
                     },
                     props.cancelButtonStyle,
                 ]}
                 titleStyle={{
                     paddingRight: 20,
-                    color: colors.grey1
+                    color: colors.grey1,
                 }}
                 disabled={props.busy}
                 disabledStyle={sharedStyles.darkBackground}
@@ -67,14 +73,14 @@ export function UIActions(props: UiActionBarProps) {
                 }}
                 buttonStyle={[
                     {
-                        borderRadius: 18,
-                        minHeight: 48,
+                        borderRadius: 22,
+                        minHeight: 44,
                         paddingHorizontal: 18,
                     },
                     props.submitButtonStyle,
                 ]}
                 titleStyle={{
-                    paddingRight: 20
+                    paddingRight: 20,
                 }}
                 disabled={props.busy}
                 disabledStyle={sharedStyles.darkBackground}

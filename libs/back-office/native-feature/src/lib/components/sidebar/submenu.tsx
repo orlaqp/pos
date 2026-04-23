@@ -42,6 +42,8 @@ export function Submenu({
             ) : null}
             <ListItem.Content style={styles.headerTitleContent}>
                 <ListItem.Title
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
                     style={[
                         styles.headerTitle,
                         parentActive && styles.headerTitleActive,
@@ -117,6 +119,8 @@ const useStyles = (colors: ReturnType<typeof getThemeColors>) =>
         headerContent: {
             flexDirection: 'row',
             alignItems: 'center',
+            minWidth: 0,
+            flex: 1,
         },
         iconSlot: {
             width: 28,
@@ -125,11 +129,12 @@ const useStyles = (colors: ReturnType<typeof getThemeColors>) =>
         },
         headerTitleContent: {
             marginLeft: 8,
+            minWidth: 0,
         },
         headerTitle: {
             color: colors.grey1,
             fontWeight: '600',
-            fontSize: 16,
+            fontSize: 15,
         },
         headerTitleActive: {
             color: colors.primary,

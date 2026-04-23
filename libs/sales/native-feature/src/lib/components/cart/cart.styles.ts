@@ -319,6 +319,14 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             padding: tokens.spacing.lg,
             marginBottom: tokens.spacing.md,
         },
+        dialogSectionCard: {
+            borderRadius: 22,
+            borderWidth: 1,
+            borderColor: '#C7D0DB24',
+            backgroundColor: '#FFFFFF08',
+            padding: tokens.spacing.md,
+            marginBottom: tokens.spacing.sm,
+        },
         dialogHeroMetaRow: {
             flexDirection: 'row',
             flexWrap: 'wrap',

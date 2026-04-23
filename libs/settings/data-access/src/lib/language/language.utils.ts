@@ -1,12 +1,16 @@
-import * as RNLocalize from "react-native-localize";
-import memoize from "lodash/memoize";
-import i18next, { TOptions } from "i18next";
+import * as RNLocalize from 'react-native-localize';
+import memoize from 'lodash/memoize';
+import i18next, { TOptions } from 'i18next';
 import { I18nManager } from 'react-native';
+export {
+    hasTranslationKey,
+    translateWithFallback,
+} from '../../../../../shared/utils/src/lib/translation';
 
 const translationGetters = {
-  // lazy requires
-  en: () => require("./en.json"),
-  es: () => require("./es.json"),
+    // lazy requires
+    en: () => require('./en.json'),
+    es: () => require('./es.json'),
 };
 
 const resources = {
@@ -35,20 +39,21 @@ export const translate = memoize(
 export type AvailableLanguage = 'en' | 'es';
 
 // fallback if no available language fits
-const fallback = { languageTag: "en", isRTL: false };
+const fallback = { languageTag: 'en', isRTL: false };
 
 export const { languageTag, isRTL } =
-    RNLocalize.findBestLanguageTag(Object.keys(translationGetters)) ||
-    fallback;
+    RNLocalize.findBestLanguageTag(Object.keys(translationGetters)) || fallback;
 
 export const setI18nConfig = (languageTag: string) => {
-  // clear translation cache
-  translate.cache.clear();
-  // update layout direction
-  I18nManager.forceRTL(isRTL);
-  const normalized = (languageTag === 'es' ? 'es' : 'en') as AvailableLanguage;
-  ensureI18nInitialized(normalized);
-  i18next.changeLanguage(normalized);
+    // clear translation cache
+    translate.cache.clear();
+    // update layout direction
+    I18nManager.forceRTL(isRTL);
+    const normalized = (
+        languageTag === 'es' ? 'es' : 'en'
+    ) as AvailableLanguage;
+    ensureI18nInitialized(normalized);
+    i18next.changeLanguage(normalized);
 };
 
 ensureI18nInitialized(languageTag as AvailableLanguage);

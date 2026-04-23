@@ -52,6 +52,8 @@ export function SingleItem({
             ) : null}
             <ListItem.Content style={styles.content}>
                 <ListItem.Title
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
                     style={[
                         styles.title,
                         compact && styles.titleCompact,
@@ -106,14 +108,15 @@ const useStyles = (colors: ReturnType<typeof getThemeColors>) =>
         },
         content: {
             marginLeft: 0,
+            minWidth: 0,
         },
         title: {
             color: colors.grey1,
             fontWeight: '600',
-            fontSize: 16,
+            fontSize: 15,
         },
         titleCompact: {
-            fontSize: 14,
+            fontSize: 13,
             color: colors.grey2,
             fontWeight: '600',
         },

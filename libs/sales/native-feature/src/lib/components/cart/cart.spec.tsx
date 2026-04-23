@@ -36,8 +36,14 @@ jest.mock('@pos/sales/data-access', () => ({
             payload: item,
         }),
         upsert: (item: unknown) => ({ type: 'cart/upsert', payload: item }),
-        addPromoCode: (promo: unknown) => ({ type: 'cart/addPromoCode', payload: promo }),
-        removePromoCode: (code: string) => ({ type: 'cart/removePromoCode', payload: code }),
+        addPromoCode: (promo: unknown) => ({
+            type: 'cart/addPromoCode',
+            payload: promo,
+        }),
+        removePromoCode: (code: string) => ({
+            type: 'cart/removePromoCode',
+            payload: code,
+        }),
         applyManualDiscount: (request: unknown) => ({
             type: 'cart/applyManualDiscount',
             payload: request,
@@ -54,8 +60,14 @@ jest.mock('@pos/sales/data-access', () => ({
             type: 'cart/setDefinitions',
             payload: definitions,
         }),
-        setPolicy: (policy: unknown) => ({ type: 'cart/setPolicy', payload: policy }),
-        setPricingContext: (payload: unknown) => ({ type: 'cart/setPricingContext', payload }),
+        setPolicy: (policy: unknown) => ({
+            type: 'cart/setPolicy',
+            payload: policy,
+        }),
+        setPricingContext: (payload: unknown) => ({
+            type: 'cart/setPricingContext',
+            payload,
+        }),
     },
     selectCart: (state: any) => state.cart,
 }));
@@ -87,6 +99,36 @@ jest.mock('@pos/shared/ui-native', () => ({
     UIEmptyState: ({ text }: { text: string }) => {
         const { Text } = require('react-native');
         return <Text>{text}</Text>;
+    },
+    UIOrderSummaryPanel: ({
+        orderSummary,
+        discountBreakdown,
+        title,
+        hint,
+        footer,
+    }: {
+        orderSummary: any;
+        discountBreakdown: any[];
+        title: string;
+        hint: string;
+        footer?: React.ReactNode;
+    }) => {
+        const { View, Text } = require('react-native');
+        return (
+            <View>
+                <Text>{title}</Text>
+                <Text>{hint}</Text>
+                {orderSummary.lines.map((line: any) => (
+                    <Text key={line.id}>{line.name}</Text>
+                ))}
+                {discountBreakdown.map((discount: any) => (
+                    <Text key={discount.discountApplicationId}>
+                        {discount.name}
+                    </Text>
+                ))}
+                {footer}
+            </View>
+        );
     },
 }));
 
@@ -121,7 +163,7 @@ jest.mock('@rneui/themed', () => ({
         title: string;
         onPress: () => void;
         testID?: string;
-    }) => (
+    }) =>
         (() => {
             const { Pressable, Text } = require('react-native');
             return (
@@ -129,8 +171,7 @@ jest.mock('@rneui/themed', () => ({
                     <Text>{title}</Text>
                 </Pressable>
             );
-        })()
-    ),
+        })(),
     Dialog: ({
         isVisible,
         onBackdropPress,
@@ -140,22 +181,22 @@ jest.mock('@rneui/themed', () => ({
         onBackdropPress?: () => void;
         children: React.ReactNode;
     }) =>
-        isVisible ? (
-            (() => {
-                const { View, Pressable, Text } = require('react-native');
-                return (
-                    <View>
-                        {children}
-                        <Pressable
-                            testID="cart-payment-backdrop"
-                            onPress={onBackdropPress}
-                        >
-                            <Text>Close</Text>
-                        </Pressable>
-                    </View>
-                );
-            })()
-        ) : null,
+        isVisible
+            ? (() => {
+                  const { View, Pressable, Text } = require('react-native');
+                  return (
+                      <View>
+                          {children}
+                          <Pressable
+                              testID="cart-payment-backdrop"
+                              onPress={onBackdropPress}
+                          >
+                              <Text>Close</Text>
+                          </Pressable>
+                      </View>
+                  );
+              })()
+            : null,
 }));
 
 jest.mock('../cart-line/cart-line', () => ({
@@ -180,19 +221,34 @@ jest.mock('../cart-line/cart-line', () => ({
             return (
                 <View>
                     <Text>{item.product.name}</Text>
-                    <Pressable testID="cart-line-open-details" onPress={() => onOpenDetails(item)}>
+                    <Pressable
+                        testID="cart-line-open-details"
+                        onPress={() => onOpenDetails(item)}
+                    >
                         <Text>OpenDetails</Text>
                     </Pressable>
-                    <Pressable testID="cart-line-select" onLongPress={() => onSelect(item)}>
+                    <Pressable
+                        testID="cart-line-select"
+                        onLongPress={() => onSelect(item)}
+                    >
                         <Text>Select</Text>
                     </Pressable>
-                    <Pressable testID="cart-line-remove" onPress={() => onRemove(item)}>
+                    <Pressable
+                        testID="cart-line-remove"
+                        onPress={() => onRemove(item)}
+                    >
                         <Text>Remove</Text>
                     </Pressable>
-                    <Pressable testID="cart-line-increment" onPress={() => onIncrement?.(item)}>
+                    <Pressable
+                        testID="cart-line-increment"
+                        onPress={() => onIncrement?.(item)}
+                    >
                         <Text>Increment</Text>
                     </Pressable>
-                    <Pressable testID="cart-line-decrement" onPress={() => onDecrement?.(item)}>
+                    <Pressable
+                        testID="cart-line-decrement"
+                        onPress={() => onDecrement?.(item)}
+                    >
                         <Text>Decrement</Text>
                     </Pressable>
                 </View>
@@ -202,13 +258,19 @@ jest.mock('../cart-line/cart-line', () => ({
 
 jest.mock('../cart-payment/cart-payment', () => ({
     __esModule: true,
-    default: ({ onPaymentEntered }: { onPaymentEntered: (payments: any[]) => void }) =>
+    default: ({
+        onPaymentEntered,
+    }: {
+        onPaymentEntered: (payments: any[]) => void;
+    }) =>
         (() => {
             const { Pressable, Text } = require('react-native');
             return (
                 <Pressable
                     testID="cart-payment-entered"
-                    onPress={() => onPaymentEntered([{ method: 'cash', amount: 5 }])}
+                    onPress={() =>
+                        onPaymentEntered([{ method: 'cash', amount: 5 }])
+                    }
                 >
                     <Text>CartPayment</Text>
                 </Pressable>
@@ -224,10 +286,12 @@ describe('Cart', () => {
         jest.clearAllMocks();
         jest.useFakeTimers();
         jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
-        mockSubscribeDefinitionChanges.mockImplementation((callback: (definitions: any[]) => void) => {
-            callback([]);
-            return jest.fn();
-        });
+        mockSubscribeDefinitionChanges.mockImplementation(
+            (callback: (definitions: any[]) => void) => {
+                callback([]);
+                return jest.fn();
+            },
+        );
         mockCartState = {
             items: [
                 {
@@ -260,7 +324,10 @@ describe('Cart', () => {
             priceOverrides: [],
             approvalEvents: [],
         };
-        mockEmployeeState = { id: 'employee-1', roles: ['Receive Check Payment', 'Discounts'] };
+        mockEmployeeState = {
+            id: 'employee-1',
+            roles: ['Receive Check Payment', 'Discounts'],
+        };
         mockStoreState = { id: 'store-1', timezone: 'America/New_York' };
         mockStationState = { stationNumber: '25' };
         DiscountService.listDefinitions.mockResolvedValue([]);
@@ -273,7 +340,7 @@ describe('Cart', () => {
 
     const renderCart = (
         mode: 'order' | 'payment',
-        options?: { preferPayFromSalesScreen?: boolean }
+        options?: { preferPayFromSalesScreen?: boolean },
     ) => {
         return render(
             <Cart
@@ -282,7 +349,7 @@ describe('Cart', () => {
                 onSubmit={mockOnSubmit}
                 products={[{ id: 'p-1', quantity: 100 } as any]}
                 onInteractionComplete={mockOnInteractionComplete}
-            />
+            />,
         );
     };
 
@@ -304,32 +371,32 @@ describe('Cart', () => {
                         timezone: 'America/New_York',
                         stationId: '25',
                     }),
-                })
-            )
+                }),
+            ),
         );
     });
 
     it('opens details on press and select/remove from line actions', () => {
         const { getByTestId } = renderCart('order');
-        expect(getByTestId('cart-lines-scroll').props.keyboardShouldPersistTaps).toBe(
-            'handled'
-        );
+        expect(
+            getByTestId('cart-lines-scroll').props.keyboardShouldPersistTaps,
+        ).toBe('handled');
         fireEvent.press(getByTestId('cart-line-open-details'));
         fireEvent(getByTestId('cart-line-select'), 'longPress');
         fireEvent.press(getByTestId('cart-line-remove'));
         fireEvent.press(getByTestId('cart-line-increment'));
         fireEvent.press(getByTestId('cart-line-decrement'));
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/setActiveProduct' })
+            expect.objectContaining({ type: 'cart/setActiveProduct' }),
         );
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/select' })
+            expect.objectContaining({ type: 'cart/select' }),
         );
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/removeProduct' })
+            expect.objectContaining({ type: 'cart/removeProduct' }),
         );
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/upsert' })
+            expect.objectContaining({ type: 'cart/upsert' }),
         );
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(4);
     });
@@ -374,7 +441,7 @@ describe('Cart', () => {
         expect(mockOnSubmit).toHaveBeenCalledWith(
             mockCartState,
             undefined,
-            expect.objectContaining({ intent: 'save_open_order' })
+            expect.objectContaining({ intent: 'save_open_order' }),
         );
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
     });
@@ -386,8 +453,10 @@ describe('Cart', () => {
         fireEvent.press(getByTestId('cart-payment-entered'));
         expect(mockOnSubmit).toHaveBeenCalledWith(
             mockCartState,
-            expect.arrayContaining([expect.objectContaining({ method: 'cash' })]),
-            expect.objectContaining({ intent: 'receive_payment' })
+            expect.arrayContaining([
+                expect.objectContaining({ method: 'cash' }),
+            ]),
+            expect.objectContaining({ intent: 'receive_payment' }),
         );
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
     });
@@ -411,8 +480,10 @@ describe('Cart', () => {
 
         expect(mockOnSubmit).toHaveBeenCalledWith(
             mockCartState,
-            expect.arrayContaining([expect.objectContaining({ method: 'cash' })]),
-            expect.objectContaining({ intent: 'receive_payment' })
+            expect.arrayContaining([
+                expect.objectContaining({ method: 'cash' }),
+            ]),
+            expect.objectContaining({ intent: 'receive_payment' }),
         );
     });
 
@@ -436,7 +507,7 @@ describe('Cart', () => {
             expect.objectContaining({
                 type: 'cart/addPromoCode',
                 payload: { code: 'SAVE5' },
-            })
+            }),
         );
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
     });
@@ -478,7 +549,9 @@ describe('Cart', () => {
         expect(getByText('Discounts')).toBeTruthy();
         expect(getByText('Saved $14.00')).toBeTruthy();
         expect(queryByText('Show actions')).toBeFalsy();
-        expect(queryByText('Select a line for line-level actions.')).toBeFalsy();
+        expect(
+            queryByText('Select a line for line-level actions.'),
+        ).toBeFalsy();
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
     });
 
@@ -522,10 +595,12 @@ describe('Cart', () => {
 
     it('subscribes to live discount definition updates while sales is open', async () => {
         let listener: ((definitions: any[]) => void) | undefined;
-        mockSubscribeDefinitionChanges.mockImplementation((callback: (definitions: any[]) => void) => {
-            listener = callback;
-            return jest.fn();
-        });
+        mockSubscribeDefinitionChanges.mockImplementation(
+            (callback: (definitions: any[]) => void) => {
+                listener = callback;
+                return jest.fn();
+            },
+        );
 
         renderCart('order');
 
@@ -563,17 +638,19 @@ describe('Cart', () => {
                             stackMode: 'STACKABLE',
                         }),
                     ],
-                })
+                }),
             );
         });
     });
 
     it('drops only non-active-status definitions from live sales pricing updates', async () => {
         let listener: ((definitions: any[]) => void) | undefined;
-        mockSubscribeDefinitionChanges.mockImplementation((callback: (definitions: any[]) => void) => {
-            listener = callback;
-            return jest.fn();
-        });
+        mockSubscribeDefinitionChanges.mockImplementation(
+            (callback: (definitions: any[]) => void) => {
+                listener = callback;
+                return jest.fn();
+            },
+        );
 
         renderCart('order');
 
@@ -633,7 +710,7 @@ describe('Cart', () => {
                             name: 'Live 10% Off',
                         }),
                     ],
-                })
+                }),
             );
         });
     });
@@ -645,12 +722,12 @@ describe('Cart', () => {
                 onSubmit={mockOnSubmit}
                 products={[{ id: 'p-1', quantity: 1 } as any]}
                 onInteractionComplete={mockOnInteractionComplete}
-            />
+            />,
         );
         fireEvent.press(getByText(/Print Order/));
         expect(Alert.alert).toHaveBeenCalledWith(
             'Product(s) not available',
-            expect.stringContaining('p-1')
+            expect.stringContaining('p-1'),
         );
         expect(mockOnSubmit).not.toHaveBeenCalled();
     });
@@ -673,7 +750,7 @@ describe('Cart', () => {
                         method: 'AMOUNT',
                         value: 4.25,
                     }),
-                })
+                }),
             );
         });
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
@@ -707,7 +784,7 @@ describe('Cart', () => {
                         method: 'PERCENT',
                         value: 10,
                     }),
-                })
+                }),
             );
         });
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
@@ -761,7 +838,7 @@ describe('Cart', () => {
                         value: 0.1,
                         lineId: 'i-1',
                     }),
-                })
+                }),
             );
         });
     });
@@ -834,7 +911,7 @@ describe('Cart', () => {
                     payload: expect.objectContaining({
                         finalPrice: 1.99,
                     }),
-                })
+                }),
             );
         });
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
@@ -880,7 +957,7 @@ describe('Cart', () => {
             expect.objectContaining({
                 type: 'cart/removePromoCode',
                 payload: 'SAVE5',
-            })
+            }),
         );
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
     });
@@ -902,7 +979,7 @@ describe('Cart', () => {
             expect.objectContaining({
                 type: 'cart/removePricingAdjustment',
                 payload: { lineId: mockCartState.items[0].identifier },
-            })
+            }),
         );
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
     });
@@ -932,7 +1009,7 @@ describe('Cart', () => {
             expect.objectContaining({
                 type: 'cart/removePricingAdjustment',
                 payload: { scope: 'ORDER' },
-            })
+            }),
         );
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(2);
     });

@@ -8,11 +8,18 @@ import {
 } from '@pos/orders/data-access';
 import { UICard, UIEmptyState, UISearchInput } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-import { Animated, View, StyleSheet, FlatList, Text, Pressable } from 'react-native';
+import {
+    Animated,
+    View,
+    StyleSheet,
+    FlatList,
+    Text,
+    Pressable,
+} from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { OrderStatus } from '@pos/shared/api';
 import CompactOrderItem from '../compact-order-item/compact-order-item';
-import i18next from 'i18next';
+import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
 import { RootState } from '@pos/store';
 
 export interface CompactOrderListProps {
@@ -28,24 +35,21 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
     const [filterText, setFilterText] = useState<string>();
     const openOrders = useSelector(selectOpenOrders);
     const currentTenantId = useSelector(
-        (state: RootState) => state?.tenantSession?.currentTenantId
+        (state: RootState) => state?.tenantSession?.currentTenantId,
     );
     const [emptyOpacity] = useState(() => new Animated.Value(0));
     const [emptyTranslateY] = useState(() => new Animated.Value(12));
-    const t = (key: string, fallback: string) =>
-        i18next.isInitialized && i18next.exists(key)
-            ? String(i18next.t(key))
-            : fallback;
+    const t = translateWithFallback;
 
     useEffect(() => {
         const ordersSub = subscribeToOrderChanges(dispatch, currentTenantId);
         const refundsSub = subscribeToOrderRefundChanges(
             dispatch,
-            currentTenantId
+            currentTenantId,
         );
         const refundLinesSub = subscribeToOrderRefundLineChanges(
             dispatch,
-            currentTenantId
+            currentTenantId,
         );
         return () => {
             ordersSub?.unsubscribe();
@@ -102,13 +106,20 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
                         {t('ORDERS_OpenOrdersEyebrow', 'Resume queue')}
                     </Text>
                     <View style={local.titleRow}>
-                        <Text style={local.title}>{t('ORDERS_OpenOrders', 'Open Orders')}</Text>
+                        <Text style={local.title}>
+                            {t('ORDERS_OpenOrders', 'Open Orders')}
+                        </Text>
                         <View style={local.countBadge}>
-                            <Text style={local.countText}>{filteredList.length}</Text>
+                            <Text style={local.countText}>
+                                {filteredList.length}
+                            </Text>
                         </View>
                     </View>
                     <Text style={local.subtitle}>
-                        {t('ORDERS_OpenOrdersSubtitle', 'Tap an order to resume checkout')}
+                        {t(
+                            'ORDERS_OpenOrdersSubtitle',
+                            'Tap an order to resume checkout',
+                        )}
                     </Text>
                 </View>
                 <Pressable
@@ -116,14 +127,19 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
                     onPress={onClose}
                     style={local.closeButton}
                 >
-                    <Text style={local.closeText}>{t('COMMON_Close', 'X')}</Text>
+                    <Text style={local.closeText}>
+                        {t('COMMON_Close', 'X')}
+                    </Text>
                 </Pressable>
             </View>
             {openOrders.length === 0 ? (
                 <Animated.View
                     style={[
                         local.emptyWrap,
-                        { opacity: emptyOpacity, transform: [{ translateY: emptyTranslateY }] },
+                        {
+                            opacity: emptyOpacity,
+                            transform: [{ translateY: emptyTranslateY }],
+                        },
                     ]}
                 >
                     <Text style={local.emptyTitle}>
@@ -132,17 +148,25 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
                     <Text style={local.emptySubtitle}>
                         {t(
                             'ORDERS_NoOpenOrdersEmptyState',
-                            'Orders started in sales will show up here until they are completed.'
+                            'Orders started in sales will show up here until they are completed.',
                         )}
                     </Text>
                 </Animated.View>
             ) : (
                 <>
-                    <UICard tone="muted" padding="sm" radius="md" style={local.searchCard}>
+                    <UICard
+                        tone="muted"
+                        padding="sm"
+                        radius="md"
+                        style={local.searchCard}
+                    >
                         <UISearchInput
                             debounceTime={300}
                             value={searchTerm}
-                            placeholder={t('ORDERS_SearchOpenOrders', 'Search open orders...')}
+                            placeholder={t(
+                                'ORDERS_SearchOpenOrders',
+                                'Search open orders...',
+                            )}
                             onChangeText={(text) => setSearchTerm(text)}
                             onSubmit={(text) => setSearchTerm(text)}
                         />
@@ -152,10 +176,17 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
                             <Animated.View
                                 style={{
                                     opacity: emptyOpacity,
-                                    transform: [{ translateY: emptyTranslateY }],
+                                    transform: [
+                                        { translateY: emptyTranslateY },
+                                    ],
                                 }}
                             >
-                                <UIEmptyState text={t('ORDERS_NoOpenOrdersFound', 'No open orders found')} />
+                                <UIEmptyState
+                                    text={t(
+                                        'ORDERS_NoOpenOrdersFound',
+                                        'No open orders found',
+                                    )}
+                                />
                             </Animated.View>
                         )}
                         {filteredList.length > 0 && (

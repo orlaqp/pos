@@ -55,46 +55,55 @@ export function CartPriceOverrideDialog({
                     </View>
                 </View>
             </View>
-            <TextInput
-                value={draft.finalPrice}
-                onChangeText={(finalPrice) =>
-                    onChange((current) => ({
-                        ...current,
-                        finalPrice,
-                    }))
-                }
-                placeholder={basePrice.toFixed(2)}
-                placeholderTextColor={placeholderTextColor}
-                keyboardType="decimal-pad"
-                style={[styles.dialogInput, styles.dialogInputLarge]}
-            />
-            <Text style={styles.dialogFieldHint}>
-                Enter the final unit price only. Everything else in the current checkout flow stays the same.
-            </Text>
-            <TextInput
-                value={draft.reasonCode}
-                onChangeText={(reasonCode) =>
-                    onChange((current) => ({
-                        ...current,
-                        reasonCode,
-                    }))
-                }
-                placeholder="Reason code (optional)"
-                placeholderTextColor={placeholderTextColor}
-                style={styles.dialogInput}
-            />
-            <TextInput
-                value={draft.reasonNote}
-                onChangeText={(reasonNote) =>
-                    onChange((current) => ({
-                        ...current,
-                        reasonNote,
-                    }))
-                }
-                placeholder="Reason note (optional)"
-                placeholderTextColor={placeholderTextColor}
-                style={styles.dialogInput}
-            />
+            <View style={styles.dialogSectionCard}>
+                <Text style={styles.dialogSubheading}>Final unit price</Text>
+                <Text style={styles.dialogFieldHint}>
+                    Enter the final unit price only. Everything else in the current checkout flow stays the same.
+                </Text>
+                <TextInput
+                    value={draft.finalPrice}
+                    onChangeText={(finalPrice) =>
+                        onChange((current) => ({
+                            ...current,
+                            finalPrice,
+                        }))
+                    }
+                    placeholder={basePrice.toFixed(2)}
+                    placeholderTextColor={placeholderTextColor}
+                    keyboardType="decimal-pad"
+                    style={[styles.dialogInput, styles.dialogInputLarge]}
+                />
+            </View>
+            <View style={styles.dialogSectionCard}>
+                <Text style={styles.dialogSubheading}>Approval notes</Text>
+                <Text style={styles.dialogFieldHint}>
+                    Add an optional reason code or note for manager review.
+                </Text>
+                <TextInput
+                    value={draft.reasonCode}
+                    onChangeText={(reasonCode) =>
+                        onChange((current) => ({
+                            ...current,
+                            reasonCode,
+                        }))
+                    }
+                    placeholder="Reason code (optional)"
+                    placeholderTextColor={placeholderTextColor}
+                    style={styles.dialogInput}
+                />
+                <TextInput
+                    value={draft.reasonNote}
+                    onChangeText={(reasonNote) =>
+                        onChange((current) => ({
+                            ...current,
+                            reasonNote,
+                        }))
+                    }
+                    placeholder="Reason note (optional)"
+                    placeholderTextColor={placeholderTextColor}
+                    style={styles.dialogInput}
+                />
+            </View>
             <View style={styles.dialogActionRow}>
                 <Button
                     type="clear"

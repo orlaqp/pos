@@ -46,14 +46,20 @@ export function CartPromoDialog({
                     </View>
                 </View>
             </View>
-            <TextInput
-                value={promoCodeInput}
-                onChangeText={onChangePromoCode}
-                placeholder="SPRING10"
-                placeholderTextColor={placeholderTextColor}
-                autoCapitalize="characters"
-                style={[styles.dialogInput, styles.dialogInputLarge]}
-            />
+            <View style={styles.dialogSectionCard}>
+                <Text style={styles.dialogSubheading}>Promo code</Text>
+                <Text style={styles.dialogFieldHint}>
+                    Keep the code visible while the cart recalculates totals.
+                </Text>
+                <TextInput
+                    value={promoCodeInput}
+                    onChangeText={onChangePromoCode}
+                    placeholder="SPRING10"
+                    placeholderTextColor={placeholderTextColor}
+                    autoCapitalize="characters"
+                    style={[styles.dialogInput, styles.dialogInputLarge]}
+                />
+            </View>
             <View style={styles.dialogActionRow}>
                 <Button
                     type="clear"

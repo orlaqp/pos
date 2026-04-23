@@ -34,8 +34,18 @@ jest.mock('@pos/theme/native/design-tokens', () => ({
 }));
 
 jest.mock('@rneui/themed', () => ({
-    useTheme: () => ({ theme: { colors: { primary: '#4da3ff', error: '#ff5f5f' } } }),
-    Button: ({ title, onPress, testID }: { title?: string; onPress: () => void; testID?: string }) => {
+    useTheme: () => ({
+        theme: { colors: { primary: '#4da3ff', error: '#ff5f5f' } },
+    }),
+    Button: ({
+        title,
+        onPress,
+        testID,
+    }: {
+        title?: string;
+        onPress: () => void;
+        testID?: string;
+    }) => {
         const { Pressable, Text } = require('react-native');
         return (
             <Pressable onPress={onPress} testID={testID || title}>
@@ -103,7 +113,9 @@ describe('OrderItem integration', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockUseSelector.mockReset();
-        mockUseSelector.mockImplementation((selector, state) => selector(state));
+        mockUseSelector.mockImplementation((selector, state) =>
+            selector(state),
+        );
         mockRefundedAmount = 0;
         mockRefundedQuantities = {};
     });
@@ -129,7 +141,7 @@ describe('OrderItem integration', () => {
                 navigation={{ navigate: mockNavigate }}
                 onVoid={jest.fn()}
                 onPay={onPay}
-            />
+            />,
         );
 
         expect(queryByText('Payment')).toBeTruthy();
@@ -156,7 +168,11 @@ describe('OrderItem integration', () => {
         };
 
         const { getByText } = render(
-            <OrderItem item={item} navigation={{ navigate: mockNavigate }} onVoid={jest.fn()} />
+            <OrderItem
+                item={item}
+                navigation={{ navigate: mockNavigate }}
+                onVoid={jest.fn()}
+            />,
         );
 
         expect(getByText('Store')).toBeTruthy();
@@ -185,7 +201,11 @@ describe('OrderItem integration', () => {
         };
 
         const { getByText, queryByText } = render(
-            <OrderItem item={item} navigation={{ navigate: mockNavigate }} onVoid={jest.fn()} />
+            <OrderItem
+                item={item}
+                navigation={{ navigate: mockNavigate }}
+                onVoid={jest.fn()}
+            />,
         );
 
         expect(getByText('INVALID-ORDER')).toBeTruthy();
@@ -252,7 +272,7 @@ describe('OrderItem integration', () => {
                 item={item}
                 navigation={{ navigate: mockNavigate }}
                 onVoid={jest.fn()}
-            />
+            />,
         );
 
         await act(async () => {
@@ -260,11 +280,7 @@ describe('OrderItem integration', () => {
             await Promise.resolve();
         });
 
-        expect(printReceipt).toHaveBeenCalledWith(
-            store,
-            printer,
-            ticket
-        );
+        expect(printReceipt).toHaveBeenCalledWith(store, printer, ticket);
     });
 
     it('shows original total struck through and remaining total for partially refunded orders', () => {
@@ -290,15 +306,45 @@ describe('OrderItem integration', () => {
                 item={item}
                 navigation={{ navigate: mockNavigate }}
                 onVoid={jest.fn()}
-            />
+            />,
         );
 
         expect(getByText('$ 99.25')).toBeTruthy();
         expect(getByTestId('order-item-original-total').props.children).toBe(
-            '$ 150.96'
+            '$ 150.96',
         );
         expect(getByTestId('order-item-active-total').props.children).toBe(
-            '$ 99.25'
+            '$ 99.25',
         );
+    });
+
+    it('shows an Open action for fully refunded orders and delegates to the detail handler', () => {
+        const item = {
+            id: 'o-6',
+            orderNo: '51-EBTDEV01-260311-0006',
+            subtotal: 25,
+            tax: 0,
+            total: 25,
+            status: 'REFUNDED',
+            employeeId: 'emp-1',
+            employeeName: 'Cashier',
+            orderDate: '2026-03-12T12:00:00.000Z',
+            lines: [],
+        };
+        const onOpenDetails = jest.fn();
+
+        const { getByTestId, queryByText } = render(
+            <OrderItem
+                item={item}
+                navigation={{ navigate: mockNavigate }}
+                onVoid={jest.fn()}
+                onOpenDetails={onOpenDetails}
+            />,
+        );
+
+        expect(queryByText('Open')).toBeTruthy();
+        fireEvent.press(getByTestId('order-item-open-details-button'));
+
+        expect(onOpenDetails).toHaveBeenCalledWith(item);
     });
 });

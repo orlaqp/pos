@@ -35,7 +35,7 @@ import {
     RefundPaymentRowDraft,
     syncSingleRefundPaymentRow,
 } from './order-void-form.logic';
-import i18next from 'i18next';
+import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
 import { RootState } from '@pos/store';
 
 export interface OrderItemProps {
@@ -52,32 +52,30 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     const [newTotal, setNewTotal] = useState<number>(0);
     const [linesToRefund, setLinesToRefund] = useState<OrderLineEntity[]>([]);
     const [busy, setBusy] = useState<boolean>(false);
-    const [refundPaymentDraft, setRefundPaymentDraft] =
-        useState<RefundPaymentRowDraft[]>(() =>
-            createEmptyRefundPaymentDraft()
-        );
-    const [openPaymentRowId, setOpenPaymentRowId] = useState<string | null>(null);
+    const [refundPaymentDraft, setRefundPaymentDraft] = useState<
+        RefundPaymentRowDraft[]
+    >(() => createEmptyRefundPaymentDraft());
+    const [openPaymentRowId, setOpenPaymentRowId] = useState<string | null>(
+        null,
+    );
     const [refundedTrayExpanded, setRefundedTrayExpanded] =
         useState<boolean>(false);
     const paymentRowCounter = useRef(1);
-    const t = (key: string, fallback: string) =>
-        i18next.isInitialized && i18next.exists(key)
-            ? String(i18next.t(key))
-            : fallback;
+    const t = translateWithFallback;
     const employee = useSelector(selectLoginEmployee);
     const existingRefundAmount = useSelector((state: RootState) =>
-        selectRefundedAmountForOrder(state, order.id)
+        selectRefundedAmountForOrder(state, order.id),
     );
     const refundedQuantitiesObject = useSelector((state: RootState) =>
-        selectRefundedQuantitiesForOrder(state, order.id)
+        selectRefundedQuantitiesForOrder(state, order.id),
     );
     const refundedQuantities = useMemo(
         () => new Map(Object.entries(refundedQuantitiesObject)),
-        [refundedQuantitiesObject]
+        [refundedQuantitiesObject],
     );
     const groupedLines = useMemo(
         () => groupOrderLinesForVoid(order.lines, refundedQuantities),
-        [order.lines, refundedQuantities]
+        [order.lines, refundedQuantities],
     );
     const itemList = groupedLines.remainingItems;
     const refundedItemList = groupedLines.refundedItems;
@@ -87,16 +85,16 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
             acc[type] = (acc[type] || 0) + Number(payment.amount || 0);
             return acc;
         },
-        {}
+        {},
     );
     const paymentTypes = Object.keys(paymentSummary);
     const refundPayments = useMemo(
         () => parseRefundPayments(refundPaymentDraft),
-        [refundPaymentDraft]
+        [refundPaymentDraft],
     );
     const refundPaymentTotal = useMemo(
         () => getRefundPaymentTotal(refundPayments),
-        [refundPayments]
+        [refundPayments],
     );
     const absoluteRefundAmount = Math.abs(refundAmount);
     const canAddPaymentMethod = canAddRefundPaymentRow(refundPaymentDraft);
@@ -106,7 +104,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     const ebtFromPayments = paymentSummary.EBT || 0;
     const ebtFromLines = (order.lines || []).reduce(
         (acc, line) => acc + Number(line?.ebtPaidAmount || 0),
-        0
+        0,
     );
 
     const onItemToggle = (line: OrderLineEntity, selected: boolean) => {
@@ -125,8 +123,8 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                 t('ORDERVOID_Error', 'Error'),
                 t(
                     'ORDERVOID_NoEmployee',
-                    'Refund is not possible because no login employee was found'
-                )
+                    'Refund is not possible because no login employee was found',
+                ),
             );
             return;
         }
@@ -142,7 +140,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                     identifier: l.identifier,
                     price: l.price,
                     quantity: l.quantity,
-                }))
+                })),
             });
             onRefundComplete();
         } catch (error) {
@@ -152,8 +150,8 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                     ? error.message
                     : t(
                           'ORDERVOID_ProcessFailed',
-                          'The refund could not be completed. Please try again.'
-                      )
+                          'The refund could not be completed. Please try again.',
+                      ),
             );
         } finally {
             setBusy(false);
@@ -166,8 +164,8 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                 t('ORDERVOID_Error', 'Error'),
                 t(
                     'ORDERVOID_RefundPaymentMismatch',
-                    'Refund payment methods must add up to the refund amount before processing.'
-                )
+                    'Refund payment methods must add up to the refund amount before processing.',
+                ),
             );
             return;
         }
@@ -176,18 +174,18 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
             t('ORDERVOID_ConfirmTitle', 'Are you sure?'),
             t(
                 'ORDERVOID_ConfirmMessage',
-                'You will not be able to undo this operation'
+                'You will not be able to undo this operation',
             ),
             [
                 { text: t('ORDERVOID_No', 'No') },
                 { text: t('ORDERVOID_Yes', 'Yes'), onPress: processRefund },
-            ]
+            ],
         );
     };
 
     useEffect(() => {
         setRefundPaymentDraft((current) =>
-            syncSingleRefundPaymentRow(current, absoluteRefundAmount)
+            syncSingleRefundPaymentRow(current, absoluteRefundAmount),
         );
     }, [absoluteRefundAmount, refundPaymentDraft.length]);
 
@@ -230,7 +228,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
         0,
         order.currentTotal != null
             ? Number(order.currentTotal || 0)
-            : Number(order.total || 0) - existingRefundAmount
+            : Number(order.total || 0) - existingRefundAmount,
     );
 
     const paymentTypeOptions = useMemo(
@@ -240,7 +238,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
             CHECK: t('PAYMENT_Method_Check', 'Check'),
             EBT: t('PAYMENT_Method_EBT', 'EBT'),
         }),
-        [t]
+        [t],
     );
 
     const addRefundPaymentRow = () => {
@@ -252,17 +250,17 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
         setRefundPaymentDraft((current) => [
             ...current,
             createRefundPaymentRow(
-                `refund-payment-row-${paymentRowCounter.current}`
+                `refund-payment-row-${paymentRowCounter.current}`,
             ),
         ]);
     };
 
     const updateRefundPaymentRow = (
         rowId: string,
-        updater: (row: RefundPaymentRowDraft) => RefundPaymentRowDraft
+        updater: (row: RefundPaymentRowDraft) => RefundPaymentRowDraft,
     ) => {
         setRefundPaymentDraft((current) =>
-            current.map((row) => (row.id === rowId ? updater(row) : row))
+            current.map((row) => (row.id === rowId ? updater(row) : row)),
         );
     };
 
@@ -283,11 +281,13 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                 <Text style={local.eyebrow}>
                     {t('ORDERVOID_Eyebrow', 'Refund workspace')}
                 </Text>
-                <Text style={local.title}>{t('ORDERVOID_Title', 'Void Items')}</Text>
+                <Text style={local.title}>
+                    {t('ORDERVOID_Title', 'Void Items')}
+                </Text>
                 <Text style={local.subtitle}>
                     {t(
                         'ORDERVOID_Subtitle',
-                        'Select items to refund from this order'
+                        'Select items to refund from this order',
                     )}
                 </Text>
             </View>
@@ -303,12 +303,17 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                             {t('ORDERVOID_ItemsEyebrow', 'Refund selection')}
                         </Text>
                         <Text style={local.sectionTitle}>
-                            {t('ORDERVOID_AvailableItems', 'Available to refund')}
+                            {t(
+                                'ORDERVOID_AvailableItems',
+                                'Available to refund',
+                            )}
                         </Text>
                         <FlatList
                             horizontal={false}
                             data={itemList}
-                            keyExtractor={(item, index) => `${item.identifier}-${index}`}
+                            keyExtractor={(item, index) =>
+                                `${item.identifier}-${index}`
+                            }
                             renderItem={(data) => (
                                 <OrderVoidableItem
                                     line={data.item}
@@ -322,7 +327,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                                 <Text style={local.emptyStateText}>
                                     {t(
                                         'ORDERVOID_NoRemainingItems',
-                                        'No refundable items remain on this order.'
+                                        'No refundable items remain on this order.',
                                     )}
                                 </Text>
                             }
@@ -338,7 +343,9 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         >
                             <TouchableOpacity
                                 onPress={() =>
-                                    setRefundedTrayExpanded((expanded) => !expanded)
+                                    setRefundedTrayExpanded(
+                                        (expanded) => !expanded,
+                                    )
                                 }
                                 style={local.trayHeader}
                                 testID="order-void-refunded-tray-toggle"
@@ -348,16 +355,16 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                                     <Text style={local.sectionTitle}>
                                         {t(
                                             'ORDERVOID_AlreadyRefunded',
-                                            'Already refunded'
+                                            'Already refunded',
                                         )}
                                     </Text>
                                     <Text style={local.trayMeta}>
                                         {t(
                                             'ORDERVOID_AlreadyRefundedCount',
-                                            '{{count}} item(s) for reference'
+                                            '{{count}} item(s) for reference',
                                         ).replace(
                                             '{{count}}',
-                                            refundedItemList.length.toString()
+                                            refundedItemList.length.toString(),
                                         )}
                                     </Text>
                                 </View>
@@ -403,13 +410,16 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                             {t('ORDERVOID_ReferenceEyebrow', 'Order context')}
                         </Text>
                         <Text style={local.referenceTitle}>
-                            {t('ORDERVOID_PaymentReference', 'Payment Reference')}
+                            {t(
+                                'ORDERVOID_PaymentReference',
+                                'Payment Reference',
+                            )}
                         </Text>
                         {paymentTypes.length === 0 && (
                             <Text style={local.referenceText}>
                                 {t(
                                     'ORDERVOID_NoPaymentDetails',
-                                    'No payment details were found for this order.'
+                                    'No payment details were found for this order.',
                                 )}
                             </Text>
                         )}
@@ -429,7 +439,12 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         )}
                         {!!(ebtFromPayments || ebtFromLines) && (
                             <Text style={local.ebtHint}>
-                                {t('ORDERVOID_EBTReference', 'EBT reference')}: $ {Math.max(ebtFromPayments, ebtFromLines).toFixed(2)}
+                                {t('ORDERVOID_EBTReference', 'EBT reference')}:
+                                ${' '}
+                                {Math.max(
+                                    ebtFromPayments,
+                                    ebtFromLines,
+                                ).toFixed(2)}
                             </Text>
                         )}
                     </UICard>
@@ -438,7 +453,10 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         tone="default"
                         padding="sm"
                         radius="md"
-                        style={[local.referenceCard, local.refundPaymentSection]}
+                        style={[
+                            local.referenceCard,
+                            local.refundPaymentSection,
+                        ]}
                     >
                         <Text style={local.sectionEyebrow}>
                             {t('ORDERVOID_TenderEyebrow', 'Refund tender')}
@@ -450,7 +468,7 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                             <Text style={local.referenceText}>
                                 {t(
                                     'ORDERVOID_RefundPaymentHelp',
-                                    'Choose how the refund was returned. The total must match the refund amount.'
+                                    'Choose how the refund was returned. The total must match the refund amount.',
                                 )}
                             </Text>
                             <Button
@@ -466,14 +484,17 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         </View>
                         <View style={local.refundPaymentsList}>
                             {refundPaymentDraft.map((row, index) => {
-                                const availableTypes = getAvailableRefundPaymentTypes(
-                                    refundPaymentDraft,
-                                    row.id
+                                const availableTypes =
+                                    getAvailableRefundPaymentTypes(
+                                        refundPaymentDraft,
+                                        row.id,
+                                    );
+                                const dropdownItems = availableTypes.map(
+                                    (type) => ({
+                                        label: paymentTypeOptions[type],
+                                        value: type,
+                                    }),
                                 );
-                                const dropdownItems = availableTypes.map((type) => ({
-                                    label: paymentTypeOptions[type],
-                                    value: type,
-                                }));
 
                                 return (
                                     <View
@@ -488,49 +509,73 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                                         <TextInput
                                             value={row.amountText}
                                             onChangeText={(value) =>
-                                                updateRefundPaymentRow(row.id, (current) => ({
-                                                    ...current,
-                                                    amountText: value.replace(/[^0-9.]/g, ''),
-                                                }))
+                                                updateRefundPaymentRow(
+                                                    row.id,
+                                                    (current) => ({
+                                                        ...current,
+                                                        amountText:
+                                                            value.replace(
+                                                                /[^0-9.]/g,
+                                                                '',
+                                                            ),
+                                                    }),
+                                                )
                                             }
                                             keyboardType="decimal-pad"
                                             placeholder="0.00"
-                                            placeholderTextColor={tokens.colors.textMuted}
-                                            style={local.refundPaymentRowAmountInput}
+                                            placeholderTextColor={
+                                                tokens.colors.textMuted
+                                            }
+                                            style={
+                                                local.refundPaymentRowAmountInput
+                                            }
                                             testID={`order-void-refund-payment-amount-${index}`}
                                         />
-                                        <View style={local.refundPaymentDropdownWrap}>
+                                        <View
+                                            style={
+                                                local.refundPaymentDropdownWrap
+                                            }
+                                        >
                                             <DropDownPicker
-                                                open={openPaymentRowId === row.id}
+                                                open={
+                                                    openPaymentRowId === row.id
+                                                }
                                                 value={row.type}
                                                 items={dropdownItems}
                                                 setOpen={(open) =>
-                                                    setOpenPaymentRowId(open ? row.id : null)
+                                                    setOpenPaymentRowId(
+                                                        open ? row.id : null,
+                                                    )
                                                 }
                                                 setValue={(callback) => {
                                                     const nextValue =
-                                                        typeof callback === 'function'
+                                                        typeof callback ===
+                                                        'function'
                                                             ? callback(row.type)
                                                             : callback;
                                                     updateRefundPaymentRow(
                                                         row.id,
                                                         (current) => ({
                                                             ...current,
-                                                            type: nextValue || null,
-                                                        })
+                                                            type:
+                                                                nextValue ||
+                                                                null,
+                                                        }),
                                                     );
                                                 }}
                                                 setItems={() => undefined}
                                                 placeholder={t(
                                                     'ORDERVOID_SelectPaymentMethod',
-                                                    'Select method'
+                                                    'Select method',
                                                 )}
                                                 listMode="SCROLLVIEW"
                                                 theme="DARK"
                                                 containerStyle={
                                                     local.refundPaymentDropdownHost
                                                 }
-                                                style={local.refundPaymentDropdown}
+                                                style={
+                                                    local.refundPaymentDropdown
+                                                }
                                                 dropDownContainerStyle={
                                                     local.refundPaymentDropdownContainer
                                                 }
@@ -540,7 +585,9 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                                                 selectedItemContainerStyle={
                                                     local.refundPaymentDropdownSelectedItemContainer
                                                 }
-                                                textStyle={local.refundPaymentDropdownText}
+                                                textStyle={
+                                                    local.refundPaymentDropdownText
+                                                }
                                                 placeholderStyle={
                                                     local.refundPaymentDropdownPlaceholder
                                                 }
@@ -555,12 +602,25 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                                         </View>
                                         {refundPaymentDraft.length > 1 ? (
                                             <TouchableOpacity
-                                                onPress={() => removeRefundPaymentRow(row.id)}
-                                                style={local.removePaymentRowButton}
+                                                onPress={() =>
+                                                    removeRefundPaymentRow(
+                                                        row.id,
+                                                    )
+                                                }
+                                                style={
+                                                    local.removePaymentRowButton
+                                                }
                                                 testID={`order-void-remove-payment-row-${index}`}
                                             >
-                                                <Text style={local.removePaymentRowText}>
-                                                    {t('ORDERVOID_Remove', 'Remove')}
+                                                <Text
+                                                    style={
+                                                        local.removePaymentRowText
+                                                    }
+                                                >
+                                                    {t(
+                                                        'ORDERVOID_Remove',
+                                                        'Remove',
+                                                    )}
                                                 </Text>
                                             </TouchableOpacity>
                                         ) : null}
@@ -571,12 +631,18 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         <Text
                             style={[
                                 local.ebtHint,
-                                !isRefundPaymentBalanced && local.refundPaymentError,
+                                !isRefundPaymentBalanced &&
+                                    local.refundPaymentError,
                             ]}
                         >
-                            {t('ORDERVOID_RefundPaymentTotal', 'Refund payment total')}: $ {refundPaymentTotal.toFixed(2)}
+                            {t(
+                                'ORDERVOID_RefundPaymentTotal',
+                                'Refund payment total',
+                            )}
+                            : $ {refundPaymentTotal.toFixed(2)}
                             {' · '}
-                            {t('ORDERVOID_RefundAmount', 'Refund Amount')}: $ {absoluteRefundAmount.toFixed(2)}
+                            {t('ORDERVOID_RefundAmount', 'Refund Amount')}: ${' '}
+                            {absoluteRefundAmount.toFixed(2)}
                         </Text>
                     </UICard>
 
@@ -598,7 +664,11 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                                         local.summaryMetricLabel,
                                     ]}
                                 >
-                                    {t('ORDERVOID_CurrentTotal', 'Current Total')}:
+                                    {t(
+                                        'ORDERVOID_CurrentTotal',
+                                        'Current Total',
+                                    )}
+                                    :
                                 </Text>
                                 <Text
                                     style={[
@@ -619,7 +689,11 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                                         local.summaryMetricLabel,
                                     ]}
                                 >
-                                    {t('ORDERVOID_RefundAmount', 'Refund Amount')}:
+                                    {t(
+                                        'ORDERVOID_RefundAmount',
+                                        'Refund Amount',
+                                    )}
+                                    :
                                 </Text>
                                 <Text
                                     style={[
@@ -672,7 +746,8 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                                     name: 'check',
                                     type: 'material-community',
                                     color:
-                                        refundAmount === 0 || !isRefundPaymentBalanced
+                                        refundAmount === 0 ||
+                                        !isRefundPaymentBalanced
                                             ? theme.theme.colors.grey2
                                             : styles.primaryText.color,
                                 }}

@@ -34,3 +34,12 @@ A phase can be considered complete only when:
 2. No new red-screen runtime errors are introduced.
 3. Critical flows remain functional.
 
+## EN/ES Localization Gate
+
+Any phase that touches user-facing UI must also verify multilanguage readiness:
+
+1. Every new visible string is backed by a translation key.
+2. Every new key exists in both `en.json` and `es.json`.
+3. Alerts, buttons, placeholders, validation messages, empty states, loading states, and navigation labels are included.
+4. Spanish text is reviewed for layout fit on representative iPad landscape screens.
+5. Known hardcoded-string exceptions are documented in the relevant phase notes.

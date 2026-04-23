@@ -1,9 +1,20 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import i18next from 'i18next';
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
-import { Animated, View, Alert, InteractionManager, TextInput } from 'react-native';
+import {
+    Animated,
+    View,
+    Alert,
+    InteractionManager,
+    TextInput,
+} from 'react-native';
 
 import {
     CategoryEntity,
@@ -55,6 +66,7 @@ import {
     stationActions,
     StationService,
 } from '@pos/settings/data-access';
+import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
 import { Role } from '@pos/auth/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { EACH } from '@pos/unit-of-measures/data-access';
@@ -134,14 +146,17 @@ export function SalesScreen({
     const tenantId = useSelector(
         (state: RootState) =>
             (state.tenantSession?.currentTenantId ??
-                (state.tenantSession as { tenantId?: string } | undefined)?.tenantId) as
-                | string
-                | undefined
+                (state.tenantSession as { tenantId?: string } | undefined)
+                    ?.tenantId) as string | undefined,
     );
     const station = useSelector(selectStation);
 
-    const [browseMode, setBrowseMode] = useState<'idle' | 'all' | 'category'>('idle');
-    const [activeCategory, setActiveCategory] = useState<CategoryEntity | undefined>();
+    const [browseMode, setBrowseMode] = useState<'idle' | 'all' | 'category'>(
+        'idle',
+    );
+    const [activeCategory, setActiveCategory] = useState<
+        CategoryEntity | undefined
+    >();
     const [searchText, setSearchText] = useState<string>();
     const [isSearchActive, setIsSearchActive] = useState(false);
     const [showCategories, setShowCategories] = useState(true);
@@ -158,15 +173,12 @@ export function SalesScreen({
     const isScreenFocusedRef = useRef(false);
     const isProductDialogOpenRef = useRef(Boolean(product));
     const searchFocusInteractionRef = useRef<{ cancel?: () => void } | null>(
-        null
+        null,
     );
     const searchFocusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-        null
+        null,
     );
-    const t = (key: string, fallback: string) =>
-        i18next.isInitialized && i18next.exists(key)
-            ? String(i18next.t(key))
-            : fallback;
+    const t = translateWithFallback;
     const hasCatalogProducts = getActiveProducts(allProducts).length > 0;
     const canManageCatalog = !!employee?.roles?.includes(Role.Admin);
     const filteredProducts = useMemo(
@@ -175,9 +187,9 @@ export function SalesScreen({
                 allProducts,
                 browseMode,
                 activeCategory,
-                isSearchActive ? searchText : undefined
+                isSearchActive ? searchText : undefined,
             ),
-        [activeCategory, allProducts, browseMode, isSearchActive, searchText]
+        [activeCategory, allProducts, browseMode, isSearchActive, searchText],
     );
     const currentDealRows = useMemo(
         () =>
@@ -197,7 +209,7 @@ export function SalesScreen({
             productsEntities,
             station?.stationNumber,
             storeInfo?.timezone,
-        ]
+        ],
     );
 
     useEffect(() => {
@@ -206,7 +218,13 @@ export function SalesScreen({
         searchTextRef.current = searchText;
         isSearchActiveRef.current = isSearchActive;
         showCategoriesRef.current = showCategories;
-    }, [activeCategory, browseMode, isSearchActive, searchText, showCategories]);
+    }, [
+        activeCategory,
+        browseMode,
+        isSearchActive,
+        searchText,
+        showCategories,
+    ]);
     const cancelPendingSearchFocus = useCallback(() => {
         searchFocusInteractionRef.current?.cancel?.();
         searchFocusInteractionRef.current = null;
@@ -231,14 +249,20 @@ export function SalesScreen({
             return;
         }
 
-        if (searchFocusInteractionRef.current || searchFocusTimeoutRef.current) {
+        if (
+            searchFocusInteractionRef.current ||
+            searchFocusTimeoutRef.current
+        ) {
             return;
         }
 
-        searchFocusInteractionRef.current = InteractionManager.runAfterInteractions(
-            () => {
+        searchFocusInteractionRef.current =
+            InteractionManager.runAfterInteractions(() => {
                 searchFocusInteractionRef.current = null;
-                if (!isScreenFocusedRef.current || isProductDialogOpenRef.current) {
+                if (
+                    !isScreenFocusedRef.current ||
+                    isProductDialogOpenRef.current
+                ) {
                     return;
                 }
 
@@ -251,8 +275,7 @@ export function SalesScreen({
                 }
 
                 input?.focus?.();
-            }
-        );
+            });
     }, []);
     const blurSearchFocus = useCallback(() => {
         const input = searchRef.current as
@@ -283,7 +306,7 @@ export function SalesScreen({
                 restoreSearchFocus();
             }, delayMs);
         },
-        [blurSearchFocus, cancelPendingSearchFocus, restoreSearchFocus]
+        [blurSearchFocus, cancelPendingSearchFocus, restoreSearchFocus],
     );
     const deselectProduct = useCallback(() => {
         dispatch(cartActions.setActiveProduct(undefined));
@@ -302,8 +325,8 @@ export function SalesScreen({
                     t('SALES_TenantUnavailableTitle', 'Tenant not ready'),
                     t(
                         'SALES_TenantUnavailableMessage',
-                        'Tenant context is not ready yet. Please try again in a moment.'
-                    )
+                        'Tenant context is not ready yet. Please try again in a moment.',
+                    ),
                 );
                 return false;
             }
@@ -313,8 +336,8 @@ export function SalesScreen({
                     t('SALES_EmployeeUnavailableTitle', 'Employee required'),
                     t(
                         'SALES_EmployeeUnavailableMessage',
-                        'Sign in as an employee before creating sales.'
-                    )
+                        'Sign in as an employee before creating sales.',
+                    ),
                 );
                 return false;
             }
@@ -325,30 +348,35 @@ export function SalesScreen({
                 !station?.stationNumber?.trim()
             ) {
                 Alert.alert(
-                    t('SALES_StationUnavailableTitle', 'Station setup required'),
+                    t(
+                        'SALES_StationUnavailableTitle',
+                        'Station setup required',
+                    ),
                     t(
                         'SALES_StationUnavailableMessage',
-                        'Configure the station code before creating sales.'
-                    )
+                        'Configure the station code before creating sales.',
+                    ),
                 );
                 return false;
             }
 
             return true;
         },
-        [employee?.id, station?.stationNumber, t, tenantId]
+        [employee?.id, station?.stationNumber, t, tenantId],
     );
 
-    const upsertCart = useCallback((item: CartItem) => {
-        isProductDialogOpenRef.current = false;
-        dispatch(cartActions.upsert(item));
-        deselectProduct();
-        scheduleSearchFocusRestore();
-    }, [deselectProduct, dispatch, scheduleSearchFocusRestore]);
+    const upsertCart = useCallback(
+        (item: CartItem) => {
+            isProductDialogOpenRef.current = false;
+            dispatch(cartActions.upsert(item));
+            deselectProduct();
+            scheduleSearchFocusRestore();
+        },
+        [deselectProduct, dispatch, scheduleSearchFocusRestore],
+    );
     const getLatestProduct = useCallback(
-        (product: ProductEntity) =>
-            productsEntities[product.id] ?? product,
-        [productsEntities]
+        (product: ProductEntity) => productsEntities[product.id] ?? product,
+        [productsEntities],
     );
 
     const preparePrintableOrderCart = useCallback(
@@ -365,41 +393,48 @@ export function SalesScreen({
             if (!orderNo && station?.stationNumber) {
                 const reservation = StationService.reserveNextOrderNumber(
                     station,
-                    employee
+                    employee,
                 );
                 orderNo = reservation.orderNo;
                 dispatch(stationActions.set(reservation.config));
-                void StationService.saveConfig(reservation.config).catch((error) => {
-                    console.error(
-                        'Unable to persist reserved station order number',
-                        getErrorMessage(error) ?? error
-                    );
-                });
+                void StationService.saveConfig(reservation.config).catch(
+                    (error) => {
+                        console.error(
+                            'Unable to persist reserved station order number',
+                            getErrorMessage(error) ?? error,
+                        );
+                    },
+                );
             }
 
             return {
                 ...cart,
                 id: cart.id ?? String(uuid.v4()),
-                orderNo: orderNo ?? (await StationService.getNextOrderNumber(employee)),
+                orderNo:
+                    orderNo ??
+                    (await StationService.getNextOrderNumber(employee)),
             };
         },
-        [dispatch, employee, station]
+        [dispatch, employee, station],
     );
 
-    const onCategoryChange = useCallback((c?: CategoryEntity) => {
-        setIsSearchActive(false);
-        setSearchText(undefined);
-        setActiveCategory(c);
+    const onCategoryChange = useCallback(
+        (c?: CategoryEntity) => {
+            setIsSearchActive(false);
+            setSearchText(undefined);
+            setActiveCategory(c);
 
-        if (!c?.id) {
-            setBrowseMode('idle');
+            if (!c?.id) {
+                setBrowseMode('idle');
+                scheduleSearchFocusRestore({ blurFirst: true });
+                return;
+            }
+
+            setBrowseMode('category');
             scheduleSearchFocusRestore({ blurFirst: true });
-            return;
-        }
-
-        setBrowseMode('category');
-        scheduleSearchFocusRestore({ blurFirst: true });
-    }, [scheduleSearchFocusRestore]);
+        },
+        [scheduleSearchFocusRestore],
+    );
 
     const onShowAllProducts = useCallback(() => {
         setIsSearchActive(false);
@@ -458,9 +493,9 @@ export function SalesScreen({
                 cartActions.upsert(
                     CartItemMapper.fromProduct(
                         p,
-                        getAutoAddQuantity(p, res.quantity)
-                    )
-                )
+                        getAutoAddQuantity(p, res.quantity),
+                    ),
+                ),
             );
             setIsSearchActive(false);
             setSearchText(undefined);
@@ -478,21 +513,23 @@ export function SalesScreen({
                 shouldBlockSelectionByInventory(
                     globalSettings?.enforceSalesBasedOnInventory,
                     product.quantity,
-                    MINIMUM_INVENTORY_FOR_SALE
+                    MINIMUM_INVENTORY_FOR_SALE,
                 )
             ) {
                 Alert.alert(
                     t('SALES_NotAvailableTitle', 'Not Available'),
                     t(
                         'SALES_NotAvailableMessage',
-                        'We do not have this product in inventory at the moment'
-                    )
+                        'We do not have this product in inventory at the moment',
+                    ),
                 );
                 return;
             }
 
             if (product.unitOfMeasure?.toLowerCase() === EACH) {
-                dispatch(cartActions.upsert(CartItemMapper.fromProduct(product, 1)));
+                dispatch(
+                    cartActions.upsert(CartItemMapper.fromProduct(product, 1)),
+                );
                 scheduleSearchFocusRestore({ blurFirst: true });
                 return;
             }
@@ -501,7 +538,7 @@ export function SalesScreen({
                 cartActions.setActiveProduct({
                     product,
                     quantity: getSelectedQuantity(product.unitOfMeasure),
-                })
+                }),
             );
         },
         [
@@ -511,7 +548,7 @@ export function SalesScreen({
             getLatestProduct,
             globalSettings,
             scheduleSearchFocusRestore,
-        ]
+        ],
     );
 
     const onProductLongPress = useCallback(
@@ -524,15 +561,15 @@ export function SalesScreen({
                 shouldBlockSelectionByInventory(
                     globalSettings?.enforceSalesBasedOnInventory,
                     product.quantity,
-                    MINIMUM_INVENTORY_FOR_SALE
+                    MINIMUM_INVENTORY_FOR_SALE,
                 )
             ) {
                 Alert.alert(
                     t('SALES_NotAvailableTitle', 'Not Available'),
                     t(
                         'SALES_NotAvailableMessage',
-                        'We do not have this product in inventory at the moment'
-                    )
+                        'We do not have this product in inventory at the moment',
+                    ),
                 );
                 return;
             }
@@ -541,7 +578,7 @@ export function SalesScreen({
                 cartActions.setActiveProduct({
                     product,
                     quantity: getSelectedQuantity(product.unitOfMeasure),
-                })
+                }),
             );
         },
         [
@@ -550,7 +587,7 @@ export function SalesScreen({
             dispatch,
             getLatestProduct,
             globalSettings,
-        ]
+        ],
     );
 
     const onCartSubmit = (
@@ -558,7 +595,7 @@ export function SalesScreen({
         payments?: CartPayment[],
         options?: {
             intent?: 'save_open_order' | 'receive_payment';
-        }
+        },
     ) => {
         const cartItems = cart.items ?? [];
         const intent =
@@ -591,7 +628,8 @@ export function SalesScreen({
                         storeInfo ??
                         selectPreferredStore(await StoreInfoService.getStore());
                     const resolvedDefaultPrinter =
-                        defaultPrinter ?? (await PrinterService.getDefaultPrinter());
+                        defaultPrinter ??
+                        (await PrinterService.getDefaultPrinter());
 
                     const result = await dispatch(
                         upsertOrder({
@@ -599,20 +637,20 @@ export function SalesScreen({
                             defaultPrinter: resolvedDefaultPrinter,
                             storeInfo: resolvedStoreInfo,
                             skipAutoPrint: !resolvedStoreInfo,
-                        })
+                        }),
                     );
 
                     if (!upsertOrder.fulfilled.match(result)) {
                         const message = t(
                             'SALES_OrderSaveFailedMessage',
-                            'The order was not saved. Please try again.'
+                            'The order was not saved. Please try again.',
                         );
                         Alert.alert(
                             t(
                                 'SALES_OrderSaveFailedTitle',
-                                'Order could not be saved'
+                                'Order could not be saved',
                             ),
-                            message
+                            message,
                         );
                         return;
                     }
@@ -626,7 +664,7 @@ export function SalesScreen({
                         getErrorMessage(error) ??
                         t(
                             'SALES_OrderSaveFailedMessage',
-                            'The order was not saved. Please try again.'
+                            'The order was not saved. Please try again.',
                         );
                     logSaleFlow('order-submit-failed', {
                         message,
@@ -634,9 +672,9 @@ export function SalesScreen({
                     Alert.alert(
                         t(
                             'SALES_OrderSaveFailedTitle',
-                            'Order could not be saved'
+                            'Order could not be saved',
                         ),
-                        message
+                        message,
                     );
                 }
             })();
@@ -648,8 +686,8 @@ export function SalesScreen({
                 Alert.alert(
                     t(
                         'SALES_PaymentRequiredMessage',
-                        'An order cannot be marked as paid without payment information'
-                    )
+                        'An order cannot be marked as paid without payment information',
+                    ),
                 );
                 return;
             }
@@ -681,7 +719,7 @@ export function SalesScreen({
                             defaultPrinter,
                             storeInfo,
                             skipAutoPrint: true,
-                        })
+                        }),
                     );
 
                     if (
@@ -691,12 +729,12 @@ export function SalesScreen({
                         Alert.alert(
                             t(
                                 'SALES_PaymentFailedTitle',
-                                'Payment could not be completed'
+                                'Payment could not be completed',
                             ),
                             t(
                                 'SALES_OneStepPaymentFailedOpenOrderMessage',
-                                'The order was saved as open. Please complete payment from Open Orders.'
-                            )
+                                'The order was saved as open. Please complete payment from Open Orders.',
+                            ),
                         );
                         return;
                     }
@@ -707,24 +745,24 @@ export function SalesScreen({
                                 submitResult.payload.order,
                                 {
                                     copyType: 'CUSTOMER',
-                                }
+                                },
                             );
                         const merchantTicket =
                             OrderService.buildPrintTicketForOrderEntitySnapshot(
                                 submitResult.payload.order,
                                 {
                                     copyType: 'MERCHANT',
-                                }
+                                },
                             );
                         await printReceipt(
                             storeInfo,
                             defaultPrinter,
-                            customerTicket
+                            customerTicket,
                         );
                         await printReceipt(
                             storeInfo,
                             defaultPrinter,
-                            merchantTicket
+                            merchantTicket,
                         );
                     }
 
@@ -737,7 +775,7 @@ export function SalesScreen({
                         getErrorMessage(error) ??
                         t(
                             'SALES_PaymentFailedMessage',
-                            'The order is still open. Please try again.'
+                            'The order is still open. Please try again.',
                         );
                     logSaleFlow('one-step-submit-failed', {
                         message,
@@ -745,9 +783,9 @@ export function SalesScreen({
                     Alert.alert(
                         t(
                             'SALES_PaymentFailedTitle',
-                            'Payment could not be completed'
+                            'Payment could not be completed',
                         ),
-                        message
+                        message,
                     );
                 }
             })();
@@ -766,8 +804,8 @@ export function SalesScreen({
                             Alert.alert(
                                 t(
                                     'SALES_PaymentRequiredMessage',
-                                    'An order cannot be marked as paid without payment information'
-                                )
+                                    'An order cannot be marked as paid without payment information',
+                                ),
                             );
                             return;
                         }
@@ -804,7 +842,7 @@ export function SalesScreen({
                                     employeeName: employee
                                         ? `${employee.firstName} ${employee.lastName}`
                                         : undefined,
-                                })
+                                }),
                             );
                         }
                         Promise.resolve(
@@ -815,8 +853,8 @@ export function SalesScreen({
                                     defaultPrinter,
                                     storeInfo,
                                     skipAutoPrint: !storeInfo,
-                                })
-                            )
+                                }),
+                            ),
                         )
                             .then((result) => {
                                 if (
@@ -825,31 +863,35 @@ export function SalesScreen({
                                 ) {
                                     if (cart.id) {
                                         dispatch(
-                                            ordersActions.optimisticRestoreOpen({
-                                                id: cart.id,
-                                            })
+                                            ordersActions.optimisticRestoreOpen(
+                                                {
+                                                    id: cart.id,
+                                                },
+                                            ),
                                         );
                                     }
                                     Alert.alert(
                                         t(
                                             'SALES_PaymentFailedTitle',
-                                            'Payment could not be completed'
+                                            'Payment could not be completed',
                                         ),
                                         t(
                                             'SALES_PaymentFailedMessage',
-                                            'The order is still open. Please try again.'
-                                        )
+                                            'The order is still open. Please try again.',
+                                        ),
                                     );
                                     return;
                                 }
 
                                 logSaleFlow('payment-close-order-complete', {
                                     orderId: result.payload.order.id,
-                                    durationMs: Date.now() - paymentSubmitStartedAt,
+                                    durationMs:
+                                        Date.now() - paymentSubmitStartedAt,
                                 });
                                 logSaleFlow('payment-submit-succeeded', {
                                     orderId: result.payload.order.id,
-                                    durationMs: Date.now() - paymentSubmitStartedAt,
+                                    durationMs:
+                                        Date.now() - paymentSubmitStartedAt,
                                 });
 
                                 if (shouldReturnToOrderList()) {
@@ -864,27 +906,27 @@ export function SalesScreen({
                                     dispatch(
                                         ordersActions.optimisticRestoreOpen({
                                             id: cart.id,
-                                        })
+                                        }),
                                     );
                                 }
                                 console.error(
                                     'payOrder dispatch failed',
-                                    getErrorMessage(error) ?? error
+                                    getErrorMessage(error) ?? error,
                                 );
                                 Alert.alert(
                                     t(
                                         'SALES_PaymentFailedTitle',
-                                        'Payment could not be completed'
+                                        'Payment could not be completed',
                                     ),
                                     t(
                                         'SALES_PaymentFailedMessage',
-                                        'The order is still open. Please try again.'
-                                    )
+                                        'The order is still open. Please try again.',
+                                    ),
                                 );
                             });
                     },
                 },
-            ]
+            ],
         );
     };
 
@@ -897,7 +939,7 @@ export function SalesScreen({
                 isScreenFocusedRef.current = false;
                 cancelPendingSearchFocus();
             };
-        }, [cancelPendingSearchFocus, resetCatalogUi, restoreSearchFocus])
+        }, [cancelPendingSearchFocus, resetCatalogUi, restoreSearchFocus]),
     );
 
     useEffect(() => {
@@ -927,7 +969,12 @@ export function SalesScreen({
             duration: 180,
             useNativeDriver: true,
         }).start();
-    }, [contentOpacity, filteredProducts.length, hasCatalogProducts, showCategories]);
+    }, [
+        contentOpacity,
+        filteredProducts.length,
+        hasCatalogProducts,
+        showCategories,
+    ]);
 
     const openBackOfficeForm = useCallback(
         (screen: 'Products' | 'Categories', initialRouteName: string) => {
@@ -938,7 +985,7 @@ export function SalesScreen({
                 },
             });
         },
-        [navigation]
+        [navigation],
     );
 
     return (
@@ -978,11 +1025,14 @@ export function SalesScreen({
                                 key="cart"
                                 mode={route.params.mode}
                                 preferPayFromSalesScreen={
-                                    route.params.mode === 'order' && payFromSalesScreen
+                                    route.params.mode === 'order' &&
+                                    payFromSalesScreen
                                 }
                                 onSubmit={onCartSubmit}
                                 products={allProducts}
-                                onInteractionComplete={scheduleSearchFocusRestore}
+                                onInteractionComplete={
+                                    scheduleSearchFocusRestore
+                                }
                             />
                         </View>
                     </View>
@@ -991,7 +1041,9 @@ export function SalesScreen({
             <SalesProductDialog
                 product={product}
                 overlayStyle={[styles.overlay, { maxWidth: 560, width: '88%' }]}
-                enforceSalesBasedOnInventory={globalSettings?.enforceSalesBasedOnInventory}
+                enforceSalesBasedOnInventory={
+                    globalSettings?.enforceSalesBasedOnInventory
+                }
                 onClose={closeProductDialog}
                 onUpsertCart={upsertCart}
             />
