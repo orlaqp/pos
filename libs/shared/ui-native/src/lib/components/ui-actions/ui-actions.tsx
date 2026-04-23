@@ -37,7 +37,14 @@ export function UIActions(props: UiActionBarProps) {
                     color: props.busy ? colors.grey5 : colors.grey0,
                 }}
                 style={{ marginRight: 20 }}
-                buttonStyle={[{ borderRadius: 10 }, props.cancelButtonStyle]}
+                buttonStyle={[
+                    {
+                        borderRadius: 18,
+                        minHeight: 48,
+                        paddingHorizontal: 18,
+                    },
+                    props.cancelButtonStyle,
+                ]}
                 titleStyle={{
                     paddingRight: 20,
                     color: colors.grey1
@@ -58,7 +65,14 @@ export function UIActions(props: UiActionBarProps) {
                             ? colors.grey5
                             : colors.grey0,
                 }}
-                buttonStyle={[{ borderRadius: 10 }, props.submitButtonStyle]}
+                buttonStyle={[
+                    {
+                        borderRadius: 18,
+                        minHeight: 48,
+                        paddingHorizontal: 18,
+                    },
+                    props.submitButtonStyle,
+                ]}
                 titleStyle={{
                     paddingRight: 20
                 }}

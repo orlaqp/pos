@@ -280,6 +280,9 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     return (
         <View style={[styles.pageBackground, local.container]}>
             <View style={local.headerRow}>
+                <Text style={local.eyebrow}>
+                    {t('ORDERVOID_Eyebrow', 'Refund workspace')}
+                </Text>
                 <Text style={local.title}>{t('ORDERVOID_Title', 'Void Items')}</Text>
                 <Text style={local.subtitle}>
                     {t(
@@ -296,6 +299,9 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         radius="md"
                         style={local.listCard}
                     >
+                        <Text style={local.sectionEyebrow}>
+                            {t('ORDERVOID_ItemsEyebrow', 'Refund selection')}
+                        </Text>
                         <Text style={local.sectionTitle}>
                             {t('ORDERVOID_AvailableItems', 'Available to refund')}
                         </Text>
@@ -393,6 +399,9 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         radius="md"
                         style={local.referenceCard}
                     >
+                        <Text style={local.sectionEyebrow}>
+                            {t('ORDERVOID_ReferenceEyebrow', 'Order context')}
+                        </Text>
                         <Text style={local.referenceTitle}>
                             {t('ORDERVOID_PaymentReference', 'Payment Reference')}
                         </Text>
@@ -431,6 +440,9 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         radius="md"
                         style={[local.referenceCard, local.refundPaymentSection]}
                     >
+                        <Text style={local.sectionEyebrow}>
+                            {t('ORDERVOID_TenderEyebrow', 'Refund tender')}
+                        </Text>
                         <Text style={local.referenceTitle}>
                             {t('ORDERVOID_RefundPayment', 'Refund Payment')}
                         </Text>
@@ -574,6 +586,9 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
                         radius="md"
                         style={local.summaryCard}
                     >
+                        <Text style={local.sectionEyebrow}>
+                            {t('ORDERVOID_SummaryEyebrow', 'Refund totals')}
+                        </Text>
                         <View style={local.summaryStack}>
                             <View style={local.summaryMetric}>
                                 <Text
@@ -686,17 +701,27 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             margin: 8,
         },
         headerRow: {
-            marginBottom: tokens.spacing.sm,
+            marginBottom: tokens.spacing.md,
+            paddingHorizontal: tokens.spacing.xs,
+        },
+        eyebrow: {
+            color: tokens.colors.primary,
+            fontSize: 12,
+            fontWeight: '800',
+            textTransform: 'uppercase',
+            letterSpacing: 1.4,
+            marginBottom: 4,
         },
         title: {
             color: tokens.colors.textPrimary,
-            fontSize: 24,
+            fontSize: 28,
             fontWeight: '800',
         },
         subtitle: {
             color: tokens.colors.textMuted,
-            fontSize: 13,
-            marginTop: 2,
+            fontSize: 14,
+            lineHeight: 20,
+            marginTop: 4,
         },
         bodyRow: {
             flex: 1,
@@ -705,7 +730,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         leftColumn: {
             flex: 1.55,
-            marginRight: tokens.spacing.sm,
+            marginRight: tokens.spacing.md,
         },
         rightColumn: {
             flex: 1,
@@ -714,6 +739,9 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         listCard: {
             flex: 1,
             marginBottom: tokens.spacing.sm,
+            borderWidth: 1,
+            borderColor: `${tokens.colors.border}AA`,
+            backgroundColor: '#0E141C',
         },
         availableList: {
             flex: 1,
@@ -721,34 +749,49 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         refundedTrayCard: {
             flexShrink: 0,
+            borderWidth: 1,
+            borderColor: `${tokens.colors.border}88`,
+            backgroundColor: '#0A1016',
         },
         referenceCard: {
             marginBottom: tokens.spacing.sm,
+            borderWidth: 1,
+            borderColor: `${tokens.colors.border}AA`,
+            backgroundColor: '#0E141C',
+        },
+        sectionEyebrow: {
+            color: tokens.colors.primary,
+            fontSize: 11,
+            fontWeight: '800',
+            textTransform: 'uppercase',
+            letterSpacing: 1.2,
+            marginBottom: 4,
         },
         sectionTitle: {
             color: tokens.colors.textPrimary,
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: '800',
             letterSpacing: 0.5,
             textTransform: 'uppercase',
-            marginBottom: tokens.spacing.xs,
+            marginBottom: tokens.spacing.sm,
         },
         emptyStateText: {
             color: tokens.colors.textMuted,
             fontSize: 13,
-            paddingVertical: tokens.spacing.sm,
+            paddingVertical: tokens.spacing.md,
         },
         referenceTitle: {
             color: tokens.colors.textPrimary,
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: '800',
             letterSpacing: 0.5,
             textTransform: 'uppercase',
-            marginBottom: tokens.spacing.xs,
+            marginBottom: tokens.spacing.sm,
         },
         referenceText: {
             color: tokens.colors.textMuted,
             fontSize: 13,
+            lineHeight: 18,
         },
         paymentRow: {
             flexDirection: 'row',
@@ -758,9 +801,9 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             borderRadius: tokens.radii.sm,
             borderWidth: 1,
             borderColor: tokens.colors.border,
-            backgroundColor: tokens.colors.surfaceMuted,
-            paddingVertical: 4,
-            paddingHorizontal: 8,
+            backgroundColor: tokens.colors.surface,
+            paddingVertical: 6,
+            paddingHorizontal: 10,
             marginRight: tokens.spacing.xs,
             marginBottom: tokens.spacing.xs,
         },
@@ -782,20 +825,21 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flexDirection: 'row',
             alignItems: 'flex-start',
             justifyContent: 'space-between',
+            gap: tokens.spacing.sm,
         },
         addPaymentBtnContainer: {
             marginLeft: tokens.spacing.sm,
         },
         addPaymentBtn: {
             minHeight: 36,
-            borderRadius: tokens.radii.md,
+            borderRadius: 18,
             borderColor: tokens.colors.border,
             backgroundColor: 'transparent',
             paddingHorizontal: tokens.spacing.sm,
         },
         addPaymentBtnTitle: {
             color: tokens.colors.textPrimary,
-            fontWeight: '700',
+            fontWeight: '800',
         },
         refundPaymentsList: {
             marginTop: tokens.spacing.sm,
@@ -803,12 +847,12 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         refundPaymentRow: {
             flexDirection: 'row',
             alignItems: 'center',
-            borderRadius: tokens.radii.md,
+            borderRadius: tokens.radii.lg,
             borderWidth: 1,
             borderColor: tokens.colors.border,
             backgroundColor: tokens.colors.surfaceMuted,
             paddingHorizontal: tokens.spacing.sm,
-            paddingVertical: tokens.spacing.xs,
+            paddingVertical: tokens.spacing.sm,
             marginBottom: tokens.spacing.sm,
         },
         refundPaymentRowOpen: {
@@ -816,7 +860,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         refundPaymentRowAmountInput: {
             width: 96,
-            borderRadius: tokens.radii.sm,
+            borderRadius: tokens.radii.md,
             borderWidth: 1,
             borderColor: tokens.colors.border,
             backgroundColor: tokens.colors.surface,
@@ -873,7 +917,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             marginLeft: tokens.spacing.sm,
             minHeight: 40,
             minWidth: 88,
-            borderRadius: tokens.radii.sm,
+            borderRadius: 16,
             borderWidth: 1,
             borderColor: `${tokens.colors.danger}99`,
             backgroundColor: `${tokens.colors.danger}2a`,
@@ -895,12 +939,12 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         trayMeta: {
             color: tokens.colors.textMuted,
             fontSize: 12,
-            marginTop: 2,
+            marginTop: 4,
         },
         trayToggleText: {
             color: tokens.colors.primary,
             fontSize: 13,
-            fontWeight: '700',
+            fontWeight: '800',
         },
         trayBody: {
             marginTop: tokens.spacing.sm,
@@ -922,13 +966,16 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         summaryCard: {
             flex: 1,
             justifyContent: 'space-between',
+            borderWidth: 1,
+            borderColor: `${tokens.colors.border}AA`,
+            backgroundColor: '#0E141C',
         },
         summaryStack: {
-            borderRadius: tokens.radii.md,
+            borderRadius: tokens.radii.lg,
             borderWidth: 1,
             borderColor: tokens.colors.border,
             backgroundColor: tokens.colors.surfaceMuted,
-            padding: tokens.spacing.sm,
+            padding: tokens.spacing.md,
         },
         summaryMetric: {
             paddingVertical: tokens.spacing.sm,
@@ -954,7 +1001,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontSize: 28,
         },
         actionsWrap: {
-            marginTop: tokens.spacing.sm,
+            marginTop: tokens.spacing.md,
             flexDirection: 'row',
             alignItems: 'stretch',
         },
@@ -970,7 +1017,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         cancelBtnTitle: {
             color: tokens.colors.textPrimary,
-            fontWeight: '700',
+            fontWeight: '800',
         },
         processBtn: {
             borderRadius: tokens.radii.lg,

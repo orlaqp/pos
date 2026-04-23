@@ -57,6 +57,9 @@ export function DiscountPolicyFields({
                 <>
                   <UICard style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Target</Text>
+                    <Text style={styles.sectionSubtitle}>
+                      Choose the role or employee this policy should govern.
+                    </Text>
                     <Text style={styles.fieldLabel}>Role</Text>
                     <UIOverlaySelect name="roleKey" title="Select role" list={roleOptions} selectedId={form.watch('roleKey')} />
                     <UIInput name="employeeId" label="Employee ID (optional)" placeholder="Optional employee override" />
@@ -64,6 +67,9 @@ export function DiscountPolicyFields({
 
                   <UICard style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Thresholds</Text>
+                    <Text style={styles.sectionSubtitle}>
+                      Set the maximum manual discount and override boundaries for this policy.
+                    </Text>
                     <View style={styles.formGrid}>
                       <View style={styles.formColumn}>
                         <UINumericInput name="maxManualPercentDiscount" label="Max manual %" keyboardType="decimal-pad" allowDecimals placeholder="0" />
@@ -84,6 +90,9 @@ export function DiscountPolicyFields({
 
                   <UICard style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Capabilities</Text>
+                    <Text style={styles.sectionSubtitle}>
+                      Turn permissions and approval requirements on or off for this target.
+                    </Text>
                     {[
                       ['canApplyOrderDiscount', 'Can apply order discounts'],
                       ['canOverridePrice', 'Can override price'],

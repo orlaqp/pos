@@ -38,10 +38,10 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flex: 1,
         },
         linesContent: {
-            paddingBottom: tokens.spacing.xs,
+            paddingBottom: tokens.spacing.sm,
         },
         actionsWrap: {
-            marginTop: tokens.spacing.sm,
+            marginTop: tokens.spacing.md,
         },
         checkoutSecondaryButtonContainer: {
             marginBottom: tokens.spacing.sm,
@@ -270,13 +270,13 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             color: tokens.colors.textSecondary,
         },
         compactDialog: {
-            width: 360,
+            width: 400,
         },
         paymentDialog: {
-            width: 760,
+            width: 800,
             maxWidth: '94%',
-            maxHeight: 640,
-            minHeight: 560,
+            maxHeight: 680,
+            minHeight: 580,
         },
         summaryDialog: {
             width: 560,
@@ -294,6 +294,14 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             padding: tokens.spacing.xl,
             overflow: 'hidden',
         },
+        summarySurfacePlain: {
+            borderWidth: 0,
+            borderColor: 'transparent',
+            backgroundColor: 'transparent',
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.sm,
+            borderRadius: 0,
+        },
         summaryDialogScroll: {
             maxHeight: 420,
         },
@@ -301,14 +309,14 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             paddingBottom: tokens.spacing.md,
         },
         mediumDialog: {
-            width: 520,
+            width: 560,
         },
         dialogHeroCard: {
             borderRadius: 24,
             borderWidth: 1,
             borderColor: '#C7D0DB2E',
             backgroundColor: '#101722',
-            padding: tokens.spacing.md,
+            padding: tokens.spacing.lg,
             marginBottom: tokens.spacing.md,
         },
         dialogHeroMetaRow: {
@@ -332,15 +340,15 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         dialogTitle: {
             color: tokens.colors.textPrimary,
-            fontSize: 22,
+            fontSize: 24,
             fontWeight: '800',
             letterSpacing: -0.4,
             marginBottom: 6,
         },
         dialogHint: {
             color: tokens.colors.textSecondary,
-            fontSize: 14,
-            lineHeight: 20,
+            fontSize: 15,
+            lineHeight: 22,
             marginBottom: tokens.spacing.md,
         },
         dialogInput: {
@@ -351,7 +359,7 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             color: tokens.colors.textPrimary,
             paddingHorizontal: tokens.spacing.sm,
             paddingVertical: tokens.spacing.sm,
-            marginBottom: tokens.spacing.xs,
+            marginBottom: tokens.spacing.sm,
         },
         dialogInputLarge: {
             minHeight: 56,
@@ -362,7 +370,28 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flexDirection: 'row',
             justifyContent: 'flex-end',
             gap: tokens.spacing.sm,
-            marginTop: tokens.spacing.sm,
+            marginTop: tokens.spacing.md,
+        },
+        dialogSecondaryButton: {
+            minHeight: 48,
+            borderRadius: 18,
+            paddingHorizontal: tokens.spacing.md,
+        },
+        dialogSecondaryButtonTitle: {
+            color: tokens.colors.textSecondary,
+            fontSize: 14,
+            fontWeight: '800',
+        },
+        dialogPrimaryButton: {
+            minHeight: 48,
+            borderRadius: 18,
+            paddingHorizontal: tokens.spacing.lg,
+            backgroundColor: tokens.colors.accent,
+        },
+        dialogPrimaryButtonTitle: {
+            color: '#ffffff',
+            fontSize: 14,
+            fontWeight: '800',
         },
         summarySection: {
             marginTop: tokens.spacing.md,

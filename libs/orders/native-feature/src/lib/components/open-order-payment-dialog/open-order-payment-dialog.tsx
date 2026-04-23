@@ -177,18 +177,6 @@ export function OpenOrderPaymentDialog({
             overlayStyle={[sharedStyles.overlay, styles.overlay]}
         >
             <View style={styles.surface} testID="open-order-payment-dialog">
-                <View style={styles.header}>
-                    <Text style={styles.title}>
-                        {t('ORDERPAYMENT_Title', 'Receive payment')}
-                    </Text>
-                    <Text style={styles.hint}>
-                        {t(
-                            'ORDERPAYMENT_Hint',
-                            'Review the order on the left and collect payment on the right.'
-                        )}
-                    </Text>
-                </View>
-
                 <View style={styles.columns}>
                     <View style={styles.summaryColumn}>
                         <OrderSummaryPanel
@@ -203,6 +191,7 @@ export function OpenOrderPaymentDialog({
                             scrollStyle={styles.summaryScroll}
                             scrollContentStyle={styles.summaryScrollContent}
                             contentTestID="open-order-payment-summary"
+                            plain={true}
                             footer={
                                 <View style={summaryStyles.summaryFooter}>
                                     <View style={summaryStyles.summaryFooterTotalBlock}>
@@ -236,15 +225,6 @@ export function OpenOrderPaymentDialog({
 
                     <View style={styles.paymentColumn}>
                         <View style={styles.paymentSurface}>
-                            <Text style={styles.paymentTitle}>
-                                {t('ORDERPAYMENT_ControlsTitle', 'Payment')}
-                            </Text>
-                            <Text style={styles.paymentHint}>
-                                {t(
-                                    'ORDERPAYMENT_ControlsHint',
-                                    'Use the payment controls below to close this open order.'
-                                )}
-                            </Text>
                             <CartPayment
                                 total={orderSummary.total}
                                 ebtEligibleTotal={orderSummary.ebtEligibleTotal}
@@ -298,21 +278,6 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             backgroundColor: '#05080C',
             padding: tokens.spacing.lg,
         },
-        header: {
-            marginBottom: tokens.spacing.md,
-        },
-        title: {
-            color: tokens.colors.textPrimary,
-            fontSize: 24,
-            fontWeight: '800',
-            letterSpacing: -0.4,
-        },
-        hint: {
-            color: tokens.colors.textSecondary,
-            fontSize: 14,
-            lineHeight: 20,
-            marginTop: tokens.spacing.xs,
-        },
         columns: {
             flexDirection: 'row',
             gap: tokens.spacing.lg,
@@ -335,19 +300,6 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             backgroundColor: '#080B10',
             padding: tokens.spacing.lg,
         },
-        paymentTitle: {
-            color: tokens.colors.textPrimary,
-            fontSize: 22,
-            fontWeight: '800',
-            letterSpacing: -0.4,
-            marginBottom: 6,
-        },
-        paymentHint: {
-            color: tokens.colors.textSecondary,
-            fontSize: 14,
-            lineHeight: 20,
-            marginBottom: tokens.spacing.sm,
-        },
         summaryScroll: {
             maxHeight: 540,
         },
@@ -362,7 +314,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         secondaryButton: {
             minHeight: 48,
-            borderRadius: tokens.radii.md,
+            borderRadius: 18,
             borderColor: tokens.colors.border,
         },
         secondaryButtonTitle: {

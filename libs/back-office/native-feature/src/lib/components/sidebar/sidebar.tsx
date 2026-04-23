@@ -96,16 +96,16 @@ const useStyles = (colors: ReturnType<typeof getThemeColors>) =>
             paddingBottom: 12,
         },
         groupContainer: {
-            marginBottom: 14,
+            marginBottom: 18,
         },
         groupLabel: {
             color: colors.grey3,
-            fontSize: 12,
-            fontWeight: '700',
-            letterSpacing: 1.1,
+            fontSize: 11,
+            fontWeight: '800',
+            letterSpacing: 1.6,
             textTransform: 'uppercase',
             paddingHorizontal: 14,
-            marginBottom: 6,
+            marginBottom: 10,
         },
     });
 

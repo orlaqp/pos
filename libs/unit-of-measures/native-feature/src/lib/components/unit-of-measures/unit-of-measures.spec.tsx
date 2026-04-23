@@ -6,7 +6,7 @@ import UnitOfMeasures from './unit-of-measures';
 
 describe('UnitOfMeasures', () => {
   it('should render successfully', () => {
-    const { container } = render(< UnitOfMeasures />);
-    expect(container).toBeTruthy();
+    const { UNSAFE_root } = render(< UnitOfMeasures />);
+    expect(UNSAFE_root).toBeTruthy();
   });
 });

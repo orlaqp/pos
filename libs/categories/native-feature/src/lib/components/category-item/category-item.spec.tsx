@@ -18,8 +18,8 @@ describe('CategoryItem', () => {
             picture: null,
         };
         const navigation: any = { navigate: jest.fn() };
-        const { container } = render(<CategoryItem item={item} navigation={navigation} />);
-        expect(container).toBeTruthy();
+        const { UNSAFE_root } = render(<CategoryItem item={item} navigation={navigation} />);
+        expect(UNSAFE_root).toBeTruthy();
     });
 
     it('navigates to form when row is pressed', () => {

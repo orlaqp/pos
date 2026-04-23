@@ -98,6 +98,9 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
         <View style={local.container}>
             <View style={local.headerRow}>
                 <View style={local.titleBlock}>
+                    <Text style={local.eyebrow}>
+                        {t('ORDERS_OpenOrdersEyebrow', 'Resume queue')}
+                    </Text>
                     <View style={local.titleRow}>
                         <Text style={local.title}>{t('ORDERS_OpenOrders', 'Open Orders')}</Text>
                         <View style={local.countBadge}>
@@ -161,6 +164,7 @@ export function CompactOrderList({ onSelect, onClose }: CompactOrderListProps) {
                                 keyboardShouldPersistTaps="handled"
                                 data={filteredList}
                                 keyExtractor={(item) => item.id}
+                                style={local.list}
                                 contentContainerStyle={local.listContent}
                                 initialNumToRender={10}
                                 maxToRenderPerBatch={10}
@@ -188,15 +192,29 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             maxWidth: '100%',
             minHeight: 460,
             maxHeight: 620,
+            borderRadius: 28,
+            borderWidth: 1,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
+            padding: tokens.spacing.lg,
+            overflow: 'hidden',
         },
         headerRow: {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
-            marginBottom: tokens.spacing.sm,
+            marginBottom: tokens.spacing.md,
         },
         titleBlock: {
             flex: 1,
+        },
+        eyebrow: {
+            color: tokens.colors.accent,
+            fontSize: 11,
+            fontWeight: '800',
+            letterSpacing: 1.6,
+            textTransform: 'uppercase',
+            marginBottom: 4,
         },
         titleRow: {
             flexDirection: 'row',
@@ -204,16 +222,18 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         title: {
             color: tokens.colors.textPrimary,
-            fontSize: 26,
+            fontSize: 28,
             fontWeight: '800',
+            letterSpacing: -0.4,
         },
         subtitle: {
             color: tokens.colors.textMuted,
-            marginTop: 2,
-            fontSize: 13,
+            marginTop: 4,
+            fontSize: 14,
+            lineHeight: 20,
         },
         countBadge: {
-            marginLeft: tokens.spacing.xs,
+            marginLeft: tokens.spacing.sm,
             borderRadius: 999,
             borderWidth: 1,
             borderColor: `${tokens.colors.accent}77`,
@@ -229,23 +249,27 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontWeight: '800',
         },
         closeButton: {
-            width: 30,
-            height: 30,
-            borderRadius: 15,
+            width: 36,
+            height: 36,
+            borderRadius: 18,
             borderWidth: 1,
             borderColor: tokens.colors.border,
-            backgroundColor: tokens.colors.surfaceMuted,
+            backgroundColor: '#101722',
             alignItems: 'center',
             justifyContent: 'center',
             marginLeft: tokens.spacing.sm,
         },
         closeText: {
-            color: tokens.colors.textSecondary,
+            color: tokens.colors.textPrimary,
             fontSize: 13,
             fontWeight: '800',
         },
         searchCard: {
-            marginBottom: tokens.spacing.sm,
+            marginBottom: tokens.spacing.md,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#0E141C',
         },
         emptyWrap: {
             minHeight: 320,
@@ -269,8 +293,12 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             maxWidth: 420,
         },
         listWrap: {
-            minHeight: 320,
-            maxHeight: 500,
+            flex: 1,
+            minHeight: 0,
+            overflow: 'hidden',
+        },
+        list: {
+            flex: 1,
         },
         listContent: {
             paddingBottom: tokens.spacing.sm,

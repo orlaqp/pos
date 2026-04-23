@@ -55,6 +55,12 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) => {
         ...StyleSheet.create({
             row: {
                 alignItems: 'center',
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: '#C7D0DB22',
+                backgroundColor: '#0E141C',
+                marginBottom: tokens.spacing.sm,
+                paddingHorizontal: tokens.spacing.md,
                 paddingVertical: tokens.spacing.md,
             },
             badgeSlot: {
@@ -82,6 +88,11 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) => {
             contentColumn: {
                 flex: 1,
                 paddingRight: tokens.spacing.md,
+            },
+            name: {
+                color: theme.theme.colors.white,
+                fontSize: 17,
+                fontWeight: '800',
             },
             secondaryReadable: {
                 color: theme.theme.colors.grey1,

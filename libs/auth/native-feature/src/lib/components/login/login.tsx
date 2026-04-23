@@ -197,6 +197,16 @@ export function LoginScreen(props: LoginProps) {
                         <Text style={styles.subtitle}>
                             Restore your business session, sync the latest catalog, and hand the device back to staff PIN entry.
                         </Text>
+                        <View style={styles.heroMetaRow}>
+                            <View style={styles.heroMetaCard}>
+                                <Text style={styles.heroMetaLabel}>Access</Text>
+                                <Text style={styles.heroMetaValue}>Owner account</Text>
+                            </View>
+                            <View style={styles.heroMetaCard}>
+                                <Text style={styles.heroMetaLabel}>Session</Text>
+                                <Text style={styles.heroMetaValue}>Workspace restore</Text>
+                            </View>
+                        </View>
                     </Animated.View>
                     <Animated.View
                         style={[
@@ -206,62 +216,69 @@ export function LoginScreen(props: LoginProps) {
                         ]}
                     >
                         <View style={styles.formInner}>
+                            <Text style={styles.formEyebrow}>Owner access</Text>
                             <Text style={styles.formTitle}>Sign in</Text>
                             <Text style={styles.formSubtitle}>Use the owner account for this business.</Text>
                             {error ? <UIAlert message={error} type="error" /> : null}
-                            <UIInput
-                                name="email"
-                                testID="login-email-input"
-                                autoCapitalize="none"
-                                placeholder="owner@business.com"
-                                keyboardType="email-address"
-                                textAlign="left"
-                                rules={{
-                                    required: 'Email address is required',
-                                    pattern: {
-                                        value: /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-                                        message: 'Email address is invalid',
-                                    },
-                                }}
-                            />
-                            <UIInput
-                                name="password"
-                                testID="login-password-input"
-                                placeholder="Password"
-                                secureTextEntry={true}
-                                textAlign="left"
-                                rules={{ required: 'Password is required' }}
-                            />
-                            <View style={styles.rememberRow}>
-                                <UISwitch
-                                    name="rememberCredentials"
-                                    testID="login-remember-switch"
+                            <View style={styles.formSection}>
+                                <Text style={styles.formSectionLabel}>Credentials</Text>
+                                <UIInput
+                                    name="email"
+                                    testID="login-email-input"
+                                    autoCapitalize="none"
+                                    placeholder="owner@business.com"
+                                    keyboardType="email-address"
+                                    textAlign="left"
+                                    rules={{
+                                        required: 'Email address is required',
+                                        pattern: {
+                                            value: /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                                            message: 'Email address is invalid',
+                                        },
+                                    }}
                                 />
-                                <View style={styles.rememberCopy}>
-                                    <Text style={styles.rememberTitle}>
-                                        Remember credentials on this device
-                                    </Text>
-                                    <Text style={styles.rememberHint}>
-                                        Allows the app to silently restore the admin session if it expires.
-                                    </Text>
+                                <UIInput
+                                    name="password"
+                                    testID="login-password-input"
+                                    placeholder="Password"
+                                    secureTextEntry={true}
+                                    textAlign="left"
+                                    rules={{ required: 'Password is required' }}
+                                />
+                                <View style={styles.rememberCard}>
+                                    <View style={styles.rememberRow}>
+                                        <UISwitch
+                                            name="rememberCredentials"
+                                            testID="login-remember-switch"
+                                        />
+                                        <View style={styles.rememberCopy}>
+                                            <Text style={styles.rememberTitle}>
+                                                Remember credentials on this device
+                                            </Text>
+                                            <Text style={styles.rememberHint}>
+                                                Allows the app to silently restore the admin session if it expires.
+                                            </Text>
+                                        </View>
+                                    </View>
                                 </View>
                             </View>
-
-                            <Button
-                                testID="login-submit-button"
-                                title="Continue"
-                                containerStyle={styles.primaryButtonContainer}
-                                buttonStyle={styles.primaryButton}
-                                onPress={formMethods.handleSubmit(login)}
-                                loading={loading}
-                            />
-                            <Button
-                                testID="login-signup-button"
-                                title="Create business account"
-                                type="clear"
-                                titleStyle={styles.secondaryAction}
-                                onPress={() => props.navigation.navigate('Signup')}
-                            />
+                            <View style={styles.formActionPanel}>
+                                <Button
+                                    testID="login-submit-button"
+                                    title="Continue"
+                                    containerStyle={styles.primaryButtonContainer}
+                                    buttonStyle={styles.primaryButton}
+                                    onPress={formMethods.handleSubmit(login)}
+                                    loading={loading}
+                                />
+                                <Button
+                                    testID="login-signup-button"
+                                    title="Create business account"
+                                    type="clear"
+                                    titleStyle={styles.secondaryAction}
+                                    onPress={() => props.navigation.navigate('Signup')}
+                                />
+                            </View>
                         </View>
                     </Animated.View>
                 </View>
@@ -335,12 +352,47 @@ const useStyles = () => {
             maxWidth: 440,
             alignSelf: 'center',
         },
+        heroMetaRow: {
+            flexDirection: 'row',
+            gap: 12,
+            marginTop: 24,
+        },
+        heroMetaCard: {
+            flex: 1,
+            minHeight: 84,
+            borderRadius: 18,
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.08)',
+            backgroundColor: 'rgba(255,255,255,0.03)',
+            justifyContent: 'space-between',
+        },
+        heroMetaLabel: {
+            color: '#7f8a9a',
+            textTransform: 'uppercase',
+            letterSpacing: 1.2,
+            fontSize: 11,
+            fontWeight: '700',
+        },
+        heroMetaValue: {
+            color: '#eef4ff',
+            fontSize: 18,
+            fontWeight: '700',
+        },
         rememberRow: {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 14,
+        },
+        rememberCard: {
             marginTop: 6,
-            marginBottom: 8,
+            borderRadius: 20,
+            paddingHorizontal: 14,
+            paddingVertical: 14,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.07)',
+            backgroundColor: 'rgba(255,255,255,0.03)',
         },
         rememberCopy: {
             flex: 1,
@@ -382,6 +434,27 @@ const useStyles = () => {
         formSubtitle: {
             color: colors.grey2,
             marginBottom: 18,
+        },
+        formSection: {
+            padding: 18,
+            borderRadius: 22,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.08)',
+            backgroundColor: 'rgba(255,255,255,0.03)',
+        },
+        formSectionLabel: {
+            color: '#7eb6ff',
+            textTransform: 'uppercase',
+            letterSpacing: 1.4,
+            fontSize: 11,
+            fontWeight: '700',
+            marginBottom: 6,
+        },
+        formActionPanel: {
+            marginTop: 14,
+            paddingTop: 14,
+            borderTopWidth: 1,
+            borderTopColor: 'rgba(255,255,255,0.08)',
         },
         primaryButton: {
             borderRadius: 16,

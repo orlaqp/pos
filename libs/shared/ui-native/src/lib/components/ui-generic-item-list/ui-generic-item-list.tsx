@@ -45,6 +45,10 @@ export interface ItemListProps<TState, TEntityType> {
     emptyAction?: () => void;
     emptyActionIcon?: string;
     renderHeader?: () => React.ReactNode;
+    headerEyebrow?: string;
+    headerTitle?: string;
+    headerSubtitle?: string;
+    plainHeader?: boolean;
 }
 
 export function UIGenericItemList({
@@ -64,6 +68,10 @@ export function UIGenericItemList({
     emptyAction,
     emptyActionIcon,
     renderHeader,
+    headerEyebrow,
+    headerTitle,
+    headerSubtitle,
+    plainHeader,
 }: ItemListProps<unknown, any>) {
     const theme = useTheme();
     const styles = useStyles();
@@ -103,37 +111,6 @@ export function UIGenericItemList({
             </View>
         );
 
-    if (loadingStatus === 'loaded' && isEmpty)
-        return (
-            <View style={[styles.page, { paddingTop: 50 }]}>
-                <UIEmptyState
-                    title={emptyTitle || 'Nothing here yet'}
-                    subtitle={
-                        emptySubtitle ||
-                        'Create the first record to start building this catalog section.'
-                    }
-                    actions={[
-                        {
-                            title: emptyActionText || 'Add item',
-                            onPress: () =>
-                                emptyAction
-                                    ? emptyAction()
-                                    : navigation.navigate(formNavName),
-                            type: 'solid',
-                            icon: emptyActionIcon
-                                ? {
-                                      name: emptyActionIcon,
-                                      type: 'material-community',
-                                      color: '#ffffff',
-                                      size: 18,
-                                  }
-                                : undefined,
-                        },
-                    ]}
-                />
-            </View>
-        );
-
     const showMoreItems = () => {
         if (!items) return;
 
@@ -151,49 +128,98 @@ export function UIGenericItemList({
         <View style={styles.detailsPage}>
             {renderHeader && renderHeader()}
             {!renderHeader && (
-                <View style={styles.headerCard}>
-                <View style={[styles.header, { alignItems: 'center' }]}>
-                    <View style={styles.searchContainer}>
-                        <TextInput
-                            testID="ui-generic-item-list-search-input"
-                            value={query}
-                            placeholder="Search..."
-                            placeholderTextColor={theme.theme.colors.grey2}
-                            style={styles.searchInput}
-                            autoCorrect={false}
-                            autoCapitalize="none"
-                            returnKeyType="search"
-                            onChangeText={(value) => setQuery(value)}
-                            onSubmitEditing={(e) => {
-                                submitQuery(e.nativeEvent.text);
-                            }}
-                            onEndEditing={(e) => submitQuery(e.nativeEvent.text)}
-                        />
-                    </View>
-                    <TouchableOpacity
-                        testID="ui-generic-item-list-refresh-button"
-                        style={styles.refreshButton}
-                        onPress={() => fetchItemsAction && dispatch(fetchItemsAction())}
-                    >
-                        <Text style={styles.refreshIcon}>↻</Text>
-                    </TouchableOpacity>
-                    <View style={styles.addButtonContainer}>
+                <View style={[styles.headerCard, plainHeader && styles.plainHeaderCard]}>
+                    {(headerTitle || headerSubtitle || headerEyebrow) && (
+                        <View style={styles.headerIntro}>
+                            {headerEyebrow ? (
+                                <Text style={styles.headerEyebrow}>
+                                    {headerEyebrow}
+                                </Text>
+                            ) : null}
+                            {headerTitle ? (
+                                <Text style={styles.headerTitle}>
+                                    {headerTitle}
+                                </Text>
+                            ) : null}
+                            {headerSubtitle ? (
+                                <Text style={styles.headerSubtitle}>
+                                    {headerSubtitle}
+                                </Text>
+                            ) : null}
+                        </View>
+                    )}
+                    <View style={styles.actionRail}>
+                        <View style={styles.searchContainer}>
+                            <TextInput
+                                testID="ui-generic-item-list-search-input"
+                                value={query}
+                                placeholder="Search..."
+                                placeholderTextColor={theme.theme.colors.grey2}
+                                style={styles.searchInput}
+                                autoCorrect={false}
+                                autoCapitalize="none"
+                                returnKeyType="search"
+                                onChangeText={(value) => setQuery(value)}
+                                onSubmitEditing={(e) => {
+                                    submitQuery(e.nativeEvent.text);
+                                }}
+                                onEndEditing={(e) =>
+                                    submitQuery(e.nativeEvent.text)
+                                }
+                            />
+                        </View>
                         <TouchableOpacity
-                            testID="ui-generic-item-list-add-button"
-                            onPress={createNew}
-                            style={[
-                                styles.addButton,
-                                { backgroundColor: theme.theme.colors.primary },
-                            ]}
+                            testID="ui-generic-item-list-refresh-button"
+                            style={styles.refreshButton}
+                            onPress={() => fetchItemsAction && dispatch(fetchItemsAction())}
                         >
-                            <Text style={styles.addButtonLabel}>+</Text>
+                            <Text style={styles.refreshIcon}>↻</Text>
                         </TouchableOpacity>
+                        <View style={styles.addButtonContainer}>
+                            <TouchableOpacity
+                                testID="ui-generic-item-list-add-button"
+                                onPress={createNew}
+                                style={[
+                                    styles.addButton,
+                                    { backgroundColor: theme.theme.colors.primary },
+                                ]}
+                            >
+                                <Text style={styles.addButtonLabel}>+</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
                 </View>
             )}
             <View style={styles.content}>
-                {items && (
+                {isEmpty ? (
+                    <View style={styles.emptyCard}>
+                        <UIEmptyState
+                            title={emptyTitle || 'Nothing here yet'}
+                            subtitle={
+                                emptySubtitle ||
+                                'Create the first record to start building this catalog section.'
+                            }
+                            actions={[
+                                {
+                                    title: emptyActionText || 'Add item',
+                                    onPress: () =>
+                                        emptyAction
+                                            ? emptyAction()
+                                            : navigation.navigate(formNavName),
+                                    type: 'solid',
+                                    icon: emptyActionIcon
+                                        ? {
+                                              name: emptyActionIcon,
+                                              type: 'material-community',
+                                              color: '#ffffff',
+                                              size: 18,
+                                          }
+                                        : undefined,
+                                },
+                            ]}
+                        />
+                    </View>
+                ) : items ? (
                     <FlatList
                         data={visibleItems}
                         keyExtractor={(item, index) =>
@@ -211,7 +237,7 @@ export function UIGenericItemList({
                             />
                         )}
                     />
-                )}
+                ) : null}
             </View>
         </View>
     );
@@ -230,16 +256,54 @@ const useStyles = () => {
                 marginHorizontal: tokens.spacing.md,
                 marginTop: tokens.spacing.md,
                 marginBottom: tokens.spacing.sm,
-                borderRadius: tokens.radii.lg,
+                borderRadius: 26,
                 borderWidth: 1,
                 borderColor: `${borderTone}55`,
-                backgroundColor: `${theme.theme.colors.grey5}20`,
-                paddingVertical: tokens.spacing.xs,
+                backgroundColor: '#080B10',
+                padding: tokens.spacing.md,
+            },
+            plainHeaderCard: {
+                borderWidth: 0,
+                backgroundColor: 'transparent',
+                paddingHorizontal: 0,
+                paddingVertical: 0,
+            },
+            headerIntro: {
+                marginBottom: tokens.spacing.md,
+            },
+            headerEyebrow: {
+                color: theme.theme.colors.primary,
+                fontSize: 11,
+                fontWeight: '800',
+                letterSpacing: 1.6,
+                textTransform: 'uppercase',
+                marginBottom: 4,
+            },
+            headerTitle: {
+                color: theme.theme.colors.grey1,
+                fontSize: 30,
+                fontWeight: '800',
+                letterSpacing: -0.6,
+            },
+            headerSubtitle: {
+                color: theme.theme.colors.grey2,
+                fontSize: 14,
+                lineHeight: 20,
+                marginTop: 4,
             },
             header: {
-                marginHorizontal: tokens.spacing.sm,
                 flexDirection: 'row',
                 alignItems: 'center',
+            },
+            actionRail: {
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: tokens.spacing.sm,
+                borderRadius: 24,
+                borderWidth: 1,
+                borderColor: `${borderTone}33`,
+                backgroundColor: '#0E141C',
+                padding: tokens.spacing.sm,
             },
             content: {
                 paddingHorizontal: tokens.spacing.lg,
@@ -253,8 +317,6 @@ const useStyles = () => {
             addButtonContainer: {
                 width: 64,
                 alignItems: 'flex-end',
-                marginLeft: tokens.spacing.sm,
-                marginRight: tokens.spacing.xs,
             },
             addButton: {
                 width: 50,
@@ -279,26 +341,37 @@ const useStyles = () => {
                 flex: 1,
             },
             searchInput: {
-                backgroundColor: theme.theme.colors.grey5,
-                borderRadius: 22,
+                backgroundColor: '#151C25',
+                borderRadius: 18,
                 borderWidth: 1,
                 borderColor: `${borderTone}66`,
                 color: theme.theme.colors.grey1,
-                paddingHorizontal: 16,
-                paddingVertical: 11,
+                paddingHorizontal: 18,
+                paddingVertical: 12,
                 fontSize: 16,
             },
             refreshButton: {
-                marginLeft: tokens.spacing.sm,
-                paddingHorizontal: tokens.spacing.xs,
-                paddingVertical: tokens.spacing.xs,
+                width: 50,
+                height: 50,
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: `${borderTone}44`,
+                backgroundColor: '#111821',
                 alignItems: 'center',
                 justifyContent: 'center',
             },
             refreshIcon: {
-                color: theme.theme.colors.grey2,
+                color: theme.theme.colors.primary,
                 fontSize: 24,
                 fontWeight: '600',
+            },
+            emptyCard: {
+                minHeight: 320,
+                borderRadius: 26,
+                borderWidth: 1,
+                borderColor: `${borderTone}44`,
+                backgroundColor: '#080B10',
+                overflow: 'hidden',
             },
         }),
     };

@@ -76,49 +76,49 @@ export function SingleItem({
 const useStyles = (colors: ReturnType<typeof getThemeColors>) =>
     StyleSheet.create({
         containerBase: {
-            borderRadius: 10,
-            borderLeftWidth: 3,
-            marginBottom: 6,
+            borderRadius: 18,
+            borderWidth: 1,
+            marginBottom: 8,
         },
         containerRegular: {
-            minHeight: 52,
-            paddingHorizontal: 10,
-            paddingVertical: 8,
+            minHeight: 58,
+            paddingHorizontal: 14,
+            paddingVertical: 10,
         },
         containerCompact: {
-            minHeight: 42,
-            paddingHorizontal: 10,
-            paddingVertical: 5,
+            minHeight: 46,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
         },
         containerActive: {
-            backgroundColor: `${colors.primary}22`,
-            borderLeftColor: colors.primary,
+            backgroundColor: `${colors.primary}18`,
+            borderColor: `${colors.primary}66`,
         },
         containerInactive: {
-            backgroundColor: 'transparent',
-            borderLeftColor: 'transparent',
+            backgroundColor: '#0E141C',
+            borderColor: `${colors.grey4}22`,
         },
         iconSlot: {
-            width: 26,
+            width: 28,
             alignItems: 'center',
             justifyContent: 'center',
-            marginRight: 6,
+            marginRight: 8,
         },
         content: {
             marginLeft: 0,
         },
         title: {
             color: colors.grey1,
-            fontWeight: '500',
-            fontSize: 17,
+            fontWeight: '600',
+            fontSize: 16,
         },
         titleCompact: {
-            fontSize: 15,
+            fontSize: 14,
             color: colors.grey2,
-            fontWeight: '500',
+            fontWeight: '600',
         },
         titleActive: {
             color: colors.primary,
-            fontWeight: '700',
+            fontWeight: '800',
         },
     });

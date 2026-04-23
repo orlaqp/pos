@@ -9,6 +9,9 @@ export const useSalesScreenStyles = () => {
     return {
         ...sharedStyles,
         ...StyleSheet.create({
+            salesShell: {
+                flex: 1,
+            },
             salesLayout: {
                 flex: 1,
                 flexDirection: 'row',
@@ -43,6 +46,19 @@ export const useSalesScreenStyles = () => {
                 alignItems: 'center',
                 gap: tokens.spacing.xs,
                 marginLeft: tokens.spacing.md,
+            },
+            productsCountBadge: {
+                borderRadius: tokens.radii.xl,
+                borderWidth: 1,
+                borderColor: tokens.colors.border,
+                backgroundColor: tokens.colors.surfaceMuted,
+                paddingHorizontal: tokens.spacing.sm,
+                paddingVertical: 8,
+            },
+            productsCountBadgeText: {
+                color: tokens.colors.textSecondary,
+                fontSize: 12,
+                fontWeight: '800',
             },
             sectionTitleRow: {
                 flexDirection: 'row',
@@ -132,11 +148,29 @@ export const useSalesScreenStyles = () => {
             cartPanel: {
                 width: 330,
                 minWidth: 300,
+                marginLeft: tokens.spacing.xs,
+            },
+            cartPanelBody: {
+                flex: 1,
             },
             dealsDialog: {
                 width: 720,
                 maxWidth: '92%',
                 maxHeight: '88%',
+            },
+            dealsDialogHero: {
+                marginBottom: tokens.spacing.md,
+                paddingBottom: tokens.spacing.md,
+                borderBottomWidth: 1,
+                borderBottomColor: tokens.colors.border,
+            },
+            dealsDialogEyebrow: {
+                color: tokens.colors.accent,
+                textTransform: 'uppercase',
+                letterSpacing: 1.4,
+                fontSize: 11,
+                fontWeight: '800',
+                marginBottom: 6,
             },
             dealsDialogTitle: {
                 color: tokens.colors.textPrimary,
@@ -149,6 +183,33 @@ export const useSalesScreenStyles = () => {
                 fontSize: 14,
                 lineHeight: 21,
                 marginBottom: tokens.spacing.md,
+            },
+            dealsDialogMetaRow: {
+                flexDirection: 'row',
+                gap: tokens.spacing.sm,
+            },
+            dealsDialogMetaCard: {
+                flex: 1,
+                minHeight: 76,
+                borderRadius: tokens.radii.lg,
+                paddingHorizontal: tokens.spacing.md,
+                paddingVertical: tokens.spacing.sm,
+                borderWidth: 1,
+                borderColor: tokens.colors.border,
+                backgroundColor: tokens.colors.surfaceMuted,
+                justifyContent: 'space-between',
+            },
+            dealsDialogMetaLabel: {
+                color: tokens.colors.textSecondary,
+                textTransform: 'uppercase',
+                letterSpacing: 1.1,
+                fontSize: 11,
+                fontWeight: '800',
+            },
+            dealsDialogMetaValue: {
+                color: tokens.colors.textPrimary,
+                fontSize: 17,
+                fontWeight: '800',
             },
             dealsDialogScroll: {
                 maxHeight: 520,

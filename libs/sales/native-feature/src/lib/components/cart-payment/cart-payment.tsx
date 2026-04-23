@@ -231,29 +231,78 @@ export function CartPayment({
     return (
         <View style={local.shell}>
             <FormProvider {...form}>
-                <UICard tone="muted" padding="md" radius="lg">
-                    <Text style={[styles.secondaryText, local.totalLabel]}>
+                <UICard
+                    tone="muted"
+                    padding={isCompact ? 'sm' : 'md'}
+                    radius="lg"
+                    style={[local.summaryCard, isCompact && local.summaryCardCompact]}
+                >
+                    {!isCompact ? <Text style={local.summaryEyebrow}>Checkout</Text> : null}
+                    <Text
+                        style={[
+                            styles.secondaryText,
+                            local.totalLabel,
+                            isCompact && local.totalLabelCompact,
+                        ]}
+                    >
                         {t('PAYMENT_AmountDue', 'Amount Due')}
                     </Text>
-                    <Text style={[styles.primaryText, styles.textCenter, local.totalAmount]}>
+                    <Text
+                        style={[
+                            styles.primaryText,
+                            styles.textCenter,
+                            local.totalAmount,
+                            isCompact && local.totalAmountCompact,
+                        ]}
+                    >
                         $ {total.toFixed(2)}
                     </Text>
-                    <View style={local.summaryRow}>
-                        <View style={[local.summaryPill, local.summaryPillSpaced]}>
+                    {!isCompact ? (
+                        <Text style={local.summaryHint}>
+                            Activate the methods you need below and keep the received amount matched exactly.
+                        </Text>
+                    ) : null}
+                    <View style={[local.summaryRow, isCompact && local.summaryRowCompact]}>
+                        <View
+                            style={[
+                                local.summaryPill,
+                                local.summaryPillSpaced,
+                                isCompact && local.summaryPillCompact,
+                            ]}
+                        >
                             <Text style={local.summaryPillLabel}>
                                 {t('PAYMENT_EBTEligible', 'EBT Eligible')}
                             </Text>
-                            <Text style={local.summaryPillValue}>$ {ebtEligibleTotal.toFixed(2)}</Text>
+                            <Text
+                                style={[
+                                    local.summaryPillValue,
+                                    isCompact && local.summaryPillValueCompact,
+                                ]}
+                            >
+                                $ {ebtEligibleTotal.toFixed(2)}
+                            </Text>
                         </View>
-                        <View style={local.summaryPill}>
+                        <View
+                            style={[
+                                local.summaryPill,
+                                isCompact && local.summaryPillCompact,
+                            ]}
+                        >
                             <Text style={local.summaryPillLabel}>
                                 {t('PAYMENT_Remaining', 'Remaining')}
                             </Text>
-                            <Text style={local.summaryPillValue}>$ {remainingTotal.toFixed(2)}</Text>
+                            <Text
+                                style={[
+                                    local.summaryPillValue,
+                                    isCompact && local.summaryPillValueCompact,
+                                ]}
+                            >
+                                $ {remainingTotal.toFixed(2)}
+                            </Text>
                         </View>
                     </View>
                 </UICard>
-                <View style={local.zoneSpacer}>
+                <View style={[local.zoneSpacer, isCompact && local.zoneSpacerCompact]}>
                     <UIVerticalSpacer size="small" />
                 </View>
                 <ScrollView
@@ -281,6 +330,9 @@ export function CartPayment({
                                                     : local.methodCardHalf,
                                             ]}
                                         >
+                                            {isActive ? (
+                                                <View style={local.methodCardActiveAccent} />
+                                            ) : null}
                                             <UICard
                                                 tone="default"
                                                 padding={isCompact ? 'xs' : 'sm'}
@@ -393,11 +445,17 @@ export function CartPayment({
                     </View>
                 </ScrollView>
                 <View style={local.footerRail}>
-                    <UICard tone="muted" padding="sm" radius="md" style={local.footerCard}>
+                    <UICard
+                        tone="muted"
+                        padding={isCompact ? 'xs' : 'sm'}
+                        radius="md"
+                        style={[local.footerCard, isCompact && local.footerCardCompact]}
+                    >
                         <View
                             style={[
                                 local.summaryFooterRow,
                                 isExactPayment && local.summaryFooterRowComplete,
+                                isCompact && local.summaryFooterRowCompact,
                             ]}
                         >
                             <Text style={local.summaryFooterLabel}>
@@ -408,6 +466,7 @@ export function CartPayment({
                                     local.summaryFooterValue,
                                     isExactPayment &&
                                         local.summaryFooterValueComplete,
+                                    isCompact && local.summaryFooterValueCompact,
                                 ]}
                             >
                                 $ {roundedReceivedTotal.toFixed(2)}
@@ -438,14 +497,22 @@ export function CartPayment({
                             </Text>
                         )}
                     </UICard>
-                    <View style={local.footerSectionSpacer}>
+                    <View
+                        style={[
+                            local.footerSectionSpacer,
+                            isCompact && local.footerSectionSpacerCompact,
+                        ]}
+                    >
                         <UIVerticalSpacer size="small" />
                     </View>
                     <View style={local.ctaWrap}>
                         <Button
                             testID="payment-submit-button"
                             title={`${t('PAYMENT_ReceivePayment', 'Receive Payment')} ($${total.toFixed(2)})`}
-                            buttonStyle={local.ctaButton}
+                            buttonStyle={[
+                                local.ctaButton,
+                                isCompact && local.ctaButtonCompact,
+                            ]}
                             disabled={!isExactPayment || disableSubmit}
                             icon={{
                                 name: 'check',
@@ -457,7 +524,12 @@ export function CartPayment({
                     </View>
                     {footerActions ? (
                         <>
-                            <View style={local.footerSectionSpacer}>
+                            <View
+                                style={[
+                                    local.footerSectionSpacer,
+                                    isCompact && local.footerSectionSpacerCompact,
+                                ]}
+                            >
                                 <UIVerticalSpacer size="small" />
                             </View>
                             <View style={local.footerActionsWrap}>
@@ -477,6 +549,27 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flex: 1,
             minHeight: 0,
         },
+        summaryCard: {
+            borderWidth: 1,
+            borderColor: `${tokens.colors.border}AA`,
+            backgroundColor: '#0D1118',
+        },
+        summaryCardCompact: {
+            paddingTop: tokens.spacing.sm,
+            paddingBottom: tokens.spacing.sm,
+        },
+        totalLabelCompact: {
+            fontSize: 11,
+        },
+        summaryEyebrow: {
+            textAlign: 'center',
+            color: tokens.colors.accent,
+            textTransform: 'uppercase',
+            letterSpacing: 1.4,
+            fontSize: 11,
+            fontWeight: '800',
+            marginBottom: tokens.spacing.xs,
+        },
         totalLabel: {
             textAlign: 'center',
             textTransform: 'uppercase',
@@ -487,14 +580,32 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         totalAmount: {
             fontSize: 36,
             marginTop: tokens.spacing.xs,
+            marginBottom: tokens.spacing.xs,
+        },
+        totalAmountCompact: {
+            fontSize: 28,
+            marginTop: 2,
+            marginBottom: 6,
+        },
+        summaryHint: {
+            color: tokens.colors.textSecondary,
+            fontSize: 13,
+            lineHeight: 18,
+            textAlign: 'center',
             marginBottom: tokens.spacing.sm,
         },
         summaryRow: {
             flexDirection: 'row',
             justifyContent: 'space-between',
         },
+        summaryRowCompact: {
+            marginTop: 0,
+        },
         zoneSpacer: {
             marginBottom: 0,
+        },
+        zoneSpacerCompact: {
+            height: 4,
         },
         summaryPill: {
             flex: 1,
@@ -504,6 +615,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             backgroundColor: tokens.colors.surface,
             paddingVertical: tokens.spacing.xs,
             paddingHorizontal: tokens.spacing.sm,
+        },
+        summaryPillCompact: {
+            paddingVertical: 6,
+            paddingHorizontal: 10,
         },
         summaryPillSpaced: {
             marginRight: tokens.spacing.sm,
@@ -521,12 +636,16 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontSize: 16,
             fontWeight: '800',
         },
+        summaryPillValueCompact: {
+            fontSize: 14,
+            marginTop: 0,
+        },
         methodsScroll: {
             flex: 1,
             minHeight: 0,
         },
         methodsScrollContent: {
-            paddingBottom: tokens.spacing.xs,
+            paddingBottom: tokens.spacing.sm,
         },
         methodsGrid: {
             gap: tokens.spacing.sm,
@@ -535,11 +654,22 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flexDirection: 'row',
             gap: tokens.spacing.sm,
         },
+        methodCardActiveAccent: {
+            position: 'absolute',
+            left: 0,
+            top: 10,
+            bottom: 10,
+            width: 4,
+            borderRadius: 999,
+            backgroundColor: tokens.colors.accent,
+            zIndex: 2,
+        },
         methodCard: {
-            minHeight: 118,
+            minHeight: 126,
+            overflow: 'hidden',
         },
         methodCardCompact: {
-            minHeight: 102,
+            minHeight: 74,
         },
         methodCardHalf: {
             flex: 1,
@@ -549,27 +679,32 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         methodCardActive: {
             borderColor: '#4EA3FF',
-            backgroundColor: '#122033',
+            backgroundColor: '#152537',
+            shadowColor: '#4EA3FF',
+            shadowOpacity: 0.18,
+            shadowRadius: 10,
+            shadowOffset: { width: 0, height: 4 },
         },
         methodCardInactive: {
-            borderColor: `${tokens.colors.border}`,
-            backgroundColor: '#11161D',
+            borderColor: '#2A3442',
+            backgroundColor: '#121922',
         },
         methodBody: {
             flex: 1,
+            justifyContent: 'space-between',
         },
         methodCaption: {
             textTransform: 'uppercase',
-            letterSpacing: 0.5,
-            fontWeight: '700',
-            fontSize: 11,
-            marginBottom: tokens.spacing.xs,
+            letterSpacing: 0.9,
+            fontWeight: '800',
+            fontSize: 10,
+            marginBottom: tokens.spacing.sm,
         },
         methodCaptionActive: {
-            color: '#A8CBFF',
+            color: '#B6D4FF',
         },
         methodCaptionInactive: {
-            color: tokens.colors.textMuted,
+            color: '#8A98AA',
         },
         methodInputWrap: {
             width: '100%',
@@ -588,19 +723,25 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         methodInputInner: {
             marginTop: 0,
+            minHeight: 52,
+            borderRadius: 16,
+            paddingLeft: 12,
+            paddingRight: 12,
         },
         methodInputInnerCompact: {
             marginTop: 0,
-            minHeight: 44,
-            borderRadius: 14,
-            paddingLeft: 10,
-            paddingRight: 10,
+            minHeight: 34,
+            borderRadius: 10,
+            paddingLeft: 8,
+            paddingRight: 8,
         },
         methodInputTextCompact: {
-            fontSize: 16,
+            fontSize: 14,
         },
         methodInputText: {
             width: '100%',
+            fontSize: 18,
+            fontWeight: '700',
         },
         methodInputTextInactive: {
             color: tokens.colors.textMuted,
@@ -608,11 +749,18 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         footerRail: {
             borderTopWidth: 1,
             borderTopColor: `${tokens.colors.border}88`,
-            paddingTop: tokens.spacing.sm,
+            paddingTop: tokens.spacing.md,
             backgroundColor: '#05080C',
         },
         footerCard: {
             marginTop: 0,
+            borderWidth: 1,
+            borderColor: '#26303D',
+            backgroundColor: '#0F151D',
+        },
+        footerCardCompact: {
+            paddingTop: 8,
+            paddingBottom: 8,
         },
         summaryFooterRow: {
             flexDirection: 'row',
@@ -623,6 +771,9 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             borderColor: 'transparent',
             paddingHorizontal: tokens.spacing.xs,
             paddingVertical: tokens.spacing.xs,
+        },
+        summaryFooterRowCompact: {
+            paddingVertical: 6,
         },
         summaryFooterRowComplete: {
             backgroundColor: `${tokens.colors.success}1f`,
@@ -639,6 +790,9 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             color: tokens.colors.textPrimary,
             fontSize: 24,
             fontWeight: '800',
+        },
+        summaryFooterValueCompact: {
+            fontSize: 20,
         },
         summaryFooterValueComplete: {
             color: tokens.colors.success,
@@ -659,12 +813,19 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         footerSectionSpacer: {
             marginBottom: 0,
         },
+        footerSectionSpacerCompact: {
+            height: 4,
+        },
         ctaWrap: {
             marginBottom: 0,
         },
         ctaButton: {
             borderRadius: tokens.radii.lg,
-            minHeight: 52,
+            minHeight: 56,
+        },
+        ctaButtonCompact: {
+            minHeight: 48,
+            borderRadius: 16,
         },
         footerActionsWrap: {
             gap: tokens.spacing.sm,

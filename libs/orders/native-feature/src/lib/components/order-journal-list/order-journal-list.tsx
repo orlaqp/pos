@@ -216,6 +216,9 @@ export function OrderJournalList({
         <View style={local.container}>
             <View style={local.headerRow}>
                 <View style={local.titleBlock}>
+                    <Text style={local.eyebrow}>
+                        {t('ORDERS_OrderJournalEyebrow', 'Device queue')}
+                    </Text>
                     <View style={local.titleRow}>
                         <Text style={local.title}>
                             {t('ORDERS_OrderJournal', 'Order Journal')}
@@ -394,15 +397,28 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             maxWidth: '100%',
             minHeight: 460,
             maxHeight: 640,
+            borderRadius: 28,
+            borderWidth: 1,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
+            padding: tokens.spacing.lg,
         },
         headerRow: {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
-            marginBottom: tokens.spacing.sm,
+            marginBottom: tokens.spacing.md,
         },
         titleBlock: {
             flex: 1,
+        },
+        eyebrow: {
+            color: tokens.colors.accent,
+            fontSize: 11,
+            fontWeight: '800',
+            letterSpacing: 1.6,
+            textTransform: 'uppercase',
+            marginBottom: 4,
         },
         titleRow: {
             flexDirection: 'row',
@@ -410,16 +426,18 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         title: {
             color: tokens.colors.textPrimary,
-            fontSize: 26,
+            fontSize: 28,
             fontWeight: '800',
+            letterSpacing: -0.4,
         },
         subtitle: {
             color: tokens.colors.textMuted,
-            marginTop: 2,
-            fontSize: 13,
+            marginTop: 4,
+            fontSize: 14,
+            lineHeight: 20,
         },
         countBadge: {
-            marginLeft: tokens.spacing.xs,
+            marginLeft: tokens.spacing.sm,
             borderRadius: 999,
             borderWidth: 1,
             borderColor: `${tokens.colors.accent}77`,
@@ -435,18 +453,18 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontWeight: '800',
         },
         closeButton: {
-            width: 30,
-            height: 30,
-            borderRadius: 15,
+            width: 36,
+            height: 36,
+            borderRadius: 18,
             borderWidth: 1,
             borderColor: tokens.colors.border,
-            backgroundColor: tokens.colors.surfaceMuted,
+            backgroundColor: '#101722',
             alignItems: 'center',
             justifyContent: 'center',
             marginLeft: tokens.spacing.sm,
         },
         closeText: {
-            color: tokens.colors.textSecondary,
+            color: tokens.colors.textPrimary,
             fontSize: 13,
             fontWeight: '800',
         },
@@ -461,7 +479,11 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             marginTop: tokens.spacing.sm,
         },
         searchCard: {
-            marginBottom: tokens.spacing.sm,
+            marginBottom: tokens.spacing.md,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#0E141C',
         },
         list: {
             minHeight: 320,
@@ -471,18 +493,18 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             paddingBottom: tokens.spacing.sm,
         },
         entryCard: {
-            borderRadius: tokens.radii.md,
+            borderRadius: 22,
             borderWidth: 1,
-            borderColor: tokens.colors.border,
-            backgroundColor: tokens.colors.surfaceMuted,
-            padding: tokens.spacing.md,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#0E141C',
+            padding: tokens.spacing.lg,
             marginBottom: tokens.spacing.sm,
         },
         entryHeader: {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
-            marginBottom: tokens.spacing.sm,
+            marginBottom: tokens.spacing.md,
         },
         entryHeaderText: {
             flex: 1,
@@ -490,13 +512,13 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         orderNumberText: {
             color: tokens.colors.textPrimary,
-            fontSize: 18,
-            fontWeight: '700',
+            fontSize: 20,
+            fontWeight: '800',
         },
         orderMetaText: {
             color: tokens.colors.textMuted,
             fontSize: 12,
-            marginTop: 2,
+            marginTop: 6,
         },
         badgesColumn: {
             alignItems: 'flex-end',
@@ -506,8 +528,8 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             backgroundColor: `${tokens.colors.accent}1f`,
             borderWidth: 1,
             borderColor: `${tokens.colors.accent}66`,
-            paddingHorizontal: 10,
-            paddingVertical: 4,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
             marginBottom: 6,
         },
         targetBadgeText: {
@@ -517,11 +539,11 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         syncBadge: {
             borderRadius: 999,
-            backgroundColor: tokens.colors.surface,
+            backgroundColor: '#111823',
             borderWidth: 1,
             borderColor: tokens.colors.border,
-            paddingHorizontal: 10,
-            paddingVertical: 4,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
         },
         syncBadgeSuccess: {
             backgroundColor: `${tokens.colors.success}20`,
@@ -540,7 +562,7 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         metaRow: {
             flexDirection: 'row',
             justifyContent: 'space-between',
-            marginTop: 4,
+            marginTop: 6,
         },
         metaLabel: {
             color: tokens.colors.textMuted,
@@ -564,9 +586,9 @@ const useLocalStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         retryButton: {
             marginTop: tokens.spacing.sm,
-            borderRadius: tokens.radii.md,
+            borderRadius: 18,
             backgroundColor: tokens.colors.accent,
-            paddingVertical: tokens.spacing.sm,
+            paddingVertical: 12,
             alignItems: 'center',
             justifyContent: 'center',
         },

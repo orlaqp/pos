@@ -28,6 +28,7 @@ export function CompactOrderItem({ item, onSelect: onOpen }: CompactOrderItemPro
     return (
         <TouchableOpacity style={[styles.dataRow, local.container]} onPress={openInCart}>
             <View style={local.leftBlock}>
+                <Text style={local.eyebrow}>Order</Text>
                 <View style={local.topRow}>
                     {parsedOrderNo ? (
                         <>
@@ -74,30 +75,38 @@ export function CompactOrderItem({ item, onSelect: onOpen }: CompactOrderItemPro
 const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     StyleSheet.create({
         container: {
-            borderRadius: tokens.radii.md,
+            borderRadius: 22,
             borderWidth: 1,
-            borderColor: tokens.colors.border,
-            backgroundColor: tokens.colors.surfaceMuted,
-            marginBottom: tokens.spacing.xs,
-            paddingVertical: tokens.spacing.sm,
-            paddingHorizontal: tokens.spacing.sm,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#0E141C',
+            marginBottom: tokens.spacing.sm,
+            paddingVertical: tokens.spacing.md,
+            paddingHorizontal: tokens.spacing.md,
             alignItems: 'center',
         },
         leftBlock: {
             flex: 2.6,
             paddingRight: tokens.spacing.xs,
         },
+        eyebrow: {
+            color: tokens.colors.textMuted,
+            fontSize: 10,
+            fontWeight: '800',
+            letterSpacing: 1.2,
+            textTransform: 'uppercase',
+            marginBottom: 4,
+        },
         topRow: {
             flexDirection: 'row',
             alignItems: 'center',
         },
         chip: {
-            borderRadius: tokens.radii.sm,
+            borderRadius: 12,
             borderWidth: 1,
             borderColor: `${tokens.colors.accent}66`,
             backgroundColor: `${tokens.colors.accent}1f`,
-            paddingHorizontal: 6,
-            paddingVertical: 2,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
             marginRight: 6,
         },
         chipText: {
@@ -106,7 +115,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontWeight: '700',
         },
         orderNoText: {
-            marginTop: 3,
+            marginTop: 6,
             fontSize: 12,
         },
         metaBlock: {
@@ -124,6 +133,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         countText: {
             fontSize: 12,
             fontWeight: '700',
+            color: tokens.colors.textMuted,
         },
         totalBlock: {
             flex: 1.3,
@@ -132,10 +142,14 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         totalText: {
             textAlign: 'right',
             marginBottom: 0,
+            fontSize: 20,
+            fontWeight: '800',
         },
         resumeText: {
             fontSize: 11,
             color: tokens.colors.accent,
+            marginTop: 4,
+            fontWeight: '700',
         },
     });
 

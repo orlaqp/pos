@@ -17,6 +17,7 @@ interface OrderSummaryPanelProps {
     scrollStyle?: object;
     scrollContentStyle?: object;
     contentTestID?: string;
+    plain?: boolean;
 }
 
 export function OrderSummaryPanel({
@@ -29,9 +30,13 @@ export function OrderSummaryPanel({
     scrollStyle,
     scrollContentStyle,
     contentTestID,
+    plain = false,
 }: OrderSummaryPanelProps) {
     return (
-        <View style={styles.summarySurface} testID={contentTestID}>
+        <View
+            style={[styles.summarySurface, plain && styles.summarySurfacePlain]}
+            testID={contentTestID}
+        >
             <Text style={styles.dialogTitle}>{title}</Text>
             <Text style={styles.dialogHint}>{hint}</Text>
             <ScrollView

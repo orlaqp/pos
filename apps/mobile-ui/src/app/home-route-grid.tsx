@@ -8,6 +8,7 @@ interface PathDetails {
     path: string;
     icon: string;
     accentColor: string;
+    subtitle?: string;
 }
 
 interface HomeRouteGridProps {
@@ -51,18 +52,47 @@ export function HomeRouteGrid({
                             <View
                                 style={[
                                     styles.bigButton,
-                                    styles.centered,
+                                    styles.routeCard,
                                     pendingPath === path.path && { opacity: 0.7 },
                                 ]}
                             >
-                                <Icon
-                                    name={path.icon}
-                                    type="material-community"
-                                    size={52}
-                                    color={path.accentColor}
-                                    containerStyle={styles.routeIcon}
+                                <View
+                                    style={[
+                                        styles.routeAccent,
+                                        { backgroundColor: path.accentColor },
+                                    ]}
                                 />
-                                <Text style={styles.routeTitle}>{path.title}</Text>
+                                <View style={styles.routeCardTop}>
+                                    <View
+                                        style={[
+                                            styles.routeIconWrap,
+                                            { backgroundColor: `${path.accentColor}18` },
+                                        ]}
+                                    >
+                                        <Icon
+                                            name={path.icon}
+                                            type="material-community"
+                                            size={40}
+                                            color={path.accentColor}
+                                            containerStyle={styles.routeIcon}
+                                        />
+                                    </View>
+                                    <Icon
+                                        name="arrow-top-right"
+                                        type="material-community"
+                                        size={22}
+                                        color={path.accentColor}
+                                    />
+                                </View>
+                                <View style={styles.routeCardBody}>
+                                    <Text style={styles.routeEyebrow}>{path.path}</Text>
+                                    <Text style={styles.routeTitle}>{path.title}</Text>
+                                    {path.subtitle ? (
+                                        <Text style={styles.routeSubtitle}>
+                                            {path.subtitle}
+                                        </Text>
+                                    ) : null}
+                                </View>
                             </View>
                         </TouchableOpacity>
                     </Animated.View>

@@ -148,6 +148,14 @@ export function OrderList({ navigation }: OrderListProps) {
             <View style={styles.container}>
                 <View style={styles.filtersRow} testID="order-list-filters-card">
                     <View style={styles.tabsColumn}>
+                        <View style={styles.filtersIntro}>
+                            <Text style={styles.filtersEyebrow}>
+                                {t('ORDERS_FilterEyebrow', 'Order status')}
+                            </Text>
+                            <Text style={styles.filtersTitle}>
+                                {t('ORDERS_FilterTitle', 'Track payments and refunds')}
+                            </Text>
+                        </View>
                         <ButtonGroup
                             buttons={orderStatusTabs}
                             selectedIndex={selectedIndex}
@@ -162,6 +170,9 @@ export function OrderList({ navigation }: OrderListProps) {
                         />
                     </View>
                     <View style={styles.searchColumn}>
+                        <Text style={styles.searchLabel}>
+                            {t('ORDERS_SearchLabel', 'Search')}
+                        </Text>
                         <View style={!hasStatusOrders ? styles.searchDisabled : null}>
                             <UISearchInput
                                 testID="order-list-search-input"
@@ -257,10 +268,16 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         filtersRow: {
             flexDirection: 'row',
-            alignItems: 'center',
+            alignItems: 'flex-end',
             marginHorizontal: tokens.spacing.md,
             marginTop: tokens.spacing.md,
             marginBottom: tokens.spacing.sm,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.md,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            borderRadius: tokens.radii.lg,
+            backgroundColor: tokens.colors.surfaceMuted,
         },
         tabsColumn: {
             flex: 3.4,
@@ -271,6 +288,30 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flex: 1.9,
             justifyContent: 'center',
         },
+        filtersIntro: {
+            marginBottom: tokens.spacing.sm,
+        },
+        filtersEyebrow: {
+            color: tokens.colors.accent,
+            fontSize: 12,
+            fontWeight: '800',
+            textTransform: 'uppercase',
+            letterSpacing: 1.2,
+            marginBottom: 4,
+        },
+        filtersTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 18,
+            fontWeight: '800',
+        },
+        searchLabel: {
+            color: tokens.colors.textMuted,
+            fontSize: 12,
+            fontWeight: '800',
+            textTransform: 'uppercase',
+            letterSpacing: 1.1,
+            marginBottom: tokens.spacing.xs,
+        },
         searchDisabled: {
             opacity: 0.45,
         },
@@ -279,33 +320,33 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             borderWidth: 1,
             borderColor: tokens.colors.border,
             backgroundColor: tokens.colors.surfaceMuted,
-            borderRadius: tokens.radii.md,
+            borderRadius: tokens.radii.lg,
             overflow: 'hidden',
-            minHeight: 52,
+            minHeight: 54,
         },
         filterButton: {
             backgroundColor: 'transparent',
-            minHeight: 50,
+            minHeight: 52,
             paddingVertical: 0,
             paddingHorizontal: tokens.spacing.md,
             justifyContent: 'center',
         },
         filterButtonContainer: {
-            minHeight: 50,
+            minHeight: 52,
         },
         filterButtonSelected: {
             backgroundColor: tokens.colors.accent,
-            minHeight: 50,
+            minHeight: 52,
         },
         filterButtonText: {
             color: tokens.colors.textMuted,
-            fontWeight: '500',
-            fontSize: 16,
+            fontWeight: '700',
+            fontSize: 15,
         },
         filterButtonTextSelected: {
             color: tokens.colors.textPrimary,
-            fontWeight: '700',
-            fontSize: 16,
+            fontWeight: '800',
+            fontSize: 15,
         },
         resultsCard: {
             flex: 1,
@@ -313,9 +354,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             marginBottom: tokens.spacing.md,
             borderWidth: 1,
             borderColor: tokens.colors.border,
-            borderRadius: tokens.radii.md,
+            borderRadius: tokens.radii.lg,
             backgroundColor: tokens.colors.surfaceMuted,
             overflow: 'hidden',
+            paddingTop: tokens.spacing.xs,
         },
         emptyStateWrap: {
             flex: 1,

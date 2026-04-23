@@ -458,8 +458,9 @@ describe('InventoryReceiveForm integration', () => {
             <InventoryReceiveForm route={readOnlyRoute as any} navigation={navigation} />
         );
 
+        expect(getByText('Completed receive')).toBeTruthy();
         expect(
-            getByText('This receive was already completed and cannot be changed')
+            getByText('This inventory receive is read-only and cannot be changed.')
         ).toBeTruthy();
         expect(queryByTestId('inventory-receive-save-button')).toBeNull();
         expect(queryByTestId('inventory-receive-update-inventory-button')).toBeNull();

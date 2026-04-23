@@ -31,6 +31,10 @@ export const buildUnitOfMeasureListProps = (
             'Create units of measure before assigning them to products in the catalog.',
         emptyActionText: 'Add unit',
         emptyActionIcon: 'scale-balance',
+        headerEyebrow: 'Catalog',
+        headerTitle: 'Units of Measure',
+        headerSubtitle:
+            'Define how products are counted, weighed, and shown during checkout.',
     } as ItemListProps<any, any>);
 
 export function UnitOfMeasureList({ navigation }: UnitOfMeasureListProps) {

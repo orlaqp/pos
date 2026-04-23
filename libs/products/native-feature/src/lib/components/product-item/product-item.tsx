@@ -12,6 +12,7 @@ import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UIEbtRibbon, UIS3Image } from '@pos/shared/ui-native';
 import { Icon } from '@rneui/base';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface ProductItemProps {
     item: ProductEntity;
@@ -50,7 +51,8 @@ export const deleteProductById = async (
 
 export function ProductItem({ item, navigation }: ProductItemProps) {
     const theme = useTheme();
-    const styles = useStyles();
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
     const codeLines = getProductCodeLines(item);
@@ -82,6 +84,7 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
         <TouchableOpacity
             style={[
                 styles.dataRow,
+                styles.row,
                 {
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -169,13 +172,22 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
     );
 }
 
-const useStyles = () => {
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) => {
     const theme = useTheme();
     const sharedStyles = useSharedStyles();
 
     return {
         ...sharedStyles,
         ...StyleSheet.create({
+            row: {
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: '#C7D0DB22',
+                backgroundColor: '#0E141C',
+                marginBottom: tokens.spacing.sm,
+                paddingHorizontal: tokens.spacing.md,
+                paddingVertical: tokens.spacing.md,
+            },
             column: {
                 marginRight: 15,
             },
@@ -193,7 +205,11 @@ const useStyles = () => {
                 color: theme.theme.colors.grey1,
             },
             deleteButton: {
-                opacity: 0.75,
+                opacity: 0.95,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: `${theme.theme.colors.error}55`,
+                backgroundColor: `${theme.theme.colors.error}12`,
             },
         }),
     };

@@ -1,4 +1,5 @@
 import { useSharedStyles } from '@pos/theme/native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import React, { useEffect, useRef, useState } from 'react';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
@@ -294,7 +295,8 @@ export const createDateUpdater = (
 
 export function EndOfDay(props: EndOfDayProps) {
     const styles = useSharedStyles();
-    const local = localStyles;
+    const tokens = useDesignTokens();
+    const local = useEndOfDayStyles(tokens);
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
@@ -448,13 +450,18 @@ export function EndOfDay(props: EndOfDayProps) {
 
     return (
         <View style={styles.page}>
-            <View style={[styles.box, { height: '100%' }]}>
-                <View style={[styles.row, { zIndex: 1000 }]}>
-                    <View style={{ flex: .5, paddingRight: 10, flexDirection: 'column' }}>
-                        <Text style={[styles.secondaryText, { marginBottom: 5 }]}>
+            <View style={[styles.box, local.reportShell]}>
+                <View style={local.filterBar}>
+                    <View style={[local.filterField, local.dateFilterField]}>
+                        <Text style={local.filterLabel}>
                             {t('EOD_Date', 'Date')}
                         </Text>
-                        <Button title={date.toLocaleDateString()} onPress={() => setDrOpen(true)} />
+                        <Button
+                            title={date.toLocaleDateString()}
+                            onPress={() => setDrOpen(true)}
+                            buttonStyle={local.dateButton}
+                            titleStyle={local.dateButtonText}
+                        />
                         <UIDatePickerModal
                             mode="date"
                             open={drOpen}
@@ -472,19 +479,21 @@ export function EndOfDay(props: EndOfDayProps) {
                     {filterConfigs.map((config) => (
                         <View
                             key={config.label}
-                            style={{
-                                flex: 1,
-                                paddingLeft: config.leftPadding ? 10 : 0,
-                                paddingRight: config.leftPadding ? 0 : 10,
-                                flexDirection: 'column',
-                            }}
+                            style={local.filterField}
                         >
-                            <Text style={[styles.secondaryText, { marginBottom: 5 }]}>
+                            <Text style={local.filterLabel}>
                                 {config.label}
                             </Text>
                             <DropDownPicker
-                                style={styles.backgroundColor}
-                                dropDownContainerStyle={styles.backgroundColor}
+                                style={local.dropdown}
+                                dropDownContainerStyle={local.dropdownMenu}
+                                textStyle={local.dropdownText}
+                                placeholderStyle={local.dropdownPlaceholder}
+                                labelStyle={local.dropdownText}
+                                listItemLabelStyle={local.dropdownText}
+                                selectedItemLabelStyle={local.dropdownSelectedText}
+                                searchTextInputStyle={local.dropdownSearchInput}
+                                searchPlaceholderTextColor={tokens.colors.textMuted}
                                 searchable={config.searchable}
                                 open={config.open}
                                 value={config.value}
@@ -617,5 +626,98 @@ const localStyles = StyleSheet.create({
         maxWidth: 440,
     },
 });
+
+const useEndOfDayStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        ...localStyles,
+        reportShell: {
+            height: '100%',
+            borderColor: '#C7D0DB22',
+            borderRadius: 26,
+            backgroundColor: '#05070B',
+            paddingHorizontal: tokens.spacing.xl,
+            paddingTop: tokens.spacing.xl,
+            paddingBottom: tokens.spacing.lg,
+        },
+        filterBar: {
+            zIndex: 1000,
+            flexDirection: 'row',
+            alignItems: 'flex-end',
+            gap: tokens.spacing.md,
+            marginBottom: tokens.spacing.lg,
+            padding: tokens.spacing.md,
+            borderRadius: 22,
+            borderWidth: 1,
+            borderColor: '#243145',
+            backgroundColor: '#090D14',
+        },
+        filterField: {
+            flex: 1,
+            flexDirection: 'column',
+        },
+        dateFilterField: {
+            flex: 0.55,
+        },
+        filterLabel: {
+            color: '#7C8EA5',
+            fontSize: 11,
+            fontWeight: '800',
+            letterSpacing: 1.1,
+            marginBottom: tokens.spacing.xs,
+            textTransform: 'uppercase',
+        },
+        dateButton: {
+            minHeight: 48,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: `${tokens.colors.accent}66`,
+            backgroundColor: `${tokens.colors.accent}33`,
+            paddingHorizontal: tokens.spacing.md,
+        },
+        dateButtonText: {
+            color: tokens.colors.textPrimary,
+            fontSize: 16,
+            fontWeight: '800',
+            letterSpacing: 0.2,
+        },
+        dropdown: {
+            minHeight: 48,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: `${tokens.colors.border}ee`,
+            backgroundColor: '#101722',
+            paddingHorizontal: tokens.spacing.md,
+        },
+        dropdownMenu: {
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: '#2A3A51',
+            backgroundColor: '#101722',
+            overflow: 'hidden',
+        },
+        dropdownText: {
+            color: tokens.colors.textPrimary,
+            fontSize: 15,
+            fontWeight: '600',
+        },
+        dropdownPlaceholder: {
+            color: tokens.colors.textMuted,
+            fontSize: 15,
+            fontWeight: '600',
+        },
+        dropdownSelectedText: {
+            color: '#D7E8FF',
+            fontSize: 15,
+            fontWeight: '800',
+        },
+        dropdownSearchInput: {
+            minHeight: 40,
+            borderRadius: 12,
+            borderColor: '#2A3A51',
+            backgroundColor: '#0B1018',
+            color: tokens.colors.textPrimary,
+            fontSize: 15,
+        },
+    });
 
 export default EndOfDay;

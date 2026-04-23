@@ -29,6 +29,10 @@ export const buildCategoryListProps = (navigation: NativeStackNavigationProp<any
             'Create categories to organize products and make catalog browsing easier.',
         emptyActionText: 'Add category',
         emptyActionIcon: 'shape-outline',
+        headerEyebrow: 'Catalog',
+        headerTitle: 'Categories',
+        headerSubtitle:
+            'Group products into clear browsing sections for sales and reporting.',
     } as ItemListProps<any, any>);
 
 export function CategoryList({ navigation }: CategoryListProps) {

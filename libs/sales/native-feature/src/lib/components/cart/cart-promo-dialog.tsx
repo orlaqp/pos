@@ -32,21 +32,42 @@ export function CartPromoDialog({
             presentationStyle="fullScreen"
             overlayStyle={overlayStyle}
         >
-            <Text style={styles.dialogTitle}>Apply promo code</Text>
-            <Text style={styles.dialogHint}>
-                Promo codes recalculate the cart immediately.
-            </Text>
+            <View style={styles.dialogHeroCard}>
+                <Text style={styles.dialogTitle}>Apply promo code</Text>
+                <Text style={styles.dialogHint}>
+                    Enter the code exactly as provided and review the pricing update in the cart immediately.
+                </Text>
+                <View style={styles.dialogHeroMetaRow}>
+                    <View style={styles.dialogHeroPill}>
+                        <Text style={styles.dialogHeroPillText}>Instant recalculation</Text>
+                    </View>
+                    <View style={styles.dialogHeroPill}>
+                        <Text style={styles.dialogHeroPillText}>Checkout ready</Text>
+                    </View>
+                </View>
+            </View>
             <TextInput
                 value={promoCodeInput}
                 onChangeText={onChangePromoCode}
                 placeholder="SPRING10"
                 placeholderTextColor={placeholderTextColor}
                 autoCapitalize="characters"
-                style={styles.dialogInput}
+                style={[styles.dialogInput, styles.dialogInputLarge]}
             />
             <View style={styles.dialogActionRow}>
-                <Button type="clear" title="Cancel" onPress={onClose} />
-                <Button title="Apply" onPress={onSubmit} />
+                <Button
+                    type="clear"
+                    title="Cancel"
+                    onPress={onClose}
+                    buttonStyle={styles.dialogSecondaryButton}
+                    titleStyle={styles.dialogSecondaryButtonTitle}
+                />
+                <Button
+                    title="Apply"
+                    onPress={onSubmit}
+                    buttonStyle={styles.dialogPrimaryButton}
+                    titleStyle={styles.dialogPrimaryButtonTitle}
+                />
             </View>
         </Dialog>
     );

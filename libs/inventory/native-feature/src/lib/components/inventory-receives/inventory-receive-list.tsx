@@ -10,7 +10,6 @@ import {
 } from '@pos/inventory/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
 import { enableInventorySync } from '@pos/shared/data-store';
-import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import InventoryReceiveItem from './inventory-receive-item';
 import { ActivityIndicator, View } from 'react-native';
@@ -29,29 +28,27 @@ export function InventoryReceiveList({ navigation }: InventoryListProps) {
     const tokens = useDesignTokens();
     const [isPreparingInventorySync, setIsPreparingInventorySync] = React.useState(true);
 
-    useFocusEffect(
-        React.useCallback(() => {
-            let active = true;
-            let receives: { unsubscribe: () => void } | undefined;
-            let lines: { unsubscribe: () => void } | undefined;
+    React.useEffect(() => {
+        let active = true;
+        let receives: { unsubscribe: () => void } | undefined;
+        let lines: { unsubscribe: () => void } | undefined;
 
-            void (async () => {
-                await enableInventorySync();
-                if (!active) return;
-                receives = subscribeToInventoryReceiveChanges(dispatch);
-                lines = subscribeToInventoryReceiveLineChanges(dispatch);
-                await dispatch(fetchInventoryReceive());
-                if (!active) return;
-                setIsPreparingInventorySync(false);
-            })();
+        void (async () => {
+            await enableInventorySync();
+            if (!active) return;
+            receives = subscribeToInventoryReceiveChanges(dispatch);
+            lines = subscribeToInventoryReceiveLineChanges(dispatch);
+            await dispatch(fetchInventoryReceive());
+            if (!active) return;
+            setIsPreparingInventorySync(false);
+        })();
 
-            return () => {
-                active = false;
-                receives?.unsubscribe();
-                lines?.unsubscribe();
-            };
-        }, [dispatch])
-    );
+        return () => {
+            active = false;
+            receives?.unsubscribe();
+            lines?.unsubscribe();
+        };
+    }, [dispatch]);
 
     if (isPreparingInventorySync) {
         return (
@@ -82,6 +79,7 @@ export function InventoryReceiveList({ navigation }: InventoryListProps) {
         clearSelectionAction: inventoryReceiveActions.clearSelection,
         filterAction: inventoryReceiveActions.filter,
         fetchItemsAction: fetchInventoryReceive,
+        plainHeader: true,
     };
 
     return <UIGenericItemList {...props} />;

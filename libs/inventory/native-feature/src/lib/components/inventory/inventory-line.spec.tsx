@@ -19,6 +19,10 @@ jest.mock('@pos/theme/native/design-tokens', () => ({
             sm: 8,
             md: 12,
         },
+        colors: {
+            textPrimary: '#fff',
+            textMuted: '#889',
+        },
     }),
 }));
 

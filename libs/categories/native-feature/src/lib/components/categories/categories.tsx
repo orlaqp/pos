@@ -21,7 +21,11 @@ export function Categories({ route }: CategoriesProps) {
 
     return (
         <StackNavigation Stack={Stack} initialRouteName={initialRouteName}>
-            <Stack.Screen name="Category List" component={CategoryList} />
+            <Stack.Screen
+                name="Category List"
+                component={CategoryList}
+                options={{ headerShown: false }}
+            />
             <Stack.Screen name="Category Form" component={CategoryForm} />
         </StackNavigation>
     );

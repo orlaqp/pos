@@ -5,7 +5,7 @@ import Categories from './categories';
 
 describe('Categories', () => {
   it('should render successfully', () => {
-    const { container } = render(<Categories />);
-    expect(container).toBeTruthy();
+    const { UNSAFE_root } = render(<Categories />);
+    expect(UNSAFE_root).toBeTruthy();
   });
 });

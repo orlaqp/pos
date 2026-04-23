@@ -131,6 +131,16 @@ export function ConfirmSignupScreen(props: ConfirmSignupProps) {
                         <Text style={styles.subtitle}>
                             Enter the verification code sent to your email before signing in to initialize the workspace.
                         </Text>
+                        <View style={styles.heroMetaRow}>
+                            <View style={styles.heroMetaCard}>
+                                <Text style={styles.heroMetaLabel}>Step</Text>
+                                <Text style={styles.heroMetaValue}>Email verification</Text>
+                            </View>
+                            <View style={styles.heroMetaCard}>
+                                <Text style={styles.heroMetaLabel}>Next</Text>
+                                <Text style={styles.heroMetaValue}>Open workspace</Text>
+                            </View>
+                        </View>
                     </Animated.View>
                     <Animated.View
                         style={[
@@ -140,48 +150,54 @@ export function ConfirmSignupScreen(props: ConfirmSignupProps) {
                         ]}
                     >
                         <View style={styles.formInner}>
+                            <Text style={styles.formEyebrow}>Verification</Text>
                             <Text style={styles.formTitle}>Enter verification code</Text>
                             <Text style={styles.formSubtitle}>Use the code from the Cognito email.</Text>
                             {error ? <UIAlert message={error} type="error" /> : null}
                             {message ? <UIAlert message={message} type="success" /> : null}
-                            <UIInput
-                                name="email"
-                                autoCapitalize="none"
-                                placeholder="owner@business.com"
-                                keyboardType="email-address"
-                                textAlign="left"
-                                rules={{ required: 'Email address is required' }}
-                            />
-                            <UIInput
-                                name="confirmationCode"
-                                placeholder="Verification code"
-                                keyboardType="number-pad"
-                                textAlign="left"
-                                rules={{ required: 'Verification code is required' }}
-                            />
-                            <Button
-                                title="Confirm account"
-                                buttonStyle={styles.primaryButton}
-                                loading={submitting}
-                                onPress={formMethods.handleSubmit(onSubmit)}
-                            />
-                            <Button
-                                title="Resend code"
-                                type="clear"
-                                titleStyle={styles.secondaryAction}
-                                loading={resending}
-                                onPress={onResend}
-                            />
-                            <Button
-                                title="Back to sign in"
-                                type="clear"
-                                titleStyle={styles.secondaryAction}
-                                onPress={() =>
-                                    props.navigation.navigate('Login', {
-                                        email: emailValue?.trim() || initialEmail,
-                                    })
-                                }
-                            />
+                            <View style={styles.formSection}>
+                                <Text style={styles.formSectionLabel}>Owner identity</Text>
+                                <UIInput
+                                    name="email"
+                                    autoCapitalize="none"
+                                    placeholder="owner@business.com"
+                                    keyboardType="email-address"
+                                    textAlign="left"
+                                    rules={{ required: 'Email address is required' }}
+                                />
+                                <UIInput
+                                    name="confirmationCode"
+                                    placeholder="Verification code"
+                                    keyboardType="number-pad"
+                                    textAlign="left"
+                                    rules={{ required: 'Verification code is required' }}
+                                />
+                            </View>
+                            <View style={styles.formActionPanel}>
+                                <Button
+                                    title="Confirm account"
+                                    buttonStyle={styles.primaryButton}
+                                    loading={submitting}
+                                    onPress={formMethods.handleSubmit(onSubmit)}
+                                />
+                                <Button
+                                    title="Resend code"
+                                    type="clear"
+                                    titleStyle={styles.secondaryAction}
+                                    loading={resending}
+                                    onPress={onResend}
+                                />
+                                <Button
+                                    title="Back to sign in"
+                                    type="clear"
+                                    titleStyle={styles.secondaryAction}
+                                    onPress={() =>
+                                        props.navigation.navigate('Login', {
+                                            email: emailValue?.trim() || initialEmail,
+                                        })
+                                    }
+                                />
+                            </View>
                         </View>
                     </Animated.View>
                 </View>
@@ -244,6 +260,34 @@ const useStyles = () => {
             maxWidth: 440,
             alignSelf: 'center',
         },
+        heroMetaRow: {
+            flexDirection: 'row',
+            gap: 12,
+            marginTop: 24,
+        },
+        heroMetaCard: {
+            flex: 1,
+            minHeight: 84,
+            borderRadius: 18,
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.08)',
+            backgroundColor: 'rgba(255,255,255,0.03)',
+            justifyContent: 'space-between',
+        },
+        heroMetaLabel: {
+            color: '#7f8a9a',
+            textTransform: 'uppercase',
+            letterSpacing: 1.2,
+            fontSize: 11,
+            fontWeight: '700',
+        },
+        heroMetaValue: {
+            color: '#eef4ff',
+            fontSize: 18,
+            fontWeight: '700',
+        },
         eyebrow: {
             color: '#7eb6ff',
             textTransform: 'uppercase',
@@ -270,6 +314,35 @@ const useStyles = () => {
         formSubtitle: {
             color: colors.grey2,
             marginBottom: 18,
+        },
+        formEyebrow: {
+            color: '#7eb6ff',
+            textTransform: 'uppercase',
+            letterSpacing: 1.6,
+            fontSize: 11,
+            fontWeight: '700',
+            marginBottom: 8,
+        },
+        formSection: {
+            padding: 18,
+            borderRadius: 22,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.08)',
+            backgroundColor: 'rgba(255,255,255,0.03)',
+        },
+        formSectionLabel: {
+            color: '#7eb6ff',
+            textTransform: 'uppercase',
+            letterSpacing: 1.4,
+            fontSize: 11,
+            fontWeight: '700',
+            marginBottom: 6,
+        },
+        formActionPanel: {
+            marginTop: 14,
+            paddingTop: 14,
+            borderTopWidth: 1,
+            borderTopColor: 'rgba(255,255,255,0.08)',
         },
         primaryButton: {
             borderRadius: 16,

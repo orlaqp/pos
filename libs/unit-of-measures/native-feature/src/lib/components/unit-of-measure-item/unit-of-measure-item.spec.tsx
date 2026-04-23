@@ -23,10 +23,10 @@ describe('UnitOfMeasureItem', () => {
             description: 'Each',
         };
         const navigation: any = { navigate: jest.fn() };
-        const { container } = render(
+        const { UNSAFE_root } = render(
             <UnitOfMeasureItem item={item} navigation={navigation} />
         );
-        expect(container).toBeTruthy();
+        expect(UNSAFE_root).toBeTruthy();
     });
 
     it('blocks editing the default ea item', () => {

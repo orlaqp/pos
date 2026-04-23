@@ -208,8 +208,19 @@ export function CartManualDiscountDialog({
                 style={styles.dialogInput}
             />
             <View style={styles.dialogActionRow}>
-                <Button type="clear" title="Cancel" onPress={onClose} />
-                <Button title="Apply" onPress={onSubmit} />
+                <Button
+                    type="clear"
+                    title="Cancel"
+                    onPress={onClose}
+                    buttonStyle={styles.dialogSecondaryButton}
+                    titleStyle={styles.dialogSecondaryButtonTitle}
+                />
+                <Button
+                    title="Apply"
+                    onPress={onSubmit}
+                    buttonStyle={styles.dialogPrimaryButton}
+                    titleStyle={styles.dialogPrimaryButtonTitle}
+                />
             </View>
         </Dialog>
     );

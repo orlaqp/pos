@@ -66,8 +66,9 @@ export function DiscountsListScreen({
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.container}>
             <UICard tone="muted" radius="lg" style={styles.headerCard}>
-              <View style={styles.headerRow}>
+                <View style={styles.headerRow}>
                 <View style={styles.headerCopy}>
+                  <Text style={styles.headerEyebrow}>Discounts</Text>
                   <Text style={styles.headerTitle}>{config.title}</Text>
                   <Text style={styles.headerSubtitle}>{config.description}</Text>
                 </View>

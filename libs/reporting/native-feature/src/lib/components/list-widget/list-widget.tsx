@@ -1,7 +1,8 @@
 import { useSharedStyles } from '@pos/theme/native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import React from 'react';
 
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
 /* eslint-disable-next-line */
@@ -12,28 +13,113 @@ export interface ListWidgetProps {
 
 export function ListWidget({ header, items }: ListWidgetProps) {
     const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const local = useStyles(tokens);
 
     return (
-        <View
-            style={{
-                borderRadius: 5,
-                backgroundColor: styles.dataRow.backgroundColor,
-                height: 220,
-                paddingHorizontal: 20,
-                paddingVertical: 10
-            }}
-        >
-            <Text style={[styles.secondaryText, { marginBottom: 10 }]}>{header}</Text>
-            <ScrollView>
+        <View style={local.card}>
+            <Text style={local.eyebrow}>Summary</Text>
+            <Text style={local.header}>{header}</Text>
+            <ScrollView contentContainerStyle={local.listContent}>
+                {!items.length && (
+                    <View style={local.emptyRow}>
+                        <Text style={local.emptyText}>No rows to show</Text>
+                    </View>
+                )}
                 {items.map((item, idx) => (
-                    <View key={idx} style={{ flexDirection: 'row', marginVertical: 8 }}>
-                        <Text style={[styles.primaryText, { flex: 2 }]}>{item.name}</Text>
-                    <Text style={[styles.primaryText, styles.textRight, { flex: 1 }]}>{item.value}</Text>
-                </View>
+                    <View
+                        key={idx}
+                        style={[
+                            local.row,
+                            idx % 2 === 1 && local.rowAlt,
+                        ]}
+                    >
+                        <Text
+                            style={[
+                                styles.primaryText,
+                                local.nameText,
+                            ]}
+                            numberOfLines={1}
+                        >
+                            {item.name}
+                        </Text>
+                        <Text
+                            style={[
+                                styles.primaryText,
+                                styles.textRight,
+                                local.valueText,
+                            ]}
+                        >
+                            {item.value}
+                        </Text>
+                    </View>
                 ))}
             </ScrollView>
         </View>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        card: {
+            height: 220,
+            borderRadius: 22,
+            borderWidth: 1,
+            borderColor: '#243145',
+            backgroundColor: '#090D14',
+            paddingHorizontal: tokens.spacing.lg,
+            paddingVertical: tokens.spacing.md,
+        },
+        eyebrow: {
+            color: tokens.colors.accent,
+            fontSize: 10,
+            fontWeight: '800',
+            letterSpacing: 1.4,
+            marginBottom: 2,
+            textTransform: 'uppercase',
+        },
+        header: {
+            color: tokens.colors.textPrimary,
+            fontSize: 17,
+            fontWeight: '800',
+            marginBottom: tokens.spacing.sm,
+        },
+        listContent: {
+            paddingBottom: tokens.spacing.sm,
+        },
+        row: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderRadius: 14,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.sm,
+            marginBottom: tokens.spacing.xs,
+        },
+        rowAlt: {
+            backgroundColor: '#101722',
+        },
+        nameText: {
+            flex: 2,
+            color: tokens.colors.textPrimary,
+            fontSize: 15,
+            fontWeight: '600',
+        },
+        valueText: {
+            flex: 1,
+            color: tokens.colors.textPrimary,
+            fontSize: 15,
+            fontWeight: '800',
+        },
+        emptyRow: {
+            minHeight: 110,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        emptyText: {
+            color: tokens.colors.textMuted,
+            fontSize: 14,
+            fontWeight: '700',
+        },
+    });
 
 export default ListWidget;

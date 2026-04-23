@@ -1,8 +1,9 @@
 import { useSharedStyles } from '@pos/theme/native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import React, { useState } from 'react';
 import i18next from 'i18next';
 
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { LineChart as BaseLineChart } from 'react-native-chart-kit';
 const LineChart = BaseLineChart as any;
 
@@ -49,6 +50,8 @@ export const buildLineChartConfig = (textColor: string) => ({
 
 export function LineChartComponent({ header, data }: LineChartProps) {
     const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const local = useStyles(tokens);
     const [width, setWidth] = useState<number>();
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
@@ -57,8 +60,8 @@ export function LineChartComponent({ header, data }: LineChartProps) {
 
     if (!data?.length)
         return (
-            <View style={styles.centered}>
-                <Text style={styles.secondaryText}>
+            <View style={local.emptyState}>
+                <Text style={local.emptyTitle}>
                     {t('CHART_NoData', 'No data provided')}
                 </Text>
             </View>
@@ -69,33 +72,87 @@ export function LineChartComponent({ header, data }: LineChartProps) {
     return (
         <View
             testID="line-chart-container"
-            style={{ width: '100%' }}
+            style={local.container}
             onLayout={(event) => {
                 const { width } = event.nativeEvent.layout;
                 setWidth(width);
             }}
         >
-            <Text style={[styles.secondaryText, { marginBottom: 10 }]}>
-                {header}
-            </Text>
-            {!!width && (
-                <LineChart
-                    data={parsedData}
-                    width={width} // from react-native
-                    height={220}
-                    yAxisLabel="$"
-                    yAxisSuffix=""
-                    yAxisInterval={1} // optional, defaults to 1
-                    chartConfig={buildLineChartConfig(styles.secondaryText.color)}
-                    bezier
-                    style={{
-                        marginVertical: 8,
-                        borderRadius: 5,
-                    }}
-                />
-            )}
+            <View style={local.headerRow}>
+                <Text style={local.eyebrow}>
+                    {t('CHART_Trend', 'Trend')}
+                </Text>
+                <Text style={local.title}>{header}</Text>
+            </View>
+            <View style={local.chartSurface}>
+                {!!width && (
+                    <LineChart
+                        data={parsedData}
+                        width={Math.max(width - 24, 0)} // from react-native
+                        height={220}
+                        yAxisLabel="$"
+                        yAxisSuffix=""
+                        yAxisInterval={1} // optional, defaults to 1
+                        chartConfig={buildLineChartConfig(styles.secondaryText.color)}
+                        bezier
+                        style={local.chart}
+                    />
+                )}
+            </View>
         </View>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        container: {
+            width: '100%',
+        },
+        headerRow: {
+            marginBottom: tokens.spacing.md,
+        },
+        eyebrow: {
+            color: tokens.colors.accent,
+            fontSize: 11,
+            fontWeight: '800',
+            letterSpacing: 1.4,
+            marginBottom: 4,
+            textTransform: 'uppercase',
+        },
+        title: {
+            color: tokens.colors.textPrimary,
+            fontSize: 18,
+            fontWeight: '800',
+        },
+        chartSurface: {
+            minHeight: 238,
+            borderRadius: 22,
+            borderWidth: 1,
+            borderColor: '#243145',
+            backgroundColor: '#090D14',
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.sm,
+            overflow: 'hidden',
+        },
+        chart: {
+            marginVertical: 0,
+            borderRadius: 18,
+        },
+        emptyState: {
+            minHeight: 180,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 22,
+            borderWidth: 1,
+            borderColor: '#243145',
+            backgroundColor: '#090D14',
+            padding: tokens.spacing.xl,
+        },
+        emptyTitle: {
+            color: tokens.colors.textSecondary,
+            fontSize: 15,
+            fontWeight: '700',
+        },
+    });
 
 export default LineChart;

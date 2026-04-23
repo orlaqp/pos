@@ -800,58 +800,50 @@ export function Dashboard(_props: DashboardProps) {
                             <>
                                 <View style={styles.metricsRow}>
                                     <View style={styles.metricColumn}>
-                                        <View style={styles.metricShell}>
-                                            <Widget
-                                                backgroundColor="#0E2233"
-                                                icon="trending-up"
-                                                text={t('DASHBOARD_GrossIncome', 'Gross Income')}
-                                                value={`$ ${netGrossIncome.toFixed(2)}`}
-                                                primaryTextColor="#EAF4FF"
-                                                primaryTextSize={24}
-                                            />
-                                        </View>
+                                        <Widget
+                                            backgroundColor="#0E2233"
+                                            icon="trending-up"
+                                            text={t('DASHBOARD_GrossIncome', 'Gross Income')}
+                                            value={`$ ${netGrossIncome.toFixed(2)}`}
+                                            primaryTextColor="#EAF4FF"
+                                            primaryTextSize={24}
+                                        />
                                     </View>
                                     <View style={styles.metricColumnSpaced}>
-                                        <View style={styles.metricShell}>
-                                            <Widget
-                                                backgroundColor="#241A0F"
-                                                icon="sigma"
-                                                text={t('DASHBOARD_Orders', 'Orders')}
-                                                value={salesSummary.totalOrders.toString()}
-                                                primaryTextColor="#FFF4D7"
-                                                primaryTextSize={24}
-                                            />
-                                        </View>
+                                        <Widget
+                                            backgroundColor="#241A0F"
+                                            icon="sigma"
+                                            text={t('DASHBOARD_Orders', 'Orders')}
+                                            value={salesSummary.totalOrders.toString()}
+                                            primaryTextColor="#FFF4D7"
+                                            primaryTextSize={24}
+                                        />
                                     </View>
                                     <View style={styles.metricColumnSpaced}>
-                                        <View style={styles.metricShell}>
-                                            <Widget
-                                                backgroundColor="#11201A"
-                                                icon="calculator-variant-outline"
-                                                text={t(
-                                                    'DASHBOARD_AverageTicket',
-                                                    'Average Ticket'
-                                                )}
-                                                value={`$ ${netAverageTicket.toFixed(2)}`}
-                                                primaryTextColor="#E9FFF3"
-                                                primaryTextSize={24}
-                                            />
-                                        </View>
+                                        <Widget
+                                            backgroundColor="#11201A"
+                                            icon="calculator-variant-outline"
+                                            text={t(
+                                                'DASHBOARD_AverageTicket',
+                                                'Average Ticket'
+                                            )}
+                                            value={`$ ${netAverageTicket.toFixed(2)}`}
+                                            primaryTextColor="#E9FFF3"
+                                            primaryTextSize={24}
+                                        />
                                     </View>
                                     <View style={styles.metricColumnSpaced}>
-                                        <View style={styles.metricShell}>
-                                            <Widget
-                                                backgroundColor="#22132A"
-                                                icon="cash-multiple"
-                                                text={t(
-                                                    'DASHBOARD_EstGrossProfit',
-                                                    'Est. Gross Profit'
-                                                )}
-                                                value={`$ ${netEstimatedGrossProfit.toFixed(2)}`}
-                                                primaryTextColor="#F5E9FF"
-                                                primaryTextSize={24}
-                                            />
-                                        </View>
+                                        <Widget
+                                            backgroundColor="#22132A"
+                                            icon="cash-multiple"
+                                            text={t(
+                                                'DASHBOARD_EstGrossProfit',
+                                                'Est. Gross Profit'
+                                            )}
+                                            value={`$ ${netEstimatedGrossProfit.toFixed(2)}`}
+                                            primaryTextColor="#F5E9FF"
+                                            primaryTextSize={24}
+                                        />
                                     </View>
                                 </View>
                                 {!!supplemental?.missingCostLineCount && (
@@ -1179,13 +1171,6 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             lineHeight: 18,
             marginTop: -4,
             marginBottom: tokens.spacing.sm,
-        },
-        metricShell: {
-            backgroundColor: '#0A0E14',
-            borderColor: '#202B3A',
-            borderRadius: 26,
-            borderWidth: 1,
-            padding: 8,
         },
         analyticsCard: {
             overflow: 'hidden',

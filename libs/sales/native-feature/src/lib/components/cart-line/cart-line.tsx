@@ -76,6 +76,11 @@ export function CartLine({
             {requiresWeight ? <View style={localStyles.errorAccent} /> : null}
             <View style={localStyles.mainWrap}>
                 <View style={localStyles.content}>
+                    <View style={localStyles.topRow}>
+                        <Text style={localStyles.eyebrowText}>
+                            {requiresWeight ? 'Needs attention' : 'Cart item'}
+                        </Text>
+                    </View>
                     <Text
                         style={localStyles.nameText}
                         numberOfLines={2}
@@ -138,12 +143,14 @@ export function CartLine({
                             </View>
                         ) : null}
                         <Button
-                            type="clear"
+                            type="solid"
                             icon={{
                                 name: 'trash-can',
                                 type: 'material-community',
-                                color: theme.theme.colors.grey2,
+                                color: theme.theme.colors.grey0,
                             }}
+                            containerStyle={localStyles.removeButtonContainer}
+                            buttonStyle={localStyles.removeButton}
                             onPress={confirmDeletion}
                         />
                     </View>
@@ -179,14 +186,14 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
     StyleSheet.create({
         container: {
             backgroundColor: `${tokens.colors.surfaceMuted}`,
-            marginBottom: tokens.spacing.xs,
-            paddingHorizontal: tokens.spacing.sm,
-            paddingVertical: tokens.spacing.sm,
-            borderRadius: tokens.radii.md,
+            marginBottom: tokens.spacing.sm,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.md,
+            borderRadius: tokens.radii.lg,
             borderWidth: 1,
             borderColor: tokens.colors.border,
             flexDirection: 'row',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             position: 'relative',
             overflow: 'hidden',
         },
@@ -227,35 +234,49 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
         content: {
             flex: 1,
             minWidth: 0,
-            paddingRight: tokens.spacing.sm,
+            paddingRight: tokens.spacing.md,
+        },
+        topRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: tokens.spacing.sm,
+            marginBottom: tokens.spacing.xs,
+        },
+        eyebrowText: {
+            color: tokens.colors.textMuted,
+            fontSize: 11,
+            fontWeight: '800',
+            letterSpacing: 1.1,
+            textTransform: 'uppercase',
         },
         nameText: {
             color: tokens.colors.textPrimary,
-            fontSize: 16,
-            fontWeight: '700',
-            lineHeight: 20,
+            fontSize: 18,
+            fontWeight: '800',
+            lineHeight: 23,
         },
         asideColumn: {
             alignItems: 'flex-end',
             justifyContent: 'space-between',
             marginLeft: tokens.spacing.sm,
-            minWidth: 118,
+            minWidth: 138,
         },
         valueColumn: {
             alignItems: 'flex-end',
             justifyContent: 'center',
-            minWidth: 118,
-            marginTop: tokens.spacing.xs,
+            minWidth: 138,
+            marginTop: tokens.spacing.sm,
         },
         controlsRow: {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'flex-end',
+            gap: tokens.spacing.xs,
         },
         stepperWrap: {
             flexDirection: 'row',
             alignItems: 'center',
-            marginRight: tokens.spacing.xs,
             gap: tokens.spacing.xs,
             alignSelf: 'center',
         },
@@ -333,7 +354,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
             lineHeight: 14,
         },
         metaRow: {
-            marginTop: 4,
+            marginTop: tokens.spacing.sm,
         },
         metaText: {
             fontSize: 14,
@@ -341,6 +362,18 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
         },
         metaTextError: {
             color: dangerColor,
+        },
+        removeButtonContainer: {
+            borderRadius: 14,
+            overflow: 'hidden',
+        },
+        removeButton: {
+            minWidth: 42,
+            minHeight: 42,
+            borderRadius: 14,
+            backgroundColor: tokens.colors.surface,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
         },
         totalRow: {
             flexDirection: 'row',
@@ -351,13 +384,13 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
             marginTop: 3,
         },
         totalText: {
-            fontSize: 18,
+            fontSize: 22,
             fontWeight: '800',
             textAlign: 'right',
         },
         originalTotalText: {
             color: tokens.colors.textSecondary,
-            fontSize: 13,
+            fontSize: 14,
             textDecorationLine: 'line-through',
             textAlign: 'right',
         },
@@ -366,8 +399,8 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>, dangerColor: stri
         },
         savedText: {
             color: tokens.colors.success,
-            fontSize: 12,
-            fontWeight: '700',
+            fontSize: 13,
+            fontWeight: '800',
             marginTop: tokens.spacing.xs,
             textAlign: 'right',
         },

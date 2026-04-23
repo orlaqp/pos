@@ -2,7 +2,7 @@ import React from 'react';
 import moment from 'moment';
 
 import { View, Text, Alert, StyleSheet } from 'react-native';
-import { getThemeColors, useSharedStyles } from '@pos/theme/native';
+import { getThemeColors } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import {
     inventoryCountActions,
@@ -23,7 +23,6 @@ export interface InventoryItemProps {
 export function InventoryCountItem({ item, navigation }: InventoryItemProps) {
     const theme = useTheme();
     const colors = getThemeColors(theme);
-    const styles = useSharedStyles();
     const tokens = useDesignTokens();
     const local = useStyles(tokens, colors);
     const dispatch = useAppDispatch();
@@ -54,10 +53,11 @@ export function InventoryCountItem({ item, navigation }: InventoryItemProps) {
     };
 
     return (
-        <View style={[styles.dataRow, local.row]}>
+        <View style={local.row}>
             <View style={local.identityColumn}>
-                <Text style={styles.name}>{moment(item.createdAt).local().format('L LT')}</Text>
-                <Text style={styles.secondaryText}>By: {item.createdBy.name}</Text>
+                <Text style={local.eyebrow}>Inventory count</Text>
+                <Text style={local.title}>{moment(item.createdAt).local().format('L LT')}</Text>
+                <Text style={local.meta}>By {item.createdBy.name}</Text>
             </View>
             <View style={local.statusColumn}>
                 <View
@@ -91,6 +91,8 @@ export function InventoryCountItem({ item, navigation }: InventoryItemProps) {
                             color: theme.theme.colors.primary,
                         }}
                         onPress={showItem}
+                        titleStyle={local.actionTitle}
+                        buttonStyle={local.actionButton}
                     />
                 )}
                 {item.status === 'IN_PROGRESS' && (
@@ -103,6 +105,8 @@ export function InventoryCountItem({ item, navigation }: InventoryItemProps) {
                                 type: 'material-community',
                             }}
                             onPress={editItem}
+                            titleStyle={local.actionTitle}
+                            buttonStyle={local.actionButton}
                         />
                         <Button
                             type="clear"
@@ -112,6 +116,7 @@ export function InventoryCountItem({ item, navigation }: InventoryItemProps) {
                                 color: theme.theme.colors.error,
                             }}
                             onPress={confirmDeletion}
+                            buttonStyle={[local.actionButton, local.dangerActionButton]}
                         />
                     </>
                 )}
@@ -126,12 +131,38 @@ const useStyles = (
 ) =>
     StyleSheet.create({
         row: {
+            backgroundColor: '#0B1119',
+            borderColor: '#1D2A3B',
+            borderRadius: 20,
+            borderWidth: 1,
             alignItems: 'center',
+            flexDirection: 'row',
+            marginBottom: tokens.spacing.sm,
+            paddingHorizontal: tokens.spacing.md,
             paddingVertical: tokens.spacing.md,
         },
         identityColumn: {
             flex: 4,
             paddingRight: tokens.spacing.md,
+        },
+        eyebrow: {
+            color: colors.primary,
+            fontSize: 10,
+            fontWeight: '800',
+            letterSpacing: 1.4,
+            marginBottom: 4,
+            textTransform: 'uppercase',
+        },
+        title: {
+            color: colors.grey0,
+            fontSize: 18,
+            fontWeight: '800',
+        },
+        meta: {
+            color: colors.grey3,
+            fontSize: 13,
+            fontWeight: '700',
+            marginTop: 4,
         },
         statusColumn: {
             flex: 2,
@@ -166,6 +197,18 @@ const useStyles = (
             flex: 1,
             flexDirection: 'row',
             justifyContent: 'flex-end',
+        },
+        actionButton: {
+            borderRadius: 16,
+            paddingHorizontal: tokens.spacing.sm,
+        },
+        dangerActionButton: {
+            backgroundColor: '#2A1115',
+            borderColor: `${colors.error}55`,
+            borderWidth: 1,
+        },
+        actionTitle: {
+            fontWeight: '800',
         },
     });
 

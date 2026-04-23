@@ -101,15 +101,16 @@ export default OrderVoidableItem;
 const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     StyleSheet.create({
         container: {
-            borderRadius: tokens.radii.md,
+            borderRadius: tokens.radii.lg,
             borderWidth: 1,
             borderColor: tokens.colors.border,
-            marginBottom: tokens.spacing.xs,
-            minHeight: 72,
+            marginBottom: tokens.spacing.sm,
+            minHeight: 76,
             paddingVertical: tokens.spacing.sm,
             paddingHorizontal: tokens.spacing.sm,
             justifyContent: 'center',
             alignItems: 'center',
+            backgroundColor: tokens.colors.surface,
         },
         compactContainer: {
             minHeight: 52,
@@ -139,9 +140,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             lineHeight: 20,
         },
         readOnlyContainer: {
-            backgroundColor: tokens.colors.surfaceMuted,
+            backgroundColor: '#0D131A',
             borderStyle: 'dashed',
-            opacity: 0.72,
+            borderColor: `${tokens.colors.border}88`,
+            opacity: 0.68,
         },
         readOnlyText: {
             color: tokens.colors.textMuted,

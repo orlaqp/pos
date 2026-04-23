@@ -16,6 +16,7 @@ interface SalesCatalogPaneProps {
     hasCatalogProducts: boolean;
     canManageCatalog: boolean;
     filteredProducts: ProductEntity[];
+    filteredProductCount: number;
     categoryWidth: Animated.Value;
     categoryOpacity: Animated.Value;
     contentOpacity: Animated.Value;
@@ -40,6 +41,7 @@ export function SalesCatalogPane({
     hasCatalogProducts,
     canManageCatalog,
     filteredProducts,
+    filteredProductCount,
     categoryWidth,
     categoryOpacity,
     contentOpacity,
@@ -109,6 +111,11 @@ export function SalesCatalogPane({
                         </Text>
                     </View>
                     <View style={styles.productsHeaderActions}>
+                        <View style={styles.productsCountBadge}>
+                            <Text style={styles.productsCountBadgeText}>
+                                {filteredProductCount} visible
+                            </Text>
+                        </View>
                         <Button
                             testID="sales-current-deals"
                             type="outline"

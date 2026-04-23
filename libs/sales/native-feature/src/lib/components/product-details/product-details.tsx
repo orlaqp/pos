@@ -93,109 +93,140 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
 
     return (
         <View style={styles.productDetailsContainer}>
-            <UICard style={styles.heroCard} tone="muted" padding="md" radius="lg">
-                {item.product.isEBTEligible && <UIEbtRibbon top={2} right={2} />}
-                <View style={styles.heroRow}>
-                    <View style={styles.pictureWrap}>
-                        <UIS3Image
-                            s3Key={product?.picture}
-                            width={styles.pictureSize.width}
-                            height={styles.pictureSize.height}
-                            factor={0.5}
-                        />
-                    </View>
-                    <View style={styles.metaWrap}>
-                        <Text style={styles.brandText}>{brand?.name || 'Unbranded'}</Text>
-                        <Text style={styles.productName} numberOfLines={2}>
-                            {item.product.name}
-                        </Text>
-                        <Text style={styles.descriptionText} numberOfLines={3}>
-                            {product?.description || 'No description'}
-                        </Text>
-                        <Text style={styles.unitHint}>
-                            Sold by {item.product.unitOfMeasure}
-                        </Text>
-                    </View>
+            <View style={styles.dialogFrame}>
+                <View style={styles.headerBlock}>
+                    <Text style={styles.eyebrow}>Product details</Text>
+                    <Text style={styles.headerTitle}>Review quantity and line value</Text>
+                    <Text style={styles.headerHint}>
+                        Keep spacing clear while adjusting the order line before confirming it in the cart.
+                    </Text>
                 </View>
-            </UICard>
-            <View style={styles.summaryCard}>
-                <View style={styles.priceWrap}>
-                    <Text style={styles.price}>$ {price?.toFixed(2)}</Text>
-                    <Text style={styles.priceLabel}>Current line total</Text>
-                </View>
-                <View style={styles.quantityWrap}>
-                {each && (
-                    <View style={styles.quantityStepper}>
-                        <Pressable
-                            testID="product-details-decrement"
-                            onPress={decrementQuantity}
-                            style={styles.quantityButtonLeft}
-                        >
-                            <Text style={styles.quantityButtonTextDark}>-</Text>
-                        </Pressable>
-                        <View style={styles.quantityValueWrap}>
-                            <TextInput
-                                ref={ref}
-                                testID="product-details-quantity-input"
-                                value={quantity}
-                                keyboardType="number-pad"
-                                textAlign="center"
-                                selectTextOnFocus
-                                style={styles.quantityValueInput}
-                                onBlur={() => {
-                                    if (toSanitizedQuantityNumber(quantity, true) <= 0) {
-                                        setQuantity('1');
-                                    }
-                                }}
-                                onChangeText={(text) => {
-                                    if (!isQuantityInputValidForUnit(text, true)) {
-                                        return;
-                                    }
 
-                                    setQuantity(text);
-                                }}
+                <UICard style={styles.heroCard} tone="muted" padding="md" radius="lg">
+                    {item.product.isEBTEligible && <UIEbtRibbon top={2} right={2} />}
+                    <View style={styles.heroRow}>
+                        <View style={styles.pictureWrap}>
+                            <UIS3Image
+                                s3Key={product?.picture}
+                                width={styles.pictureSize.width}
+                                height={styles.pictureSize.height}
+                                factor={0.5}
                             />
-                            <Text style={styles.quantityLabel}>Quantity</Text>
                         </View>
-                        <Pressable
-                            testID="product-details-increment"
-                            onPress={incrementQuantity}
-                            style={styles.quantityButtonRight}
-                        >
-                            <Text style={styles.quantityButtonTextLight}>+</Text>
-                        </Pressable>
+                        <View style={styles.metaWrap}>
+                            <Text style={styles.brandText}>{brand?.name || 'Unbranded'}</Text>
+                            <Text style={styles.productName} numberOfLines={2}>
+                                {item.product.name}
+                            </Text>
+                            <Text style={styles.descriptionText} numberOfLines={3}>
+                                {product?.description || 'No description'}
+                            </Text>
+                            <Text style={styles.unitHint}>
+                                Sold by {item.product.unitOfMeasure}
+                            </Text>
+                            <View style={styles.detailPillRow}>
+                                <View style={styles.detailPill}>
+                                    <Text style={styles.detailPillLabel}>Base price</Text>
+                                    <Text style={styles.detailPillValue}>
+                                        ${item.product.price.toFixed(2)}
+                                    </Text>
+                                </View>
+                                <View style={styles.detailPill}>
+                                    <Text style={styles.detailPillLabel}>Unit</Text>
+                                    <Text style={styles.detailPillValue}>
+                                        {item.product.unitOfMeasure}
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
                     </View>
-                )}
-                {!each && (
-                    <View style={styles.weightRow}>
-                        <Input
-                            ref={ref as any}
-                            testID="product-details-quantity-input"
-                            value={quantity.toString()}
-                            placeholder="Weight ..."
-                            keyboardType="decimal-pad"
-                            style={{ fontSize: 32 }}
-                            textAlign="center"
-                            onChangeText={(text) => {
-                                if (!isQuantityInputValidForUnit(text, false))
-                                    return;
+                </UICard>
 
-                                setQuantity(text);
-                            }}
-                        />
-                        <Text
-                            style={styles.unitOfMeasure}
-                        >{` (${item.product.unitOfMeasure})`}</Text>
+                <View style={styles.summaryCard}>
+                    <View style={styles.pricePanel}>
+                        <Text style={styles.sectionEyebrow}>Line total</Text>
+                        <View style={styles.priceWrap}>
+                            <Text style={styles.price}>$ {price?.toFixed(2)}</Text>
+                            <Text style={styles.priceLabel}>Current value based on the quantity below</Text>
+                        </View>
                     </View>
-                )}
+
+                    <View style={styles.quantityWrap}>
+                        <Text style={styles.sectionEyebrow}>Quantity</Text>
+                        {each && (
+                            <View style={styles.quantityStepper}>
+                                <Pressable
+                                    testID="product-details-decrement"
+                                    onPress={decrementQuantity}
+                                    style={styles.quantityButtonLeft}
+                                >
+                                    <Text style={styles.quantityButtonTextDark}>-</Text>
+                                </Pressable>
+                                <View style={styles.quantityValueWrap}>
+                                    <TextInput
+                                        ref={ref}
+                                        testID="product-details-quantity-input"
+                                        value={quantity}
+                                        keyboardType="number-pad"
+                                        textAlign="center"
+                                        selectTextOnFocus
+                                        style={styles.quantityValueInput}
+                                        onBlur={() => {
+                                            if (toSanitizedQuantityNumber(quantity, true) <= 0) {
+                                                setQuantity('1');
+                                            }
+                                        }}
+                                        onChangeText={(text) => {
+                                            if (!isQuantityInputValidForUnit(text, true)) {
+                                                return;
+                                            }
+
+                                            setQuantity(text);
+                                        }}
+                                    />
+                                    <Text style={styles.quantityLabel}>Units in this line</Text>
+                                </View>
+                                <Pressable
+                                    testID="product-details-increment"
+                                    onPress={incrementQuantity}
+                                    style={styles.quantityButtonRight}
+                                >
+                                    <Text style={styles.quantityButtonTextLight}>+</Text>
+                                </Pressable>
+                            </View>
+                        )}
+                        {!each && (
+                            <View style={styles.weightRow}>
+                                <Input
+                                    ref={ref as any}
+                                    testID="product-details-quantity-input"
+                                    value={quantity.toString()}
+                                    placeholder="Weight ..."
+                                    keyboardType="decimal-pad"
+                                    style={{ fontSize: 32 }}
+                                    textAlign="center"
+                                    onChangeText={(text) => {
+                                        if (!isQuantityInputValidForUnit(text, false))
+                                            return;
+
+                                        setQuantity(text);
+                                    }}
+                                />
+                                <Text
+                                    style={styles.unitOfMeasure}
+                                >{` (${item.product.unitOfMeasure})`}</Text>
+                            </View>
+                        )}
+                    </View>
                 </View>
+
+                <Button
+                    containerStyle={styles.ctaContainer}
+                    type="solid"
+                    title={item.identifier ? 'Update cart' : 'Add to cart'}
+                    onPress={validateInfo}
+                />
             </View>
-            <Button
-                containerStyle={styles.ctaContainer}
-                type="solid"
-                title={item.identifier ? 'Update cart' : 'Add to cart'}
-                onPress={validateInfo}
-            />
         </View>
     );
 }
@@ -220,14 +251,39 @@ const useStyles = (windowWidth: number) => {
         ...sharedStyles,
         ...StyleSheet.create({
             productDetailsContainer: {
-                flexDirection: 'column',
+                width: '100%',
                 alignItems: 'center',
-                position: 'relative',
-                overflow: 'hidden',
+                paddingVertical: compactLayout ? tokens.spacing.md : tokens.spacing.lg,
+            },
+            dialogFrame: {
                 width: '100%',
                 maxWidth: contentWidth,
                 minWidth: compactLayout ? 380 : 460,
                 alignSelf: 'center',
+            },
+            headerBlock: {
+                marginBottom: tokens.spacing.md,
+                paddingHorizontal: tokens.spacing.xs,
+            },
+            eyebrow: {
+                color: tokens.colors.accent,
+                fontSize: 13,
+                fontWeight: '800',
+                letterSpacing: 1.8,
+                textTransform: 'uppercase',
+                marginBottom: tokens.spacing.xs,
+            },
+            headerTitle: {
+                color: tokens.colors.textPrimary,
+                fontSize: compactLayout ? 28 : 34,
+                fontWeight: '800',
+                lineHeight: compactLayout ? 34 : 40,
+            },
+            headerHint: {
+                color: tokens.colors.textSecondary,
+                fontSize: 16,
+                lineHeight: 24,
+                marginTop: tokens.spacing.xs,
             },
             heroCard: {
                 width: '100%',
@@ -278,18 +334,62 @@ const useStyles = (windowWidth: number) => {
                 fontWeight: '600',
                 marginTop: tokens.spacing.md,
             },
+            detailPillRow: {
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: tokens.spacing.sm,
+                marginTop: tokens.spacing.md,
+            },
+            detailPill: {
+                minWidth: compactLayout ? 108 : 124,
+                borderRadius: tokens.radii.md,
+                borderWidth: 1,
+                borderColor: tokens.colors.border,
+                backgroundColor: tokens.colors.surface,
+                paddingHorizontal: tokens.spacing.sm,
+                paddingVertical: tokens.spacing.sm,
+            },
+            detailPillLabel: {
+                color: tokens.colors.textMuted,
+                fontSize: 11,
+                fontWeight: '800',
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                marginBottom: 4,
+            },
+            detailPillValue: {
+                color: tokens.colors.textPrimary,
+                fontSize: 16,
+                fontWeight: '700',
+            },
             summaryCard: {
                 width: '100%',
                 marginTop: tokens.spacing.lg,
-                paddingVertical: tokens.spacing.md,
-                paddingHorizontal: tokens.spacing.md,
+                paddingVertical: tokens.spacing.lg,
+                paddingHorizontal: tokens.spacing.lg,
                 borderRadius: tokens.radii.lg,
                 backgroundColor: tokens.colors.surface,
+                borderWidth: 1,
+                borderColor: tokens.colors.border,
+            },
+            sectionEyebrow: {
+                color: tokens.colors.textMuted,
+                fontSize: 12,
+                fontWeight: '800',
+                letterSpacing: 1.1,
+                textTransform: 'uppercase',
+                marginBottom: tokens.spacing.sm,
+            },
+            pricePanel: {
+                alignItems: 'center',
+                paddingBottom: tokens.spacing.md,
+                borderBottomWidth: 1,
+                borderBottomColor: tokens.colors.border,
             },
             quantityWrap: {
                 width: '100%',
                 alignItems: 'center',
-                marginTop: tokens.spacing.md,
+                marginTop: tokens.spacing.lg,
             },
             quantityStepper: {
                 width: quantityWidth,
@@ -372,6 +472,8 @@ const useStyles = (windowWidth: number) => {
                 fontSize: 14,
                 fontWeight: '600',
                 marginTop: tokens.spacing.xs,
+                textAlign: 'center',
+                maxWidth: compactLayout ? 220 : 260,
             },
             priceWrap: {
                 alignItems: 'center',

@@ -17,9 +17,9 @@ import {
 import { InventoryCount } from '@pos/shared/models';
 import { ProductEntity, ProductService, selectAllProducts } from '@pos/products/data-access';
 import { Button, useTheme } from '@rneui/themed';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import InventoryCountLine from '../inventory-counts/inventory-count-line';
 import { confirm } from '@pos/shared/utils';
-import { NavigationParamList } from '@pos/sales/native-feature';
 import CompactProductList from '../shared/compact-product-list/compact-product-list';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { dedupeProducts } from '../shared/dedupe-products';
@@ -29,6 +29,12 @@ import { useAppDispatch } from '@pos/store';
 export interface InventoryFormParams {
     [name: string]: object | undefined;
     inventory: InventoryCount;
+}
+
+interface InventoryCountNavigationParamList {
+    'Inventory Count Form': {
+        readOnly?: boolean;
+    };
 }
 
 type CountMode = 'quick' | 'full';
@@ -105,7 +111,7 @@ export const applyCountLineUpdate = (
 export function InventoryCountForm({
     navigation,
     route,
-}: NativeStackScreenProps<NavigationParamList, 'Inventory Count Form'>) {
+}: NativeStackScreenProps<InventoryCountNavigationParamList, 'Inventory Count Form'>) {
     const dispatch = useAppDispatch();
     const theme = useTheme();
     const colors = getThemeColors(theme);
@@ -460,19 +466,22 @@ export function InventoryCountForm({
             <UICard tone="muted" style={local.headerCard}>
             <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                 {route.params?.readOnly && (
-                    <View
-                        style={local.readOnlyBanner}
-                    >
-                        <Text
-                            style={[
-                                styles.primaryText,
-                                styles.textCenter,
-                                styles.textBold,
-                            ]}
-                        >
-                            This receive was already completed and cannot be
-                            changed
-                        </Text>
+                    <View style={local.readOnlyBanner}>
+                        <View style={local.readOnlyIconWrap}>
+                            <Icon
+                                name="lock-check-outline"
+                                size={20}
+                                color={colors.warning}
+                            />
+                        </View>
+                        <View style={local.readOnlyCopy}>
+                            <Text style={local.readOnlyTitle}>
+                                Completed count
+                            </Text>
+                            <Text style={local.readOnlyText}>
+                                This inventory count is read-only and cannot be changed.
+                            </Text>
+                        </View>
                     </View>
                 )}
               
@@ -685,11 +694,45 @@ const useStyles = (
             marginBottom: tokens.spacing.sm,
         },
         readOnlyBanner: {
-            width: '65%',
-            padding: 8,
-            marginVertical: 10,
-            borderRadius: 10,
-            backgroundColor: colors.warning,
+            alignItems: 'center',
+            alignSelf: 'stretch',
+            backgroundColor: '#15130A',
+            borderColor: `${colors.warning}66`,
+            borderRadius: 18,
+            borderWidth: 1,
+            flexDirection: 'row',
+            marginVertical: tokens.spacing.xs,
+            maxWidth: 900,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.sm,
+            width: '100%',
+        },
+        readOnlyIconWrap: {
+            alignItems: 'center',
+            backgroundColor: `${colors.warning}22`,
+            borderColor: `${colors.warning}55`,
+            borderRadius: 14,
+            borderWidth: 1,
+            height: 38,
+            justifyContent: 'center',
+            marginRight: tokens.spacing.sm,
+            width: 38,
+        },
+        readOnlyCopy: {
+            flex: 1,
+        },
+        readOnlyTitle: {
+            color: colors.warning,
+            fontSize: 12,
+            fontWeight: '800',
+            letterSpacing: 1,
+            marginBottom: 2,
+            textTransform: 'uppercase',
+        },
+        readOnlyText: {
+            color: tokens.colors.textSecondary,
+            fontSize: 14,
+            fontWeight: '700',
         },
         searchWrap: {
             flex: 3,

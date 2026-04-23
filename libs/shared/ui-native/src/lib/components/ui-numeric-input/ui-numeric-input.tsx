@@ -84,6 +84,26 @@ export const UINumericInput = React.forwardRef<any, Props>(
                         }}
                         // onChangeText={(text)=>onChange(validate(text))}
                         errorMessage={error?.message}
+                        labelStyle={[
+                            {
+                                color: theme.theme.colors.grey2,
+                                fontSize: 12,
+                                fontWeight: '700',
+                                letterSpacing: 0.6,
+                                textTransform: 'uppercase',
+                                marginBottom: 6,
+                            },
+                            inputProps.labelStyle,
+                        ]}
+                        errorStyle={[
+                            {
+                                color: theme.theme.colors.error,
+                                fontSize: 12,
+                                fontWeight: '600',
+                                marginHorizontal: 6,
+                            },
+                            inputProps.errorStyle,
+                        ]}
                         inputContainerStyle={[
                             styles.inputContainerStyle,
                             focused

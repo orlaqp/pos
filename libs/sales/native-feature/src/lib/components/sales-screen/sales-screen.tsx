@@ -544,7 +544,13 @@ export function SalesScreen({
                 })
             );
         },
-        [blurSearchFocus, cancelPendingSearchFocus, dispatch, getLatestProduct, globalSettings]
+        [
+            blurSearchFocus,
+            cancelPendingSearchFocus,
+            dispatch,
+            getLatestProduct,
+            globalSettings,
+        ]
     );
 
     const onCartSubmit = (
@@ -937,44 +943,49 @@ export function SalesScreen({
 
     return (
         <UIScreen padded>
-            <View style={styles.salesLayout}>
-                <SalesCatalogPane
-                    styles={styles}
-                    accentColor={tokens.colors.accent}
-                    showCategories={showCategories}
-                    hasCatalogProducts={hasCatalogProducts}
-                    canManageCatalog={canManageCatalog}
-                    filteredProducts={filteredProducts}
-                    categoryWidth={categoryWidth}
-                    categoryOpacity={categoryOpacity}
-                    contentOpacity={contentOpacity}
-                    searchRef={searchRef}
-                    onCategoryChange={onCategoryChange}
-                    onShowAllProducts={onShowAllProducts}
-                    showAllProducts={browseMode === 'all'}
-                    selectedCategoryId={activeCategory?.id}
-                    categoryRefreshToken={categoryRefreshToken}
-                    onToggleCategories={() => {
-                        setShowCategories((current) => !current);
-                        scheduleSearchFocusRestore({ blurFirst: true });
-                    }}
-                    onFilterChange={onFilterChange}
-                    onProductSelected={onProductSelected}
-                    onProductLongPress={onProductLongPress}
-                    onOpenBackOfficeForm={openBackOfficeForm}
-                    onOpenCurrentDeals={() => setShowCurrentDeals(true)}
-                />
-                <View style={styles.cartPanel}>
-                    <Cart
-                        key="cart"
-                        mode={route.params.mode}
-                        preferPayFromSalesScreen={
-                            route.params.mode === 'order' && payFromSalesScreen
-                        }
-                        onSubmit={onCartSubmit}
-                        products={allProducts}
-                        onInteractionComplete={scheduleSearchFocusRestore}
+            <View style={styles.salesShell}>
+                <View style={styles.salesLayout}>
+                    <SalesCatalogPane
+                        styles={styles}
+                        accentColor={tokens.colors.accent}
+                        showCategories={showCategories}
+                        hasCatalogProducts={hasCatalogProducts}
+                        canManageCatalog={canManageCatalog}
+                        filteredProducts={filteredProducts}
+                        filteredProductCount={filteredProducts.length}
+                        categoryWidth={categoryWidth}
+                        categoryOpacity={categoryOpacity}
+                        contentOpacity={contentOpacity}
+                        searchRef={searchRef}
+                        onCategoryChange={onCategoryChange}
+                        onShowAllProducts={onShowAllProducts}
+                        showAllProducts={browseMode === 'all'}
+                        selectedCategoryId={activeCategory?.id}
+                        categoryRefreshToken={categoryRefreshToken}
+                        onToggleCategories={() => {
+                            setShowCategories((current) => !current);
+                            scheduleSearchFocusRestore({ blurFirst: true });
+                        }}
+                        onFilterChange={onFilterChange}
+                        onProductSelected={onProductSelected}
+                        onProductLongPress={onProductLongPress}
+                        onOpenBackOfficeForm={openBackOfficeForm}
+                        onOpenCurrentDeals={() => setShowCurrentDeals(true)}
                     />
+                    <View style={styles.cartPanel}>
+                        <View style={styles.cartPanelBody}>
+                            <Cart
+                                key="cart"
+                                mode={route.params.mode}
+                                preferPayFromSalesScreen={
+                                    route.params.mode === 'order' && payFromSalesScreen
+                                }
+                                onSubmit={onCartSubmit}
+                                products={allProducts}
+                                onInteractionComplete={scheduleSearchFocusRestore}
+                            />
+                        </View>
+                    </View>
                 </View>
             </View>
             <SalesProductDialog

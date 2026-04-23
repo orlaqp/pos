@@ -65,6 +65,11 @@ jest.mock('@react-navigation/native-stack', () => ({
 
 jest.mock('@pos/brands/native-feature', () => ({ Brands: () => null }));
 jest.mock('@pos/categories/native-feature', () => ({ Categories: () => null }));
+jest.mock('@pos/discounts/native-feature', () => ({
+  DiscountEditor: () => null,
+  Discounts: () => null,
+  PolicyEditor: () => null,
+}));
 jest.mock('@pos/employees/native-feature', () => ({ Employees: () => null }));
 jest.mock('@pos/products/native-feature', () => ({ Products: () => null }));
 jest.mock('@pos/unit-of-measures/native-feature', () => ({ UnitOfMeasures: () => null }));
@@ -73,11 +78,22 @@ jest.mock('@pos/store-info/native-feature', () => ({ StationForm: () => null, St
 jest.mock('@pos/settings/native-feature', () => ({ LogList: () => null, Settings: () => null }));
 jest.mock('@pos/inventory/native-feature', () => ({ InventoryCounts: () => null, InventoryList: () => null, InventoryReceives: () => null }));
 jest.mock('@pos/reporting/native-feature', () => ({
+  CategoryPerformance: () => null,
   Dashboard: () => null,
+  DiscountReport: () => null,
+  EbtSummary: () => null,
   EndOfDay: () => null,
+  HourlySales: () => null,
+  LowSalesItems: () => null,
+  OpenOrdersAging: () => null,
+  PaymentSummary: () => null,
+  RefundReport: () => null,
   Sales: () => null,
   SalesByEmployee: () => null,
   SalesByProduct: () => null,
+}));
+jest.mock('@pos/auth/native-feature', () => ({
+  AuthGlyph: () => null,
 }));
 jest.mock('@pos/employees/data-access', () => ({
   selectLoginEmployee: () => ({ firstName: 'Ada', lastName: 'Lovelace' }),

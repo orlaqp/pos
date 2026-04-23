@@ -329,9 +329,14 @@ export function ReportViewer({
             <View style={styles.screen}>
                 <View style={styles.container}>
                     <UIStack spacing="lg">
-                        <UICard tone="muted" radius="lg">
-                            <Text style={styles.title}>{title}</Text>
-                            <Text style={styles.subtitle}>{subtitle}</Text>
+                        <UICard tone="muted" radius="lg" style={styles.headerCard}>
+                            <View style={styles.headerCopy}>
+                                <Text style={styles.eyebrow}>
+                                    {t('REPORT_Eyebrow', 'Report')}
+                                </Text>
+                                <Text style={styles.title}>{title}</Text>
+                                <Text style={styles.subtitle}>{subtitle}</Text>
+                            </View>
                             <UIDateRange
                                 initialRange={dateRange}
                                 onRangeChange={setDateRange}
@@ -391,7 +396,7 @@ export function ReportViewer({
                                     <Text style={styles.rangeTagText}>{selectedRangeLabel}</Text>
                                 </View>
                             </View>
-                            <UICard>
+                            <UICard style={styles.tableCard}>
                                 {loading && (
                                     <View style={styles.stateWrap}>
                                         <UISpinner
@@ -471,8 +476,13 @@ export function ReportViewer({
                                                 keyExtractor={(item, index) =>
                                                     getRowKey(item as Record<string, unknown>, index)
                                                 }
-                                                renderItem={({ item }) => (
-                                                    <View style={styles.dataRow}>
+                                                renderItem={({ item, index }) => (
+                                                    <View
+                                                        style={[
+                                                            styles.dataRow,
+                                                            index % 2 === 1 && styles.dataRowAlt,
+                                                        ]}
+                                                    >
                                                         {headers.map((h) => (
                                                             <View key={h.field} style={[styles.colCell, { flex: h.width }]}>
                                                                 <Text
@@ -532,16 +542,34 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         container: {
             width: '100%',
         },
+        headerCard: {
+            borderRadius: 26,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
+        },
+        headerCopy: {
+            marginBottom: tokens.spacing.sm,
+        },
+        eyebrow: {
+            color: tokens.colors.accent,
+            fontSize: 11,
+            fontWeight: '800',
+            letterSpacing: 1.6,
+            textTransform: 'uppercase',
+            marginBottom: 4,
+        },
         title: {
             color: tokens.colors.textPrimary,
-            fontSize: 26,
-            fontWeight: '700',
+            fontSize: 30,
+            fontWeight: '800',
+            letterSpacing: -0.6,
         },
         subtitle: {
             color: tokens.colors.textSecondary,
             fontSize: 14,
             marginTop: tokens.spacing.xs,
-            marginBottom: tokens.spacing.sm,
+            marginBottom: tokens.spacing.xs,
+            lineHeight: 20,
         },
         exportButton: {
             flexDirection: 'row',
@@ -610,10 +638,19 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         tableHeaderRow: {
             flexDirection: 'row',
-            paddingTop: tokens.spacing.md,
-            paddingBottom: tokens.spacing.sm,
+            marginBottom: tokens.spacing.xs,
+            borderRadius: 16,
+            paddingHorizontal: tokens.spacing.sm,
+            paddingVertical: tokens.spacing.sm,
             borderBottomWidth: 1,
-            borderBottomColor: tokens.colors.border,
+            borderBottomColor: '#2D3C52',
+            backgroundColor: '#0D1520',
+        },
+        tableCard: {
+            borderRadius: 24,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
+            paddingTop: tokens.spacing.lg,
         },
         reportCardWrap: {
             position: 'relative',
@@ -641,18 +678,18 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             letterSpacing: 0.3,
         },
         colCell: {
-            paddingHorizontal: tokens.spacing.sm,
+            paddingHorizontal: tokens.spacing.md,
         },
         headerPressable: {
             flexDirection: 'row',
             alignItems: 'center',
         },
         colHeader: {
-            color: tokens.colors.textMuted,
-            fontSize: 14,
-            fontWeight: '700',
+            color: '#8FA1B6',
+            fontSize: 12,
+            fontWeight: '800',
             textTransform: 'uppercase',
-            letterSpacing: 0.4,
+            letterSpacing: 0.9,
         },
         sortIndicator: {
             color: tokens.colors.accent,
@@ -662,14 +699,24 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         dataRow: {
             flexDirection: 'row',
-            paddingVertical: tokens.spacing.sm,
+            alignItems: 'center',
+            borderRadius: 16,
+            marginBottom: tokens.spacing.xs,
+            paddingHorizontal: tokens.spacing.sm,
+            paddingVertical: tokens.spacing.md,
             borderBottomWidth: 1,
-            borderBottomColor: `${tokens.colors.border}66`,
+            borderBottomColor: `${tokens.colors.border}33`,
+        },
+        dataRowAlt: {
+            backgroundColor: '#0D121B',
         },
         tableListWrap: {
             width: '100%',
+            borderRadius: 18,
+            backgroundColor: '#05080D',
         },
         tableListContent: {
+            paddingHorizontal: tokens.spacing.xs,
             paddingBottom: tokens.spacing.md,
         },
         tableListFooter: {
@@ -677,14 +724,19 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         colValue: {
             color: tokens.colors.textPrimary,
-            fontSize: 16,
+            fontSize: 15,
+            lineHeight: 21,
         },
         totalRow: {
             flexDirection: 'row',
-            marginTop: tokens.spacing.sm,
-            paddingTop: tokens.spacing.sm,
+            alignItems: 'center',
+            marginTop: tokens.spacing.md,
+            borderRadius: 16,
+            paddingHorizontal: tokens.spacing.sm,
+            paddingVertical: tokens.spacing.md,
             borderTopWidth: 1,
-            borderTopColor: tokens.colors.border,
+            borderTopColor: '#2D3C52',
+            backgroundColor: '#101722',
         },
         totalValue: {
             color: tokens.colors.textPrimary,

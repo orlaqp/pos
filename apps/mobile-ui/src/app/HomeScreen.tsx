@@ -72,6 +72,7 @@ interface PathDetails {
     icon: string;
     accentColor: string;
     role: string;
+    subtitle?: string;
     params?: object;
     validate?: () => Promise<string | null>;
 }
@@ -213,6 +214,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
             icon: 'cart-outline',
             accentColor: '#4db8ff',
             role: Role.Sales,
+            subtitle: 'Start a new ticket, browse products, and move straight into checkout.',
             params: { mode: 'order' },
             validate: async () => {
                 dispatch(cartActions.reset());
@@ -227,6 +229,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
             icon: 'cash-register',
             accentColor: '#58c472',
             role: Role.Payments,
+            subtitle: 'Review open orders, take payment, and manage post-sale collection.',
         },
         {
             title: 'Back Office',
@@ -234,6 +237,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
             icon: 'chart-box-outline',
             accentColor: '#d8a24a',
             role: Role.Admin,
+            subtitle: 'Open reporting, inventory, catalog, employees, and configuration tools.',
         },
     ], [dispatch, station?.stationNumber]);
     const visiblePaths = useMemo(
@@ -783,12 +787,61 @@ export const HomeScreen = (props: HomeScreenProps) => {
                         <Text style={styles.heroSubtitle}>
                             Syncing staff records for this tenant before showing the PIN screen or setup flow.
                         </Text>
+                        <View style={styles.setupHeroMetaRow}>
+                            <View style={styles.setupHeroMetaCard}>
+                                <Text style={styles.setupHeroMetaLabel}>Stage</Text>
+                                <Text style={styles.setupHeroMetaValue}>Employee access</Text>
+                            </View>
+                            <View style={styles.setupHeroMetaCard}>
+                                <Text style={styles.setupHeroMetaLabel}>Next</Text>
+                                <Text style={styles.setupHeroMetaValue}>
+                                    PIN or setup flow
+                                </Text>
+                            </View>
+                        </View>
+                        <View style={styles.wizardStepsPanel}>
+                            <Text style={styles.wizardStepsEyebrow}>What happens next</Text>
+                            <View style={styles.wizardStepCard}>
+                                <View style={styles.syncPulseDot} />
+                                <View style={styles.wizardStepCopy}>
+                                    <Text style={styles.wizardStepTitle}>Access records sync</Text>
+                                    <Text style={styles.wizardStepText}>
+                                        Once shared employee records finish syncing, this device
+                                        automatically moves into the correct entry flow.
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
                     </View>
-                    <View style={styles.keypadCard}>
+                    <View style={[styles.keypadCard, styles.syncStatusCard]}>
+                        <Text style={styles.setupWizardEyebrow}>Preparing device</Text>
                         <Text style={styles.keypadTitle}>Preparing employee access</Text>
                         <Text style={styles.keypadHint}>
                             The PIN screen will appear once employee sync finishes.
                         </Text>
+                        <View style={styles.syncStatusPanel}>
+                            <View style={styles.syncStatusRow}>
+                                <Text style={styles.syncStatusLabel}>Employee directory</Text>
+                                <Text style={styles.syncStatusValue}>Syncing</Text>
+                            </View>
+                            <View style={styles.syncStatusDivider} />
+                            <View style={styles.syncStatusRow}>
+                                <Text style={styles.syncStatusLabel}>Store setup check</Text>
+                                <Text style={styles.syncStatusValue}>Queued next</Text>
+                            </View>
+                            <View style={styles.syncStatusDivider} />
+                            <View style={styles.syncStatusRow}>
+                                <Text style={styles.syncStatusLabel}>Device access</Text>
+                                <Text style={styles.syncStatusValue}>Waiting</Text>
+                            </View>
+                        </View>
+                        <View style={styles.syncHintCard}>
+                            <Text style={styles.syncHintTitle}>No action needed</Text>
+                            <Text style={styles.syncHintText}>
+                                This is only a visual waiting state. Access appears automatically
+                                when sync completes.
+                            </Text>
+                        </View>
                     </View>
                 </View>
             ) : !employee ? (
@@ -812,14 +865,39 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     onOpenAppDiagnostics={openAppDiagnostics}
                 />
             ) : (
-                <View testID="home-ready-shell">
-                    <HomeRouteGrid
-                        paths={visiblePaths}
-                        routeAnimations={routeAnimations}
-                        styles={styles}
-                        onGoTo={goto}
-                        pendingPath={pendingRoutePath}
-                    />
+                <View testID="home-ready-shell" style={styles.readyShell}>
+                    <View style={styles.readyHero}>
+                        <Image source={brandMark} style={styles.readyBrandMark} resizeMode="contain" />
+                        <Text style={styles.businessLabel}>{businessName || 'Business workspace'}</Text>
+                        <Text style={styles.readyTitle}>Choose your workspace</Text>
+                        <Text style={styles.readySubtitle}>
+                            Jump into the live operational area that matches your role on this shared device.
+                        </Text>
+                        <View style={styles.readyMetaRow}>
+                            <View style={styles.readyMetaChip}>
+                                <Text style={styles.readyMetaLabel}>Employee</Text>
+                                <Text style={styles.readyMetaValue}>
+                                    {`${employee?.firstName || ''} ${employee?.lastName || ''}`.trim() || 'Signed in'}
+                                </Text>
+                            </View>
+                            <View style={styles.readyMetaChip}>
+                                <Text style={styles.readyMetaLabel}>Roles</Text>
+                                <Text style={styles.readyMetaValue}>
+                                    {visiblePaths.length} workspace{visiblePaths.length === 1 ? '' : 's'}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                    <View style={styles.readyRoutesPanel}>
+                        <Text style={styles.readyRoutesEyebrow}>Available areas</Text>
+                        <HomeRouteGrid
+                            paths={visiblePaths}
+                            routeAnimations={routeAnimations}
+                            styles={styles}
+                            onGoTo={goto}
+                            pendingPath={pendingRoutePath}
+                        />
+                    </View>
                 </View>
             )}
         </ScrollView>

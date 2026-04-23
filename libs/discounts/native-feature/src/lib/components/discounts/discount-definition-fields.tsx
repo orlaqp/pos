@@ -100,6 +100,9 @@ export function DiscountDefinitionFields({
                 <>
                   <UICard style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Core</Text>
+                    <Text style={styles.sectionSubtitle}>
+                      Name the offer and define the basic pricing behavior.
+                    </Text>
                     <UIInput name="name" label="Name" placeholder="Name" rules={{ required: 'Name is required' }} />
                     <UIInput name="description" label="Description" placeholder="Description" />
                     <View style={styles.formGrid}>
@@ -143,6 +146,9 @@ export function DiscountDefinitionFields({
 
                   <UICard style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Eligibility</Text>
+                    <Text style={styles.sectionSubtitle}>
+                      Limit when this offer can apply by basket size, quantity, category, or product.
+                    </Text>
                     <View style={styles.formGrid}>
                       <View style={styles.formColumn}>
                         <UINumericInput
@@ -209,6 +215,9 @@ export function DiscountDefinitionFields({
 
                   <UICard style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Schedule</Text>
+                    <Text style={styles.sectionSubtitle}>
+                      Optional windows keep offers available only during the right dates and times.
+                    </Text>
                     <View style={styles.formGrid}>
                       <View style={styles.formColumn}>
                         <UIDateTimeField
@@ -257,6 +266,9 @@ export function DiscountDefinitionFields({
 
                   <UICard style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Rules</Text>
+                    <Text style={styles.sectionSubtitle}>
+                      Advanced controls for stacking, exclusions, stations, and product-wide behavior.
+                    </Text>
                     <Text style={styles.fieldHint}>
                       Use Status in the Core section to control whether this discount is active.
                     </Text>

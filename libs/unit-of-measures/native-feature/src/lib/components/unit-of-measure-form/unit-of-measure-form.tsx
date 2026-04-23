@@ -123,25 +123,34 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         headerCard: {
             marginBottom: tokens.spacing.lg,
+            borderRadius: 26,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
         },
         headerTitle: {
             color: tokens.colors.textPrimary,
-            fontSize: 26,
-            fontWeight: '700',
+            fontSize: 28,
+            fontWeight: '800',
+            letterSpacing: -0.5,
         },
         headerSubtitle: {
             color: tokens.colors.textSecondary,
             marginTop: tokens.spacing.xs,
             fontSize: 15,
+            lineHeight: 21,
         },
         sectionCard: {
             marginBottom: tokens.spacing.lg,
+            borderRadius: 24,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#0E141C',
         },
         sectionTitle: {
             color: tokens.colors.textPrimary,
             fontSize: 19,
-            fontWeight: '700',
-            marginBottom: tokens.spacing.sm,
+            fontWeight: '800',
+            letterSpacing: 0.2,
+            marginBottom: tokens.spacing.md,
         },
         descriptionInput: {
             height: 100,
@@ -156,7 +165,9 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             maxWidth: 980,
             alignSelf: 'center',
             width: '100%',
-            borderRadius: tokens.radii.lg,
+            borderRadius: 24,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
         },
     });
 

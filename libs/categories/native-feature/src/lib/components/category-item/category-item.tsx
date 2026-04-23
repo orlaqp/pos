@@ -108,6 +108,12 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) => {
         ...StyleSheet.create({
             row: {
                 alignItems: 'center',
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: '#C7D0DB22',
+                backgroundColor: '#0E141C',
+                marginBottom: tokens.spacing.sm,
+                paddingHorizontal: tokens.spacing.md,
                 paddingVertical: tokens.spacing.md,
             },
             thumbnailSlot: {
@@ -128,6 +134,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) => {
             name: {
                 fontSize: 18,
                 color: theme.theme.colors.grey0,
+                fontWeight: '800',
                 marginBottom: 5,
             },
             description: {
@@ -138,7 +145,11 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) => {
                 color: theme.theme.colors.grey1,
             },
             deleteButton: {
-                opacity: 0.75,
+                opacity: 0.95,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: `${theme.theme.colors.error}55`,
+                backgroundColor: `${theme.theme.colors.error}12`,
             },
         }),
     };

@@ -11,7 +11,11 @@ const Stack = createNativeStackNavigator();
 export function Employees() {
   return (
     <StackNavigation Stack={Stack}>
-        <Stack.Screen name="Employee List"  component={EmployeeList} />
+        <Stack.Screen
+            name="Employee List"
+            component={EmployeeList}
+            options={{ headerShown: false }}
+        />
         <Stack.Screen name="Employee Form" component={EmployeeForm} />
     </StackNavigation>
   );

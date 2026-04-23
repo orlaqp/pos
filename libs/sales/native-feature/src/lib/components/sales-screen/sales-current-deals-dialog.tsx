@@ -12,6 +12,11 @@ interface SalesCurrentDealsDialogProps {
     overlayStyle: object;
     styles: {
         dealsDialog: object;
+        dealsDialogHero: object;
+        dealsDialogMetaRow: object;
+        dealsDialogMetaCard: object;
+        dealsDialogMetaLabel: object;
+        dealsDialogMetaValue: object;
         dealsDialogScroll: object;
         dealsDialogContent: object;
         dealsSection: object;
@@ -25,6 +30,7 @@ interface SalesCurrentDealsDialogProps {
         dealsDialogFooter: object;
         dealsDialogTitle: object;
         dealsDialogSubtitle: object;
+        dealsDialogEyebrow: object;
     };
     onClose: () => void;
 }
@@ -47,12 +53,27 @@ export function SalesCurrentDealsDialog({
             supportedOrientations={['landscape']}
             overlayStyle={overlayStyle}
         >
-            <Text style={styles.dealsDialogTitle}>Current deals</Text>
-            <Text style={styles.dealsDialogSubtitle}>
-                {selectedProductName
-                    ? `Staff-friendly summary of active offers, with ${selectedProductName} highlighted first.`
-                    : 'Staff-friendly summary of the discounts customers can use right now.'}
-            </Text>
+            <View style={styles.dealsDialogHero}>
+                <Text style={styles.dealsDialogEyebrow}>Sales support</Text>
+                <Text style={styles.dealsDialogTitle}>Current deals</Text>
+                <Text style={styles.dealsDialogSubtitle}>
+                    {selectedProductName
+                        ? `Staff-friendly summary of active offers, with ${selectedProductName} highlighted first.`
+                        : 'Staff-friendly summary of the discounts customers can use right now.'}
+                </Text>
+                <View style={styles.dealsDialogMetaRow}>
+                    <View style={styles.dealsDialogMetaCard}>
+                        <Text style={styles.dealsDialogMetaLabel}>Active offers</Text>
+                        <Text style={styles.dealsDialogMetaValue}>{rows.length}</Text>
+                    </View>
+                    <View style={styles.dealsDialogMetaCard}>
+                        <Text style={styles.dealsDialogMetaLabel}>Selected product</Text>
+                        <Text style={styles.dealsDialogMetaValue}>
+                            {selectedProductName || 'Storewide view'}
+                        </Text>
+                    </View>
+                </View>
+            </View>
 
             {!rows.length ? (
                 <UIEmptyState

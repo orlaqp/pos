@@ -86,9 +86,9 @@ export function OrderDetails({
               .filter((payment) => payment.amount > 0);
 
     return (
-        <View style={[styles.box, styles.column]}>
-            <View style={styles.row}>
-                <View style={[styles.column, { flex: 2.35, marginRight: 28 }]}>
+        <View style={[styles.box, styles.column, local.detailCard]}>
+            <View style={[styles.row, local.headerRow]}>
+                <View style={[styles.column, local.orderNoColumn]}>
                     {parsedOrderNo ? (
                         <View style={local.chipsRow}>
                             <View style={local.chip}>
@@ -116,72 +116,91 @@ export function OrderDetails({
                         <Text style={styles.secondaryText}>{order.orderNo}</Text>
                     )}
                 </View>
-                <View style={[styles.column, { flex: 1.15, marginRight: 28 }]}>
-                    <Text style={styles.secondaryText}>
+                <View style={[styles.column, local.metaColumn]}>
+                    <Text style={[styles.secondaryText, local.metaLabel]}>
                         {t('EOD_CreatedBy', 'Created By')}
                     </Text>
-                    <Text style={styles.primaryText}>{createdByName}</Text>
+                    <Text style={[styles.primaryText, local.metaValue]}>{createdByName}</Text>
                 </View>
-                <View style={[styles.column, styles.centered, { flex: .12, marginRight: 20 }]}>
+                <View style={[styles.column, styles.centered, local.arrowColumn]}>
                     <Icon name='arrow-right' type='material-community' size={16} />
                 </View>
-                <View style={[styles.column, { flex: 1.15, marginRight: 28 }]}>
-                    <Text style={styles.secondaryText}>
+                <View style={[styles.column, local.metaColumn]}>
+                    <Text style={[styles.secondaryText, local.metaLabel]}>
                         {t('EOD_ClosedBy', 'Closed By')}
                     </Text>
-                    <Text style={styles.primaryText}>{order.paymentInfo?.employeeName}</Text>
+                    <Text style={[styles.primaryText, local.metaValue]}>
+                        {order.paymentInfo?.employeeName}
+                    </Text>
                 </View>
-                <View style={{ flex: .2 }}></View>
-                <View style={[styles.column, { marginRight: 45 }]}>
-                    <Text style={[styles.secondaryText, styles.textRight ]}>
+                <View style={local.headerSpacer} />
+                <View style={[styles.column, local.collectedSalesColumn]}>
+                    <Text style={[styles.secondaryText, styles.textRight, local.metaLabel]}>
                         {t('EOD_NetSales', 'Collected Sales')}
                     </Text>
-                    <Text style={[styles.primaryText, styles.textWarning, styles.textBold ]}>$ {netSales.toFixed(2)}</Text>
+                    <Text
+                        style={[
+                            styles.primaryText,
+                            styles.textBold,
+                            styles.textRight,
+                            local.collectedSalesValue,
+                        ]}
+                    >
+                        $ {netSales.toFixed(2)}
+                    </Text>
                 </View>
             </View>
-            <View style={[styles.row, { marginTop: 10, marginRight: 26 }]}>
-                <View style={{ flex: 1.5, marginRight: 45 }}>
-                    <Text style={styles.secondaryText}>
+
+            <View style={[styles.row, local.summaryRow]}>
+                <View style={local.summaryRail}>
+                    <View style={local.summaryMetricsRow}>
+                        <View style={[local.summaryMetricCard, local.discountMetricCard]}>
+                            <Text style={[styles.secondaryText, local.summaryMetricLabel]}>
                         {t('EOD_Discounts', 'Discounts')}
                     </Text>
-                    <Text style={styles.primaryText}>$ {discountAmount.toFixed(2)}</Text>
-                </View>
-                <View style={{ flex: 1.5, marginRight: 45 }}>
-                    <Text style={styles.secondaryText}>
+                            <Text style={[styles.primaryText, local.summaryMetricValue]}>
+                                $ {discountAmount.toFixed(2)}
+                            </Text>
+                        </View>
+                        <View style={[local.summaryMetricCard, local.refundMetricCard]}>
+                            <Text style={[styles.secondaryText, local.summaryMetricLabel]}>
                         {t('EOD_Refunds', 'Refunds')}
                     </Text>
-                    <Text style={styles.primaryText}>$ {refundedAmount.toFixed(2)}</Text>
-                </View>
-                <View style={{ flex: 3 }} />
-            </View>
-            <View style={[styles.row, { marginRight: 26, marginTop: 10 }]}>
-                <View style={{ flex: 2 }}>
-                    <Text style={styles.secondaryText}>
+                            <Text style={[styles.primaryText, local.summaryMetricValue]}>
+                                $ {refundedAmount.toFixed(2)}
+                            </Text>
+                        </View>
+                    </View>
+                    <View style={local.paymentsPanel}>
+                        <Text style={[styles.secondaryText, local.summaryMetricLabel]}>
                         {t('EOD_Payments', 'Payments')}
                     </Text>
+                        <View style={local.paymentRows}>
                     {resolvedPaymentDetails.map((payment, index) => (
                         <Text
                             key={`${payment.kind}-${payment.type}-${index}`}
-                            style={styles.primaryText}
+                                    style={[styles.primaryText, local.paymentRow]}
                         >
                             {payment.kind === 'refund'
                                 ? `${t('EOD_RefundPayment', 'Refund')} ${payment.type}: -$${payment.amount.toFixed(2)}`
                                 : `${payment.type}: $${payment.amount.toFixed(2)}`}
                         </Text>
                     ))}
+                        </View>
+                    </View>
                 </View>
-                <View style={[styles.box, { flex: 6 }]}>
-                    <View style={[styles.row]}>
-                        <Text style={[styles.secondaryText, styles.textRight, { flex: 1, marginRight: 30 }]}>
+                <View style={[styles.box, local.itemBox]}>
+                    <View style={[styles.row, local.itemHeaderRow]}>
+                        <Text style={[styles.secondaryText, styles.textRight, local.qtyHeader]}>
                             {t('EOD_Quantity', 'Quantity')}
                         </Text>
-                        <Text style={[styles.secondaryText, { flex: 3 }]}>
+                        <Text style={[styles.secondaryText, local.nameHeader]}>
                             {t('EOD_Name', 'Name')}
                         </Text>
-                        <Text style={[styles.secondaryText, styles.textRight, { flex: 1 }]}>
+                        <Text style={[styles.secondaryText, styles.textRight, local.moneyHeader]}>
                             {t('EOD_Price', 'Price')}
                         </Text>
-                        <Text style={[styles.secondaryText, styles.textRight, { flex: 1 }]}>
+                        <Text style={[styles.secondaryText, styles.textRight, local.moneyHeader]}>
                             {t('EOD_Total', 'Total')}
                         </Text>
                     </View>
@@ -198,11 +217,11 @@ export function OrderDetails({
                         )
                     )}
                     {orderLevelDiscountAmount > 0 && (
-                        <View style={styles.row}>
+                        <View style={[styles.row, local.adjustmentRow]}>
                             <Text
                                 style={[
                                     styles.secondaryText,
-                                    { flex: 5, textAlign: 'right' },
+                                    local.adjustmentLabel,
                                 ]}
                             >
                                 {t('EOD_OrderDiscount', 'Order Discount')}
@@ -211,7 +230,7 @@ export function OrderDetails({
                                 style={[
                                     styles.secondaryText,
                                     styles.textRight,
-                                    { flex: 1, color: '#8BC34A' },
+                                    local.adjustmentValue,
                                 ]}
                             >
                                 - $ {orderLevelDiscountAmount.toFixed(2)}
@@ -225,6 +244,24 @@ export function OrderDetails({
 }
 
 const local = StyleSheet.create({
+    detailCard: {
+        borderRadius: 24,
+        borderColor: '#C7D0DB22',
+        backgroundColor: '#080B10',
+        paddingHorizontal: 18,
+        paddingVertical: 16,
+        marginBottom: 14,
+    },
+    headerRow: {
+        alignItems: 'flex-start',
+        marginBottom: 16,
+    },
+    orderNoColumn: {
+        flex: 2.05,
+        marginRight: 24,
+        justifyContent: 'flex-start',
+        paddingTop: 1,
+    },
     chipsRow: {
         flexDirection: 'row',
         flexWrap: 'nowrap',
@@ -236,16 +273,154 @@ const local = StyleSheet.create({
         minWidth: 0,
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 8,
-        paddingVertical: 9,
-        borderRadius: 10,
+        paddingHorizontal: 9,
+        paddingVertical: 8,
+        borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#2f374288',
-        backgroundColor: '#2f37422a',
+        borderColor: '#30445d',
+        backgroundColor: '#0D1520',
     },
     chipValue: {
-        fontWeight: '700',
+        color: '#B8C8DB',
+        fontWeight: '800',
+        fontSize: 11,
+        letterSpacing: 0.8,
+    },
+    metaColumn: {
+        flex: 1.1,
+        marginRight: 22,
+    },
+    metaLabel: {
+        fontSize: 11,
+        marginBottom: 2,
+    },
+    metaValue: {
+        fontSize: 13,
+        lineHeight: 17,
+    },
+    arrowColumn: {
+        flex: 0.12,
+        marginRight: 14,
+        paddingTop: 10,
+    },
+    headerSpacer: {
+        flex: 0.15,
+    },
+    collectedSalesColumn: {
+        minWidth: 110,
+        alignItems: 'flex-end',
+        paddingVertical: 8,
+        paddingHorizontal: 14,
+        borderRadius: 14,
+        backgroundColor: '#121926',
+        borderWidth: 1,
+        borderColor: '#30445d',
+    },
+    collectedSalesValue: {
+        color: '#34C759',
+        fontSize: 16,
+        lineHeight: 20,
+    },
+    summaryRow: {
+        marginRight: 26,
+        marginTop: 4,
+        alignItems: 'stretch',
+    },
+    summaryRail: {
+        flex: 2,
+        marginRight: 22,
+    },
+    summaryMetricsRow: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: 12,
+    },
+    summaryMetricCard: {
+        flex: 1,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        borderRadius: 16,
+        backgroundColor: '#101722',
+        borderWidth: 1,
+        borderColor: '#243145',
+    },
+    discountMetricCard: {
+        backgroundColor: '#2A2114',
+        borderColor: '#7A541C',
+    },
+    refundMetricCard: {
+        backgroundColor: '#241733',
+        borderColor: '#6F3FA0',
+    },
+    summaryMetricLabel: {
+        fontSize: 11,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: 4,
+    },
+    summaryMetricValue: {
+        fontSize: 15,
+        lineHeight: 18,
+    },
+    paymentsPanel: {
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        borderRadius: 16,
+        backgroundColor: '#0D1520',
+        borderWidth: 1,
+        borderColor: '#243145',
+    },
+    paymentRows: {
+        marginTop: 4,
+        gap: 4,
+    },
+    paymentRow: {
+        fontSize: 14,
+    },
+    itemBox: {
+        flex: 6,
+        borderRadius: 18,
+        borderColor: '#243145',
+        backgroundColor: '#0B1018',
+        paddingHorizontal: 16,
+        paddingTop: 14,
+        paddingBottom: 12,
+    },
+    itemHeaderRow: {
+        borderRadius: 14,
+        paddingHorizontal: 8,
+        paddingVertical: 10,
+        marginBottom: 6,
+        borderBottomWidth: 1,
+        borderBottomColor: '#2D3C52',
+        backgroundColor: '#101722',
+    },
+    qtyHeader: {
+        flex: 1,
+        marginRight: 30,
+    },
+    nameHeader: {
+        flex: 3,
+    },
+    moneyHeader: {
+        flex: 1,
+    },
+    adjustmentRow: {
+        marginTop: 2,
+        paddingTop: 2,
+    },
+    adjustmentLabel: {
+        flex: 5,
+        textAlign: 'right',
+        paddingRight: 14,
         fontSize: 12,
+        color: '#8f9aab',
+    },
+    adjustmentValue: {
+        flex: 1,
+        color: '#8BC34A',
+        fontSize: 12,
+        fontWeight: '800',
     },
 });
 

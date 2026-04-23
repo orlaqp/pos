@@ -30,6 +30,10 @@ export const buildProductListProps = (navigation: NativeStackNavigationProp<any>
             'Add your first product to start building the catalog available to sales.',
         emptyActionText: 'Add product',
         emptyActionIcon: 'plus-box-outline',
+        headerEyebrow: 'Catalog',
+        headerTitle: 'Products',
+        headerSubtitle:
+            'Manage sale-ready items, pricing, inventory behavior, and catalog visibility.',
     } as ItemListProps<any, any>);
 
 export function ProductList({ navigation }: ProductListProps) {

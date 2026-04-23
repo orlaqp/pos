@@ -212,6 +212,9 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
             <View style={[local.statusRail, { backgroundColor: statusColor }]} />
             <View style={local.infoBlock}>
                 <View style={local.orderNoColumn}>
+                    <Text style={local.orderEyebrow}>
+                        {t('ORDERITEM_OrderEyebrow', 'Order reference')}
+                    </Text>
                     <View style={local.chipsRow}>
                         {parsedOrderNo ? (
                             <>
@@ -254,6 +257,9 @@ export function OrderItem({ item, navigation, onVoid, onPay }: OrderItemProps) {
                     </View>
                 </View>
                 <View style={local.metaColumn}>
+                    <Text style={local.metaEyebrow}>
+                        {t('ORDERITEM_Cashier', 'Cashier')}
+                    </Text>
                     <Text style={styles.primaryText}>{item.employeeName}</Text>
                     <Text numberOfLines={1} style={[styles.secondaryText, local.metaTop]}>
                         {orderDateString}
@@ -359,9 +365,16 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         row: {
             alignItems: 'center',
             paddingLeft: tokens.spacing.md,
+            paddingVertical: tokens.spacing.md,
+            borderRadius: tokens.radii.lg,
+            borderWidth: 1,
+            borderColor: `${tokens.colors.border}AA`,
+            backgroundColor: tokens.colors.surfaceMuted,
+            marginHorizontal: tokens.spacing.md,
+            marginVertical: tokens.spacing.xs,
         },
         statusRail: {
-            width: 4,
+            width: 5,
             alignSelf: 'stretch',
             borderRadius: tokens.radii.sm,
             marginRight: tokens.spacing.md,
@@ -369,12 +382,20 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         infoBlock: {
             flex: 1,
             flexDirection: 'row',
-            alignItems: 'center',
+            alignItems: 'stretch',
         },
         orderNoColumn: {
             flex: 3.5,
             justifyContent: 'center',
             paddingRight: tokens.spacing.md,
+        },
+        orderEyebrow: {
+            color: tokens.colors.textMuted,
+            fontSize: 11,
+            fontWeight: '800',
+            textTransform: 'uppercase',
+            letterSpacing: 1.1,
+            marginBottom: tokens.spacing.xs,
         },
         metaColumn: {
             flex: 1.5,
@@ -382,6 +403,14 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             paddingLeft: tokens.spacing.md,
             borderLeftWidth: 1,
             borderLeftColor: tokens.colors.border,
+        },
+        metaEyebrow: {
+            color: tokens.colors.textMuted,
+            fontSize: 11,
+            fontWeight: '800',
+            textTransform: 'uppercase',
+            letterSpacing: 1.1,
+            marginBottom: 4,
         },
         chipsRow: {
             flexDirection: 'row',
@@ -391,27 +420,30 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         chip: {
             borderWidth: 1,
             borderColor: tokens.colors.border,
-            borderRadius: tokens.radii.sm,
-            paddingVertical: 4,
-            paddingHorizontal: 6,
+            borderRadius: tokens.radii.md,
+            paddingVertical: 6,
+            paddingHorizontal: 8,
             marginRight: tokens.spacing.xs,
             marginBottom: tokens.spacing.xs,
-            backgroundColor: tokens.colors.surfaceMuted,
+            backgroundColor: tokens.colors.surface,
         },
         chipLabel: {
             color: tokens.colors.textMuted,
             fontSize: 10,
             textTransform: 'uppercase',
+            fontWeight: '800',
+            letterSpacing: 0.8,
         },
         chipValue: {
-            fontSize: 13,
-            marginTop: 1,
+            fontSize: 14,
+            fontWeight: '800',
+            marginTop: 2,
         },
         metaTop: {
             marginTop: tokens.spacing.xs,
         },
         amountBlock: {
-            minWidth: 120,
+            minWidth: 138,
             flexShrink: 0,
             alignItems: 'flex-end',
             justifyContent: 'center',
@@ -419,15 +451,17 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         statusBadge: {
             borderWidth: 1,
-            borderRadius: tokens.radii.sm,
+            borderRadius: tokens.radii.md,
             paddingVertical: tokens.spacing.xs,
             paddingHorizontal: tokens.spacing.sm,
             marginBottom: tokens.spacing.xs,
-            backgroundColor: tokens.colors.surfaceMuted,
+            backgroundColor: tokens.colors.surface,
         },
         amountText: {
             textAlign: 'right',
             marginBottom: 0,
+            fontSize: 28,
+            fontWeight: '800',
         },
         originalAmountText: {
             textAlign: 'right',
@@ -442,6 +476,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             alignItems: 'center',
             justifyContent: 'flex-end',
             marginLeft: tokens.spacing.md,
+            gap: tokens.spacing.xs,
         },
     });
 

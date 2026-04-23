@@ -6,7 +6,7 @@ import Brands from './brands';
 
 describe('Brands', () => {
   it('should render successfully', () => {
-    const { container } = render(< Brands />);
-    expect(container).toBeTruthy();
+    const { UNSAFE_root } = render(< Brands />);
+    expect(UNSAFE_root).toBeTruthy();
   });
 });

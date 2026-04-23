@@ -102,48 +102,49 @@ export function Submenu({
 const useStyles = (colors: ReturnType<typeof getThemeColors>) =>
     StyleSheet.create({
         accordionContainer: {
-            borderRadius: 10,
-            borderLeftWidth: 3,
-            borderLeftColor: 'transparent',
-            paddingHorizontal: 10,
-            minHeight: 52,
-            marginBottom: 6,
+            borderRadius: 18,
+            borderWidth: 1,
+            borderColor: `${colors.grey4}22`,
+            backgroundColor: '#0E141C',
+            paddingHorizontal: 14,
+            minHeight: 58,
+            marginBottom: 8,
         },
         accordionContainerActive: {
-            backgroundColor: `${colors.primary}22`,
-            borderLeftColor: colors.primary,
+            backgroundColor: `${colors.primary}18`,
+            borderColor: `${colors.primary}66`,
         },
         headerContent: {
             flexDirection: 'row',
             alignItems: 'center',
         },
         iconSlot: {
-            width: 26,
+            width: 28,
             alignItems: 'center',
             justifyContent: 'center',
         },
         headerTitleContent: {
-            marginLeft: 6,
+            marginLeft: 8,
         },
         headerTitle: {
             color: colors.grey1,
-            fontWeight: '500',
-            fontSize: 17,
+            fontWeight: '600',
+            fontSize: 16,
         },
         headerTitleActive: {
             color: colors.primary,
-            fontWeight: '700',
+            fontWeight: '800',
         },
         childrenContainer: {
             flexDirection: 'row',
-            marginTop: 4,
-            marginLeft: 12,
-            marginBottom: 2,
+            marginTop: 8,
+            marginLeft: 16,
+            marginBottom: 4,
         },
         childrenRail: {
             width: 1,
-            backgroundColor: `${colors.grey4}99`,
-            marginRight: 10,
+            backgroundColor: `${colors.primary}40`,
+            marginRight: 12,
             marginLeft: 3,
         },
         childrenItems: {

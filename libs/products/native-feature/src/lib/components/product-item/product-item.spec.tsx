@@ -27,8 +27,8 @@ describe('ProductItem', () => {
             isEBTEligible: true,
         };
         const navigation: any = { navigate: jest.fn() };
-        const { container } = render(<ProductItem item={item} navigation={navigation} />);
-        expect(container).toBeTruthy();
+        const { UNSAFE_root } = render(<ProductItem item={item} navigation={navigation} />);
+        expect(UNSAFE_root).toBeTruthy();
     });
 
     it('navigates to product form on row press', () => {

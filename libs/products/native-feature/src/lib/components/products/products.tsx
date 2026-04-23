@@ -21,7 +21,11 @@ export function Products({ route }: ProductsProps) {
 
     return (
         <StackNavigation Stack={Stack} initialRouteName={initialRouteName}>
-            <Stack.Screen name="Product List" component={ProductList} />
+            <Stack.Screen
+                name="Product List"
+                component={ProductList}
+                options={{ headerShown: false }}
+            />
             <Stack.Screen name="Product Form" component={ProductForm} />
         </StackNavigation>
     );

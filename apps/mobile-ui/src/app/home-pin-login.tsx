@@ -60,16 +60,30 @@ export function HomePinLogin({
                     Admin session is active for {userEmail || 'this device'}. Enter a staff PIN to
                     continue into the operational app.
                 </Text>
+                <View style={styles.pinHeroMetaRow}>
+                    <View style={styles.pinHeroMetaChip}>
+                        <Text style={styles.pinHeroMetaLabel}>Access</Text>
+                        <Text style={styles.pinHeroMetaValue}>Shared device</Text>
+                    </View>
+                    <View style={styles.pinHeroMetaChip}>
+                        <Text style={styles.pinHeroMetaLabel}>Mode</Text>
+                        <Text style={styles.pinHeroMetaValue}>PIN required</Text>
+                    </View>
+                </View>
             </View>
             <View style={styles.keypadCard}>
+                <View style={styles.keypadHeader}>
+                    <Text style={styles.keypadEyebrow}>Staff access</Text>
                 <Text style={styles.keypadTitle}>Shared device access</Text>
                 <Text style={styles.keypadHint}>
                     PIN is required every time the app is reopened.
                 </Text>
+                </View>
                 {pinLockMessage ? <UIAlert message={pinLockMessage} type="error" /> : null}
                 {pinAttemptsMessage ? (
                     <UIAlert message={pinAttemptsMessage} type="warning" />
                 ) : null}
+                <View style={styles.keypadWrap}>
                 <UIKeyPad
                     initialValue={pin}
                     onChange={onPinUpdated}
@@ -77,6 +91,9 @@ export function HomePinLogin({
                     resetToken={pinResetToken}
                     disabled={isPinLocked}
                 />
+                </View>
+                <View style={styles.pinUtilityPanel}>
+                    <Text style={styles.pinUtilityTitle}>Device session</Text>
                 {onLogoff ? (
                     <Pressable
                         testID="home-pin-logoff-button"
@@ -86,34 +103,47 @@ export function HomePinLogin({
                         <Text style={styles.pinLogoffButtonText}>Log off business</Text>
                     </Pressable>
                 ) : null}
-                {savedLoginStatusLabel ? (
-                    <Text style={styles.savedLoginStatusText}>{savedLoginStatusLabel}</Text>
-                ) : null}
-                {pendingOrderStatusLabel ? (
-                    <Text style={styles.savedLoginStatusText}>{pendingOrderStatusLabel}</Text>
-                ) : null}
-                {onRemoveSavedLogin ? (
-                    <Pressable
-                        testID="home-pin-remove-saved-login-button"
-                        onPress={onRemoveSavedLogin}
-                        style={styles.secondaryDeviceActionButton}
-                    >
-                        <Text style={styles.secondaryDeviceActionButtonText}>
-                            Remove saved login from this device
-                        </Text>
-                    </Pressable>
-                ) : null}
-                {onOpenAppDiagnostics ? (
-                    <Pressable
-                        testID="home-pin-app-diagnostics-button"
-                        onPress={onOpenAppDiagnostics}
-                        style={styles.secondaryDeviceActionButton}
-                    >
-                        <Text style={styles.secondaryDeviceActionButtonText}>
-                            View app diagnostics on this device
-                        </Text>
-                    </Pressable>
-                ) : null}
+                    {savedLoginStatusLabel || pendingOrderStatusLabel ? (
+                        <View style={styles.pinStatusPanel}>
+                            {savedLoginStatusLabel ? (
+                                <Text style={styles.savedLoginStatusText}>
+                                    {savedLoginStatusLabel}
+                                </Text>
+                            ) : null}
+                            {pendingOrderStatusLabel ? (
+                                <Text style={styles.savedLoginStatusText}>
+                                    {pendingOrderStatusLabel}
+                                </Text>
+                            ) : null}
+                        </View>
+                    ) : null}
+                    {onRemoveSavedLogin || onOpenAppDiagnostics ? (
+                        <View style={styles.secondaryDeviceActionsPanel}>
+                            {onRemoveSavedLogin ? (
+                                <Pressable
+                                    testID="home-pin-remove-saved-login-button"
+                                    onPress={onRemoveSavedLogin}
+                                    style={styles.secondaryDeviceActionButton}
+                                >
+                                    <Text style={styles.secondaryDeviceActionButtonText}>
+                                        Remove saved login from this device
+                                    </Text>
+                                </Pressable>
+                            ) : null}
+                            {onOpenAppDiagnostics ? (
+                                <Pressable
+                                    testID="home-pin-app-diagnostics-button"
+                                    onPress={onOpenAppDiagnostics}
+                                    style={styles.secondaryDeviceActionButton}
+                                >
+                                    <Text style={styles.secondaryDeviceActionButtonText}>
+                                        View app diagnostics on this device
+                                    </Text>
+                                </Pressable>
+                            ) : null}
+                        </View>
+                    ) : null}
+                </View>
             </View>
         </View>
     );

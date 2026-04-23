@@ -28,6 +28,7 @@ export function Widget({
 }: WidgetProps) {
     const theme = useTheme();
     const styles = useSharedStyles();
+    const compact = typeof height === 'number' && height <= 90;
 
     const primaryColor =
         primaryTextColor ||
@@ -39,21 +40,37 @@ export function Widget({
     return (
         <View
             style={{
-                ...styles.smallMargin,
                 backgroundColor: backgroundC,
-                borderRadius: 5,
+                borderColor: `${primaryColor}22`,
+                borderRadius: compact ? 18 : 24,
+                borderWidth: 1,
                 height: height || 130,
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                padding: 20,
+                margin: compact ? 6 : 10,
+                overflow: 'hidden',
+                paddingHorizontal: compact ? 14 : 18,
+                paddingVertical: compact ? 12 : 16,
             }}
         >
-            <View style={{ alignSelf: 'flex-end' }}>
+            <View
+                style={{
+                    alignSelf: 'flex-end',
+                    alignItems: 'center',
+                    backgroundColor: icon ? `${primaryColor}12` : 'transparent',
+                    borderColor: `${primaryColor}22`,
+                    borderRadius: 999,
+                    borderWidth: icon ? 1 : 0,
+                    height: icon ? (compact ? 28 : 34) : 0,
+                    justifyContent: 'center',
+                    width: icon ? (compact ? 28 : 34) : 0,
+                }}
+            >
                 { icon &&
                 <Icon
                     name={icon}
                     type="material-community"
-                    size={28}
+                    size={compact ? 17 : 21}
                     color={primaryColor}
                 />
                 }
@@ -64,7 +81,9 @@ export function Widget({
                     minimumFontScale={0.7}
                     numberOfLines={2}
                     style={{
-                        fontSize: primaryTextSize || 28,
+                        fontSize: primaryTextSize || (compact ? 18 : 28),
+                        fontWeight: '700',
+                        letterSpacing: compact ? 0 : -0.4,
                         color: primaryColor,
                         textAlign: 'center',
                     }}
@@ -78,9 +97,12 @@ export function Widget({
                     style={[
                         styles.secondaryText,
                         {
-                            fontSize: secondaryTextSize || 14,
+                            fontSize: secondaryTextSize || (compact ? 12 : 14),
+                            fontWeight: '700',
+                            letterSpacing: compact ? 0.4 : 0.2,
                             color: `${primaryColor}aa`,
                             textAlign: 'center',
+                            textTransform: compact ? 'uppercase' : 'none',
                         },
                     ]}
                 >

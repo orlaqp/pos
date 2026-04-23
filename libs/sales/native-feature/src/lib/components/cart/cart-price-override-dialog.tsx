@@ -68,6 +68,9 @@ export function CartPriceOverrideDialog({
                 keyboardType="decimal-pad"
                 style={[styles.dialogInput, styles.dialogInputLarge]}
             />
+            <Text style={styles.dialogFieldHint}>
+                Enter the final unit price only. Everything else in the current checkout flow stays the same.
+            </Text>
             <TextInput
                 value={draft.reasonCode}
                 onChangeText={(reasonCode) =>
@@ -93,8 +96,19 @@ export function CartPriceOverrideDialog({
                 style={styles.dialogInput}
             />
             <View style={styles.dialogActionRow}>
-                <Button type="clear" title="Cancel" onPress={onClose} />
-                <Button title="Apply" onPress={onSubmit} />
+                <Button
+                    type="clear"
+                    title="Cancel"
+                    onPress={onClose}
+                    buttonStyle={styles.dialogSecondaryButton}
+                    titleStyle={styles.dialogSecondaryButtonTitle}
+                />
+                <Button
+                    title="Apply"
+                    onPress={onSubmit}
+                    buttonStyle={styles.dialogPrimaryButton}
+                    titleStyle={styles.dialogPrimaryButtonTitle}
+                />
             </View>
         </Dialog>
     );

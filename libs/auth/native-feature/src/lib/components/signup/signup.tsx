@@ -121,6 +121,16 @@ export function SignUpScreen(props: SignupProps) {
             <Text style={styles.subtitle}>
               This creates the owner account and the shared business workspace used across your POS devices.
             </Text>
+            <View style={styles.heroMetaRow}>
+              <View style={styles.heroMetaCard}>
+                <Text style={styles.heroMetaLabel}>Outcome</Text>
+                <Text style={styles.heroMetaValue}>Owner account</Text>
+              </View>
+              <View style={styles.heroMetaCard}>
+                <Text style={styles.heroMetaLabel}>Workspace</Text>
+                <Text style={styles.heroMetaValue}>Shared POS tenant</Text>
+              </View>
+            </View>
             <View style={styles.heroNotes}>
               <View style={styles.heroNoteRow}>
                 <View style={styles.heroNoteBullet} />
@@ -146,6 +156,9 @@ export function SignUpScreen(props: SignupProps) {
             <View style={styles.formInner}>
               <Text style={styles.formEyebrow}>Owner Setup</Text>
               <Text style={styles.formTitle}>Create workspace</Text>
+              <Text style={styles.formSubtitle}>
+                Enter the owner and business details used to initialize the workspace.
+              </Text>
               {error ? <UIAlert message={error} type="error" /> : null}
               {success ? (
                 <UiActionMessage
@@ -282,11 +295,16 @@ const useStyles = () => {
       fontWeight: '700',
       marginBottom: 10,
     },
+    formSubtitle: {
+      color: colors.grey2,
+      marginBottom: 18,
+      lineHeight: 20,
+    },
     formTitle: {
       color: colors.black,
       fontSize: 30,
       fontWeight: '700',
-      marginBottom: 18,
+      marginBottom: 6,
     },
     eyebrow: {
       color: '#7eb6ff',
@@ -303,6 +321,35 @@ const useStyles = () => {
     subtitle: {
       color: '#a3adba',
       lineHeight: 22,
+    },
+    heroMetaRow: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 24,
+      marginBottom: 4,
+    },
+    heroMetaCard: {
+      flex: 1,
+      minHeight: 84,
+      borderRadius: 18,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.08)',
+      backgroundColor: 'rgba(255,255,255,0.03)',
+      justifyContent: 'space-between',
+    },
+    heroMetaLabel: {
+      color: '#7f8a9a',
+      textTransform: 'uppercase',
+      letterSpacing: 1.2,
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    heroMetaValue: {
+      color: '#eef4ff',
+      fontSize: 18,
+      fontWeight: '700',
     },
     heroNotes: {
       marginTop: 20,
@@ -342,12 +389,12 @@ const useStyles = () => {
       borderColor: 'rgba(255,255,255,0.05)',
     },
     sectionLabel: {
-      color: colors.grey2,
-      fontSize: 12,
+      color: '#7eb6ff',
+      fontSize: 11,
       fontWeight: '700',
-      letterSpacing: 1.2,
+      letterSpacing: 1.4,
       textTransform: 'uppercase',
-      marginBottom: 4,
+      marginBottom: 8,
     },
     topMargin: {
       marginTop: 16,

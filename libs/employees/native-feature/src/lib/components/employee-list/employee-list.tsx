@@ -20,6 +20,10 @@ export function EmployeeList({ navigation }: EmployeeListProps) {
         clearSelectionAction: employeesActions.clearSelection,
         filterAction: employeesActions.filter,
         fetchItemsAction: fetchEmployees,
+        headerEyebrow: 'Management',
+        headerTitle: 'Employees',
+        headerSubtitle:
+            'Manage staff access, checkout permissions, and operational roles.',
     }
 
     return <UIGenericItemList {...props} />

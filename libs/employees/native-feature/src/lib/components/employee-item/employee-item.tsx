@@ -122,6 +122,7 @@ export function EmployeeItem({ item, navigation }: EmployeeItemProps) {
                         type: 'material-community',
                         color: theme.theme.colors.error,
                     }}
+                    buttonStyle={local.deleteButton}
                     onPress={confirmDeletion}
                 />
             </View>
@@ -133,10 +134,16 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     StyleSheet.create({
         row: {
             alignItems: 'center',
+            borderRadius: 22,
+            borderWidth: 1,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#0E141C',
+            marginBottom: tokens.spacing.sm,
+            paddingHorizontal: tokens.spacing.md,
             paddingVertical: tokens.spacing.md,
         },
         statusColumn: {
-            width: 100,
+            width: 110,
             justifyContent: 'center',
             paddingRight: tokens.spacing.md,
         },
@@ -160,6 +167,12 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             width: 70,
             alignItems: 'flex-end',
             justifyContent: 'center',
+        },
+        deleteButton: {
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: '#DC262655',
+            backgroundColor: '#DC262612',
         },
     });
 

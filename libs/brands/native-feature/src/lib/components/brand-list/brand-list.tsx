@@ -24,6 +24,10 @@ export const buildBrandListProps = (navigation: NativeStackNavigationProp<any>) 
             'Create brands to group products and keep the catalog consistent.',
         emptyActionText: 'Add brand',
         emptyActionIcon: 'tag-outline',
+        headerEyebrow: 'Catalog',
+        headerTitle: 'Brands',
+        headerSubtitle:
+            'Keep vendor and brand naming consistent across products and reports.',
     } as ItemListProps<any, any>);
 
 export function BrandList({ navigation }: BrandListProps) {
