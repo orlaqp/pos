@@ -224,6 +224,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 <View style={styles.catalogRow}>
                                     <View style={styles.imageColumn}>
                                         <UiFileUpload
+                                            testID="product-picture-upload"
                                             prefix={`${tenantId}/products`}
                                             imageKey={form.getValues().picture}
                                             onAssetUploaded={updatePicture}
@@ -278,12 +279,14 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 <UIStack spacing="sm">
                                     <UIInput
                                         name="name"
+                                        testID="product-input-name"
                                         label="Name"
                                         placeholder="Name"
                                         rules={{ required: 'Name is required' }}
                                     />
                                     <UIInput
                                         name="description"
+                                        testID="product-input-description"
                                         placeholder="Description"
                                         label="Description"
                                         multiline
@@ -295,6 +298,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                             <UINumericInput
                                                 keyboardType="decimal-pad"
                                                 name="cost"
+                                                testID="product-input-cost"
                                                 label="Cost"
                                                 allowDecimals
                                                 placeholder="Cost"
@@ -306,6 +310,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                             <UINumericInput
                                                 keyboardType="decimal-pad"
                                                 name="price"
+                                                testID="product-input-price"
                                                 label="Price"
                                                 allowDecimals
                                                 placeholder="Price"
@@ -326,6 +331,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                     <View style={styles.column}>
                                         <UIInput
                                             name="barcode"
+                                            testID="product-input-barcode"
                                             placeholder="UPC"
                                             label="UPC"
                                             lIcon="barcode"
@@ -334,6 +340,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                     <View style={styles.column}>
                                         <UIInput
                                             name="sku"
+                                            testID="product-input-sku"
                                             placeholder="SKU"
                                             label="SKU"
                                             lIcon="barcode"
@@ -342,6 +349,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                     <View style={styles.columnLast}>
                                         <UIInput
                                             name="plu"
+                                            testID="product-input-plu"
                                             placeholder="PLU"
                                             label="PLU"
                                             lIcon="barcode"
@@ -355,6 +363,8 @@ export function ProductForm({ navigation }: ProductFormProps) {
                         <UICard tone="muted" style={styles.actionBarCard}>
                             <UIActions
                                 busy={busy}
+                                submitTestID="product-save"
+                                cancelTestID="product-cancel"
                                 submitAction={form.handleSubmit(save, handleInvalidSubmit)}
                                 cancelAction={confirmCancel}
                             />

@@ -85,7 +85,10 @@ export function OrderRefundedDetailsDialog({
             overlayStyle={[styles.overlay, { width: 1120, maxWidth: '94%' }]}
         >
             {!order || !orderSummary ? null : (
-                <View style={styles.container}>
+                <View
+                    style={styles.container}
+                    testID="order-refunded-details-dialog"
+                >
                     <UIOrderSummaryPanel
                         orderSummary={orderSummary}
                         discountBreakdown={discountBreakdown}
@@ -111,6 +114,7 @@ export function OrderRefundedDetailsDialog({
                                     </Text>
                                 </View>
                                 <Button
+                                    testID="order-refunded-details-close-button"
                                     title={t('COMMON_Close', 'Close')}
                                     type="solid"
                                     onPress={onClose}
@@ -119,7 +123,10 @@ export function OrderRefundedDetailsDialog({
                             </View>
                         }
                     />
-                    <View style={styles.refundCard}>
+                    <View
+                        style={styles.refundCard}
+                        testID="order-refunded-details-refund-card"
+                    >
                         <Text style={styles.refundTitle}>
                             {t(
                                 'ORDERS_RefundedOrderDetailsRefundSummary',
@@ -133,7 +140,10 @@ export function OrderRefundedDetailsDialog({
                             />
                         ) : (
                             <>
-                                <View style={styles.refundMetaGrid}>
+                                <View
+                                    style={styles.refundMetaGrid}
+                                    testID="order-refunded-details-meta-grid"
+                                >
                                     <View style={styles.refundMetaItem}>
                                         <Text style={styles.refundMetaLabel}>
                                             {t(
@@ -210,6 +220,7 @@ export function OrderRefundedDetailsDialog({
                                                 <View
                                                     key={`${payment.type}-${index}`}
                                                     style={styles.paymentRow}
+                                                    testID={`order-refunded-details-payment-${index}`}
                                                 >
                                                     <Text
                                                         style={

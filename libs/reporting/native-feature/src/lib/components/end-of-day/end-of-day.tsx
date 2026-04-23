@@ -481,14 +481,18 @@ export function EndOfDay(props: EndOfDayProps) {
     }, [emptyOpacity, emptyTranslateY, hasFilteredData, loading]);
 
     return (
-        <View style={styles.page}>
-            <View style={[styles.box, local.reportShell]}>
-                <View style={local.reportToolbar}>
+        <View style={styles.page} testID="end-of-day-screen">
+            <View
+                style={[styles.box, local.reportShell]}
+                testID="end-of-day-shell"
+            >
+                <View style={local.reportToolbar} testID="end-of-day-toolbar">
                     <Text style={local.reportToolbarTitle}>
                         {t('SIDEBAR_EndOfDay', 'End of Day')}
                     </Text>
                     <View style={local.reportToolbarActions}>
                         <Button
+                            testID="end-of-day-toggle-filters-button"
                             type="outline"
                             title={
                                 filtersCollapsed
@@ -502,6 +506,7 @@ export function EndOfDay(props: EndOfDayProps) {
                             titleStyle={local.toolbarButtonText}
                         />
                         <Button
+                            testID="end-of-day-toggle-summary-button"
                             type="outline"
                             title={
                                 summaryCollapsed
@@ -518,7 +523,10 @@ export function EndOfDay(props: EndOfDayProps) {
                 </View>
 
                 {!filtersCollapsed && (
-                    <View style={local.filterBar}>
+                    <View
+                        style={local.filterBar}
+                        testID="end-of-day-filter-bar"
+                    >
                         <View
                             style={[local.filterField, local.dateFilterField]}
                         >
@@ -526,6 +534,7 @@ export function EndOfDay(props: EndOfDayProps) {
                                 {t('EOD_Date', 'Date')}
                             </Text>
                             <Button
+                                testID="end-of-day-date-button"
                                 title={date.toLocaleDateString()}
                                 titleProps={{
                                     numberOfLines: 1,
@@ -555,6 +564,9 @@ export function EndOfDay(props: EndOfDayProps) {
                                     {config.label}
                                 </Text>
                                 <DropDownPicker
+                                    testID={`end-of-day-filter-${config.label
+                                        .toLowerCase()
+                                        .replace(/[^a-z0-9]+/g, '-')}`}
                                     style={local.dropdown}
                                     dropDownContainerStyle={local.dropdownMenu}
                                     textStyle={local.dropdownText}
@@ -621,7 +633,10 @@ export function EndOfDay(props: EndOfDayProps) {
                 {!loading && hasFilteredData && (
                     <>
                         {!summaryCollapsed && (
-                            <View style={local.widgetSection}>
+                            <View
+                                style={local.widgetSection}
+                                testID="end-of-day-summary-section"
+                            >
                                 <View style={{ flex: 1 }}>
                                     {chunkWidgets(widgets).map((row, index) => (
                                         <View
@@ -654,6 +669,7 @@ export function EndOfDay(props: EndOfDayProps) {
                         )}
 
                         <FlatList
+                            testID="end-of-day-orders-list"
                             style={local.ordersList}
                             data={filteredOrders}
                             keyExtractor={(item) => item.id}

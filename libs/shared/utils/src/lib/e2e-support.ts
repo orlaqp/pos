@@ -1,3 +1,5 @@
+import { Settings } from 'react-native';
+
 export type E2EConfig = {
     enabled: boolean;
     seedTenant: boolean;
@@ -42,6 +44,16 @@ const state: E2EState = {
 
 const emit = () => {
     listeners.forEach((listener) => listener());
+};
+
+const readNativeE2ESetting = (key: string) => {
+    const value = Settings.get(key);
+
+    if (typeof value === 'string') {
+        return value.toLowerCase() === 'true';
+    }
+
+    return value === true;
 };
 
 export const subscribeToE2EState = (listener: Listener) => {
@@ -105,3 +117,5 @@ export const isE2EEnabled = () => state.config.enabled;
 
 export const isE2EPrinterSpyEnabled = () =>
     state.config.enabled && state.config.printerSpy;
+
+export const isNativeE2ERequested = () => readNativeE2ESetting('e2eEnabled');

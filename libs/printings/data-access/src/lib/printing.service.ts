@@ -277,6 +277,28 @@ export const printReceipt = async (
     const resolvedPrinterInfo = printerInfo ?? (await PrinterService.getDefaultPrinter());
 
     if (!resolvedPrinterInfo) {
+        const previewReceiptText = buildReceiptPreviewText(
+            store,
+            ticket,
+            undefined,
+            DEFAULT_RECEIPT_LAYOUT_PROFILE
+        );
+
+        if (isE2EPrinterSpyEnabled()) {
+            recordE2EPrintJob({
+                timestamp: new Date().toISOString(),
+                printerIdentifier: undefined,
+                orderId: ticket.orderId,
+                orderNo: ticket.orderNo,
+                copyType: ticket.copyType,
+                copyLabel: getReceiptCopyLabel(ticket),
+                total: ticket.totals.total,
+                paymentSummaryText: getReceiptPaymentsText(ticket),
+                receiptText: previewReceiptText,
+            });
+            return;
+        }
+
         if (!receiptPreviewHandler) {
             Alert.alert('No printer is configured for this device.');
             return;
@@ -285,12 +307,7 @@ export const printReceipt = async (
         receiptPreviewHandler({
             copyType: ticket.copyType,
             orderNo: ticket.orderNo,
-            receiptText: buildReceiptPreviewText(
-                store,
-                ticket,
-                undefined,
-                DEFAULT_RECEIPT_LAYOUT_PROFILE
-            ),
+            receiptText: previewReceiptText,
         });
         return;
     }

@@ -57,6 +57,7 @@ export function Submenu({
 
     return (
         <ListItem.Accordion
+            testID={`sidebar-submenu-${item.id}`}
             containerStyle={[
                 styles.accordionContainer,
                 parentActive ? styles.accordionContainerActive : undefined,

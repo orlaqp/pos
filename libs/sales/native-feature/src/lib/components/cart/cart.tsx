@@ -9,7 +9,7 @@ import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, Dialog } from '@rneui/themed';
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { View, Alert, Text, Image } from 'react-native';
+import { View, Alert, Text, Image, Pressable } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -54,6 +54,7 @@ import {
     baseAmountForDisplay,
     getAvailableManualDefinitions,
 } from './cart-discount.helpers';
+import { isE2EEnabled } from '@pos/shared/utils';
 
 export type CartMode = 'order' | 'payment';
 
@@ -395,6 +396,13 @@ export function Cart({
         onInteractionComplete();
     };
 
+    const e2eCheckoutAction =
+        mode === 'order' && !payFromSalesScreen ? confirmPrintOrder : submitOrder;
+    const e2eCheckoutLabel =
+        mode === 'order' && !payFromSalesScreen
+            ? 'E2E Print Order'
+            : 'E2E Checkout';
+
     const validateProductInventory = () => {
         const notAvailableProducts = getUnavailableProductMessages(
             cart.items,
@@ -620,6 +628,26 @@ export function Cart({
             </View>
 
             <View style={localStyles.actionsWrap}>
+                {typeof __DEV__ !== 'undefined' && __DEV__ && isE2EEnabled() ? (
+                    <View style={localStyles.e2eShortcutContainer}>
+                        <Pressable
+                            testID="cart-pay-order-e2e-shortcut"
+                            accessible={true}
+                            accessibilityRole="button"
+                            accessibilityLabel={e2eCheckoutLabel}
+                            disabled={!ready}
+                            onPress={e2eCheckoutAction}
+                            style={[
+                                localStyles.e2eShortcutButton,
+                                !ready && localStyles.primaryButtonDisabled,
+                            ]}
+                        >
+                            <Text style={localStyles.e2eShortcutTitle}>
+                                {e2eCheckoutLabel}
+                            </Text>
+                        </Pressable>
+                    </View>
+                ) : null}
                 {canViewDiscountControls && (
                     <CartDiscountActions
                         styles={localStyles}

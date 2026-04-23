@@ -82,6 +82,7 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
 
     return (
         <TouchableOpacity
+            testID={`product-item-${item.id}`}
             style={[
                 styles.dataRow,
                 styles.row,
@@ -157,6 +158,7 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
                     onPress={editItem}
                 /> */}
                 <Button
+                    testID={`product-item-delete-${item.id}`}
                     type="clear"
                     icon={{
                         name: 'trash-can',

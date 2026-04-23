@@ -43,6 +43,25 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         actionsWrap: {
             marginTop: tokens.spacing.md,
         },
+        e2eShortcutContainer: {
+            alignItems: 'flex-start',
+            marginBottom: tokens.spacing.xs,
+        },
+        e2eShortcutButton: {
+            minHeight: 36,
+            paddingHorizontal: tokens.spacing.sm,
+            borderRadius: tokens.radii.sm,
+            borderWidth: 1,
+            borderColor: `${tokens.colors.accent}66`,
+            backgroundColor: `${tokens.colors.accent}18`,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        e2eShortcutTitle: {
+            color: tokens.colors.accent,
+            fontSize: 12,
+            fontWeight: '800',
+        },
         checkoutSecondaryButtonContainer: {
             marginBottom: tokens.spacing.sm,
             borderRadius: tokens.radii.md,

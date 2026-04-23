@@ -20,7 +20,8 @@ export interface UIButtonProps {
     onLongPress?: (item: ButtonItemType) => void;
     item: ButtonItemType;
     maxTextLength?: number;
-    children?: any; 
+    children?: any;
+    testID?: string;
 }
 
 export function UIButton({
@@ -29,6 +30,7 @@ export function UIButton({
     onLongPress,
     maxTextLength,
     children,
+    testID,
 }: UIButtonProps) {
     const theme = useTheme();
     const colors = theme?.theme?.colors || { black: '#ffffff' };
@@ -38,7 +40,7 @@ export function UIButton({
     return (
         <TouchableOpacity
             key={item.id}
-            testID={item.id ? `ui-button-${item.id}` : undefined}
+            testID={testID || (item.id ? `ui-button-${item.id}` : undefined)}
             onPress={() => onSelected(item)}
             onLongPress={onLongPress ? () => onLongPress(item) : undefined}
             style={{ padding: 10 }}

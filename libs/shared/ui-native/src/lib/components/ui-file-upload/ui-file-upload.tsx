@@ -17,6 +17,7 @@ export interface UiFileUploadProps {
     message?: string;
     prefix: string;
     imageKey: string | null | undefined;
+    testID?: string;
     width?: number;
     height?: number;
     onAssetUploaded?: (key: string) => void;
@@ -27,6 +28,7 @@ export function UiFileUpload({
     message,
     prefix,
     imageKey,
+    testID,
     height,
     width,
     onAssetUploaded,
@@ -117,6 +119,7 @@ export function UiFileUpload({
     return (
         <View style={{ marginRight: 25 }}>
             <TouchableOpacity
+                testID={testID}
                 style={{
                     ...styles.darkBackground,
                     ...styles.centered,
@@ -159,6 +162,7 @@ export function UiFileUpload({
             </TouchableOpacity>
             { imageUri && 
             <TouchableOpacity
+                testID={testID ? `${testID}-remove` : undefined}
                 style={{ position: 'absolute', top: -12, left: (width || 125) - 14 }}
                 onPress={() => deleteImage()}
             >

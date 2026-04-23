@@ -29,7 +29,11 @@
         "migrate:develop-to-ebtdev": "ts-node --project tools/tsconfig.tools.json tools/migrate-amplify-to-tenant.ts",
         "migrate:develop-assets-to-ebtdev": "ts-node --project tools/tsconfig.tools.json tools/migrate-amplify-assets.ts",
         "seed:tenant-discounts": "ts-node --project tools/tsconfig.tools.json tools/seed-tenant-discounts.ts",
-        "coverage:discounts-sales": "node tools/run-discount-sales-coverage.js"
+        "coverage:discounts-sales": "node tools/run-discount-sales-coverage.js",
+        "test:critical": "node tools/run-critical-tests.js",
+        "test:e2e:ios:smoke": "nx run mobile-ui-e2e:test-ios-smoke",
+        "test:e2e:ios:critical": "nx run mobile-ui-e2e:test-ios-critical",
+        "test:coverage:critical": "node tools/run-critical-coverage.js"
     },
     "resolutions": {
         "@babel/core": "7.29.0",

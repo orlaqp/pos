@@ -48,7 +48,11 @@ import {
     readPinLockState,
     writePinLockState,
 } from './use-pin-lock';
-import { E2E_MANAGER_PIN } from '@pos/shared/utils';
+import {
+    E2E_MANAGER_PIN,
+    isE2EEnabled,
+    isNativeE2ERequested,
+} from '@pos/shared/utils';
 import {
     Auth,
     DataStore,
@@ -314,6 +318,8 @@ export const HomeScreen = (props: HomeScreenProps) => {
         setPinResetToken((current) => current + 1);
     };
 
+    const e2eAutoManagerLoginStartedRef = useRef(false);
+
     const clearPinGuard = useCallback(async () => {
         setInvalidPinAttempt(0);
         const clearedState: PinLockState = {
@@ -338,6 +344,28 @@ export const HomeScreen = (props: HomeScreenProps) => {
             console.error('E2E manager login failed', error);
         }
     }, [clearPinGuard, dispatch]);
+
+    useEffect(() => {
+        if (
+            typeof __DEV__ === 'undefined' ||
+            !__DEV__ ||
+            !isNativeE2ERequested()
+        ) {
+            return;
+        }
+
+        if (!isE2EEnabled() || employee || accessSyncInProgress || isPinLocked) {
+            e2eAutoManagerLoginStartedRef.current = false;
+            return;
+        }
+
+        if (e2eAutoManagerLoginStartedRef.current) {
+            return;
+        }
+
+        e2eAutoManagerLoginStartedRef.current = true;
+        void loginWithE2EManager();
+    }, [accessSyncInProgress, employee, isPinLocked, loginWithE2EManager]);
 
     const confirmLogoff = useCallback(() => {
         Alert.alert('Log off business?', 'This will sign out the admin session on this device.', [

@@ -28,6 +28,11 @@ node_modules
 /.sass-cache
 /connect.lock
 /coverage
+**/coverage/
+**/lcov.info
+**/clover.xml
+**/coverage-final.json
+**/coverage-summary.json
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log

@@ -50,6 +50,9 @@ export function LoginScreen(props: LoginProps) {
     const loading = useSelector(
         (state: RootState) => state.auth.signInStatus === 'inProgress'
     );
+    const signInStatus = useSelector(
+        (state: RootState) => state.auth.signInStatus
+    );
     const initialEmail = props.route?.params?.email?.trim() || '';
     const formMethods = useForm<SignInModel>({
         mode: 'onChange',
@@ -61,14 +64,29 @@ export function LoginScreen(props: LoginProps) {
     });
 
     const login = async (model: SignInModel) => {
+        const normalizedEmail = model.email.trim();
+        const isE2ELogin =
+            typeof __DEV__ !== 'undefined' &&
+            __DEV__ &&
+            normalizedEmail.toLowerCase() === E2E_OWNER_EMAIL.toLowerCase() &&
+            model.password === E2E_OWNER_PASSWORD;
+
+        if (isE2ELogin) {
+            activateE2EMode({
+                seedTenant: true,
+                cleanupOnExit: true,
+                printerSpy: true,
+            });
+        }
+
         await dispatch(
-            signIn({ email: model.email.trim(), password: model.password })
+            signIn({ email: normalizedEmail, password: model.password })
         ).unwrap();
 
         try {
             if (model.rememberCredentials) {
                 await saveRememberedAdminCredentials({
-                    username: model.email.trim(),
+                    username: normalizedEmail,
                     password: model.password,
                 });
             } else {
@@ -220,6 +238,16 @@ export function LoginScreen(props: LoginProps) {
                             <Text style={styles.formTitle}>Sign in</Text>
                             <Text style={styles.formSubtitle}>Use the owner account for this business.</Text>
                             {error ? <UIAlert message={error} type="error" /> : null}
+                            {typeof __DEV__ !== 'undefined' && __DEV__ ? (
+                                <View style={styles.e2eStatusPanel}>
+                                    <Text testID="login-auth-status" style={styles.e2eStatusText}>
+                                        {signInStatus}
+                                    </Text>
+                                    <Text testID="login-auth-error" style={styles.e2eStatusText}>
+                                        {error || ''}
+                                    </Text>
+                                </View>
+                            ) : null}
                             <View style={styles.formSection}>
                                 <Text style={styles.formSectionLabel}>Credentials</Text>
                                 <UIInput
@@ -309,6 +337,15 @@ const useStyles = () => {
             opacity: 0.18,
             backgroundColor: 'rgba(255,255,255,0.08)',
             borderRadius: 6,
+        },
+        e2eStatusPanel: {
+            minHeight: 16,
+            marginBottom: 8,
+        },
+        e2eStatusText: {
+            fontSize: 6,
+            lineHeight: 8,
+            color: 'rgba(255,255,255,0.16)',
         },
         shell: {
             width: '100%',

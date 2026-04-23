@@ -9,6 +9,8 @@ export interface UiActionBarProps {
     busy: boolean;
     submitTitle?: string;
     cancelTitle?: string;
+    submitTestID?: string;
+    cancelTestID?: string;
     submitLoading?: boolean;
     submitAction: () => unknown;
     cancelAction: () => unknown;
@@ -34,6 +36,7 @@ export function UIActions(props: UiActionBarProps) {
             }}
         >
             <Button
+                testID={props.cancelTestID || 'ui-actions-cancel-button'}
                 title={props.cancelTitle || 'Cancel'}
                 type="clear"
                 onPress={props.cancelAction}
@@ -60,6 +63,7 @@ export function UIActions(props: UiActionBarProps) {
                 disabledTitleStyle={{ color: colors.grey5 }}
             />
             <Button
+                testID={props.submitTestID || 'ui-actions-submit-button'}
                 title={props.submitTitle || 'Save'}
                 onPress={props.submitAction}
                 loading={props.submitLoading}

@@ -92,7 +92,7 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
     };
 
     return (
-        <View style={styles.productDetailsContainer}>
+        <View style={styles.productDetailsContainer} testID="sales-product-details-screen">
             <View style={styles.dialogFrame}>
                 <View style={styles.headerBlock}>
                     <Text style={styles.eyebrow}>Product details</Text>
@@ -221,6 +221,7 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
                 </View>
 
                 <Button
+                    testID="sales-product-details-submit"
                     containerStyle={styles.ctaContainer}
                     type="solid"
                     title={item.identifier ? 'Update cart' : 'Add to cart'}

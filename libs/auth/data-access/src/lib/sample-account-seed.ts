@@ -11,6 +11,7 @@ import {
   Store,
   UnitOfMeasure,
 } from '@pos/shared/models';
+import { DataStore } from '@pos/shared/amplify';
 import { User } from './auth.slice';
 import { bootstrapTenantSession } from './tenant-bootstrap';
 

@@ -22,6 +22,8 @@ export const UINumericInput = React.forwardRef<any, Props>(
         const { control } = useFormContext();
 
         const inputProps = restOfProps as InputProps;
+        const nativeInputTestId =
+            typeof inputProps.testID === 'string' ? inputProps.testID : undefined;
         inputProps.leftIcon = lIcon
             ? {
                   name: lIcon,
@@ -66,6 +68,13 @@ export const UINumericInput = React.forwardRef<any, Props>(
                     <Input
                         ref={ref as any}
                         {...restOfProps}
+                        inputProps={{
+                            ...inputProps.inputProps,
+                            testID:
+                                inputProps.inputProps?.testID || nativeInputTestId,
+                            nativeID:
+                                inputProps.inputProps?.nativeID || nativeInputTestId,
+                        }}
                         placeholder={props.placeholder}
                         value={value?.toString()}
                         onBlur={(event) => {

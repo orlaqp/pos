@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import {
     clearSampleAccountData,
     resetSampleAccountData,
+    restoreSession,
 } from '@pos/auth/data-access';
 import {
     fetchEmployees,
@@ -22,6 +23,7 @@ import {
     clearE2EPrintJobs,
     deactivateE2EMode,
     getE2EState,
+    isNativeE2ERequested,
     markE2ECleanupComplete,
     markE2EResetComplete,
     setE2ESeedStatus,
@@ -32,32 +34,31 @@ import { configureDataStore } from '@pos/shared/data-store';
 
 const E2E_STATION_NUMBER = '01';
 
-const panelEnabled = () => typeof __DEV__ !== 'undefined' && __DEV__;
+const panelEnabled = () =>
+    typeof __DEV__ !== 'undefined' && __DEV__ && isNativeE2ERequested();
 
 export function E2EControlPanel() {
     const dispatch = useAppDispatch();
     const user = useSelector((state: RootState) => state.auth.user);
     const [e2eState, setLocalE2EState] = useState(getE2EState());
+    const [lastAction, setLastAction] = useState('idle');
+    const autoResetStartedRef = useRef(false);
+    const panelVisible = panelEnabled();
 
     useEffect(() => {
-        if (!panelEnabled()) {
+        if (!panelVisible) {
             return;
         }
 
         return subscribeToE2EState(() => {
             setLocalE2EState(getE2EState());
         });
-    }, []);
+    }, [panelVisible]);
 
     const latestPrintJob = useMemo(() => {
         const last = e2eState.printJobs[e2eState.printJobs.length - 1];
         return last ? JSON.stringify(last) : '';
     }, [e2eState.printJobs]);
-
-    if (!panelEnabled()) {
-        return null;
-    }
-
     const refreshBusinessState = async () => {
         await dispatch(saveStationNumber(E2E_STATION_NUMBER)).unwrap();
         await dispatch(fetchStationInfo()).unwrap();
@@ -70,8 +71,23 @@ export function E2EControlPanel() {
         ]);
     };
 
+    const resolveAuthUser = async () => {
+        if (user) {
+            return user;
+        }
+
+        try {
+            return await dispatch(restoreSession()).unwrap();
+        } catch {
+            return null;
+        }
+    };
+
     const runReset = async () => {
-        if (!user) {
+        setLastAction('reset:pressed');
+        const activeUser = await resolveAuthUser();
+        if (!activeUser) {
+            setLastAction('reset:missing-auth-user');
             setE2ESeedStatus('missing-auth-user');
             return;
         }
@@ -82,14 +98,22 @@ export function E2EControlPanel() {
             printerSpy: true,
         });
         clearE2EPrintJobs();
+        setLastAction('reset:resetting');
         setE2ESeedStatus('resetting');
 
         try {
-            await resetSampleAccountData(user, { includeOrders: false });
+            await resetSampleAccountData(activeUser, { includeOrders: false });
+            setLastAction('reset:refreshing-business');
             await refreshBusinessState();
             markE2EResetComplete();
+            setLastAction('reset:ready');
             setE2ESeedStatus('ready');
         } catch (error) {
+            setLastAction(
+                `reset:error:${
+                    error instanceof Error ? error.message : String(error)
+                }`
+            );
             setE2ESeedStatus(
                 error instanceof Error ? error.message : String(error)
             );
@@ -97,20 +121,31 @@ export function E2EControlPanel() {
     };
 
     const runCleanup = async () => {
-        if (!user) {
+        setLastAction('cleanup:pressed');
+        const activeUser = await resolveAuthUser();
+        if (!activeUser) {
+            setLastAction('cleanup:missing-auth-user');
             setE2ESeedStatus('missing-auth-user');
             return;
         }
 
+        setLastAction('cleanup:cleaning');
         setE2ESeedStatus('cleaning');
         try {
-            await clearSampleAccountData(user);
+            await clearSampleAccountData(activeUser);
+            setLastAction('cleanup:refreshing-business');
             await refreshBusinessState();
             clearE2EPrintJobs();
             markE2ECleanupComplete();
+            setLastAction('cleanup:clean');
             setE2ESeedStatus('clean');
             deactivateE2EMode();
         } catch (error) {
+            setLastAction(
+                `cleanup:error:${
+                    error instanceof Error ? error.message : String(error)
+                }`
+            );
             setE2ESeedStatus(
                 error instanceof Error ? error.message : String(error)
             );
@@ -118,11 +153,15 @@ export function E2EControlPanel() {
     };
 
     const runResetLocalSync = async () => {
-        if (!user) {
+        setLastAction('sync-reset:pressed');
+        const activeUser = await resolveAuthUser();
+        if (!activeUser) {
+            setLastAction('sync-reset:missing-auth-user');
             setE2ESeedStatus('missing-auth-user');
             return;
         }
 
+        setLastAction('sync-reset:resetting');
         setE2ESeedStatus('resetting-local-sync');
 
         try {
@@ -130,26 +169,76 @@ export function E2EControlPanel() {
             await DataStore.clear();
             configureDataStore();
             await DataStore.start();
+            setLastAction('sync-reset:refreshing-business');
             await refreshBusinessState();
+            setLastAction('sync-reset:ready');
             setE2ESeedStatus('local-sync-reset');
         } catch (error) {
+            setLastAction(
+                `sync-reset:error:${
+                    error instanceof Error ? error.message : String(error)
+                }`
+            );
             setE2ESeedStatus(
                 error instanceof Error ? error.message : String(error)
             );
         }
     };
 
+    useEffect(() => {
+        if (panelVisible && !e2eState.config.enabled) {
+            activateE2EMode({
+                seedTenant: true,
+                cleanupOnExit: true,
+                printerSpy: true,
+            });
+        }
+    }, [e2eState.config.enabled, panelVisible]);
+
+    useEffect(() => {
+        if (!panelVisible || !e2eState.config.enabled || !e2eState.config.seedTenant) {
+            autoResetStartedRef.current = false;
+            return;
+        }
+
+        if (e2eState.seedStatus !== 'idle' || autoResetStartedRef.current) {
+            return;
+        }
+
+        autoResetStartedRef.current = true;
+        const timer = setTimeout(() => {
+            void runReset();
+        }, 0);
+
+        return () => clearTimeout(timer);
+    }, [e2eState.config.enabled, e2eState.config.seedTenant, e2eState.seedStatus, panelVisible]);
+
+    if (!panelVisible) {
+        return null;
+    }
+
     return (
         <View pointerEvents="box-none" style={styles.root}>
             <View style={styles.panel} testID="e2e-panel">
-                <Pressable testID="e2e-reset-data" onPress={runReset} style={styles.hitArea}>
-                    <Text style={styles.hiddenLabel}>Reset E2E</Text>
+                <Pressable
+                    testID="e2e-reset-data"
+                    accessibilityRole="button"
+                    onPress={runReset}
+                    style={styles.hitArea}
+                >
+                    <Text style={styles.actionLabel}>Reset E2E</Text>
                 </Pressable>
-                <Pressable testID="e2e-cleanup-data" onPress={runCleanup} style={styles.hitArea}>
-                    <Text style={styles.hiddenLabel}>Cleanup E2E</Text>
+                <Pressable
+                    testID="e2e-cleanup-data"
+                    accessibilityRole="button"
+                    onPress={runCleanup}
+                    style={styles.hitArea}
+                >
+                    <Text style={styles.actionLabel}>Cleanup E2E</Text>
                 </Pressable>
                 <Pressable
                     testID="e2e-reset-local-sync"
+                    accessibilityRole="button"
                     onPress={runResetLocalSync}
                     style={styles.debugHitArea}
                 >
@@ -157,6 +246,12 @@ export function E2EControlPanel() {
                 </Pressable>
                 <Text testID="e2e-seed-status" style={styles.hiddenLabel}>
                     {e2eState.seedStatus}
+                </Text>
+                <Text testID="e2e-auth-email" style={styles.hiddenLabel}>
+                    {user?.email || ''}
+                </Text>
+                <Text testID="e2e-last-action" style={styles.hiddenLabel}>
+                    {lastAction}
                 </Text>
                 <Text testID="e2e-print-count" style={styles.hiddenLabel}>
                     {String(e2eState.printJobs.length)}
@@ -177,7 +272,7 @@ const styles = StyleSheet.create({
         zIndex: 9999,
     },
     panel: {
-        opacity: 0.22,
+        opacity: 0.55,
         padding: 4,
         width: 120,
         backgroundColor: 'rgba(12, 16, 24, 0.18)',
@@ -188,8 +283,14 @@ const styles = StyleSheet.create({
         height: 24,
         marginBottom: 2,
         justifyContent: 'center',
+        alignItems: 'center',
         backgroundColor: 'rgba(255, 255, 255, 0.08)',
         borderRadius: 6,
+    },
+    actionLabel: {
+        fontSize: 10,
+        fontWeight: '600',
+        color: '#f8fbff',
     },
     debugHitArea: {
         width: 112,

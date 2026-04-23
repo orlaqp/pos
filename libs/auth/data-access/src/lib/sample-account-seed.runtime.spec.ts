@@ -61,25 +61,23 @@ describe('sample-account-seed runtime helpers', () => {
   });
 
   it('deletes only records for the requested tenant during cleanup', async () => {
-    const queryMock = jest.mocked(DataStore.query);
     const deleteMock = jest.mocked(DataStore.delete);
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 
-    queryMock.mockResolvedValue([
-      { id: 'tenant-record', tenantId: 'tenant-123' },
-      { id: 'other-record', tenantId: 'tenant-999' },
-    ] as never);
+    try {
+      await clearSampleAccountData(user);
 
-    await clearSampleAccountData(user);
-
-    expect(deleteMock).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'tenant-record', tenantId: 'tenant-123' })
-    );
-    expect(deleteMock).not.toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'other-record', tenantId: 'tenant-999' })
-    );
+      expect(deleteMock).not.toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[sample-account-seed] clearSampleAccountData is disabled to avoid tombstoning tenant data in shared environments.',
+        { tenantId: user.tenantId }
+      );
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 
-  it('resets tenant data by cleaning first and then reseeding', async () => {
+  it('resets tenant data by reseeding without cleanup', async () => {
     const clearSpy = jest.spyOn(require('./sample-account-seed'), 'clearSampleAccountData');
     const seedSpy = jest.spyOn(require('./sample-account-seed'), 'seedSampleAccountData');
     seedSpy.mockResolvedValue({
@@ -100,7 +98,31 @@ describe('sample-account-seed runtime helpers', () => {
 
     await resetSampleAccountData(user, { includeOrders: false });
 
-    expect(clearSpy).toHaveBeenCalledWith(user);
+    expect(clearSpy).not.toHaveBeenCalled();
     expect(seedSpy).toHaveBeenCalledWith(user, { includeOrders: false });
+  });
+
+  it('does not attempt cleanup before reseeding', async () => {
+    const seedSpy = jest.spyOn(require('./sample-account-seed'), 'seedSampleAccountData');
+    seedSpy.mockResolvedValue({
+      tenantId: user.tenantId,
+      storeId: 'store-1',
+      counts: {
+        unitOfMeasures: 0,
+        brands: 0,
+        categories: 0,
+        employees: 0,
+        products: 0,
+        customers: 0,
+        discountDefinitions: 0,
+        employeeDiscountPolicies: 0,
+        orders: 0,
+      },
+    });
+
+    await expect(resetSampleAccountData(user)).resolves.toEqual(
+      expect.objectContaining({ tenantId: user.tenantId })
+    );
+    expect(seedSpy).toHaveBeenCalledWith(user, {});
   });
 });

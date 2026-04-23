@@ -105,6 +105,8 @@ export function StationForm({ navigation }: StationFormProps) {
 
                                 <UIActions
                                     busy={busy}
+                                    submitTestID="station-save"
+                                    cancelTestID="station-cancel"
                                     submitAction={form.handleSubmit(save)}
                                     cancelAction={confirmCancel}
                                 />

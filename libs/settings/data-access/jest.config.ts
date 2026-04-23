@@ -1,5 +1,6 @@
 /* eslint-disable */
-const basePreset = require('../../../jest.preset.js');
+// @ts-ignore jest preset is a plain JS module
+import basePreset from '../../../jest.preset.js';
 
 export default {
     displayName: 'settings-data-access',

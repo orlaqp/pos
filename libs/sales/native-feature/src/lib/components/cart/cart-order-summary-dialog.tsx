@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import { Button, Dialog } from '@rneui/themed';
+import { isE2EEnabled } from '@pos/shared/utils';
 import { CartStyles } from './cart.styles';
 import { OrderSummaryPanel } from './order-summary-panel';
 
@@ -49,6 +50,14 @@ export function CartOrderSummaryDialog({
                             </Text>
                         </View>
                         <View style={styles.summaryFooterActions}>
+                            {typeof __DEV__ !== 'undefined' && __DEV__ && isE2EEnabled() ? (
+                                <Button
+                                    testID="order-summary-print-e2e-shortcut"
+                                    type="clear"
+                                    title="E2E Print"
+                                    onPress={onConfirm}
+                                />
+                            ) : null}
                             <Button
                                 type="clear"
                                 title="Back to cart"

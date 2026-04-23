@@ -30,6 +30,22 @@
                 }
             }
         },
+        "test-ios-smoke": {
+            "executor": "@nx/detox:test",
+            "options": {
+                "detoxConfiguration": "ios.sim.debug",
+                "buildTarget": "mobile-ui-e2e:build-ios",
+                "testPathPattern": "apps/mobile-ui-e2e/src/app.spec.ts"
+            }
+        },
+        "test-ios-critical": {
+            "executor": "@nx/detox:test",
+            "options": {
+                "detoxConfiguration": "ios.sim.debug",
+                "buildTarget": "mobile-ui-e2e:build-ios",
+                "testPathPattern": "apps/mobile-ui-e2e/src/app.spec.ts"
+            }
+        },
         "build-android": {
             "executor": "@nx/detox:build",
             "options": {

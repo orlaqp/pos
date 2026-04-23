@@ -63,12 +63,35 @@ const canSubscribeToDataStore = () =>
     dataStoreLifecycleState === 'started' ||
     dataStoreLifecycleState === 'stopped';
 
+const safeReadProperty = (
+    value: unknown,
+    key: 'DataStore' | 'default'
+) => {
+    if (!value || (typeof value !== 'object' && typeof value !== 'function')) {
+        return undefined;
+    }
+
+    try {
+        return Reflect.get(value, key);
+    } catch {
+        return undefined;
+    }
+};
+
 const resolveDataStore = () => {
     const module = getDataStoreModule();
+    const directModule =
+        module &&
+        typeof module === 'object' &&
+        typeof (module as { query?: unknown }).query === 'function'
+            ? module
+            : undefined;
+    const defaultExport = safeReadProperty(module, 'default');
     const resolved =
-        module?.DataStore ||
-        module?.default?.DataStore ||
-        module?.default;
+        directModule ||
+        safeReadProperty(module, 'DataStore') ||
+        safeReadProperty(defaultExport, 'DataStore') ||
+        defaultExport;
 
     if (!resolved) {
         throw new Error('Amplify DataStore module is not available');

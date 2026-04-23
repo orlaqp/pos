@@ -208,6 +208,8 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
 
                                 <UIActions
                                     busy={busy}
+                                    submitTestID="store-info-save"
+                                    cancelTestID="store-info-cancel"
                                     submitAction={form.handleSubmit(save, onInvalid)}
                                     cancelAction={confirmCancel}
                                 />

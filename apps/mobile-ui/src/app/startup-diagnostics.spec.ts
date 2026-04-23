@@ -22,17 +22,21 @@ describe('startup diagnostics', () => {
         expect(payload.nodeEnv).toBeTruthy();
     });
 
-    it('logs diagnostics payload', () => {
-        logStartupDiagnostics({
+    it('builds expected falsey flags when endpoint values are missing', () => {
+        const payload = buildDiagnostics({
             aws_project_region: 'us-east-1',
         });
 
-        expect(console.info).toHaveBeenCalledWith(
-            '[startup-diagnostics]',
-            expect.objectContaining({
-                hasAwsRegion: true,
-                hasGraphQlEndpoint: false,
+        expect(payload.hasAwsRegion).toBe(true);
+        expect(payload.hasGraphQlEndpoint).toBe(false);
+    });
+
+    it('keeps startup logging side-effect free', () => {
+        expect(() =>
+            logStartupDiagnostics({
+                aws_project_region: 'us-east-1',
             })
-        );
+        ).not.toThrow();
+        expect(console.info).not.toHaveBeenCalled();
     });
 });

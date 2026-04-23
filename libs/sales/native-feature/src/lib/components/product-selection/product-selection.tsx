@@ -32,6 +32,13 @@ const CARD_HIGHLIGHT_CLEAR_MS = 900;
 const buildQuantityMap = (products: ProductEntity[]) =>
     Object.fromEntries(products.map((product) => [product.id, Number(product.quantity || 0)]));
 
+const toStableProductSelector = (value?: string | null) =>
+    (value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
 export function ProductSelection({
     products,
     onSelected,
@@ -189,7 +196,10 @@ export function ProductSelection({
                                 styles.row, localStyles.row,
                             ]}
                         >
-                            {info.item?.map((p) => (
+                            {info.item?.map((p) => {
+                                const stableSelector = toStableProductSelector(p.name);
+
+                                return (
                                 <Animated.View
                                     key={p.id}
                                     style={{
@@ -226,12 +236,23 @@ export function ProductSelection({
                                         onSelected={onSelected}
                                         onLongPress={onLongPress}
                                         maxTextLength={14}
+                                        testID={
+                                            stableSelector
+                                                ? `sales-product-card-${stableSelector}`
+                                                : undefined
+                                        }
                                     >
                                         <View
                                             style={localStyles.productMeta}
                                         >
                                             <Text
-                                                testID={p.id ? `sales-product-stock-${p.id}` : undefined}
+                                                testID={
+                                                    stableSelector
+                                                        ? `sales-product-stock-value-${stableSelector}`
+                                                        : p.id
+                                                            ? `sales-product-stock-${p.id}`
+                                                            : undefined
+                                                }
                                                 style={[
                                                     styles.labelText,
                                                     localStyles.stockText,
@@ -250,7 +271,8 @@ export function ProductSelection({
                                         </View>
                                     </UIButton>
                                 </Animated.View>
-                            ))}
+                                );
+                            })}
                         </View>
                     )}
                 />
