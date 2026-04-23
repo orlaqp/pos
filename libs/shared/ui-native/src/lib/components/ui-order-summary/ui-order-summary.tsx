@@ -214,10 +214,13 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     StyleSheet.create({
         summarySurface: {
             flex: 1,
+            width: '100%',
+            minHeight: 0,
+            alignSelf: 'stretch',
             borderRadius: tokens.radii.lg,
             borderWidth: 1,
-            borderColor: tokens.colors.border,
-            backgroundColor: tokens.colors.surfaceMuted,
+            borderColor: '#C7D0DB33',
+            backgroundColor: '#080B10',
             padding: tokens.spacing.lg,
         },
         summarySurfacePlain: {
@@ -247,8 +250,8 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             marginBottom: tokens.spacing.md,
             borderRadius: tokens.radii.md,
             borderWidth: 1,
-            borderColor: tokens.colors.border,
-            backgroundColor: tokens.colors.surface,
+            borderColor: '#C7D0DB24',
+            backgroundColor: '#101722',
             padding: tokens.spacing.md,
         },
         summarySectionTitle: {

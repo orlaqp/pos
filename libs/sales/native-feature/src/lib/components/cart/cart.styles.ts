@@ -300,6 +300,7 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         summaryDialog: {
             width: 560,
             maxHeight: 560,
+            minHeight: 500,
             backgroundColor: 'transparent',
             padding: 0,
             borderWidth: 0,
