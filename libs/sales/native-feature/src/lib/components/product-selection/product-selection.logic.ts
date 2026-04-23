@@ -1,5 +1,6 @@
 import { ProductEntity } from '@pos/products/data-access';
 import { MINIMUM_INVENTORY_FOR_SALE } from '@pos/sales/data-access';
+import { EACH } from '@pos/unit-of-measures/data-access';
 
 export const chunkProducts = (
     products: ProductEntity[],
@@ -33,3 +34,42 @@ export const getProductCardState = (
 
 export const isProductOutOfStock = (product: ProductEntity): boolean =>
     product.quantity < MINIMUM_INVENTORY_FOR_SALE;
+
+export const getProductStockBadgeTone = (
+    product: ProductEntity
+): 'neutral' | 'warning' | 'danger' => {
+    const state = getProductCardState(product);
+    if (state === 'danger') return 'danger';
+    if (state === 'warning') return 'warning';
+    return 'neutral';
+};
+
+export const getProductStockLabel = (
+    product: ProductEntity,
+    labels?: {
+        inStock?: string;
+        lowStock?: string;
+        outOfStock?: string;
+        leftSuffix?: string;
+    }
+): string => {
+    const unit = String(product.unitOfMeasure || '').toLowerCase();
+    const quantity =
+        unit === EACH
+            ? `${product.quantity}`
+            : `${Number(product.quantity || 0).toFixed(2)}`;
+    const inStock = labels?.inStock || 'In stock';
+    const lowStock = labels?.lowStock || 'Low stock';
+    const outOfStock = labels?.outOfStock || 'Out of stock';
+    const leftSuffix = labels?.leftSuffix || 'left';
+
+    if (isProductOutOfStock(product)) {
+        return outOfStock;
+    }
+
+    if (getProductCardState(product) === 'warning') {
+        return `${lowStock} • ${quantity} ${leftSuffix}`;
+    }
+
+    return `${inStock} • ${quantity}`;
+};

@@ -11,6 +11,10 @@ jest.mock('@pos/shared/ui-native', () => ({
         const { Text } = require('react-native');
         return <Text>{text}</Text>;
     },
+    UIS3Image: () => {
+        const { Text } = require('react-native');
+        return <Text>IMAGE</Text>;
+    },
     UIEbtRibbon: () => {
         const { Text } = require('react-native');
         return <Text>EBT</Text>;
@@ -54,7 +58,7 @@ describe('ProductSelection', () => {
     });
 
     it('shows empty state and renders products', () => {
-        const { getByText, rerender, getByTestId } = render(
+        const { getByText, getAllByText, rerender, getByTestId } = render(
             <ProductSelection
                 products={[]}
                 onSelected={mockOnSelected}
@@ -117,10 +121,14 @@ describe('ProductSelection', () => {
                 onLongPress={mockOnLongPress}
             />
         );
-        fireEvent.press(getByTestId('product-btn-p-1'));
-        fireEvent(getByTestId('product-btn-p-1'), 'longPress');
+        fireEvent.press(getByTestId('sales-product-card-apple'));
+        fireEvent(getByTestId('sales-product-card-apple'), 'longPress');
 
-        expect(getByText('In stock: 1.23')).toBeTruthy();
+        expect(getByText('In stock • 10')).toBeTruthy();
+        expect(getByText('Low stock • 2 left')).toBeTruthy();
+        expect(getByText('In stock • 1.23')).toBeTruthy();
+        expect(getByText('EBT')).toBeTruthy();
+        expect(getAllByText('Price').length).toBeGreaterThan(0);
         expect(getByTestId('product-selection-list').props.keyboardShouldPersistTaps).toBe(
             'handled'
         );
@@ -150,13 +158,47 @@ describe('ProductSelection', () => {
             />
         );
 
-        fireEvent.press(getByTestId('product-btn-p-2'));
+        fireEvent.press(getByTestId('sales-product-card-low'));
 
         expect(Alert.alert).toHaveBeenCalledWith(
             'Not Available',
             'We do not have this product in inventory at the moment'
         );
         expect(mockOnSelected).not.toHaveBeenCalled();
+    });
+
+    it('renders out-of-stock and low-stock badge-based states', () => {
+        const products = [
+            {
+                id: 'p-2',
+                name: 'Low',
+                quantity: 0,
+                reorderPoint: 3,
+                price: 1.5,
+                unitOfMeasure: 'EA',
+                isEBTEligible: false,
+            },
+            {
+                id: 'p-3',
+                name: 'Warn',
+                quantity: 2,
+                reorderPoint: 3,
+                price: 1.2,
+                unitOfMeasure: 'EA',
+                isEBTEligible: false,
+            },
+        ] as any;
+
+        const { getByText } = render(
+            <ProductSelection
+                products={products}
+                onSelected={mockOnSelected}
+                onLongPress={mockOnLongPress}
+            />
+        );
+
+        expect(getByText('Out of stock')).toBeTruthy();
+        expect(getByText('Low stock • 2 left')).toBeTruthy();
     });
 
     it('highlights a product when its quantity changes', () => {
