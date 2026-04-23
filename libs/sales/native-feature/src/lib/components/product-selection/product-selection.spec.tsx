@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any, import/first */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 
 const mockOnSelected = jest.fn();
 const mockOnLongPress = jest.fn();
@@ -45,6 +46,11 @@ const { ProductSelection } = require('./product-selection');
 describe('ProductSelection', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
     });
 
     it('shows empty state and renders products', () => {
@@ -120,6 +126,37 @@ describe('ProductSelection', () => {
         );
         expect(mockOnSelected).toHaveBeenCalledWith(products[0]);
         expect(mockOnLongPress).toHaveBeenCalledWith(products[0]);
+    });
+
+    it('dims out of stock products and shows an alert instead of adding them to the cart', () => {
+        const products = [
+            {
+                id: 'p-2',
+                name: 'Low',
+                description: 'low stock',
+                quantity: 0,
+                reorderPoint: 3,
+                price: 1.5,
+                unitOfMeasure: 'EA',
+                isEBTEligible: false,
+            },
+        ] as any;
+
+        const { getByTestId } = render(
+            <ProductSelection
+                products={products}
+                onSelected={mockOnSelected}
+                onLongPress={mockOnLongPress}
+            />
+        );
+
+        fireEvent.press(getByTestId('product-btn-p-2'));
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Not Available',
+            'We do not have this product in inventory at the moment'
+        );
+        expect(mockOnSelected).not.toHaveBeenCalled();
     });
 
     it('highlights a product when its quantity changes', () => {

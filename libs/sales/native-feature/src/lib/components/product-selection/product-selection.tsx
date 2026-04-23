@@ -5,15 +5,17 @@ import {
     UIEbtRibbon,
     UIEmptyState,
 } from '@pos/shared/ui-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { EACH } from '@pos/unit-of-measures/data-access';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { View, Text, FlatList, StyleSheet, Animated } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Animated, Alert } from 'react-native';
 import {
     chunkProducts,
     getProductCardState,
+    isProductOutOfStock,
 } from './product-selection.logic';
 
 /* eslint-disable-next-line */
@@ -53,6 +55,23 @@ export function ProductSelection({
     const flashMapRef = useRef<Record<string, Animated.Value>>({});
     const clearTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const [highlightTones, setHighlightTones] = useState<Record<string, HighlightTone>>({});
+    const outOfStockTitle = translateWithFallback(
+        'SALES_NotAvailableTitle',
+        'Not Available'
+    );
+    const outOfStockMessage = translateWithFallback(
+        'SALES_NotAvailableMessage',
+        'We do not have this product in inventory at the moment'
+    );
+
+    const handleProductSelected = (product: ButtonItemType) => {
+        if (isProductOutOfStock(product as ProductEntity)) {
+            Alert.alert(outOfStockTitle, outOfStockMessage);
+            return;
+        }
+
+        onSelected(product);
+    };
 
     const getScaleValue = (productId: string) => {
         if (!scaleMapRef.current[productId]) {
@@ -198,21 +217,25 @@ export function ProductSelection({
                         >
                             {info.item?.map((p) => {
                                 const stableSelector = toStableProductSelector(p.name);
+                                const outOfStock = isProductOutOfStock(p);
 
                                 return (
                                 <Animated.View
                                     key={p.id}
-                                    style={{
-                                        ...productBackgroundColor(p),
-                                        borderRadius: tokens.radii.md,
-                                        marginRight: 0,
-                                        marginBottom: tokens.spacing.sm,
-                                        width: '32%',
-                                        position: 'relative',
-                                        borderWidth: 1,
-                                        borderColor: tokens.colors.border,
-                                        transform: [{ scale: getScaleValue(p.id) }],
-                                    }}
+                                    style={[
+                                        {
+                                            ...productBackgroundColor(p),
+                                            borderRadius: tokens.radii.md,
+                                            marginRight: 0,
+                                            marginBottom: tokens.spacing.sm,
+                                            width: '32%',
+                                            position: 'relative',
+                                            borderWidth: 1,
+                                            borderColor: tokens.colors.border,
+                                            transform: [{ scale: getScaleValue(p.id) }],
+                                        },
+                                        outOfStock ? localStyles.outOfStockCard : null,
+                                    ]}
                                 >
                                     {highlightTones[p.id] ? (
                                         <Animated.View
@@ -233,7 +256,7 @@ export function ProductSelection({
                                     {p.isEBTEligible && <UIEbtRibbon />}
                                     <UIButton
                                         item={p}
-                                        onSelected={onSelected}
+                                        onSelected={handleProductSelected}
                                         onLongPress={onLongPress}
                                         maxTextLength={14}
                                         testID={
@@ -256,6 +279,7 @@ export function ProductSelection({
                                                 style={[
                                                     styles.labelText,
                                                     localStyles.stockText,
+                                                    outOfStock ? localStyles.outOfStockText : null,
                                                 ]}
                                             >
                                                 In stock: {p.unitOfMeasure === EACH ? p.quantity : p.quantity.toFixed(2)}
@@ -264,6 +288,7 @@ export function ProductSelection({
                                                 style={[
                                                     styles.labelText,
                                                     localStyles.priceText,
+                                                    outOfStock ? localStyles.outOfStockText : null,
                                                 ]}
                                             >
                                                 $ {p.price.toFixed(2)}
@@ -314,6 +339,12 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         updateFlashDecrease: {
             backgroundColor: 'rgba(245, 166, 35, 0.26)',
+        },
+        outOfStockCard: {
+            opacity: 0.42,
+        },
+        outOfStockText: {
+            opacity: 0.82,
         },
         stockText: {
             fontWeight: '700',

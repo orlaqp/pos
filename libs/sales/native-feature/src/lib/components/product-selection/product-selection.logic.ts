@@ -30,3 +30,6 @@ export const getProductCardState = (
     }
     return 'default';
 };
+
+export const isProductOutOfStock = (product: ProductEntity): boolean =>
+    product.quantity < MINIMUM_INVENTORY_FOR_SALE;

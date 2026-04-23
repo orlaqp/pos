@@ -2,6 +2,7 @@ import {
     chunkProducts,
     getNextRowsToShow,
     getProductCardState,
+    isProductOutOfStock,
 } from './product-selection.logic';
 
 describe('product-selection.logic', () => {
@@ -31,5 +32,10 @@ describe('product-selection.logic', () => {
         expect(
             getProductCardState({ quantity: 5, reorderPoint: 2 } as any)
         ).toBe('default');
+    });
+
+    it('marks products below the sale threshold as out of stock', () => {
+        expect(isProductOutOfStock({ quantity: 0 } as any)).toBe(true);
+        expect(isProductOutOfStock({ quantity: 1 } as any)).toBe(false);
     });
 });
