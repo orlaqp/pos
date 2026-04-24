@@ -32,6 +32,10 @@ jest.mock('@pos/theme/native/design-tokens', () => ({
     }),
 }));
 
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 jest.mock('@pos/shared/ui-native', () => ({
     UIScreen: ({ children }: { children: React.ReactNode }) => {
         const { View } = require('react-native');

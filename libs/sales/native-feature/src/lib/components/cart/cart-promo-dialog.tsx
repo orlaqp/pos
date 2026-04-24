@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, TextInput, View } from 'react-native';
 import { Button, Dialog } from '@rneui/themed';
 import { CartStyles } from './cart.styles';
+import { translateWithFallback } from '@pos/shared/utils';
 
 interface CartPromoDialogProps {
     visible: boolean;
@@ -24,6 +25,7 @@ export function CartPromoDialog({
     onClose,
     onSubmit,
 }: CartPromoDialogProps) {
+    const t = translateWithFallback;
     return (
         <Dialog
             isVisible={visible}
@@ -33,28 +35,42 @@ export function CartPromoDialog({
             overlayStyle={overlayStyle}
         >
             <View style={styles.dialogHeroCard}>
-                <Text style={styles.dialogTitle}>Apply promo code</Text>
+                <Text style={styles.dialogTitle}>
+                    {t('SALES_ApplyPromoCode', 'Apply promo code')}
+                </Text>
                 <Text style={styles.dialogHint}>
-                    Enter the code exactly as provided and review the pricing update in the cart immediately.
+                    {t(
+                        'SALES_PromoDialogHint',
+                        'Enter the code exactly as provided and review the pricing update in the cart immediately.'
+                    )}
                 </Text>
                 <View style={styles.dialogHeroMetaRow}>
                     <View style={styles.dialogHeroPill}>
-                        <Text style={styles.dialogHeroPillText}>Instant recalculation</Text>
+                        <Text style={styles.dialogHeroPillText}>
+                            {t('SALES_InstantRecalculation', 'Instant recalculation')}
+                        </Text>
                     </View>
                     <View style={styles.dialogHeroPill}>
-                        <Text style={styles.dialogHeroPillText}>Checkout ready</Text>
+                        <Text style={styles.dialogHeroPillText}>
+                            {t('SALES_CheckoutReady', 'Checkout ready')}
+                        </Text>
                     </View>
                 </View>
             </View>
             <View style={styles.dialogSectionCard}>
-                <Text style={styles.dialogSubheading}>Promo code</Text>
+                <Text style={styles.dialogSubheading}>
+                    {t('SALES_PromoCode', 'Promo code')}
+                </Text>
                 <Text style={styles.dialogFieldHint}>
-                    Keep the code visible while the cart recalculates totals.
+                    {t(
+                        'SALES_PromoCodeHint',
+                        'Keep the code visible while the cart recalculates totals.'
+                    )}
                 </Text>
                 <TextInput
                     value={promoCodeInput}
                     onChangeText={onChangePromoCode}
-                    placeholder="SPRING10"
+                    placeholder={t('SALES_PromoCodeExample', 'SPRING10')}
                     placeholderTextColor={placeholderTextColor}
                     autoCapitalize="characters"
                     style={[styles.dialogInput, styles.dialogInputLarge]}
@@ -63,13 +79,13 @@ export function CartPromoDialog({
             <View style={styles.dialogActionRow}>
                 <Button
                     type="clear"
-                    title="Cancel"
+                    title={t('COMMON_Cancel', 'Cancel')}
                     onPress={onClose}
                     buttonStyle={styles.dialogSecondaryButton}
                     titleStyle={styles.dialogSecondaryButtonTitle}
                 />
                 <Button
-                    title="Apply"
+                    title={t('COMMON_Apply', 'Apply')}
                     onPress={onSubmit}
                     buttonStyle={styles.dialogPrimaryButton}
                     titleStyle={styles.dialogPrimaryButtonTitle}

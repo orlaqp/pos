@@ -233,6 +233,12 @@ describe('OrderItem integration', () => {
 
     it('shortens the partially refunded status label for display', () => {
         expect(getOrderStatusLabel('PARTIALLY_REFUNDED')).toBe('P. REFUNDED');
+        expect(
+            getOrderStatusLabel(
+                'PARTIALLY_REFUNDED',
+                (_key, fallback) => `x:${fallback}`
+            )
+        ).toBe('x:P. REFUNDED');
         expect(getOrderStatusLabel('PAID')).toBe('PAID');
     });
 

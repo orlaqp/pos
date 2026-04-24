@@ -13,6 +13,7 @@ import {
 import { RootState } from '@pos/store';
 import { UnitOfMeasure } from '@pos/shared/models';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface UnitOfMeasureFormParams {
     [name: string]: object | undefined;
@@ -24,6 +25,7 @@ export interface UnitOfMeasureFormProps {
 }
 
 export function UnitOfMeasureForm({ navigation }: UnitOfMeasureFormProps) {
+    const t = translateWithFallback;
     const unitOfMeasure = useSelector((state: RootState) => state.unitOfMeasures.selected);
     const dispatch = useDispatch();
     const tokens = useDesignTokens();
@@ -54,11 +56,11 @@ export function UnitOfMeasureForm({ navigation }: UnitOfMeasureFormProps) {
 
     const confirmCancel = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t('COMMON_PressYesToConfirm', 'Press yes to confirm'),
             [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => navigation.goBack() },
             ]
         );
     }
@@ -70,19 +72,36 @@ export function UnitOfMeasureForm({ navigation }: UnitOfMeasureFormProps) {
                     <ScrollView contentContainerStyle={styles.scrollContent}>
                         <View style={styles.container}>
                             <UICard tone="muted" radius="lg" style={styles.headerCard}>
-                                <Text style={styles.headerTitle}>Unit of Measure Profile</Text>
+                                <Text style={styles.headerTitle}>
+                                    {t(
+                                        'UOM_ProfileTitle',
+                                        'Unit of Measure Profile',
+                                    )}
+                                </Text>
                                 <Text style={styles.headerSubtitle}>
-                                    Define shorthand units used across products and inventory.
+                                    {t(
+                                        'UOM_ProfileSubtitle',
+                                        'Define shorthand units used across products and inventory.',
+                                    )}
                                 </Text>
                             </UICard>
 
                             <UICard style={styles.sectionCard}>
-                                <Text style={styles.sectionTitle}>Details</Text>
-                                <UIInput name="name" placeholder="Name" label="Name" />
+                                <Text style={styles.sectionTitle}>
+                                    {t('COMMON_Details', 'Details')}
+                                </Text>
+                                <UIInput
+                                    name="name"
+                                    placeholder={t('COMMON_Name', 'Name')}
+                                    label={t('COMMON_Name', 'Name')}
+                                />
                                 <UIInput
                                     name="description"
-                                    placeholder="Description"
-                                    label="Description"
+                                    placeholder={t(
+                                        'COMMON_Description',
+                                        'Description',
+                                    )}
+                                    label={t('COMMON_Description', 'Description')}
                                     multiline
                                     numberOfLines={3}
                                     style={styles.descriptionInput}

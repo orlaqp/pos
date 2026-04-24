@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { UICard } from '@pos/shared/ui-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { CartStyles } from './cart.styles';
 
 interface CartDiscountActionsProps {
@@ -57,6 +58,7 @@ export function CartDiscountActions({
     onClearLinePricing,
     onClearOrderDiscount,
 }: CartDiscountActionsProps) {
+    const t = translateWithFallback;
     const showClearActions = selectedLineHasManualAdjustment || hasOrderManualAdjustment;
 
     return (
@@ -73,29 +75,42 @@ export function CartDiscountActions({
                         </Text>
                     </Pressable>
                     <View style={styles.discountHeaderContent}>
-                        <Text style={styles.discountActionTitle}>Discounts</Text>
+                        <Text style={styles.discountActionTitle}>
+                            {t('CART_DiscountsTitle', 'Discounts')}
+                        </Text>
                         {!sectionCollapsed ? (
                             <Text style={styles.discountActionHint}>
                                 {selectedItemName
-                                    ? `Selected: ${selectedItemName}`
-                                    : 'Select a line for line-level actions.'}
+                                    ? t('CART_SelectedItemLabel', 'Selected: {{name}}', {
+                                          name: selectedItemName,
+                                      })
+                                    : t(
+                                          'CART_SelectLineForLineActions',
+                                          'Select a line for line-level actions.',
+                                      )}
                             </Text>
                         ) : null}
                     </View>
                 </View>
                 <View style={styles.discountHeaderMeta}>
                     {discountsLoading ? (
-                        <Text style={styles.discountActionStatus}>Loading rules…</Text>
+                        <Text style={styles.discountActionStatus}>
+                            {t('CART_LoadingRules', 'Loading rules…')}
+                        </Text>
                     ) : null}
                     {!sectionCollapsed ? (
                         <Pressable style={styles.expandButton} onPress={onToggleExpanded}>
                             <Text style={styles.expandButtonText}>
-                                {actionsExpanded ? 'Hide actions' : 'Show actions'}
+                                {actionsExpanded
+                                    ? t('CART_HideActions', 'Hide actions')
+                                    : t('CART_ShowActions', 'Show actions')}
                             </Text>
                         </Pressable>
                     ) : hasDiscountSummary ? (
                         <Text style={styles.discountCollapsedSummary}>
-                            Saved ${savingsTotal.toFixed(2)}
+                            {t('CART_SavedAmount', 'Saved ${{amount}}', {
+                                amount: savingsTotal.toFixed(2),
+                            })}
                         </Text>
                     ) : null}
                 </View>
@@ -105,10 +120,18 @@ export function CartDiscountActions({
                 <>
                     {hasDiscountSummary ? (
                         <>
-                            <Text style={styles.summaryValue}>Saved ${savingsTotal.toFixed(2)}</Text>
+                            <Text style={styles.summaryValue}>
+                                {t('CART_SavedAmount', 'Saved ${{amount}}', {
+                                    amount: savingsTotal.toFixed(2),
+                                })}
+                            </Text>
                             {discountBreakdown.length > 1 ? (
                                 <Text style={styles.actionMutedCopy}>
-                                    {discountBreakdown.length} discounts applied
+                                    {t(
+                                        'CART_DiscountsAppliedCount',
+                                        '{{count}} discounts applied',
+                                        { count: discountBreakdown.length },
+                                    )}
                                 </Text>
                             ) : null}
                             {discountBreakdown.map((adjustment) => (
@@ -116,8 +139,11 @@ export function CartDiscountActions({
                                     key={adjustment.discountApplicationId}
                                     style={styles.summaryLine}
                                 >
-                                    {adjustment.scope === 'LINE' ? 'Line' : 'Order'} · {adjustment.name}:{' '}
-                                    -${adjustment.discountAmount.toFixed(2)}
+                                    {adjustment.scope === 'LINE'
+                                        ? t('CART_LineScope', 'Line')
+                                        : t('CART_OrderScope', 'Order')}{' '}
+                                    · {adjustment.name}: -$
+                                    {adjustment.discountAmount.toFixed(2)}
                                 </Text>
                             ))}
                             {promoCodes.length ? (
@@ -154,7 +180,10 @@ export function CartDiscountActions({
                                     onPress={onClearLinePricing}
                                 >
                                     <Text style={styles.discountSecondaryButtonText}>
-                                        Clear line pricing
+                                        {t(
+                                            'CART_ClearLinePricing',
+                                            'Clear line pricing',
+                                        )}
                                     </Text>
                                 </Pressable>
                             ) : null}
@@ -164,7 +193,10 @@ export function CartDiscountActions({
                                     onPress={onClearOrderDiscount}
                                 >
                                     <Text style={styles.discountSecondaryButtonText}>
-                                        Clear order discount
+                                        {t(
+                                            'CART_ClearOrderDiscount',
+                                            'Clear order discount',
+                                        )}
                                     </Text>
                                 </Pressable>
                             ) : null}
@@ -177,24 +209,36 @@ export function CartDiscountActions({
                                 onPress={onOpenPromo}
                                 disabled={discountsLoading}
                             >
-                                <Text style={styles.discountActionButtonEyebrow}>CODE</Text>
-                                <Text style={styles.discountActionButtonText}>Promo</Text>
+                                <Text style={styles.discountActionButtonEyebrow}>
+                                    {t('CART_DiscountCodeEyebrow', 'CODE')}
+                                </Text>
+                                <Text style={styles.discountActionButtonText}>
+                                    {t('CART_PromoShort', 'Promo')}
+                                </Text>
                             </Pressable>
                             <Pressable
                                 style={[styles.discountActionButton, styles.discountActionButtonManual]}
                                 onPress={onOpenManual}
                                 disabled={discountsLoading}
                             >
-                                <Text style={styles.discountActionButtonEyebrow}>ONE-TIME</Text>
-                                <Text style={styles.discountActionButtonText}>Manual</Text>
+                                <Text style={styles.discountActionButtonEyebrow}>
+                                    {t('CART_OneTimeEyebrow', 'ONE-TIME')}
+                                </Text>
+                                <Text style={styles.discountActionButtonText}>
+                                    {t('CART_ManualShort', 'Manual')}
+                                </Text>
                             </Pressable>
                             <Pressable
                                 style={[styles.discountActionButton, styles.discountActionButtonOverride]}
                                 onPress={onOpenOverride}
                                 disabled={discountsLoading}
                             >
-                                <Text style={styles.discountActionButtonEyebrow}>PRICE</Text>
-                                <Text style={styles.discountActionButtonText}>Override</Text>
+                                <Text style={styles.discountActionButtonEyebrow}>
+                                    {t('CART_PriceEyebrow', 'PRICE')}
+                                </Text>
+                                <Text style={styles.discountActionButtonText}>
+                                    {t('CART_OverrideShort', 'Override')}
+                                </Text>
                             </Pressable>
                         </View>
                     ) : null}

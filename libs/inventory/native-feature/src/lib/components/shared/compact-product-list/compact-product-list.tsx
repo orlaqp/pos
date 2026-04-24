@@ -5,6 +5,7 @@ import React from 'react';
 
 import { View, Text, FlatList, Pressable } from 'react-native';
 import CompactProductItem from '../compact-product-item/compact-product-item';
+import { translateWithFallback } from '@pos/shared/utils';
 
 /* eslint-disable-next-line */
 export interface CompactProductListProps {
@@ -15,6 +16,7 @@ export interface CompactProductListProps {
 }
 
 export function CompactProductList({ products, onAdd, onClose, visible }: CompactProductListProps) {
+    const t = translateWithFallback;
     const styles = useSharedStyles();
 
     if (!visible) {
@@ -64,10 +66,12 @@ export function CompactProductList({ products, onAdd, onClose, visible }: Compac
                         alignItems: 'center',
                     }}
                 >
-                    <Text style={styles.secondaryText}>Products found:</Text>
+                    <Text style={styles.secondaryText}>
+                        {t('INVENTORY_ProductsFound', 'Products found:')}
+                    </Text>
                     <Button
                         type="clear"
-                        title="Close"
+                        title={t('COMMON_Close', 'Close')}
                         onPress={onClose}
                         testID="compact-product-list-close"
                     />

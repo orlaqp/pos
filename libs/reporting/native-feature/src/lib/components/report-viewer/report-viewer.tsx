@@ -172,8 +172,8 @@ const toSafeFileSlug = (value: string) =>
 export function ReportViewer({
     getData,
     headers,
-    title = 'Sales Report',
-    subtitle = 'Filter by date range to review transactions.',
+    title,
+    subtitle,
 }: ReportViewerProps) {
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
@@ -190,6 +190,13 @@ export function ReportViewer({
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
             : fallback;
+    const resolvedTitle = title || t('REPORT_DefaultTitle', 'Sales Report');
+    const resolvedSubtitle =
+        subtitle ||
+        t(
+            'REPORT_DefaultSubtitle',
+            'Filter by date range to review transactions.'
+        );
     const [dateRange, setDateRange] = useState<DateRange>({
         startDate: moment().startOf('day'),
         endDate: moment().endOf('day'),
@@ -233,7 +240,7 @@ export function ReportViewer({
 
     const exportToCsv = async () => {
         try {
-            const filename = `${toSafeFileSlug(title || 'report')}-${moment().format(
+            const filename = `${toSafeFileSlug(resolvedTitle || 'report')}-${moment().format(
                 'YYYYMMDD-HHmmss'
             )}.csv`;
             const path = `${RNFS.DocumentDirectoryPath}/${filename}`;
@@ -334,8 +341,8 @@ export function ReportViewer({
                                 <Text style={styles.eyebrow}>
                                     {t('REPORT_Eyebrow', 'Report')}
                                 </Text>
-                                <Text style={styles.title}>{title}</Text>
-                                <Text style={styles.subtitle}>{subtitle}</Text>
+                                <Text style={styles.title}>{resolvedTitle}</Text>
+                                <Text style={styles.subtitle}>{resolvedSubtitle}</Text>
                             </View>
                             <UIDateRange
                                 initialRange={dateRange}

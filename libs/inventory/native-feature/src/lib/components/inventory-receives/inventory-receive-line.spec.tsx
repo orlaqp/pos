@@ -31,6 +31,10 @@ jest.mock('react-native-gesture-handler', () => ({
     TextInput: require('react-native').TextInput,
 }));
 
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 describe('InventoryReceiveLine', () => {
     beforeEach(() => {
         jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());

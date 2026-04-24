@@ -259,7 +259,10 @@ export function ProductSelection({
             {!products.length && (
                 <View style={localStyles.emptyWrap}>
                     <UIEmptyState
-                        text="No products found. Add products in Back Office, choose another category, or search again."
+                        text={translateWithFallback(
+                            'SALES_NoProductsFoundDetailed',
+                            'No products found. Add products in Back Office, choose another category, or search again.',
+                        )}
                         backgroundColor="transparent"
                         imageSize={150}
                     />

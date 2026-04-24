@@ -157,6 +157,8 @@ jest.mock('@pos/settings/data-access', () => ({
                 'This resets local cached data on this device. It does not delete your master business data.',
             SETTINGS_ResetData: 'Reset Data',
             SETTINGS_Status_synced: 'synced',
+            SETTINGS_AppInfo: 'App Info',
+            SETTINGS_Version: 'Version',
         };
         return values[key] || key;
     },

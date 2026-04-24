@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 
 import { View, Text, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { brandsActions, BrandEntity, BrandService } from '@pos/brands/data-access';
@@ -26,6 +27,7 @@ export const deleteBrandById = async (
 };
 
 export function BrandItem({ item, navigation }: BrandItemProps) {
+    const t = translateWithFallback;
     const theme = useTheme();
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
@@ -49,11 +51,11 @@ export function BrandItem({ item, navigation }: BrandItemProps) {
 
     const confirmDeletion = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t('COMMON_UndoOperationWarning', 'You will not be able to undo this operation'),
             [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => deleteItem() },
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => deleteItem() },
             ]
         );
     }

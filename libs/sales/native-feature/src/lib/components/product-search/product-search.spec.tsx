@@ -8,6 +8,10 @@ const mockPrimary = '#00f';
 const mockGrey = '#999';
 const mockFocus = jest.fn();
 
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 jest.mock('@pos/shared/ui-native', () => ({
     UISearchInput: (() => {
         const React = require('react');

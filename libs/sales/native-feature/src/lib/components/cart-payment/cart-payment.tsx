@@ -262,7 +262,9 @@ export function CartPayment({
                     ]}
                 >
                     {!isCompact ? (
-                        <Text style={local.summaryEyebrow}>Checkout</Text>
+                        <Text style={local.summaryEyebrow}>
+                            {t('PAYMENT_CheckoutEyebrow', 'Checkout')}
+                        </Text>
                     ) : null}
                     <Text
                         style={[
@@ -285,8 +287,10 @@ export function CartPayment({
                     </Text>
                     {!isCompact ? (
                         <Text style={local.summaryHint}>
-                            Activate the methods you need below and keep the
-                            received amount matched exactly.
+                            {t(
+                                'PAYMENT_CheckoutHint',
+                                'Activate the methods you need below and keep the received amount matched exactly.',
+                            )}
                         </Text>
                     ) : null}
                     <View

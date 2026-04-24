@@ -82,9 +82,13 @@ export const getStatusAccentColor = (
     return colors.accent;
 };
 
-export const getOrderStatusLabel = (status: OrderEntity['status']) => {
+export const getOrderStatusLabel = (
+    status: OrderEntity['status'],
+    translate: (key: string, fallback: string) => string = (_key, fallback) =>
+        fallback,
+) => {
     if (status === 'PARTIALLY_REFUNDED') {
-        return 'P. REFUNDED';
+        return translate('ORDERITEM_PartiallyRefundedShort', 'P. REFUNDED');
     }
 
     return status;
@@ -313,7 +317,7 @@ export function OrderItem({
                     <Text
                         style={[styles.secondaryText, { color: statusColor }]}
                     >
-                        {getOrderStatusLabel(item.status)}
+                        {getOrderStatusLabel(item.status, t)}
                     </Text>
                 </View>
                 {hasRefundDisplay && (

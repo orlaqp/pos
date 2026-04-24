@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { translateWithFallback } from '@pos/shared/utils';
 
 const padMatrix: Array<Array<number | 'back' | null>> = [
     [1, 2, 3],
@@ -23,6 +24,7 @@ export function UIKeyPad({
     resetToken = 0,
     disabled = false,
 }: UIKeyPadProps) {
+    const t = translateWithFallback;
     const styles = useStyles();
     const [shakeX] = useState(() => new Animated.Value(0));
     const [displayScale] = useState(() => new Animated.Value(1));
@@ -75,7 +77,9 @@ export function UIKeyPad({
     return (
         <Animated.View style={[styles.container, { transform: [{ translateX: shakeX }] }]}>
             <Animated.View style={[styles.display, { transform: [{ scale: displayScale }] }]}>
-                <Text style={styles.displayLabel}>Enter PIN</Text>
+                <Text style={styles.displayLabel}>
+                    {t('COMMON_EnterPin', 'Enter PIN')}
+                </Text>
                 <View testID="ui-keypad-display" style={styles.pinSlots}>
                     {Array.from({ length: 4 }, (_, index) => {
                         const isFilled = index < numbers.length;

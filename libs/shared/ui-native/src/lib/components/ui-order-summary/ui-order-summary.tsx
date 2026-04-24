@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface UIOrderSummaryDiscount {
     discountApplicationId: string;
@@ -54,14 +55,18 @@ interface UIOrderSummaryPanelProps {
 export function UIOrderSummaryPanel({
     orderSummary,
     discountBreakdown,
-    title = 'Order summary',
-    hint = 'Review the order with the customer before printing.',
+    title = translateWithFallback('COMMON_OrderSummary', 'Order summary'),
+    hint = translateWithFallback(
+        'COMMON_OrderSummaryHint',
+        'Review the order with the customer before printing.',
+    ),
     footer,
     scrollStyle,
     scrollContentStyle,
     contentTestID,
     plain = false,
 }: UIOrderSummaryPanelProps) {
+    const t = translateWithFallback;
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
 
@@ -80,7 +85,9 @@ export function UIOrderSummaryPanel({
                 ]}
             >
                 <View style={styles.summarySection}>
-                    <Text style={styles.summarySectionTitle}>Items</Text>
+                    <Text style={styles.summarySectionTitle}>
+                        {t('COMMON_Items', 'Items')}
+                    </Text>
                     {orderSummary.lines.map((line) => (
                         <View key={line.id} style={styles.summaryItemRow}>
                             <View style={styles.summaryItemMain}>
@@ -112,7 +119,9 @@ export function UIOrderSummaryPanel({
                                 </Text>
                                 {line.savings > 0 ? (
                                     <Text style={styles.summaryItemSavings}>
-                                        Saved ${line.savings.toFixed(2)}
+                                        {t('CART_SavedAmount', 'Saved ${{amount}}', {
+                                            amount: line.savings.toFixed(2),
+                                        })}
                                     </Text>
                                 ) : null}
                             </View>
@@ -124,15 +133,23 @@ export function UIOrderSummaryPanel({
                     orderSummary.promoCodes.length > 0 ||
                     orderSummary.warnings.length > 0) && (
                     <View style={styles.summarySection}>
-                        <Text style={styles.summarySectionTitle}>Savings</Text>
+                        <Text style={styles.summarySectionTitle}>
+                            {t('COMMON_Savings', 'Savings')}
+                        </Text>
                         {orderSummary.discountTotal > 0 ? (
                             <Text style={styles.summaryValue}>
-                                Saved ${orderSummary.savingsTotal.toFixed(2)}
+                                {t('CART_SavedAmount', 'Saved ${{amount}}', {
+                                    amount: orderSummary.savingsTotal.toFixed(2),
+                                })}
                             </Text>
                         ) : null}
                         {discountBreakdown.length > 1 ? (
                             <Text style={styles.actionMutedCopy}>
-                                {discountBreakdown.length} discounts applied
+                                {t(
+                                    'CART_DiscountsAppliedCount',
+                                    '{{count}} discounts applied',
+                                    { count: discountBreakdown.length },
+                                )}
                             </Text>
                         ) : null}
                         {discountBreakdown.map((adjustment) => (
@@ -140,7 +157,9 @@ export function UIOrderSummaryPanel({
                                 key={adjustment.discountApplicationId}
                                 style={styles.summaryLine}
                             >
-                                {adjustment.scope === 'LINE' ? 'Line' : 'Order'}{' '}
+                                {adjustment.scope === 'LINE'
+                                    ? t('CART_LineScope', 'Line')
+                                    : t('CART_OrderScope', 'Order')}{' '}
                                 · {adjustment.name}: -$
                                 {adjustment.discountAmount.toFixed(2)}
                             </Text>
@@ -168,37 +187,47 @@ export function UIOrderSummaryPanel({
                 )}
 
                 <View style={styles.summarySection}>
-                    <Text style={styles.summarySectionTitle}>Totals</Text>
+                    <Text style={styles.summarySectionTitle}>
+                        {t('COMMON_Totals', 'Totals')}
+                    </Text>
                     <View style={styles.totalRow}>
-                        <Text style={styles.totalLabel}>Subtotal</Text>
+                        <Text style={styles.totalLabel}>
+                            {t('COMMON_Subtotal', 'Subtotal')}
+                        </Text>
                         <Text style={styles.totalValue}>
                             ${orderSummary.subtotal.toFixed(2)}
                         </Text>
                     </View>
                     {orderSummary.discountTotal > 0 ? (
                         <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>Discounts</Text>
+                            <Text style={styles.totalLabel}>
+                                {t('COMMON_Discounts', 'Discounts')}
+                            </Text>
                             <Text style={styles.totalValueSuccess}>
                                 -${orderSummary.discountTotal.toFixed(2)}
                             </Text>
                         </View>
                     ) : null}
                     <View style={styles.totalRow}>
-                        <Text style={styles.totalLabel}>Tax</Text>
+                        <Text style={styles.totalLabel}>{t('COMMON_Tax', 'Tax')}</Text>
                         <Text style={styles.totalValue}>
                             ${orderSummary.tax.toFixed(2)}
                         </Text>
                     </View>
                     {orderSummary.ebtEligibleTotal > 0 ? (
                         <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>EBT eligible</Text>
+                            <Text style={styles.totalLabel}>
+                                {t('COMMON_EBTEligible', 'EBT eligible')}
+                            </Text>
                             <Text style={styles.totalValue}>
                                 ${orderSummary.ebtEligibleTotal.toFixed(2)}
                             </Text>
                         </View>
                     ) : null}
                     <View style={[styles.totalRow, styles.totalRowStrong]}>
-                        <Text style={styles.totalLabelStrong}>Total</Text>
+                        <Text style={styles.totalLabelStrong}>
+                            {t('COMMON_Total', 'Total')}
+                        </Text>
                         <Text style={styles.totalValueStrong}>
                             ${orderSummary.total.toFixed(2)}
                         </Text>

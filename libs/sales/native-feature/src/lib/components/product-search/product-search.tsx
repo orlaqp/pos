@@ -1,4 +1,5 @@
 import { UISearchInput } from '@pos/shared/ui-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { TextInput, View } from 'react-native';
@@ -14,6 +15,7 @@ export interface ProductSearchProps {
 
 export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((props, ref) => {
     const { onFilterChange } = props;
+    const t = translateWithFallback;
     const theme = useTheme();
     const [showSoftInputOnFocus, setShowSoftInputOnFocus] = useState(false);
 
@@ -58,7 +60,10 @@ export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((pr
                     clearOnSubmit={true}
                     retainFocusOnSubmit={true}
                     debounceTime={300}
-                    placeholder="type to search by name, description, barcode and sku..."
+                    placeholder={t(
+                        'SALES_ProductSearchPlaceholder',
+                        'type to search by name, description, barcode and sku...'
+                    )}
                     returnKeyType='search'
                     autoComplete='off'
                     autoCorrect={false}

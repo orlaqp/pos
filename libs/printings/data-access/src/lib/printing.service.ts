@@ -13,6 +13,7 @@ import { Alignment } from 'react-native-star-io10/src/StarXpandCommand/Printer/A
 import {
     isE2EPrinterSpyEnabled,
     recordE2EPrintJob,
+    translateWithFallback,
 } from '@pos/shared/utils';
 import type { OrderTicketPrintModel } from '@pos/orders/data-access';
 import { PrinterService } from './slices/printer.service';
@@ -270,7 +271,12 @@ export const printReceipt = async (
 ) => {
     const startedAt = Date.now();
     if (!store) {
-        Alert.alert('Store information should be available in order to preview or print.');
+        Alert.alert(
+            translateWithFallback(
+                'PRINTING_StoreInfoRequired',
+                'Store information should be available in order to preview or print.',
+            ),
+        );
         return;
     }
 
@@ -300,7 +306,12 @@ export const printReceipt = async (
         }
 
         if (!receiptPreviewHandler) {
-            Alert.alert('No printer is configured for this device.');
+            Alert.alert(
+                translateWithFallback(
+                    'PRINTING_NoPrinterConfigured',
+                    'No printer is configured for this device.',
+                ),
+            );
             return;
         }
 

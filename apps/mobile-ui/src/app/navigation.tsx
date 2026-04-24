@@ -27,6 +27,7 @@ import {
 } from '@pos/auth/data-access';
 import { DataStore } from '@pos/shared/amplify';
 import { markManualSignOut } from './session-signout';
+import { translateWithFallback } from '@pos/shared/utils';
 
 /* eslint-disable-next-line */
 export interface NavigationParamList {
@@ -71,6 +72,7 @@ export function Navigation() {
 
     const [showOtherOrders, setShowOtherOrders] = useState<boolean>(false);
     const [showSalesActions, setShowSalesActions] = useState<boolean>(false);
+    const t = translateWithFallback;
 
     const print = () => {
         printReceipt(
@@ -81,9 +83,9 @@ export function Navigation() {
     };
 
     const confirmResetCart = () => {
-        Alert.alert('Are you sure?', 'Press yes to confirm', [
-            { text: 'No' },
-            { text: 'Yes', onPress: () => dispatch(cartActions.reset()) },
+        Alert.alert(t('COMMON_AreYouSure', 'Are you sure?'), t('COMMON_PressYesToConfirm', 'Press yes to confirm'), [
+            { text: t('COMMON_No', 'No') },
+            { text: t('COMMON_Yes', 'Yes'), onPress: () => dispatch(cartActions.reset()) },
         ]);
     };
 
@@ -98,13 +100,13 @@ export function Navigation() {
         const hasCartItems = (cart.items?.length || 0) > 0;
 
         Alert.alert(
-            'Switch employee?',
+            t('NAV_SwitchEmployeeTitle', 'Switch employee?'),
             hasCartItems
-                ? 'This will clear the current sale and return to the PIN screen.'
-                : 'This will return to the PIN screen without logging out the business admin.',
+                ? t('NAV_SwitchEmployeeWithCart', 'This will clear the current sale and return to the PIN screen.')
+                : t('NAV_SwitchEmployeeNoCart', 'This will return to the PIN screen without logging out the business admin.'),
             [
-                { text: 'Cancel' },
-                { text: 'Switch', onPress: () => switchEmployee(navigation) },
+                { text: t('COMMON_Cancel', 'Cancel') },
+                { text: t('NAV_SwitchEmployeeConfirm', 'Switch'), onPress: () => switchEmployee(navigation) },
             ]
         );
     };
@@ -113,7 +115,7 @@ export function Navigation() {
         employee ? (
             <Button
                 type="clear"
-                title="Switch Employee"
+                title={t('NAV_SwitchEmployeeButton', 'Switch Employee')}
                 testID="nav-switch-employee-button"
                 containerStyle={{ marginRight: 12 }}
                 onPress={() => confirmSwitchEmployee(navigation)}
@@ -121,10 +123,10 @@ export function Navigation() {
         ) : null;
 
     const confirmLogoff = () => {
-        Alert.alert('Are you sure?', 'Press yes to confirm', [
-            { text: 'No' },
+        Alert.alert(t('COMMON_AreYouSure', 'Are you sure?'), t('COMMON_PressYesToConfirm', 'Press yes to confirm'), [
+            { text: t('COMMON_No', 'No') },
             {
-                text: 'Yes',
+                text: t('COMMON_Yes', 'Yes'),
                 onPress: async () => {
                     try {
                         await markManualSignOut();
@@ -183,7 +185,7 @@ export function Navigation() {
                 <Button
                     testID="nav-actions-open-orders"
                     type="clear"
-                    title="Open Orders"
+                    title={t('NAV_OpenOrders', 'Open Orders')}
                     onPress={() => {
                         setShowSalesActions(false);
                         setShowOtherOrders(true);
@@ -194,7 +196,7 @@ export function Navigation() {
                 <Button
                     testID="nav-actions-print"
                     type="clear"
-                    title="Print"
+                    title={t('NAV_Print', 'Print')}
                     onPress={() => {
                         setShowSalesActions(false);
                         print();
@@ -206,7 +208,7 @@ export function Navigation() {
                 <Button
                     testID="nav-actions-reset"
                     type="clear"
-                    title="Reset"
+                    title={t('NAV_Reset', 'Reset')}
                     onPress={() => {
                         setShowSalesActions(false);
                         confirmResetCart();
@@ -242,7 +244,7 @@ export function Navigation() {
                             component={HomeScreen}
                             options={({ navigation }) => ({
                                 headerShown: true,
-                                headerTitle: 'Home',
+                                headerTitle: t('NAV_Home', 'Home'),
                                 headerRight: () => (
                                     <View
                                         style={{
@@ -253,7 +255,7 @@ export function Navigation() {
                                         {renderSwitchEmployeeButton(navigation)}
                                         <Button
                                             type="clear"
-                                            title="Logoff"
+                                            title={t('NAV_Logoff', 'Logoff')}
                                             testID="nav-home-logoff-button"
                                             containerStyle={{ marginRight: 8 }}
                                             onPress={confirmLogoff}
@@ -279,7 +281,7 @@ export function Navigation() {
                                             testID="nav-sales-actions-button"
                                             type="clear"
                                             containerStyle={{ marginRight: 8 }}
-                                            title="Actions"
+                                            title={t('NAV_Actions', 'Actions')}
                                             onPress={() => setShowSalesActions(true)}
                                             icon={{
                                                 name: 'chevron-down',
@@ -305,7 +307,7 @@ export function Navigation() {
                             name="BackOffice"
                             component={BackOffice}
                             options={({ navigation }) => ({
-                                headerTitle: businessName || 'Back Office',
+                                headerTitle: businessName || t('NAV_BackOffice', 'Back Office'),
                                 headerRight: () => renderSwitchEmployeeButton(navigation),
                             })}
                         />

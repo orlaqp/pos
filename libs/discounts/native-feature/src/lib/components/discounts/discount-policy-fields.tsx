@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { FormProvider, UseFormReturn } from 'react-hook-form';
+import { translateWithFallback } from '@pos/shared/utils';
 import {
   UICard,
   UIActions,
@@ -10,7 +11,7 @@ import {
   UIScreen,
   UISwitch,
 } from '@pos/shared/ui-native';
-import { PolicyFormValues, roleOptions } from './discounts.helpers';
+import { buildRoleOptions, PolicyFormValues } from './discounts.helpers';
 import { DiscountsStyles } from './discounts.styles';
 
 interface DiscountPolicyFieldsProps {
@@ -36,6 +37,9 @@ export function DiscountPolicyFields({
   onCancel,
   onDelete,
 }: DiscountPolicyFieldsProps) {
+  const t = translateWithFallback;
+  const roleOptions = buildRoleOptions(t);
+
   return (
     <UIScreen>
       <FormProvider {...form}>
@@ -43,68 +47,131 @@ export function DiscountPolicyFields({
           <ScrollView contentContainerStyle={styles.scrollContent}>
             <View style={styles.container}>
               <UICard tone="muted" radius="lg" style={styles.headerCard}>
-                <Text style={styles.headerTitle}>{editingId ? 'Edit Policy' : 'Policy Form'}</Text>
+                <Text style={styles.headerTitle}>
+                  {editingId
+                    ? t('DISCOUNT_EditPolicy', 'Edit Policy')
+                    : t('DISCOUNT_PolicyForm', 'Policy Form')}
+                </Text>
                 <Text style={styles.headerSubtitle}>
-                  Create or edit a role or employee policy for manual discounts, overrides, and approvals.
+                  {t(
+                    'DISCOUNT_PolicyFormSubtitle',
+                    'Create or edit a role or employee policy for manual discounts, overrides, and approvals.'
+                  )}
                 </Text>
               </UICard>
 
               {loading ? (
                 <UICard style={styles.emptyCard}>
-                  <Text style={styles.headerTitle}>Loading policy…</Text>
+                  <Text style={styles.headerTitle}>
+                    {t('DISCOUNT_LoadingPolicy', 'Loading policy...')}
+                  </Text>
                 </UICard>
               ) : (
                 <>
                   <UICard style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Target</Text>
-                    <Text style={styles.sectionSubtitle}>
-                      Choose the role or employee this policy should govern.
+                    <Text style={styles.sectionTitle}>
+                      {t('DISCOUNT_TargetSection', 'Target')}
                     </Text>
-                    <Text style={styles.fieldLabel}>Role</Text>
-                    <UIOverlaySelect name="roleKey" title="Select role" list={roleOptions} selectedId={form.watch('roleKey')} />
-                    <UIInput name="employeeId" label="Employee ID (optional)" placeholder="Optional employee override" />
+                    <Text style={styles.sectionSubtitle}>
+                      {t(
+                        'DISCOUNT_TargetSectionSubtitle',
+                        'Choose the role or employee this policy should govern.'
+                      )}
+                    </Text>
+                    <Text style={styles.fieldLabel}>{t('COMMON_Role', 'Role')}</Text>
+                    <UIOverlaySelect
+                      name="roleKey"
+                      title={t('DISCOUNT_SelectRole', 'Select role')}
+                      list={roleOptions}
+                      selectedId={form.watch('roleKey')}
+                    />
+                    <UIInput
+                      name="employeeId"
+                      label={t('DISCOUNT_EmployeeIdOptional', 'Employee ID (optional)')}
+                      placeholder={t(
+                        'DISCOUNT_EmployeeOverridePlaceholder',
+                        'Optional employee override'
+                      )}
+                    />
                   </UICard>
 
                   <UICard style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Thresholds</Text>
+                    <Text style={styles.sectionTitle}>
+                      {t('DISCOUNT_ThresholdsSection', 'Thresholds')}
+                    </Text>
                     <Text style={styles.sectionSubtitle}>
-                      Set the maximum manual discount and override boundaries for this policy.
+                      {t(
+                        'DISCOUNT_ThresholdsSectionSubtitle',
+                        'Set the maximum manual discount and override boundaries for this policy.'
+                      )}
                     </Text>
                     <View style={styles.formGrid}>
                       <View style={styles.formColumn}>
-                        <UINumericInput name="maxManualPercentDiscount" label="Max manual %" keyboardType="decimal-pad" allowDecimals placeholder="0" />
+                        <UINumericInput
+                          name="maxManualPercentDiscount"
+                          label={t('DISCOUNT_MaxManualPercent', 'Max manual %')}
+                          keyboardType="decimal-pad"
+                          allowDecimals
+                          placeholder="0"
+                        />
                       </View>
                       <View style={styles.formColumn}>
-                        <UINumericInput name="maxManualAmountDiscount" label="Max manual amount" keyboardType="decimal-pad" allowDecimals placeholder="0" />
+                        <UINumericInput
+                          name="maxManualAmountDiscount"
+                          label={t('DISCOUNT_MaxManualAmount', 'Max manual amount')}
+                          keyboardType="decimal-pad"
+                          allowDecimals
+                          placeholder="0"
+                        />
                       </View>
                     </View>
                     <View style={styles.formGrid}>
                       <View style={styles.formColumn}>
-                        <UINumericInput name="maxPriceOverrideAmount" label="Max override amount" keyboardType="decimal-pad" allowDecimals placeholder="0" />
+                        <UINumericInput
+                          name="maxPriceOverrideAmount"
+                          label={t('DISCOUNT_MaxOverrideAmount', 'Max override amount')}
+                          keyboardType="decimal-pad"
+                          allowDecimals
+                          placeholder="0"
+                        />
                       </View>
                       <View style={styles.formColumn}>
-                        <UINumericInput name="maxPriceOverridePercentBelowBase" label="Max override below base %" keyboardType="decimal-pad" allowDecimals placeholder="0" />
+                        <UINumericInput
+                          name="maxPriceOverridePercentBelowBase"
+                          label={t(
+                            'DISCOUNT_MaxOverrideBelowBase',
+                            'Max override below base %'
+                          )}
+                          keyboardType="decimal-pad"
+                          allowDecimals
+                          placeholder="0"
+                        />
                       </View>
                     </View>
                   </UICard>
 
                   <UICard style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Capabilities</Text>
+                    <Text style={styles.sectionTitle}>
+                      {t('DISCOUNT_CapabilitiesSection', 'Capabilities')}
+                    </Text>
                     <Text style={styles.sectionSubtitle}>
-                      Turn permissions and approval requirements on or off for this target.
+                      {t(
+                        'DISCOUNT_CapabilitiesSectionSubtitle',
+                        'Turn permissions and approval requirements on or off for this target.'
+                      )}
                     </Text>
                     {[
-                      ['canApplyOrderDiscount', 'Can apply order discounts'],
-                      ['canOverridePrice', 'Can override price'],
-                      ['canApproveDiscounts', 'Can approve discounts'],
-                      ['canApprovePriceOverrides', 'Can approve overrides'],
-                      ['canUsePromoCodes', 'Can use promo codes'],
-                      ['requireReasonForManualDiscounts', 'Require reason for manual discounts'],
-                      ['requireReasonForOverrides', 'Require reason for overrides'],
-                      ['requireApprovalForOrderDiscount', 'Require approval for order discounts'],
-                      ['requireApprovalForAnyPriceOverride', 'Require approval for any override'],
-                      ['allowExclusiveDiscountOverride', 'Allow exclusive discount override'],
-                      ['active', 'Active'],
+                      ['canApplyOrderDiscount', t('DISCOUNT_CanApplyOrderDiscounts', 'Can apply order discounts')],
+                      ['canOverridePrice', t('DISCOUNT_CanOverridePrice', 'Can override price')],
+                      ['canApproveDiscounts', t('DISCOUNT_CanApproveDiscounts', 'Can approve discounts')],
+                      ['canApprovePriceOverrides', t('DISCOUNT_CanApproveOverrides', 'Can approve overrides')],
+                      ['canUsePromoCodes', t('DISCOUNT_CanUsePromoCodes', 'Can use promo codes')],
+                      ['requireReasonForManualDiscounts', t('DISCOUNT_RequireReasonManualDiscounts', 'Require reason for manual discounts')],
+                      ['requireReasonForOverrides', t('DISCOUNT_RequireReasonOverrides', 'Require reason for overrides')],
+                      ['requireApprovalForOrderDiscount', t('DISCOUNT_RequireApprovalOrderDiscounts', 'Require approval for order discounts')],
+                      ['requireApprovalForAnyPriceOverride', t('DISCOUNT_RequireApprovalAnyOverride', 'Require approval for any override')],
+                      ['allowExclusiveDiscountOverride', t('DISCOUNT_AllowExclusiveOverride', 'Allow exclusive discount override')],
+                      ['active', t('COMMON_Active', 'Active')],
                     ].map(([name, label], index, items) => (
                       <View key={name} style={index === items.length - 1 ? styles.toggleRowNoBorder : styles.toggleRow}>
                         <Text style={styles.toggleLabel}>{label}</Text>
@@ -127,7 +194,9 @@ export function DiscountPolicyFields({
                     onPress={onDelete}
                   >
                     <Text style={styles.deleteButtonText}>
-                      {deleteBusy ? 'Deleting…' : 'Delete'}
+                      {deleteBusy
+                        ? t('COMMON_Deleting', 'Deleting...')
+                        : t('COMMON_Delete', 'Delete')}
                     </Text>
                   </Pressable>
                 ) : (
@@ -135,7 +204,11 @@ export function DiscountPolicyFields({
                 )}
                 <UIActions
                   busy={busy || loading || deleteBusy}
-                  submitTitle={editingId ? 'Update' : 'Save'}
+                  submitTitle={
+                    editingId
+                      ? t('COMMON_Update', 'Update')
+                      : t('COMMON_Save', 'Save')
+                  }
                   submitAction={onSave}
                   cancelAction={onCancel}
                 />

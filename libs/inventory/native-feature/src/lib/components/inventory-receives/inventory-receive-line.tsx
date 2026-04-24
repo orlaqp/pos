@@ -6,6 +6,7 @@ import { Button, useTheme } from '@rneui/themed';
 import { InventoryReceiveLineDTO } from '@pos/inventory/data-access';
 import { TextInput } from 'react-native-gesture-handler';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface InventoryReceiveLineProps {
     readOnly: boolean;
@@ -27,6 +28,7 @@ export function InventoryReceiveLine({
     onUpdate,
     onDelete,
 }: InventoryReceiveLineProps) {
+    const t = translateWithFallback;
     const theme = useTheme();
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
@@ -42,9 +44,15 @@ export function InventoryReceiveLine({
 
     const confirmDeletion = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
-            [{ text: 'No' }, { text: 'Yes', onPress: () => onDelete(item) }]
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t(
+                'COMMON_UndoOperationWarning',
+                'You will not be able to undo this operation'
+            ),
+            [
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => onDelete(item) },
+            ]
         );
     };
 
@@ -64,10 +72,14 @@ export function InventoryReceiveLine({
         <View style={[local.row, readOnly && local.readOnlyRow]}>
             <View style={local.productColumn}>
                 <Text style={local.productName}>{item.productName}</Text>
-                <Text style={local.productMeta}>Receiving quantity</Text>
+                <Text style={local.productMeta}>
+                    {t('INVENTORY_ReceivingQuantity', 'Receiving quantity')}
+                </Text>
             </View>
             <View style={local.quantityColumn}>
-                <Text style={local.inputLabel}>Received</Text>
+                <Text style={local.inputLabel}>
+                    {t('INVENTORY_Received', 'Received')}
+                </Text>
                 <TextInput
                     testID={`inventory-receive-qty-${productKey}`}
                     value={received}
@@ -94,7 +106,9 @@ export function InventoryReceiveLine({
                 />
             </View>
             <View style={local.commentColumn}>
-                <Text style={local.inputLabel}>Comments</Text>
+                <Text style={local.inputLabel}>
+                    {t('COMMON_Comments', 'Comments')}
+                </Text>
                 <TextInput
                     value={comment}
                     onChangeText={setComment}

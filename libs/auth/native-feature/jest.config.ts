@@ -1,4 +1,5 @@
 /* eslint-disable */
+// @ts-ignore jest preset is a JS module in the workspace root
 import basePreset from '../../../jest.preset.js';
 
 export default {

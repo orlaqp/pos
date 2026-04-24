@@ -2,6 +2,10 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { InventoryLine } from './inventory-line';
 
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 jest.mock('@pos/theme/native', () => ({
     useSharedStyles: () => ({
         smallDataRow: {},

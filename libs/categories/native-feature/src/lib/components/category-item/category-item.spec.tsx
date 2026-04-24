@@ -4,6 +4,10 @@ import { render } from '@testing-library/react-native';
 
 import CategoryItem, { deleteCategoryById } from './category-item';
 
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 describe('CategoryItem', () => {
     beforeEach(() => {
         jest.clearAllMocks();

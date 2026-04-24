@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux';
 import { ProductEntity, ProductService } from '@pos/products/data-access';
 import { RootState, useAppDispatch } from '@pos/store';
 import { Product } from '@pos/shared/models';
+import { translateWithFallback } from '@pos/shared/utils';
 import { selectAllBrands } from '@pos/brands/data-access';
 import { selectAllUnitOfMeasures } from '@pos/unit-of-measures/data-access';
 import { requireCurrentTenantId } from '@pos/auth/data-access';
@@ -35,6 +36,7 @@ export interface ProductFormProps {
 }
 
 export function ProductForm({ navigation }: ProductFormProps) {
+    const t = translateWithFallback;
     const product = useSelector((state: RootState) => state.products.selected);
     const brands = useSelector(selectAllBrands);
     const ums = useSelector(selectAllUnitOfMeasures);
@@ -122,8 +124,8 @@ export function ProductForm({ navigation }: ProductFormProps) {
                 error instanceof Error ? error.message : String(error);
             console.error('Unable to save product', error);
             Alert.alert(
-                'Unable to save product',
-                message || 'The product could not be saved.'
+                t('PRODUCT_SaveErrorTitle', 'Unable to save product'),
+                message || t('PRODUCT_SaveErrorMessage', 'The product could not be saved.')
             );
         } finally {
             setBusy(false);
@@ -134,28 +136,35 @@ export function ProductForm({ navigation }: ProductFormProps) {
         errors: Partial<Record<keyof ProductEntity, { message?: string }>>
     ) => {
         const fieldLabels: Partial<Record<keyof ProductEntity, string>> = {
-            name: 'Name',
-            price: 'Price',
-            unitOfMeasure: 'Unit of Measure',
+            name: t('COMMON_Name', 'Name'),
+            price: t('COMMON_Price', 'Price'),
+            unitOfMeasure: t('PRODUCT_UnitOfMeasure', 'Unit of Measure'),
         };
         const fields = Object.keys(errors)
             .map((fieldName) => fieldLabels[fieldName as keyof ProductEntity])
             .filter((field): field is string => !!field);
 
         const message = fields.length
-            ? `Complete the required field${fields.length === 1 ? '' : 's'}: ${fields.join(', ')}.`
-            : 'Complete the required fields before saving this product.';
+            ? t(
+                  'PRODUCT_CompleteRequiredFieldsList',
+                  `Complete the required field${fields.length === 1 ? '' : 's'}: ${fields.join(', ')}.`,
+                  { fields: fields.join(', ') }
+              )
+            : t(
+                  'PRODUCT_CompleteRequiredFields',
+                  'Complete the required fields before saving this product.'
+              );
 
-        Alert.alert('Missing information', message);
+        Alert.alert(t('COMMON_MissingInformation', 'Missing information'), message);
     };
 
     const confirmCancel = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t('COMMON_UndoOperationWarning', 'You will not be able to undo this operation'),
             [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => navigation.goBack() },
             ]
         );
     };
@@ -169,9 +178,14 @@ export function ProductForm({ navigation }: ProductFormProps) {
                             <UICard style={styles.headerCard} tone="muted" radius="lg">
                                 <View style={styles.headerRow}>
                                     <View style={styles.headerTitleBlock}>
-                                        <Text style={styles.headerTitle}>Product Profile</Text>
+                                        <Text style={styles.headerTitle}>
+                                            {t('PRODUCT_ProfileTitle', 'Product Profile')}
+                                        </Text>
                                         <Text style={styles.headerSubtitle}>
-                                            Configure catalog details, pricing and identifiers.
+                                            {t(
+                                                'PRODUCT_ProfileSubtitle',
+                                                'Configure catalog details, pricing and identifiers.'
+                                            )}
                                         </Text>
                                     </View>
                                     <View style={styles.headerStatusBlock}>
@@ -191,7 +205,9 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                                         : styles.statusBadgeTextInactive,
                                                 ]}
                                             >
-                                                {form.watch('isActive') ? 'Available' : 'Hidden'}
+                                                {form.watch('isActive')
+                                                    ? t('PRODUCT_StatusAvailable', 'Available')
+                                                    : t('PRODUCT_StatusHidden', 'Hidden')}
                                             </Text>
                                         </View>
                                         <View
@@ -211,8 +227,8 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                                 ]}
                                             >
                                                 {form.watch('isEBTEligible')
-                                                    ? 'EBT Eligible'
-                                                    : 'Regular Product'}
+                                                    ? t('PRODUCT_StatusEbtEligible', 'EBT Eligible')
+                                                    : t('PRODUCT_StatusRegular', 'Regular Product')}
                                             </Text>
                                         </View>
                                     </View>
@@ -220,7 +236,9 @@ export function ProductForm({ navigation }: ProductFormProps) {
                             </UICard>
 
                             <UICard style={styles.sectionCard}>
-                                <Text style={styles.sectionTitle}>Catalog</Text>
+                                <Text style={styles.sectionTitle}>
+                                    {t('PRODUCT_CatalogSection', 'Catalog')}
+                                </Text>
                                 <View style={styles.catalogRow}>
                                     <View style={styles.imageColumn}>
                                         <UiFileUpload
@@ -237,7 +255,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                                 <View style={styles.overlaySelectSlot}>
                                                     <UIOverlaySelect
                                                         name="productBrandId"
-                                                        title="Select Brand"
+                                                        title={t('PRODUCT_SelectBrand', 'Select Brand')}
                                                         list={brands}
                                                         selectedId={product?.productBrandId}
                                                     />
@@ -245,7 +263,10 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                                 <View style={styles.overlaySelectSlot}>
                                                     <UIOverlaySelect
                                                         name="unitOfMeasure"
-                                                        title="Select U/of Measure"
+                                                        title={t(
+                                                            'PRODUCT_SelectUnitOfMeasure',
+                                                            'Select U/of Measure'
+                                                        )}
                                                         list={ums.map((u) => ({
                                                             id: u.name,
                                                             name: u.name,
@@ -257,13 +278,17 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                             </View>
                                             <View style={styles.switchesColumn}>
                                                 <View style={styles.toggleItem}>
-                                                    <Text style={styles.toggleLabel}>Available for sale</Text>
+                                                    <Text style={styles.toggleLabel}>
+                                                        {t('PRODUCT_AvailableForSale', 'Available for sale')}
+                                                    </Text>
                                                     <View style={styles.toggleSwitchWrap}>
                                                         <UISwitch name="isActive" />
                                                     </View>
                                                 </View>
                                                 <View style={styles.toggleItem}>
-                                                    <Text style={styles.toggleLabel}>EBT eligible</Text>
+                                                    <Text style={styles.toggleLabel}>
+                                                        {t('PRODUCT_EbtEligibleLabel', 'EBT eligible')}
+                                                    </Text>
                                                     <View style={styles.toggleSwitchWrap}>
                                                         <UISwitch name="isEBTEligible" />
                                                     </View>
@@ -275,20 +300,24 @@ export function ProductForm({ navigation }: ProductFormProps) {
                             </UICard>
 
                             <UICard style={styles.sectionCard}>
-                                <Text style={styles.sectionTitle}>Details</Text>
+                                <Text style={styles.sectionTitle}>
+                                    {t('COMMON_Details', 'Details')}
+                                </Text>
                                 <UIStack spacing="sm">
                                     <UIInput
                                         name="name"
                                         testID="product-input-name"
-                                        label="Name"
-                                        placeholder="Name"
-                                        rules={{ required: 'Name is required' }}
+                                        label={t('COMMON_Name', 'Name')}
+                                        placeholder={t('COMMON_Name', 'Name')}
+                                        rules={{
+                                            required: t('COMMON_NameRequired', 'Name is required'),
+                                        }}
                                     />
                                     <UIInput
                                         name="description"
                                         testID="product-input-description"
-                                        placeholder="Description"
-                                        label="Description"
+                                        placeholder={t('COMMON_Description', 'Description')}
+                                        label={t('COMMON_Description', 'Description')}
                                         multiline
                                         numberOfLines={2}
                                         style={styles.descriptionInput}
@@ -299,9 +328,9 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                                 keyboardType="decimal-pad"
                                                 name="cost"
                                                 testID="product-input-cost"
-                                                label="Cost"
+                                                label={t('PRODUCT_Cost', 'Cost')}
                                                 allowDecimals
-                                                placeholder="Cost"
+                                                placeholder={t('PRODUCT_Cost', 'Cost')}
                                                 textAlign="right"
                                                 lIcon="currency-usd"
                                             />
@@ -311,12 +340,15 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                                 keyboardType="decimal-pad"
                                                 name="price"
                                                 testID="product-input-price"
-                                                label="Price"
+                                                label={t('COMMON_Price', 'Price')}
                                                 allowDecimals
-                                                placeholder="Price"
+                                                placeholder={t('COMMON_Price', 'Price')}
                                                 textAlign="right"
                                                 rules={{
-                                                    required: 'Price is required',
+                                                    required: t(
+                                                        'PRODUCT_PriceRequired',
+                                                        'Price is required'
+                                                    ),
                                                 }}
                                                 lIcon="currency-usd"
                                             />
@@ -326,14 +358,16 @@ export function ProductForm({ navigation }: ProductFormProps) {
                             </UICard>
 
                             <UICard style={styles.sectionCard}>
-                                <Text style={styles.sectionTitle}>Identifiers</Text>
+                                <Text style={styles.sectionTitle}>
+                                    {t('PRODUCT_IdentifiersSection', 'Identifiers')}
+                                </Text>
                                 <View style={styles.row}>
                                     <View style={styles.column}>
                                         <UIInput
                                             name="barcode"
                                             testID="product-input-barcode"
-                                            placeholder="UPC"
-                                            label="UPC"
+                                            placeholder={t('PRODUCT_Upc', 'UPC')}
+                                            label={t('PRODUCT_Upc', 'UPC')}
                                             lIcon="barcode"
                                         />
                                     </View>
@@ -341,8 +375,8 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                         <UIInput
                                             name="sku"
                                             testID="product-input-sku"
-                                            placeholder="SKU"
-                                            label="SKU"
+                                            placeholder={t('PRODUCT_Sku', 'SKU')}
+                                            label={t('PRODUCT_Sku', 'SKU')}
                                             lIcon="barcode"
                                         />
                                     </View>
@@ -350,8 +384,8 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                         <UIInput
                                             name="plu"
                                             testID="product-input-plu"
-                                            placeholder="PLU"
-                                            label="PLU"
+                                            placeholder={t('PRODUCT_Plu', 'PLU')}
+                                            label={t('PRODUCT_Plu', 'PLU')}
                                             lIcon="barcode"
                                         />
                                     </View>

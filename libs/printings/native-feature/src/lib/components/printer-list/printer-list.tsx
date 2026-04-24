@@ -19,6 +19,7 @@ import {
     UIStack,
     UISpinner,
 } from '@pos/shared/ui-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { useAppDispatch } from '@pos/store';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
@@ -54,7 +55,12 @@ export const createSetDefaultPrinterHandler =
         try {
             await setDefaultPrinter(dispatch, printer);
         } catch {
-            Alert.alert('There was an error setting the default printer');
+            Alert.alert(
+                translateWithFallback(
+                    'PRINTER_SetDefaultError',
+                    'There was an error setting the default printer'
+                )
+            );
         }
     };
 
@@ -65,7 +71,12 @@ export const discoverPrintersSafely = async (
     try {
         return await discoverAndMapPrinters(discover, currentDeviceId);
     } catch {
-        Alert.alert('There was an error looking for available printers');
+        Alert.alert(
+            translateWithFallback(
+                'PRINTER_DiscoveryError',
+                'There was an error looking for available printers'
+            )
+        );
         return [];
     }
 };
@@ -87,6 +98,7 @@ export interface PrintingListProps {
 }
 
 export function PrinterList({ navigation }: PrintingListProps) {
+    const t = translateWithFallback;
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
     const dispatch = useAppDispatch();
@@ -119,14 +131,23 @@ export function PrinterList({ navigation }: PrintingListProps) {
             <UIScreen padded>
                 <View style={styles.container}>
                     <UICard tone="muted" radius="lg">
-                        <Text style={styles.title}>Printer setup</Text>
+                        <Text style={styles.title}>
+                            {t('PRINTER_SetupTitle', 'Printer setup')}
+                        </Text>
                         <Text style={styles.subtitle}>
-                            Discover printers on this device network and choose
-                            the default receipt printer.
+                            {t(
+                                'PRINTER_SetupSubtitle',
+                                'Discover printers on this device network and choose the default receipt printer.'
+                            )}
                         </Text>
                     </UICard>
                     <UICard style={styles.emptyCard}>
-                        <UIEmptyState text="No printers were found" />
+                        <UIEmptyState
+                            text={t(
+                                'PRINTER_NoneFound',
+                                'No printers were found'
+                            )}
+                        />
                     </UICard>
                 </View>
             </UIScreen>
@@ -138,17 +159,23 @@ export function PrinterList({ navigation }: PrintingListProps) {
                 <UICard tone="muted" radius="lg">
                     <View style={styles.headerRow}>
                         <View style={styles.headerTextWrap}>
-                            <Text style={styles.title}>Printer setup</Text>
+                            <Text style={styles.title}>
+                                {t('PRINTER_SetupTitle', 'Printer setup')}
+                            </Text>
                             <Text style={styles.subtitle}>
-                                Discover printers on this device network and
-                                choose the default receipt printer.
+                                {t(
+                                    'PRINTER_SetupSubtitle',
+                                    'Discover printers on this device network and choose the default receipt printer.'
+                                )}
                             </Text>
                         </View>
                         <View style={styles.statusBadge}>
                             <Text style={styles.statusText}>
                                 {busy
-                                    ? 'Scanning'
-                                    : `${printers?.length || 0} found`}
+                                    ? t('PRINTER_Scanning', 'Scanning')
+                                    : t('PRINTER_FoundCount', '{{count}} found', {
+                                          count: printers?.length || 0,
+                                      })}
                             </Text>
                         </View>
                     </View>
@@ -165,7 +192,10 @@ export function PrinterList({ navigation }: PrintingListProps) {
                     <UICard style={styles.loadingCard}>
                         <UISpinner
                             size="small"
-                            message="Looking for printers..."
+                            message={t(
+                                'PRINTER_LookingForPrinters',
+                                'Looking for printers...'
+                            )}
                         />
                     </UICard>
                 )}

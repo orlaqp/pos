@@ -1,5 +1,6 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Text } from '@rneui/themed';
+import i18next from 'i18next';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Alert, ScrollView, Animated, Image } from 'react-native';
 
@@ -52,6 +53,7 @@ import {
     E2E_MANAGER_PIN,
     isE2EEnabled,
     isNativeE2ERequested,
+    translateWithFallback,
 } from '@pos/shared/utils';
 import {
     Auth,
@@ -71,6 +73,7 @@ import {
 } from './native-lifecycle-diagnostics';
 
 interface PathDetails {
+    eyebrow?: string;
     title: string;
     path: string;
     icon: string;
@@ -129,21 +132,22 @@ const formatLifecycleEvent = (event: {
     return `${event.at}  ${event.name}${details}`;
 };
 
-const getOwnerNameParts = (name?: string) => {
+const getOwnerNameParts = (name?: string, ownerFallback = 'Owner') => {
     const trimmed = name?.trim() || '';
     if (!trimmed) {
-        return { firstName: 'Owner', lastName: '' };
+        return { firstName: ownerFallback, lastName: '' };
     }
 
     const parts = trimmed.split(/\s+/);
     return {
-        firstName: parts[0] || 'Owner',
+        firstName: parts[0] || ownerFallback,
         lastName: parts.slice(1).join(' '),
     };
 };
 
 export const HomeScreen = (props: HomeScreenProps) => {
     const dispatch = useDispatch();
+    const t = translateWithFallback;
     const styles = useHomeScreenStyles();
     const employee = useSelector(selectLoginEmployee);
     const employees = useSelector(selectAllEmployees);
@@ -170,7 +174,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
     const [setupError, setSetupError] = useState<string | null>(null);
     const [setupSaving, setSetupSaving] = useState(false);
     const [savedLoginStatusLabel, setSavedLoginStatusLabel] = useState(
-        'Checking saved login on this device...'
+        t('HOME_SavedLoginChecking', 'Checking saved login on this device...')
     );
     const [pendingRoutePath, setPendingRoutePath] = useState<string | null>(null);
     const [setupStep, setSetupStep] = useState<'employee' | 'store'>('employee');
@@ -213,37 +217,52 @@ export const HomeScreen = (props: HomeScreenProps) => {
         (needsInitialEmployee || storeNeedsSetup);
     const paths: PathDetails[] = useMemo(() => [
         {
-            title: 'Sales',
+            eyebrow: t('HOME_PathSalesEyebrow', 'Sales'),
+            title: t('HOME_PathSalesTitle', 'Sales'),
             path: 'Sales',
             icon: 'cart-outline',
             accentColor: '#4db8ff',
             role: Role.Sales,
-            subtitle: 'Start a new ticket, browse products, and move straight into checkout.',
+            subtitle: t(
+                'HOME_PathSalesSubtitle',
+                'Start a new ticket, browse products, and move straight into checkout.'
+            ),
             params: { mode: 'order' },
             validate: async () => {
                 dispatch(cartActions.reset());
                 return station?.stationNumber
                     ? null
-                    : 'Please make sure station number is set before making sales';
+                    : t(
+                          'HOME_StationRequiredForSales',
+                          'Please make sure station number is set before making sales'
+                      );
             }
         },
         {
-            title: 'Payments',
+            eyebrow: t('HOME_PathPaymentsEyebrow', 'Payments'),
+            title: t('HOME_PathPaymentsTitle', 'Payments'),
             path: 'Payments',
             icon: 'cash-register',
             accentColor: '#58c472',
             role: Role.Payments,
-            subtitle: 'Review open orders, take payment, and manage post-sale collection.',
+            subtitle: t(
+                'HOME_PathPaymentsSubtitle',
+                'Review open orders, take payment, and manage post-sale collection.'
+            ),
         },
         {
-            title: 'Back Office',
+            eyebrow: t('HOME_PathBackOfficeEyebrow', 'Back Office'),
+            title: t('HOME_PathBackOfficeTitle', 'Back Office'),
             path: 'BackOffice',
             icon: 'chart-box-outline',
             accentColor: '#d8a24a',
             role: Role.Admin,
-            subtitle: 'Open reporting, inventory, catalog, employees, and configuration tools.',
+            subtitle: t(
+                'HOME_PathBackOfficeSubtitle',
+                'Open reporting, inventory, catalog, employees, and configuration tools.'
+            ),
         },
-    ], [dispatch, station?.stationNumber]);
+    ], [dispatch, station?.stationNumber, t, i18next.language]);
     const visiblePaths = useMemo(
         () => paths.filter((p) => employee?.roles?.includes(p.role)),
         [employee?.roles, paths]
@@ -261,15 +280,21 @@ export const HomeScreen = (props: HomeScreenProps) => {
         MAX_PIN_ATTEMPTS - pinLockState.failedAttempts
     );
     const pinLockMessage = isPinLocked
-        ? `Too many invalid PIN attempts. Try again in ${formatLockCountdown(
-              lockedUntil - lockNow
-          )}.`
+        ? t(
+              'HOME_PinLockedCountdownMessage',
+              'Too many invalid PIN attempts. Try again in {{remaining}}.',
+              {
+                  remaining: formatLockCountdown(lockedUntil - lockNow),
+              }
+          )
         : null;
     const pinAttemptsMessage =
         !isPinLocked && pinLockState.failedAttempts > 0
-            ? `${remainingPinAttempts} ${
-                  remainingPinAttempts === 1 ? 'attempt' : 'attempts'
-              } remaining before this device locks for 5 minutes.`
+            ? t(
+                  'HOME_PinAttemptsRemainingMessage',
+                  '{{count}} attempts remaining before this device locks for 5 minutes.',
+                  { count: remainingPinAttempts }
+              )
             : null;
 
     const goto = (details: PathDetails) => {
@@ -296,7 +321,12 @@ export const HomeScreen = (props: HomeScreenProps) => {
             Alert.alert(msg);
         }).catch(() => {
             setPendingRoutePath(null);
-            Alert.alert('Unable to open this screen right now. Please try again.');
+            Alert.alert(
+                t(
+                    'HOME_UnableToOpenScreen',
+                    'Unable to open this screen right now. Please try again.'
+                )
+            );
         });
     };
 
@@ -368,10 +398,16 @@ export const HomeScreen = (props: HomeScreenProps) => {
     }, [accessSyncInProgress, employee, isPinLocked, loginWithE2EManager]);
 
     const confirmLogoff = useCallback(() => {
-        Alert.alert('Log off business?', 'This will sign out the admin session on this device.', [
-            { text: 'Cancel' },
+        Alert.alert(
+            t('HOME_LogoffBusinessTitle', 'Log off business?'),
+            t(
+                'HOME_LogoffBusinessMessage',
+                'This will sign out the admin session on this device.'
+            ),
+            [
+            { text: t('COMMON_Cancel', 'Cancel') },
             {
-                text: 'Log off',
+                text: t('HOME_LogoffBusinessConfirm', 'Log off'),
                 onPress: async () => {
                     try {
                         await markManualSignOut();
@@ -386,38 +422,50 @@ export const HomeScreen = (props: HomeScreenProps) => {
                 },
             },
         ]);
-    }, [dispatch]);
+    }, [dispatch, t]);
 
     const refreshSavedLoginStatus = useCallback(async () => {
         const status = await getRememberedAdminCredentialStatus();
         setSavedLoginStatusLabel(
             status.enabled
-                ? `Saved login enabled on this device${status.username ? ` for ${status.username}` : ''}.`
-                : 'No saved login stored on this device.'
+                ? t(
+                      'HOME_SavedLoginEnabled',
+                      'Saved login enabled on this device{{usernameSuffix}}.',
+                      {
+                          usernameSuffix: status.username ? ` for ${status.username}` : '',
+                      }
+                  )
+                : t('HOME_NoSavedLogin', 'No saved login stored on this device.')
         );
-    }, []);
+    }, [t]);
 
     const removeSavedLogin = useCallback(() => {
         Alert.alert(
-            'Remove saved login?',
-            'This only removes the stored admin username and password from this device. Your current admin session will stay active.',
+            t('HOME_RemoveSavedLoginTitle', 'Remove saved login?'),
+            t(
+                'HOME_RemoveSavedLoginMessage',
+                'This only removes the stored admin username and password from this device. Your current admin session will stay active.'
+            ),
             [
-                { text: 'Cancel' },
+                { text: t('COMMON_Cancel', 'Cancel') },
                 {
-                    text: 'Remove',
+                    text: t('HOME_RemoveSavedLoginConfirm', 'Remove'),
                     style: 'destructive',
                     onPress: async () => {
                         await clearRememberedAdminCredentials();
                         await refreshSavedLoginStatus();
                         Alert.alert(
-                            'Saved login removed',
-                            'The stored admin credentials were removed from this device.'
+                            t('HOME_SavedLoginRemovedTitle', 'Saved login removed'),
+                            t(
+                                'HOME_SavedLoginRemovedMessage',
+                                'The stored admin credentials were removed from this device.'
+                            )
                         );
                     },
                 },
             ]
         );
-    }, [refreshSavedLoginStatus]);
+    }, [refreshSavedLoginStatus, t]);
 
     const openAppDiagnostics = useCallback(async () => {
         const [
@@ -463,56 +511,116 @@ export const HomeScreen = (props: HomeScreenProps) => {
 
         const sections = [
             [
-                'Sync status',
-                `Tenant: ${currentTenantId || 'none'}`,
-                `DataStore lifecycle: ${getDataStoreLifecycleState()}`,
-                `Network active: ${networkActive}`,
-                `Outbox empty: ${outboxEmpty}`,
+                t('HOME_DiagnosticsSyncStatus', 'Sync status'),
+                t('HOME_DiagnosticsTenant', 'Tenant: {{value}}', {
+                    value: currentTenantId || t('COMMON_None', 'none'),
+                }),
+                t('HOME_DiagnosticsDataStoreLifecycle', 'DataStore lifecycle: {{value}}', {
+                    value: getDataStoreLifecycleState(),
+                }),
+                t('HOME_DiagnosticsNetworkActive', 'Network active: {{value}}', {
+                    value: String(networkActive),
+                }),
+                t('HOME_DiagnosticsOutboxEmpty', 'Outbox empty: {{value}}', {
+                    value: String(outboxEmpty),
+                }),
                 syncHealthSummary.length > 0
                     ? syncHealthSummary.join('\n')
-                    : 'No shared sync subscriptions are currently active.',
+                    : t(
+                          'HOME_DiagnosticsNoSyncSubscriptions',
+                          'No shared sync subscriptions are currently active.'
+                      ),
             ].join('\n'),
             previousSummary
-                ? `Previous session\nStarted: ${previousSummary.startedAt}\nEnded: ${previousSummary.endedAt || 'unknown'}\nLast event: ${previousSummary.lastEvent || 'unknown'}\nEvents: ${previousSummary.eventCount}`
-                : 'Previous session\nNo previous session diagnostics recorded on this device yet.',
+                ? t(
+                      'HOME_DiagnosticsPreviousSession',
+                      'Previous session\nStarted: {{startedAt}}\nEnded: {{endedAt}}\nLast event: {{lastEvent}}\nEvents: {{eventCount}}',
+                      {
+                          startedAt: previousSummary.startedAt,
+                          endedAt: previousSummary.endedAt || t('COMMON_Unknown', 'unknown'),
+                          lastEvent: previousSummary.lastEvent || t('COMMON_Unknown', 'unknown'),
+                          eventCount: previousSummary.eventCount,
+                      }
+                  )
+                : t(
+                      'HOME_DiagnosticsNoPreviousSession',
+                      'Previous session\nNo previous session diagnostics recorded on this device yet.'
+                  ),
             previousEvents.length > 0
-                ? `Previous events\n${previousEvents
-                      .map(formatLifecycleEvent)
-                      .join('\n')}`
-                : 'Previous events\nNo stored events.',
+                ? t('HOME_DiagnosticsPreviousEvents', 'Previous events\n{{events}}', {
+                      events: previousEvents.map(formatLifecycleEvent).join('\n'),
+                  })
+                : t('HOME_DiagnosticsNoPreviousEvents', 'Previous events\nNo stored events.'),
             currentEvents.length > 0
-                ? `Current session\n${currentEvents
-                      .map(formatLifecycleEvent)
-                      .join('\n')}`
-                : 'Current session\nNo current session events recorded yet.',
+                ? t('HOME_DiagnosticsCurrentSession', 'Current session\n{{events}}', {
+                      events: currentEvents.map(formatLifecycleEvent).join('\n'),
+                  })
+                : t(
+                      'HOME_DiagnosticsNoCurrentSessionEvents',
+                      'Current session\nNo current session events recorded yet.'
+                  ),
         ];
 
         if (isNativeLifecycleDiagnosticsAvailable()) {
             sections.push(
                 previousNativeSummary
-                    ? `Native previous session\nStarted: ${previousNativeSummary.startedAt}\nEnded: ${previousNativeSummary.endedAt || 'unknown'}\nLast event: ${previousNativeSummary.lastEvent || 'unknown'}\nEvents: ${previousNativeSummary.eventCount}`
-                    : 'Native previous session\nNo native previous session diagnostics recorded yet.'
+                    ? t(
+                          'HOME_DiagnosticsNativePreviousSession',
+                          'Native previous session\nStarted: {{startedAt}}\nEnded: {{endedAt}}\nLast event: {{lastEvent}}\nEvents: {{eventCount}}',
+                          {
+                              startedAt: previousNativeSummary.startedAt,
+                              endedAt:
+                                  previousNativeSummary.endedAt ||
+                                  t('COMMON_Unknown', 'unknown'),
+                              lastEvent:
+                                  previousNativeSummary.lastEvent ||
+                                  t('COMMON_Unknown', 'unknown'),
+                              eventCount: previousNativeSummary.eventCount,
+                          }
+                      )
+                    : t(
+                          'HOME_DiagnosticsNoNativePreviousSession',
+                          'Native previous session\nNo native previous session diagnostics recorded yet.'
+                      )
             );
 
             sections.push(
                 previousNativeEvents.length > 0
-                    ? `Native previous events\n${previousNativeEvents
-                          .map(formatLifecycleEvent)
-                          .join('\n')}`
-                    : 'Native previous events\nNo native stored events.'
+                    ? t(
+                          'HOME_DiagnosticsNativePreviousEvents',
+                          'Native previous events\n{{events}}',
+                          {
+                              events: previousNativeEvents
+                                  .map(formatLifecycleEvent)
+                                  .join('\n'),
+                          }
+                      )
+                    : t(
+                          'HOME_DiagnosticsNoNativePreviousEvents',
+                          'Native previous events\nNo native stored events.'
+                      )
             );
 
             sections.push(
                 currentNativeEvents.length > 0
-                    ? `Native current session\n${currentNativeEvents
-                          .map(formatLifecycleEvent)
-                          .join('\n')}`
-                    : 'Native current session\nNo native current session events recorded yet.'
+                    ? t(
+                          'HOME_DiagnosticsNativeCurrentSession',
+                          'Native current session\n{{events}}',
+                          {
+                              events: currentNativeEvents
+                                  .map(formatLifecycleEvent)
+                                  .join('\n'),
+                          }
+                      )
+                    : t(
+                          'HOME_DiagnosticsNoNativeCurrentSessionEvents',
+                          'Native current session\nNo native current session events recorded yet.'
+                      )
             );
         }
 
-        Alert.alert('App diagnostics', sections.join('\n\n'));
-    }, [currentTenantId, networkActive, outboxEmpty, syncHealth]);
+        Alert.alert(t('HOME_AppDiagnosticsTitle', 'App diagnostics'), sections.join('\n\n'));
+    }, [currentTenantId, networkActive, outboxEmpty, syncHealth, t]);
 
     const recordFailedPinAttempt = useCallback(async (message: string) => {
         const nextFailedAttempts = pinLockState.failedAttempts + 1;
@@ -534,8 +642,11 @@ export const HomeScreen = (props: HomeScreenProps) => {
 
         if (shouldLock) {
             Alert.alert(
-                'PIN locked',
-                'Too many invalid PIN attempts. This device is locked for 5 minutes.'
+                t('HOME_PinLockedTitle', 'PIN locked'),
+                t(
+                    'HOME_PinLockedMessage',
+                    'Too many invalid PIN attempts. This device is locked for 5 minutes.'
+                )
             );
             return;
         }
@@ -553,7 +664,9 @@ export const HomeScreen = (props: HomeScreenProps) => {
         EmployeeService.getEmployee(pin)
             .then(async (emp) => {
                 if (!emp) {
-                    void recordFailedPinAttempt('The PIN number you entered is not valid');
+                    void recordFailedPinAttempt(
+                        t('HOME_PinInvalid', 'The PIN number you entered is not valid')
+                    );
                     return;
                 }
 
@@ -564,7 +677,10 @@ export const HomeScreen = (props: HomeScreenProps) => {
             .catch((error) => {
                 console.error('PIN login failed', error);
                 void recordFailedPinAttempt(
-                    'Unable to validate PIN at the moment. Please try again.'
+                    t(
+                        'HOME_PinValidationFailed',
+                        'Unable to validate PIN at the moment. Please try again.'
+                    )
                 );
             });
     }, [clearPinGuard, dispatch, isPinLocked, pin, recordFailedPinAttempt]);
@@ -691,12 +807,12 @@ export const HomeScreen = (props: HomeScreenProps) => {
         const trimmedPin = model.pin.trim();
 
         if (!/^\d{4}$/.test(trimmedPin)) {
-            setSetupError('PIN must be exactly 4 digits');
+            setSetupError(t('HOME_SetupPinLength', 'PIN must be exactly 4 digits'));
             return;
         }
 
         if (trimmedPin !== model.confirmPin.trim()) {
-            setSetupError('PIN confirmation does not match');
+            setSetupError(t('HOME_SetupPinMismatch', 'PIN confirmation does not match'));
             return;
         }
 
@@ -704,7 +820,10 @@ export const HomeScreen = (props: HomeScreenProps) => {
         setSetupError(null);
 
         try {
-            const ownerName = getOwnerNameParts(model.name || user?.name);
+            const ownerName = getOwnerNameParts(
+                model.name || user?.name,
+                t('HOME_OwnerFallback', 'Owner')
+            );
             const newEmployee = {
                 code: 'OWNER',
                 firstName: ownerName.firstName,
@@ -737,7 +856,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
         } catch (error) {
             console.error('Initial employee setup failed', error);
             setSetupError(
-                error instanceof Error ? error.message : 'Unable to create owner employee'
+                error instanceof Error ? error.message : t('HOME_SetupOwnerFailed', 'Unable to create owner employee')
             );
         } finally {
             setSetupSaving(false);
@@ -774,7 +893,7 @@ export const HomeScreen = (props: HomeScreenProps) => {
         } catch (error) {
             console.error('Store setup failed', error);
             setSetupError(
-                error instanceof Error ? error.message : 'Unable to save store details'
+                error instanceof Error ? error.message : t('HOME_SetupStoreFailed', 'Unable to save store details')
             );
         } finally {
             setSetupSaving(false);
@@ -810,64 +929,71 @@ export const HomeScreen = (props: HomeScreenProps) => {
                 <View style={styles.shell}>
                     <View style={styles.hero}>
                         <Image source={brandMark} style={styles.brandMark} resizeMode="contain" />
-                        <Text style={styles.businessLabel}>{businessName || 'Business workspace'}</Text>
-                        <Text style={styles.heroTitle}>Syncing employee access</Text>
+                        <Text style={styles.businessLabel}>{businessName || t('HOME_BusinessWorkspace', 'Business workspace')}</Text>
+                        <Text style={styles.heroTitle}>{t('HOME_SyncingEmployeeAccessTitle', 'Syncing employee access')}</Text>
                         <Text style={styles.heroSubtitle}>
-                            Syncing staff records for this tenant before showing the PIN screen or setup flow.
+                            {t(
+                                'HOME_SyncingEmployeeAccessSubtitle',
+                                'Syncing staff records for this tenant before showing the PIN screen or setup flow.'
+                            )}
                         </Text>
                         <View style={styles.setupHeroMetaRow}>
                             <View style={styles.setupHeroMetaCard}>
-                                <Text style={styles.setupHeroMetaLabel}>Stage</Text>
-                                <Text style={styles.setupHeroMetaValue}>Employee access</Text>
+                                <Text style={styles.setupHeroMetaLabel}>{t('HOME_SyncStageLabel', 'Stage')}</Text>
+                                <Text style={styles.setupHeroMetaValue}>{t('HOME_SyncStageValue', 'Employee access')}</Text>
                             </View>
                             <View style={styles.setupHeroMetaCard}>
-                                <Text style={styles.setupHeroMetaLabel}>Next</Text>
+                                <Text style={styles.setupHeroMetaLabel}>{t('HOME_SyncNextLabel', 'Next')}</Text>
                                 <Text style={styles.setupHeroMetaValue}>
-                                    PIN or setup flow
+                                    {t('HOME_SyncNextValue', 'PIN or setup flow')}
                                 </Text>
                             </View>
                         </View>
                         <View style={styles.wizardStepsPanel}>
-                            <Text style={styles.wizardStepsEyebrow}>What happens next</Text>
+                            <Text style={styles.wizardStepsEyebrow}>{t('HOME_WhatHappensNext', 'What happens next')}</Text>
                             <View style={styles.wizardStepCard}>
                                 <View style={styles.syncPulseDot} />
                                 <View style={styles.wizardStepCopy}>
-                                    <Text style={styles.wizardStepTitle}>Access records sync</Text>
+                                    <Text style={styles.wizardStepTitle}>{t('HOME_AccessRecordsSyncTitle', 'Access records sync')}</Text>
                                     <Text style={styles.wizardStepText}>
-                                        Once shared employee records finish syncing, this device
-                                        automatically moves into the correct entry flow.
+                                        {t(
+                                            'HOME_AccessRecordsSyncText',
+                                            'Once shared employee records finish syncing, this device automatically moves into the correct entry flow.'
+                                        )}
                                     </Text>
                                 </View>
                             </View>
                         </View>
                     </View>
                     <View style={[styles.keypadCard, styles.syncStatusCard]}>
-                        <Text style={styles.setupWizardEyebrow}>Preparing device</Text>
-                        <Text style={styles.keypadTitle}>Preparing employee access</Text>
+                        <Text style={styles.setupWizardEyebrow}>{t('HOME_PreparingDeviceEyebrow', 'Preparing device')}</Text>
+                        <Text style={styles.keypadTitle}>{t('HOME_PreparingEmployeeAccessTitle', 'Preparing employee access')}</Text>
                         <Text style={styles.keypadHint}>
-                            The PIN screen will appear once employee sync finishes.
+                            {t('HOME_PreparingEmployeeAccessHint', 'The PIN screen will appear once employee sync finishes.')}
                         </Text>
                         <View style={styles.syncStatusPanel}>
                             <View style={styles.syncStatusRow}>
-                                <Text style={styles.syncStatusLabel}>Employee directory</Text>
-                                <Text style={styles.syncStatusValue}>Syncing</Text>
+                                <Text style={styles.syncStatusLabel}>{t('HOME_SyncEmployeeDirectory', 'Employee directory')}</Text>
+                                <Text style={styles.syncStatusValue}>{t('HOME_Syncing', 'Syncing')}</Text>
                             </View>
                             <View style={styles.syncStatusDivider} />
                             <View style={styles.syncStatusRow}>
-                                <Text style={styles.syncStatusLabel}>Store setup check</Text>
-                                <Text style={styles.syncStatusValue}>Queued next</Text>
+                                <Text style={styles.syncStatusLabel}>{t('HOME_SyncStoreSetupCheck', 'Store setup check')}</Text>
+                                <Text style={styles.syncStatusValue}>{t('HOME_QueuedNext', 'Queued next')}</Text>
                             </View>
                             <View style={styles.syncStatusDivider} />
                             <View style={styles.syncStatusRow}>
-                                <Text style={styles.syncStatusLabel}>Device access</Text>
-                                <Text style={styles.syncStatusValue}>Waiting</Text>
+                                <Text style={styles.syncStatusLabel}>{t('HOME_SyncDeviceAccess', 'Device access')}</Text>
+                                <Text style={styles.syncStatusValue}>{t('HOME_Waiting', 'Waiting')}</Text>
                             </View>
                         </View>
                         <View style={styles.syncHintCard}>
-                            <Text style={styles.syncHintTitle}>No action needed</Text>
+                            <Text style={styles.syncHintTitle}>{t('HOME_NoActionNeeded', 'No action needed')}</Text>
                             <Text style={styles.syncHintText}>
-                                This is only a visual waiting state. Access appears automatically
-                                when sync completes.
+                                {t(
+                                    'HOME_NoActionNeededHint',
+                                    'This is only a visual waiting state. Access appears automatically when sync completes.'
+                                )}
                             </Text>
                         </View>
                     </View>
@@ -888,7 +1014,10 @@ export const HomeScreen = (props: HomeScreenProps) => {
                     onE2EManagerLogin={loginWithE2EManager}
                     onLogoff={confirmLogoff}
                     savedLoginStatusLabel={savedLoginStatusLabel}
-                    pendingOrderStatusLabel="Order journal entries stay on this device until you retry them manually."
+                    pendingOrderStatusLabel={t(
+                        'HOME_OrderJournalPendingHint',
+                        'Order journal entries stay on this device until you retry them manually.'
+                    )}
                     onRemoveSavedLogin={removeSavedLogin}
                     onOpenAppDiagnostics={openAppDiagnostics}
                 />
@@ -896,28 +1025,35 @@ export const HomeScreen = (props: HomeScreenProps) => {
                 <View testID="home-ready-shell" style={styles.readyShell}>
                     <View style={styles.readyHero}>
                         <Image source={brandMark} style={styles.readyBrandMark} resizeMode="contain" />
-                        <Text style={styles.businessLabel}>{businessName || 'Business workspace'}</Text>
-                        <Text style={styles.readyTitle}>Choose your workspace</Text>
+                        <Text style={styles.businessLabel}>{businessName || t('HOME_BusinessWorkspace', 'Business workspace')}</Text>
+                        <Text style={styles.readyTitle}>{t('HOME_ChooseWorkspaceTitle', 'Choose your workspace')}</Text>
                         <Text style={styles.readySubtitle}>
-                            Jump into the live operational area that matches your role on this shared device.
+                            {t(
+                                'HOME_ChooseWorkspaceSubtitle',
+                                'Jump into the live operational area that matches your role on this shared device.'
+                            )}
                         </Text>
                         <View style={styles.readyMetaRow}>
                             <View style={styles.readyMetaChip}>
-                                <Text style={styles.readyMetaLabel}>Employee</Text>
+                                <Text style={styles.readyMetaLabel}>{t('HOME_EmployeeLabel', 'Employee')}</Text>
                                 <Text style={styles.readyMetaValue}>
-                                    {`${employee?.firstName || ''} ${employee?.lastName || ''}`.trim() || 'Signed in'}
+                                    {`${employee?.firstName || ''} ${employee?.lastName || ''}`.trim() || t('HOME_SignedIn', 'Signed in')}
                                 </Text>
                             </View>
                             <View style={styles.readyMetaChip}>
-                                <Text style={styles.readyMetaLabel}>Roles</Text>
+                                <Text style={styles.readyMetaLabel}>{t('HOME_RolesLabel', 'Roles')}</Text>
                                 <Text style={styles.readyMetaValue}>
-                                    {visiblePaths.length} workspace{visiblePaths.length === 1 ? '' : 's'}
+                                    {t(
+                                        'HOME_WorkspaceCount',
+                                        `${visiblePaths.length} workspace${visiblePaths.length === 1 ? '' : 's'}`,
+                                        { count: visiblePaths.length }
+                                    )}
                                 </Text>
                             </View>
                         </View>
                     </View>
                     <View style={styles.readyRoutesPanel}>
-                        <Text style={styles.readyRoutesEyebrow}>Available areas</Text>
+                        <Text style={styles.readyRoutesEyebrow}>{t('HOME_AvailableAreas', 'Available areas')}</Text>
                         <HomeRouteGrid
                             paths={visiblePaths}
                             routeAnimations={routeAnimations}

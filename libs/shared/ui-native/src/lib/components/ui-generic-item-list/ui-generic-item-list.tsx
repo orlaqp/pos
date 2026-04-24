@@ -16,6 +16,7 @@ import {
 import { useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAppDispatch } from '@pos/store';
+import { translateWithFallback } from '@pos/shared/utils';
 
 const PAGE_SIZE = 10;
 
@@ -73,6 +74,7 @@ export function UIGenericItemList({
     headerSubtitle,
     plainHeader,
 }: ItemListProps<unknown, any>) {
+    const t = translateWithFallback;
     const theme = useTheme();
     const styles = useStyles();
     const dispatch = useAppDispatch();
@@ -107,7 +109,7 @@ export function UIGenericItemList({
     if (loadingStatus === 'loading' || loadingStatus === 'not loaded')
         return (
             <View style={[styles.page, { paddingTop: 50 }]}>
-                <UISpinner size="small" message="Loading..." />
+                <UISpinner size="small" message={t('COMMON_Loading', 'Loading...')} />
             </View>
         );
 
@@ -153,7 +155,7 @@ export function UIGenericItemList({
                             <TextInput
                                 testID="ui-generic-item-list-search-input"
                                 value={query}
-                                placeholder="Search..."
+                                placeholder={t('COMMON_Search', 'Search...')}
                                 placeholderTextColor={theme.theme.colors.grey2}
                                 style={styles.searchInput}
                                 autoCorrect={false}
@@ -194,14 +196,17 @@ export function UIGenericItemList({
                 {isEmpty ? (
                     <View style={styles.emptyCard}>
                         <UIEmptyState
-                            title={emptyTitle || 'Nothing here yet'}
+                            title={emptyTitle || t('COMMON_NothingHereYet', 'Nothing here yet')}
                             subtitle={
                                 emptySubtitle ||
-                                'Create the first record to start building this catalog section.'
+                                t(
+                                    'COMMON_CreateFirstRecord',
+                                    'Create the first record to start building this catalog section.',
+                                )
                             }
                             actions={[
                                 {
-                                    title: emptyActionText || 'Add item',
+                                    title: emptyActionText || t('COMMON_AddItem', 'Add item'),
                                     onPress: () =>
                                         emptyAction
                                             ? emptyAction()

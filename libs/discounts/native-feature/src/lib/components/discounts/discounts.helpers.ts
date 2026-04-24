@@ -2,6 +2,7 @@ import {
   DiscountDefinitionEntity,
   EmployeeDiscountPolicyEntity,
 } from '@pos/discounts/data-access';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export const definitionTypeOptions = [
   { id: 'MANUAL', name: 'Manual' },
@@ -47,6 +48,54 @@ export const dayOfWeekOptions = [
   { id: 'FRIDAY', name: 'Friday' },
   { id: 'SATURDAY', name: 'Saturday' },
   { id: 'SUNDAY', name: 'Sunday' },
+];
+
+type Translator = typeof translateWithFallback;
+
+export const buildDefinitionTypeOptions = (t: Translator) => [
+  { id: 'MANUAL', name: t('DISCOUNT_DefinitionTypeManual', 'Manual') },
+  { id: 'AUTOMATIC', name: t('DISCOUNT_DefinitionTypeAutomatic', 'Automatic') },
+  { id: 'PROMO_CODE', name: t('DISCOUNT_DefinitionTypePromoCode', 'Promo code') },
+];
+
+export const buildStatusOptions = (t: Translator) => [
+  { id: 'DRAFT', name: t('DISCOUNT_StatusDraft', 'Draft') },
+  { id: 'ACTIVE', name: t('DISCOUNT_StatusActive', 'Active') },
+  { id: 'INACTIVE', name: t('DISCOUNT_StatusInactive', 'Inactive') },
+  { id: 'EXPIRED', name: t('DISCOUNT_StatusExpired', 'Expired') },
+];
+
+export const buildMethodOptions = (t: Translator) => [
+  { id: 'PERCENT', name: t('DISCOUNT_MethodPercent', 'Percent') },
+  { id: 'AMOUNT', name: t('DISCOUNT_MethodAmount', 'Amount') },
+  { id: 'FINAL_PRICE', name: t('DISCOUNT_MethodFinalPrice', 'Final price') },
+];
+
+export const buildScopeOptions = (t: Translator) => [
+  { id: 'LINE', name: t('DISCOUNT_ScopeLine', 'Line') },
+  { id: 'ORDER', name: t('DISCOUNT_ScopeOrder', 'Order') },
+];
+
+export const buildStackModeOptions = (t: Translator) => [
+  { id: 'STACKABLE', name: t('DISCOUNT_StackModeStackable', 'Stackable') },
+  { id: 'EXCLUSIVE', name: t('DISCOUNT_StackModeExclusive', 'Exclusive') },
+  { id: 'BEST_PRICE_ONLY', name: t('DISCOUNT_StackModeBestPriceOnly', 'Best price only') },
+];
+
+export const buildRoleOptions = (t: Translator) => [
+  { id: 'Admin', name: t('DISCOUNT_RoleAdmin', 'Admin') },
+  { id: 'Sales', name: t('DISCOUNT_RoleSales', 'Sales') },
+  { id: 'Payments', name: t('DISCOUNT_RolePayments', 'Payments') },
+];
+
+export const buildDayOfWeekOptions = (t: Translator) => [
+  { id: 'MONDAY', name: t('DISCOUNT_DayMonday', 'Monday') },
+  { id: 'TUESDAY', name: t('DISCOUNT_DayTuesday', 'Tuesday') },
+  { id: 'WEDNESDAY', name: t('DISCOUNT_DayWednesday', 'Wednesday') },
+  { id: 'THURSDAY', name: t('DISCOUNT_DayThursday', 'Thursday') },
+  { id: 'FRIDAY', name: t('DISCOUNT_DayFriday', 'Friday') },
+  { id: 'SATURDAY', name: t('DISCOUNT_DaySaturday', 'Saturday') },
+  { id: 'SUNDAY', name: t('DISCOUNT_DaySunday', 'Sunday') },
 ];
 
 export interface DefinitionFormValues {

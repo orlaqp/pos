@@ -25,8 +25,12 @@ export interface OrderJournalListProps {
     onClose?: () => void;
 }
 
-const getEmployeeName = (entry: PendingOrderJournalEntry) =>
-    entry.employee?.name || 'Unknown employee';
+const getEmployeeName = (
+    entry: PendingOrderJournalEntry,
+    t: typeof translateWithFallback,
+) =>
+    entry.employee?.name ||
+    t('ORDERS_OrderJournalUnknownEmployee', 'Unknown employee');
 
 const getItemCount = (entry: PendingOrderJournalEntry) =>
     Array.isArray(entry.cart.items) ? entry.cart.items.length : 0;
@@ -50,6 +54,45 @@ const toSearchText = (entry: PendingOrderJournalEntry) =>
         .filter(Boolean)
         .join(' ')
         .toLowerCase();
+
+const getJournalSyncStateLabel = (
+    syncState: PendingOrderJournalEntry['syncState'],
+    t: typeof translateWithFallback,
+) => {
+    switch (syncState) {
+        case 'local_only':
+            return t('ORDERS_OrderJournalSyncStateLocalOnly', 'Local only');
+        case 'sync_pending':
+            return t('ORDERS_OrderJournalSyncStatePending', 'Sync pending');
+        case 'sync_failed':
+            return t('ORDERS_OrderJournalSyncStateFailed', 'Sync failed');
+        case 'synced':
+            return t('ORDERS_OrderJournalSyncStateSynced', 'Synced');
+        default:
+            return String(syncState).replace(/_/g, ' ');
+    }
+};
+
+const getJournalTargetLabel = (
+    statusTarget: PendingOrderJournalEntry['statusTarget'],
+    t: typeof translateWithFallback,
+) => {
+    switch (statusTarget) {
+        case 'OPEN':
+            return t('ORDER_StatusOpen', 'Open');
+        case 'PAID':
+            return t('ORDER_StatusPaid', 'Paid');
+        case 'REFUNDED':
+            return t('ORDER_StatusRefunded', 'Refunded');
+        case 'PARTIALLY_REFUNDED':
+            return t(
+                'ORDER_StatusPartiallyRefunded',
+                'Partially refunded',
+            );
+        default:
+            return String(statusTarget);
+    }
+};
 
 export function OrderJournalList({ tenantId, onClose }: OrderJournalListProps) {
     const tokens = useDesignTokens();
@@ -312,7 +355,10 @@ export function OrderJournalList({ tenantId, onClose }: OrderJournalListProps) {
                                     <View style={local.badgesColumn}>
                                         <View style={local.targetBadge}>
                                             <Text style={local.targetBadgeText}>
-                                                {String(item.statusTarget)}
+                                                {getJournalTargetLabel(
+                                                    item.statusTarget,
+                                                    t,
+                                                )}
                                             </Text>
                                         </View>
                                         <View
@@ -327,9 +373,9 @@ export function OrderJournalList({ tenantId, onClose }: OrderJournalListProps) {
                                             ]}
                                         >
                                             <Text style={local.syncBadgeText}>
-                                                {item.syncState.replace(
-                                                    /_/g,
-                                                    ' ',
+                                                {getJournalSyncStateLabel(
+                                                    item.syncState,
+                                                    t,
                                                 )}
                                             </Text>
                                         </View>
@@ -343,7 +389,7 @@ export function OrderJournalList({ tenantId, onClose }: OrderJournalListProps) {
                                         )}
                                     </Text>
                                     <Text style={local.metaValue}>
-                                        {getEmployeeName(item)}
+                                        {getEmployeeName(item, t)}
                                     </Text>
                                 </View>
                                 <View style={local.metaRow}>

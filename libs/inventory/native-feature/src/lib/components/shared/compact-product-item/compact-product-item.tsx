@@ -4,6 +4,7 @@ import { ProductEntity } from '@pos/products/data-access';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button } from '@rneui/themed';
 import { View, Text } from 'react-native';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface SearchItemProps {
     product: ProductEntity;
@@ -26,6 +27,7 @@ const formatQuantity = (value: unknown) => {
 };
 
 export function CompactProductItem({ product, onAdd }: SearchItemProps) {
+    const t = translateWithFallback;
     const styles = useSharedStyles();
     const productKey = toTestKey(product.name);
 
@@ -53,7 +55,7 @@ export function CompactProductItem({ product, onAdd }: SearchItemProps) {
             >
                 <Button
                     type="clear"
-                    title="Add to list"
+                    title={t('INVENTORY_AddToList', 'Add to list')}
                     testID={`compact-product-add-${productKey}`}
                     onPress={() => onAdd(product)}
                 />

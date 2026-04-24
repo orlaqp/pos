@@ -1,5 +1,6 @@
 import React, { ErrorInfo, ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { translateWithFallback } from '@pos/shared/utils';
 
 interface AppErrorBoundaryProps {
     children: ReactNode;
@@ -31,19 +32,26 @@ export class AppErrorBoundary extends React.Component<
     };
 
     render() {
+        const t = translateWithFallback;
         if (!this.state.hasError) {
             return this.props.children;
         }
 
         return (
             <View style={styles.container} testID="app-crash-fallback">
-                <Text style={styles.title}>Something went wrong</Text>
+                <Text style={styles.title}>
+                    {t('APP_CrashTitle', 'Something went wrong')}
+                </Text>
                 <Text style={styles.message}>
-                    The app hit an unexpected error. You can retry or relaunch
-                    the app.
+                    {t(
+                        'APP_CrashMessage',
+                        'The app hit an unexpected error. You can retry or relaunch the app.'
+                    )}
                 </Text>
                 <Pressable style={styles.button} onPress={this.onRetry}>
-                    <Text style={styles.buttonText}>Try Again</Text>
+                    <Text style={styles.buttonText}>
+                        {t('APP_TryAgain', 'Try Again')}
+                    </Text>
                 </Pressable>
             </View>
         );

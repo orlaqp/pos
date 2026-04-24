@@ -5,6 +5,7 @@ import { Button } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PrinterEntity } from '@pos/printings/data-access';
 import { UICard } from '@pos/shared/ui-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface PrinterItemProps {
@@ -32,6 +33,7 @@ export function PrinterItem({
     defaultPrinter,
     setAsDefault,
 }: PrinterItemProps) {
+    const t = translateWithFallback;
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
     const isDefault = defaultPrinter?.identifier === item.identifier;
@@ -40,16 +42,28 @@ export function PrinterItem({
         <UICard style={[styles.card, isDefault && styles.defaultCard]}>
             <View style={styles.contentRow}>
                 <View style={styles.infoGrid}>
-                    <InfoBox label="Model" value={item.model} />
-                    <InfoBox label="Identifier" value={item.identifier} />
-                    <InfoBox label="IP Address" value={item.ip} />
-                    <InfoBox label="Interface" value={item.interfaceType} />
+                    <InfoBox
+                        label={t('PRINTER_Model', 'Model')}
+                        value={item.model}
+                    />
+                    <InfoBox
+                        label={t('PRINTER_Identifier', 'Identifier')}
+                        value={item.identifier}
+                    />
+                    <InfoBox
+                        label={t('PRINTER_IpAddress', 'IP Address')}
+                        value={item.ip}
+                    />
+                    <InfoBox
+                        label={t('PRINTER_Interface', 'Interface')}
+                        value={item.interfaceType}
+                    />
                 </View>
                 <View style={styles.actionColumn}>
                     {!isDefault && setAsDefault && (
                         <Button
                             type="outline"
-                            title="Set as Default"
+                            title={t('PRINTER_SetAsDefault', 'Set as Default')}
                             onPress={() => setAsDefault(item)}
                             buttonStyle={styles.defaultButton}
                             titleStyle={styles.defaultButtonTitle}
@@ -58,7 +72,7 @@ export function PrinterItem({
                     {isDefault && (
                         <View style={styles.defaultBadge}>
                             <Text style={styles.defaultBadgeText}>
-                                Default Printer
+                                {t('PRINTER_DefaultPrinter', 'Default Printer')}
                             </Text>
                         </View>
                     )}

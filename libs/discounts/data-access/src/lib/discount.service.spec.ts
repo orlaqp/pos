@@ -159,6 +159,35 @@ describe('DiscountService', () => {
     expect(saveMock).toHaveBeenCalledTimes(1);
   });
 
+  it('rejects creating a duplicate promo code definition', async () => {
+    queryMock.mockResolvedValueOnce([
+      {
+        id: 'promo-1',
+        name: 'Original promo',
+        code: 'SAVE5',
+        type: 'PROMO_CODE',
+        active: true,
+        _deleted: false,
+      },
+    ]);
+
+    await expect(
+      DiscountService.saveDefinition({
+        name: 'Duplicate promo',
+        code: ' save5 ',
+        status: 'ACTIVE',
+        type: 'PROMO_CODE',
+        method: 'PERCENT',
+        scope: 'ORDER',
+        value: 5,
+        stackMode: 'STACKABLE',
+        active: true,
+      })
+    ).rejects.toThrow('Promo code SAVE5 already exists');
+
+    expect(saveMock).not.toHaveBeenCalled();
+  });
+
   it('gets a definition by id', async () => {
     queryMock.mockResolvedValueOnce({ id: 'disc-1', name: 'Holiday', type: 'MANUAL' });
 
@@ -194,19 +223,30 @@ describe('DiscountService', () => {
   });
 
   it('updates an existing definition', async () => {
-    queryMock.mockResolvedValueOnce({
-      id: 'disc-1',
-      name: 'Old',
-      code: null,
-      description: null,
-      status: 'ACTIVE',
-      type: 'PROMO_CODE',
-      method: 'PERCENT',
-      scope: 'LINE',
-      value: 5,
-      stackMode: 'STACKABLE',
-      active: true,
-    });
+    queryMock
+      .mockResolvedValueOnce([
+        {
+          id: 'disc-1',
+          name: 'Old',
+          code: 'SAVE5',
+          type: 'PROMO_CODE',
+          active: true,
+          _deleted: false,
+        },
+      ])
+      .mockResolvedValueOnce({
+        id: 'disc-1',
+        name: 'Old',
+        code: null,
+        description: null,
+        status: 'ACTIVE',
+        type: 'PROMO_CODE',
+        method: 'PERCENT',
+        scope: 'LINE',
+        value: 5,
+        stackMode: 'STACKABLE',
+        active: true,
+      });
     saveMock.mockResolvedValueOnce({ id: 'disc-1' });
 
     await DiscountService.saveDefinition({
@@ -238,6 +278,44 @@ describe('DiscountService', () => {
         stackMode: 'EXCLUSIVE',
       })
     );
+  });
+
+  it('rejects updating a promo code to another definition code', async () => {
+    queryMock.mockResolvedValueOnce([
+      {
+        id: 'promo-1',
+        name: 'First promo',
+        code: 'SAVE5',
+        type: 'PROMO_CODE',
+        active: true,
+        _deleted: false,
+      },
+      {
+        id: 'promo-2',
+        name: 'Second promo',
+        code: 'SAVE10',
+        type: 'PROMO_CODE',
+        active: true,
+        _deleted: false,
+      },
+    ]);
+
+    await expect(
+      DiscountService.saveDefinition({
+        id: 'promo-2',
+        name: 'Second promo',
+        code: 'save5',
+        status: 'ACTIVE',
+        type: 'PROMO_CODE',
+        method: 'PERCENT',
+        scope: 'ORDER',
+        value: 10,
+        stackMode: 'STACKABLE',
+        active: true,
+      })
+    ).rejects.toThrow('Promo code SAVE5 already exists');
+
+    expect(saveMock).not.toHaveBeenCalled();
   });
 
   it('throws when updating a missing definition', async () => {

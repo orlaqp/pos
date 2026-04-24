@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@rneui/themed';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface UnitOfMeasureItemProps {
     item: UnitOfMeasureEntity;
@@ -15,13 +16,16 @@ export interface UnitOfMeasureItemProps {
 }
 
 export function UnitOfMeasureItem({ item, navigation }: UnitOfMeasureItemProps) {
+    const t = translateWithFallback;
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
     const dispatch = useDispatch();
 
     const editItem = () => {
         if (item.name === 'ea') {
-            Alert.alert('This item cannot be changed');
+            Alert.alert(
+                t('UOM_DefaultUnitLocked', 'This item cannot be changed'),
+            );
             return;
         }
 

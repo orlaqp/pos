@@ -10,6 +10,7 @@ import {
     TouchableOpacity,
 } from 'react-native';
 import { Controller, RegisterOptions, useFormContext } from 'react-hook-form';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface IdName {
     id?: string;
@@ -29,6 +30,7 @@ export interface UiOverlaySelectProps {
 export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectProps>(
     (props, ref) => {
         const { name, title, list, onSelection, rules } = props;
+        const t = translateWithFallback;
         const styles = useStyles();
         const [visible, setVisible] = useState(false);
         const [selected, setSelected] = useState<IdName>();
@@ -76,10 +78,15 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                             >
                                 <View style={styles.overlayContent}>
                                     <View style={styles.overlayHeader}>
-                                        <Text style={styles.overlayEyebrow}>Select</Text>
+                                        <Text style={styles.overlayEyebrow}>
+                                            {t('COMMON_Select', 'Select')}
+                                        </Text>
                                         <Text style={styles.overlayTitle}>{title}</Text>
                                         <Text style={styles.overlaySubtitle}>
-                                            Choose one option to continue.
+                                            {t(
+                                                'COMMON_ChooseOneOption',
+                                                'Choose one option to continue.',
+                                            )}
                                         </Text>
                                     </View>
                                     <FlatList
@@ -90,7 +97,10 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                                         contentContainerStyle={styles.listContent}
                                         ListEmptyComponent={
                                             <Text style={styles.emptyText}>
-                                                No options available
+                                                {t(
+                                                    'COMMON_NoOptionsAvailable',
+                                                    'No options available',
+                                                )}
                                             </Text>
                                         }
                                         renderItem={({ item }) => (
@@ -115,7 +125,12 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                                                     </Text>
                                                 </View>
                                                 {item.id === value ? (
-                                                    <Text style={styles.selectedTag}>Selected</Text>
+                                                    <Text style={styles.selectedTag}>
+                                                        {t(
+                                                            'COMMON_Selected',
+                                                            'Selected',
+                                                        )}
+                                                    </Text>
                                                 ) : null}
                                             </TouchableOpacity>
                                         )}
@@ -147,10 +162,15 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                 >
                     <View style={styles.overlayContent}>
                         <View style={styles.overlayHeader}>
-                            <Text style={styles.overlayEyebrow}>Select</Text>
+                            <Text style={styles.overlayEyebrow}>
+                                {t('COMMON_Select', 'Select')}
+                            </Text>
                             <Text style={styles.overlayTitle}>{title}</Text>
                             <Text style={styles.overlaySubtitle}>
-                                Choose one option to continue.
+                                {t(
+                                    'COMMON_ChooseOneOption',
+                                    'Choose one option to continue.',
+                                )}
                             </Text>
                         </View>
                         <FlatList
@@ -161,7 +181,10 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                             contentContainerStyle={styles.listContent}
                             ListEmptyComponent={
                                 <Text style={styles.emptyText}>
-                                    No options available
+                                    {t(
+                                        'COMMON_NoOptionsAvailable',
+                                        'No options available',
+                                    )}
                                 </Text>
                             }
                             renderItem={({ item }) => (
@@ -183,7 +206,9 @@ export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectP
                                         </Text>
                                     </View>
                                     {item.id === selected?.id ? (
-                                        <Text style={styles.selectedTag}>Selected</Text>
+                                        <Text style={styles.selectedTag}>
+                                            {t('COMMON_Selected', 'Selected')}
+                                        </Text>
                                     ) : null}
                                 </TouchableOpacity>
                             )}

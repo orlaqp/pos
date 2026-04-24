@@ -267,7 +267,7 @@ describe('Discounts screen', () => {
       <Discounts navigation={navigation} route={{ name: 'Discounts' } as any} />
     );
 
-    await waitFor(() => expect(getByText('No discounts yet')).toBeTruthy());
+    await waitFor(() => expect(getByText('No discount definitions yet')).toBeTruthy());
     expect(getByTestId('discounts-empty-add-button')).toBeTruthy();
     expect(queryByTestId('discounts-header-add-button')).toBeNull();
   });
@@ -367,7 +367,7 @@ describe('Discounts screen', () => {
       <Discounts navigation={navigation} route={{ name: 'Discounts' } as any} />
     );
 
-    await waitFor(() => expect(getByText('No discounts yet')).toBeTruthy());
+    await waitFor(() => expect(getByText('No discount definitions yet')).toBeTruthy());
 
     act(() => {
       definitionListener?.([
@@ -493,7 +493,7 @@ describe('Discounts screen', () => {
       <Discounts navigation={navigation} route={{ name: 'Exceptions' } as any} />
     );
 
-    expect(getByText('EXCEPTIONS')).toBeTruthy();
+    expect(getByText('NO EXCEPTIONS')).toBeTruthy();
     expect(getByText('No exceptions')).toBeTruthy();
   });
 });
@@ -712,6 +712,25 @@ describe('DiscountEditor', () => {
 
     await waitFor(() => expect(Alert.alert).toHaveBeenCalledWith('Promo code is required'));
     expect(mockSaveDefinition).not.toHaveBeenCalled();
+  });
+
+  it('alerts when saving a promo code that already exists', async () => {
+    mockSaveDefinition.mockRejectedValueOnce(new Error('Promo code SAVE5 already exists'));
+
+    const { getByPlaceholderText, getByTestId } = render(
+      <DiscountEditor navigation={navigation} route={{ name: 'Promo Code Form', params: {} } as any} />
+    );
+
+    fireEvent.changeText(getByPlaceholderText('Name'), 'Duplicate promo');
+    fireEvent.changeText(getByPlaceholderText('SPRING10'), 'SAVE5');
+    fireEvent.press(getByTestId('ui-actions-submit'));
+
+    await waitFor(() =>
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Unable to save promo code',
+        'Promo code SAVE5 already exists'
+      )
+    );
   });
 
   it('alerts when the definition is missing during edit load', async () => {

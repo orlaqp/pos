@@ -8,6 +8,7 @@ import {
 import { useSharedStyles } from '@pos/theme/native';
 import { FlatList, StyleSheet, View, Text } from 'react-native';
 import { UIEmptyState, UIScreen, UISearchInput } from '@pos/shared/ui-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import InventoryLine from './inventory-line';
 import { dedupeProducts } from '../shared/dedupe-products';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
@@ -17,6 +18,7 @@ export interface InventoryListProps {
 }
 
 export function InventoryList({ navigation: _navigation }: InventoryListProps) {
+    const t = translateWithFallback;
     const styles = useStyles();
     const products = useSelector(selectAllProducts);
     const [filterText, setFilterText] = useState<string>();
@@ -32,8 +34,12 @@ export function InventoryList({ navigation: _navigation }: InventoryListProps) {
             <View style={styles.page}>
                 <View style={styles.headerPanel}>
                     <View style={styles.headerCopy}>
-                        <Text style={styles.eyebrow}>Inventory</Text>
-                        <Text style={styles.headerTitle}>Stock levels</Text>
+                        <Text style={styles.eyebrow}>
+                            {t('INVENTORY_Inventory', 'Inventory')}
+                        </Text>
+                        <Text style={styles.headerTitle}>
+                            {t('INVENTORY_StockLevels', 'Stock levels')}
+                        </Text>
                     </View>
                     <View style={styles.searchWrap}>
                             <UISearchInput
@@ -45,22 +51,32 @@ export function InventoryList({ navigation: _navigation }: InventoryListProps) {
                 </View>
                 <View style={styles.content}>
                     {filteredList.length === 0 && (
-                        <UIEmptyState text="No products found" />
+                        <UIEmptyState
+                            text={t('COMMON_NoProductsFound', 'No products found')}
+                        />
                     )}
                     {filteredList.length > 0 && (
                         <>
                         <View style={styles.tableHeader}>
                             <View style={styles.tableProductColumn}>
-                                <Text style={styles.tableHeaderText}>Product</Text>
+                                <Text style={styles.tableHeaderText}>
+                                    {t('COMMON_Product', 'Product')}
+                                </Text>
                             </View>
                             <View style={styles.tableQtyColumn}>
-                                <Text style={styles.tableHeaderText}>On hand</Text>
+                                <Text style={styles.tableHeaderText}>
+                                    {t('INVENTORY_OnHand', 'On hand')}
+                                </Text>
                             </View>
                             <View style={styles.tableQtyColumn}>
-                                <Text style={styles.tableHeaderText}>Reorder point</Text>
+                                <Text style={styles.tableHeaderText}>
+                                    {t('INVENTORY_ReorderPoint', 'Reorder point')}
+                                </Text>
                             </View>
                             <View style={styles.tableQtyColumn}>
-                                <Text style={styles.tableHeaderText}>Reorder qty</Text>
+                                <Text style={styles.tableHeaderText}>
+                                    {t('INVENTORY_ReorderQty', 'Reorder qty')}
+                                </Text>
                             </View>
                         </View>
                         <FlatList

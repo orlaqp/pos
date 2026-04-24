@@ -8,7 +8,7 @@ import { ThemeProvider, Button, Dialog, Text } from '@rneui/themed';
 import { designTokens, theme } from '@pos/theme/native';
 import { Provider, useSelector } from 'react-redux';
 import { store, RootState, useAppDispatch } from '@pos/store';
-import { logSyncDebug, startSyncMeasure } from '@pos/shared/utils';
+import { logSyncDebug, startSyncMeasure, translateWithFallback } from '@pos/shared/utils';
 import Navigation from './navigation';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppErrorBoundary } from './app-error-boundary';
@@ -226,12 +226,22 @@ const StartupScreen = ({
     errorMessage?: string;
 }) => {
     const styles = useStartupStyles();
+    const t = translateWithFallback;
     const isError = status === 'error';
     const messageByStatus: Record<Exclude<BootstrapStatus, 'ready' | 'error'>, string> = {
-        idle: 'Starting...',
-        'checking-session': 'Restoring business admin session...',
-        'resolving-tenant': 'Resolving business workspace...',
-        'preparing-business-data': 'Loading employees and tenant data...',
+        idle: t('APP_StartupStarting', 'Starting...'),
+        'checking-session': t(
+            'APP_StartupCheckingSession',
+            'Restoring business admin session...'
+        ),
+        'resolving-tenant': t(
+            'APP_StartupResolvingTenant',
+            'Resolving business workspace...'
+        ),
+        'preparing-business-data': t(
+            'APP_StartupPreparingBusinessData',
+            'Loading employees and tenant data...'
+        ),
     };
 
     return (
@@ -239,21 +249,26 @@ const StartupScreen = ({
             <Image source={brandMark} style={styles.logo} resizeMode="contain" />
             {isError ? (
                 <>
-                    <Text h3 style={styles.title} testID="app-startup-title">Startup failed</Text>
+                    <Text h3 style={styles.title} testID="app-startup-title">
+                        {t('APP_StartupFailedTitle', 'Startup failed')}
+                    </Text>
                     <Text style={styles.message}>
-                        The app could not restore the business workspace. Retry the startup sequence.
+                        {t(
+                            'APP_StartupFailedMessage',
+                            'The app could not restore the business workspace. Retry the startup sequence.'
+                        )}
                     </Text>
                     {errorMessage ? (
                         <Text style={styles.errorDetail}>{errorMessage}</Text>
                     ) : null}
                     <View style={styles.errorActions}>
                         <Button
-                            title="Retry"
+                            title={t('APP_Retry', 'Retry')}
                             onPress={onRetry}
                             buttonStyle={styles.retryButton}
                         />
                         <Button
-                            title="Sign Out"
+                            title={t('APP_SignOut', 'Sign Out')}
                             type="outline"
                             onPress={onSignOut}
                             buttonStyle={styles.signOutButton}
@@ -263,7 +278,9 @@ const StartupScreen = ({
                 </>
             ) : (
                 <>
-                    <Text h3 style={styles.title} testID="app-startup-title">Preparing POS</Text>
+                    <Text h3 style={styles.title} testID="app-startup-title">
+                        {t('APP_PreparingPos', 'Preparing POS')}
+                    </Text>
                     <UISpinner size="large" message={messageByStatus[status]} />
                     <Text testID="app-startup-status" style={styles.message}>
                         {messageByStatus[status]}
@@ -473,11 +490,14 @@ const AppContent = () => {
                 if (!sessionExpiryAlertShownRef.current) {
                     sessionExpiryAlertShownRef.current = true;
                     Alert.alert(
-                        'Admin login expired',
-                        'This sale is safe to finish. Sign in again after checkout to restore syncing and admin access.',
+                        t('APP_AdminLoginExpiredTitle', 'Admin login expired'),
+                        t(
+                            'APP_AdminLoginExpiredMessage',
+                            'This sale is safe to finish. Sign in again after checkout to restore syncing and admin access.'
+                        ),
                         [
                             {
-                                text: 'OK',
+                                text: t('COMMON_Ok', 'OK'),
                                 onPress: () => {
                                     sessionExpiryAlertShownRef.current = false;
                                 },
@@ -493,11 +513,14 @@ const AppContent = () => {
             if (!sessionExpiryAlertShownRef.current) {
                 sessionExpiryAlertShownRef.current = true;
                 Alert.alert(
-                    'Session expired',
-                    'Your admin login expired. Please sign in again to continue.',
+                    t('APP_SessionExpiredTitle', 'Session expired'),
+                    t(
+                        'APP_SessionExpiredMessage',
+                        'Your admin login expired. Please sign in again to continue.'
+                    ),
                     [
                         {
-                            text: 'OK',
+                            text: t('COMMON_Ok', 'OK'),
                             onPress: () => {
                                 sessionExpiryAlertShownRef.current = false;
                             },
@@ -649,8 +672,11 @@ const AppContent = () => {
                         void clearLastBootstrappedTenantId();
                         if (previousTenantId) {
                             Alert.alert(
-                                'Session expired',
-                                'Your admin login expired. Please sign in again to continue. If you enable saved login on this device, the app can recover it automatically next time.'
+                                t('APP_SessionExpiredTitle', 'Session expired'),
+                                t(
+                                    'APP_SessionExpiredRecoveryMessage',
+                                    'Your admin login expired. Please sign in again to continue. If you enable saved login on this device, the app can recover it automatically next time.'
+                                )
                             );
                         }
                         setSessionRecoveryState('needs_reauth');
@@ -794,7 +820,10 @@ const AppContent = () => {
                       ? error.message
                       : error && typeof error === 'object' && 'message' in error
                         ? String((error as { message?: unknown }).message)
-                        : 'Bootstrap failed with an unknown error';
+                        : t(
+                              'APP_UnknownBootstrapError',
+                              'Bootstrap failed with an unknown error'
+                          );
             dispatch(tenantSessionActions.setTenantSessionError(message));
             setBootstrapError(message);
             setBootstrapStatus('error');
@@ -1212,8 +1241,11 @@ const AppContent = () => {
             }
 
             Alert.alert(
-                'Admin login required',
-                'The sale finished safely. Please sign in again to continue syncing and business admin actions.'
+                t('APP_AdminLoginRequiredTitle', 'Admin login required'),
+                t(
+                    'APP_AdminLoginRequiredMessage',
+                    'The sale finished safely. Please sign in again to continue syncing and business admin actions.'
+                )
             );
             await resetSessionState({ manual: false });
             if (!isCancelled) {
@@ -1317,7 +1349,7 @@ const AppContent = () => {
                 <View style={startupStyles.receiptPreviewActions}>
                     <Button
                         type="clear"
-                        title="Close"
+                        title={translateWithFallback('COMMON_Close', 'Close')}
                         onPress={() =>
                             setReceiptPreviewState({ items: [], activeIndex: 0 })
                         }
@@ -1325,7 +1357,7 @@ const AppContent = () => {
                     {receiptPreviewState.activeIndex > 0 ? (
                         <Button
                             type="outline"
-                            title="Previous"
+                            title={translateWithFallback('COMMON_Previous', 'Previous')}
                             onPress={() =>
                                 setReceiptPreviewState((current) => ({
                                     ...current,
@@ -1337,7 +1369,7 @@ const AppContent = () => {
                     {receiptPreviewState.activeIndex <
                     receiptPreviewState.items.length - 1 ? (
                         <Button
-                            title="Next"
+                            title={translateWithFallback('COMMON_Next', 'Next')}
                             onPress={() =>
                                 setReceiptPreviewState((current) => ({
                                     ...current,

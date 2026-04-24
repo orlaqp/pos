@@ -236,7 +236,7 @@ describe('OrderJournalList', () => {
         );
 
         await waitFor(() => {
-            expect(getByText('sync pending')).toBeTruthy();
+            expect(getByText('Sync pending')).toBeTruthy();
         });
 
         expect(queryByTestId('order-journal-retry-order-2')).toBeNull();

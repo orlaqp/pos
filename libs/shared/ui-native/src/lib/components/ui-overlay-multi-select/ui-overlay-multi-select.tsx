@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { IdName } from '../ui-overlay-select/ui-overlay-select';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface UIOverlayMultiSelectProps {
   name: string;
@@ -41,8 +42,12 @@ export function UIOverlayMultiSelect({
   emptyLabel,
   disabled = false,
   searchable = false,
-  searchPlaceholder = 'Filter options',
+  searchPlaceholder = translateWithFallback(
+    'COMMON_FilterOptions',
+    'Filter options',
+  ),
 }: UIOverlayMultiSelectProps) {
+  const t = translateWithFallback;
   const theme = useTheme();
   const searchColors = theme?.theme?.colors || {
     grey2: '#8f9baa',
@@ -129,10 +134,15 @@ export function UIOverlayMultiSelect({
             >
               <View style={styles.overlayContent}>
                 <View style={styles.overlayHeader}>
-                  <Text style={styles.overlayEyebrow}>Select</Text>
+                  <Text style={styles.overlayEyebrow}>
+                    {t('COMMON_Select', 'Select')}
+                  </Text>
                   <Text style={styles.overlayTitle}>{title}</Text>
                   <Text style={styles.overlaySubtitle}>
-                    Choose one or more options to continue.
+                    {t(
+                      'COMMON_ChooseMultipleOptions',
+                      'Choose one or more options to continue.',
+                    )}
                   </Text>
                 </View>
                 {searchable ? (
@@ -158,7 +168,9 @@ export function UIOverlayMultiSelect({
                   contentContainerStyle={styles.listContent}
                   ListEmptyComponent={
                     <Text style={styles.emptyText}>
-                      {normalizedQuery ? 'No matching options' : 'No options available'}
+                      {normalizedQuery
+                        ? t('COMMON_NoMatchingOptions', 'No matching options')
+                        : t('COMMON_NoOptionsAvailable', 'No options available')}
                     </Text>
                   }
                   renderItem={({ item }) => {
@@ -185,10 +197,14 @@ export function UIOverlayMultiSelect({
                 />
                 <View style={styles.footer}>
                   <Pressable style={styles.footerButtonSecondary} onPress={() => onChange([])}>
-                    <Text style={styles.footerButtonSecondaryText}>Clear</Text>
+                    <Text style={styles.footerButtonSecondaryText}>
+                      {t('COMMON_Clear', 'Clear')}
+                    </Text>
                   </Pressable>
                   <Pressable style={styles.footerButtonPrimary} onPress={closeOverlay}>
-                    <Text style={styles.footerButtonPrimaryText}>Done</Text>
+                    <Text style={styles.footerButtonPrimaryText}>
+                      {t('COMMON_Done', 'Done')}
+                    </Text>
                   </Pressable>
                 </View>
               </View>

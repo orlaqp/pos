@@ -205,7 +205,7 @@ describe('ProductDetails', () => {
 
         fireEvent.press(getByTestId('product-details-submit'));
         expect(Alert.alert).toHaveBeenCalledWith(
-            'Cannot sale this much',
+            'Cannot sell this much',
             'There is not enough inventory to fulfill your request'
         );
         expect(mockUpsert).not.toHaveBeenCalled();

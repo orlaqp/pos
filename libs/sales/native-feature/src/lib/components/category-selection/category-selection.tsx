@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { CategoryEntity, selectAllCategories } from '@pos/categories/data-access';
 import { UIEmptyState, UIS3Image } from '@pos/shared/ui-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
@@ -55,6 +56,7 @@ export function CategorySelection({
     selectedCategoryId,
     refreshToken = 0,
 }: CategorySelectionProps) {
+    const t = translateWithFallback;
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
     const categories = useSelector(selectAllCategories);
@@ -87,7 +89,7 @@ export function CategorySelection({
             {!categories.length ? (
                 <View style={styles.emptyWrap}>
                     <UIEmptyState
-                        text="No categories yet"
+                        text={t('SALES_NoCategoriesYet', 'No categories yet')}
                         imageSize={150}
                     />
                 </View>
@@ -110,7 +112,7 @@ export function CategorySelection({
                             showAllSelected && styles.itemLabelSelected,
                         ]}
                     >
-                        All Products
+                        {t('SALES_AllProducts', 'All Products')}
                     </Text>
                 </Pressable>
             ) : null}

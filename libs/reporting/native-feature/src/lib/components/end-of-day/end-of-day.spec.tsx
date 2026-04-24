@@ -129,7 +129,7 @@ describe('EndOfDay', () => {
             { text: 'Credit Card', value: '$10', backgroundColor: '#1976d2', flex: 1 },
             { text: 'Cash', value: '$5', backgroundColor: '#e91e63', flex: 1 },
             { text: 'Checks', value: '$2', backgroundColor: '#43a047', flex: 1 },
-            { text: 'EBT', value: '$0', backgroundColor: '#8e24aa', flex: 1 },
+            { text: 'EBT', value: '$0', backgroundColor: '#00695c', flex: 1 },
         ]);
     });
 

@@ -1,6 +1,7 @@
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import React from 'react';
+import { translateWithFallback } from '@pos/shared/utils';
 
 import { View, Text, StyleSheet } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -12,18 +13,21 @@ export interface ListWidgetProps {
 }
 
 export function ListWidget({ header, items }: ListWidgetProps) {
+    const t = translateWithFallback;
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
     const local = useStyles(tokens);
 
     return (
         <View style={local.card}>
-            <Text style={local.eyebrow}>Summary</Text>
+            <Text style={local.eyebrow}>{t('COMMON_Summary', 'Summary')}</Text>
             <Text style={local.header}>{header}</Text>
             <ScrollView contentContainerStyle={local.listContent}>
                 {!items.length && (
                     <View style={local.emptyRow}>
-                        <Text style={local.emptyText}>No rows to show</Text>
+                        <Text style={local.emptyText}>
+                            {t('COMMON_NoRowsToShow', 'No rows to show')}
+                        </Text>
                     </View>
                 )}
                 {items.map((item, idx) => (

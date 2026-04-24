@@ -3,6 +3,7 @@ import { Animated, Image, ImageSourcePropType, View } from 'react-native';
 import { Button, Input, Text } from '@rneui/themed';
 import { Controller, FormProvider, UseFormReturn } from 'react-hook-form';
 import { UIAlert, UIInput } from '@pos/shared/ui-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { HomeScreenStyles } from './HomeScreen.styles';
 
 type FirstEmployeeSetupModel = {
@@ -58,36 +59,57 @@ export function HomeSetupWizard({
 }: HomeSetupWizardProps) {
     const isEmployeeStep = setupStep === 'employee';
     const employeeStepComplete = !needsInitialEmployee;
+    const t = translateWithFallback;
 
     return (
         <View style={styles.shell}>
             <View style={styles.hero}>
                 <Image source={brandMark} style={styles.brandMark} resizeMode="contain" />
-                <Text style={styles.businessLabel}>{businessName || 'Business workspace'}</Text>
+                <Text style={styles.businessLabel}>
+                    {businessName || t('HOME_BusinessWorkspace', 'Business workspace')}
+                </Text>
                 <Text style={styles.heroTitle}>
-                    {isEmployeeStep ? 'Finish owner setup' : 'Add store details'}
+                    {isEmployeeStep
+                        ? t('HOME_FinishOwnerSetupTitle', 'Finish owner setup')
+                        : t('HOME_AddStoreDetailsTitle', 'Add store details')}
                 </Text>
                 <Text style={styles.heroSubtitle}>
                     {isEmployeeStep
-                        ? 'Create the initial owner employee and PIN before shared-device access begins.'
-                        : 'Finish the business setup with the primary store information used across receipts, settings, and reporting.'}
+                        ? t(
+                              'HOME_FinishOwnerSetupSubtitle',
+                              'Create the initial owner employee and PIN before shared-device access begins.'
+                          )
+                        : t(
+                              'HOME_AddStoreDetailsSubtitle',
+                              'Finish the business setup with the primary store information used across receipts, settings, and reporting.'
+                          )}
                 </Text>
                 <View style={styles.setupHeroMetaRow}>
                     <View style={styles.setupHeroMetaCard}>
-                        <Text style={styles.setupHeroMetaLabel}>Current step</Text>
+                        <Text style={styles.setupHeroMetaLabel}>
+                            {t('HOME_CurrentStepLabel', 'Current step')}
+                        </Text>
                         <Text style={styles.setupHeroMetaValue}>
-                            {isEmployeeStep ? 'Owner employee' : 'Store details'}
+                            {isEmployeeStep
+                                ? t('HOME_CurrentStepOwner', 'Owner employee')
+                                : t('HOME_CurrentStepStore', 'Store details')}
                         </Text>
                     </View>
                     <View style={styles.setupHeroMetaCard}>
-                        <Text style={styles.setupHeroMetaLabel}>Progress</Text>
+                        <Text style={styles.setupHeroMetaLabel}>
+                            {t('HOME_SetupProgressLabel', 'Progress')}
+                        </Text>
                         <Text style={styles.setupHeroMetaValue}>
-                            {isEmployeeStep ? 'Step 1 of 2' : 'Step 2 of 2'}
+                            {isEmployeeStep
+                                ? t('HOME_SetupProgressStep1', 'Step 1 of 2')
+                                : t('HOME_SetupProgressStep2', 'Step 2 of 2')}
                         </Text>
                     </View>
                 </View>
                 <View style={styles.wizardStepsPanel}>
-                    <Text style={styles.wizardStepsEyebrow}>Setup path</Text>
+                    <Text style={styles.wizardStepsEyebrow}>
+                        {t('HOME_SetupPathEyebrow', 'Setup path')}
+                    </Text>
                     <View
                         style={[
                             styles.wizardStepCard,
@@ -105,9 +127,14 @@ export function HomeSetupWizard({
                             ]}
                         />
                         <View style={styles.wizardStepCopy}>
-                            <Text style={styles.wizardStepTitle}>Owner employee</Text>
+                            <Text style={styles.wizardStepTitle}>
+                                {t('HOME_WizardOwnerEmployeeTitle', 'Owner employee')}
+                            </Text>
                             <Text style={styles.wizardStepText}>
-                                Create the first employee profile and secure it with a PIN.
+                                {t(
+                                    'HOME_WizardOwnerEmployeeText',
+                                    'Create the first employee profile and secure it with a PIN.'
+                                )}
                             </Text>
                         </View>
                     </View>
@@ -124,9 +151,14 @@ export function HomeSetupWizard({
                             ]}
                         />
                         <View style={styles.wizardStepCopy}>
-                            <Text style={styles.wizardStepTitle}>Store details</Text>
+                            <Text style={styles.wizardStepTitle}>
+                                {t('HOME_WizardStoreDetailsTitle', 'Store details')}
+                            </Text>
                             <Text style={styles.wizardStepText}>
-                                Save the receipt and reporting details for the primary location.
+                                {t(
+                                    'HOME_WizardStoreDetailsText',
+                                    'Save the receipt and reporting details for the primary location.'
+                                )}
                             </Text>
                         </View>
                     </View>
@@ -144,15 +176,25 @@ export function HomeSetupWizard({
             >
                 <View style={styles.setupWizardHeader}>
                     <Text style={styles.setupWizardEyebrow}>
-                        {isEmployeeStep ? 'Owner setup' : 'Store setup'}
+                        {isEmployeeStep
+                            ? t('HOME_OwnerSetupEyebrow', 'Owner setup')
+                            : t('HOME_StoreSetupEyebrow', 'Store setup')}
                     </Text>
                     <Text style={styles.keypadTitle}>
-                        {isEmployeeStep ? 'Create owner employee' : 'Store details'}
+                        {isEmployeeStep
+                            ? t('HOME_CreateOwnerEmployeeTitle', 'Create owner employee')
+                            : t('HOME_StoreDetailsTitle', 'Store details')}
                     </Text>
                     <Text style={styles.keypadHint}>
                         {isEmployeeStep
-                            ? 'This one-time setup creates the first PIN-based employee for the tenant.'
-                            : 'These values replace the default placeholders created during bootstrap.'}
+                            ? t(
+                                  'HOME_CreateOwnerEmployeeHint',
+                                  'This one-time setup creates the first PIN-based employee for the tenant.'
+                              )
+                            : t(
+                                  'HOME_StoreDetailsHint',
+                                  'These values replace the default placeholders created during bootstrap.'
+                              )}
                     </Text>
                 </View>
                 {setupError ? <UIAlert message={setupError} type="error" /> : null}
@@ -161,64 +203,100 @@ export function HomeSetupWizard({
                         <View style={styles.setupWizardContent}>
                             <View style={styles.setupSectionCard}>
                                 <Text style={styles.setupSectionEyebrow}>
-                                    Employee details
+                                    {t('HOME_EmployeeDetailsEyebrow', 'Employee details')}
                                 </Text>
                                 <Text style={styles.setupSectionTitle}>
-                                    Primary owner profile
+                                    {t('HOME_PrimaryOwnerProfileTitle', 'Primary owner profile')}
                                 </Text>
                                 <Text style={styles.setupSectionHint}>
-                                    This profile becomes the first PIN-based employee for the
-                                    business.
+                                    {t(
+                                        'HOME_PrimaryOwnerProfileHint',
+                                        'This profile becomes the first PIN-based employee for the business.'
+                                    )}
                                 </Text>
                                 <UIInput
                                     name="name"
-                                    placeholder="Owner display name"
+                                    placeholder={t(
+                                        'HOME_OwnerDisplayNamePlaceholder',
+                                        'Owner display name'
+                                    )}
                                     textAlign="left"
-                                    rules={{ required: 'Owner display name is required' }}
+                                    rules={{
+                                        required: t(
+                                            'HOME_OwnerDisplayNameRequired',
+                                            'Owner display name is required'
+                                        ),
+                                    }}
                                 />
                                 <UIInput
                                     name="phone"
-                                    placeholder="Owner phone"
+                                    placeholder={t(
+                                        'HOME_OwnerPhonePlaceholder',
+                                        'Owner phone'
+                                    )}
                                     textAlign="left"
                                     keyboardType="default"
                                     autoCorrect={false}
                                 />
                             </View>
                             <View style={styles.setupSectionCard}>
-                                <Text style={styles.setupSectionEyebrow}>Access PIN</Text>
+                                <Text style={styles.setupSectionEyebrow}>
+                                    {t('HOME_AccessPinEyebrow', 'Access PIN')}
+                                </Text>
                                 <Text style={styles.setupSectionTitle}>
-                                    Shared-device access
+                                    {t(
+                                        'HOME_SharedDeviceAccessTitle',
+                                        'Shared-device access'
+                                    )}
                                 </Text>
                                 <Text style={styles.setupSectionHint}>
-                                    Choose a secure 4-digit PIN used to unlock the workspace on
-                                    this device.
+                                    {t(
+                                        'HOME_SharedDeviceAccessSetupHint',
+                                        'Choose a secure 4-digit PIN used to unlock the workspace on this device.'
+                                    )}
                                 </Text>
                                 <View style={styles.formRow}>
                                     <View style={styles.formColumn}>
                                         <UIInput
                                             name="pin"
-                                            placeholder="4-digit PIN"
+                                            placeholder={t(
+                                                'HOME_PinPlaceholder',
+                                                '4-digit PIN'
+                                            )}
                                             textAlign="left"
                                             keyboardType="number-pad"
                                             secureTextEntry={true}
-                                            rules={{ required: 'PIN is required' }}
+                                            rules={{
+                                                required: t(
+                                                    'HOME_PinRequired',
+                                                    'PIN is required'
+                                                ),
+                                            }}
                                         />
                                     </View>
                                     <View style={styles.formColumn}>
                                         <UIInput
                                             name="confirmPin"
-                                            placeholder="Confirm 4-digit PIN"
+                                            placeholder={t(
+                                                'HOME_ConfirmPinPlaceholder',
+                                                'Confirm 4-digit PIN'
+                                            )}
                                             textAlign="left"
                                             keyboardType="number-pad"
                                             secureTextEntry={true}
-                                            rules={{ required: 'PIN confirmation is required' }}
+                                            rules={{
+                                                required: t(
+                                                    'HOME_PinConfirmationRequired',
+                                                    'PIN confirmation is required'
+                                                ),
+                                            }}
                                         />
                                     </View>
                                 </View>
                             </View>
                             <View style={styles.setupActionRow}>
                                 <Button
-                                    title="Continue"
+                                    title={t('COMMON_Continue', 'Continue')}
                                     buttonStyle={styles.setupButton}
                                     containerStyle={styles.setupPrimaryAction}
                                     loading={setupSaving}
@@ -226,7 +304,7 @@ export function HomeSetupWizard({
                                 />
                                 {onLogoff ? (
                                     <Button
-                                        title="Log off business"
+                                        title={t('HOME_LogoffBusinessButton', 'Log off business')}
                                         type="clear"
                                         buttonStyle={styles.setupSecondaryButton}
                                         titleStyle={styles.setupLogoffButtonText}
@@ -240,30 +318,54 @@ export function HomeSetupWizard({
                     <FormProvider {...storeSetupForm}>
                         <View style={styles.setupWizardContent}>
                             <View style={styles.setupSectionCard}>
-                                <Text style={styles.setupSectionEyebrow}>Store identity</Text>
+                                <Text style={styles.setupSectionEyebrow}>
+                                    {t('HOME_StoreIdentityEyebrow', 'Store identity')}
+                                </Text>
                                 <Text style={styles.setupSectionTitle}>
-                                    Primary location details
+                                    {t(
+                                        'HOME_PrimaryLocationDetailsTitle',
+                                        'Primary location details'
+                                    )}
                                 </Text>
                                 <Text style={styles.setupSectionHint}>
-                                    These details appear across receipts, settings, and reporting.
+                                    {t(
+                                        'HOME_PrimaryLocationDetailsHint',
+                                        'These details appear across receipts, settings, and reporting.'
+                                    )}
                                 </Text>
                                 <View style={styles.formRow}>
                                     <View style={styles.formColumn}>
                                         <UIInput
                                             name="name"
-                                            placeholder="Store name"
+                                            placeholder={t(
+                                                'HOME_StoreNamePlaceholder',
+                                                'Store name'
+                                            )}
                                             textAlign="left"
-                                            rules={{ required: 'Store name is required' }}
+                                            rules={{
+                                                required: t(
+                                                    'HOME_StoreNameRequired',
+                                                    'Store name is required'
+                                                ),
+                                            }}
                                         />
                                     </View>
                                     <View style={styles.formColumn}>
                                         <UIInput
                                             name="phone"
-                                            placeholder="Store phone"
+                                            placeholder={t(
+                                                'HOME_StorePhonePlaceholder',
+                                                'Store phone'
+                                            )}
                                             textAlign="left"
                                             keyboardType="default"
                                             autoCorrect={false}
-                                            rules={{ required: 'Store phone is required' }}
+                                            rules={{
+                                                required: t(
+                                                    'HOME_StorePhoneRequired',
+                                                    'Store phone is required'
+                                                ),
+                                            }}
                                         />
                                     </View>
                                 </View>
@@ -271,32 +373,55 @@ export function HomeSetupWizard({
                                     <View style={styles.formColumn}>
                                         <UIInput
                                             name="email"
-                                            placeholder="Store email"
+                                            placeholder={t(
+                                                'HOME_StoreEmailPlaceholder',
+                                                'Store email'
+                                            )}
                                             textAlign="left"
                                             keyboardType="email-address"
                                             autoCapitalize="none"
-                                            rules={{ required: 'Store email is required' }}
+                                            rules={{
+                                                required: t(
+                                                    'HOME_StoreEmailRequired',
+                                                    'Store email is required'
+                                                ),
+                                            }}
                                         />
                                     </View>
                                     <View style={styles.formColumn}>
                                         <UIInput
                                             name="country"
-                                            placeholder="Country"
+                                            placeholder={t(
+                                                'HOME_CountryPlaceholder',
+                                                'Country'
+                                            )}
                                             textAlign="left"
                                             autoCapitalize="characters"
-                                            rules={{ required: 'Country is required' }}
+                                            rules={{
+                                                required: t(
+                                                    'HOME_CountryRequired',
+                                                    'Country is required'
+                                                ),
+                                            }}
                                         />
                                     </View>
                                 </View>
                             </View>
                             <View style={styles.setupSectionCard}>
-                                <Text style={styles.setupSectionEyebrow}>Address</Text>
+                                <Text style={styles.setupSectionEyebrow}>
+                                    {t('HOME_AddressEyebrow', 'Address')}
+                                </Text>
                                 <Text style={styles.setupSectionTitle}>
-                                    Receipt and reporting location
+                                    {t(
+                                        'HOME_ReceiptLocationTitle',
+                                        'Receipt and reporting location'
+                                    )}
                                 </Text>
                                 <Text style={styles.setupSectionHint}>
-                                    Keep this address aligned with the store location customers see
-                                    on printed receipts.
+                                    {t(
+                                        'HOME_ReceiptLocationHint',
+                                        'Keep this address aligned with the store location customers see on printed receipts.'
+                                    )}
                                 </Text>
                                 <Controller
                                     control={storeSetupForm.control}
@@ -308,7 +433,10 @@ export function HomeSetupWizard({
                                         fieldState: { error },
                                     }) => (
                                         <Input
-                                            placeholder="Street address"
+                                            placeholder={t(
+                                                'HOME_StreetAddressPlaceholder',
+                                                'Street address'
+                                            )}
                                             value={typeof value === 'string' ? value : ''}
                                             onChangeText={onChange}
                                             onBlur={onBlur}
@@ -325,18 +453,28 @@ export function HomeSetupWizard({
                                     <View style={styles.formColumn}>
                                         <UIInput
                                             name="city"
-                                            placeholder="City"
+                                            placeholder={t('HOME_CityPlaceholder', 'City')}
                                             textAlign="left"
-                                            rules={{ required: 'City is required' }}
+                                            rules={{
+                                                required: t(
+                                                    'HOME_CityRequired',
+                                                    'City is required'
+                                                ),
+                                            }}
                                         />
                                     </View>
                                     <View style={styles.formColumn}>
                                         <UIInput
                                             name="state"
-                                            placeholder="State"
+                                            placeholder={t('HOME_StatePlaceholder', 'State')}
                                             textAlign="left"
                                             autoCapitalize="characters"
-                                            rules={{ required: 'State is required' }}
+                                            rules={{
+                                                required: t(
+                                                    'HOME_StateRequired',
+                                                    'State is required'
+                                                ),
+                                            }}
                                         />
                                     </View>
                                 </View>
@@ -344,10 +482,18 @@ export function HomeSetupWizard({
                                     <View style={styles.formColumn}>
                                         <UIInput
                                             name="zipCode"
-                                            placeholder="ZIP code"
+                                            placeholder={t(
+                                                'HOME_ZipCodePlaceholder',
+                                                'ZIP code'
+                                            )}
                                             textAlign="left"
                                             keyboardType="number-pad"
-                                            rules={{ required: 'ZIP code is required' }}
+                                            rules={{
+                                                required: t(
+                                                    'HOME_ZipCodeRequired',
+                                                    'ZIP code is required'
+                                                ),
+                                            }}
                                         />
                                     </View>
                                     <View style={styles.formColumn}>
@@ -357,7 +503,7 @@ export function HomeSetupWizard({
                             </View>
                             <View style={styles.setupActionRow}>
                                 <Button
-                                    title="Finish setup"
+                                    title={t('HOME_FinishSetupButton', 'Finish setup')}
                                     buttonStyle={styles.setupButton}
                                     containerStyle={styles.setupPrimaryAction}
                                     loading={setupSaving}
@@ -365,7 +511,7 @@ export function HomeSetupWizard({
                                 />
                                 {onLogoff ? (
                                     <Button
-                                        title="Log off business"
+                                        title={t('HOME_LogoffBusinessButton', 'Log off business')}
                                         type="clear"
                                         buttonStyle={styles.setupSecondaryButton}
                                         titleStyle={styles.setupLogoffButtonText}

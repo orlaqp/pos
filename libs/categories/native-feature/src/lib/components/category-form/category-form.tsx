@@ -19,6 +19,7 @@ import { RootState } from '@pos/store';
 import { Category } from '@pos/shared/models';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { requireCurrentTenantId } from '@pos/auth/data-access';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface CategoryFormParams {
     [name: string]: object | undefined;
@@ -31,6 +32,7 @@ export interface CategoryFormProps {
 }
 
 export function CategoryForm({ navigation }: CategoryFormProps) {
+    const t = translateWithFallback;
     const category = useSelector((state: RootState) => state.categories.selected);
     const dispatch = useDispatch();
     const tenantId = requireCurrentTenantId();
@@ -58,8 +60,8 @@ export function CategoryForm({ navigation }: CategoryFormProps) {
                 error instanceof Error ? error.message : String(error);
             console.error('Unable to save category', error);
             Alert.alert(
-                'Unable to save category',
-                message || 'The category could not be saved.'
+                t('CATEGORY_SaveErrorTitle', 'Unable to save category'),
+                message || t('CATEGORY_SaveErrorMessage', 'The category could not be saved.')
             );
         } finally {
             setBusy(false);
@@ -79,11 +81,14 @@ export function CategoryForm({ navigation }: CategoryFormProps) {
 
     const confirmCancel = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t(
+                'COMMON_UndoOperationWarning',
+                'You will not be able to undo this operation'
+            ),
             [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => navigation.goBack() },
             ]
         );
     }
@@ -99,14 +104,21 @@ export function CategoryForm({ navigation }: CategoryFormProps) {
                     <ScrollView contentContainerStyle={styles.scrollContent}>
                         <View style={styles.container}>
                             <UICard tone="muted" radius="lg" style={styles.headerCard}>
-                                <Text style={styles.headerTitle}>Category Profile</Text>
+                                <Text style={styles.headerTitle}>
+                                    {t('CATEGORY_ProfileTitle', 'Category Profile')}
+                                </Text>
                                 <Text style={styles.headerSubtitle}>
-                                    Define a category with image and metadata.
+                                    {t(
+                                        'CATEGORY_ProfileSubtitle',
+                                        'Define a category with image and metadata.'
+                                    )}
                                 </Text>
                             </UICard>
 
                             <UICard style={styles.sectionCard}>
-                                <Text style={styles.sectionTitle}>Catalog</Text>
+                                <Text style={styles.sectionTitle}>
+                                    {t('CATEGORY_CatalogSection', 'Catalog')}
+                                </Text>
                                 <View style={styles.uploadWrap}>
                                     <UiFileUpload
                                         prefix={`${tenantId}/categories`}
@@ -117,14 +129,14 @@ export function CategoryForm({ navigation }: CategoryFormProps) {
                                 </View>
                                 <UIInput
                                     name="name"
-                                    label="Name"
-                                    placeholder="Name"
-                                    rules={{ required: 'Name is required' }}
+                                    label={t('COMMON_Name', 'Name')}
+                                    placeholder={t('COMMON_Name', 'Name')}
+                                    rules={{ required: t('CATEGORY_NameRequired', 'Name is required') }}
                                 />
                                 <UIInput
                                     name="description"
-                                    label="Description"
-                                    placeholder="Description"
+                                    label={t('COMMON_Description', 'Description')}
+                                    placeholder={t('COMMON_Description', 'Description')}
                                     multiline
                                     numberOfLines={3}
                                     style={styles.descriptionInput}

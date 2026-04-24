@@ -53,6 +53,9 @@ const filterDefinitionsByType = (
 const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
   !!item && item._deleted !== true;
 
+const normalizePromoDefinitionCode = (code?: string | null) =>
+  (code || '').trim().toUpperCase();
+
 const notifyDefinitionListeners = (items: DiscountDefinitionEntity[]) => {
   definitionListeners.forEach((config, listener) => {
     listener(filterDefinitionsByType(items, config.type));
@@ -202,6 +205,26 @@ export class DiscountService {
   }
 
   static async saveDefinition(entity: DiscountDefinitionEntity) {
+    if (entity.type === 'PROMO_CODE') {
+      const normalizedCode = normalizePromoDefinitionCode(entity.code);
+
+      if (normalizedCode) {
+        const existingDefinitions = (((await DataStore.query(DiscountDefinition)) || []) as typeof definitionSnapshot)
+          .filter((item) => isNotDeleted(item as { _deleted?: boolean | null }))
+          .filter((item) => item.type === 'PROMO_CODE');
+
+        const duplicate = existingDefinitions.find(
+          (item) =>
+            normalizePromoDefinitionCode(item.code) === normalizedCode &&
+            item.id !== entity.id
+        );
+
+        if (duplicate) {
+          throw new Error(`Promo code ${normalizedCode} already exists`);
+        }
+      }
+    }
+
     if (!entity.id) {
       return DataStore.save(
         new DiscountDefinition(

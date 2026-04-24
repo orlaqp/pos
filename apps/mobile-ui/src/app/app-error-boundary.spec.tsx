@@ -3,6 +3,10 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { AppErrorBoundary } from './app-error-boundary';
 
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 const Thrower = () => {
     throw new Error('boom');
 };

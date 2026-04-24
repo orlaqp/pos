@@ -196,6 +196,7 @@ jest.mock('@rneui/themed', () => ({
 jest.mock('@pos/shared/utils', () => ({
     confirm: (title: string, message: string, onConfirm: () => void) =>
         mockConfirm(title, message, onConfirm),
+    translateWithFallback: (_key: string, fallback: string) => fallback,
 }));
 
 jest.mock('@pos/products/data-access', () => ({

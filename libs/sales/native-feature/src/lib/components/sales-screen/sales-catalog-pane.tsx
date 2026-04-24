@@ -8,6 +8,7 @@ import ProductSelection from '../product-selection/product-selection';
 import { ProductSearch } from '../product-search/product-search';
 import { CategoryEntity } from '@pos/categories/data-access';
 import { SalesScreenStyles } from './sales-screen.styles';
+import { translateWithFallback } from '@pos/shared/utils';
 
 interface SalesCatalogPaneProps {
     styles: SalesScreenStyles;
@@ -58,6 +59,7 @@ export function SalesCatalogPane({
     onOpenBackOfficeForm,
     onOpenCurrentDeals,
 }: SalesCatalogPaneProps) {
+    const t = translateWithFallback;
     return (
         <>
             <Animated.View
@@ -92,7 +94,9 @@ export function SalesCatalogPane({
                                 type="clear"
                                 onPress={onToggleCategories}
                                 accessibilityLabel={
-                                    showCategories ? 'Hide categories' : 'Show categories'
+                                    showCategories
+                                        ? t('SALES_HideCategories', 'Hide categories')
+                                        : t('SALES_ShowCategories', 'Show categories')
                                 }
                                 icon={{
                                     name: showCategories ? 'dock-right' : 'dock-left',
@@ -102,24 +106,34 @@ export function SalesCatalogPane({
                                 }}
                                 buttonStyle={styles.toggleIconButton}
                             />
-                            <Text style={styles.sectionTitle}>Products</Text>
+                            <Text style={styles.sectionTitle}>
+                                {t('COMMON_Products', 'Products')}
+                            </Text>
                         </View>
                         <Text style={styles.sectionSubtitle}>
                             {showCategories
-                                ? 'Choose a category, tap All Products, or search the catalog.'
-                                : 'Search the catalog or show categories again.'}
+                                ? t(
+                                      'SALES_CatalogWithCategories',
+                                      'Choose a category, tap All Products, or search the catalog.'
+                                  )
+                                : t(
+                                      'SALES_CatalogWithoutCategories',
+                                      'Search the catalog or show categories again.'
+                                  )}
                         </Text>
                     </View>
                     <View style={styles.productsHeaderActions}>
                         <View style={styles.productsCountBadge}>
                             <Text style={styles.productsCountBadgeText}>
-                                {filteredProductCount} visible
+                                {t('SALES_VisibleCount', '{{count}} visible', {
+                                    count: filteredProductCount,
+                                })}
                             </Text>
                         </View>
                         <Button
                             testID="sales-current-deals"
                             type="outline"
-                            title="Current deals"
+                            title={t('SALES_CurrentDeals', 'Current deals')}
                             onPress={onOpenCurrentDeals}
                             icon={{
                                 name: 'tag-multiple-outline',
@@ -150,16 +164,20 @@ export function SalesCatalogPane({
                         </>
                     ) : (
                         <View style={styles.emptyCatalogWrap}>
-                            <Text style={styles.emptyTitle}>No products yet</Text>
+                            <Text style={styles.emptyTitle}>
+                                {t('SALES_NoProductsYet', 'No products yet')}
+                            </Text>
                             <Text style={styles.emptySubtitle}>
-                                Add your first category or product in Back Office before using sales
-                                search.
+                                {t(
+                                    'SALES_NoProductsYetSubtitle',
+                                    'Add your first category or product in Back Office before using sales search.'
+                                )}
                             </Text>
                             {canManageCatalog ? (
                                 <View style={styles.emptyActions}>
                                     <Button
                                         testID="sales-empty-add-category"
-                                        title="Add category"
+                                        title={t('SALES_AddCategory', 'Add category')}
                                         onPress={() =>
                                             onOpenBackOfficeForm('Categories', 'Category Form')
                                         }
@@ -174,7 +192,7 @@ export function SalesCatalogPane({
                                     />
                                     <Button
                                         testID="sales-empty-add-product"
-                                        title="Add product"
+                                        title={t('SALES_AddProduct', 'Add product')}
                                         type="outline"
                                         onPress={() =>
                                             onOpenBackOfficeForm('Products', 'Product Form')

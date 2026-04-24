@@ -120,6 +120,13 @@ jest.mock('@pos/store-info/data-access', () => ({
     },
 }));
 
+jest.mock('@pos/shared/utils', () => ({
+    E2E_MANAGER_PIN: '0000',
+    isE2EEnabled: jest.fn(() => false),
+    isNativeE2ERequested: jest.fn(() => false),
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 jest.mock('@pos/shared/amplify', () => ({
     Auth: {
         signOut: jest.fn(),
@@ -218,6 +225,20 @@ jest.mock('./use-pin-lock', () => ({
 describe('HomeScreen', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        mockState.auth.user = {
+            name: 'Owner User',
+            email: 'owner@example.com',
+        };
+        mockState.tenantSession.businessName = 'Test Business';
+        mockState.employees.loginEmployee = {
+            id: 'employee-1',
+            roles: ['Sales'],
+        };
+        mockState.employees.all = [{ id: 'employee-1' }];
+        mockState.employees.initialEmployeeSyncComplete = true;
+        mockState.employees.loadingStatus = 'loaded';
+        mockState.storeInfo.store = { id: 'store-1', name: 'Test Store' };
+        mockState.storeInfo.initialStoreSyncComplete = true;
         mockState.settings.station = { stationNumber: '01' };
         jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     });

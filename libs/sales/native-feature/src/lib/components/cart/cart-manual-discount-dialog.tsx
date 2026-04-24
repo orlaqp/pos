@@ -3,6 +3,7 @@ import { Text, TextInput, View, Pressable } from 'react-native';
 import { Button, Dialog } from '@rneui/themed';
 import { CartStyles } from './cart.styles';
 import { ManualDraft } from './cart.types';
+import { translateWithFallback } from '@pos/shared/utils';
 
 interface CartManualDiscountDialogProps {
     visible: boolean;
@@ -39,6 +40,7 @@ export function CartManualDiscountDialog({
     onSelectDefinition,
     onChange,
 }: CartManualDiscountDialogProps) {
+    const t = translateWithFallback;
     return (
         <Dialog
             isVisible={visible}
@@ -48,14 +50,21 @@ export function CartManualDiscountDialog({
             overlayStyle={overlayStyle}
         >
             <View style={styles.dialogHeroCard}>
-                <Text style={styles.dialogTitle}>Manual discount</Text>
+                <Text style={styles.dialogTitle}>
+                    {t('SALES_ManualDiscount', 'Manual discount')}
+                </Text>
                 <Text style={styles.dialogHint}>
-                    Apply a one-time line or order discount to the current sale.
+                    {t(
+                        'SALES_ManualDiscountHint',
+                        'Apply a one-time line or order discount to the current sale.'
+                    )}
                 </Text>
                 <View style={styles.dialogHeroMetaRow}>
                     <View style={styles.dialogHeroPill}>
                         <Text style={styles.dialogHeroPillText}>
-                            {draft.scope === 'LINE' ? 'Line discount' : 'Order discount'}
+                            {draft.scope === 'LINE'
+                                ? t('SALES_LineDiscount', 'Line discount')
+                                : t('SALES_OrderDiscount', 'Order discount')}
                         </Text>
                     </View>
                     <View style={styles.dialogHeroPill}>
@@ -87,7 +96,9 @@ export function CartManualDiscountDialog({
                                 draft.scope === scope && styles.segmentButtonTextActive,
                             ]}
                         >
-                            {scope}
+                            {scope === 'LINE'
+                                ? t('SALES_Line', 'Line')
+                                : t('SALES_Order', 'Order')}
                         </Text>
                     </Pressable>
                 ))}
@@ -114,16 +125,23 @@ export function CartManualDiscountDialog({
                                 draft.method === method && styles.segmentButtonTextActive,
                             ]}
                         >
-                            {method === 'PERCENT' ? 'Percent' : 'Amount'}
+                            {method === 'PERCENT'
+                                ? t('COMMON_Percent', 'Percent')
+                                : t('COMMON_Amount', 'Amount')}
                         </Text>
                     </Pressable>
                 ))}
             </View>
             {availableDefinitions.length ? (
                 <View style={styles.savedDiscountCard}>
-                    <Text style={styles.dialogSubheading}>Saved manual discounts</Text>
+                    <Text style={styles.dialogSubheading}>
+                        {t('SALES_SavedManualDiscounts', 'Saved manual discounts')}
+                    </Text>
                     <Text style={styles.dialogFieldHint}>
-                        Choose a saved manual rule or keep using a one-time entry below.
+                        {t(
+                            'SALES_SavedManualDiscountsHint',
+                            'Choose a saved manual rule or keep using a one-time entry below.'
+                        )}
                     </Text>
                     <View style={styles.savedDiscountList}>
                         {availableDefinitions.map((definition) => (
@@ -149,7 +167,9 @@ export function CartManualDiscountDialog({
                                     {definition.method === 'PERCENT'
                                         ? `${definition.value}%`
                                         : `$${definition.value.toFixed(2)}`}{' '}
-                                    · {definition.scope === 'LINE' ? 'Line' : 'Order'}
+                                    · {definition.scope === 'LINE'
+                                        ? t('SALES_Line', 'Line')
+                                        : t('SALES_Order', 'Order')}
                                 </Text>
                             </Pressable>
                         ))}
@@ -158,12 +178,22 @@ export function CartManualDiscountDialog({
             ) : null}
             <View style={styles.manualValueCard}>
                 <Text style={styles.dialogSubheading}>
-                    {draft.method === 'PERCENT' ? 'Discount percent' : 'Discount amount'}
+                    {draft.method === 'PERCENT'
+                        ? t('SALES_DiscountPercent', 'Discount percent')
+                        : t('SALES_DiscountAmount', 'Discount amount')}
                 </Text>
                 <Text style={styles.dialogFieldHint}>
                     {draft.method === 'PERCENT'
-                        ? `Enter only the percent to take off ${approvalTargetName}.`
-                        : `Enter only the dollar amount to take off ${approvalTargetName}.`}
+                        ? t(
+                              'SALES_DiscountPercentHint',
+                              'Enter only the percent to take off {{target}}.',
+                              { target: approvalTargetName }
+                          )
+                        : t(
+                              'SALES_DiscountAmountHint',
+                              'Enter only the dollar amount to take off {{target}}.',
+                              { target: approvalTargetName }
+                          )}
                 </Text>
                 <TextInput
                     value={draft.method === 'PERCENT' ? draft.percentValue : draft.amountValue}
@@ -184,9 +214,14 @@ export function CartManualDiscountDialog({
                 />
             </View>
             <View style={styles.dialogSectionCard}>
-                <Text style={styles.dialogSubheading}>Approval notes</Text>
+                <Text style={styles.dialogSubheading}>
+                    {t('SALES_ApprovalNotes', 'Approval notes')}
+                </Text>
                 <Text style={styles.dialogFieldHint}>
-                    Add an optional reason code or note for manager review.
+                    {t(
+                        'SALES_ApprovalNotesHint',
+                        'Add an optional reason code or note for manager review.'
+                    )}
                 </Text>
                 <TextInput
                     value={draft.reasonCode}
@@ -196,7 +231,7 @@ export function CartManualDiscountDialog({
                             reasonCode,
                         }))
                     }
-                    placeholder="Reason code (optional)"
+                    placeholder={t('SALES_ReasonCodeOptional', 'Reason code (optional)')}
                     placeholderTextColor={placeholderTextColor}
                     style={styles.dialogInput}
                 />
@@ -208,7 +243,7 @@ export function CartManualDiscountDialog({
                             reasonNote,
                         }))
                     }
-                    placeholder="Reason note (optional)"
+                    placeholder={t('SALES_ReasonNoteOptional', 'Reason note (optional)')}
                     placeholderTextColor={placeholderTextColor}
                     style={styles.dialogInput}
                 />
@@ -216,13 +251,13 @@ export function CartManualDiscountDialog({
             <View style={styles.dialogActionRow}>
                 <Button
                     type="clear"
-                    title="Cancel"
+                    title={t('COMMON_Cancel', 'Cancel')}
                     onPress={onClose}
                     buttonStyle={styles.dialogSecondaryButton}
                     titleStyle={styles.dialogSecondaryButtonTitle}
                 />
                 <Button
-                    title="Apply"
+                    title={t('COMMON_Apply', 'Apply')}
                     onPress={onSubmit}
                     buttonStyle={styles.dialogPrimaryButton}
                     titleStyle={styles.dialogPrimaryButtonTitle}

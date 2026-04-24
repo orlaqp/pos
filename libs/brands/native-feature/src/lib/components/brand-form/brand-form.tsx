@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { BrandEntity, BrandService } from '@pos/brands/data-access';
 import { RootState } from '@pos/store';
 import { Brand } from '@pos/shared/models';
+import { translateWithFallback } from '@pos/shared/utils';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface BrandFormParams {
@@ -20,6 +21,7 @@ export interface BrandFormProps {
 }
 
 export function BrandForm({ navigation }: BrandFormProps) {
+    const t = translateWithFallback;
     const brand = useSelector((state: RootState) => state.brands.selected);
     const dispatch = useDispatch();
     const tokens = useDesignTokens();
@@ -50,11 +52,14 @@ export function BrandForm({ navigation }: BrandFormProps) {
 
     const confirmCancel = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t(
+                'COMMON_UndoOperationWarning',
+                'You will not be able to undo this operation'
+            ),
             [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => navigation.goBack() },
             ]
         );
     };
@@ -66,24 +71,31 @@ export function BrandForm({ navigation }: BrandFormProps) {
                     <ScrollView contentContainerStyle={styles.scrollContent}>
                         <View style={styles.container}>
                             <UICard tone="muted" radius="lg" style={styles.headerCard}>
-                                <Text style={styles.headerTitle}>Brand Profile</Text>
+                                <Text style={styles.headerTitle}>
+                                    {t('BRAND_ProfileTitle', 'Brand Profile')}
+                                </Text>
                                 <Text style={styles.headerSubtitle}>
-                                    Define brand identity and notes.
+                                    {t(
+                                        'BRAND_ProfileSubtitle',
+                                        'Define brand identity and notes.'
+                                    )}
                                 </Text>
                             </UICard>
 
                             <UICard style={styles.sectionCard}>
-                                <Text style={styles.sectionTitle}>Details</Text>
+                                <Text style={styles.sectionTitle}>
+                                    {t('COMMON_Details', 'Details')}
+                                </Text>
                                 <UIInput
                                     name="name"
-                                    placeholder="Name"
-                                    label="Name"
+                                    placeholder={t('COMMON_Name', 'Name')}
+                                    label={t('COMMON_Name', 'Name')}
                                     rules={{ required: true }}
                                 />
                                 <UIInput
                                     name="description"
-                                    placeholder="Description"
-                                    label="Description"
+                                    placeholder={t('COMMON_Description', 'Description')}
+                                    label={t('COMMON_Description', 'Description')}
                                     multiline
                                     numberOfLines={3}
                                     style={styles.descriptionInput}

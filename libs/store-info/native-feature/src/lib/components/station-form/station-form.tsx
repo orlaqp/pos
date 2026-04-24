@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { saveStationNumber, selectStation, StationConfig } from '@pos/settings/data-access';
 import { useAppDispatch } from '@pos/store';
+import { translateWithFallback } from '@pos/shared/utils';
 
 /* eslint-disable-next-line */
 export interface StationFormProps {
@@ -17,6 +18,7 @@ export interface StationFormProps {
 export type CustomStationConfig = Omit<StationConfig, 'orderNumber'> & { orderNumber: string };
 
 export function StationForm({ navigation }: StationFormProps) {
+    const t = translateWithFallback;
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
     const dispatch = useAppDispatch();
@@ -31,17 +33,17 @@ export function StationForm({ navigation }: StationFormProps) {
 
         dispatch(saveStationNumber(formValues.stationNumber));
         
-        Alert.alert('Store information has been updated');
+        Alert.alert(t('STATION_SaveSuccess', 'Station information has been updated'));
         setBusy(false);
     };
 
     const confirmCancel = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t('COMMON_UndoOperationWarning', 'You will not be able to undo this operation'),
             [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => navigation.goBack() },
             ]
         );
     }
@@ -66,29 +68,36 @@ export function StationForm({ navigation }: StationFormProps) {
                         <View style={styles.container}>
                             <UIStack spacing="lg">
                                 <UICard tone="muted" radius="lg">
-                                    <Text style={styles.title}>Station Configuration</Text>
+                                    <Text style={styles.title}>
+                                        {t('STATION_ProfileTitle', 'Station Configuration')}
+                                    </Text>
                                     <Text style={styles.subtitle}>
-                                        Configure station identity used to generate order references.
+                                        {t(
+                                            'STATION_ProfileSubtitle',
+                                            'Configure station identity used to generate order references.'
+                                        )}
                                     </Text>
                                 </UICard>
 
                                 <UICard>
                                     <UIStack spacing="lg">
-                                        <Text style={styles.sectionTitle}>Station Details</Text>
+                                        <Text style={styles.sectionTitle}>
+                                            {t('STATION_DetailsSection', 'Station Details')}
+                                        </Text>
                                         <View style={styles.twoColumnRow}>
                                             <View style={styles.column}>
                                                 <UIInput
                                                     name="currentDate"
-                                                    label="Current Date (read only)"
-                                                    placeholder="Current Date"
+                                                    label={t('STATION_CurrentDateReadonly', 'Current Date (read only)')}
+                                                    placeholder={t('STATION_CurrentDate', 'Current Date')}
                                                     disabled={true}
                                                 />
                                             </View>
                                             <View style={styles.columnSpaced}>
                                                 <UIInput
                                                     name="orderNumber"
-                                                    label="Order Number (read only)"
-                                                    placeholder="Order Number"
+                                                    label={t('STATION_OrderNumberReadonly', 'Order Number (read only)')}
+                                                    placeholder={t('STATION_OrderNumber', 'Order Number')}
                                                     disabled={true}
                                                 />
                                             </View>
@@ -96,8 +105,8 @@ export function StationForm({ navigation }: StationFormProps) {
 
                                         <UIInput
                                             name="stationNumber"
-                                            label="Station Number"
-                                            placeholder="Station Number"
+                                            label={t('STATION_Number', 'Station Number')}
+                                            placeholder={t('STATION_Number', 'Station Number')}
                                             rules={{ required: true }}
                                         />
                                     </UIStack>

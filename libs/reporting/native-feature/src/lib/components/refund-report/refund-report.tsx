@@ -221,25 +221,47 @@ export function RefundReport() {
                         {!loading && !!rows.length && (
                             <>
                                 <View style={styles.sectionIntro}>
-                                    <Text style={styles.sectionEyebrow}>Refund Overview</Text>
+                                    <Text style={styles.sectionEyebrow}>
+                                        {t(
+                                            'REPORT_RefundOverviewEyebrow',
+                                            'Refund Overview',
+                                        )}
+                                    </Text>
                                     <Text style={styles.sectionLead}>
-                                        A quick view of refund volume, average value, and the team members
-                                        processing the most refunds.
+                                        {t(
+                                            'REPORT_RefundOverviewLead',
+                                            'A quick view of refund volume, average value, and the team members processing the most refunds.',
+                                        )}
                                     </Text>
                                 </View>
                                 <View style={styles.kpiRow}>
                                     <View style={[styles.kpiCard, styles.kpiCardPrimary]}>
-                                        <Text style={styles.kpiLabel}>Refund Total</Text>
+                                        <Text style={styles.kpiLabel}>
+                                            {t(
+                                                'REPORT_RefundTotalLabel',
+                                                'Refund Total',
+                                            )}
+                                        </Text>
                                         <Text style={styles.kpiValue}>
                                             ${insights.totalAmount.toFixed(2)}
                                         </Text>
                                     </View>
                                     <View style={[styles.kpiCardSpaced, styles.kpiCardSecondary]}>
-                                        <Text style={styles.kpiLabel}>Refund Count</Text>
+                                        <Text style={styles.kpiLabel}>
+                                            {t(
+                                                'REPORT_RefundCountLabel',
+                                                'Refund Count',
+                                            )}
+                                        </Text>
                                         <Text style={styles.kpiValue}>{insights.totalOrders}</Text>
                                     </View>
                                     <View style={[styles.kpiCardSpaced, styles.kpiCardTertiary]}>
-                                        <Text style={styles.kpiLabel}>Average Refund</Text>
+                                        <Text style={styles.kpiLabel}>
+                                            {t(
+                                                'REPORT_AverageRefundLabel',
+                                                'Average Refund',
+                                            )}
+                                        </Text>
                                         <Text style={styles.kpiValue}>
                                             ${insights.averageAmount.toFixed(2)}
                                         </Text>
@@ -248,8 +270,15 @@ export function RefundReport() {
 
                                 <View style={styles.insightRow}>
                                     <UICard style={[styles.insightCard, styles.insightCardEmphasis]}>
-                                        <Text style={styles.insightEyebrow}>Team</Text>
-                                        <Text style={styles.insightTitle}>Top Refunding Employees</Text>
+                                        <Text style={styles.insightEyebrow}>
+                                            {t('REPORT_TeamEyebrow', 'Team')}
+                                        </Text>
+                                        <Text style={styles.insightTitle}>
+                                            {t(
+                                                'REPORT_TopRefundingEmployees',
+                                                'Top Refunding Employees',
+                                            )}
+                                        </Text>
                                         {insights.topEmployees.map((item) => (
                                             <View key={item.name} style={styles.rankedRow}>
                                                 <Text style={styles.rankedLabel}>{item.name}</Text>
@@ -260,8 +289,15 @@ export function RefundReport() {
                                         ))}
                                     </UICard>
                                     <UICard style={[styles.insightCardSpaced, styles.insightCardMuted]}>
-                                        <Text style={styles.insightEyebrow}>Trends</Text>
-                                        <Text style={styles.insightTitle}>Top Refund Reasons</Text>
+                                        <Text style={styles.insightEyebrow}>
+                                            {t('REPORT_TrendsEyebrow', 'Trends')}
+                                        </Text>
+                                        <Text style={styles.insightTitle}>
+                                            {t(
+                                                'REPORT_TopRefundReasons',
+                                                'Top Refund Reasons',
+                                            )}
+                                        </Text>
                                         {insights.reasons.length ? (
                                             insights.reasons.map((item) => (
                                                 <View key={item.name} style={styles.rankedRow}>
@@ -273,7 +309,10 @@ export function RefundReport() {
                                             ))
                                         ) : (
                                             <Text style={styles.emptyInline}>
-                                                No refund notes captured.
+                                                {t(
+                                                    'REPORT_NoRefundNotesCaptured',
+                                                    'No refund notes captured.',
+                                                )}
                                             </Text>
                                         )}
                                     </UICard>
@@ -282,20 +321,38 @@ export function RefundReport() {
                                 <UICard style={styles.tableCard}>
                                     <View style={styles.tableHeaderWrap}>
                                         <View>
-                                            <Text style={styles.tableEyebrow}>Activity</Text>
-                                            <Text style={styles.tableTitle}>Recent Refund Activity</Text>
+                                            <Text style={styles.tableEyebrow}>
+                                                {t(
+                                                    'REPORT_ActivityEyebrow',
+                                                    'Activity',
+                                                )}
+                                            </Text>
+                                            <Text style={styles.tableTitle}>
+                                                {t(
+                                                    'REPORT_RecentRefundActivity',
+                                                    'Recent Refund Activity',
+                                                )}
+                                            </Text>
                                         </View>
                                         <View style={styles.tableBadge}>
-                                            <Text style={styles.tableBadgeText}>{rows.length} refunds</Text>
+                                            <Text style={styles.tableBadgeText}>
+                                                {t(
+                                                    'REPORT_RefundsCount',
+                                                    '{{count}} refunds',
+                                                    { count: rows.length },
+                                                )}
+                                            </Text>
                                         </View>
                                     </View>
                                     <View style={styles.tableHeader}>
-                                        <Text style={[styles.tableHeaderCell, styles.dateCell]}>Date</Text>
+                                        <Text style={[styles.tableHeaderCell, styles.dateCell]}>
+                                            {t('REPORT_Header_Date', 'Date')}
+                                        </Text>
                                         <Text style={[styles.tableHeaderCell, styles.orderCell]}>
-                                            Order #
+                                            {t('REPORT_Header_OrderNo', 'Order #')}
                                         </Text>
                                         <Text style={[styles.tableHeaderCell, styles.employeeCell]}>
-                                            Employee
+                                            {t('REPORT_Header_Employee', 'Employee')}
                                         </Text>
                                         <Text
                                             style={[
@@ -304,7 +361,7 @@ export function RefundReport() {
                                                 styles.textRight,
                                             ]}
                                         >
-                                            Amount
+                                            {t('REPORT_Header_Amount', 'Amount')}
                                         </Text>
                                     </View>
                                     <FlatList

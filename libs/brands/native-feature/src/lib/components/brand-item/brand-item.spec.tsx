@@ -5,6 +5,10 @@ import { render } from '@testing-library/react-native';
 
 import BrandItem, { deleteBrandById } from './brand-item';
 
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 describe('BrandItem', () => {
     beforeEach(() => {
         jest.clearAllMocks();

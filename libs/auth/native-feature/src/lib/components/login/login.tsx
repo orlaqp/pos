@@ -10,6 +10,7 @@ import {
     E2E_OWNER_EMAIL,
     E2E_OWNER_PASSWORD,
     activateE2EMode,
+    translateWithFallback,
 } from '@pos/shared/utils';
 import { useSelector } from 'react-redux';
 import {
@@ -40,6 +41,7 @@ type SignInModel = {
 
 export function LoginScreen(props: LoginProps) {
     const styles = useStyles();
+    const t = translateWithFallback;
     const { width } = useWindowDimensions();
     const [heroOpacity] = useState(() => new Animated.Value(0));
     const [heroTranslateY] = useState(() => new Animated.Value(18));
@@ -95,8 +97,11 @@ export function LoginScreen(props: LoginProps) {
         } catch (error) {
             console.error('Unable to update remembered login settings', error);
             Alert.alert(
-                'Signed in',
-                'The admin login was restored, but the saved-login preference could not be updated on this device.'
+                t('LOGIN_SignedInTitle', 'Signed in'),
+                t(
+                    'LOGIN_SavedPreferenceUpdateFailed',
+                    'The admin login was restored, but the saved-login preference could not be updated on this device.'
+                )
             );
         }
     };
@@ -210,19 +215,22 @@ export function LoginScreen(props: LoginProps) {
                         ]}
                     >
                         <AuthGlyph />
-                        <Text style={styles.eyebrow}>Business Admin Access</Text>
-                        <Text h2 style={styles.title}>Open your workspace</Text>
+                        <Text style={styles.eyebrow}>{t('LOGIN_HeroEyebrow', 'Business Admin Access')}</Text>
+                        <Text h2 style={styles.title}>{t('LOGIN_HeroTitle', 'Open your workspace')}</Text>
                         <Text style={styles.subtitle}>
-                            Restore your business session, sync the latest catalog, and hand the device back to staff PIN entry.
+                            {t(
+                                'LOGIN_HeroSubtitle',
+                                'Restore your business session, sync the latest catalog, and hand the device back to staff PIN entry.'
+                            )}
                         </Text>
                         <View style={styles.heroMetaRow}>
                             <View style={styles.heroMetaCard}>
-                                <Text style={styles.heroMetaLabel}>Access</Text>
-                                <Text style={styles.heroMetaValue}>Owner account</Text>
+                                <Text style={styles.heroMetaLabel}>{t('LOGIN_HeroAccessLabel', 'Access')}</Text>
+                                <Text style={styles.heroMetaValue}>{t('LOGIN_HeroAccessValue', 'Owner account')}</Text>
                             </View>
                             <View style={styles.heroMetaCard}>
-                                <Text style={styles.heroMetaLabel}>Session</Text>
-                                <Text style={styles.heroMetaValue}>Workspace restore</Text>
+                                <Text style={styles.heroMetaLabel}>{t('LOGIN_HeroSessionLabel', 'Session')}</Text>
+                                <Text style={styles.heroMetaValue}>{t('LOGIN_HeroSessionValue', 'Workspace restore')}</Text>
                             </View>
                         </View>
                     </Animated.View>
@@ -234,9 +242,9 @@ export function LoginScreen(props: LoginProps) {
                         ]}
                     >
                         <View style={styles.formInner}>
-                            <Text style={styles.formEyebrow}>Owner access</Text>
-                            <Text style={styles.formTitle}>Sign in</Text>
-                            <Text style={styles.formSubtitle}>Use the owner account for this business.</Text>
+                            <Text style={styles.formEyebrow}>{t('LOGIN_FormEyebrow', 'Owner access')}</Text>
+                            <Text style={styles.formTitle}>{t('LOGIN_FormTitle', 'Sign in')}</Text>
+                            <Text style={styles.formSubtitle}>{t('LOGIN_FormSubtitle', 'Use the owner account for this business.')}</Text>
                             {error ? <UIAlert message={error} type="error" /> : null}
                             {typeof __DEV__ !== 'undefined' && __DEV__ ? (
                                 <View style={styles.e2eStatusPanel}>
@@ -249,29 +257,29 @@ export function LoginScreen(props: LoginProps) {
                                 </View>
                             ) : null}
                             <View style={styles.formSection}>
-                                <Text style={styles.formSectionLabel}>Credentials</Text>
+                                <Text style={styles.formSectionLabel}>{t('LOGIN_CredentialsSection', 'Credentials')}</Text>
                                 <UIInput
                                     name="email"
                                     testID="login-email-input"
                                     autoCapitalize="none"
-                                    placeholder="owner@business.com"
+                                    placeholder={t('LOGIN_EmailPlaceholder', 'owner@business.com')}
                                     keyboardType="email-address"
                                     textAlign="left"
                                     rules={{
-                                        required: 'Email address is required',
+                                        required: t('LOGIN_EmailRequired', 'Email address is required'),
                                         pattern: {
                                             value: /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-                                            message: 'Email address is invalid',
+                                            message: t('LOGIN_EmailInvalid', 'Email address is invalid'),
                                         },
                                     }}
                                 />
                                 <UIInput
                                     name="password"
                                     testID="login-password-input"
-                                    placeholder="Password"
+                                    placeholder={t('LOGIN_PasswordPlaceholder', 'Password')}
                                     secureTextEntry={true}
                                     textAlign="left"
-                                    rules={{ required: 'Password is required' }}
+                                    rules={{ required: t('LOGIN_PasswordRequired', 'Password is required') }}
                                 />
                                 <View style={styles.rememberCard}>
                                     <View style={styles.rememberRow}>
@@ -281,10 +289,13 @@ export function LoginScreen(props: LoginProps) {
                                         />
                                         <View style={styles.rememberCopy}>
                                             <Text style={styles.rememberTitle}>
-                                                Remember credentials on this device
+                                                {t('LOGIN_RememberTitle', 'Remember credentials on this device')}
                                             </Text>
                                             <Text style={styles.rememberHint}>
-                                                Allows the app to silently restore the admin session if it expires.
+                                                {t(
+                                                    'LOGIN_RememberHint',
+                                                    'Allows the app to silently restore the admin session if it expires.'
+                                                )}
                                             </Text>
                                         </View>
                                     </View>
@@ -293,7 +304,7 @@ export function LoginScreen(props: LoginProps) {
                             <View style={styles.formActionPanel}>
                                 <Button
                                     testID="login-submit-button"
-                                    title="Continue"
+                                    title={t('LOGIN_Submit', 'Continue')}
                                     containerStyle={styles.primaryButtonContainer}
                                     buttonStyle={styles.primaryButton}
                                     onPress={formMethods.handleSubmit(login)}
@@ -301,7 +312,7 @@ export function LoginScreen(props: LoginProps) {
                                 />
                                 <Button
                                     testID="login-signup-button"
-                                    title="Create business account"
+                                    title={t('LOGIN_CreateAccount', 'Create business account')}
                                     type="clear"
                                     titleStyle={styles.secondaryAction}
                                     onPress={() => props.navigation.navigate('Signup')}

@@ -10,6 +10,7 @@ import {
     Text,
     View,
 } from 'react-native';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface UIDatePickerModalProps {
     open: boolean;
@@ -24,10 +25,11 @@ export function UIDatePickerModal({
     open,
     date,
     mode = 'date',
-    title = 'Select date',
+    title = translateWithFallback('COMMON_SelectDate', 'Select date'),
     onConfirm,
     onCancel,
 }: UIDatePickerModalProps) {
+    const t = translateWithFallback;
     const [draftDate, setDraftDate] = useState(date);
 
     useEffect(() => {
@@ -70,7 +72,7 @@ export function UIDatePickerModal({
                             onPress={onCancel}
                         >
                             <Text style={[styles.buttonText, styles.secondaryButtonText]}>
-                                Cancel
+                                {t('COMMON_Cancel', 'Cancel')}
                             </Text>
                         </Pressable>
                         <Pressable
@@ -78,7 +80,9 @@ export function UIDatePickerModal({
                             style={[styles.button, styles.primaryButton]}
                             onPress={() => onConfirm(draftDate)}
                         >
-                            <Text style={styles.buttonText}>Confirm</Text>
+                            <Text style={styles.buttonText}>
+                                {t('COMMON_Confirm', 'Confirm')}
+                            </Text>
                         </Pressable>
                     </View>
                 </View>

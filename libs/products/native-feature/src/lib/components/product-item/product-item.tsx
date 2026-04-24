@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { View, Text, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import {
@@ -50,6 +51,7 @@ export const deleteProductById = async (
 };
 
 export function ProductItem({ item, navigation }: ProductItemProps) {
+    const t = translateWithFallback;
     const theme = useTheme();
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
@@ -74,9 +76,12 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
 
     const confirmDeletion = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
-            [{ text: 'No' }, { text: 'Yes', onPress: () => deleteItem() }]
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t('COMMON_UndoOperationWarning', 'You will not be able to undo this operation'),
+            [
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => deleteItem() },
+            ]
         );
     };
 
@@ -136,7 +141,15 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
                             numberOfLines={1}
                             ellipsizeMode="tail"
                         >
-                            {line.label}: {line.value}
+                            {t(
+                                line.label === 'UPC'
+                                    ? 'PRODUCT_Upc'
+                                    : line.label === 'SKU'
+                                      ? 'PRODUCT_Sku'
+                                      : 'PRODUCT_Plu',
+                                line.label
+                            )}
+                            : {line.value}
                         </Text>
                     ))}
                 </View>

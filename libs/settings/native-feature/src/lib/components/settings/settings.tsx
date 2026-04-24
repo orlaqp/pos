@@ -203,14 +203,18 @@ export function Settings(_props: SettingsProps) {
 
                         <UICard tone="muted">
                             <UIStack spacing="sm">
-                                <Text style={styles.sectionTitle}>App Info</Text>
+                                <Text style={styles.sectionTitle}>
+                                    {translate('SETTINGS_AppInfo')}
+                                </Text>
                                 <UIStack
                                     direction="horizontal"
                                     justify="space-between"
                                     align="center"
                                     style={styles.settingRow}
                                 >
-                                    <Text style={styles.settingLabel}>Version</Text>
+                                    <Text style={styles.settingLabel}>
+                                        {translate('SETTINGS_Version')}
+                                    </Text>
                                     <Text
                                         style={styles.settingValue}
                                         testID="settings-app-version"

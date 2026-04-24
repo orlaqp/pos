@@ -3,6 +3,7 @@ import { Text, TextInput, View } from 'react-native';
 import { Button, Dialog } from '@rneui/themed';
 import { CartStyles } from './cart.styles';
 import { OverrideDraft } from './cart.types';
+import { translateWithFallback } from '@pos/shared/utils';
 
 interface CartPriceOverrideDialogProps {
     visible: boolean;
@@ -29,6 +30,7 @@ export function CartPriceOverrideDialog({
     onSubmit,
     onChange,
 }: CartPriceOverrideDialogProps) {
+    const t = translateWithFallback;
     return (
         <Dialog
             isVisible={visible}
@@ -38,14 +40,19 @@ export function CartPriceOverrideDialog({
             overlayStyle={overlayStyle}
         >
             <View style={styles.dialogHeroCard}>
-                <Text style={styles.dialogTitle}>Price override</Text>
+                <Text style={styles.dialogTitle}>
+                    {t('SALES_PriceOverride', 'Price override')}
+                </Text>
                 <Text style={styles.dialogHint}>
-                    Override the selected line price for the current sale.
+                    {t(
+                        'SALES_PriceOverrideHint',
+                        'Override the selected line price for the current sale.'
+                    )}
                 </Text>
                 <View style={styles.dialogHeroMetaRow}>
                     <View style={styles.dialogHeroPill}>
                         <Text style={styles.dialogHeroPillText}>
-                            {selectedItemName || 'Selected item'}
+                            {selectedItemName || t('SALES_SelectedItem', 'Selected item')}
                         </Text>
                     </View>
                     <View style={styles.dialogHeroPill}>
@@ -56,9 +63,14 @@ export function CartPriceOverrideDialog({
                 </View>
             </View>
             <View style={styles.dialogSectionCard}>
-                <Text style={styles.dialogSubheading}>Final unit price</Text>
+                <Text style={styles.dialogSubheading}>
+                    {t('SALES_FinalUnitPrice', 'Final unit price')}
+                </Text>
                 <Text style={styles.dialogFieldHint}>
-                    Enter the final unit price only. Everything else in the current checkout flow stays the same.
+                    {t(
+                        'SALES_FinalUnitPriceHint',
+                        'Enter the final unit price only. Everything else in the current checkout flow stays the same.'
+                    )}
                 </Text>
                 <TextInput
                     value={draft.finalPrice}
@@ -75,9 +87,14 @@ export function CartPriceOverrideDialog({
                 />
             </View>
             <View style={styles.dialogSectionCard}>
-                <Text style={styles.dialogSubheading}>Approval notes</Text>
+                <Text style={styles.dialogSubheading}>
+                    {t('SALES_ApprovalNotes', 'Approval notes')}
+                </Text>
                 <Text style={styles.dialogFieldHint}>
-                    Add an optional reason code or note for manager review.
+                    {t(
+                        'SALES_ApprovalNotesHint',
+                        'Add an optional reason code or note for manager review.'
+                    )}
                 </Text>
                 <TextInput
                     value={draft.reasonCode}
@@ -87,7 +104,7 @@ export function CartPriceOverrideDialog({
                             reasonCode,
                         }))
                     }
-                    placeholder="Reason code (optional)"
+                    placeholder={t('SALES_ReasonCodeOptional', 'Reason code (optional)')}
                     placeholderTextColor={placeholderTextColor}
                     style={styles.dialogInput}
                 />
@@ -99,7 +116,7 @@ export function CartPriceOverrideDialog({
                             reasonNote,
                         }))
                     }
-                    placeholder="Reason note (optional)"
+                    placeholder={t('SALES_ReasonNoteOptional', 'Reason note (optional)')}
                     placeholderTextColor={placeholderTextColor}
                     style={styles.dialogInput}
                 />
@@ -107,13 +124,13 @@ export function CartPriceOverrideDialog({
             <View style={styles.dialogActionRow}>
                 <Button
                     type="clear"
-                    title="Cancel"
+                    title={t('COMMON_Cancel', 'Cancel')}
                     onPress={onClose}
                     buttonStyle={styles.dialogSecondaryButton}
                     titleStyle={styles.dialogSecondaryButtonTitle}
                 />
                 <Button
-                    title="Apply"
+                    title={t('COMMON_Apply', 'Apply')}
                     onPress={onSubmit}
                     buttonStyle={styles.dialogPrimaryButton}
                     titleStyle={styles.dialogPrimaryButtonTitle}

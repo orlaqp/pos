@@ -5,6 +5,7 @@ import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, useTheme } from '@rneui/themed';
 import React from 'react';
+import { translateWithFallback } from '@pos/shared/utils';
 
 import { View, Text, Alert, StyleSheet, Pressable } from 'react-native';
 import { EACH } from '@pos/unit-of-measures/data-access';
@@ -35,6 +36,7 @@ export function CartLine({
     onIncrement,
     onDecrement,
 }: CartLineProps) {
+    const t = translateWithFallback;
     const theme = useTheme();
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
@@ -50,11 +52,11 @@ export function CartLine({
     
     const confirmDeletion = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t('COMMON_UndoOperationWarning', 'You will not be able to undo this operation'),
             [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => onRemove(item) },
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => onRemove(item) },
             ]
         );
     };
@@ -78,7 +80,9 @@ export function CartLine({
                 <View style={localStyles.content}>
                     <View style={localStyles.topRow}>
                         <Text style={localStyles.eyebrowText}>
-                            {requiresWeight ? 'Needs attention' : 'Cart item'}
+                            {requiresWeight
+                                ? t('CART_NeedsAttention', 'Needs attention')
+                                : t('CART_CartItem', 'Cart item')}
                         </Text>
                     </View>
                     <Text
@@ -89,7 +93,9 @@ export function CartLine({
                     </Text>
                     {requiresWeight ? (
                         <View style={localStyles.statusBadge}>
-                            <Text style={localStyles.statusBadgeText}>Needs weight</Text>
+                            <Text style={localStyles.statusBadgeText}>
+                                {t('CART_NeedsWeight', 'Needs weight')}
+                            </Text>
                         </View>
                     ) : null}
                     {!requiresWeight && appliedDiscounts.length ? (
@@ -101,7 +107,7 @@ export function CartLine({
                                         numberOfLines={2}
                                     >
                                         {discount.applicationType === 'PRICE_OVERRIDE'
-                                            ? 'Override'
+                                            ? t('SALES_OverrideShort', 'Override')
                                             : discount.code || discount.name}
                                     </Text>
                                 </View>

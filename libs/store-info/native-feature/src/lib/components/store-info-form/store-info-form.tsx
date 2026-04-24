@@ -8,6 +8,7 @@ import { View, Text, Alert, ScrollView, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAppDispatch } from '@pos/store';
+import { translateWithFallback } from '@pos/shared/utils';
 
 /* eslint-disable-next-line */
 export interface StoreInfoFormProps {
@@ -15,6 +16,7 @@ export interface StoreInfoFormProps {
 }
 
 export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
+    const t = translateWithFallback;
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
     const storeInfo = useSelector(selectStore);
@@ -45,13 +47,15 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
             }
 
             await StoreInfoService.save(dispatch, formValues);
-            Alert.alert('Store information has been updated');
+            Alert.alert(
+                t('STOREINFO_SaveSuccess', 'Store information has been updated')
+            );
         } catch (error) {
             Alert.alert(
-                'Unable to save store information',
+                t('STOREINFO_SaveErrorTitle', 'Unable to save store information'),
                 error instanceof Error
                     ? error.message
-                    : 'Please try again in a moment.'
+                    : t('COMMON_TryAgainMoment', 'Please try again in a moment.')
             );
         } finally {
             setBusy(false);
@@ -61,30 +65,41 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
     const onInvalid = (errors: FieldErrors<StoreInfoEntity>) => {
         const firstInvalidField = Object.keys(errors)[0];
         const labelByField: Partial<Record<keyof StoreInfoEntity, string>> = {
-            name: 'Name',
-            email: 'Email',
-            address: 'Address',
-            city: 'City',
-            state: 'State',
-            zipCode: 'Zip Code',
-            phone: 'Phone',
+            name: t('COMMON_Name', 'Name'),
+            email: t('COMMON_Email', 'Email'),
+            address: t('COMMON_Address', 'Address'),
+            city: t('COMMON_City', 'City'),
+            state: t('COMMON_State', 'State'),
+            zipCode: t('COMMON_ZipCode', 'Zip Code'),
+            phone: t('COMMON_Phone', 'Phone'),
         };
 
         Alert.alert(
-            'Missing required information',
+            t('COMMON_MissingInformation', 'Missing information'),
             firstInvalidField
-                ? `${labelByField[firstInvalidField as keyof StoreInfoEntity] || firstInvalidField} is required.`
-                : 'Please complete all required fields before saving.'
+                ? t(
+                      'COMMON_FieldRequired',
+                      '{{field}} is required.',
+                      {
+                          field:
+                              labelByField[firstInvalidField as keyof StoreInfoEntity] ||
+                              firstInvalidField,
+                      }
+                  )
+                : t(
+                      'STOREINFO_CompleteRequiredFields',
+                      'Please complete all required fields before saving.'
+                  )
         );
     };
 
     const confirmCancel = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t('COMMON_UndoOperationWarning', 'You will not be able to undo this operation'),
             [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => navigation.goBack() },
             ]
         );
     }
@@ -113,54 +128,61 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
                         <View style={styles.container}>
                             <UIStack spacing="lg">
                                 <UICard tone="muted" radius="lg">
-                                    <Text style={styles.title}>Store Profile</Text>
+                                    <Text style={styles.title}>
+                                        {t('STOREINFO_ProfileTitle', 'Store Profile')}
+                                    </Text>
                                     <Text style={styles.subtitle}>
-                                        Manage store identity and contact details used across receipts and reports.
+                                        {t(
+                                            'STOREINFO_ProfileSubtitle',
+                                            'Manage store identity and contact details used across receipts and reports.'
+                                        )}
                                     </Text>
                                 </UICard>
 
                                 <UICard>
                                     <UIStack spacing="lg">
-                                        <Text style={styles.sectionTitle}>Business Details</Text>
+                                        <Text style={styles.sectionTitle}>
+                                            {t('STOREINFO_BusinessDetails', 'Business Details')}
+                                        </Text>
                                         <View style={styles.twoColumnRow}>
                                             <View style={styles.column}>
                                                 <UIInput
                                                     name="name"
-                                                    label="Name"
-                                                    placeholder="Name"
-                                                    rules={{ required: 'Name is required' }}
+                                                    label={t('COMMON_Name', 'Name')}
+                                                    placeholder={t('COMMON_Name', 'Name')}
+                                                    rules={{ required: t('COMMON_NameRequired', 'Name is required') }}
                                                 />
                                             </View>
                                             <View style={styles.columnSpaced}>
                                                 <UIInput
                                                     name="email"
-                                                    label="Email"
-                                                    placeholder="Email"
-                                                    rules={{ required: 'Email is required' }}
+                                                    label={t('COMMON_Email', 'Email')}
+                                                    placeholder={t('COMMON_Email', 'Email')}
+                                                    rules={{ required: t('COMMON_EmailRequired', 'Email is required') }}
                                                 />
                                             </View>
                                         </View>
                                         <UIInput
                                             name="address"
-                                            label="Address"
-                                            placeholder="Address"
-                                            rules={{ required: 'Address is required' }}
+                                            label={t('COMMON_Address', 'Address')}
+                                            placeholder={t('COMMON_Address', 'Address')}
+                                            rules={{ required: t('COMMON_AddressRequired', 'Address is required') }}
                                         />
                                         <View style={styles.twoColumnRow}>
                                             <View style={styles.column}>
                                                 <UIInput
                                                     name="city"
-                                                    label="City"
-                                                    placeholder="City"
-                                                    rules={{ required: 'City is required' }}
+                                                    label={t('COMMON_City', 'City')}
+                                                    placeholder={t('COMMON_City', 'City')}
+                                                    rules={{ required: t('COMMON_CityRequired', 'City is required') }}
                                                 />
                                             </View>
                                             <View style={styles.columnSpaced}>
                                                 <UIInput
                                                     name="state"
-                                                    label="State"
-                                                    placeholder="State"
-                                                    rules={{ required: 'State is required' }}
+                                                    label={t('COMMON_State', 'State')}
+                                                    placeholder={t('COMMON_State', 'State')}
+                                                    rules={{ required: t('COMMON_StateRequired', 'State is required') }}
                                                 />
                                             </View>
                                         </View>
@@ -168,24 +190,24 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
                                             <View style={styles.column}>
                                                 <UIInput
                                                     name="zipCode"
-                                                    label="Zip Code"
-                                                    placeholder="Zip Code"
-                                                    rules={{ required: 'Zip Code is required' }}
+                                                    label={t('COMMON_ZipCode', 'Zip Code')}
+                                                    placeholder={t('COMMON_ZipCode', 'Zip Code')}
+                                                    rules={{ required: t('COMMON_ZipCodeRequired', 'Zip Code is required') }}
                                                 />
                                             </View>
                                             <View style={styles.columnSpaced}>
                                                 <UIInput
                                                     name="phone"
-                                                    label="Phone"
-                                                    placeholder="Phone"
-                                                    rules={{ required: 'Phone is required' }}
+                                                    label={t('COMMON_Phone', 'Phone')}
+                                                    placeholder={t('COMMON_Phone', 'Phone')}
+                                                    rules={{ required: t('COMMON_PhoneRequired', 'Phone is required') }}
                                                 />
                                             </View>
                                             <View style={styles.columnSpaced}>
                                                 <UIInput
                                                     name="fax"
-                                                    label="Fax"
-                                                    placeholder="Fax"
+                                                    label={t('COMMON_Fax', 'Fax')}
+                                                    placeholder={t('COMMON_Fax', 'Fax')}
                                                 />
                                             </View>
                                         </View>
@@ -194,11 +216,13 @@ export function StoreInfoForm({ navigation }: StoreInfoFormProps) {
 
                                 <UICard tone="muted">
                                     <UIStack spacing="md">
-                                        <Text style={styles.sectionTitle}>Receipt Footer</Text>
+                                        <Text style={styles.sectionTitle}>
+                                            {t('STOREINFO_ReceiptFooter', 'Receipt Footer')}
+                                        </Text>
                                         <UIInput
                                             name="disclaimer"
-                                            label="Disclaimer"
-                                            placeholder="Disclaimer"
+                                            label={t('STOREINFO_Disclaimer', 'Disclaimer')}
+                                            placeholder={t('STOREINFO_Disclaimer', 'Disclaimer')}
                                             multiline={true}
                                             numberOfLines={3}
                                             style={styles.disclaimerInput}

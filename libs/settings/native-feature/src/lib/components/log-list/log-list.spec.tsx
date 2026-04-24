@@ -2,6 +2,10 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 jest.mock('react-redux', () => ({
     useSelector: jest.fn(() => [
         {

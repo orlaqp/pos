@@ -155,7 +155,10 @@ export function OrderDetails({
                 <View style={local.summaryRail}>
                     <View style={local.summaryMetricsRow}>
                         <View style={[local.summaryMetricCard, local.discountMetricCard]}>
-                            <Text style={[styles.secondaryText, local.summaryMetricLabel]}>
+                            <Text
+                                numberOfLines={1}
+                                style={[styles.secondaryText, local.summaryMetricLabel]}
+                            >
                         {t('EOD_Discounts', 'Discounts')}
                     </Text>
                             <Text style={[styles.primaryText, local.summaryMetricValue]}>
@@ -163,7 +166,10 @@ export function OrderDetails({
                             </Text>
                         </View>
                         <View style={[local.summaryMetricCard, local.refundMetricCard]}>
-                            <Text style={[styles.secondaryText, local.summaryMetricLabel]}>
+                            <Text
+                                numberOfLines={1}
+                                style={[styles.secondaryText, local.summaryMetricLabel]}
+                            >
                         {t('EOD_Refunds', 'Refunds')}
                     </Text>
                             <Text style={[styles.primaryText, local.summaryMetricValue]}>
@@ -353,14 +359,14 @@ const local = StyleSheet.create({
         borderColor: '#6F3FA0',
     },
     summaryMetricLabel: {
-        fontSize: 11,
+        fontSize: 10,
         textTransform: 'uppercase',
-        letterSpacing: 0.5,
-        marginBottom: 4,
+        letterSpacing: 0.35,
+        marginBottom: 3,
     },
     summaryMetricValue: {
-        fontSize: 15,
-        lineHeight: 18,
+        fontSize: 13,
+        lineHeight: 16,
     },
     paymentsPanel: {
         paddingHorizontal: 14,

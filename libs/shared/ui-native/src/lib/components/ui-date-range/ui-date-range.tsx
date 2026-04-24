@@ -3,6 +3,7 @@ import moment from 'moment';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { UIDatePickerModal } from '../ui-date-picker-modal/ui-date-picker-modal';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface DateRange {
     startDate: moment.Moment;
@@ -45,6 +46,7 @@ export function UIDateRange({
     rightAction,
     showSummary = true,
 }: UIDateRangeProps) {
+    const t = translateWithFallback;
     const styles = useStyles();
     const [selectedPreset, setSelectedPreset] = useState<RangePreset>('TODAY');
     const [rangeLabel, setRangeLabel] = useState(
@@ -64,12 +66,18 @@ export function UIDateRange({
 
     const presets = useMemo(
         () => [
-            { key: 'TODAY' as const, title: 'Today' },
-            { key: 'LAST_7_DAYS' as const, title: 'Last 7 Days' },
-            { key: 'THIS_MONTH' as const, title: 'This Month' },
-            { key: 'CUSTOM' as const, title: 'Custom' },
+            { key: 'TODAY' as const, title: t('COMMON_Today', 'Today') },
+            {
+                key: 'LAST_7_DAYS' as const,
+                title: t('COMMON_Last7Days', 'Last 7 Days'),
+            },
+            {
+                key: 'THIS_MONTH' as const,
+                title: t('COMMON_ThisMonth', 'This Month'),
+            },
+            { key: 'CUSTOM' as const, title: t('COMMON_Custom', 'Custom') },
         ],
-        []
+        [t]
     );
 
     const applyPreset = (preset: RangePreset) => {
@@ -97,7 +105,12 @@ export function UIDateRange({
         const end = moment(endDate);
 
         if (start.isAfter(end, 'day')) {
-            setCustomError('Start date must be before or equal to end date.');
+            setCustomError(
+                t(
+                    'COMMON_StartDateBeforeEndDate',
+                    'Start date must be before or equal to end date.',
+                ),
+            );
             return;
         }
 
@@ -156,7 +169,9 @@ export function UIDateRange({
                             onPress={() => setStartPickerOpen(true)}
                             style={styles.pickButton}
                         >
-                            <Text style={styles.pickButtonLabel}>Start</Text>
+                            <Text style={styles.pickButtonLabel}>
+                                {t('COMMON_Start', 'Start')}
+                            </Text>
                             <Text style={styles.pickButtonText}>
                                 {moment(customStartDate).format('MM-DD-YYYY')}
                             </Text>
@@ -166,7 +181,9 @@ export function UIDateRange({
                             onPress={() => setEndPickerOpen(true)}
                             style={[styles.pickButton, styles.pickButtonSpaced]}
                         >
-                            <Text style={styles.pickButtonLabel}>End</Text>
+                            <Text style={styles.pickButtonLabel}>
+                                {t('COMMON_End', 'End')}
+                            </Text>
                             <Text style={styles.pickButtonText}>
                                 {moment(customEndDate).format('MM-DD-YYYY')}
                             </Text>
@@ -184,7 +201,7 @@ export function UIDateRange({
                 mode="date"
                 open={startPickerOpen}
                 date={customStartDate}
-                title="Select start date"
+                title={t('COMMON_SelectStartDate', 'Select start date')}
                 onConfirm={(date) => {
                     setStartPickerOpen(false);
                     setCustomStartDate(date);
@@ -196,7 +213,7 @@ export function UIDateRange({
                 mode="date"
                 open={endPickerOpen}
                 date={customEndDate}
-                title="Select end date"
+                title={t('COMMON_SelectEndDate', 'Select end date')}
                 onConfirm={(date) => {
                     setEndPickerOpen(false);
                     setCustomEndDate(date);

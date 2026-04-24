@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { StyleSheet, View, Text } from 'react-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
 import { TextInput } from 'react-native-gesture-handler';
 import { ProductEntity } from '@pos/products/data-access';
@@ -19,6 +20,7 @@ const toTestKey = (value: string) =>
         .replace(/^-+|-+$/g, '');
 
 export function InventoryLine({ item }: InventoryLineProps) {
+    const t = translateWithFallback;
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
     const local = useStyles(tokens);
@@ -84,11 +86,15 @@ export function InventoryLine({ item }: InventoryLineProps) {
                     </Text>
                 </View>
                 {isLowInventory && (
-                    <Text style={local.lowInventoryLabel}>Low stock</Text>
+                    <Text style={local.lowInventoryLabel}>
+                        {t('SALES_ProductCardLowStock', 'Low stock')}
+                    </Text>
                 )}
             </View>
             <View style={local.inputColumn}>
-                <Text style={local.inputLabel}>Point</Text>
+                <Text style={local.inputLabel}>
+                    {t('INVENTORY_ReorderPointShort', 'Point')}
+                </Text>
                 <TextInput
                     value={reorderPoint}
                     onChangeText={setReorderPoint}
@@ -102,7 +108,9 @@ export function InventoryLine({ item }: InventoryLineProps) {
                 />
             </View>
             <View style={local.inputColumn}>
-                <Text style={local.inputLabel}>Qty</Text>
+                <Text style={local.inputLabel}>
+                    {t('COMMON_QuantityShort', 'Qty')}
+                </Text>
                 <TextInput
                     value={reorderQuantity}
                     onChangeText={setReorderQuantity}

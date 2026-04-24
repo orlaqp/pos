@@ -212,7 +212,7 @@ export const buildEndOfDayWidgets = (
     {
         text: labels.ebt,
         value: formatPaymentAmount(summary.EBT),
-        backgroundColor: '#8e24aa',
+        backgroundColor: '#00695c',
         flex: 1,
     },
 ];

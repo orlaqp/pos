@@ -12,6 +12,7 @@ import {
 import { useAppDispatch } from '@pos/store';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { translateWithFallback } from '@pos/shared/utils';
 
 type InventoryNavigationParams = Record<string, object | undefined>;
 
@@ -21,6 +22,7 @@ export interface InventoryItemProps {
 }
 
 export function InventoryReceiveItem({ item, navigation }: InventoryItemProps) {
+    const t = translateWithFallback;
     const theme = useTheme();
     const colors = getThemeColors(theme);
     const tokens = useDesignTokens();
@@ -46,18 +48,30 @@ export function InventoryReceiveItem({ item, navigation }: InventoryItemProps) {
 
     const confirmDeletion = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
-            [{ text: 'No' }, { text: 'Yes', onPress: () => deleteItem() }]
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t(
+                'COMMON_UndoOperationWarning',
+                'You will not be able to undo this operation'
+            ),
+            [
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => deleteItem() },
+            ]
         );
     };
 
     return (
         <View style={local.row}>
             <View style={local.identityColumn}>
-                <Text style={local.eyebrow}>Inventory receive</Text>
+                <Text style={local.eyebrow}>
+                    {t('INVENTORY_ReceiveEyebrow', 'Inventory receive')}
+                </Text>
                 <Text style={local.title}>{moment(item.createdAt).local().format('L LT')}</Text>
-                <Text style={local.meta}>By {item.createdBy?.name || 'N/A'}</Text>
+                <Text style={local.meta}>
+                    {t('COMMON_ByName', 'By {{name}}', {
+                        name: item.createdBy?.name || t('COMMON_NotAvailable', 'N/A'),
+                    })}
+                </Text>
             </View>
             <View style={local.statusColumn}>
                 <View
@@ -84,7 +98,7 @@ export function InventoryReceiveItem({ item, navigation }: InventoryItemProps) {
                 {item.status === 'COMPLETED' && (
                     <Button
                         type="clear"
-                        title="View"
+                        title={t('COMMON_View', 'View')}
                         icon={{
                             name: 'eye-arrow-right-outline',
                             type: 'material-community',
@@ -99,7 +113,7 @@ export function InventoryReceiveItem({ item, navigation }: InventoryItemProps) {
                     <>
                         <Button
                             type="clear"
-                            title="Edit"
+                            title={t('COMMON_Edit', 'Edit')}
                             icon={{
                                 name: 'pencil-outline',
                                 type: 'material-community',

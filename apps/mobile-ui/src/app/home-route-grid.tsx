@@ -4,6 +4,7 @@ import { Icon, Text } from '@rneui/themed';
 import { HomeScreenStyles } from './HomeScreen.styles';
 
 interface PathDetails {
+    eyebrow?: string;
     title: string;
     path: string;
     icon: string;
@@ -85,7 +86,9 @@ export function HomeRouteGrid({
                                     />
                                 </View>
                                 <View style={styles.routeCardBody}>
-                                    <Text style={styles.routeEyebrow}>{path.path}</Text>
+                                    <Text style={styles.routeEyebrow}>
+                                        {path.eyebrow || path.title}
+                                    </Text>
                                     <Text style={styles.routeTitle}>{path.title}</Text>
                                     {path.subtitle ? (
                                         <Text style={styles.routeSubtitle}>

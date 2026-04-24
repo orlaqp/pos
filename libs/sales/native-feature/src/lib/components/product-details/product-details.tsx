@@ -6,6 +6,7 @@ import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { EACH } from '@pos/unit-of-measures/data-access';
 import { Button, Input, useTheme } from '@rneui/themed';
+import { translateWithFallback } from '@pos/shared/utils';
 import React, { useEffect, useRef, useState } from 'react';
 
 import {
@@ -34,6 +35,7 @@ export interface ProductDetailsProps {
 }
 
 export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory }: ProductDetailsProps) {
+    const t = translateWithFallback;
     const theme = useTheme();
     const { width: windowWidth } = useWindowDimensions();
     const styles = useStyles(windowWidth);
@@ -62,7 +64,13 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
                 normalizedQuantity
             )
         ) {
-            Alert.alert('Cannot sale this much', 'There is not enough inventory to fulfill your request');
+            Alert.alert(
+                t('SALES_CannotSellQuantityTitle', 'Cannot sell this much'),
+                t(
+                    'SALES_CannotSellQuantityMessage',
+                    'There is not enough inventory to fulfill your request'
+                )
+            );
             return;
         }
 
@@ -95,10 +103,17 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
         <View style={styles.productDetailsContainer} testID="sales-product-details-screen">
             <View style={styles.dialogFrame}>
                 <View style={styles.headerBlock}>
-                    <Text style={styles.eyebrow}>Product details</Text>
-                    <Text style={styles.headerTitle}>Review quantity and line value</Text>
+                    <Text style={styles.eyebrow}>
+                        {t('SALES_ProductDetails', 'Product details')}
+                    </Text>
+                    <Text style={styles.headerTitle}>
+                        {t('SALES_ReviewQuantityAndLineValue', 'Review quantity and line value')}
+                    </Text>
                     <Text style={styles.headerHint}>
-                        Keep spacing clear while adjusting the order line before confirming it in the cart.
+                        {t(
+                            'SALES_ProductDetailsHint',
+                            'Keep spacing clear while adjusting the order line before confirming it in the cart.'
+                        )}
                     </Text>
                 </View>
 
@@ -114,25 +129,33 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
                             />
                         </View>
                         <View style={styles.metaWrap}>
-                            <Text style={styles.brandText}>{brand?.name || 'Unbranded'}</Text>
+                            <Text style={styles.brandText}>
+                                {brand?.name || t('PRODUCT_Unbranded', 'Unbranded')}
+                            </Text>
                             <Text style={styles.productName} numberOfLines={2}>
                                 {item.product.name}
                             </Text>
                             <Text style={styles.descriptionText} numberOfLines={3}>
-                                {product?.description || 'No description'}
+                                {product?.description || t('COMMON_NoDescription', 'No description')}
                             </Text>
                             <Text style={styles.unitHint}>
-                                Sold by {item.product.unitOfMeasure}
+                                {t('SALES_SoldByUnit', 'Sold by {{unit}}', {
+                                    unit: item.product.unitOfMeasure,
+                                })}
                             </Text>
                             <View style={styles.detailPillRow}>
                                 <View style={styles.detailPill}>
-                                    <Text style={styles.detailPillLabel}>Base price</Text>
+                                    <Text style={styles.detailPillLabel}>
+                                        {t('SALES_BasePrice', 'Base price')}
+                                    </Text>
                                     <Text style={styles.detailPillValue}>
                                         ${item.product.price.toFixed(2)}
                                     </Text>
                                 </View>
                                 <View style={styles.detailPill}>
-                                    <Text style={styles.detailPillLabel}>Unit</Text>
+                                    <Text style={styles.detailPillLabel}>
+                                        {t('COMMON_Unit', 'Unit')}
+                                    </Text>
                                     <Text style={styles.detailPillValue}>
                                         {item.product.unitOfMeasure}
                                     </Text>
@@ -144,15 +167,24 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
 
                 <View style={styles.summaryCard}>
                     <View style={styles.pricePanel}>
-                        <Text style={styles.sectionEyebrow}>Line total</Text>
+                        <Text style={styles.sectionEyebrow}>
+                            {t('SALES_LineTotal', 'Line total')}
+                        </Text>
                         <View style={styles.priceWrap}>
                             <Text style={styles.price}>$ {price?.toFixed(2)}</Text>
-                            <Text style={styles.priceLabel}>Current value based on the quantity below</Text>
+                            <Text style={styles.priceLabel}>
+                                {t(
+                                    'SALES_CurrentValueBasedOnQuantity',
+                                    'Current value based on the quantity below'
+                                )}
+                            </Text>
                         </View>
                     </View>
 
                     <View style={styles.quantityWrap}>
-                        <Text style={styles.sectionEyebrow}>Quantity</Text>
+                        <Text style={styles.sectionEyebrow}>
+                            {t('COMMON_Quantity', 'Quantity')}
+                        </Text>
                         {each && (
                             <View style={styles.quantityStepper}>
                                 <Pressable
@@ -184,7 +216,9 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
                                             setQuantity(text);
                                         }}
                                     />
-                                    <Text style={styles.quantityLabel}>Units in this line</Text>
+                                    <Text style={styles.quantityLabel}>
+                                        {t('SALES_UnitsInThisLine', 'Units in this line')}
+                                    </Text>
                                 </View>
                                 <Pressable
                                     testID="product-details-increment"
@@ -201,7 +235,7 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
                                     ref={ref as any}
                                     testID="product-details-quantity-input"
                                     value={quantity.toString()}
-                                    placeholder="Weight ..."
+                                    placeholder={t('SALES_WeightPlaceholder', 'Weight ...')}
                                     keyboardType="decimal-pad"
                                     style={{ fontSize: 32 }}
                                     textAlign="center"
@@ -224,7 +258,11 @@ export function ProductDetails({ item, upsertCart, enforceSalesBasedOnInventory 
                     testID="sales-product-details-submit"
                     containerStyle={styles.ctaContainer}
                     type="solid"
-                    title={item.identifier ? 'Update cart' : 'Add to cart'}
+                    title={
+                        item.identifier
+                            ? t('CART_UpdateCart', 'Update cart')
+                            : t('CART_AddToCart', 'Add to cart')
+                    }
                     onPress={validateInfo}
                 />
             </View>

@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
     StyleSheet,
 } from 'react-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import {
@@ -25,6 +26,7 @@ export interface EmployeeItemProps {
 }
 
 export function EmployeeItem({ item, navigation }: EmployeeItemProps) {
+    const t = translateWithFallback;
     const theme = useTheme();
     const tokens = useDesignTokens();
     const styles = useSharedStyles();
@@ -48,9 +50,12 @@ export function EmployeeItem({ item, navigation }: EmployeeItemProps) {
 
     const confirmDeletion = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
-            [{ text: 'No' }, { text: 'Yes', onPress: () => deleteItem() }]
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t('COMMON_UndoOperationWarning', 'You will not be able to undo this operation'),
+            [
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => deleteItem() },
+            ]
         );
     };
 
@@ -69,7 +74,9 @@ export function EmployeeItem({ item, navigation }: EmployeeItemProps) {
                         }
                     ]}
                 >
-                    {item.active ? 'Active' : 'Inactive' }
+                    {item.active
+                        ? t('COMMON_Active', 'Active')
+                        : t('COMMON_Inactive', 'Inactive')}
                 </Text>
             </View>
 
@@ -79,7 +86,7 @@ export function EmployeeItem({ item, navigation }: EmployeeItemProps) {
                     numberOfLines={1}
                     ellipsizeMode="tail"
                 >
-                    ID: {item.code}
+                    {t('COMMON_ById', `ID: ${item.code}`, { value: item.code })}
                 </Text>
                 <Text
                     style={[styles.name, local.nameText]}

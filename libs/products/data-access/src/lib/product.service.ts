@@ -8,6 +8,7 @@ const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
     !!item && item._deleted !== true;
 import { Alert } from 'react-native';
 import { stampTenant } from '@pos/auth/data-access';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface ProductSearchRequest {
     text?: string;
@@ -397,7 +398,12 @@ async function validateNameBarcodeAndSku(
     });
 
     if (nameChanged && withSameName) {
-        Alert.alert('A product with same name already exist');
+        Alert.alert(
+            translateWithFallback(
+                'PRODUCT_DuplicateName',
+                'A product with same name already exist',
+            ),
+        );
         return false;
     }
 
@@ -408,7 +414,12 @@ async function validateNameBarcodeAndSku(
             );
 
         if (withSameBarcode.length) {
-            Alert.alert('A product with same barcode already exist');
+            Alert.alert(
+                translateWithFallback(
+                    'PRODUCT_DuplicateBarcode',
+                    'A product with same barcode already exist',
+                ),
+            );
             return false;
         }
     }
@@ -420,7 +431,12 @@ async function validateNameBarcodeAndSku(
             );
 
         if (withSameSku.length) {
-            Alert.alert('A product with same sku already exist');
+            Alert.alert(
+                translateWithFallback(
+                    'PRODUCT_DuplicateSku',
+                    'A product with same sku already exist',
+                ),
+            );
             return false;
         }
     }
@@ -432,7 +448,12 @@ async function validateNameBarcodeAndSku(
             );
 
         if (withSamePlu.length) {
-            Alert.alert('A product with same plu already exist');
+            Alert.alert(
+                translateWithFallback(
+                    'PRODUCT_DuplicatePlu',
+                    'A product with same plu already exist',
+                ),
+            );
             return false;
         }
     }

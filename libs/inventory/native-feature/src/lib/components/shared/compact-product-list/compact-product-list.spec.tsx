@@ -31,6 +31,10 @@ jest.mock('@rneui/themed', () => ({
     },
 }));
 
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 describe('CompactProductList', () => {
     const product = {
         id: 'product-1',

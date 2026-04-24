@@ -400,8 +400,8 @@ export function Cart({
         mode === 'order' && !payFromSalesScreen ? confirmPrintOrder : submitOrder;
     const e2eCheckoutLabel =
         mode === 'order' && !payFromSalesScreen
-            ? 'E2E Print Order'
-            : 'E2E Checkout';
+            ? t('E2E_PrintOrder', 'E2E Print Order')
+            : t('E2E_Checkout', 'E2E Checkout');
 
     const validateProductInventory = () => {
         const notAvailableProducts = getUnavailableProductMessages(
@@ -427,15 +427,26 @@ export function Cart({
 
     const disabledActionReason = useMemo(() => {
         if (!selectedItem)
-            return 'Select a cart line for line-level adjustments.';
+            return t(
+                'CART_SelectLineForAdjustments',
+                'Select a cart line for line-level adjustments.'
+            );
         if (selectedItem.quantity === 0)
-            return 'Resolve the item weight before applying pricing actions.';
+            return t(
+                'CART_ResolveWeightBeforePricing',
+                'Resolve the item weight before applying pricing actions.'
+            );
         return null;
-    }, [selectedItem]);
+    }, [selectedItem, t]);
 
     const openPromoDialog = () => {
         if (!canUsePromoCodes) {
-            Alert.alert('Promo codes are not allowed for this employee.');
+            Alert.alert(
+                t(
+                    'CART_PromoCodesNotAllowed',
+                    'Promo codes are not allowed for this employee.'
+                )
+            );
             return;
         }
         setPromoVisible(true);
@@ -444,7 +455,7 @@ export function Cart({
     const submitPromoCode = () => {
         const code = normalizePromoCode(promoCodeInput);
         if (!code) {
-            Alert.alert('Promo code is required.');
+            Alert.alert(t('CART_PromoCodeRequired', 'Promo code is required.'));
             return;
         }
 
@@ -456,7 +467,12 @@ export function Cart({
 
     const openManualDiscountDialog = () => {
         if (manualDraft.scope === 'ORDER' && !canApplyOrderDiscount) {
-            Alert.alert('Order discounts are not allowed for this employee.');
+            Alert.alert(
+                t(
+                    'CART_OrderDiscountsNotAllowed',
+                    'Order discounts are not allowed for this employee.'
+                )
+            );
             return;
         }
         setManualVisible(true);
@@ -489,17 +505,29 @@ export function Cart({
     const submitManualDiscount = async () => {
         const value = Number(manualDraftValue);
         if (!Number.isFinite(value) || value <= 0) {
-            Alert.alert('Enter a valid discount value.');
+            Alert.alert(
+                t('CART_EnterValidDiscountValue', 'Enter a valid discount value.')
+            );
             return;
         }
 
         if (manualDraft.scope === 'LINE' && !selectedItem?.identifier) {
-            Alert.alert('Select a cart line before applying a line discount.');
+            Alert.alert(
+                t(
+                    'CART_SelectLineBeforeDiscount',
+                    'Select a cart line before applying a line discount.'
+                )
+            );
             return;
         }
 
         if (manualDraft.scope === 'ORDER' && !canApplyOrderDiscount) {
-            Alert.alert('Order discounts are not allowed for this employee.');
+            Alert.alert(
+                t(
+                    'CART_OrderDiscountsNotAllowed',
+                    'Order discounts are not allowed for this employee.'
+                )
+            );
             return;
         }
 
@@ -519,8 +547,8 @@ export function Cart({
                         definition.id === manualDraft.selectedDefinitionId,
                 )?.name ||
                 (manualDraft.scope === 'ORDER'
-                    ? 'Manual order discount'
-                    : 'Manual line discount'),
+                    ? t('CART_ManualOrderDiscount', 'Manual order discount')
+                    : t('CART_ManualLineDiscount', 'Manual line discount')),
             reasonCode: manualDraft.reasonCode.trim() || undefined,
             reasonNote: manualDraft.reasonNote.trim() || undefined,
         };
@@ -533,11 +561,21 @@ export function Cart({
 
     const openOverrideDialog = () => {
         if (!selectedItem?.identifier) {
-            Alert.alert('Select a cart line before overriding price.');
+            Alert.alert(
+                t(
+                    'CART_SelectLineBeforePriceOverride',
+                    'Select a cart line before overriding price.'
+                )
+            );
             return;
         }
         if (!canOverridePrice) {
-            Alert.alert('Price overrides are not allowed for this employee.');
+            Alert.alert(
+                t(
+                    'CART_PriceOverridesNotAllowed',
+                    'Price overrides are not allowed for this employee.'
+                )
+            );
             return;
         }
         setOverrideVisible(true);
@@ -545,13 +583,23 @@ export function Cart({
 
     const submitOverride = async () => {
         if (!selectedItem?.identifier) {
-            Alert.alert('Select a cart line before overriding price.');
+            Alert.alert(
+                t(
+                    'CART_SelectLineBeforePriceOverride',
+                    'Select a cart line before overriding price.'
+                )
+            );
             return;
         }
 
         const finalPrice = Number(overrideDraft.finalPrice);
         if (!Number.isFinite(finalPrice) || finalPrice < 0) {
-            Alert.alert('Enter a valid final unit price.');
+            Alert.alert(
+                t(
+                    'CART_EnterValidFinalUnitPrice',
+                    'Enter a valid final unit price.'
+                )
+            );
             return;
         }
 
@@ -559,7 +607,7 @@ export function Cart({
             kind: 'PRICE_OVERRIDE',
             lineId: selectedItem.identifier,
             finalPrice,
-            name: 'Price override',
+            name: t('SALES_PriceOverride', 'Price override'),
             reasonCode: overrideDraft.reasonCode.trim() || undefined,
             reasonNote: overrideDraft.reasonNote.trim() || undefined,
         };
@@ -582,7 +630,10 @@ export function Cart({
                     {t('CART_Empty', 'Cart is empty')}
                 </Text>
                 <Text style={localStyles.emptyHint}>
-                    Scan items or search the catalog to start a sale.
+                    {t(
+                        'CART_EmptyHint',
+                        'Scan items or search the catalog to start a sale.'
+                    )}
                 </Text>
             </View>
         );
@@ -703,8 +754,15 @@ export function Cart({
                 {!ready && invalidItemCount > 0 ? (
                     <Text style={localStyles.warningText}>
                         {invalidItemCount === 1
-                            ? '1 item needs weight before checkout'
-                            : `${invalidItemCount} items need weight before checkout`}
+                            ? t(
+                                  'CART_OneItemNeedsWeight',
+                                  '1 item needs weight before checkout'
+                              )
+                            : t(
+                                  'CART_MultipleItemsNeedWeight',
+                                  '{{count}} items need weight before checkout',
+                                  { count: invalidItemCount }
+                              )}
                     </Text>
                 ) : null}
                 {payFromSalesScreen ? (
@@ -728,7 +786,10 @@ export function Cart({
                     testID="cart-pay-order-button"
                     title={
                         !ready && invalidItemCount > 0
-                            ? 'Resolve cart items to continue'
+                            ? t(
+                                  'CART_ResolveItemsToContinue',
+                                  'Resolve cart items to continue'
+                              )
                             : payFromSalesScreen || mode === 'payment'
                               ? `${t('CART_ReceivePayment', 'Receive Payment')}  •  $${cart.footer.total.toFixed(2)}`
                               : mode === 'order'

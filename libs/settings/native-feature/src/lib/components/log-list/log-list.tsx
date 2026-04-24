@@ -1,5 +1,6 @@
 import { selectAllEvents } from '@pos/shared/data-store';
 import { UICard, UIStack, UIScreen } from '@pos/shared/ui-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import React from 'react';
 
@@ -10,7 +11,7 @@ import { useSelector } from 'react-redux';
 export interface LogListProps {}
 
 export const formatLogTimestamp = (timestamp?: string) => {
-    if (!timestamp) return 'Unknown time';
+    if (!timestamp) return translateWithFallback('LOG_UnknownTime', 'Unknown time');
 
     const date = new Date(timestamp);
     if (Number.isNaN(date.getTime())) return timestamp;
@@ -19,7 +20,7 @@ export const formatLogTimestamp = (timestamp?: string) => {
 };
 
 export const formatLogPayload = (payload?: string) => {
-    if (!payload) return 'No details recorded.';
+    if (!payload) return translateWithFallback('LOG_NoDetails', 'No details recorded.');
 
     try {
         return JSON.stringify(JSON.parse(payload), null, 2);
@@ -29,9 +30,10 @@ export const formatLogPayload = (payload?: string) => {
 };
 
 export const getLogCategory = (event?: string) =>
-    event?.split(/[:.\s]/)[0]?.trim() || 'Event';
+    event?.split(/[:.\s]/)[0]?.trim() || translateWithFallback('LOG_EventFallback', 'Event');
 
 export function LogList(_props: LogListProps) {
+    const t = translateWithFallback;
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
     const events = useSelector(selectAllEvents);
@@ -42,24 +44,28 @@ export function LogList(_props: LogListProps) {
                 <UICard tone="muted" radius="lg">
                     <View style={styles.headerRow}>
                         <View style={styles.headerTextWrap}>
-                            <Text style={styles.title}>System Logs</Text>
+                            <Text style={styles.title}>{t('LOG_Title', 'System Logs')}</Text>
                             <Text style={styles.subtitle}>
-                                Track sync and device events for
-                                troubleshooting.
+                                {t(
+                                    'LOG_Subtitle',
+                                    'Track sync and device events for troubleshooting.'
+                                )}
                             </Text>
                         </View>
                         <View style={styles.countBadge}>
                             <Text style={styles.countValue}>
                                 {events?.length || 0}
                             </Text>
-                            <Text style={styles.countLabel}>Events</Text>
+                            <Text style={styles.countLabel}>{t('LOG_Events', 'Events')}</Text>
                         </View>
                     </View>
                 </UICard>
 
                 {(!events || events.length === 0) && (
                     <UICard style={styles.emptyCard}>
-                        <Text style={styles.emptyText}>No logs available.</Text>
+                        <Text style={styles.emptyText}>
+                            {t('LOG_Empty', 'No logs available.')}
+                        </Text>
                     </UICard>
                 )}
 

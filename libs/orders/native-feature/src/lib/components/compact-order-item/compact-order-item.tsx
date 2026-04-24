@@ -7,6 +7,7 @@ import { OrderEntity } from '@pos/orders/data-access';
 import { useDispatch } from 'react-redux';
 import { cartActions } from '@pos/sales/data-access';
 import { parseOrderNoSegments } from '../order-item/order-item';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface CompactOrderItemProps {
     item: OrderEntity;
@@ -14,6 +15,7 @@ export interface CompactOrderItemProps {
 }
 
 export function CompactOrderItem({ item, onSelect: onOpen }: CompactOrderItemProps) {
+    const t = translateWithFallback;
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
     const local = useStyles(tokens);
@@ -28,7 +30,7 @@ export function CompactOrderItem({ item, onSelect: onOpen }: CompactOrderItemPro
     return (
         <TouchableOpacity style={[styles.dataRow, local.container]} onPress={openInCart}>
             <View style={local.leftBlock}>
-                <Text style={local.eyebrow}>Order</Text>
+                <Text style={local.eyebrow}>{t('COMMON_Order', 'Order')}</Text>
                 <View style={local.topRow}>
                     {parsedOrderNo ? (
                         <>
@@ -59,14 +61,18 @@ export function CompactOrderItem({ item, onSelect: onOpen }: CompactOrderItemPro
             </View>
             <View style={local.countBlock}>
                 <Text style={[styles.secondaryText, local.countText]}>
-                    {item.lines?.length || 0} item(s)
+                    {t('ORDERITEM_ItemCount', '{{count}} item(s)', {
+                        count: item.lines?.length || 0,
+                    })}
                 </Text>
             </View>
             <View style={local.totalBlock}>
                 <Text style={[styles.name, local.totalText]}>
                     {`$ ${item.total.toFixed(2)}`}
                 </Text>
-                <Text style={[styles.secondaryText, local.resumeText]}>Tap to resume</Text>
+                <Text style={[styles.secondaryText, local.resumeText]}>
+                    {t('ORDERS_TapToResume', 'Tap to resume')}
+                </Text>
             </View>
         </TouchableOpacity>
     );

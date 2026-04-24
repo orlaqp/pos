@@ -4,6 +4,10 @@ import React from 'react';
 import { Alert, TextInput } from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 const mockDispatch = jest.fn();
 const mockGoBack = jest.fn();
 const mockProductSave = jest.fn(() => Promise.resolve({ id: 'saved-1' }));

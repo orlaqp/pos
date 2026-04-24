@@ -3,6 +3,10 @@ import { Alert, TouchableOpacity } from 'react-native';
 import { render } from '@testing-library/react-native';
 import EmployeeItem from './employee-item';
 
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 const mockDispatch = jest.fn();
 const mockDelete = jest.fn(() => Promise.resolve());
 

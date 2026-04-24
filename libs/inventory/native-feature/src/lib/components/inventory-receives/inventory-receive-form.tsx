@@ -41,6 +41,7 @@ import CompactProductList from '../shared/compact-product-list/compact-product-l
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { dedupeProducts } from '../shared/dedupe-products';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -92,6 +93,7 @@ export function InventoryReceiveForm({
     InventoryReceiveNavigationParamList,
     'Inventory Receive Form'
 >) {
+    const t = translateWithFallback;
     const inventoryReceive = useSelector(
         (state: RootState) => state.inventoryReceive.selected,
     );
@@ -165,7 +167,10 @@ export function InventoryReceiveForm({
             } else {
                 if (!employee) {
                     Alert.alert(
-                        'The system could not find the details of the logged in employee',
+                        t(
+                            'INVENTORY_LoggedInEmployeeMissing',
+                            'The system could not find the details of the logged in employee'
+                        ),
                     );
                     return;
                 }
@@ -200,19 +205,25 @@ export function InventoryReceiveForm({
         Keyboard.dismiss();
         confirm(
             '',
-            'This action will adjust your inventory based on this receive. You will no be able to undo this operation',
+            t(
+                'INVENTORY_ReceiveUpdateWarning',
+                'This action will adjust your inventory based on this receive. You will no be able to undo this operation'
+            ),
             () => save(true, 'submit'),
         );
     };
 
     const confirmCancel = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t(
+                'COMMON_UndoOperationWarning',
+                'You will not be able to undo this operation'
+            ),
             [
-                { text: 'No' },
+                { text: t('COMMON_No', 'No') },
                 {
-                    text: 'Yes',
+                    text: t('COMMON_Yes', 'Yes'),
                     onPress: () => {
                         dispatch(inventoryReceiveActions.clearSelection());
                         navigation.goBack();
@@ -283,11 +294,13 @@ export function InventoryReceiveForm({
                                 </View>
                                 <View style={local.readOnlyCopy}>
                                     <Text style={local.readOnlyTitle}>
-                                        Completed receive
+                                        {t('INVENTORY_CompletedReceive', 'Completed receive')}
                                     </Text>
                                     <Text style={local.readOnlyText}>
-                                        This inventory receive is read-only and
-                                        cannot be changed.
+                                        {t(
+                                            'INVENTORY_ReceiveReadOnly',
+                                            'This inventory receive is read-only and cannot be changed.'
+                                        )}
                                     </Text>
                                 </View>
                             </View>
@@ -297,10 +310,10 @@ export function InventoryReceiveForm({
                                 <View style={local.formHeaderRow}>
                                     <View>
                                         <Text style={local.formEyebrow}>
-                                            Inventory receive
+                                            {t('INVENTORY_ReceiveEyebrow', 'Inventory receive')}
                                         </Text>
                                         <Text style={local.formTitle}>
-                                            Receive workspace
+                                            {t('INVENTORY_ReceiveWorkspace', 'Receive workspace')}
                                         </Text>
                                     </View>
                                     <View style={local.formMetricPill}>
@@ -308,7 +321,7 @@ export function InventoryReceiveForm({
                                             {lines.length}
                                         </Text>
                                         <Text style={local.formMetricLabel}>
-                                            Lines
+                                            {t('COMMON_Lines', 'Lines')}
                                         </Text>
                                     </View>
                                 </View>
@@ -317,7 +330,10 @@ export function InventoryReceiveForm({
                                     testID="inventory-receive-search-input"
                                     value={filter}
                                     editable={!busy}
-                                    placeholder="Search for products ..."
+                                    placeholder={t(
+                                        'INVENTORY_SearchProducts',
+                                        'Search for products ...'
+                                    )}
                                     debounceTime={700}
                                     onChangeText={setFilter}
                                     onSubmit={searchSubmit}
@@ -368,7 +384,10 @@ export function InventoryReceiveForm({
                                 <View style={{ marginLeft: 10 }}>
                                     <Button
                                         color="success"
-                                        title="Update Inventory"
+                                        title={t(
+                                            'INVENTORY_UpdateInventory',
+                                            'Update Inventory'
+                                        )}
                                         testID="inventory-receive-update-inventory-button"
                                         onPress={updateInventory}
                                         loading={

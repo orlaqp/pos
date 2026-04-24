@@ -17,6 +17,7 @@ import { RootState } from '@pos/store';
 import { Employee } from '@pos/shared/models';
 import { Button, Icon } from '@rneui/themed';
 import { Role } from '@pos/auth/data-access';
+import { translateWithFallback } from '@pos/shared/utils';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface EmployeeFormParams {
@@ -66,6 +67,7 @@ export const toggleEmployeeRoleSet = (
 };
 
 export function EmployeeForm({ navigation }: EmployeeFormProps) {
+    const t = translateWithFallback;
     const employee = useSelector(
         (state: RootState) => state.employees.selected
     );
@@ -132,11 +134,14 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
 
     const confirmCancel = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t(
+                'COMMON_UndoOperationWarning',
+                'You will not be able to undo this operation'
+            ),
             [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => navigation.goBack() },
             ]
         );
     };
@@ -155,9 +160,14 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
                             <UICard style={styles.headerCard} tone="muted" radius="lg">
                                 <View style={styles.headerRow}>
                                     <View style={styles.headerTitleBlock}>
-                                        <Text style={styles.headerTitle}>Employee Profile</Text>
+                                        <Text style={styles.headerTitle}>
+                                            {t('EMPLOYEE_ProfileTitle', 'Employee Profile')}
+                                        </Text>
                                         <Text style={styles.headerSubtitle}>
-                                            Manage identity, access and security settings.
+                                            {t(
+                                                'EMPLOYEE_ProfileSubtitle',
+                                                'Manage identity, access and security settings.'
+                                            )}
                                         </Text>
                                     </View>
                                     <View style={styles.headerStatusBlock}>
@@ -177,11 +187,15 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
                                                         : styles.statusBadgeTextInactive,
                                                 ]}
                                             >
-                                                {form.watch('active') ? 'Active' : 'Inactive'}
+                                                {form.watch('active')
+                                                    ? t('COMMON_Active', 'Active')
+                                                    : t('COMMON_Inactive', 'Inactive')}
                                             </Text>
                                         </View>
                                         <View style={styles.statusSwitchRow}>
-                                            <Text style={styles.toggleLabel}>Is active?</Text>
+                                            <Text style={styles.toggleLabel}>
+                                                {t('EMPLOYEE_IsActive', 'Is active?')}
+                                            </Text>
                                             <View style={styles.toggleSwitchWrap}>
                                                 <UISwitch name="active" />
                                             </View>
@@ -191,22 +205,24 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
                             </UICard>
 
                             <UICard style={styles.sectionCard}>
-                                <Text style={styles.sectionTitle}>Profile</Text>
+                                <Text style={styles.sectionTitle}>
+                                    {t('EMPLOYEE_ProfileSection', 'Profile')}
+                                </Text>
                                 <UIStack spacing="sm">
                                     <View style={styles.row}>
                                         <View style={styles.column}>
                                             <UIInput
-                                                label="First Name"
+                                                label={t('EMPLOYEE_FirstName', 'First Name')}
                                                 name="firstName"
-                                                placeholder="First name"
+                                                placeholder={t('EMPLOYEE_FirstNamePlaceholder', 'First name')}
                                                 lIcon="account-outline"
                                             />
                                         </View>
                                         <View style={styles.columnLast}>
                                             <UIInput
-                                                label="Last Name"
+                                                label={t('EMPLOYEE_LastName', 'Last Name')}
                                                 name="lastName"
-                                                placeholder="Last name"
+                                                placeholder={t('EMPLOYEE_LastNamePlaceholder', 'Last name')}
                                                 lIcon="account-outline"
                                             />
                                         </View>
@@ -215,18 +231,18 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
                                         <View style={styles.column}>
                                             <UIInput
                                                 name="phone"
-                                                label="Phone"
+                                                label={t('COMMON_Phone', 'Phone')}
                                                 keyboardType="phone-pad"
-                                                placeholder="Phone Number"
+                                                placeholder={t('EMPLOYEE_PhonePlaceholder', 'Phone Number')}
                                                 lIcon="phone-outline"
                                             />
                                         </View>
                                         <View style={styles.columnLast}>
                                             <UIInput
                                                 name="email"
-                                                label="Email"
+                                                label={t('COMMON_Email', 'Email')}
                                                 keyboardType="email-address"
-                                                placeholder="Email Address"
+                                                placeholder={t('EMPLOYEE_EmailPlaceholder', 'Email Address')}
                                                 autoCapitalize="none"
                                                 autoCorrect={false}
                                                 lIcon="email-outline"
@@ -236,9 +252,9 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
                                     <View style={styles.row}>
                                         <View style={styles.column}>
                                             <UIInput
-                                                label="Code"
+                                                label={t('EMPLOYEE_Code', 'Code')}
                                                 name="code"
-                                                placeholder="Code"
+                                                placeholder={t('EMPLOYEE_Code', 'Code')}
                                                 lIcon="badge-account-outline"
                                             />
                                         </View>
@@ -250,21 +266,28 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
                             <UICard style={styles.sectionCard}>
                                 <View style={styles.sectionHeaderRow}>
                                     <View>
-                                        <Text style={styles.sectionTitle}>Access</Text>
+                                        <Text style={styles.sectionTitle}>
+                                            {t('EMPLOYEE_AccessSection', 'Access')}
+                                        </Text>
                                         <Text style={styles.sectionSubtitle}>
-                                            {activeRoleCount} role
-                                            {activeRoleCount === 1 ? '' : 's'} selected
+                                            {t(
+                                                'EMPLOYEE_RoleSelectionCount',
+                                                `${activeRoleCount} role${activeRoleCount === 1 ? '' : 's'} selected`,
+                                                {
+                                                    count: activeRoleCount,
+                                                }
+                                            )}
                                         </Text>
                                     </View>
                                     <View style={styles.sectionHeaderActions}>
                                         <Button
-                                            title="Select common"
+                                            title={t('EMPLOYEE_SelectCommonRoles', 'Select common')}
                                             type="clear"
                                             titleStyle={styles.helperActionText}
                                             onPress={selectCommonRoles}
                                         />
                                         <Button
-                                            title="Clear all"
+                                            title={t('COMMON_ClearAll', 'Clear all')}
                                             type="clear"
                                             titleStyle={styles.helperActionText}
                                             onPress={clearRoles}
@@ -311,13 +334,18 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
                             <UICard style={styles.sectionCard}>
                                 <View style={styles.sectionHeaderRow}>
                                     <View>
-                                        <Text style={styles.sectionTitle}>Security</Text>
+                                        <Text style={styles.sectionTitle}>
+                                            {t('EMPLOYEE_SecuritySection', 'Security')}
+                                        </Text>
                                         <Text style={styles.sectionSubtitle}>
-                                            Keep employee sign-in credentials up to date.
+                                            {t(
+                                                'EMPLOYEE_SecuritySubtitle',
+                                                'Keep employee sign-in credentials up to date.'
+                                            )}
                                         </Text>
                                     </View>
                                     <Button
-                                        title="Reset PIN"
+                                        title={t('EMPLOYEE_ResetPin', 'Reset PIN')}
                                         type="outline"
                                         buttonStyle={styles.resetPinButton}
                                         titleStyle={styles.resetPinText}
@@ -328,9 +356,9 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
                                     <View style={styles.column}>
                                         <UIInput
                                             name="pin"
-                                            label="Pin"
+                                            label={t('EMPLOYEE_Pin', 'Pin')}
                                             keyboardType="decimal-pad"
-                                            placeholder="Pin"
+                                            placeholder={t('EMPLOYEE_Pin', 'Pin')}
                                             rules={{ minLength: 4, maxLength: 4 }}
                                             secureTextEntry={!pinVisible}
                                             lIcon="lock-outline"

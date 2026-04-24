@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import { Button, Dialog } from '@rneui/themed';
-import { isE2EEnabled } from '@pos/shared/utils';
+import { isE2EEnabled, translateWithFallback } from '@pos/shared/utils';
 import { CartStyles } from './cart.styles';
 import { OrderSummaryPanel } from './order-summary-panel';
 
@@ -29,6 +29,7 @@ export function CartOrderSummaryDialog({
     onClose,
     onConfirm,
 }: CartOrderSummaryDialogProps) {
+    const t = translateWithFallback;
     return (
         <Dialog
             isVisible={visible}
@@ -44,7 +45,9 @@ export function CartOrderSummaryDialog({
                 footer={
                     <View style={styles.summaryFooter}>
                         <View style={styles.summaryFooterTotalBlock}>
-                            <Text style={styles.summaryFooterLabel}>Total</Text>
+                            <Text style={styles.summaryFooterLabel}>
+                                {t('COMMON_Total', 'Total')}
+                            </Text>
                             <Text style={styles.summaryFooterValue}>
                                 ${orderSummary.total.toFixed(2)}
                             </Text>
@@ -54,13 +57,13 @@ export function CartOrderSummaryDialog({
                                 <Button
                                     testID="order-summary-print-e2e-shortcut"
                                     type="clear"
-                                    title="E2E Print"
+                                    title={t('E2E_Print', 'E2E Print')}
                                     onPress={onConfirm}
                                 />
                             ) : null}
                             <Button
                                 type="clear"
-                                title="Back to cart"
+                                title={t('SALES_BackToCart', 'Back to cart')}
                                 onPress={onClose}
                                 buttonStyle={styles.summarySecondaryButton}
                                 titleStyle={styles.summarySecondaryButtonTitle}

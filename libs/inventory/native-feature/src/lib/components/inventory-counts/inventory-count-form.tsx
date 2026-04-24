@@ -42,6 +42,7 @@ import { selectLoginEmployee } from '@pos/employees/data-access';
 import { dedupeProducts } from '../shared/dedupe-products';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { useAppDispatch } from '@pos/store';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface InventoryFormParams {
     [name: string]: object | undefined;
@@ -133,6 +134,7 @@ export function InventoryCountForm({
     InventoryCountNavigationParamList,
     'Inventory Count Form'
 >) {
+    const t = translateWithFallback;
     const dispatch = useAppDispatch();
     const theme = useTheme();
     const colors = getThemeColors(theme);
@@ -231,7 +233,12 @@ export function InventoryCountForm({
         );
 
         if (missingQuantity) {
-            Alert.alert('Make sure all products have a new count value');
+            Alert.alert(
+                t(
+                    'INVENTORY_CountMissingValue',
+                    'Make sure all products have a new count value'
+                )
+            );
             return;
         }
 
@@ -254,7 +261,7 @@ export function InventoryCountForm({
                 };
             } else {
                 if (!employee) {
-                    Alert.alert('No employee found');
+                    Alert.alert(t('INVENTORY_NoEmployeeFound', 'No employee found'));
                     return;
                 }
 
@@ -286,19 +293,25 @@ export function InventoryCountForm({
     const updateInventory = () => {
         confirm(
             '',
-            'This action will adjust your inventory based on this count. You will no be able to undo this operation',
+            t(
+                'INVENTORY_CountUpdateWarning',
+                'This action will adjust your inventory based on this count. You will no be able to undo this operation'
+            ),
             () => save(true, 'submit'),
         );
     };
 
     const confirmCancel = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t(
+                'COMMON_UndoOperationWarning',
+                'You will not be able to undo this operation'
+            ),
             [
-                { text: 'No' },
+                { text: t('COMMON_No', 'No') },
                 {
-                    text: 'Yes',
+                    text: t('COMMON_Yes', 'Yes'),
                     onPress: () => {
                         dispatch(inventoryCountActions.clearSelection());
                         navigation.goBack();
@@ -515,11 +528,13 @@ export function InventoryCountForm({
                                 </View>
                                 <View style={local.readOnlyCopy}>
                                     <Text style={local.readOnlyTitle}>
-                                        Completed count
+                                        {t('INVENTORY_CompletedCount', 'Completed count')}
                                     </Text>
                                     <Text style={local.readOnlyText}>
-                                        This inventory count is read-only and
-                                        cannot be changed.
+                                        {t(
+                                            'INVENTORY_CountReadOnly',
+                                            'This inventory count is read-only and cannot be changed.'
+                                        )}
                                     </Text>
                                 </View>
                             </View>
@@ -530,12 +545,18 @@ export function InventoryCountForm({
                                 <View style={local.formHeaderRow}>
                                     <View>
                                         <Text style={local.formEyebrow}>
-                                            Inventory count
+                                            {t('INVENTORY_CountEyebrow', 'Inventory count')}
                                         </Text>
                                         <Text style={local.formTitle}>
                                             {countMode === 'quick'
-                                                ? 'Quick count workspace'
-                                                : 'Full count workspace'}
+                                                ? t(
+                                                      'INVENTORY_QuickCountWorkspace',
+                                                      'Quick count workspace'
+                                                  )
+                                                : t(
+                                                      'INVENTORY_FullCountWorkspace',
+                                                      'Full count workspace'
+                                                  )}
                                         </Text>
                                     </View>
                                     <View style={local.formMetricPill}>
@@ -543,7 +564,7 @@ export function InventoryCountForm({
                                             {lineItems.length}
                                         </Text>
                                         <Text style={local.formMetricLabel}>
-                                            Lines
+                                            {t('COMMON_Lines', 'Lines')}
                                         </Text>
                                     </View>
                                 </View>
@@ -558,7 +579,10 @@ export function InventoryCountForm({
                                             ref={ref}
                                             value={filter}
                                             editable={!busy}
-                                            placeholder="Search for products ..."
+                                            placeholder={t(
+                                                'INVENTORY_SearchProducts',
+                                                'Search for products ...'
+                                            )}
                                             debounceTime={700}
                                             onChangeText={setFilter}
                                             onSubmit={searchSubmit}
@@ -573,7 +597,7 @@ export function InventoryCountForm({
                                                         ? 'solid'
                                                         : 'outline'
                                                 }
-                                                title="Quick"
+                                                title={t('INVENTORY_Quick', 'Quick')}
                                                 testID="inventory-count-mode-quick"
                                                 onPress={enableQuickCountMode}
                                                 buttonStyle={local.modeButton}
@@ -586,7 +610,7 @@ export function InventoryCountForm({
                                                             ? 'solid'
                                                             : 'outline'
                                                     }
-                                                    title="Full"
+                                                    title={t('INVENTORY_Full', 'Full')}
                                                     testID="inventory-count-mode-full"
                                                     onPress={
                                                         enableFullCountMode
@@ -601,7 +625,7 @@ export function InventoryCountForm({
                                                 <View style={{ marginLeft: 8 }}>
                                                     <Button
                                                         type="outline"
-                                                        title="Reload"
+                                                        title={t('COMMON_Reload', 'Reload')}
                                                         testID="inventory-count-mode-reload"
                                                         onPress={
                                                             regenerateFullCount
@@ -626,13 +650,22 @@ export function InventoryCountForm({
                                             ]}
                                         >
                                             {countMode === 'quick'
-                                                ? 'Quick: search/scan and add only what you count.'
-                                                : 'Full: preload all active stock-tracked products.'}
+                                                ? t(
+                                                      'INVENTORY_QuickCountHint',
+                                                      'Quick: search/scan and add only what you count.'
+                                                  )
+                                                : t(
+                                                      'INVENTORY_FullCountHint',
+                                                      'Full: preload all active stock-tracked products.'
+                                                  )}
                                         </Text>
                                     )}
                                     <Text style={styles.secondaryText}>
-                                        Count Progress: {countedItems} /{' '}
-                                        {totalItems}
+                                        {t(
+                                            'INVENTORY_CountProgress',
+                                            `Count Progress: ${countedItems} / ${totalItems}`,
+                                            { countedItems, totalItems }
+                                        )}
                                     </Text>
                                     <View style={local.progressTrack}>
                                         <View
@@ -745,7 +778,10 @@ export function InventoryCountForm({
                                 <View style={{ marginLeft: 10 }}>
                                     <Button
                                         color="success"
-                                        title="Update Inventory"
+                                        title={t(
+                                            'INVENTORY_UpdateInventory',
+                                            'Update Inventory'
+                                        )}
                                         testID="inventory-count-update-inventory-button"
                                         onPress={() =>
                                             runAfterInputCommit(updateInventory)

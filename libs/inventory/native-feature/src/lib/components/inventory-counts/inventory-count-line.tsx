@@ -6,6 +6,7 @@ import { Button, useTheme } from '@rneui/themed';
 import { InventoryCountLineDTO } from '@pos/inventory/data-access';
 import { TextInput } from 'react-native-gesture-handler';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface InventoryCountLineProps {
     readOnly: boolean;
@@ -27,6 +28,7 @@ export function InventoryCountLine({
     onUpdate,
     onDelete,
 }: InventoryCountLineProps) {
+    const t = translateWithFallback;
     const theme = useTheme();
     const styles = useSharedStyles();
     const tokens = useDesignTokens();
@@ -43,9 +45,15 @@ export function InventoryCountLine({
 
     const confirmDeletion = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
-            [{ text: 'No' }, { text: 'Yes', onPress: () => onDelete(item) }]
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t(
+                'COMMON_UndoOperationWarning',
+                'You will not be able to undo this operation'
+            ),
+            [
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => onDelete(item) },
+            ]
         );
     };
 
@@ -79,10 +87,16 @@ export function InventoryCountLine({
         <View style={[local.row, readOnly && local.readOnlyRow]}>
             <View style={local.productColumn}>
                 <Text style={local.productName}>{item.productName}</Text>
-                <Text style={local.productMeta}>Current: {item.current.toFixed(2)}</Text>
+                <Text style={local.productMeta}>
+                    {t('INVENTORY_CurrentCount', 'Current: {{count}}', {
+                        count: item.current.toFixed(2),
+                    })}
+                </Text>
             </View>
             <View style={local.quantityColumn}>
-                <Text style={local.inputLabel}>New count</Text>
+                <Text style={local.inputLabel}>
+                    {t('INVENTORY_NewCount', 'New count')}
+                </Text>
                 <TextInput
                     testID={`inventory-count-qty-${productKey}`}
                     value={count}
@@ -91,7 +105,7 @@ export function InventoryCountLine({
                         setCount(text);
                         updateCount(text);
                     }}
-                    placeholder='#'
+                    placeholder={t('COMMON_NumberSign', '#')}
                     style={[
                         styles.input, styles.primaryText,
                         local.input,
@@ -105,11 +119,13 @@ export function InventoryCountLine({
                 />
             </View>
             <View style={local.commentColumn}>
-                <Text style={local.inputLabel}>Comments</Text>
+                <Text style={local.inputLabel}>
+                    {t('COMMON_Comments', 'Comments')}
+                </Text>
                 <TextInput
                     value={comment}
                     onChangeText={setComment}
-                    placeholder='comments ...'
+                    placeholder={t('COMMON_CommentsPlaceholder', 'comments ...')}
                     onBlur={() => updateComment(comment || '')}
                     style={[styles.input, styles.primaryText, local.input]}
                     editable={!readOnly}

@@ -4,6 +4,7 @@ import { Button, Text, useTheme } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FormProvider, useForm } from 'react-hook-form';
 import { UIAlert, UIInput } from '@pos/shared/ui-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { Auth } from '@pos/shared/amplify';
 import { getThemeColors } from '@pos/theme/native';
 import { AuthGlyph } from '../auth-glyph/auth-glyph';
@@ -24,6 +25,7 @@ type ConfirmSignupModel = {
 
 export function ConfirmSignupScreen(props: ConfirmSignupProps) {
     const styles = useStyles();
+    const t = translateWithFallback;
     const { width } = useWindowDimensions();
     const heroOpacity = useRef(new Animated.Value(0)).current;
     const heroTranslateY = useRef(new Animated.Value(18)).current;
@@ -86,9 +88,9 @@ export function ConfirmSignupScreen(props: ConfirmSignupProps) {
                 username: model.email.trim(),
                 confirmationCode: model.confirmationCode.trim(),
             });
-            setMessage('Account confirmed. Sign in to open the workspace.');
+            setMessage(t('CONFIRM_ConfirmedMessage', 'Account confirmed. Sign in to open the workspace.'));
         } catch (e: any) {
-            setError(e?.message || 'Unable to confirm account');
+            setError(e?.message || t('CONFIRM_ConfirmFailed', 'Unable to confirm account'));
         } finally {
             setSubmitting(false);
         }
@@ -96,7 +98,7 @@ export function ConfirmSignupScreen(props: ConfirmSignupProps) {
 
     const onResend = async () => {
         if (!emailValue?.trim()) {
-            setError('Email address is required to resend the code');
+            setError(t('CONFIRM_EmailRequiredForResend', 'Email address is required to resend the code'));
             return;
         }
 
@@ -106,9 +108,9 @@ export function ConfirmSignupScreen(props: ConfirmSignupProps) {
 
         try {
             await Auth.resendSignUpCode(emailValue.trim());
-            setMessage('A new verification code was sent to your email.');
+            setMessage(t('CONFIRM_ResentMessage', 'A new verification code was sent to your email.'));
         } catch (e: any) {
-            setError(e?.message || 'Unable to resend verification code');
+            setError(e?.message || t('CONFIRM_ResendFailed', 'Unable to resend verification code'));
         } finally {
             setResending(false);
         }
@@ -126,19 +128,22 @@ export function ConfirmSignupScreen(props: ConfirmSignupProps) {
                         ]}
                     >
                         <AuthGlyph />
-                        <Text style={styles.eyebrow}>Verify Account</Text>
-                        <Text h2 style={styles.title}>Confirm your owner login</Text>
+                        <Text style={styles.eyebrow}>{t('CONFIRM_HeroEyebrow', 'Verify Account')}</Text>
+                        <Text h2 style={styles.title}>{t('CONFIRM_HeroTitle', 'Confirm your owner login')}</Text>
                         <Text style={styles.subtitle}>
-                            Enter the verification code sent to your email before signing in to initialize the workspace.
+                            {t(
+                                'CONFIRM_HeroSubtitle',
+                                'Enter the verification code sent to your email before signing in to initialize the workspace.'
+                            )}
                         </Text>
                         <View style={styles.heroMetaRow}>
                             <View style={styles.heroMetaCard}>
-                                <Text style={styles.heroMetaLabel}>Step</Text>
-                                <Text style={styles.heroMetaValue}>Email verification</Text>
+                                <Text style={styles.heroMetaLabel}>{t('CONFIRM_HeroStepLabel', 'Step')}</Text>
+                                <Text style={styles.heroMetaValue}>{t('CONFIRM_HeroStepValue', 'Email verification')}</Text>
                             </View>
                             <View style={styles.heroMetaCard}>
-                                <Text style={styles.heroMetaLabel}>Next</Text>
-                                <Text style={styles.heroMetaValue}>Open workspace</Text>
+                                <Text style={styles.heroMetaLabel}>{t('CONFIRM_HeroNextLabel', 'Next')}</Text>
+                                <Text style={styles.heroMetaValue}>{t('CONFIRM_HeroNextValue', 'Open workspace')}</Text>
                             </View>
                         </View>
                     </Animated.View>
@@ -150,45 +155,45 @@ export function ConfirmSignupScreen(props: ConfirmSignupProps) {
                         ]}
                     >
                         <View style={styles.formInner}>
-                            <Text style={styles.formEyebrow}>Verification</Text>
-                            <Text style={styles.formTitle}>Enter verification code</Text>
-                            <Text style={styles.formSubtitle}>Use the code from the Cognito email.</Text>
+                            <Text style={styles.formEyebrow}>{t('CONFIRM_FormEyebrow', 'Verification')}</Text>
+                            <Text style={styles.formTitle}>{t('CONFIRM_FormTitle', 'Enter verification code')}</Text>
+                            <Text style={styles.formSubtitle}>{t('CONFIRM_FormSubtitle', 'Use the code from the Cognito email.')}</Text>
                             {error ? <UIAlert message={error} type="error" /> : null}
                             {message ? <UIAlert message={message} type="success" /> : null}
                             <View style={styles.formSection}>
-                                <Text style={styles.formSectionLabel}>Owner identity</Text>
+                                <Text style={styles.formSectionLabel}>{t('CONFIRM_SectionOwnerIdentity', 'Owner identity')}</Text>
                                 <UIInput
                                     name="email"
                                     autoCapitalize="none"
-                                    placeholder="owner@business.com"
+                                    placeholder={t('CONFIRM_EmailPlaceholder', 'owner@business.com')}
                                     keyboardType="email-address"
                                     textAlign="left"
-                                    rules={{ required: 'Email address is required' }}
+                                    rules={{ required: t('CONFIRM_EmailRequired', 'Email address is required') }}
                                 />
                                 <UIInput
                                     name="confirmationCode"
-                                    placeholder="Verification code"
+                                    placeholder={t('CONFIRM_CodePlaceholder', 'Verification code')}
                                     keyboardType="number-pad"
                                     textAlign="left"
-                                    rules={{ required: 'Verification code is required' }}
+                                    rules={{ required: t('CONFIRM_CodeRequired', 'Verification code is required') }}
                                 />
                             </View>
                             <View style={styles.formActionPanel}>
                                 <Button
-                                    title="Confirm account"
+                                    title={t('CONFIRM_Submit', 'Confirm account')}
                                     buttonStyle={styles.primaryButton}
                                     loading={submitting}
                                     onPress={formMethods.handleSubmit(onSubmit)}
                                 />
                                 <Button
-                                    title="Resend code"
+                                    title={t('CONFIRM_Resend', 'Resend code')}
                                     type="clear"
                                     titleStyle={styles.secondaryAction}
                                     loading={resending}
                                     onPress={onResend}
                                 />
                                 <Button
-                                    title="Back to sign in"
+                                    title={t('CONFIRM_BackToSignIn', 'Back to sign in')}
                                     type="clear"
                                     titleStyle={styles.secondaryAction}
                                     onPress={() =>

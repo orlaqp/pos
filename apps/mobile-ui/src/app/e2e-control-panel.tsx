@@ -28,6 +28,7 @@ import {
     markE2EResetComplete,
     setE2ESeedStatus,
     subscribeToE2EState,
+    translateWithFallback,
 } from '@pos/shared/utils';
 import { DataStore } from '@pos/shared/amplify';
 import { configureDataStore } from '@pos/shared/data-store';
@@ -38,6 +39,7 @@ const panelEnabled = () =>
     typeof __DEV__ !== 'undefined' && __DEV__ && isNativeE2ERequested();
 
 export function E2EControlPanel() {
+    const t = translateWithFallback;
     const dispatch = useAppDispatch();
     const user = useSelector((state: RootState) => state.auth.user);
     const [e2eState, setLocalE2EState] = useState(getE2EState());
@@ -226,7 +228,7 @@ export function E2EControlPanel() {
                     onPress={runReset}
                     style={styles.hitArea}
                 >
-                    <Text style={styles.actionLabel}>Reset E2E</Text>
+                    <Text style={styles.actionLabel}>{t('E2E_Reset', 'Reset E2E')}</Text>
                 </Pressable>
                 <Pressable
                     testID="e2e-cleanup-data"
@@ -234,7 +236,9 @@ export function E2EControlPanel() {
                     onPress={runCleanup}
                     style={styles.hitArea}
                 >
-                    <Text style={styles.actionLabel}>Cleanup E2E</Text>
+                    <Text style={styles.actionLabel}>
+                        {t('E2E_Cleanup', 'Cleanup E2E')}
+                    </Text>
                 </Pressable>
                 <Pressable
                     testID="e2e-reset-local-sync"
@@ -242,7 +246,9 @@ export function E2EControlPanel() {
                     onPress={runResetLocalSync}
                     style={styles.debugHitArea}
                 >
-                    <Text style={styles.debugLabel}>Reset Sync</Text>
+                    <Text style={styles.debugLabel}>
+                        {t('E2E_ResetSync', 'Reset Sync')}
+                    </Text>
                 </Pressable>
                 <Text testID="e2e-seed-status" style={styles.hiddenLabel}>
                     {e2eState.seedStatus}

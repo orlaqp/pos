@@ -81,7 +81,9 @@ export function OrderVoidForm({ order, onRefundComplete }: OrderItemProps) {
     const refundedItemList = groupedLines.refundedItems;
     const paymentSummary = (order.paymentInfo?.payments || []).reduce(
         (acc: Record<string, number>, payment) => {
-            const type = String(payment.type || 'Unknown');
+            const type = String(
+                payment.type || t('COMMON_Unknown', 'Unknown'),
+            );
             acc[type] = (acc[type] || 0) + Number(payment.amount || 0);
             return acc;
         },

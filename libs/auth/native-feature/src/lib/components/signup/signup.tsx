@@ -7,6 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Auth } from '@pos/shared/amplify';
 import { useForm, FormProvider } from 'react-hook-form';
 import { UiActionMessage, UIAlert, UIInput } from '@pos/shared/ui-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { getThemeColors } from '@pos/theme/native';
 import { AuthGlyph } from '../auth-glyph/auth-glyph';
 export interface SignupProps {
@@ -23,6 +24,7 @@ type SignUpModel = {
 
 export function SignUpScreen(props: SignupProps) {
   const styles = useStyles();
+  const t = translateWithFallback;
   const { width } = useWindowDimensions();
   const heroOpacity = useRef(new Animated.Value(0)).current;
   const heroTranslateY = useRef(new Animated.Value(18)).current;
@@ -47,7 +49,7 @@ export function SignUpScreen(props: SignupProps) {
 
     if (model.password !== model.confirmPassword) {
       setSuccess(false);
-      setError('Passwords do not match');
+      setError(t('SIGNUP_PasswordMismatch', 'Passwords do not match'));
       return;
     }
 
@@ -68,7 +70,7 @@ export function SignUpScreen(props: SignupProps) {
     } catch (e: any) {
       console.error(e?.message || e);
       setSuccess(false);
-      setError(e?.message || 'Unable to create account');
+      setError(e?.message || t('SIGNUP_CreateFailed', 'Unable to create account'));
     }
   }
 
@@ -116,33 +118,36 @@ export function SignUpScreen(props: SignupProps) {
             ]}
           >
             <AuthGlyph />
-            <Text style={styles.eyebrow}>Create Business</Text>
-            <Text h3 style={styles.title}>Launch a new workspace</Text>
+            <Text style={styles.eyebrow}>{t('SIGNUP_HeroEyebrow', 'Create Business')}</Text>
+            <Text h3 style={styles.title}>{t('SIGNUP_HeroTitle', 'Launch a new workspace')}</Text>
             <Text style={styles.subtitle}>
-              This creates the owner account and the shared business workspace used across your POS devices.
+              {t(
+                'SIGNUP_HeroSubtitle',
+                'This creates the owner account and the shared business workspace used across your POS devices.'
+              )}
             </Text>
             <View style={styles.heroMetaRow}>
               <View style={styles.heroMetaCard}>
-                <Text style={styles.heroMetaLabel}>Outcome</Text>
-                <Text style={styles.heroMetaValue}>Owner account</Text>
+                <Text style={styles.heroMetaLabel}>{t('SIGNUP_HeroOutcomeLabel', 'Outcome')}</Text>
+                <Text style={styles.heroMetaValue}>{t('SIGNUP_HeroOutcomeValue', 'Owner account')}</Text>
               </View>
               <View style={styles.heroMetaCard}>
-                <Text style={styles.heroMetaLabel}>Workspace</Text>
-                <Text style={styles.heroMetaValue}>Shared POS tenant</Text>
+                <Text style={styles.heroMetaLabel}>{t('SIGNUP_HeroWorkspaceLabel', 'Workspace')}</Text>
+                <Text style={styles.heroMetaValue}>{t('SIGNUP_HeroWorkspaceValue', 'Shared POS tenant')}</Text>
               </View>
             </View>
             <View style={styles.heroNotes}>
               <View style={styles.heroNoteRow}>
                 <View style={styles.heroNoteBullet} />
-                <Text style={styles.heroNote}>Business name becomes the identity for this tenant.</Text>
+                <Text style={styles.heroNote}>{t('SIGNUP_HeroNoteBusiness', 'Business name becomes the identity for this tenant.')}</Text>
               </View>
               <View style={styles.heroNoteRow}>
                 <View style={styles.heroNoteBullet} />
-                <Text style={styles.heroNote}>Owner login restores the admin session when the app is reopened.</Text>
+                <Text style={styles.heroNote}>{t('SIGNUP_HeroNoteRestore', 'Owner login restores the admin session when the app is reopened.')}</Text>
               </View>
               <View style={styles.heroNoteRow}>
                 <View style={styles.heroNoteBullet} />
-                <Text style={styles.heroNote}>Staff still unlock daily use with their employee PIN.</Text>
+                <Text style={styles.heroNote}>{t('SIGNUP_HeroNotePin', 'Staff still unlock daily use with their employee PIN.')}</Text>
               </View>
             </View>
           </Animated.View>
@@ -154,16 +159,22 @@ export function SignUpScreen(props: SignupProps) {
             ]}
           >
             <View style={styles.formInner}>
-              <Text style={styles.formEyebrow}>Owner Setup</Text>
-              <Text style={styles.formTitle}>Create workspace</Text>
+              <Text style={styles.formEyebrow}>{t('SIGNUP_FormEyebrow', 'Owner Setup')}</Text>
+              <Text style={styles.formTitle}>{t('SIGNUP_FormTitle', 'Create workspace')}</Text>
               <Text style={styles.formSubtitle}>
-                Enter the owner and business details used to initialize the workspace.
+                {t(
+                  'SIGNUP_FormSubtitle',
+                  'Enter the owner and business details used to initialize the workspace.'
+                )}
               </Text>
               {error ? <UIAlert message={error} type="error" /> : null}
               {success ? (
                 <UiActionMessage
-                  message="Account created. Enter the verification code from your email to confirm the owner login."
-                  actionTitle="Verify account"
+                  message={t(
+                    'SIGNUP_SuccessMessage',
+                    'Account created. Enter the verification code from your email to confirm the owner login.'
+                  )}
+                  actionTitle={t('SIGNUP_VerifyAction', 'Verify account')}
                   action={() =>
                     props.navigation.navigate('ConfirmSignup', {
                       email: formMethods.getValues('email').trim(),
@@ -173,52 +184,52 @@ export function SignUpScreen(props: SignupProps) {
               ) : (
                 <>
                   <View style={styles.section}>
-                    <Text style={styles.sectionLabel}>Account</Text>
+                    <Text style={styles.sectionLabel}>{t('SIGNUP_SectionAccount', 'Account')}</Text>
                     <UIInput
                       name="businessName"
-                      placeholder="Business name"
+                      placeholder={t('SIGNUP_BusinessNamePlaceholder', 'Business name')}
                       style={styles.inputControl}
-                      rules={{ required: 'Business name is required' }}
+                      rules={{ required: t('SIGNUP_BusinessNameRequired', 'Business name is required') }}
                     />
                     <UIInput
                       name="name"
-                      placeholder="Owner name"
+                      placeholder={t('SIGNUP_OwnerNamePlaceholder', 'Owner name')}
                       style={styles.inputControl}
-                      rules={{ required: 'Owner name is required' }}
+                      rules={{ required: t('SIGNUP_OwnerNameRequired', 'Owner name is required') }}
                     />
                     <UIInput
                       name="email"
-                      placeholder="Email address"
+                      placeholder={t('SIGNUP_EmailPlaceholder', 'Email address')}
                       style={styles.inputControl}
                       autoCapitalize="none"
-                      rules={{ required: 'Email is required' }}
+                      rules={{ required: t('SIGNUP_EmailRequired', 'Email is required') }}
                     />
                   </View>
                   <View style={styles.section}>
-                    <Text style={styles.sectionLabel}>Security</Text>
+                    <Text style={styles.sectionLabel}>{t('SIGNUP_SectionSecurity', 'Security')}</Text>
                     <UIInput
                       name="password"
-                      placeholder="Password"
+                      placeholder={t('SIGNUP_PasswordPlaceholder', 'Password')}
                       style={styles.inputControl}
                       secureTextEntry={true}
-                      rules={{ required: 'Password is required', minLength: { value: 8, message: 'Password must be at least 8 characters' } }}
+                      rules={{ required: t('SIGNUP_PasswordRequired', 'Password is required'), minLength: { value: 8, message: t('SIGNUP_PasswordMinLength', 'Password must be at least 8 characters') } }}
                     />
                     <UIInput
                       name="confirmPassword"
-                      placeholder="Confirm password"
+                      placeholder={t('SIGNUP_ConfirmPasswordPlaceholder', 'Confirm password')}
                       style={styles.inputControl}
                       secureTextEntry={true}
-                      rules={{ required: 'Please confirm the password' }}
+                      rules={{ required: t('SIGNUP_ConfirmPasswordRequired', 'Please confirm the password') }}
                     />
                   </View>
                   <Button
-                    title="Create workspace"
+                    title={t('SIGNUP_Submit', 'Create workspace')}
                     containerStyle={styles.primaryButtonContainer}
                     buttonStyle={styles.primaryButton}
                     onPress={formMethods.handleSubmit(onSubmit)}
                   />
                   <Button
-                    title="Back to sign in"
+                    title={t('SIGNUP_BackToSignIn', 'Back to sign in')}
                     type="clear"
                     titleStyle={styles.secondaryButtonText}
                     onPress={() => props.navigation.navigate('Login')}

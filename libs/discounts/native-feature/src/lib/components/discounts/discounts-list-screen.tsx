@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from '@rneui/themed';
+import { translateWithFallback } from '@pos/shared/utils';
 import { UICard, UIEmptyState, UIScreen } from '@pos/shared/ui-native';
 import {
   DiscountDefinitionEntity,
@@ -46,11 +47,13 @@ export function DiscountsListScreen({
   onDeleteDefinition,
   onDeletePolicy,
 }: DiscountsListScreenProps) {
+  const t = translateWithFallback;
+
   if (config.type === 'static') {
     return (
       <View style={styles.page}>
         <View style={styles.card}>
-          <Text style={styles.eyebrow}>{keyLabel.toUpperCase()}</Text>
+          <Text style={styles.eyebrow}>{config.title.toUpperCase()}</Text>
           <Text style={styles.title}>{config.title}</Text>
           <Text style={styles.description}>{config.description}</Text>
         </View>
@@ -68,7 +71,9 @@ export function DiscountsListScreen({
             <UICard tone="muted" radius="lg" style={styles.headerCard}>
                 <View style={styles.headerRow}>
                 <View style={styles.headerCopy}>
-                  <Text style={styles.headerEyebrow}>Discounts</Text>
+                  <Text style={styles.headerEyebrow}>
+                    {t('DISCOUNT_HeaderEyebrow', 'Discounts')}
+                  </Text>
                   <Text style={styles.headerTitle}>{config.title}</Text>
                   <Text style={styles.headerSubtitle}>{config.description}</Text>
                 </View>
@@ -88,7 +93,15 @@ export function DiscountsListScreen({
             {empty ? (
               <UICard style={styles.emptyCard}>
                 <UIEmptyState
-                  title={loading ? 'Loading…' : `No ${keyLabel.toLowerCase()} yet`}
+                  title={
+                    loading
+                      ? t('COMMON_Loading', 'Loading...')
+                      : t(
+                          'DISCOUNT_EmptyStateTitle',
+                          `No ${config.title.toLowerCase()} yet`,
+                          { key: config.title.toLowerCase() }
+                        )
+                  }
                   subtitle={config.description}
                   actions={
                     config.actionLabel
@@ -123,7 +136,11 @@ export function DiscountsListScreen({
                         >
                           <View style={styles.listCopy}>
                             <Text style={styles.listTitle}>
-                              {'name' in item ? item.name : item.roleKey || item.employeeId || 'Policy'}
+                              {'name' in item
+                                ? item.name
+                                : item.roleKey ||
+                                  item.employeeId ||
+                                  t('DISCOUNT_PolicyFallback', 'Policy')}
                             </Text>
                             <View style={styles.metaChipRow}>
                               {'type' in item ? (
@@ -138,7 +155,12 @@ export function DiscountsListScreen({
                               ) : (
                                 <View style={styles.metaChip}>
                                   <Text style={styles.metaChipText}>
-                                    {item.employeeId ? 'Employee override' : 'Role policy'}
+                                    {item.employeeId
+                                      ? t(
+                                          'DISCOUNT_EmployeeOverride',
+                                          'Employee override'
+                                        )
+                                      : t('DISCOUNT_RolePolicy', 'Role policy')}
                                   </Text>
                                 </View>
                               )}
@@ -151,7 +173,9 @@ export function DiscountsListScreen({
                         <View style={styles.listAside}>
                           {'active' in item && !item.active ? (
                             <View style={styles.inactivePill}>
-                              <Text style={styles.inactivePillText}>Inactive</Text>
+                              <Text style={styles.inactivePillText}>
+                                {t('COMMON_Inactive', 'Inactive')}
+                              </Text>
                             </View>
                           ) : null}
                           <View style={styles.listActionRow}>
@@ -162,7 +186,9 @@ export function DiscountsListScreen({
                                 config.createRoute ? onNavigate(config.createRoute, navigateParams) : undefined
                               }
                             >
-                              <Text style={styles.editHint}>Edit</Text>
+                              <Text style={styles.editHint}>
+                                {t('COMMON_Edit', 'Edit')}
+                              </Text>
                             </Pressable>
                             <Pressable
                               testID={`discounts-list-delete-${id}`}
@@ -173,7 +199,9 @@ export function DiscountsListScreen({
                                   : onDeletePolicy(item)
                               }
                             >
-                              <Text style={styles.listDeleteText}>Delete</Text>
+                              <Text style={styles.listDeleteText}>
+                                {t('COMMON_Delete', 'Delete')}
+                              </Text>
                             </Pressable>
                           </View>
                         </View>
