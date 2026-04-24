@@ -89,6 +89,7 @@ describe('inventoryReceiveSlice chronology', () => {
             expect.objectContaining({
                 id: 'line-1',
                 productId: 'p-1',
+                current: 5,
                 received: 2,
             }),
         ]);

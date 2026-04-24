@@ -2004,6 +2004,7 @@ export const createInventoryReceiveLine = /* GraphQL */ `mutation CreateInventor
     productId
     productName
     unitOfMeasure
+    current
     received
     comments
     InventoryReceive {
@@ -2045,6 +2046,7 @@ export const updateInventoryReceiveLine = /* GraphQL */ `mutation UpdateInventor
     productId
     productName
     unitOfMeasure
+    current
     received
     comments
     InventoryReceive {
@@ -2086,6 +2088,7 @@ export const deleteInventoryReceiveLine = /* GraphQL */ `mutation DeleteInventor
     productId
     productName
     unitOfMeasure
+    current
     received
     comments
     InventoryReceive {

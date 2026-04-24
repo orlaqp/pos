@@ -1,4 +1,5 @@
 import { ProductEntity } from '@pos/products/data-access';
+import { EACH } from '@pos/unit-of-measures/data-access';
 import {
     UIEmptyState,
     UIS3Image,
@@ -79,6 +80,7 @@ export function ProductSelection({
         'Out of stock'
     );
     const stockLabelLeft = translateWithFallback('SALES_ProductCardLeft', 'left');
+    const onHandLabel = translateWithFallback('INVENTORY_OnHand', 'On hand');
     const priceCaption = translateWithFallback('SALES_ProductCardPrice', 'Price');
     const productMetaWithPhoto = translateWithFallback(
         'SALES_ProductCardPhotoReady',
@@ -299,6 +301,10 @@ export function ProductSelection({
                                     outOfStock: stockLabelOutOfStock,
                                     leftSuffix: stockLabelLeft,
                                 });
+                                const explicitStockQuantity =
+                                    String(p.unitOfMeasure || '').toLowerCase() === EACH
+                                        ? `${Number(p.quantity || 0)}`
+                                        : Number(p.quantity || 0).toFixed(2);
                                 const initial = (p.name || '?').trim().charAt(0).toUpperCase() || '?';
 
                                 return (
@@ -412,6 +418,15 @@ export function ProductSelection({
                                                 numberOfLines={1}
                                             >
                                                 {p.picture ? productMetaWithPhoto : productMetaCatalogItem}
+                                            </Text>
+                                            <Text
+                                                style={[
+                                                    localStyles.inventoryText,
+                                                    outOfStock ? localStyles.outOfStockText : null,
+                                                ]}
+                                                numberOfLines={1}
+                                            >
+                                                {`${onHandLabel}: ${explicitStockQuantity}`}
                                             </Text>
                                         </View>
                                         <View style={localStyles.priceWrap}>
@@ -563,6 +578,12 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontWeight: '700',
             textTransform: 'uppercase',
             letterSpacing: 0.8,
+        },
+        inventoryText: {
+            color: tokens.colors.textSecondary,
+            fontSize: 12,
+            fontWeight: '700',
+            marginTop: 6,
         },
         stockBadge: {
             borderRadius: tokens.radii.xl,

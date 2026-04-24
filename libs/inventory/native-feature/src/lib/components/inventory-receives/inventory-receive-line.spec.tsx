@@ -51,6 +51,7 @@ describe('InventoryReceiveLine', () => {
                     productId: 'p-1',
                     productName: 'Aceitunas Jumbo',
                     unitOfMeasure: 'EA',
+                    current: 12,
                     received: 0,
                     comments: '',
                     inventoryReceiveLineInventoryReceiveId: 'recv-1',
@@ -68,5 +69,30 @@ describe('InventoryReceiveLine', () => {
         expect(onUpdate).toHaveBeenLastCalledWith(
             expect.objectContaining({ productId: 'p-1', received: 4 })
         );
+    });
+
+    it('shows before, received, and after values in read-only mode', () => {
+        const { getByText } = render(
+            <InventoryReceiveLine
+                readOnly={true}
+                item={{
+                    productId: 'p-1',
+                    productName: 'Aceitunas Jumbo',
+                    unitOfMeasure: 'EA',
+                    current: 12,
+                    received: 4,
+                    comments: '',
+                    inventoryReceiveLineInventoryReceiveId: 'recv-1',
+                }}
+                onUpdate={jest.fn()}
+                onDelete={jest.fn()}
+            />
+        );
+
+        expect(getByText('Before: 12 • After: 16')).toBeTruthy();
+        expect(getByText('Received')).toBeTruthy();
+        expect(getByText('After')).toBeTruthy();
+        expect(getByText('4')).toBeTruthy();
+        expect(getByText('16')).toBeTruthy();
     });
 });

@@ -37,6 +37,12 @@ jest.mock('@pos/auth/data-access', () => ({
 }));
 
 jest.mock('@pos/shared/models', () => {
+    class Product {
+        constructor(input: any) {
+            Object.assign(this, input);
+        }
+    }
+
     class InventoryCount {
         constructor(input: any) {
             Object.assign(this, input);
@@ -62,6 +68,7 @@ jest.mock('@pos/shared/models', () => {
     }
 
     return {
+        Product,
         InventoryCount,
         InventoryCountLine,
     };
@@ -76,15 +83,22 @@ describe('InventoryCountService', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        mockedQuery.mockImplementation(async (model: any, arg: any) => {
+            if (model?.name === 'Product') {
+                return { id: arg, quantity: 27 };
+            }
+            if (model?.name === 'InventoryCount' && typeof arg === 'string') {
+                return {
+                    id: 'count-1',
+                    status: 'IN_PROGRESS',
+                    comments: 'cycle count',
+                };
+            }
+            return [];
+        });
     });
 
     it('finalizes counts through the backend lifecycle query and applies exact quantities locally', async () => {
-        mockedQuery.mockResolvedValueOnce({
-            id: 'count-1',
-            status: 'IN_PROGRESS',
-            comments: 'cycle count',
-        });
-        mockedQuery.mockResolvedValueOnce([]);
         mockedSave.mockImplementation(async (value) => value);
         mockedGraphql.mockResolvedValue({
             data: {
@@ -141,7 +155,7 @@ describe('InventoryCountService', () => {
                             expect.objectContaining({
                                 id: 'line-1',
                                 productId: 'p-1',
-                                current: 25,
+                                current: 27,
                                 newCount: 30,
                             }),
                         ],
@@ -164,6 +178,13 @@ describe('InventoryCountService', () => {
                 id: 'count-1',
                 status: 'COMPLETED',
                 comments: 'cycle count',
+            })
+        );
+        expect(mockedSave).toHaveBeenCalledWith(
+            expect.objectContaining({
+                productId: 'p-1',
+                current: 27,
+                newCount: 30,
             })
         );
     });
@@ -201,9 +222,15 @@ describe('InventoryCountService', () => {
     });
 
     it('creates a local completed count when finalizing a brand-new count', async () => {
-        mockedQuery
-            .mockResolvedValueOnce(undefined)
-            .mockResolvedValueOnce([]);
+        mockedQuery.mockImplementation(async (model: any, arg: any) => {
+            if (model?.name === 'Product') {
+                return { id: arg, quantity: 19 };
+            }
+            if (model?.name === 'InventoryCount') {
+                return undefined;
+            }
+            return [];
+        });
         mockedSave.mockImplementation(async (value) => ({
             ...value,
             id: value.id || 'count-2',
@@ -258,6 +285,13 @@ describe('InventoryCountService', () => {
         expect(dispatch).toHaveBeenCalledWith(
             expect.objectContaining({
                 type: expect.stringContaining('/add'),
+            })
+        );
+        expect(mockedSave).toHaveBeenCalledWith(
+            expect.objectContaining({
+                productId: 'p-1',
+                current: 19,
+                newCount: 30,
             })
         );
     });

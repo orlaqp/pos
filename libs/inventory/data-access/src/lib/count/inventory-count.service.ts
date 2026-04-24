@@ -1,4 +1,4 @@
-import { InventoryCount, InventoryCountLine } from '@pos/shared/models';
+import { InventoryCount, InventoryCountLine, Product } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { API, DataStore } from '@pos/shared/amplify';
 import { inventoryCountActions } from './inventory-count.slice';
@@ -96,6 +96,20 @@ const normalizeCountLines = (lines: InventoryCountLineDTO[]) =>
             comments: line.comments,
         }));
 
+const resolveLiveProductQuantities = async (
+    productIds: string[]
+): Promise<Record<string, number>> => {
+    const uniqueIds = Array.from(new Set(productIds.filter(Boolean)));
+    const entries = await Promise.all(
+        uniqueIds.map(async (productId) => {
+            const product = await DataStore.query(Product, productId);
+            return [productId, Number(product?.quantity || 0)] as const;
+        })
+    );
+
+    return Object.fromEntries(entries);
+};
+
 const syncFinalizedProducts = (
     dispatch: Dispatch<any>,
     affectedProducts: Array<{ productId?: string | null; finalQuantity?: number | null }>
@@ -116,6 +130,14 @@ const finalizeCount = async (
     dispatch: Dispatch<any>,
     count: InventoryCountDTO
 ) => {
+    const liveQuantities = await resolveLiveProductQuantities(
+        count.lines.map((line) => line.productId)
+    );
+    const finalizedLines = count.lines.map((line) => ({
+        ...line,
+        current: liveQuantities[line.productId] ?? Number(line.current || 0),
+    }));
+
     const result = await API.graphql({
         query: finalizeInventoryCountQuery,
         variables: {
@@ -127,7 +149,7 @@ const finalizeCount = async (
                     id: count.createdBy?.id || '',
                     name: count.createdBy?.name || '',
                 },
-                lines: normalizeCountLines(count.lines),
+                lines: normalizeCountLines(finalizedLines),
             },
         },
         authMode: 'userPool',
@@ -158,6 +180,7 @@ const finalizeCount = async (
         ...count,
         id: finalized.sourceId,
         status: 'COMPLETED',
+        lines: finalizedLines,
     };
 
     dispatch(
@@ -169,7 +192,7 @@ const finalizeCount = async (
             : inventoryCountActions.add(finalizedCount)
     );
 
-    await reconcileFinalizedCountRecord(count, finalized.sourceId);
+    await reconcileFinalizedCountRecord(finalizedCount, finalized.sourceId);
     syncFinalizedProducts(dispatch, finalized.affectedProducts || []);
     return true;
 };

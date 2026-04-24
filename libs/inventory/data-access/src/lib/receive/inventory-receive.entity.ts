@@ -48,6 +48,7 @@ export class InventoryReceiveMapper {
             productId: x.productId,
             productName: x.productName,
             unitOfMeasure: x.unitOfMeasure,
+            current: Number((x as { current?: number | null }).current || 0),
             received: x.received,
             comments: x.comments,
             createdAt: x.createdAt,
@@ -65,5 +66,4 @@ export class InventoryReceiveMapper {
         }));
     }
 }
-
 

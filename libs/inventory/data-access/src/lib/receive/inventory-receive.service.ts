@@ -1,4 +1,4 @@
-import { InventoryReceive, InventoryReceiveLine } from '@pos/shared/models';
+import { InventoryReceive, InventoryReceiveLine, Product } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { API, DataStore } from '@pos/shared/amplify';
 import { inventoryReceiveActions } from './inventory-receive.slice';
@@ -108,6 +108,20 @@ const normalizeReceiveLines = (lines: InventoryReceiveLineDTO[]) =>
             comments: line.comments,
         }));
 
+const resolveLiveProductQuantities = async (
+    productIds: string[]
+): Promise<Record<string, number>> => {
+    const uniqueIds = Array.from(new Set(productIds.filter(Boolean)));
+    const entries = await Promise.all(
+        uniqueIds.map(async (productId) => {
+            const product = await DataStore.query(Product, productId);
+            return [productId, Number(product?.quantity || 0)] as const;
+        })
+    );
+
+    return Object.fromEntries(entries);
+};
+
 const syncFinalizedProducts = (
     dispatch: Dispatch<any>,
     affectedProducts: Array<{ productId?: string | null; finalQuantity?: number | null }>
@@ -128,6 +142,9 @@ const finalizeReceive = async (
     dispatch: Dispatch<any>,
     receive: InventoryReceiveDTO
 ) => {
+    const liveQuantities = await resolveLiveProductQuantities(
+        receive.lines.map((line) => line.productId)
+    );
     const result = await API.graphql({
         query: finalizeInventoryReceiveQuery,
         variables: {
@@ -166,10 +183,16 @@ const finalizeReceive = async (
         throw new Error('Inventory receive finalization did not return a source id.');
     }
 
+    const finalizedLines = receive.lines.map((line) => ({
+        ...line,
+        current: liveQuantities[line.productId] ?? Number(line.current || 0),
+    }));
+
     const finalizedReceive: InventoryReceiveDTO = {
         ...receive,
         id: finalized.sourceId,
         status: 'COMPLETED',
+        lines: finalizedLines,
     };
 
     dispatch(
@@ -181,7 +204,7 @@ const finalizeReceive = async (
             : inventoryReceiveActions.add(finalizedReceive)
     );
 
-    await reconcileFinalizedReceiveRecord(receive, finalized.sourceId);
+    await reconcileFinalizedReceiveRecord(finalizedReceive, finalized.sourceId);
     syncFinalizedProducts(dispatch, finalized.affectedProducts || []);
     return true;
 };
@@ -236,6 +259,7 @@ const reconcileFinalizedReceiveRecord = async (
                     updated.productId = line.productId;
                     updated.productName = line.productName;
                     updated.unitOfMeasure = line.unitOfMeasure;
+                    updated.current = Number(line.current || 0);
                     updated.received = line.received;
                     updated.comments = line.comments;
                 })
@@ -250,6 +274,7 @@ const reconcileFinalizedReceiveRecord = async (
                 productId: line.productId,
                 productName: line.productName,
                 unitOfMeasure: line.unitOfMeasure,
+                current: Number(line.current || 0),
                 received: line.received,
                 comments: line.comments,
                 inventoryReceiveLineInventoryReceiveId: savedReceive.id,
@@ -331,15 +356,16 @@ async function createReceive(count: InventoryReceiveDTO, dispatch: Dispatch<any>
     const promises = lines.map((l) => {
         l.inventoryReceiveLineInventoryReceiveId = res.id;
         return DataStore.save(
-            new InventoryReceiveLine({
-                tenantId: requireCurrentTenantId(),
-                productId: l.productId,
-                productName: l.productName,
-                unitOfMeasure: l.unitOfMeasure,
-                received: l.received,
-                comments: l.comments,
-                inventoryReceiveLineInventoryReceiveId: res.id,
-            } as never)
+                new InventoryReceiveLine({
+                    tenantId: requireCurrentTenantId(),
+                    productId: l.productId,
+                    productName: l.productName,
+                    unitOfMeasure: l.unitOfMeasure,
+                    current: Number(l.current || 0),
+                    received: l.received,
+                    comments: l.comments,
+                    inventoryReceiveLineInventoryReceiveId: res.id,
+                } as never)
         );
     });
 
@@ -371,6 +397,7 @@ async function updateReceive(receive: InventoryReceiveDTO, dispatch: Dispatch<an
                     productId: l.productId,
                     productName: l.productName,
                     unitOfMeasure: l.unitOfMeasure,
+                    current: Number(l.current || 0),
                     received: l.received,
                     comments: l.comments,
                     inventoryReceiveLineInventoryReceiveId: existing.id,
@@ -390,6 +417,7 @@ async function updateReceive(receive: InventoryReceiveDTO, dispatch: Dispatch<an
 
         await DataStore.save(
             InventoryReceiveLine.copyOf(line[0], (updated) => {
+                updated.current = Number(l.current || 0);
                 updated.received = l.received;
                 updated.comments = l.comments;
             })

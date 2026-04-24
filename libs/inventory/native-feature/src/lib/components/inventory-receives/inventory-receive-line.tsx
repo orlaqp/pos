@@ -41,6 +41,14 @@ export function InventoryReceiveLine({
     const productKey = toTestKey(item.productName);
     
     const originalReceived = item.received;
+    const beforeQuantity = Number(item.current || 0);
+    const receivedQuantity = Number(item.received || 0);
+    const afterQuantity = beforeQuantity + receivedQuantity;
+    const beforeLabel = t('INVENTORY_Before', 'Before');
+    const afterLabel = t('INVENTORY_After', 'After');
+
+    const formatQuantity = (value: number) =>
+        Number.isInteger(value) ? `${value}` : value.toFixed(2);
 
     const confirmDeletion = () => {
         Alert.alert(
@@ -73,49 +81,67 @@ export function InventoryReceiveLine({
             <View style={local.productColumn}>
                 <Text style={local.productName}>{item.productName}</Text>
                 <Text style={local.productMeta}>
-                    {t('INVENTORY_ReceivingQuantity', 'Receiving quantity')}
+                    {readOnly
+                        ? `${beforeLabel}: ${formatQuantity(beforeQuantity)} • ${afterLabel}: ${formatQuantity(afterQuantity)}`
+                        : t('INVENTORY_ReceivingQuantity', 'Receiving quantity')}
                 </Text>
             </View>
             <View style={local.quantityColumn}>
                 <Text style={local.inputLabel}>
-                    {t('INVENTORY_Received', 'Received')}
+                    {readOnly
+                        ? t('INVENTORY_Received', 'Received')
+                        : t('INVENTORY_Received', 'Received')}
                 </Text>
-                <TextInput
-                    testID={`inventory-receive-qty-${productKey}`}
-                    value={received}
-                    onChangeText={(value) => {
-                        receivedRef.current = value;
-                        setReceived(value);
-                        if (!value) return;
+                {readOnly ? (
+                    <Text style={local.readOnlyValue}>
+                        {formatQuantity(receivedQuantity)}
+                    </Text>
+                ) : (
+                    <TextInput
+                        testID={`inventory-receive-qty-${productKey}`}
+                        value={received}
+                        onChangeText={(value) => {
+                            receivedRef.current = value;
+                            setReceived(value);
+                            if (!value) return;
 
-                        const parsed = +value;
-                        if (Number.isNaN(parsed)) return;
-                        onUpdate({ ...item, received: parsed });
-                    }}
-                    style={[
-                        styles.input, styles.primaryText,
-                        local.input,
-                    ]}
-                    onFocus={() => {
-                        receivedRef.current = '';
-                        setReceived('');
-                        onUpdate({ ...item, received: 0 });
-                    }}
-                    onBlur={() => updateReceived(receivedRef.current)}
-                    editable={!readOnly}
-                />
+                            const parsed = +value;
+                            if (Number.isNaN(parsed)) return;
+                            onUpdate({ ...item, received: parsed });
+                        }}
+                        style={[
+                            styles.input, styles.primaryText,
+                            local.input,
+                        ]}
+                        onFocus={() => {
+                            receivedRef.current = '';
+                            setReceived('');
+                            onUpdate({ ...item, received: 0 });
+                        }}
+                        onBlur={() => updateReceived(receivedRef.current)}
+                        editable={!readOnly}
+                    />
+                )}
             </View>
             <View style={local.commentColumn}>
                 <Text style={local.inputLabel}>
-                    {t('COMMON_Comments', 'Comments')}
+                    {readOnly
+                        ? t('INVENTORY_After', 'After')
+                        : t('COMMON_Comments', 'Comments')}
                 </Text>
-                <TextInput
-                    value={comment}
-                    onChangeText={setComment}
-                    onBlur={() => updateComment(comment || '')}
-                    style={[styles.input, styles.primaryText, local.input]}
-                    editable={!readOnly}
-                />
+                {readOnly ? (
+                    <Text style={local.readOnlyValue}>
+                        {formatQuantity(afterQuantity)}
+                    </Text>
+                ) : (
+                    <TextInput
+                        value={comment}
+                        onChangeText={setComment}
+                        onBlur={() => updateComment(comment || '')}
+                        style={[styles.input, styles.primaryText, local.input]}
+                        editable={!readOnly}
+                    />
+                )}
             </View>
             { !readOnly &&
             <View style={local.actionsColumn}>
@@ -188,6 +214,13 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             borderWidth: 1,
             marginRight: 0,
             paddingHorizontal: tokens.spacing.sm,
+        },
+        readOnlyValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 15,
+            fontWeight: '800',
+            minHeight: 28,
+            paddingVertical: 6,
         },
         actionsColumn: {
             flex: 0.8,

@@ -330,6 +330,14 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         mediumDialog: {
             width: 560,
+            maxWidth: '94%',
+            maxHeight: 680,
+        },
+        manualDiscountDialogScroll: {
+            maxHeight: 560,
+        },
+        manualDiscountDialogScrollContent: {
+            paddingBottom: tokens.spacing.sm,
         },
         dialogHeroCard: {
             borderRadius: 24,

@@ -2219,6 +2219,7 @@ export const getInventoryReceiveLine = /* GraphQL */ `query GetInventoryReceiveL
     productId
     productName
     unitOfMeasure
+    current
     received
     comments
     InventoryReceive {
@@ -2266,6 +2267,7 @@ export const listInventoryReceiveLines = /* GraphQL */ `query ListInventoryRecei
       productId
       productName
       unitOfMeasure
+      current
       received
       comments
       createdAt
@@ -2303,6 +2305,7 @@ export const syncInventoryReceiveLines = /* GraphQL */ `query SyncInventoryRecei
       productId
       productName
       unitOfMeasure
+      current
       received
       comments
       createdAt

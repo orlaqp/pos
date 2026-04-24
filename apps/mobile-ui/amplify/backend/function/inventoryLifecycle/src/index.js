@@ -534,6 +534,7 @@ function buildLineInput(config, sourceId, tenantId, line) {
   if (config.sourceType === 'INVENTORY_RECEIVE') {
     return {
       ...base,
+      current: Number(line.current || 0),
       received: line.received,
     };
   }

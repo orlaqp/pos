@@ -2013,6 +2013,7 @@ export const onCreateInventoryReceiveLine = /* GraphQL */ `subscription OnCreate
     productId
     productName
     unitOfMeasure
+    current
     received
     comments
     InventoryReceive {
@@ -2054,6 +2055,7 @@ export const onUpdateInventoryReceiveLine = /* GraphQL */ `subscription OnUpdate
     productId
     productName
     unitOfMeasure
+    current
     received
     comments
     InventoryReceive {
@@ -2095,6 +2097,7 @@ export const onDeleteInventoryReceiveLine = /* GraphQL */ `subscription OnDelete
     productId
     productName
     unitOfMeasure
+    current
     received
     comments
     InventoryReceive {

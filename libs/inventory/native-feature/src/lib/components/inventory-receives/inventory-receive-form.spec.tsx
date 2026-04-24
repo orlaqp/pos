@@ -396,6 +396,7 @@ describe('InventoryReceiveForm integration', () => {
                     productId: 'p-1',
                     productName: 'Aceitunas Jumbo',
                     unitOfMeasure: 'EA',
+                    current: 4,
                     received: 4,
                     comments: '',
                 },
@@ -424,6 +425,7 @@ describe('InventoryReceiveForm integration', () => {
                     lines: [
                         expect.objectContaining({
                             productId: 'p-1',
+                            current: 4,
                             received: 8,
                             comments: 'updated',
                         }),

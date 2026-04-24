@@ -42,6 +42,14 @@ export function InventoryCountLine({
     
     const originalCount = item.newCount;
     const originalComment = item.comments;
+    const beforeQuantity = Number(item.current || 0);
+    const countedQuantity = Number(item.newCount ?? 0);
+    const afterQuantity = countedQuantity;
+    const beforeLabel = t('INVENTORY_Before', 'Before');
+    const afterLabel = t('INVENTORY_After', 'After');
+
+    const formatQuantity = (value: number) =>
+        Number.isInteger(value) ? `${value}` : value.toFixed(2);
 
     const confirmDeletion = () => {
         Alert.alert(
@@ -88,48 +96,66 @@ export function InventoryCountLine({
             <View style={local.productColumn}>
                 <Text style={local.productName}>{item.productName}</Text>
                 <Text style={local.productMeta}>
-                    {t('INVENTORY_CurrentCount', 'Current: {{count}}', {
-                        count: item.current.toFixed(2),
-                    })}
+                    {readOnly
+                        ? `${beforeLabel}: ${formatQuantity(beforeQuantity)} • ${afterLabel}: ${formatQuantity(afterQuantity)}`
+                        : t('INVENTORY_CurrentCount', 'Current: {{count}}', {
+                              count: item.current.toFixed(2),
+                          })}
                 </Text>
             </View>
             <View style={local.quantityColumn}>
                 <Text style={local.inputLabel}>
-                    {t('INVENTORY_NewCount', 'New count')}
+                    {readOnly
+                        ? t('INVENTORY_Counted', 'Counted')
+                        : t('INVENTORY_NewCount', 'New count')}
                 </Text>
-                <TextInput
-                    testID={`inventory-count-qty-${productKey}`}
-                    value={count}
-                    onChangeText={(text) => {
-                        countRef.current = text;
-                        setCount(text);
-                        updateCount(text);
-                    }}
-                    placeholder={t('COMMON_NumberSign', '#')}
-                    style={[
-                        styles.input, styles.primaryText,
-                        local.input,
-                    ]}
-                    onFocus={() => {
-                        countRef.current = '';
-                        setCount('');
-                    }}
-                    onBlur={() => updateCount(countRef.current || '')}
-                    editable={!readOnly}
-                />
+                {readOnly ? (
+                    <Text style={local.readOnlyValue}>
+                        {formatQuantity(countedQuantity)}
+                    </Text>
+                ) : (
+                    <TextInput
+                        testID={`inventory-count-qty-${productKey}`}
+                        value={count}
+                        onChangeText={(text) => {
+                            countRef.current = text;
+                            setCount(text);
+                            updateCount(text);
+                        }}
+                        placeholder={t('COMMON_NumberSign', '#')}
+                        style={[
+                            styles.input, styles.primaryText,
+                            local.input,
+                        ]}
+                        onFocus={() => {
+                            countRef.current = '';
+                            setCount('');
+                        }}
+                        onBlur={() => updateCount(countRef.current || '')}
+                        editable={!readOnly}
+                    />
+                )}
             </View>
             <View style={local.commentColumn}>
                 <Text style={local.inputLabel}>
-                    {t('COMMON_Comments', 'Comments')}
+                    {readOnly
+                        ? t('INVENTORY_After', 'After')
+                        : t('COMMON_Comments', 'Comments')}
                 </Text>
-                <TextInput
-                    value={comment}
-                    onChangeText={setComment}
-                    placeholder={t('COMMON_CommentsPlaceholder', 'comments ...')}
-                    onBlur={() => updateComment(comment || '')}
-                    style={[styles.input, styles.primaryText, local.input]}
-                    editable={!readOnly}
-                />
+                {readOnly ? (
+                    <Text style={local.readOnlyValue}>
+                        {formatQuantity(afterQuantity)}
+                    </Text>
+                ) : (
+                    <TextInput
+                        value={comment}
+                        onChangeText={setComment}
+                        placeholder={t('COMMON_CommentsPlaceholder', 'comments ...')}
+                        onBlur={() => updateComment(comment || '')}
+                        style={[styles.input, styles.primaryText, local.input]}
+                        editable={!readOnly}
+                    />
+                )}
             </View>
             { !readOnly &&
             <View style={local.actionsColumn}>
@@ -202,6 +228,13 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             borderWidth: 1,
             marginRight: 0,
             paddingHorizontal: tokens.spacing.sm,
+        },
+        readOnlyValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 15,
+            fontWeight: '800',
+            minHeight: 28,
+            paddingVertical: 6,
         },
         actionsColumn: {
             flex: 0.8,

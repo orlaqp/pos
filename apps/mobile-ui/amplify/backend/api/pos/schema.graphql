@@ -486,7 +486,7 @@ type InventoryCountLine @model @auth(rules: [{allow: owner, ownerField: "tenantI
     productId: String!
     productName: String!
     unitOfMeasure: String!
-    current: Float!
+    current: Float
     newCount: Float!
     comments: String
     InventoryCount: InventoryCount @hasOne
@@ -515,6 +515,7 @@ type InventoryReceiveLine @model @auth(rules: [{allow: owner, ownerField: "tenan
     productId: String!
     productName: String!
     unitOfMeasure: String!
+    current: Float
     received: Float!
     comments: String
     InventoryReceive: InventoryReceive @hasOne

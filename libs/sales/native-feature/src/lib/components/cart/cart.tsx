@@ -159,7 +159,9 @@ export function Cart({
         cart.footer.discount > 0 ||
         cart.promoCodes.length > 0 ||
         pricingWarnings.length > 0;
-    const hasDiscountAccess = (employee?.roles || []).includes(Role.Discounts);
+    const hasDiscountAccess =
+        (employee?.roles || []).includes(Role.Discounts) ||
+        (employee?.roles || []).includes(Role.Admin);
     const canUsePromoCodes = hasDiscountAccess;
     const canApplyOrderDiscount = hasDiscountAccess;
     const canOverridePrice = hasDiscountAccess;

@@ -5,6 +5,7 @@ export type InventoryReceiveLineDTO = {
     productId: string;
     productName: string;
     unitOfMeasure: string;
+    current: number;
     received: number;
     comments: string | null | undefined;
     createdAt?: string | null | undefined;
@@ -12,7 +13,7 @@ export type InventoryReceiveLineDTO = {
     inventoryReceiveLineInventoryReceiveId: string | null | undefined;
 };
 
-type ReceiveSelectableProduct = Pick<Product, 'id' | 'name' | 'unitOfMeasure'>;
+type ReceiveSelectableProduct = Pick<Product, 'id' | 'name' | 'unitOfMeasure' | 'quantity'>;
 
 export class InventoryReceiveLineMapper {
     static fromProduct(x: ReceiveSelectableProduct): InventoryReceiveLineDTO {
@@ -20,6 +21,7 @@ export class InventoryReceiveLineMapper {
             productId: x.id,
             productName: x.name,
             unitOfMeasure: x.unitOfMeasure,
+            current: Number(x.quantity || 0),
             comments: '',
             received: 0,
             inventoryReceiveLineInventoryReceiveId: '',
@@ -32,6 +34,7 @@ export class InventoryReceiveLineMapper {
             productId: x.productId,
             productName: x.productName,
             unitOfMeasure: x.unitOfMeasure,
+            current: Number((x as { current?: number | null }).current || 0),
             received: x.received,
             comments: x.comments,
             createdAt: x.createdAt,
@@ -40,4 +43,3 @@ export class InventoryReceiveLineMapper {
         };
     }
 }
-

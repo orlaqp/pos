@@ -37,6 +37,12 @@ jest.mock('@pos/auth/data-access', () => ({
 }));
 
 jest.mock('@pos/shared/models', () => {
+    class Product {
+        constructor(input: any) {
+            Object.assign(this, input);
+        }
+    }
+
     class InventoryReceive {
         constructor(input: any) {
             Object.assign(this, input);
@@ -62,6 +68,7 @@ jest.mock('@pos/shared/models', () => {
     }
 
     return {
+        Product,
         InventoryReceive,
         InventoryReceiveLine,
     };
@@ -76,15 +83,22 @@ describe('InventoryReceiveService', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        mockedQuery.mockImplementation(async (model: any, arg: any) => {
+            if (model?.name === 'Product') {
+                return { id: arg, quantity: 10 };
+            }
+            if (model?.name === 'InventoryReceive' && typeof arg === 'string') {
+                return {
+                    id: 'receive-1',
+                    status: 'IN_PROGRESS',
+                    comments: 'restock',
+                };
+            }
+            return [];
+        });
     });
 
     it('finalizes inventory receive through the backend lifecycle query', async () => {
-        mockedQuery.mockResolvedValueOnce({
-            id: 'receive-1',
-            status: 'IN_PROGRESS',
-            comments: 'restock',
-        });
-        mockedQuery.mockResolvedValueOnce([]);
         mockedSave.mockImplementation(async (value) => value);
         mockedGraphql.mockResolvedValue({
             data: {
@@ -118,6 +132,7 @@ describe('InventoryReceiveService', () => {
                         productId: 'p-1',
                         productName: 'Apple',
                         unitOfMeasure: 'EA',
+                        current: 0,
                         received: 5,
                         comments: '',
                         inventoryReceiveLineInventoryReceiveId: 'receive-1',
@@ -165,6 +180,13 @@ describe('InventoryReceiveService', () => {
                 comments: 'restock',
             })
         );
+        expect(mockedSave).toHaveBeenCalledWith(
+            expect.objectContaining({
+                productId: 'p-1',
+                current: 10,
+                received: 5,
+            })
+        );
     });
 
     it('persists drafts locally without calling the finalization query', async () => {
@@ -184,6 +206,7 @@ describe('InventoryReceiveService', () => {
                         productId: 'p-1',
                         productName: 'Apple',
                         unitOfMeasure: 'EA',
+                        current: 4,
                         received: 2,
                         comments: '',
                         inventoryReceiveLineInventoryReceiveId: '',
@@ -199,9 +222,15 @@ describe('InventoryReceiveService', () => {
     });
 
     it('creates a local completed receive when finalizing a brand-new receive', async () => {
-        mockedQuery
-            .mockResolvedValueOnce(undefined)
-            .mockResolvedValueOnce([]);
+        mockedQuery.mockImplementation(async (model: any, arg: any) => {
+            if (model?.name === 'Product') {
+                return { id: arg, quantity: 22 };
+            }
+            if (model?.name === 'InventoryReceive') {
+                return undefined;
+            }
+            return [];
+        });
         mockedSave.mockImplementation(async (value) => ({
             ...value,
             id: value.id || 'receive-2',
@@ -230,6 +259,7 @@ describe('InventoryReceiveService', () => {
                         productId: 'p-1',
                         productName: 'Apple',
                         unitOfMeasure: 'EA',
+                        current: 0,
                         received: 5,
                         comments: '',
                         inventoryReceiveLineInventoryReceiveId: '',
@@ -257,6 +287,13 @@ describe('InventoryReceiveService', () => {
                 type: expect.stringContaining('/add'),
             })
         );
+        expect(mockedSave).toHaveBeenCalledWith(
+            expect.objectContaining({
+                productId: 'p-1',
+                current: 22,
+                received: 5,
+            })
+        );
     });
 
     it('surfaces finalization errors to the user and returns false', async () => {
@@ -276,6 +313,7 @@ describe('InventoryReceiveService', () => {
                         productId: 'p-1',
                         productName: 'Apple',
                         unitOfMeasure: 'EA',
+                        current: 0,
                         received: 5,
                         comments: '',
                         inventoryReceiveLineInventoryReceiveId: 'receive-1',
@@ -309,6 +347,7 @@ describe('InventoryReceiveService', () => {
                         productId: 'p-1',
                         productName: 'Apple',
                         unitOfMeasure: 'EA',
+                        current: 0,
                         received: 5,
                         comments: '',
                         inventoryReceiveLineInventoryReceiveId: 'receive-1',

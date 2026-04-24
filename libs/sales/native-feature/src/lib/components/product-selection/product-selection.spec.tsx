@@ -127,6 +127,9 @@ describe('ProductSelection', () => {
         expect(getByText('In stock • 10')).toBeTruthy();
         expect(getByText('Low stock • 2 left')).toBeTruthy();
         expect(getByText('In stock • 1.23')).toBeTruthy();
+        expect(getByText('On hand: 10')).toBeTruthy();
+        expect(getByText('On hand: 0')).toBeTruthy();
+        expect(getByText('On hand: 1.23')).toBeTruthy();
         expect(getByText('EBT')).toBeTruthy();
         expect(getAllByText('Price').length).toBeGreaterThan(0);
         expect(getByTestId('product-selection-list').props.keyboardShouldPersistTaps).toBe(

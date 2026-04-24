@@ -1265,7 +1265,7 @@ type EagerInventoryCountLine = {
   readonly productId: string;
   readonly productName: string;
   readonly unitOfMeasure: string;
-  readonly current: number;
+  readonly current?: number | null;
   readonly newCount: number;
   readonly comments?: string | null;
   readonly InventoryCount?: InventoryCount | null;
@@ -1280,7 +1280,7 @@ type LazyInventoryCountLine = {
   readonly productId: string;
   readonly productName: string;
   readonly unitOfMeasure: string;
-  readonly current: number;
+  readonly current?: number | null;
   readonly newCount: number;
   readonly comments?: string | null;
   readonly InventoryCount: AsyncItem<InventoryCount | undefined>;
@@ -1335,6 +1335,7 @@ type EagerInventoryReceiveLine = {
   readonly productId: string;
   readonly productName: string;
   readonly unitOfMeasure: string;
+  readonly current?: number | null;
   readonly received: number;
   readonly comments?: string | null;
   readonly InventoryReceive?: InventoryReceive | null;
@@ -1349,6 +1350,7 @@ type LazyInventoryReceiveLine = {
   readonly productId: string;
   readonly productName: string;
   readonly unitOfMeasure: string;
+  readonly current?: number | null;
   readonly received: number;
   readonly comments?: string | null;
   readonly InventoryReceive: AsyncItem<InventoryReceive | undefined>;

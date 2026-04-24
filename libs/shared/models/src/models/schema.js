@@ -2446,7 +2446,7 @@ export const schema = {
                     "name": "current",
                     "isArray": false,
                     "type": "Float",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "newCount": {
@@ -2702,6 +2702,13 @@ export const schema = {
                     "isArray": false,
                     "type": "String",
                     "isRequired": true,
+                    "attributes": []
+                },
+                "current": {
+                    "name": "current",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
                     "attributes": []
                 },
                 "received": {
@@ -5316,5 +5323,5 @@ export const schema = {
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "760fec79456738885bcb6c0d50c81263"
+    "version": "e4036b45ef8c8b244ee41ba665eb1d36"
 };

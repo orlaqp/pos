@@ -70,4 +70,28 @@ describe('InventoryCountLine', () => {
             expect.objectContaining({ productId: 'p-1', newCount: 8 })
         );
     });
+
+    it('shows before, counted, and after values in read-only mode', () => {
+        const { getByText, getAllByText } = render(
+            <InventoryCountLine
+                readOnly={true}
+                item={{
+                    productId: 'p-1',
+                    productName: 'Aceitunas Jumbo',
+                    unitOfMeasure: 'EA',
+                    current: 4,
+                    newCount: 8,
+                    comments: '',
+                    inventoryCountLineInventoryCountId: 'count-1',
+                } as any}
+                onUpdate={jest.fn()}
+                onDelete={jest.fn()}
+            />
+        );
+
+        expect(getByText('Before: 4 • After: 8')).toBeTruthy();
+        expect(getByText('Counted')).toBeTruthy();
+        expect(getByText('After')).toBeTruthy();
+        expect(getAllByText('8')).toHaveLength(2);
+    });
 });

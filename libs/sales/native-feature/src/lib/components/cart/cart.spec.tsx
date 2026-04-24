@@ -86,6 +86,7 @@ jest.mock('@pos/settings/data-access', () => ({
 
 jest.mock('@pos/auth/data-access', () => ({
     Role: {
+        Admin: 'Admin',
         Checks: 'Receive Check Payment',
         Discounts: 'Discounts',
     },
@@ -538,6 +539,15 @@ describe('Cart', () => {
         expect(getByText('Show actions')).toBeTruthy();
     });
 
+    it('shows the discount card when the logged-in employee has the admin role', () => {
+        mockEmployeeState = { roles: ['Admin'] };
+
+        const { getByText } = renderCart('order');
+
+        expect(getByText('Discounts')).toBeTruthy();
+        expect(getByText('Show actions')).toBeTruthy();
+    });
+
     it('collapses the discounts section to a single header row', () => {
         mockCartState.footer.discount = 14;
         mockCartState.footer.savingsTotal = 14;
@@ -841,6 +851,31 @@ describe('Cart', () => {
                 }),
             );
         });
+    });
+
+    it('renders the manual discount options inside a scrollable dialog when many saved discounts exist', () => {
+        mockCartState.selected = mockCartState.items[0];
+        mockCartState.definitions = Array.from({ length: 16 }, (_, index) => ({
+            id: `manual-def-${index + 1}`,
+            name: `Manager 10% line discount ${index + 1}`,
+            type: 'MANUAL',
+            method: 'PERCENT',
+            scope: 'LINE',
+            value: 10,
+            status: 'ACTIVE',
+            stackMode: 'STACKABLE',
+            active: true,
+            minSubtotal: 0,
+            applicableProductIds: ['p-1'],
+        }));
+
+        const { getByText, getByTestId } = renderCart('order');
+
+        fireEvent.press(getByText('Show actions'));
+        fireEvent.press(getByText('Manual'));
+
+        expect(getByTestId('manual-discount-dialog-scroll')).toBeTruthy();
+        expect(getByText('Manager 10% line discount 1')).toBeTruthy();
     });
 
     it('does not offer a line manual discount when only the order subtotal meets the minimum', async () => {

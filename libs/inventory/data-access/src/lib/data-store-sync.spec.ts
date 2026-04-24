@@ -15,6 +15,7 @@ jest.mock('@pos/shared/utils', () => ({
 }));
 
 jest.mock('@pos/shared/amplify', () => ({
+    getDataStoreLifecycleState: jest.fn(() => 'started'),
     DataStore: {
         query: jest.fn(),
         observeQuery: jest.fn(() => ({
@@ -158,6 +159,7 @@ describe('inventory data-store sync', () => {
                     productId: 'product-1',
                     productName: 'Apple',
                     unitOfMeasure: 'EA',
+                    current: 9,
                     received: 5,
                     comments: '',
                     inventoryReceiveLineInventoryReceiveId: 'receive-1',

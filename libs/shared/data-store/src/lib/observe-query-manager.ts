@@ -1,5 +1,6 @@
 import { Dispatch } from '@reduxjs/toolkit';
 import { trackSyncSubscription } from '@pos/shared/utils';
+import { getDataStoreLifecycleState } from '@pos/shared/amplify';
 import { eventsActions, SyncHealthEntry, SyncHealthStatus } from './events.slice';
 
 type ObserveQueryEmission<TItem> = {
@@ -61,6 +62,16 @@ const DEFAULT_STALE_THRESHOLD_MS = 60_000;
 
 const toErrorMessage = (error: unknown) =>
     error instanceof Error ? error.message : String(error);
+
+const isRetryableObserveError = (error: unknown) => {
+    const message = toErrorMessage(error);
+
+    return (
+        message.includes('while DataStore was "Stopping"') ||
+        message.includes('while DataStore was "Starting"') ||
+        message.includes('BackgroundManagerNotOpenError')
+    );
+};
 
 export const createSharedObserveQueryManager = <TItem, TSnapshot>(
     options: SharedObserveQueryManagerOptions<TItem, TSnapshot>
@@ -165,6 +176,15 @@ export const createSharedObserveQueryManager = <TItem, TSnapshot>(
     };
 
     const startSharedSubscription = (dispatch: Dispatch, tenantId?: string) => {
+        const lifecycleState = getDataStoreLifecycleState();
+        if (lifecycleState === 'starting' || lifecycleState === 'stopping') {
+            scheduleRecovery(
+                dispatch,
+                `DataStore lifecycle settling (${lifecycleState})`
+            );
+            return;
+        }
+
         activeTenantId = tenantId;
         lastSubscriptionStartedAt = new Date().toISOString();
         updateSyncHealth(dispatch, {
@@ -183,47 +203,68 @@ export const createSharedObserveQueryManager = <TItem, TSnapshot>(
             release();
         };
 
-        const observeSubscription = options
-            .observeQuery(tenantId)
-            .subscribe({
-                next: (emission) => {
-                    const nextSnapshot = options.mapSnapshot(emission);
-                    lastIsSynced = emission.isSynced;
-                    recoveryRetryCount = 0;
-                    lastError = undefined;
-                    lastSnapshotAt = new Date().toISOString();
-                    publishSnapshot(nextSnapshot, {
-                        isSynced: emission.isSynced,
-                        replay: false,
-                    });
-                    broadcastSyncHealth({
-                        status: 'healthy',
-                        lastSnapshotAt,
-                        lastError: undefined,
-                    });
-                },
-                error: (error) => {
-                    releaseOnce();
-                    lastError = toErrorMessage(error);
-                    console.error(
-                        `[${options.model}.sync] shared subscription failed`,
-                        error
-                    );
-                    options.onError?.(error);
-                    broadcastSyncHealth({
-                        status: 'error',
-                        lastError,
-                    });
-                    scheduleRecovery(dispatch, 'observeQuery error', error);
-                },
-            });
+        try {
+            const observeSubscription = options
+                .observeQuery(tenantId)
+                .subscribe({
+                    next: (emission) => {
+                        const nextSnapshot = options.mapSnapshot(emission);
+                        lastIsSynced = emission.isSynced;
+                        recoveryRetryCount = 0;
+                        lastError = undefined;
+                        lastSnapshotAt = new Date().toISOString();
+                        publishSnapshot(nextSnapshot, {
+                            isSynced: emission.isSynced,
+                            replay: false,
+                        });
+                        broadcastSyncHealth({
+                            status: 'healthy',
+                            lastSnapshotAt,
+                            lastError: undefined,
+                        });
+                    },
+                    error: (error) => {
+                        releaseOnce();
+                        if (isRetryableObserveError(error)) {
+                            scheduleRecovery(dispatch, 'observeQuery retryable error', error);
+                            return;
+                        }
 
-        sharedSubscription = {
-            unsubscribe() {
-                observeSubscription.unsubscribe();
-                releaseOnce();
-            },
-        };
+                        lastError = toErrorMessage(error);
+                        console.error(
+                            `[${options.model}.sync] shared subscription failed`,
+                            error
+                        );
+                        options.onError?.(error);
+                        broadcastSyncHealth({
+                            status: 'error',
+                            lastError,
+                        });
+                        scheduleRecovery(dispatch, 'observeQuery error', error);
+                    },
+                });
+
+            sharedSubscription = {
+                unsubscribe() {
+                    observeSubscription.unsubscribe();
+                    releaseOnce();
+                },
+            };
+        } catch (error) {
+            releaseOnce();
+            if (isRetryableObserveError(error)) {
+                scheduleRecovery(dispatch, 'observeQuery setup retryable error', error);
+                return;
+            }
+
+            lastError = toErrorMessage(error);
+            options.onError?.(error);
+            broadcastSyncHealth({
+                status: 'error',
+                lastError,
+            });
+            throw error;
+        }
     };
 
     const restart = async (
