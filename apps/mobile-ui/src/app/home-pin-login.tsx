@@ -56,43 +56,36 @@ export function HomePinLogin({
                 />
             ) : null}
             <View style={styles.hero}>
-                <View style={styles.pinHeroTop}>
-                    <View style={styles.pinBrandPlate}>
-                        <Image source={brandMark} style={styles.brandMark} resizeMode="contain" />
+                <Image source={brandMark} style={styles.brandMark} resizeMode="contain" />
+                <Text style={styles.businessLabel}>
+                    {businessName || t('HOME_BusinessWorkspace', 'Business workspace')}
+                </Text>
+                <Text style={styles.heroTitle}>
+                    {t('HOME_EmployeePinTitle', 'Employee PIN')}
+                </Text>
+                <Text style={styles.heroSubtitle}>
+                    {t(
+                        'HOME_EmployeePinSubtitle',
+                        'Admin session is active for {{target}}. Enter a staff PIN to continue into the operational app.',
+                        { target: userEmail || t('HOME_ThisDevice', 'this device') }
+                    )}
+                </Text>
+                <View style={styles.pinHeroMetaRow}>
+                    <View style={styles.pinHeroMetaChip}>
+                        <Text style={styles.pinHeroMetaLabel}>
+                            {t('HOME_PinAccessLabel', 'Access')}
+                        </Text>
+                        <Text style={styles.pinHeroMetaValue}>
+                            {t('HOME_PinAccessValue', 'Shared device')}
+                        </Text>
                     </View>
-                    <View style={styles.pinHeroGlow} />
-                </View>
-                <View style={styles.pinHeroBottom}>
-                    <Text style={styles.businessLabel}>
-                        {businessName || t('HOME_BusinessWorkspace', 'Business workspace')}
-                    </Text>
-                    <Text style={styles.heroTitle}>
-                        {t('HOME_EmployeePinTitle', 'Employee PIN')}
-                    </Text>
-                    <Text style={styles.heroSubtitle}>
-                        {t(
-                            'HOME_EmployeePinSubtitle',
-                            'Admin session is active for {{target}}. Enter a staff PIN to continue into the operational app.',
-                            { target: userEmail || t('HOME_ThisDevice', 'this device') }
-                        )}
-                    </Text>
-                    <View style={styles.pinHeroMetaRow}>
-                        <View style={styles.pinHeroMetaChip}>
-                            <Text style={styles.pinHeroMetaLabel}>
-                                {t('HOME_PinAccessLabel', 'Access')}
-                            </Text>
-                            <Text style={styles.pinHeroMetaValue}>
-                                {t('HOME_PinAccessValue', 'Shared device')}
-                            </Text>
-                        </View>
-                        <View style={styles.pinHeroMetaChip}>
-                            <Text style={styles.pinHeroMetaLabel}>
-                                {t('HOME_PinModeLabel', 'Mode')}
-                            </Text>
-                            <Text style={styles.pinHeroMetaValue}>
-                                {t('HOME_PinModeValue', 'PIN required')}
-                            </Text>
-                        </View>
+                    <View style={styles.pinHeroMetaChip}>
+                        <Text style={styles.pinHeroMetaLabel}>
+                            {t('HOME_PinModeLabel', 'Mode')}
+                        </Text>
+                        <Text style={styles.pinHeroMetaValue}>
+                            {t('HOME_PinModeValue', 'PIN required')}
+                        </Text>
                     </View>
                 </View>
             </View>
