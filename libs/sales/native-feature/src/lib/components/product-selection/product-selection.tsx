@@ -82,15 +82,6 @@ export function ProductSelection({
     const stockLabelLeft = translateWithFallback('SALES_ProductCardLeft', 'left');
     const onHandLabel = translateWithFallback('INVENTORY_OnHand', 'On hand');
     const priceCaption = translateWithFallback('SALES_ProductCardPrice', 'Price');
-    const productMetaWithPhoto = translateWithFallback(
-        'SALES_ProductCardPhotoReady',
-        'Photo ready'
-    );
-    const productMetaCatalogItem = translateWithFallback(
-        'SALES_ProductCardCatalogItem',
-        'Catalog item'
-    );
-
     const handleProductSelected = (product: ProductEntity) => {
         if (isProductOutOfStock(product)) {
             Alert.alert(outOfStockTitle, outOfStockMessage);
@@ -409,15 +400,6 @@ export function ProductSelection({
                                                 numberOfLines={2}
                                             >
                                                 {p.name}
-                                            </Text>
-                                            <Text
-                                                style={[
-                                                    localStyles.metaText,
-                                                    outOfStock ? localStyles.outOfStockText : null,
-                                                ]}
-                                                numberOfLines={1}
-                                            >
-                                                {p.picture ? productMetaWithPhoto : productMetaCatalogItem}
                                             </Text>
                                             <Text
                                                 style={[

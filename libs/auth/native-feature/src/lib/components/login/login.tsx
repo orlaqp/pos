@@ -10,6 +10,7 @@ import {
     E2E_OWNER_EMAIL,
     E2E_OWNER_PASSWORD,
     activateE2EMode,
+    isNativeE2ERequested,
     translateWithFallback,
 } from '@pos/shared/utils';
 import { useSelector } from 'react-redux';
@@ -67,9 +68,10 @@ export function LoginScreen(props: LoginProps) {
 
     const login = async (model: SignInModel) => {
         const normalizedEmail = model.email.trim();
+        const nativeE2ERequested =
+            typeof __DEV__ !== 'undefined' && __DEV__ && isNativeE2ERequested();
         const isE2ELogin =
-            typeof __DEV__ !== 'undefined' &&
-            __DEV__ &&
+            nativeE2ERequested &&
             normalizedEmail.toLowerCase() === E2E_OWNER_EMAIL.toLowerCase() &&
             model.password === E2E_OWNER_PASSWORD;
 
@@ -107,6 +109,13 @@ export function LoginScreen(props: LoginProps) {
     };
 
     const loginWithE2EAccount = async () => {
+        if (
+            typeof __DEV__ === 'undefined' ||
+            !__DEV__ ||
+            !isNativeE2ERequested()
+        ) {
+            return;
+        }
         activateE2EMode({
             seedTenant: true,
             cleanupOnExit: true,
