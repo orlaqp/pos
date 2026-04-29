@@ -8,6 +8,7 @@ import {
     StyleSheet,
     FlatList,
     TouchableOpacity,
+    TextInput,
 } from 'react-native';
 import { Controller, RegisterOptions, useFormContext } from 'react-hook-form';
 import { translateWithFallback } from '@pos/shared/utils';
@@ -25,200 +26,311 @@ export interface UiOverlaySelectProps {
     selectedId: string | null | undefined;
     rules?: RegisterOptions;
     onSelection?: (item: IdName) => unknown;
+    searchable?: boolean;
+    searchPlaceholder?: string;
+    clearable?: boolean;
+    clearTitle?: string;
 }
 
-export const UIOverlaySelect = React.forwardRef<typeof Overlay, UiOverlaySelectProps>(
-    (props, ref) => {
-        const { name, title, list, onSelection, rules } = props;
-        const t = translateWithFallback;
-        const styles = useStyles();
-        const [visible, setVisible] = useState(false);
-        const [selected, setSelected] = useState<IdName>();
-        const { control } = useFormContext();
-        const options = list || [];
+export const UIOverlaySelect = React.forwardRef<
+    typeof Overlay,
+    UiOverlaySelectProps
+>((props, ref) => {
+    const {
+        name,
+        title,
+        list,
+        onSelection,
+        rules,
+        searchable,
+        searchPlaceholder,
+        clearable,
+        clearTitle,
+    } = props;
+    const t = translateWithFallback;
+    const styles = useStyles();
+    const [visible, setVisible] = useState(false);
+    const [selected, setSelected] = useState<IdName>();
+    const [searchText, setSearchText] = useState('');
+    const { control } = useFormContext();
+    const options = list || [];
+    const normalizedSearch = searchText.trim().toLowerCase();
+    const filteredOptions =
+        searchable && normalizedSearch
+            ? options.filter(
+                  (item) =>
+                      item.name.toLowerCase().includes(normalizedSearch) ||
+                      String(item.id || '')
+                          .toLowerCase()
+                          .includes(normalizedSearch),
+              )
+            : options;
 
-        const toggleOverlay = () => setVisible(!visible);
-        const getSelected = (value: string) =>
-            options.find((i) => i.id === value);
-        const select = (item: IdName) => {
-            setSelected(item);
-            toggleOverlay();
-            if (onSelection) onSelection(item);
-        };
+    const toggleOverlay = () => setVisible(!visible);
+    const getSelected = (value: string) => options.find((i) => i.id === value);
+    const hasSelection = (value: unknown) =>
+        value !== undefined && value !== null && value !== '';
+    const select = (item: IdName) => {
+        setSelected(item);
+        toggleOverlay();
+        if (onSelection) onSelection(item);
+    };
 
-        if (name) {
-            return (
-                <Controller
-                    control={control}
-                    name={name}
-                    render={({
-                        field: { onChange, value, onBlur, ref },
-                        fieldState: { isTouched, isDirty, error },
-                    }) => (
-                        <>
-                            <Button
-                                title={getSelected(value)?.name || title}
-                                onPress={toggleOverlay}
-                                buttonStyle={[
-                                    styles.button,
-                                    error ? styles.buttonError : undefined,
-                                ]}
-                                type="outline"
-                                titleStyle={styles.buttonTitle}
-                            />
-                            {error?.message ? (
-                                <Text style={styles.errorText}>{error.message}</Text>
-                            ) : null}
-                            <Overlay
-                                isVisible={visible}
-                                onBackdropPress={toggleOverlay}
-                                overlayStyle={styles.overlay}
-                                supportedOrientations={['landscape-left', 'landscape-right']}
-                                presentationStyle="fullScreen"
-                            >
-                                <View style={styles.overlayContent}>
-                                    <View style={styles.overlayHeader}>
-                                        <Text style={styles.overlayEyebrow}>
-                                            {t('COMMON_Select', 'Select')}
-                                        </Text>
-                                        <Text style={styles.overlayTitle}>{title}</Text>
-                                        <Text style={styles.overlaySubtitle}>
+    if (name) {
+        return (
+            <Controller
+                control={control}
+                name={name}
+                render={({
+                    field: { onChange, value, onBlur, ref },
+                    fieldState: { isTouched, isDirty, error },
+                }) => (
+                    <>
+                        <Button
+                            title={getSelected(value)?.name || title}
+                            onPress={toggleOverlay}
+                            buttonStyle={[
+                                styles.button,
+                                error ? styles.buttonError : undefined,
+                            ]}
+                            type="outline"
+                            titleStyle={styles.buttonTitle}
+                        />
+                        {error?.message ? (
+                            <Text style={styles.errorText}>
+                                {error.message}
+                            </Text>
+                        ) : null}
+                        <Overlay
+                            isVisible={visible}
+                            onBackdropPress={toggleOverlay}
+                            overlayStyle={styles.overlay}
+                            supportedOrientations={[
+                                'landscape-left',
+                                'landscape-right',
+                            ]}
+                            presentationStyle="fullScreen"
+                        >
+                            <View style={styles.overlayContent}>
+                                <View style={styles.overlayHeader}>
+                                    <Text style={styles.overlayEyebrow}>
+                                        {t('COMMON_Select', 'Select')}
+                                    </Text>
+                                    <Text style={styles.overlayTitle}>
+                                        {title}
+                                    </Text>
+                                    <Text style={styles.overlaySubtitle}>
+                                        {t(
+                                            'COMMON_ChooseOneOption',
+                                            'Choose one option to continue.',
+                                        )}
+                                    </Text>
+                                </View>
+                                {searchable ? (
+                                    <TextInput
+                                        testID={`overlay-select-search-${name}`}
+                                        value={searchText}
+                                        onChangeText={setSearchText}
+                                        placeholder={
+                                            searchPlaceholder ||
+                                            t('COMMON_Search', 'Search')
+                                        }
+                                        placeholderTextColor="#8f9baa"
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
+                                        style={styles.searchInput}
+                                    />
+                                ) : null}
+                                {clearable && hasSelection(value) ? (
+                                    <Button
+                                        testID={`overlay-select-clear-${name}`}
+                                        title={
+                                            clearTitle ||
+                                            t(
+                                                'COMMON_ClearSelection',
+                                                'Clear selection',
+                                            )
+                                        }
+                                        onPress={() => {
+                                            onChange(null);
+                                            setSelected(undefined);
+                                            setSearchText('');
+                                            toggleOverlay();
+                                        }}
+                                        type="outline"
+                                        buttonStyle={styles.clearButton}
+                                        titleStyle={styles.clearButtonTitle}
+                                    />
+                                ) : null}
+                                <FlatList
+                                    data={filteredOptions}
+                                    keyExtractor={(item, index) =>
+                                        `${item.id || item.name}-${index}`
+                                    }
+                                    contentContainerStyle={styles.listContent}
+                                    ListEmptyComponent={
+                                        <Text style={styles.emptyText}>
                                             {t(
-                                                'COMMON_ChooseOneOption',
-                                                'Choose one option to continue.',
+                                                normalizedSearch
+                                                    ? 'COMMON_NoMatchingOptions'
+                                                    : 'COMMON_NoOptionsAvailable',
+                                                normalizedSearch
+                                                    ? 'No matching options'
+                                                    : 'No options available',
                                             )}
                                         </Text>
-                                    </View>
-                                    <FlatList
-                                        data={options}
-                                        keyExtractor={(item, index) =>
-                                            `${item.id || item.name}-${index}`
-                                        }
-                                        contentContainerStyle={styles.listContent}
-                                        ListEmptyComponent={
-                                            <Text style={styles.emptyText}>
-                                                {t(
-                                                    'COMMON_NoOptionsAvailable',
-                                                    'No options available',
-                                                )}
-                                            </Text>
-                                        }
-                                        renderItem={({ item }) => (
-                                            <TouchableOpacity
-                                                style={[
-                                                    styles.dataRow,
-                                                    item.id === value
-                                                        ? styles.dataRowSelected
-                                                        : undefined,
-                                                ]}
-                                                onPress={() => {
-                                                    onChange(item.id);
-                                                    select(item);
-                                                }}
-                                            >
-                                                <View style={styles.optionCopy}>
-                                                    <Text style={styles.name}>
-                                                        {item.name}
-                                                    </Text>
-                                                    <Text style={styles.optionMeta}>
-                                                        {item.id || item.name}
-                                                    </Text>
-                                                </View>
-                                                {item.id === value ? (
-                                                    <Text style={styles.selectedTag}>
-                                                        {t(
-                                                            'COMMON_Selected',
-                                                            'Selected',
-                                                        )}
-                                                    </Text>
-                                                ) : null}
-                                            </TouchableOpacity>
-                                        )}
-                                    />
-                                </View>
-                            </Overlay>
-                        </>
-                    )}
-                    rules={rules}
-                />
-            );
-        }
-
-        return (
-            <>
-                <Button
-                    title={selected?.name || title}
-                    onPress={toggleOverlay}
-                    buttonStyle={styles.button}
-                    type="outline"
-                    titleStyle={styles.buttonTitle}
-                />
-                <Overlay
-                    isVisible={visible}
-                    onBackdropPress={toggleOverlay}
-                    overlayStyle={styles.overlay}
-                    supportedOrientations={['landscape-left', 'landscape-right']}
-                    presentationStyle="fullScreen"
-                >
-                    <View style={styles.overlayContent}>
-                        <View style={styles.overlayHeader}>
-                            <Text style={styles.overlayEyebrow}>
-                                {t('COMMON_Select', 'Select')}
-                            </Text>
-                            <Text style={styles.overlayTitle}>{title}</Text>
-                            <Text style={styles.overlaySubtitle}>
-                                {t(
-                                    'COMMON_ChooseOneOption',
-                                    'Choose one option to continue.',
-                                )}
-                            </Text>
-                        </View>
-                        <FlatList
-                            data={options}
-                            keyExtractor={(item, index) =>
-                                `${item.id || item.name}-${index}`
-                            }
-                            contentContainerStyle={styles.listContent}
-                            ListEmptyComponent={
-                                <Text style={styles.emptyText}>
-                                    {t(
-                                        'COMMON_NoOptionsAvailable',
-                                        'No options available',
+                                    }
+                                    renderItem={({ item }) => (
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.dataRow,
+                                                item.id === value
+                                                    ? styles.dataRowSelected
+                                                    : undefined,
+                                            ]}
+                                            onPress={() => {
+                                                onChange(item.id);
+                                                select(item);
+                                            }}
+                                        >
+                                            <View style={styles.optionCopy}>
+                                                <Text style={styles.name}>
+                                                    {item.name}
+                                                </Text>
+                                                <Text style={styles.optionMeta}>
+                                                    {item.id || item.name}
+                                                </Text>
+                                            </View>
+                                            {item.id === value ? (
+                                                <Text
+                                                    style={styles.selectedTag}
+                                                >
+                                                    {t(
+                                                        'COMMON_Selected',
+                                                        'Selected',
+                                                    )}
+                                                </Text>
+                                            ) : null}
+                                        </TouchableOpacity>
                                     )}
-                                </Text>
-                            }
-                            renderItem={({ item }) => (
-                                <TouchableOpacity
-                                    style={[
-                                        styles.dataRow,
-                                        item.id === selected?.id
-                                            ? styles.dataRowSelected
-                                            : undefined,
-                                    ]}
-                                    onPress={() => select(item)}
-                                >
-                                    <View style={styles.optionCopy}>
-                                        <Text style={styles.name}>
-                                            {item.name}
-                                        </Text>
-                                        <Text style={styles.optionMeta}>
-                                            {item.id || item.name}
-                                        </Text>
-                                    </View>
-                                    {item.id === selected?.id ? (
-                                        <Text style={styles.selectedTag}>
-                                            {t('COMMON_Selected', 'Selected')}
-                                        </Text>
-                                    ) : null}
-                                </TouchableOpacity>
-                            )}
-                        />
-                    </View>
-                </Overlay>
-            </>
+                                />
+                            </View>
+                        </Overlay>
+                    </>
+                )}
+                rules={rules}
+            />
         );
     }
-);
+
+    return (
+        <>
+            <Button
+                title={selected?.name || title}
+                onPress={toggleOverlay}
+                buttonStyle={styles.button}
+                type="outline"
+                titleStyle={styles.buttonTitle}
+            />
+            <Overlay
+                isVisible={visible}
+                onBackdropPress={toggleOverlay}
+                overlayStyle={styles.overlay}
+                supportedOrientations={['landscape-left', 'landscape-right']}
+                presentationStyle="fullScreen"
+            >
+                <View style={styles.overlayContent}>
+                    <View style={styles.overlayHeader}>
+                        <Text style={styles.overlayEyebrow}>
+                            {t('COMMON_Select', 'Select')}
+                        </Text>
+                        <Text style={styles.overlayTitle}>{title}</Text>
+                        <Text style={styles.overlaySubtitle}>
+                            {t(
+                                'COMMON_ChooseOneOption',
+                                'Choose one option to continue.',
+                            )}
+                        </Text>
+                    </View>
+                    {searchable ? (
+                        <TextInput
+                            testID="overlay-select-search"
+                            value={searchText}
+                            onChangeText={setSearchText}
+                            placeholder={
+                                searchPlaceholder ||
+                                t('COMMON_Search', 'Search')
+                            }
+                            placeholderTextColor="#8f9baa"
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            style={styles.searchInput}
+                        />
+                    ) : null}
+                    {clearable && selected ? (
+                        <Button
+                            testID="overlay-select-clear"
+                            title={
+                                clearTitle ||
+                                t('COMMON_ClearSelection', 'Clear selection')
+                            }
+                            onPress={() => {
+                                setSelected(undefined);
+                                setSearchText('');
+                                toggleOverlay();
+                            }}
+                            type="outline"
+                            buttonStyle={styles.clearButton}
+                            titleStyle={styles.clearButtonTitle}
+                        />
+                    ) : null}
+                    <FlatList
+                        data={filteredOptions}
+                        keyExtractor={(item, index) =>
+                            `${item.id || item.name}-${index}`
+                        }
+                        contentContainerStyle={styles.listContent}
+                        ListEmptyComponent={
+                            <Text style={styles.emptyText}>
+                                {t(
+                                    normalizedSearch
+                                        ? 'COMMON_NoMatchingOptions'
+                                        : 'COMMON_NoOptionsAvailable',
+                                    normalizedSearch
+                                        ? 'No matching options'
+                                        : 'No options available',
+                                )}
+                            </Text>
+                        }
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                style={[
+                                    styles.dataRow,
+                                    item.id === selected?.id
+                                        ? styles.dataRowSelected
+                                        : undefined,
+                                ]}
+                                onPress={() => select(item)}
+                            >
+                                <View style={styles.optionCopy}>
+                                    <Text style={styles.name}>{item.name}</Text>
+                                    <Text style={styles.optionMeta}>
+                                        {item.id || item.name}
+                                    </Text>
+                                </View>
+                                {item.id === selected?.id ? (
+                                    <Text style={styles.selectedTag}>
+                                        {t('COMMON_Selected', 'Selected')}
+                                    </Text>
+                                ) : null}
+                            </TouchableOpacity>
+                        )}
+                    />
+                </View>
+            </Overlay>
+        </>
+    );
+});
 
 const useStyles = () => {
     const theme = useTheme();
@@ -276,6 +388,29 @@ const useStyles = () => {
                 color: colors.grey2,
                 textAlign: 'center',
                 paddingVertical: 28,
+            },
+            searchInput: {
+                color: colors.grey1,
+                minHeight: 44,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.12)',
+                backgroundColor: 'rgba(255,255,255,0.04)',
+                paddingHorizontal: 14,
+                marginBottom: 12,
+                fontSize: 15,
+            },
+            clearButton: {
+                borderRadius: 10,
+                minHeight: 40,
+                borderColor: 'rgba(239,68,68,0.55)',
+                backgroundColor: 'rgba(239,68,68,0.08)',
+                marginBottom: 12,
+            },
+            clearButtonTitle: {
+                color: '#fca5a5',
+                fontSize: 14,
+                fontWeight: '700',
             },
             button: {
                 margin: 10,

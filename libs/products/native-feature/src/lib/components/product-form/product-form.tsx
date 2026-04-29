@@ -20,6 +20,7 @@ import { RootState, useAppDispatch } from '@pos/store';
 import { Product } from '@pos/shared/models';
 import { translateWithFallback } from '@pos/shared/utils';
 import { selectAllBrands } from '@pos/brands/data-access';
+import { selectAllCategories } from '@pos/categories/data-access';
 import { selectAllUnitOfMeasures } from '@pos/unit-of-measures/data-access';
 import { requireCurrentTenantId } from '@pos/auth/data-access';
 import { useTheme } from '@rneui/themed';
@@ -38,6 +39,7 @@ export interface ProductFormProps {
 export function ProductForm({ navigation }: ProductFormProps) {
     const t = translateWithFallback;
     const product = useSelector((state: RootState) => state.products.selected);
+    const categories = useSelector(selectAllCategories);
     const brands = useSelector(selectAllBrands);
     const ums = useSelector(selectAllUnitOfMeasures);
     const dispatch = useAppDispatch();
@@ -62,7 +64,8 @@ export function ProductForm({ navigation }: ProductFormProps) {
             sku: product?.sku,
             plu: product?.plu,
             unitOfMeasure:
-                product?.unitOfMeasure || (ums.length === 1 ? ums[0]?.name : undefined),
+                product?.unitOfMeasure ||
+                (ums.length === 1 ? ums[0]?.name : undefined),
             trackStock: product?.trackStock ?? true,
             reorderPoint: product?.reorderPoint,
             reorderQuantity: product?.reorderQuantity,
@@ -112,7 +115,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
 
             const res = await ProductService.save(
                 dispatch,
-                catalogValues as ProductEntity
+                catalogValues as ProductEntity,
             );
             if (!res) {
                 return;
@@ -125,7 +128,11 @@ export function ProductForm({ navigation }: ProductFormProps) {
             console.error('Unable to save product', error);
             Alert.alert(
                 t('PRODUCT_SaveErrorTitle', 'Unable to save product'),
-                message || t('PRODUCT_SaveErrorMessage', 'The product could not be saved.')
+                message ||
+                    t(
+                        'PRODUCT_SaveErrorMessage',
+                        'The product could not be saved.',
+                    ),
             );
         } finally {
             setBusy(false);
@@ -133,7 +140,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
     };
 
     const handleInvalidSubmit = (
-        errors: Partial<Record<keyof ProductEntity, { message?: string }>>
+        errors: Partial<Record<keyof ProductEntity, { message?: string }>>,
     ) => {
         const fieldLabels: Partial<Record<keyof ProductEntity, string>> = {
             name: t('COMMON_Name', 'Name'),
@@ -148,24 +155,33 @@ export function ProductForm({ navigation }: ProductFormProps) {
             ? t(
                   'PRODUCT_CompleteRequiredFieldsList',
                   `Complete the required field${fields.length === 1 ? '' : 's'}: ${fields.join(', ')}.`,
-                  { fields: fields.join(', ') }
+                  { fields: fields.join(', ') },
               )
             : t(
                   'PRODUCT_CompleteRequiredFields',
-                  'Complete the required fields before saving this product.'
+                  'Complete the required fields before saving this product.',
               );
 
-        Alert.alert(t('COMMON_MissingInformation', 'Missing information'), message);
+        Alert.alert(
+            t('COMMON_MissingInformation', 'Missing information'),
+            message,
+        );
     };
 
     const confirmCancel = () => {
         Alert.alert(
             t('COMMON_AreYouSure', 'Are you sure?'),
-            t('COMMON_UndoOperationWarning', 'You will not be able to undo this operation'),
+            t(
+                'COMMON_UndoOperationWarning',
+                'You will not be able to undo this operation',
+            ),
             [
                 { text: t('COMMON_No', 'No') },
-                { text: t('COMMON_Yes', 'Yes'), onPress: () => navigation.goBack() },
-            ]
+                {
+                    text: t('COMMON_Yes', 'Yes'),
+                    onPress: () => navigation.goBack(),
+                },
+            ],
         );
     };
 
@@ -175,16 +191,23 @@ export function ProductForm({ navigation }: ProductFormProps) {
                 <View style={styles.screen}>
                     <ScrollView contentContainerStyle={styles.scrollContent}>
                         <View style={styles.container}>
-                            <UICard style={styles.headerCard} tone="muted" radius="lg">
+                            <UICard
+                                style={styles.headerCard}
+                                tone="muted"
+                                radius="lg"
+                            >
                                 <View style={styles.headerRow}>
                                     <View style={styles.headerTitleBlock}>
                                         <Text style={styles.headerTitle}>
-                                            {t('PRODUCT_ProfileTitle', 'Product Profile')}
+                                            {t(
+                                                'PRODUCT_ProfileTitle',
+                                                'Product Profile',
+                                            )}
                                         </Text>
                                         <Text style={styles.headerSubtitle}>
                                             {t(
                                                 'PRODUCT_ProfileSubtitle',
-                                                'Configure catalog details, pricing and identifiers.'
+                                                'Configure catalog details, pricing and identifiers.',
                                             )}
                                         </Text>
                                     </View>
@@ -206,8 +229,14 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                                 ]}
                                             >
                                                 {form.watch('isActive')
-                                                    ? t('PRODUCT_StatusAvailable', 'Available')
-                                                    : t('PRODUCT_StatusHidden', 'Hidden')}
+                                                    ? t(
+                                                          'PRODUCT_StatusAvailable',
+                                                          'Available',
+                                                      )
+                                                    : t(
+                                                          'PRODUCT_StatusHidden',
+                                                          'Hidden',
+                                                      )}
                                             </Text>
                                         </View>
                                         <View
@@ -227,8 +256,14 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                                 ]}
                                             >
                                                 {form.watch('isEBTEligible')
-                                                    ? t('PRODUCT_StatusEbtEligible', 'EBT Eligible')
-                                                    : t('PRODUCT_StatusRegular', 'Regular Product')}
+                                                    ? t(
+                                                          'PRODUCT_StatusEbtEligible',
+                                                          'EBT Eligible',
+                                                      )
+                                                    : t(
+                                                          'PRODUCT_StatusRegular',
+                                                          'Regular Product',
+                                                      )}
                                             </Text>
                                         </View>
                                     </View>
@@ -252,44 +287,110 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                     <View style={styles.catalogFieldsColumn}>
                                         <View style={styles.controlsGrid}>
                                             <View style={styles.controlsColumn}>
-                                                <View style={styles.overlaySelectSlot}>
+                                                <View
+                                                    style={
+                                                        styles.overlaySelectSlot
+                                                    }
+                                                >
                                                     <UIOverlaySelect
                                                         name="productBrandId"
-                                                        title={t('PRODUCT_SelectBrand', 'Select Brand')}
+                                                        title={t(
+                                                            'PRODUCT_SelectBrand',
+                                                            'Select Brand',
+                                                        )}
                                                         list={brands}
-                                                        selectedId={product?.productBrandId}
+                                                        selectedId={
+                                                            product?.productBrandId
+                                                        }
                                                     />
                                                 </View>
-                                                <View style={styles.overlaySelectSlot}>
+                                                <View
+                                                    style={
+                                                        styles.overlaySelectSlot
+                                                    }
+                                                >
+                                                    <UIOverlaySelect
+                                                        name="productCategoryId"
+                                                        title={t(
+                                                            'PRODUCT_SelectCategory',
+                                                            'Select Category',
+                                                        )}
+                                                        list={categories}
+                                                        selectedId={
+                                                            product?.productCategoryId
+                                                        }
+                                                        searchable
+                                                        searchPlaceholder={t(
+                                                            'PRODUCT_SearchCategories',
+                                                            'Search categories',
+                                                        )}
+                                                        clearable
+                                                        clearTitle={t(
+                                                            'PRODUCT_ClearCategory',
+                                                            'Clear category',
+                                                        )}
+                                                    />
+                                                </View>
+                                                <View
+                                                    style={
+                                                        styles.overlaySelectSlot
+                                                    }
+                                                >
                                                     <UIOverlaySelect
                                                         name="unitOfMeasure"
                                                         title={t(
                                                             'PRODUCT_SelectUnitOfMeasure',
-                                                            'Select U/of Measure'
+                                                            'Select U/of Measure',
                                                         )}
                                                         list={ums.map((u) => ({
                                                             id: u.name,
                                                             name: u.name,
                                                         }))}
-                                                        selectedId={product?.unitOfMeasure}
-                                                        rules={{ required: true }}
+                                                        selectedId={
+                                                            product?.unitOfMeasure
+                                                        }
+                                                        rules={{
+                                                            required: true,
+                                                        }}
                                                     />
                                                 </View>
                                             </View>
                                             <View style={styles.switchesColumn}>
                                                 <View style={styles.toggleItem}>
-                                                    <Text style={styles.toggleLabel}>
-                                                        {t('PRODUCT_AvailableForSale', 'Available for sale')}
+                                                    <Text
+                                                        style={
+                                                            styles.toggleLabel
+                                                        }
+                                                    >
+                                                        {t(
+                                                            'PRODUCT_AvailableForSale',
+                                                            'Available for sale',
+                                                        )}
                                                     </Text>
-                                                    <View style={styles.toggleSwitchWrap}>
+                                                    <View
+                                                        style={
+                                                            styles.toggleSwitchWrap
+                                                        }
+                                                    >
                                                         <UISwitch name="isActive" />
                                                     </View>
                                                 </View>
                                                 <View style={styles.toggleItem}>
-                                                    <Text style={styles.toggleLabel}>
-                                                        {t('PRODUCT_EbtEligibleLabel', 'EBT eligible')}
+                                                    <Text
+                                                        style={
+                                                            styles.toggleLabel
+                                                        }
+                                                    >
+                                                        {t(
+                                                            'PRODUCT_EbtEligibleLabel',
+                                                            'EBT eligible',
+                                                        )}
                                                     </Text>
-                                                    <View style={styles.toggleSwitchWrap}>
+                                                    <View
+                                                        style={
+                                                            styles.toggleSwitchWrap
+                                                        }
+                                                    >
                                                         <UISwitch name="isEBTEligible" />
                                                     </View>
                                                 </View>
@@ -310,14 +411,23 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                         label={t('COMMON_Name', 'Name')}
                                         placeholder={t('COMMON_Name', 'Name')}
                                         rules={{
-                                            required: t('COMMON_NameRequired', 'Name is required'),
+                                            required: t(
+                                                'COMMON_NameRequired',
+                                                'Name is required',
+                                            ),
                                         }}
                                     />
                                     <UIInput
                                         name="description"
                                         testID="product-input-description"
-                                        placeholder={t('COMMON_Description', 'Description')}
-                                        label={t('COMMON_Description', 'Description')}
+                                        placeholder={t(
+                                            'COMMON_Description',
+                                            'Description',
+                                        )}
+                                        label={t(
+                                            'COMMON_Description',
+                                            'Description',
+                                        )}
                                         multiline
                                         numberOfLines={2}
                                         style={styles.descriptionInput}
@@ -328,9 +438,15 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                                 keyboardType="decimal-pad"
                                                 name="cost"
                                                 testID="product-input-cost"
-                                                label={t('PRODUCT_Cost', 'Cost')}
+                                                label={t(
+                                                    'PRODUCT_Cost',
+                                                    'Cost',
+                                                )}
                                                 allowDecimals
-                                                placeholder={t('PRODUCT_Cost', 'Cost')}
+                                                placeholder={t(
+                                                    'PRODUCT_Cost',
+                                                    'Cost',
+                                                )}
                                                 textAlign="right"
                                                 lIcon="currency-usd"
                                             />
@@ -340,14 +456,20 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                                 keyboardType="decimal-pad"
                                                 name="price"
                                                 testID="product-input-price"
-                                                label={t('COMMON_Price', 'Price')}
+                                                label={t(
+                                                    'COMMON_Price',
+                                                    'Price',
+                                                )}
                                                 allowDecimals
-                                                placeholder={t('COMMON_Price', 'Price')}
+                                                placeholder={t(
+                                                    'COMMON_Price',
+                                                    'Price',
+                                                )}
                                                 textAlign="right"
                                                 rules={{
                                                     required: t(
                                                         'PRODUCT_PriceRequired',
-                                                        'Price is required'
+                                                        'Price is required',
                                                     ),
                                                 }}
                                                 lIcon="currency-usd"
@@ -359,14 +481,20 @@ export function ProductForm({ navigation }: ProductFormProps) {
 
                             <UICard style={styles.sectionCard}>
                                 <Text style={styles.sectionTitle}>
-                                    {t('PRODUCT_IdentifiersSection', 'Identifiers')}
+                                    {t(
+                                        'PRODUCT_IdentifiersSection',
+                                        'Identifiers',
+                                    )}
                                 </Text>
                                 <View style={styles.row}>
                                     <View style={styles.column}>
                                         <UIInput
                                             name="barcode"
                                             testID="product-input-barcode"
-                                            placeholder={t('PRODUCT_Upc', 'UPC')}
+                                            placeholder={t(
+                                                'PRODUCT_Upc',
+                                                'UPC',
+                                            )}
                                             label={t('PRODUCT_Upc', 'UPC')}
                                             lIcon="barcode"
                                         />
@@ -375,7 +503,10 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                         <UIInput
                                             name="sku"
                                             testID="product-input-sku"
-                                            placeholder={t('PRODUCT_Sku', 'SKU')}
+                                            placeholder={t(
+                                                'PRODUCT_Sku',
+                                                'SKU',
+                                            )}
                                             label={t('PRODUCT_Sku', 'SKU')}
                                             lIcon="barcode"
                                         />
@@ -384,7 +515,10 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                         <UIInput
                                             name="plu"
                                             testID="product-input-plu"
-                                            placeholder={t('PRODUCT_Plu', 'PLU')}
+                                            placeholder={t(
+                                                'PRODUCT_Plu',
+                                                'PLU',
+                                            )}
                                             label={t('PRODUCT_Plu', 'PLU')}
                                             lIcon="barcode"
                                         />
@@ -399,7 +533,10 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                 busy={busy}
                                 submitTestID="product-save"
                                 cancelTestID="product-cancel"
-                                submitAction={form.handleSubmit(save, handleInvalidSubmit)}
+                                submitAction={form.handleSubmit(
+                                    save,
+                                    handleInvalidSubmit,
+                                )}
                                 cancelAction={confirmCancel}
                             />
                         </UICard>
@@ -412,7 +549,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
 
 const useStyles = (
     tokens: ReturnType<typeof useDesignTokens>,
-    colors: ReturnType<typeof getThemeColors>
+    colors: ReturnType<typeof getThemeColors>,
 ) =>
     StyleSheet.create({
         screen: {

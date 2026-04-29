@@ -123,14 +123,22 @@
         },
         "getSales": {
           "deploymentBucketName": "amplify-pos-prod-8629e-deployment",
-          "s3Key": "amplify-builds/getSales-512b4144576d39457657-build.zip"
+          "s3Key": "amplify-builds/getSales-3869476c6b626b666a57-build.zip"
         },
         "getSalesSummaryQuery": {
           "deploymentBucketName": "amplify-pos-prod-8629e-deployment",
-          "s3Key": "amplify-builds/getSalesSummaryQuery-4b4e5a347a4b36695574-build.zip"
+          "s3Key": "amplify-builds/getSalesSummaryQuery-537736596676734a3530-build.zip"
         },
         "pos0614c248": {},
-        "pos": {}
+        "pos": {},
+        "inventoryLifecycle": {
+          "deploymentBucketName": "amplify-pos-prod-8629e-deployment",
+          "s3Key": "amplify-builds/inventoryLifecycle-534c7a31762b4438724a-build.zip"
+        },
+        "orderInventoryLifecycle": {
+          "deploymentBucketName": "amplify-pos-prod-8629e-deployment",
+          "s3Key": "amplify-builds/orderInventoryLifecycle-62396e484c6f7a363443-build.zip"
+        }
       },
       "api": {
         "pos": {}
