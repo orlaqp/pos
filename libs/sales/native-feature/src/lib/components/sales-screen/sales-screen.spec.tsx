@@ -6,6 +6,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 const mockDispatch = jest.fn();
 const mockGoBack = jest.fn();
 const mockNavigate = jest.fn();
+const mockNavigationDispatch = jest.fn();
 const mockSearch = jest.fn();
 const mockCategoriesUnsubscribe = jest.fn();
 const mockProductsUnsubscribe = jest.fn();
@@ -17,6 +18,12 @@ const mockSearchFocus = jest.fn();
 const mockSearchBlur = jest.fn();
 const mockSearchClear = jest.fn();
 let focusEffectCallback: (() => void | (() => void)) | undefined;
+let preventRemoveConfig:
+    | {
+          preventRemove: boolean;
+          callback: (options: { data: { action: unknown } }) => void;
+      }
+    | undefined;
 const mockGetNextOrderNumber = jest.fn(async () => '51-EMP-260326-0001');
 const mockReserveNextOrderNumber = jest.fn(() => ({
     orderNo: '51-EMP-260326-0001',
@@ -34,9 +41,10 @@ const mockUpsertOrder = Object.assign(
     })),
     {
         fulfilled: {
-            match: (action: { type?: string }) => action.type === 'orders/upsert/fulfilled',
+            match: (action: { type?: string }) =>
+                action.type === 'orders/upsert/fulfilled',
         },
-    }
+    },
 );
 const mockPayOrder = Object.assign(
     jest.fn((payload: unknown) => ({
@@ -45,9 +53,10 @@ const mockPayOrder = Object.assign(
     })),
     {
         fulfilled: {
-            match: (action: { type?: string }) => action.type === 'orders/pay/fulfilled',
+            match: (action: { type?: string }) =>
+                action.type === 'orders/pay/fulfilled',
         },
-    }
+    },
 );
 const mockSubmitOrderAndPay = Object.assign(
     jest.fn((payload: unknown) => ({
@@ -59,7 +68,7 @@ const mockSubmitOrderAndPay = Object.assign(
             match: (action: { type?: string }) =>
                 action.type === 'orders/submitAndPay/fulfilled',
         },
-    }
+    },
 );
 const mockProduct = {
     id: 'p-1',
@@ -106,6 +115,12 @@ jest.mock('@react-navigation/native', () => ({
             return cleanup;
         }, [callback]);
     },
+    usePreventRemove: (
+        preventRemove: boolean,
+        callback: (options: { data: { action: unknown } }) => void,
+    ) => {
+        preventRemoveConfig = { preventRemove, callback };
+    },
 }));
 
 jest.mock('@pos/theme/native/design-tokens', () => ({
@@ -135,14 +150,21 @@ jest.mock('@pos/employees/data-access', () => ({
 
 jest.mock('@pos/categories/data-access', () => ({
     selectCategoriesEntities: (state: any) => state.categoriesEntities || {},
-    subscribeToCategoryChanges: () => ({ unsubscribe: mockCategoriesUnsubscribe }),
+    subscribeToCategoryChanges: () => ({
+        unsubscribe: mockCategoriesUnsubscribe,
+    }),
 }));
 
 jest.mock('@pos/products/data-access', () => ({
     selectAllProducts: (state: any) => state.allProducts,
     selectProductsEntities: (state: any) =>
         state.productsEntities ||
-        Object.fromEntries((state.allProducts || []).map((product: any) => [product.id, product])),
+        Object.fromEntries(
+            (state.allProducts || []).map((product: any) => [
+                product.id,
+                product,
+            ]),
+        ),
     ProductService: {
         search: (...args: unknown[]) => mockSearch(...args),
     },
@@ -151,8 +173,7 @@ jest.mock('@pos/products/data-access', () => ({
 
 jest.mock('@pos/settings/data-access', () => ({
     getGlobalSettings: (state: any) => state.settings,
-    selectPayFromSalesScreen: (state: any) =>
-        state.settings.payFromSalesScreen,
+    selectPayFromSalesScreen: (state: any) => state.settings.payFromSalesScreen,
     selectStation: (state: any) => state.station,
     stationActions: {
         set: (payload: unknown) => ({ type: 'station/set', payload }),
@@ -161,8 +182,10 @@ jest.mock('@pos/settings/data-access', () => ({
         unsubscribe: mockSettingsUnsubscribe,
     }),
     StationService: {
-        getNextOrderNumber: (...args: unknown[]) => mockGetNextOrderNumber(...args),
-        reserveNextOrderNumber: (...args: unknown[]) => mockReserveNextOrderNumber(...args),
+        getNextOrderNumber: (...args: unknown[]) =>
+            mockGetNextOrderNumber(...args),
+        reserveNextOrderNumber: (...args: unknown[]) =>
+            mockReserveNextOrderNumber(...args),
         saveConfig: (...args: unknown[]) => mockSaveStationConfig(...args),
     },
 }));
@@ -190,18 +213,24 @@ jest.mock('@pos/printings/data-access', () => ({
 
 jest.mock('@pos/orders/data-access', () => ({
     buildEbtAllocations: jest.fn(() => ({})),
-    getLineTotal: jest.fn((quantity: number, price: number) => +(quantity * price).toFixed(2)),
+    getLineTotal: jest.fn(
+        (quantity: number, price: number) => +(quantity * price).toFixed(2),
+    ),
     OrderService: {
-        buildPrintTicketForOrderEntitySnapshot: jest.fn((order: any, options?: any) => ({
-            isReceipt: true,
-            orderId: order?.id,
-            orderNo: order?.orderNo,
-            copyType: options?.copyType ?? 'MERCHANT',
-            sections: [{ title: 'Items', emptyLabel: 'No items', rows: [] }],
-            totals: { subtotal: 0, discount: 0, tax: 0, total: 0 },
-            paymentRows: [],
-            promoCodes: [],
-        })),
+        buildPrintTicketForOrderEntitySnapshot: jest.fn(
+            (order: any, options?: any) => ({
+                isReceipt: true,
+                orderId: order?.id,
+                orderNo: order?.orderNo,
+                copyType: options?.copyType ?? 'MERCHANT',
+                sections: [
+                    { title: 'Items', emptyLabel: 'No items', rows: [] },
+                ],
+                totals: { subtotal: 0, discount: 0, tax: 0, total: 0 },
+                paymentRows: [],
+                promoCodes: [],
+            }),
+        ),
     },
     ordersActions: {
         optimisticMarkPaid: (payload: unknown) => ({
@@ -221,7 +250,10 @@ jest.mock('@pos/orders/data-access', () => ({
 jest.mock('@pos/sales/data-access', () => ({
     MINIMUM_INVENTORY_FOR_SALE: 1,
     cartActions: {
-        setActiveProduct: (payload: unknown) => ({ type: 'cart/setActiveProduct', payload }),
+        setActiveProduct: (payload: unknown) => ({
+            type: 'cart/setActiveProduct',
+            payload,
+        }),
         upsert: (payload: unknown) => ({ type: 'cart/upsert', payload }),
         reset: () => ({ type: 'cart/reset' }),
     },
@@ -270,28 +302,55 @@ jest.mock('./sales-catalog-pane', () => ({
         }
         return (
             <View>
-                <Text testID="sales-catalog-count">{filteredProducts.length}</Text>
-                <Text testID="sales-selected-category">{selectedCategoryId ?? 'none'}</Text>
-                <Text testID="sales-show-all-state">{showAllProducts ? 'all' : 'not-all'}</Text>
-                <Pressable testID="sales-category-clear" onPress={() => onCategoryChange(undefined)}>
+                <Text testID="sales-catalog-count">
+                    {filteredProducts.length}
+                </Text>
+                <Text testID="sales-selected-category">
+                    {selectedCategoryId ?? 'none'}
+                </Text>
+                <Text testID="sales-show-all-state">
+                    {showAllProducts ? 'all' : 'not-all'}
+                </Text>
+                <Pressable
+                    testID="sales-category-clear"
+                    onPress={() => onCategoryChange(undefined)}
+                >
                     <Text>Clear Category</Text>
                 </Pressable>
-                <Pressable testID="sales-category-select" onPress={() => onCategoryChange({ id: 'c-1' })}>
+                <Pressable
+                    testID="sales-category-select"
+                    onPress={() => onCategoryChange({ id: 'c-1' })}
+                >
                     <Text>Select Category</Text>
                 </Pressable>
-                <Pressable testID="sales-category-all" onPress={onShowAllProducts}>
+                <Pressable
+                    testID="sales-category-all"
+                    onPress={onShowAllProducts}
+                >
                     <Text>All Products</Text>
                 </Pressable>
-                <Pressable testID="sales-search-submit" onPress={() => onFilterChange('apple')}>
+                <Pressable
+                    testID="sales-search-submit"
+                    onPress={() => onFilterChange('apple')}
+                >
                     <Text>Search</Text>
                 </Pressable>
-                <Pressable testID="sales-search-barcode" onPress={() => onFilterChange('12345')}>
+                <Pressable
+                    testID="sales-search-barcode"
+                    onPress={() => onFilterChange('12345')}
+                >
                     <Text>Search Barcode</Text>
                 </Pressable>
-                <Pressable testID="sales-search-empty" onPress={() => onFilterChange('')}>
+                <Pressable
+                    testID="sales-search-empty"
+                    onPress={() => onFilterChange('')}
+                >
                     <Text>Search Empty</Text>
                 </Pressable>
-                <Pressable testID="sales-product-select" onPress={() => onProductSelected(mockProduct)}>
+                <Pressable
+                    testID="sales-product-select"
+                    onPress={() => onProductSelected(mockProduct)}
+                >
                     <Text>Product</Text>
                 </Pressable>
                 <Pressable
@@ -312,10 +371,16 @@ jest.mock('./sales-catalog-pane', () => ({
                 >
                     <Text>Product Long Press</Text>
                 </Pressable>
-                <Pressable testID="sales-toggle-categories" onPress={onToggleCategories}>
+                <Pressable
+                    testID="sales-toggle-categories"
+                    onPress={onToggleCategories}
+                >
                     <Text>Toggle Categories</Text>
                 </Pressable>
-                <Pressable testID="sales-current-deals" onPress={onOpenCurrentDeals}>
+                <Pressable
+                    testID="sales-current-deals"
+                    onPress={onOpenCurrentDeals}
+                >
                     <Text>Current Deals</Text>
                 </Pressable>
                 {!hasCatalogProducts ? (
@@ -323,13 +388,20 @@ jest.mock('./sales-catalog-pane', () => ({
                         <Text>No products yet</Text>
                         <Pressable
                             testID="sales-empty-add-category"
-                            onPress={() => onOpenBackOfficeForm('Categories', 'Category Form')}
+                            onPress={() =>
+                                onOpenBackOfficeForm(
+                                    'Categories',
+                                    'Category Form',
+                                )
+                            }
                         >
                             <Text>Add category</Text>
                         </Pressable>
                         <Pressable
                             testID="sales-empty-add-product"
-                            onPress={() => onOpenBackOfficeForm('Products', 'Product Form')}
+                            onPress={() =>
+                                onOpenBackOfficeForm('Products', 'Product Form')
+                            }
                         >
                             <Text>Add product</Text>
                         </Pressable>
@@ -341,7 +413,12 @@ jest.mock('./sales-catalog-pane', () => ({
 }));
 
 jest.mock('./sales-current-deals-dialog', () => ({
-    SalesCurrentDealsDialog: ({ isVisible, rows, selectedProductName, onClose }: any) => {
+    SalesCurrentDealsDialog: ({
+        isVisible,
+        rows,
+        selectedProductName,
+        onClose,
+    }: any) => {
         const { Pressable, Text, View } = require('react-native');
         return isVisible ? (
             <View>
@@ -374,7 +451,10 @@ jest.mock('./sales-product-dialog', () => ({
                 >
                     <Text>Details</Text>
                 </Pressable>
-                <Pressable testID="sales-product-details-close" onPress={onClose}>
+                <Pressable
+                    testID="sales-product-details-close"
+                    onPress={onClose}
+                >
                     <Text>Close</Text>
                 </Pressable>
             </View>
@@ -392,7 +472,7 @@ jest.mock('../cart/cart', () => ({
         onSubmit: (
             cart: any,
             payments?: any[],
-            options?: { intent?: 'save_open_order' | 'receive_payment' }
+            options?: { intent?: 'save_open_order' | 'receive_payment' },
         ) => void;
         onInteractionComplete: () => void;
         preferPayFromSalesScreen?: boolean;
@@ -429,7 +509,7 @@ jest.mock('../cart/cart', () => ({
                         onSubmit(
                             { id: 'cart-1' },
                             [{ type: 'cash', amount: 10 }],
-                            { intent: 'receive_payment' }
+                            { intent: 'receive_payment' },
                         )
                     }
                 >
@@ -458,14 +538,16 @@ describe('SalesScreen', () => {
         mockSearchBlur.mockClear();
         mockSearchClear.mockClear();
         focusEffectCallback = undefined;
+        preventRemoveConfig = undefined;
         interactionCallbacks = [];
         mockInteractionCancel = jest.fn();
-        jest
-            .spyOn(InteractionManager, 'runAfterInteractions')
-            .mockImplementation((callback: () => void) => {
-                interactionCallbacks.push(callback);
-                return { cancel: mockInteractionCancel } as any;
-            });
+        jest.spyOn(
+            InteractionManager,
+            'runAfterInteractions',
+        ).mockImplementation((callback: () => void) => {
+            interactionCallbacks.push(callback);
+            return { cancel: mockInteractionCancel } as any;
+        });
         mockSearch.mockReturnValue({
             items: [mockProduct],
             allNumbers: false,
@@ -552,13 +634,18 @@ describe('SalesScreen', () => {
     const renderSalesScreen = (mode: 'order' | 'payment' = 'order') =>
         render(
             <SalesScreen
-                navigation={{
-                    goBack: mockGoBack,
-                    navigate: mockNavigate,
-                    getState: () => ({ routeNames: ['Home', 'Order List', 'Sales'] }),
-                } as any}
+                navigation={
+                    {
+                        goBack: mockGoBack,
+                        navigate: mockNavigate,
+                        dispatch: mockNavigationDispatch,
+                        getState: () => ({
+                            routeNames: ['Home', 'Order List', 'Sales'],
+                        }),
+                    } as any
+                }
                 route={{ key: 'Sales', name: 'Sales', params: { mode } } as any}
-            />
+            />,
         );
 
     const flushInteractionCallbacks = () => {
@@ -586,15 +673,53 @@ describe('SalesScreen', () => {
         act(() => {
             interactionCallbacks.forEach((callback) => callback());
         });
-
     });
 
     it('dispatches cart upsert when an EA product is selected', () => {
         const { getByTestId } = renderSalesScreen();
         fireEvent.press(getByTestId('sales-product-select'));
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/upsert' })
+            expect.objectContaining({ type: 'cart/upsert' }),
         );
+    });
+
+    it('confirms before leaving the sales screen when a sale is in progress', () => {
+        const backAction = { type: 'GO_BACK' };
+        mockState.cart = {
+            ...mockState.cart,
+            items: [
+                {
+                    identifier: 'i-1',
+                    product: mockProduct,
+                    quantity: 1,
+                },
+            ],
+        };
+
+        renderSalesScreen();
+
+        expect(preventRemoveConfig?.preventRemove).toBe(true);
+
+        act(() => {
+            preventRemoveConfig?.callback({ data: { action: backAction } });
+        });
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Leave sale?',
+            'There is a sale in progress. Do you want to leave this screen?',
+            expect.any(Array),
+        );
+
+        const buttons = (Alert.alert as jest.Mock).mock.calls[0][2];
+        buttons[1].onPress();
+
+        expect(mockNavigationDispatch).toHaveBeenCalledWith(backAction);
+    });
+
+    it('allows leaving the sales screen without confirmation when the cart is empty', () => {
+        renderSalesScreen();
+
+        expect(preventRemoveConfig?.preventRemove).toBe(false);
     });
 
     it('delays search refocus after tapping a product card', () => {
@@ -620,7 +745,7 @@ describe('SalesScreen', () => {
         const { getByTestId } = renderSalesScreen();
         fireEvent.press(getByTestId('sales-product-select-weighted'));
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/setActiveProduct' })
+            expect.objectContaining({ type: 'cart/setActiveProduct' }),
         );
     });
 
@@ -628,7 +753,7 @@ describe('SalesScreen', () => {
         const { getByTestId } = renderSalesScreen();
         fireEvent.press(getByTestId('sales-product-long-press'));
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/setActiveProduct' })
+            expect.objectContaining({ type: 'cart/setActiveProduct' }),
         );
     });
 
@@ -679,7 +804,7 @@ describe('SalesScreen', () => {
         fireEvent.press(getByTestId('sales-product-select-low'));
         expect(Alert.alert).toHaveBeenCalledWith(
             'Not Available',
-            'We do not have this product in inventory at the moment'
+            'We do not have this product in inventory at the moment',
         );
     });
 
@@ -687,14 +812,15 @@ describe('SalesScreen', () => {
         mockState.settings.payFromSalesScreen = true;
 
         const orderScreen = renderSalesScreen('order');
-        expect(orderScreen.getByTestId('sales-cart-prefer-pay-now').props.children).toBe(
-            'pay-now'
-        );
+        expect(
+            orderScreen.getByTestId('sales-cart-prefer-pay-now').props.children,
+        ).toBe('pay-now');
         orderScreen.unmount();
 
         const paymentScreen = renderSalesScreen('payment');
         expect(
-            paymentScreen.getByTestId('sales-cart-prefer-pay-now').props.children
+            paymentScreen.getByTestId('sales-cart-prefer-pay-now').props
+                .children,
         ).toBe('open-order');
     });
 
@@ -733,7 +859,7 @@ describe('SalesScreen', () => {
 
         expect(mockSearch).toHaveBeenCalled();
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/upsert' })
+            expect.objectContaining({ type: 'cart/upsert' }),
         );
         expect(getByTestId('sales-catalog-count').props.children).toBe(0);
     });
@@ -832,9 +958,9 @@ describe('SalesScreen', () => {
         fireEvent.press(getByTestId('sales-current-deals'));
 
         expect(getByTestId('sales-current-deals-count').props.children).toBe(1);
-        expect(getByTestId('sales-current-deals-selected-product').props.children).toBe(
-            'Apple'
-        );
+        expect(
+            getByTestId('sales-current-deals-selected-product').props.children,
+        ).toBe('Apple');
 
         fireEvent.press(getByTestId('sales-current-deals-close'));
 
@@ -866,7 +992,9 @@ describe('SalesScreen', () => {
             fireEvent.press(getByTestId('sales-category-select'));
             await Promise.resolve();
         });
-        expect(getByTestId('sales-selected-category').props.children).toBe('c-1');
+        expect(getByTestId('sales-selected-category').props.children).toBe(
+            'c-1',
+        );
 
         await act(async () => {
             fireEvent.press(getByTestId('sales-search-submit'));
@@ -878,8 +1006,12 @@ describe('SalesScreen', () => {
             focusEffectCallback?.();
         });
 
-        expect(getByTestId('sales-selected-category').props.children).toBe('none');
-        expect(getByTestId('sales-show-all-state').props.children).toBe('not-all');
+        expect(getByTestId('sales-selected-category').props.children).toBe(
+            'none',
+        );
+        expect(getByTestId('sales-show-all-state').props.children).toBe(
+            'not-all',
+        );
         expect(getByTestId('sales-catalog-count').props.children).toBe(0);
         expect(mockSearchClear).toHaveBeenCalled();
     });
@@ -892,20 +1024,26 @@ describe('SalesScreen', () => {
             await Promise.resolve();
         });
 
-        expect(getByTestId('sales-selected-category').props.children).toBe('c-1');
+        expect(getByTestId('sales-selected-category').props.children).toBe(
+            'c-1',
+        );
 
         act(() => {
             focusEffectCallback?.();
         });
 
-        expect(getByTestId('sales-selected-category').props.children).toBe('none');
+        expect(getByTestId('sales-selected-category').props.children).toBe(
+            'none',
+        );
         expect(mockSearchClear).toHaveBeenCalledTimes(1);
 
         act(() => {
             focusEffectCallback?.();
         });
 
-        expect(getByTestId('sales-selected-category').props.children).toBe('none');
+        expect(getByTestId('sales-selected-category').props.children).toBe(
+            'none',
+        );
         expect(mockSearchClear).toHaveBeenCalledTimes(1);
     });
 
@@ -920,7 +1058,7 @@ describe('SalesScreen', () => {
 
         expect(mockReserveNextOrderNumber).toHaveBeenCalledWith(
             mockState.station,
-            mockState.employee
+            mockState.employee,
         );
         expect(mockGetNextOrderNumber).not.toHaveBeenCalled();
         expect(mockSaveStationConfig).toHaveBeenCalledWith({
@@ -936,7 +1074,7 @@ describe('SalesScreen', () => {
                     currentDate: '260326',
                     orderNumber: 1,
                 },
-            })
+            }),
         );
         expect(mockUpsertOrder).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -946,12 +1084,12 @@ describe('SalesScreen', () => {
                 }),
                 defaultPrinter: mockState.printer,
                 storeInfo: mockState.store,
-            })
+            }),
         );
         expect(mockUpsertOrder.mock.calls[0][0]?.skipAutoPrint).toBe(false);
         expect(mockPrintReceipt).not.toHaveBeenCalled();
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/reset' })
+            expect.objectContaining({ type: 'cart/reset' }),
         );
         expect(Alert.alert).not.toHaveBeenCalled();
     });
@@ -986,7 +1124,7 @@ describe('SalesScreen', () => {
                     name: 'Persisted Store',
                 }),
                 skipAutoPrint: false,
-            })
+            }),
         );
     });
 
@@ -1009,10 +1147,10 @@ describe('SalesScreen', () => {
 
         expect(Alert.alert).toHaveBeenCalledWith(
             'Order could not be saved',
-            'The order was not saved. Please try again.'
+            'The order was not saved. Please try again.',
         );
         expect(mockDispatch).not.toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/reset' })
+            expect.objectContaining({ type: 'cart/reset' }),
         );
     });
 
@@ -1024,7 +1162,7 @@ describe('SalesScreen', () => {
         buttons[1].onPress();
 
         expect(Alert.alert).toHaveBeenCalledWith(
-            'An order cannot be marked as paid without payment information'
+            'An order cannot be marked as paid without payment information',
         );
         expect(mockGoBack).not.toHaveBeenCalled();
     });
@@ -1044,7 +1182,7 @@ describe('SalesScreen', () => {
         expect(mockPayOrder).toHaveBeenCalledWith(
             expect.objectContaining({
                 skipAutoPrint: false,
-            })
+            }),
         );
         expect(mockPrintReceipt).not.toHaveBeenCalled();
     });
@@ -1065,13 +1203,13 @@ describe('SalesScreen', () => {
                 payments: [{ type: 'cash', amount: 10 }],
                 defaultPrinter: mockState.printer,
                 storeInfo: mockState.store,
-            })
+            }),
         );
         expect(mockPayOrder.mock.calls[0][0]?.skipAutoPrint).toBe(false);
         expect(mockPrintReceipt).not.toHaveBeenCalled();
         expect(mockNavigate).toHaveBeenCalledWith('Order List');
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/reset' })
+            expect.objectContaining({ type: 'cart/reset' }),
         );
     });
 
@@ -1087,7 +1225,7 @@ describe('SalesScreen', () => {
 
         expect(Alert.alert).toHaveBeenCalledWith(
             'Tenant not ready',
-            'Tenant context is not ready yet. Please try again in a moment.'
+            'Tenant context is not ready yet. Please try again in a moment.',
         );
         expect(mockUpsertOrder).not.toHaveBeenCalled();
     });
@@ -1111,7 +1249,7 @@ describe('SalesScreen', () => {
 
         expect(Alert.alert).toHaveBeenLastCalledWith(
             'Payment could not be completed',
-            'The order is still open. Please try again.'
+            'The order is still open. Please try again.',
         );
         expect(mockNavigate).not.toHaveBeenCalledWith('Order List');
     });
@@ -1131,24 +1269,24 @@ describe('SalesScreen', () => {
             expect.objectContaining({
                 skipAutoPrint: true,
                 payments: [{ type: 'cash', amount: 10 }],
-            })
+            }),
         );
         expect(mockPrintReceipt).toHaveBeenNthCalledWith(
             1,
             expect.anything(),
             expect.anything(),
-            expect.objectContaining({ copyType: 'CUSTOMER' })
+            expect.objectContaining({ copyType: 'CUSTOMER' }),
         );
         expect(mockPrintReceipt).toHaveBeenNthCalledWith(
             2,
             expect.anything(),
             expect.anything(),
-            expect.objectContaining({ copyType: 'MERCHANT' })
+            expect.objectContaining({ copyType: 'MERCHANT' }),
         );
         expect(mockPrintReceipt).toHaveBeenCalledTimes(2);
         expect(mockNavigate).not.toHaveBeenCalledWith('Order List');
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/reset' })
+            expect.objectContaining({ type: 'cart/reset' }),
         );
     });
 
@@ -1156,7 +1294,9 @@ describe('SalesScreen', () => {
         mockState.settings.payFromSalesScreen = true;
         mockDispatch.mockImplementation((action: any) => {
             if (action?.type === 'orders/submitAndPay') {
-                return Promise.resolve({ type: 'orders/submitAndPay/rejected' });
+                return Promise.resolve({
+                    type: 'orders/submitAndPay/rejected',
+                });
             }
 
             return action;
@@ -1172,11 +1312,11 @@ describe('SalesScreen', () => {
 
         expect(Alert.alert).toHaveBeenCalledWith(
             'Payment could not be completed',
-            'The order was saved as open. Please complete payment from Open Orders.'
+            'The order was saved as open. Please complete payment from Open Orders.',
         );
         expect(mockPrintReceipt).not.toHaveBeenCalled();
         expect(mockDispatch).not.toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/reset' })
+            expect.objectContaining({ type: 'cart/reset' }),
         );
     });
 
@@ -1191,10 +1331,13 @@ describe('SalesScreen', () => {
         fireEvent.press(getByTestId('sales-product-details-submit'));
 
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/upsert' })
+            expect.objectContaining({ type: 'cart/upsert' }),
         );
         expect(mockDispatch).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/setActiveProduct', payload: undefined })
+            expect.objectContaining({
+                type: 'cart/setActiveProduct',
+                payload: undefined,
+            }),
         );
     });
 
@@ -1202,7 +1345,7 @@ describe('SalesScreen', () => {
         mockState.productsEntities = { 'p-1': mockProduct };
         renderSalesScreen();
         expect(mockDispatch).not.toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'cart/upsert' })
+            expect.objectContaining({ type: 'cart/upsert' }),
         );
     });
 

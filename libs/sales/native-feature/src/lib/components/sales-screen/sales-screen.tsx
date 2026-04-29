@@ -38,8 +38,9 @@ import {
     selectAllProducts,
     selectProductsEntities,
 } from '@pos/products/data-access';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, usePreventRemove } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { NavigationAction } from '@react-navigation/routers';
 import { ButtonItemType, UIScreen } from '@pos/shared/ui-native';
 import { RootState, useAppDispatch } from '@pos/store';
 import {
@@ -211,6 +212,32 @@ export function SalesScreen({
             storeInfo?.timezone,
         ],
     );
+    const hasSaleInProgress = (cart.items?.length ?? 0) > 0;
+    const confirmLeaveSale = useCallback(
+        ({ data }: { data: { action: NavigationAction } }) => {
+            Alert.alert(
+                t('SALES_LeaveSaleTitle', 'Leave sale?'),
+                t(
+                    'SALES_LeaveSaleMessage',
+                    'There is a sale in progress. Do you want to leave this screen?',
+                ),
+                [
+                    {
+                        text: t('COMMON_Cancel', 'Cancel'),
+                        style: 'cancel',
+                    },
+                    {
+                        text: t('COMMON_Continue', 'Continue'),
+                        style: 'destructive',
+                        onPress: () => navigation.dispatch(data.action),
+                    },
+                ],
+            );
+        },
+        [navigation, t],
+    );
+
+    usePreventRemove(hasSaleInProgress, confirmLeaveSale);
 
     useEffect(() => {
         browseModeRef.current = browseMode;

@@ -394,7 +394,8 @@
             {
               "Effect": "Allow",
               "Action": [
-                "appsync:GraphQL"
+                "appsync:GraphQL",
+                "appsync:GetGraphqlApi"
               ],
               "Resource": [
                 {
