@@ -12,6 +12,7 @@ let mockCartState: any;
 let mockEmployeeState: any;
 let mockStoreState: any;
 let mockStationState: any;
+const mockCustomerGetAll = jest.fn();
 
 jest.mock('react-redux', () => ({
     useDispatch: () => mockDispatch,
@@ -68,6 +69,10 @@ jest.mock('@pos/sales/data-access', () => ({
             type: 'cart/setPricingContext',
             payload,
         }),
+        selectCustomer: (customer: unknown) => ({
+            type: 'cart/selectCustomer',
+            payload: customer,
+        }),
     },
     selectCart: (state: any) => state.cart,
 }));
@@ -89,7 +94,40 @@ jest.mock('@pos/auth/data-access', () => ({
         Admin: 'Admin',
         Checks: 'Receive Check Payment',
         Discounts: 'Discounts',
+        CreateCustomers: 'Create Customers',
     },
+    selectCurrentTenantId: () => 'tenant-1',
+}));
+
+jest.mock('@pos/customers/data-access', () => ({
+    CustomerService: {
+        getAll: (...args: unknown[]) => mockCustomerGetAll(...args),
+    },
+}));
+
+jest.mock('@pos/customers/native-feature', () => ({
+    CustomerPickerDialog: ({
+        visible,
+        customers,
+        onSelect,
+    }: {
+        visible: boolean;
+        customers: any[];
+        onSelect: (customer: any) => void;
+    }) =>
+        visible
+            ? (() => {
+                  const { Pressable, Text } = require('react-native');
+                  return (
+                      <Pressable
+                          testID="mock-customer-picker-select"
+                          onPress={() => onSelect(customers[0])}
+                      >
+                          <Text>Pick customer</Text>
+                      </Pressable>
+                  );
+              })()
+            : null,
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
@@ -348,6 +386,7 @@ describe('Cart', () => {
         mockStoreState = { id: 'store-1', timezone: 'America/New_York' };
         mockStationState = { stationNumber: '25' };
         DiscountService.listDefinitions.mockResolvedValue([]);
+        mockCustomerGetAll.mockImplementation(() => new Promise(() => undefined));
     });
 
     afterEach(() => {
@@ -391,6 +430,42 @@ describe('Cart', () => {
                 }),
             ),
         );
+    });
+
+    it('selects a customer from the cart customer bar', async () => {
+        mockCustomerGetAll.mockResolvedValueOnce([
+            {
+                id: 'customer-1',
+                firstName: 'Ada',
+                lastName: 'Lovelace',
+                displayName: 'Ada Lovelace',
+                creditLimit: 100,
+                creditBalance: 25,
+                creditStatus: 'OK',
+                active: true,
+            },
+        ]);
+        const { getByTestId } = renderCart('payment');
+
+        await waitFor(() => expect(mockCustomerGetAll).toHaveBeenCalled());
+
+        fireEvent.press(getByTestId('cart-customer-button'));
+
+        await waitFor(() => expect(getByTestId('mock-customer-picker-select')).toBeTruthy());
+        fireEvent.press(getByTestId('mock-customer-picker-select'));
+
+        await waitFor(() => {
+            expect(mockDispatch).toHaveBeenCalledWith({
+                type: 'cart/selectCustomer',
+                payload: expect.objectContaining({
+                    id: 'customer-1',
+                    displayName: 'Ada Lovelace',
+                    creditLimit: 100,
+                    creditBalance: 25,
+                    active: true,
+                }),
+            });
+        });
     });
 
     it('opens details on press and select/remove from line actions', () => {

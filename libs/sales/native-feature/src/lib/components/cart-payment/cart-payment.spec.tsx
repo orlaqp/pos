@@ -303,4 +303,91 @@ describe('CartPayment integration', () => {
             disabled: false,
         });
     });
+
+    it('requires a customer before customer credit can be used', () => {
+        const onPaymentEntered = jest.fn();
+        const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
+        const { getByTestId } = render(
+            <CartPayment
+                total={20}
+                ebtEligibleTotal={0}
+                canReceiveChecks={false}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-credit'));
+
+        expect(alertSpy).toHaveBeenCalledWith(
+            'Customer credit unavailable',
+            'Add a customer to the cart before using customer credit.'
+        );
+        expect(getByTestId('payment-input-credit')).toHaveProp('editable', false);
+    });
+
+    it('submits partial customer credit with another payment method', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId } = render(
+            <CartPayment
+                total={20}
+                ebtEligibleTotal={0}
+                customer={{
+                    id: 'customer-1',
+                    displayName: 'Ada Lovelace',
+                    firstName: 'Ada',
+                    creditLimit: 100,
+                    creditBalance: 25,
+                    active: true,
+                }}
+                canReceiveChecks={false}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-credit'));
+        fireEvent.changeText(getByTestId('payment-input-credit'), '10');
+        fireEvent.press(getByTestId('payment-card-cash'));
+        fireEvent.changeText(getByTestId('payment-input-cash'), '10');
+        fireEvent.press(getByTestId('payment-submit-button'));
+
+        expect(onPaymentEntered).toHaveBeenCalledWith([
+            {
+                type: 'CASH',
+                amount: 10,
+                customerId: undefined,
+                customerDisplayName: undefined,
+            },
+            {
+                type: 'CREDIT',
+                amount: 10,
+                customerId: 'customer-1',
+                customerDisplayName: 'Ada Lovelace',
+            },
+        ]);
+    });
+
+    it('keeps submit disabled when customer credit exceeds available credit', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId } = render(
+            <CartPayment
+                total={20}
+                ebtEligibleTotal={0}
+                customer={{
+                    id: 'customer-1',
+                    firstName: 'Ada',
+                    creditLimit: 15,
+                    creditBalance: 10,
+                    active: true,
+                }}
+                canReceiveChecks={false}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-credit'));
+
+        expect(getByTestId('payment-submit-button')).toHaveProp('accessibilityState', {
+            disabled: true,
+        });
+    });
 });

@@ -1,10 +1,16 @@
 import {
     cartActions,
+    CartCustomer,
     CartItem,
     CartPayment as ICartPayment,
     CartState,
     selectCart,
 } from '@pos/sales/data-access';
+import {
+    CustomerEntity,
+    CustomerService,
+} from '@pos/customers/data-access';
+import { CustomerPickerDialog } from '@pos/customers/native-feature';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button } from '@rneui/themed';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -16,14 +22,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useSharedStyles } from '@pos/theme/native';
 
 import CartLine from '../cart-line/cart-line';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import EmptyCart from '../../../../../../../apps/mobile-ui/assets/illustrations/empty-cart-1600.png';
 import CartPaymentDialog from '../cart-payment/cart-payment-dialog';
 import { selectLoginEmployee } from '@pos/employees/data-access';
-import { Role } from '@pos/auth/data-access';
+import { Role, selectCurrentTenantId } from '@pos/auth/data-access';
 import { ProductEntity } from '@pos/products/data-access';
 import { selectStore } from '@pos/store-info/data-access';
 import { selectStation } from '@pos/settings/data-access';
-import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
+import { translateWithFallback } from '@pos/shared/utils';
 import {
     buildDiscountBreakdown,
     buildOrderSummary,
@@ -112,6 +119,7 @@ export function Cart({
     const dispatch = useDispatch();
     const cart = useSelector(selectCart);
     const employee = useSelector(selectLoginEmployee);
+    const tenantId = useSelector(selectCurrentTenantId);
     const storeInfo = useSelector(selectStore);
     const stationInfo = useSelector(selectStation);
     const [receivePayment, setReceivePayment] = useState<boolean>(false);
@@ -124,6 +132,8 @@ export function Cart({
     const [promoVisible, setPromoVisible] = useState(false);
     const [manualVisible, setManualVisible] = useState(false);
     const [overrideVisible, setOverrideVisible] = useState(false);
+    const [customerPickerVisible, setCustomerPickerVisible] = useState(false);
+    const [customers, setCustomers] = useState<CustomerEntity[]>([]);
     const [promoCodeInput, setPromoCodeInput] = useState('');
     const [manualDraft, setManualDraft] =
         useState<ManualDraft>(defaultManualDraft);
@@ -152,6 +162,13 @@ export function Cart({
             : manualDraft.amountValue;
     const approvalTargetName = selectedItem?.product.name || 'this order';
     const t = translateWithFallback;
+
+    const customerDisplayName =
+        cart.customer?.displayName ||
+        [cart.customer?.firstName, cart.customer?.lastName].filter(Boolean).join(' ') ||
+        'Walk-in';
+    const customerAvailableCredit =
+        (cart.customer?.creditLimit ?? 0) - (cart.customer?.creditBalance ?? 0);
 
     const hasDiscountSummary =
         cart.footer.discount > 0 ||
@@ -319,6 +336,53 @@ export function Cart({
         storeInfo?.id,
         storeInfo?.timezone,
     ]);
+
+    useEffect(() => {
+        let active = true;
+
+        CustomerService.getAll()
+            .then((items) => {
+                if (active) {
+                    setCustomers(items);
+                }
+            })
+            .catch(() => {
+                if (active) {
+                    setCustomers([]);
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    const toCartCustomer = (customer: CustomerEntity): CartCustomer => ({
+        id: customer.id,
+        displayName:
+            customer.displayName ||
+            [customer.firstName, customer.lastName].filter(Boolean).join(' '),
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        phone: customer.phone,
+        email: customer.email,
+        active: customer.active,
+        creditLimit: customer.creditLimit,
+        creditBalance: customer.creditBalance,
+        creditStatus: customer.creditStatus,
+    });
+
+    const selectCustomer = (customer: CustomerEntity) => {
+        dispatch(cartActions.selectCustomer(toCartCustomer(customer)));
+        setCustomers((current) => {
+            const exists = current.some((item) => item.id === customer.id);
+            return exists
+                ? current.map((item) => (item.id === customer.id ? customer : item))
+                : [customer, ...current];
+        });
+        setCustomerPickerVisible(false);
+        onInteractionComplete();
+    };
 
     const onSelect = (item: CartItem) => {
         if (cart.selected?.identifier === item.identifier) {
@@ -684,6 +748,30 @@ export function Cart({
             </View>
 
             <View style={localStyles.actionsWrap}>
+                <Pressable
+                    testID="cart-customer-button"
+                    onPress={() => setCustomerPickerVisible(true)}
+                    style={localStyles.customerBar}
+                >
+                    <View style={localStyles.customerBarMain}>
+                        <Text style={localStyles.customerBarLabel}>Customer</Text>
+                        <Text style={localStyles.customerBarName}>{customerDisplayName}</Text>
+                    </View>
+                    {cart.customer?.id ? (
+                        <View style={localStyles.customerCreditMeta}>
+                            <Text style={localStyles.customerCreditText}>
+                                Available ${customerAvailableCredit.toFixed(2)}
+                            </Text>
+                            <Text style={localStyles.customerCreditText}>
+                                {cart.customer.active === false
+                                    ? 'Inactive'
+                                    : cart.customer.creditStatus || 'OK'}
+                            </Text>
+                        </View>
+                    ) : (
+                        <Text style={localStyles.customerCreditText}>Add customer</Text>
+                    )}
+                </Pressable>
                 {typeof __DEV__ !== 'undefined' && __DEV__ && isE2EEnabled() ? (
                     <View style={localStyles.e2eShortcutContainer}>
                         <Pressable
@@ -848,6 +936,19 @@ export function Cart({
                     onInteractionComplete();
                 }}
                 onPaymentEntered={paymentEntered}
+            />
+
+            <CustomerPickerDialog
+                visible={customerPickerVisible}
+                customers={customers}
+                tenantId={tenantId}
+                currentEmployee={employee}
+                onClose={() => {
+                    setCustomerPickerVisible(false);
+                    onInteractionComplete();
+                }}
+                onSelect={selectCustomer}
+                onCreated={selectCustomer}
             />
 
             {canViewDiscountControls && (

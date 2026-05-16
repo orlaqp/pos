@@ -116,6 +116,7 @@ export function CartPaymentDialog({
                             <CartPayment
                                 total={orderSummary.total}
                                 ebtEligibleTotal={orderSummary.ebtEligibleTotal}
+                                customer={cart.customer}
                                 canReceiveChecks={canReceiveChecks}
                                 onPaymentEntered={onPaymentEntered}
                                 layout="compact"
