@@ -64,7 +64,7 @@ describe('EndOfDay', () => {
     });
 
     it('computes and formats payment totals', () => {
-        const total = getPaymentMethodsTotal({ CC: 12.5, CASH: 3, CHECK: 4.25, EBT: 1.5 });
+        const total = getPaymentMethodsTotal({ CC: 12.5, CASH: 3, CHECK: 4.25, EBT: 1.5, CREDIT: 0 });
         expect(total).toBe(21.25);
         expect(formatPaymentAmount(total)).toBe('$21.25');
     });
@@ -116,7 +116,7 @@ describe('EndOfDay', () => {
             2.5,
             1.5,
             17,
-            { CC: 10, CASH: 5, CHECK: 2, EBT: 0 },
+            { CC: 10, CASH: 5, CHECK: 2, EBT: 0, CREDIT: 4 },
             '#111'
         );
 
@@ -130,6 +130,7 @@ describe('EndOfDay', () => {
             { text: 'Cash', value: '$5', backgroundColor: '#e91e63', flex: 1 },
             { text: 'Checks', value: '$2', backgroundColor: '#43a047', flex: 1 },
             { text: 'EBT', value: '$0', backgroundColor: '#00695c', flex: 1 },
+            { text: 'Customer Credit', value: '$4', backgroundColor: '#455a64', flex: 1 },
         ]);
     });
 
@@ -315,6 +316,7 @@ describe('EndOfDay', () => {
             CASH: 0,
             CHECK: 0,
             EBT: 30,
+            CREDIT: 0,
         });
         expect(result.references.netSales).toBe(75);
     });
@@ -371,6 +373,7 @@ describe('EndOfDay', () => {
             CASH: 0,
             CHECK: 0,
             EBT: 20,
+            CREDIT: 0,
         });
         expect(result.references.netSales).toBe(80);
     });

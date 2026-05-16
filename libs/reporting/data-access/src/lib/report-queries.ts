@@ -1,5 +1,11 @@
 import { DataStore } from '@pos/shared/amplify';
-import { Order, OrderRefund, OrderRefundLine, OrderStatus } from '@pos/shared/models';
+import {
+    CustomerCreditTransaction,
+    Order,
+    OrderRefund,
+    OrderRefundLine,
+    OrderStatus,
+} from '@pos/shared/models';
 import { DateRange } from '@pos/shared/ui-native';
 import { getSalesForRange } from './reporting.service';
 
@@ -34,4 +40,19 @@ export const getRefundLinesForRefundIds = async (refundIds: string[]) => {
     const refundIdSet = new Set(refundIds);
 
     return allLines.filter((line) => refundIdSet.has(line.refundId));
+};
+
+export const getCustomerCreditTransactionsForRange = async ({
+    range,
+}: {
+    range: DateRange;
+}) => {
+    const from = range.startDate.toISOString();
+    const to = range.endDate.toISOString();
+
+    const transactions = await DataStore.query(CustomerCreditTransaction, (transaction) =>
+        transaction.transactionDate.between(from, to)
+    );
+
+    return [...transactions];
 };

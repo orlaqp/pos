@@ -37,6 +37,7 @@ interface RefundRow {
     date: string;
     employee: string;
     amount: number;
+    paymentTypes: string;
     reason: string;
 }
 
@@ -76,6 +77,7 @@ export function RefundReport() {
             { label: t('REPORT_Header_Date', 'Date'), field: 'date', width: 1.2 },
             { label: t('REPORT_Header_OrderNo', 'Order #'), field: 'orderNo', width: 2.2 },
             { label: t('REPORT_Header_Employee', 'Employee'), field: 'employee', width: 1.8 },
+            { label: t('REPORT_Header_Payments', 'Payments'), field: 'paymentTypes', width: 1.6 },
             {
                 label: t('REPORT_Header_Amount', 'Amount'),
                 field: 'amount',

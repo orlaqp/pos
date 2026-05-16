@@ -35,6 +35,7 @@ export interface PaymentMethodsSummary {
     CASH: number;
     CHECK: number;
     EBT: number;
+    CREDIT: number;
 }
 
 export interface OrderPaymentDetailRow {
@@ -57,6 +58,7 @@ const createEmptyPaymentSummary = (): PaymentMethodsSummary => ({
     CASH: 0,
     CHECK: 0,
     EBT: 0,
+    CREDIT: 0,
 });
 
 const compareOrdersByTicketCreatedAtDesc = (left: Order, right: Order) => {
@@ -115,7 +117,8 @@ const getKnownPaymentType = (type: string | undefined | null) => {
     return normalized === 'CC' ||
         normalized === 'CASH' ||
         normalized === 'CHECK' ||
-        normalized === 'EBT'
+        normalized === 'EBT' ||
+        normalized === 'CREDIT'
         ? normalized
         : null;
 };
@@ -277,7 +280,7 @@ const buildRefundLinePaymentSummary = (
     );
     const nonEbtPayments = (order.paymentInfo?.payments || []).filter((payment) => {
         const type = getKnownPaymentType(payment?.type);
-        return type === 'CC' || type === 'CASH' || type === 'CHECK';
+        return type === 'CC' || type === 'CASH' || type === 'CHECK' || type === 'CREDIT';
     });
 
     [...allocateAmountAcrossPayments(ebtPayments, refundLineTotals.ebt), ...allocateAmountAcrossPayments(nonEbtPayments, refundLineTotals.nonEbt)].forEach(
@@ -351,7 +354,7 @@ const buildOrderPaymentSummary = (
                 acc[payment.type] = roundMoney(acc[payment.type] + payment.amount);
                 return acc;
             },
-            { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+            createEmptyPaymentSummary()
         );
     }
 
@@ -361,7 +364,7 @@ const buildOrderPaymentSummary = (
     const nonEbtPayments = (order.paymentInfo?.payments || []).filter(
         (payment) => {
             const type = getKnownPaymentType(payment?.type);
-            return type === 'CC' || type === 'CASH' || type === 'CHECK';
+            return type === 'CC' || type === 'CASH' || type === 'CHECK' || type === 'CREDIT';
         }
     );
 
@@ -379,7 +382,7 @@ const buildOrderPaymentSummary = (
             acc[payment.type] = roundMoney(acc[payment.type] + payment.amount);
             return acc;
         },
-        { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+        createEmptyPaymentSummary()
     );
 };
 
@@ -394,7 +397,7 @@ const buildOriginalPaymentSummary = (order: Order) =>
             acc[type] = roundMoney(acc[type] + Number(payment?.amount || 0));
             return acc;
         },
-        { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+        createEmptyPaymentSummary()
     );
 
 const buildCapturedRefundPaymentSummary = (
@@ -413,7 +416,7 @@ const buildCapturedRefundPaymentSummary = (
         );
 
     if (!refundPayments.length) {
-        return { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary;
+        return createEmptyPaymentSummary();
     }
 
     const scopedRefundAmount = request.productId
@@ -434,7 +437,7 @@ const buildCapturedRefundPaymentSummary = (
             acc[payment.type] = roundMoney(acc[payment.type] + payment.amount * ratio);
             return acc;
         },
-        { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+        createEmptyPaymentSummary()
     );
 };
 
@@ -610,7 +613,7 @@ export const filterOrders = (
 
             return acc;
         },
-        { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+        createEmptyPaymentSummary()
     );
 
     const references = buildEndOfDayReferenceSummary(

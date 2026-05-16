@@ -1,4 +1,6 @@
 import {
+    CustomerCreditTransaction,
+    CustomerCreditTransactionType,
     Order,
     OrderRefund,
     OrderRefundLine,
@@ -14,6 +16,7 @@ const PAYMENT_TYPE_LABELS: Record<string, string> = {
     [PaymentType.CASH]: 'Cash',
     [PaymentType.EBT]: 'EBT',
     [PaymentType.CHECK]: 'Checks',
+    [PaymentType.CREDIT]: 'Customer Credit',
 };
 
 type DiscountApplicationSummary = {
@@ -432,7 +435,11 @@ const allocateRefundAcrossOrderPayments = (
         .filter((payment) => payment.amount > 0);
 };
 
-export const buildPaymentSummaryRows = (orders: Order[], refunds: OrderRefund[] = []) => {
+export const buildPaymentSummaryRows = (
+    orders: Order[],
+    refunds: OrderRefund[] = [],
+    accountPayments: CustomerCreditTransaction[] = []
+) => {
     const totals = new Map<string, { amount: number; count: number }>();
     const ordersById = new Map<string, Order>();
 
@@ -467,6 +474,19 @@ export const buildPaymentSummaryRows = (orders: Order[], refunds: OrderRefund[] 
             addPaymentAmount(totals, payment.type, -1 * payment.amount, 0);
         });
     });
+
+    accountPayments
+        .filter(
+            (transaction) =>
+                transaction.type === CustomerCreditTransactionType.ACCOUNT_PAYMENT
+        )
+        .forEach((transaction) => {
+            const label = `Account Payment - ${toPaymentLabel(transaction.paymentMethod)}`;
+            const current = totals.get(label) || { amount: 0, count: 0 };
+            current.amount = round(current.amount + Number(transaction.amount || 0));
+            current.count += 1;
+            totals.set(label, current);
+        });
 
     const totalAmount = Array.from(totals.values()).reduce((sum, item) => sum + item.amount, 0);
 
@@ -611,6 +631,10 @@ export const buildRefundReportRows = (refunds: OrderRefund[]) =>
             date: (refund.refundDate || '').substring(0, 10),
             employee: refund.createdByEmployeeName || 'Unknown',
             amount: Number(refund.refundAmount || 0),
+            paymentTypes: (refund.refundPayments || [])
+                .map((payment) => toPaymentLabel(payment?.type))
+                .filter(Boolean)
+                .join(', ') || '-',
             reason: refund.refundReason || '-',
         }))
         .sort((a, b) => (a.date < b.date ? 1 : -1));

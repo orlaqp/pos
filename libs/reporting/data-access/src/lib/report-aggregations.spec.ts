@@ -134,6 +134,7 @@ describe('report-aggregations', () => {
                 date: '2026-03-16',
                 employee: 'Grace',
                 amount: 18,
+                paymentTypes: '-',
                 reason: 'Damaged item',
             },
         ]);
@@ -193,6 +194,56 @@ describe('report-aggregations', () => {
         ).toEqual([
             { paymentType: 'Cash', amount: 4.79, count: 1, percent: '50%' },
             { paymentType: 'Cards', amount: 4.71, count: 1, percent: '50%' },
+        ]);
+    });
+
+    it('includes customer credit in payment summaries and refund method rows', () => {
+        const creditOrder: any = {
+            ...paidOrder,
+            id: 'credit-order',
+            paymentInfo: {
+                payments: [
+                    { type: 'CREDIT', amount: 12 },
+                    { type: 'CASH', amount: 8 },
+                ],
+            },
+        };
+        const creditRefund: any = {
+            id: 'credit-refund',
+            orderId: 'credit-order',
+            orderNo: '3003',
+            refundDate: '2026-03-17T10:00:00.000Z',
+            createdByEmployeeName: 'Ada',
+            refundAmount: 4,
+            refundPayments: [{ type: 'CREDIT', amount: 4 }],
+        };
+
+        expect(buildPaymentSummaryRows([creditOrder], [creditRefund])).toEqual([
+            { paymentType: 'Customer Credit', amount: 8, count: 1, percent: '50%' },
+            { paymentType: 'Cash', amount: 8, count: 1, percent: '50%' },
+        ]);
+        expect(
+            buildPaymentSummaryRows([creditOrder], [creditRefund], [
+                {
+                    type: 'ACCOUNT_PAYMENT',
+                    amount: 6,
+                    paymentMethod: 'CASH',
+                },
+            ] as any)
+        ).toEqual([
+            { paymentType: 'Customer Credit', amount: 8, count: 1, percent: '36%' },
+            { paymentType: 'Cash', amount: 8, count: 1, percent: '36%' },
+            { paymentType: 'Account Payment - Cash', amount: 6, count: 1, percent: '27%' },
+        ]);
+        expect(buildRefundReportRows([creditRefund])).toEqual([
+            {
+                orderNo: '3003',
+                date: '2026-03-17',
+                employee: 'Ada',
+                amount: 4,
+                paymentTypes: 'Customer Credit',
+                reason: '-',
+            },
         ]);
     });
 
