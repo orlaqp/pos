@@ -7,7 +7,7 @@ import {
     EntityState,
     PayloadAction,
 } from '@reduxjs/toolkit';
-import { CustomerEntity } from '../customer.entity';
+import { CreditTransactionEntity, CustomerEntity } from '../customer.entity';
 
 export const CUSTOMERS_FEATURE_KEY = 'customers';
 
@@ -15,6 +15,7 @@ export interface CustomersState extends EntityState<CustomerEntity, string> {
     loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
     error?: string;
     selected?: CustomerEntity;
+    ledger: CreditTransactionEntity[];
 }
 
 export const customersAdapter = createEntityAdapter<CustomerEntity, string>({
@@ -25,6 +26,7 @@ export const initialCustomersState: CustomersState =
     customersAdapter.getInitialState({
         loadingStatus: 'not loaded',
         selected: undefined,
+        ledger: [],
     });
 
 export const customersSlice = createSlice({
@@ -46,6 +48,15 @@ export const customersSlice = createSlice({
         },
         clearSelection: (state: CustomersState) => {
             state.selected = undefined;
+        },
+        setLedger: (
+            state: CustomersState,
+            action: PayloadAction<CreditTransactionEntity[]>
+        ) => {
+            state.ledger = action.payload;
+        },
+        clearLedger: (state: CustomersState) => {
+            state.ledger = [];
         },
     },
 });
@@ -79,3 +90,30 @@ export const selectSelectedCustomer = createSelector(
     getCustomersState,
     (state: CustomersState) => state.selected
 );
+
+export const selectCustomerLedger = createSelector(
+    getCustomersState,
+    (state: CustomersState) => state.ledger
+);
+
+export const selectCustomerSearchResults = (rootState: RootState, query: string) => {
+    const normalizedQuery = query.trim().toLowerCase();
+    const customers = selectAllCustomers(rootState);
+
+    if (!normalizedQuery) {
+        return customers;
+    }
+
+    return customers.filter((customer) =>
+        [
+            customer.displayName,
+            customer.firstName,
+            customer.middleName,
+            customer.lastName,
+            customer.phone,
+            customer.email?.trim().toLowerCase(),
+        ]
+            .filter(Boolean)
+            .some((value) => value?.toLowerCase().includes(normalizedQuery))
+    );
+};

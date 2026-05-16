@@ -9,6 +9,7 @@ import {
 export type CustomerEntity = {
     id?: string;
     tenantId?: string;
+    displayName?: string;
     firstName: string;
     lastName?: string | null | undefined;
     middleName?: string | null | undefined;
@@ -47,21 +48,44 @@ export type CreditTransactionEntity = {
     updatedAt?: string | null | undefined;
 };
 
+const coalesceCreditAmount = (value?: number | null) => value ?? 0;
+
+const coalesceCreditStatus = (
+    customer: Pick<CustomerEntity, 'creditLimit' | 'creditBalance' | 'creditStatus'>
+) => {
+    if (customer.creditStatus) {
+        return customer.creditStatus;
+    }
+
+    return coalesceCreditAmount(customer.creditBalance) > coalesceCreditAmount(customer.creditLimit)
+        ? CustomerCreditStatus.OVER_LIMIT
+        : CustomerCreditStatus.OK;
+};
+
+export const formatCustomerDisplayName = (
+    customer: Pick<CustomerEntity, 'firstName' | 'middleName' | 'lastName'>
+) =>
+    [customer.firstName, customer.middleName, customer.lastName]
+        .map((part) => part?.trim())
+        .filter(Boolean)
+        .join(' ');
+
 export class CustomerEntityMapper {
     static fromModel(customer: Customer): CustomerEntity {
         return {
             id: customer.id,
             tenantId: customer.tenantId,
+            displayName: formatCustomerDisplayName(customer),
             firstName: customer.firstName,
             lastName: customer.lastName,
             middleName: customer.middleName,
             dob: customer.dob,
             phone: customer.phone,
             email: customer.email,
-            active: customer.active,
-            creditLimit: customer.creditLimit,
-            creditBalance: customer.creditBalance,
-            creditStatus: customer.creditStatus,
+            active: customer.active ?? true,
+            creditLimit: coalesceCreditAmount(customer.creditLimit),
+            creditBalance: coalesceCreditAmount(customer.creditBalance),
+            creditStatus: coalesceCreditStatus(customer),
             createdAt: customer.createdAt,
             updatedAt: customer.updatedAt,
         };
