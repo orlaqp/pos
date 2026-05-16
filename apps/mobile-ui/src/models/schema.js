@@ -571,6 +571,36 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "active": {
+                    "name": "active",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "creditLimit": {
+                    "name": "creditLimit",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "creditBalance": {
+                    "name": "creditBalance",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "creditStatus": {
+                    "name": "creditStatus",
+                    "isArray": false,
+                    "type": {
+                        "enum": "CustomerCreditStatus"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -594,6 +624,210 @@ export const schema = {
                 {
                     "type": "model",
                     "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "provider": "userPools",
+                                "ownerField": "tenantId",
+                                "allow": "owner",
+                                "identityClaim": "sub",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "CustomerCreditTransaction": {
+            "name": "CustomerCreditTransaction",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tenantId": {
+                    "name": "tenantId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "customerId": {
+                    "name": "customerId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "customerDisplayName": {
+                    "name": "customerDisplayName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "customerPhone": {
+                    "name": "customerPhone",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "customerEmail": {
+                    "name": "customerEmail",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "transactionDate": {
+                    "name": "transactionDate",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "type": {
+                    "name": "type",
+                    "isArray": false,
+                    "type": {
+                        "enum": "CustomerCreditTransactionType"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "amount": {
+                    "name": "amount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "balanceAfter": {
+                    "name": "balanceAfter",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "paymentMethod": {
+                    "name": "paymentMethod",
+                    "isArray": false,
+                    "type": {
+                        "enum": "PaymentType"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "orderId": {
+                    "name": "orderId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "orderNo": {
+                    "name": "orderNo",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "referenceKey": {
+                    "name": "referenceKey",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "employeeId": {
+                    "name": "employeeId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "employeeName": {
+                    "name": "employeeName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "storeId": {
+                    "name": "storeId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "stationId": {
+                    "name": "stationId",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "notes": {
+                    "name": "notes",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "CustomerCreditTransactions",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byCustomerByTransactionDate",
+                        "fields": [
+                            "customerId",
+                            "transactionDate"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byReferenceKey",
+                        "fields": [
+                            "referenceKey"
+                        ]
+                    }
                 },
                 {
                     "type": "auth",
@@ -4372,6 +4606,22 @@ export const schema = {
                 "RECONCILED_WITH_EXCEPTION"
             ]
         },
+        "CustomerCreditStatus": {
+            "name": "CustomerCreditStatus",
+            "values": [
+                "OK",
+                "OVER_LIMIT"
+            ]
+        },
+        "CustomerCreditTransactionType": {
+            "name": "CustomerCreditTransactionType",
+            "values": [
+                "CREDIT_PURCHASE",
+                "ACCOUNT_PAYMENT",
+                "REFUND_REVERSAL",
+                "ADJUSTMENT"
+            ]
+        },
         "InventoryApplyState": {
             "name": "InventoryApplyState",
             "values": [
@@ -4401,7 +4651,8 @@ export const schema = {
                 "CASH",
                 "CHECK",
                 "CC",
-                "EBT"
+                "EBT",
+                "CREDIT"
             ]
         },
         "OrderStatus": {
@@ -5323,5 +5574,5 @@ export const schema = {
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "e4036b45ef8c8b244ee41ba665eb1d36"
+    "version": "b2c783e7042744ef58bbf07e4b9e87fb"
 };

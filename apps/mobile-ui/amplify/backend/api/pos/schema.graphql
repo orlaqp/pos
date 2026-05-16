@@ -96,6 +96,18 @@ enum ReconciliationStatus {
   RECONCILED_WITH_EXCEPTION
 }
 
+enum CustomerCreditStatus {
+  OK
+  OVER_LIMIT
+}
+
+enum CustomerCreditTransactionType {
+  CREDIT_PURCHASE
+  ACCOUNT_PAYMENT
+  REFUND_REVERSAL
+  ADJUSTMENT
+}
+
 type Store @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
   tenantId: ID!
@@ -140,6 +152,32 @@ type Customer @model @auth(rules: [{allow: owner, ownerField: "tenantId", identi
   dob: AWSDate
   phone: String
   email: String
+  active: Boolean @default(value: "true")
+  creditLimit: Float @default(value: "0")
+  creditBalance: Float @default(value: "0")
+  creditStatus: CustomerCreditStatus @default(value: "OK")
+}
+
+type CustomerCreditTransaction @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+  id: ID!
+  tenantId: ID!
+  customerId: ID! @index(name: "byCustomerByTransactionDate", sortKeyFields: ["transactionDate"])
+  customerDisplayName: String!
+  customerPhone: String
+  customerEmail: String
+  transactionDate: AWSDateTime!
+  type: CustomerCreditTransactionType!
+  amount: Float!
+  balanceAfter: Float!
+  paymentMethod: PaymentType
+  orderId: ID
+  orderNo: String
+  referenceKey: String! @index(name: "byReferenceKey")
+  employeeId: String!
+  employeeName: String!
+  storeId: String
+  stationId: String
+  notes: String
 }
 
 type Employee @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
@@ -404,6 +442,7 @@ enum PaymentType {
     CHECK
     CC
     EBT
+    CREDIT
 }
 
 type Payment {

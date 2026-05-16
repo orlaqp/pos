@@ -378,6 +378,10 @@ export const onCreateCustomer = /* GraphQL */ `subscription OnCreateCustomer(
     dob
     phone
     email
+    active
+    creditLimit
+    creditBalance
+    creditStatus
     createdAt
     updatedAt
     _version
@@ -403,6 +407,10 @@ export const onUpdateCustomer = /* GraphQL */ `subscription OnUpdateCustomer(
     dob
     phone
     email
+    active
+    creditLimit
+    creditBalance
+    creditStatus
     createdAt
     updatedAt
     _version
@@ -428,6 +436,10 @@ export const onDeleteCustomer = /* GraphQL */ `subscription OnDeleteCustomer(
     dob
     phone
     email
+    active
+    creditLimit
+    creditBalance
+    creditStatus
     createdAt
     updatedAt
     _version
@@ -439,6 +451,114 @@ export const onDeleteCustomer = /* GraphQL */ `subscription OnDeleteCustomer(
 ` as GeneratedSubscription<
   APITypes.OnDeleteCustomerSubscriptionVariables,
   APITypes.OnDeleteCustomerSubscription
+>;
+export const onCreateCustomerCreditTransaction = /* GraphQL */ `subscription OnCreateCustomerCreditTransaction(
+  $filter: ModelSubscriptionCustomerCreditTransactionFilterInput
+  $tenantId: String
+) {
+  onCreateCustomerCreditTransaction(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    customerId
+    customerDisplayName
+    customerPhone
+    customerEmail
+    transactionDate
+    type
+    amount
+    balanceAfter
+    paymentMethod
+    orderId
+    orderNo
+    referenceKey
+    employeeId
+    employeeName
+    storeId
+    stationId
+    notes
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateCustomerCreditTransactionSubscriptionVariables,
+  APITypes.OnCreateCustomerCreditTransactionSubscription
+>;
+export const onUpdateCustomerCreditTransaction = /* GraphQL */ `subscription OnUpdateCustomerCreditTransaction(
+  $filter: ModelSubscriptionCustomerCreditTransactionFilterInput
+  $tenantId: String
+) {
+  onUpdateCustomerCreditTransaction(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    customerId
+    customerDisplayName
+    customerPhone
+    customerEmail
+    transactionDate
+    type
+    amount
+    balanceAfter
+    paymentMethod
+    orderId
+    orderNo
+    referenceKey
+    employeeId
+    employeeName
+    storeId
+    stationId
+    notes
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateCustomerCreditTransactionSubscriptionVariables,
+  APITypes.OnUpdateCustomerCreditTransactionSubscription
+>;
+export const onDeleteCustomerCreditTransaction = /* GraphQL */ `subscription OnDeleteCustomerCreditTransaction(
+  $filter: ModelSubscriptionCustomerCreditTransactionFilterInput
+  $tenantId: String
+) {
+  onDeleteCustomerCreditTransaction(filter: $filter, tenantId: $tenantId) {
+    id
+    tenantId
+    customerId
+    customerDisplayName
+    customerPhone
+    customerEmail
+    transactionDate
+    type
+    amount
+    balanceAfter
+    paymentMethod
+    orderId
+    orderNo
+    referenceKey
+    employeeId
+    employeeName
+    storeId
+    stationId
+    notes
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteCustomerCreditTransactionSubscriptionVariables,
+  APITypes.OnDeleteCustomerCreditTransactionSubscription
 >;
 export const onCreateEmployee = /* GraphQL */ `subscription OnCreateEmployee(
   $filter: ModelSubscriptionEmployeeFilterInput
@@ -629,6 +749,10 @@ export const onCreateOrder = /* GraphQL */ `subscription OnCreateOrder(
       dob
       phone
       email
+      active
+      creditLimit
+      creditBalance
+      creditStatus
       createdAt
       updatedAt
       _version
@@ -745,6 +869,10 @@ export const onUpdateOrder = /* GraphQL */ `subscription OnUpdateOrder(
       dob
       phone
       email
+      active
+      creditLimit
+      creditBalance
+      creditStatus
       createdAt
       updatedAt
       _version
@@ -861,6 +989,10 @@ export const onDeleteOrder = /* GraphQL */ `subscription OnDeleteOrder(
       dob
       phone
       email
+      active
+      creditLimit
+      creditBalance
+      creditStatus
       createdAt
       updatedAt
       _version

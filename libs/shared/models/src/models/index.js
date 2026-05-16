@@ -86,6 +86,18 @@ const ReconciliationStatus = {
   "RECONCILED_WITH_EXCEPTION": "RECONCILED_WITH_EXCEPTION"
 };
 
+const CustomerCreditStatus = {
+  "OK": "OK",
+  "OVER_LIMIT": "OVER_LIMIT"
+};
+
+const CustomerCreditTransactionType = {
+  "CREDIT_PURCHASE": "CREDIT_PURCHASE",
+  "ACCOUNT_PAYMENT": "ACCOUNT_PAYMENT",
+  "REFUND_REVERSAL": "REFUND_REVERSAL",
+  "ADJUSTMENT": "ADJUSTMENT"
+};
+
 const InventoryApplyState = {
   "PENDING": "PENDING",
   "APPLYING": "APPLYING",
@@ -107,7 +119,8 @@ const PaymentType = {
   "CASH": "CASH",
   "CHECK": "CHECK",
   "CC": "CC",
-  "EBT": "EBT"
+  "EBT": "EBT",
+  "CREDIT": "CREDIT"
 };
 
 const OrderStatus = {
@@ -127,7 +140,7 @@ const InventoryReceiveStatus = {
   "COMPLETED": "COMPLETED"
 };
 
-const { Tenant, TenantUser, Store, Brand, Category, Customer, Employee, Order, OrderRefund, OrderRefundLine, OrderDiscountDefinitionSnapshot, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, DiscountDefinition, DiscountReasonCode, EmployeeDiscountPolicy, DiscountPreset, DiscountApplication, ApprovalEvent, DiscountReconciliationException, PaymentInfo, RefundInfo, ByEmployee, AppliedDiscountDetailSnapshot, PricingApprovalEventSnapshot, AppliedLineDiscountSummarySnapshot, AppliedDiscountSummarySnapshot, OrderLine, Payment, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary, SalesSummary, InventoryProductFinalizeResult, InventoryFinalizeResult } = initSchema(schema);
+const { Tenant, TenantUser, Store, Brand, Category, Customer, CustomerCreditTransaction, Employee, Order, OrderRefund, OrderRefundLine, OrderDiscountDefinitionSnapshot, Product, UnitOfMeasure, InventoryChanges, InventoryCount, InventoryCountLine, InventoryReceive, InventoryReceiveLine, Printer, Station, GlobalSettings, DiscountDefinition, DiscountReasonCode, EmployeeDiscountPolicy, DiscountPreset, DiscountApplication, ApprovalEvent, DiscountReconciliationException, PaymentInfo, RefundInfo, ByEmployee, AppliedDiscountDetailSnapshot, PricingApprovalEventSnapshot, AppliedLineDiscountSummarySnapshot, AppliedDiscountSummarySnapshot, OrderLine, Payment, ProductSaleSummary, EmployeeSaleSummary, DatePartSaleSummary, SalesSummary, InventoryProductFinalizeResult, InventoryFinalizeResult } = initSchema(schema);
 
 export {
   Tenant,
@@ -136,6 +149,7 @@ export {
   Brand,
   Category,
   Customer,
+  CustomerCreditTransaction,
   Employee,
   Order,
   OrderRefund,
@@ -172,6 +186,8 @@ export {
   PricingApprovalDecision,
   PricingSource,
   ReconciliationStatus,
+  CustomerCreditStatus,
+  CustomerCreditTransactionType,
   InventoryApplyState,
   RefundType,
   OrderRefundStatus,

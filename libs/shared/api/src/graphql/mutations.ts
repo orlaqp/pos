@@ -378,6 +378,10 @@ export const createCustomer = /* GraphQL */ `mutation CreateCustomer(
     dob
     phone
     email
+    active
+    creditLimit
+    creditBalance
+    creditStatus
     createdAt
     updatedAt
     _version
@@ -403,6 +407,10 @@ export const updateCustomer = /* GraphQL */ `mutation UpdateCustomer(
     dob
     phone
     email
+    active
+    creditLimit
+    creditBalance
+    creditStatus
     createdAt
     updatedAt
     _version
@@ -428,6 +436,10 @@ export const deleteCustomer = /* GraphQL */ `mutation DeleteCustomer(
     dob
     phone
     email
+    active
+    creditLimit
+    creditBalance
+    creditStatus
     createdAt
     updatedAt
     _version
@@ -439,6 +451,114 @@ export const deleteCustomer = /* GraphQL */ `mutation DeleteCustomer(
 ` as GeneratedMutation<
   APITypes.DeleteCustomerMutationVariables,
   APITypes.DeleteCustomerMutation
+>;
+export const createCustomerCreditTransaction = /* GraphQL */ `mutation CreateCustomerCreditTransaction(
+  $input: CreateCustomerCreditTransactionInput!
+  $condition: ModelCustomerCreditTransactionConditionInput
+) {
+  createCustomerCreditTransaction(input: $input, condition: $condition) {
+    id
+    tenantId
+    customerId
+    customerDisplayName
+    customerPhone
+    customerEmail
+    transactionDate
+    type
+    amount
+    balanceAfter
+    paymentMethod
+    orderId
+    orderNo
+    referenceKey
+    employeeId
+    employeeName
+    storeId
+    stationId
+    notes
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateCustomerCreditTransactionMutationVariables,
+  APITypes.CreateCustomerCreditTransactionMutation
+>;
+export const updateCustomerCreditTransaction = /* GraphQL */ `mutation UpdateCustomerCreditTransaction(
+  $input: UpdateCustomerCreditTransactionInput!
+  $condition: ModelCustomerCreditTransactionConditionInput
+) {
+  updateCustomerCreditTransaction(input: $input, condition: $condition) {
+    id
+    tenantId
+    customerId
+    customerDisplayName
+    customerPhone
+    customerEmail
+    transactionDate
+    type
+    amount
+    balanceAfter
+    paymentMethod
+    orderId
+    orderNo
+    referenceKey
+    employeeId
+    employeeName
+    storeId
+    stationId
+    notes
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateCustomerCreditTransactionMutationVariables,
+  APITypes.UpdateCustomerCreditTransactionMutation
+>;
+export const deleteCustomerCreditTransaction = /* GraphQL */ `mutation DeleteCustomerCreditTransaction(
+  $input: DeleteCustomerCreditTransactionInput!
+  $condition: ModelCustomerCreditTransactionConditionInput
+) {
+  deleteCustomerCreditTransaction(input: $input, condition: $condition) {
+    id
+    tenantId
+    customerId
+    customerDisplayName
+    customerPhone
+    customerEmail
+    transactionDate
+    type
+    amount
+    balanceAfter
+    paymentMethod
+    orderId
+    orderNo
+    referenceKey
+    employeeId
+    employeeName
+    storeId
+    stationId
+    notes
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteCustomerCreditTransactionMutationVariables,
+  APITypes.DeleteCustomerCreditTransactionMutation
 >;
 export const createEmployee = /* GraphQL */ `mutation CreateEmployee(
   $input: CreateEmployeeInput!
@@ -629,6 +749,10 @@ export const createOrder = /* GraphQL */ `mutation CreateOrder(
       dob
       phone
       email
+      active
+      creditLimit
+      creditBalance
+      creditStatus
       createdAt
       updatedAt
       _version
@@ -745,6 +869,10 @@ export const updateOrder = /* GraphQL */ `mutation UpdateOrder(
       dob
       phone
       email
+      active
+      creditLimit
+      creditBalance
+      creditStatus
       createdAt
       updatedAt
       _version
@@ -861,6 +989,10 @@ export const deleteOrder = /* GraphQL */ `mutation DeleteOrder(
       dob
       phone
       email
+      active
+      creditLimit
+      creditBalance
+      creditStatus
       createdAt
       updatedAt
       _version
