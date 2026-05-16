@@ -14,6 +14,8 @@
         "categories-data-access": "libs/categories/data-access",
         "categories-native-feature": "libs/categories/native-feature",
         "categories-web-feature": "libs/categories/web-feature",
+        "customers-data-access": "libs/customers/data-access",
+        "customers-native-feature": "libs/customers/native-feature",
         "employees-data-access": "libs/employees/data-access",
         "employees-native-feature": "libs/employees/native-feature",
         "graph-client": "tools/graph-client",

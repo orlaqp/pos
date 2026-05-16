@@ -18,6 +18,7 @@ import { ordersReducer, ORDER_FEATURE_KEY } from '@pos/orders/data-access';
 import { awsConfigReducer, AWS_CONFIG_FEATURE_KEY, settingsReducer, SETTINGS_FEATURE_KEY, stationReducer, STATION_FEATURE_KEY } from '@pos/settings/data-access';
 import { inventoryCountReducer, inventoryReceiveReducer, INVENTORY_COUNT_FEATURE_KEY, INVENTORY_RECEIVE_FEATURE_KEY } from '@pos/inventory/data-access';
 import { categoriesReducer, CATEGORIES_FEATURE_KEY } from '@pos/categories/data-access';
+import { customersReducer, CUSTOMERS_FEATURE_KEY } from '@pos/customers/data-access';
 import { employeesReducer, EMPLOYEE_FEATURE_KEY } from '@pos/employees/data-access';
 import { productsReducer, PRODUCT_FEATURE_KEY } from '@pos/products/data-access';
 import { eventsReducer, EVENTS_FEATURE_KEY } from '@pos/shared/data-store';
@@ -30,6 +31,7 @@ export const store = configureStore({
       [AUTH_FEATURE_KEY]: authReducer,
       [TENANT_SESSION_FEATURE_KEY]: tenantSessionReducer,
       [CATEGORIES_FEATURE_KEY]: categoriesReducer,
+      [CUSTOMERS_FEATURE_KEY]: customersReducer,
       [EMPLOYEE_FEATURE_KEY]: employeesReducer,
       [PRODUCT_FEATURE_KEY]: productsReducer,
       [BRAND_FEATURE_KEY]: brandsReducer,

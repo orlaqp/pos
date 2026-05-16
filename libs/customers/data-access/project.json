@@ -1,0 +1,26 @@
+{
+    "name": "customers-data-access",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/customers/data-access/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": [
+                    "libs/customers/data-access/**/*.{ts,tsx,js,jsx}"
+                ]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/customers/data-access"],
+            "options": {
+                "jestConfig": "libs/customers/data-access/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
+    }
+}
