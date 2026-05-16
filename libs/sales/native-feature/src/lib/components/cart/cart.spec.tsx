@@ -257,26 +257,42 @@ jest.mock('../cart-line/cart-line', () => ({
         })(),
 }));
 
-jest.mock('../cart-payment/cart-payment', () => ({
+jest.mock('../cart-payment/cart-payment-dialog', () => ({
     __esModule: true,
     default: ({
+        visible,
         onPaymentEntered,
+        onClose,
     }: {
+        visible: boolean;
         onPaymentEntered: (payments: any[]) => void;
+        onClose: () => void;
     }) =>
-        (() => {
-            const { Pressable, Text } = require('react-native');
-            return (
-                <Pressable
-                    testID="cart-payment-entered"
-                    onPress={() =>
-                        onPaymentEntered([{ method: 'cash', amount: 5 }])
-                    }
-                >
-                    <Text>CartPayment</Text>
-                </Pressable>
-            );
-        })(),
+        visible
+            ? (() => {
+                  const { Pressable, Text } = require('react-native');
+                  return (
+                      <>
+                          <Pressable
+                              testID="cart-payment-entered"
+                              onPress={() =>
+                                  onPaymentEntered([
+                                      { method: 'cash', amount: 5 },
+                                  ])
+                              }
+                          >
+                              <Text>CartPayment</Text>
+                          </Pressable>
+                          <Pressable
+                              testID="cart-payment-backdrop"
+                              onPress={onClose}
+                          >
+                              <Text>Close</Text>
+                          </Pressable>
+                      </>
+                  );
+              })()
+            : null,
 }));
 
 const { Cart } = require('./cart');

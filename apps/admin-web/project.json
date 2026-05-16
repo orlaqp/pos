@@ -1,0 +1,36 @@
+{
+    "name": "admin-web",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "apps/admin-web/src",
+    "projectType": "application",
+    "tags": ["scope:admin", "type:app", "platform:web"],
+    "targets": {
+        "build": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "next build --webpack apps/admin-web"
+            }
+        },
+        "serve": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "next dev --webpack apps/admin-web -p 4200"
+            }
+        },
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["apps/admin-web/**/*.{ts,tsx,js,jsx}"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/apps/admin-web"],
+            "options": {
+                "jestConfig": "apps/admin-web/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
+    }
+}

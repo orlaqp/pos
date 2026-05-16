@@ -1,0 +1,16 @@
+{
+    "name": "categories-web-feature",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/categories/web-feature/src",
+    "projectType": "library",
+    "tags": ["scope:categories", "type:feature", "platform:web"],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["libs/categories/web-feature/**/*.{ts,tsx,js,jsx}"]
+            }
+        }
+    }
+}

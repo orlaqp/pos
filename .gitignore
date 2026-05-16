@@ -4,6 +4,7 @@
 /dist
 /tmp
 /out-tsc
+**/.next/
 
 # dependencies
 node_modules
@@ -125,3 +126,4 @@ amplifytools.xcconfig
 **/.derived-data
 libs/inventory/data-access/src/lib/receive/inventory-receive.service.ts
 tools-output/
+.playwright-cli/

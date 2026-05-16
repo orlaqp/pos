@@ -63,6 +63,9 @@ Copy scripts used by codegen:
 
 ## Amplify safety (critical)
 - This repository treats `develop` as production.
+- Do not change Amplify backend logic for the web admin system unless Orlando explicitly asks for that specific backend change.
+- The web admin must reuse the exact same Amplify/Cognito/AppSync/DataStore backend behavior the iPad app uses by default.
+- Frontend web work may add adapters, UI, routing, and client integration code, but backend schema, resolvers, functions, auth groups, IAM policies, and Amplify environment settings are read-only without explicit approval.
 - Do not run mutating Amplify commands on `develop`.
 - Use `ebtdev` for EBT feature schema/codegen work (`ebt-dev` label, CLI-safe name).
 - See `.codex/amplify-safety-runbook.md` for command-level guardrails.

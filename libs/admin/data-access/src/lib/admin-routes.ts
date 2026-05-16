@@ -1,0 +1,34 @@
+export const ADMIN_ROUTES = {
+    dashboard: 'dashboard',
+    reports: 'reports',
+    endOfDay: 'end-of-day',
+    saleList: 'sale-list',
+    salesByEmployee: 'sales-by-employee',
+    salesByProduct: 'sales-by-product',
+    categoryPerformance: 'category-performance',
+    paymentSummary: 'payment-summary',
+    discountReport: 'discount-report',
+    refundReport: 'refund-report',
+    hourlySales: 'hourly-sales',
+    ebtSummary: 'ebt-summary',
+    openOrdersAging: 'open-orders-aging',
+    lowSalesItems: 'low-sales-items',
+    employees: 'employees',
+    discounts: 'discounts',
+    products: 'products',
+    categories: 'categories',
+    units: 'units',
+    brands: 'brands',
+    inventoryStock: 'inventory-stock',
+    inventoryCounts: 'inventory-counts',
+    inventoryReceives: 'inventory-receives',
+    settings: 'settings',
+    store: 'store',
+    station: 'station',
+    printers: 'printers',
+    logs: 'logs',
+} as const;
+
+export type AdminRouteId = (typeof ADMIN_ROUTES)[keyof typeof ADMIN_ROUTES];
+
+export const DEFAULT_ADMIN_ROUTE: AdminRouteId = ADMIN_ROUTES.dashboard;

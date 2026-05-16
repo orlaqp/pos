@@ -1,0 +1,16 @@
+{
+    "name": "admin-data-access",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/admin/data-access/src",
+    "projectType": "library",
+    "tags": ["scope:admin", "type:data-access", "platform:web"],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["libs/admin/data-access/**/*.{ts,tsx,js,jsx}"]
+            }
+        }
+    }
+}

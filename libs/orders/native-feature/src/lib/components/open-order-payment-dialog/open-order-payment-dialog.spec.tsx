@@ -161,13 +161,17 @@ jest.mock('@pos/orders/data-access', () => ({
         })),
     },
     OrderService: {
-        buildPrintTicketPreview: (...args: unknown[]) => mockBuildPrintTicketPreview(...args),
+        buildPrintTicketPreview: (...args: unknown[]) =>
+            mockBuildPrintTicketPreview(...args),
     },
-    payOrder: Object.assign(jest.fn((payload) => payload), {
-        fulfilled: {
-            match: (result: any) => result?.type === 'order/pay/fulfilled',
+    payOrder: Object.assign(
+        jest.fn((payload) => payload),
+        {
+            fulfilled: {
+                match: (result: any) => result?.type === 'order/pay/fulfilled',
+            },
         },
-    }),
+    ),
 }));
 
 jest.mock('@pos/sales/data-access', () => ({
@@ -227,7 +231,9 @@ jest.mock('@pos/sales/native-feature', () => ({
         onPaymentEntered,
         footerActions,
     }: {
-        onPaymentEntered: (payments: Array<{ type: string; amount: number }>) => void;
+        onPaymentEntered: (
+            payments: Array<{ type: string; amount: number }>,
+        ) => void;
         footerActions?: React.ReactNode;
     }) => {
         const { View, Pressable, Text } = require('react-native');
@@ -235,7 +241,9 @@ jest.mock('@pos/sales/native-feature', () => ({
             <View>
                 <Pressable
                     testID="mock-cart-payment-submit"
-                    onPress={() => onPaymentEntered([{ type: 'CASH', amount: 20 }])}
+                    onPress={() =>
+                        onPaymentEntered([{ type: 'CASH', amount: 20 }])
+                    }
                 >
                     <Text>Submit Payment</Text>
                 </Pressable>
@@ -244,6 +252,29 @@ jest.mock('@pos/sales/native-feature', () => ({
         );
     },
 }));
+
+jest.mock(
+    '../../../../../../sales/native-feature/src/lib/components/cart-payment/cart-payment-dialog',
+    () => ({
+        CartPaymentDialog: ({
+            visible,
+            summaryActions,
+            paymentFooterActions,
+        }: {
+            visible: boolean;
+            summaryActions?: React.ReactNode;
+            paymentFooterActions?: React.ReactNode;
+        }) => {
+            const { View } = require('react-native');
+            return visible ? (
+                <View testID="mock-cart-payment-dialog">
+                    {summaryActions}
+                    {paymentFooterActions}
+                </View>
+            ) : null;
+        },
+    }),
+);
 
 jest.mock('@pos/printings/data-access', () => ({
     getDefaultPrinter: (state: any) => state.printer.default,
@@ -272,7 +303,7 @@ describe('OpenOrderPaymentDialog', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockDispatch.mockImplementation((action: any) =>
-            Promise.resolve({ type: 'order/pay/fulfilled', payload: action })
+            Promise.resolve({ type: 'order/pay/fulfilled', payload: action }),
         );
         mockGetStore.mockResolvedValue([{ id: 'store-fallback' }]);
         mockGetDefaultPrinter.mockResolvedValue({ id: 'printer-fallback' });
@@ -287,10 +318,12 @@ describe('OpenOrderPaymentDialog', () => {
                 order={mockOrder}
                 navigation={{ navigate: mockNavigate }}
                 onClose={onClose}
-            />
+            />,
         );
 
-        fireEvent.press(view.getByTestId('open-order-payment-open-in-sales-button'));
+        fireEvent.press(
+            view.getByTestId('open-order-payment-open-in-sales-button'),
+        );
 
         expect(mockDispatch).toHaveBeenCalledWith({
             type: 'cart/set',
@@ -307,7 +340,7 @@ describe('OpenOrderPaymentDialog', () => {
                 order={mockOrder}
                 navigation={{ navigate: mockNavigate }}
                 onClose={jest.fn()}
-            />
+            />,
         );
 
         fireEvent.press(view.getByTestId('open-order-payment-print-button'));
@@ -315,8 +348,8 @@ describe('OpenOrderPaymentDialog', () => {
         await waitFor(() =>
             expect(mockBuildPrintTicketPreview).toHaveBeenCalledWith(
                 expect.objectContaining({ id: 'open-1' }),
-                'CUSTOMER'
-            )
+                'CUSTOMER',
+            ),
         );
         expect(mockPrintReceipt).toHaveBeenCalled();
     });

@@ -6,7 +6,7 @@ import {
     selectCart,
 } from '@pos/sales/data-access';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-import { Button, Dialog } from '@rneui/themed';
+import { Button } from '@rneui/themed';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { View, Alert, Text, Image, Pressable } from 'react-native';
@@ -17,7 +17,7 @@ import { useSharedStyles } from '@pos/theme/native';
 
 import CartLine from '../cart-line/cart-line';
 import EmptyCart from '../../../../../../../apps/mobile-ui/assets/illustrations/empty-cart-1600.png';
-import CartPayment from '../cart-payment/cart-payment';
+import CartPaymentDialog from '../cart-payment/cart-payment-dialog';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { Role } from '@pos/auth/data-access';
 import { ProductEntity } from '@pos/products/data-access';
@@ -27,7 +27,6 @@ import { translateWithFallback } from '../../../../../../shared/utils/src/lib/tr
 import {
     buildDiscountBreakdown,
     buildOrderSummary,
-    getEbtEligibleTotal,
     getUnavailableProductMessages,
     isCartReady,
 } from './cart.logic';
@@ -131,7 +130,6 @@ export function Cart({
     const [overrideDraft, setOverrideDraft] =
         useState<OverrideDraft>(defaultOverrideDraft);
     const ready = isCartReady(cart);
-    const ebtEligibleTotal = getEbtEligibleTotal(cart);
     const invalidItemCount = cart.items.filter(
         (item) => item.quantity === 0,
     ).length;
@@ -399,7 +397,9 @@ export function Cart({
     };
 
     const e2eCheckoutAction =
-        mode === 'order' && !payFromSalesScreen ? confirmPrintOrder : submitOrder;
+        mode === 'order' && !payFromSalesScreen
+            ? confirmPrintOrder
+            : submitOrder;
     const e2eCheckoutLabel =
         mode === 'order' && !payFromSalesScreen
             ? t('E2E_PrintOrder', 'E2E Print Order')
@@ -431,12 +431,12 @@ export function Cart({
         if (!selectedItem)
             return t(
                 'CART_SelectLineForAdjustments',
-                'Select a cart line for line-level adjustments.'
+                'Select a cart line for line-level adjustments.',
             );
         if (selectedItem.quantity === 0)
             return t(
                 'CART_ResolveWeightBeforePricing',
-                'Resolve the item weight before applying pricing actions.'
+                'Resolve the item weight before applying pricing actions.',
             );
         return null;
     }, [selectedItem, t]);
@@ -446,8 +446,8 @@ export function Cart({
             Alert.alert(
                 t(
                     'CART_PromoCodesNotAllowed',
-                    'Promo codes are not allowed for this employee.'
-                )
+                    'Promo codes are not allowed for this employee.',
+                ),
             );
             return;
         }
@@ -472,8 +472,8 @@ export function Cart({
             Alert.alert(
                 t(
                     'CART_OrderDiscountsNotAllowed',
-                    'Order discounts are not allowed for this employee.'
-                )
+                    'Order discounts are not allowed for this employee.',
+                ),
             );
             return;
         }
@@ -508,7 +508,10 @@ export function Cart({
         const value = Number(manualDraftValue);
         if (!Number.isFinite(value) || value <= 0) {
             Alert.alert(
-                t('CART_EnterValidDiscountValue', 'Enter a valid discount value.')
+                t(
+                    'CART_EnterValidDiscountValue',
+                    'Enter a valid discount value.',
+                ),
             );
             return;
         }
@@ -517,8 +520,8 @@ export function Cart({
             Alert.alert(
                 t(
                     'CART_SelectLineBeforeDiscount',
-                    'Select a cart line before applying a line discount.'
-                )
+                    'Select a cart line before applying a line discount.',
+                ),
             );
             return;
         }
@@ -527,8 +530,8 @@ export function Cart({
             Alert.alert(
                 t(
                     'CART_OrderDiscountsNotAllowed',
-                    'Order discounts are not allowed for this employee.'
-                )
+                    'Order discounts are not allowed for this employee.',
+                ),
             );
             return;
         }
@@ -566,8 +569,8 @@ export function Cart({
             Alert.alert(
                 t(
                     'CART_SelectLineBeforePriceOverride',
-                    'Select a cart line before overriding price.'
-                )
+                    'Select a cart line before overriding price.',
+                ),
             );
             return;
         }
@@ -575,8 +578,8 @@ export function Cart({
             Alert.alert(
                 t(
                     'CART_PriceOverridesNotAllowed',
-                    'Price overrides are not allowed for this employee.'
-                )
+                    'Price overrides are not allowed for this employee.',
+                ),
             );
             return;
         }
@@ -588,8 +591,8 @@ export function Cart({
             Alert.alert(
                 t(
                     'CART_SelectLineBeforePriceOverride',
-                    'Select a cart line before overriding price.'
-                )
+                    'Select a cart line before overriding price.',
+                ),
             );
             return;
         }
@@ -599,8 +602,8 @@ export function Cart({
             Alert.alert(
                 t(
                     'CART_EnterValidFinalUnitPrice',
-                    'Enter a valid final unit price.'
-                )
+                    'Enter a valid final unit price.',
+                ),
             );
             return;
         }
@@ -634,7 +637,7 @@ export function Cart({
                 <Text style={localStyles.emptyHint}>
                     {t(
                         'CART_EmptyHint',
-                        'Scan items or search the catalog to start a sale.'
+                        'Scan items or search the catalog to start a sale.',
                     )}
                 </Text>
             </View>
@@ -758,12 +761,12 @@ export function Cart({
                         {invalidItemCount === 1
                             ? t(
                                   'CART_OneItemNeedsWeight',
-                                  '1 item needs weight before checkout'
+                                  '1 item needs weight before checkout',
                               )
                             : t(
                                   'CART_MultipleItemsNeedWeight',
                                   '{{count}} items need weight before checkout',
-                                  { count: invalidItemCount }
+                                  { count: invalidItemCount },
                               )}
                     </Text>
                 ) : null}
@@ -790,7 +793,7 @@ export function Cart({
                         !ready && invalidItemCount > 0
                             ? t(
                                   'CART_ResolveItemsToContinue',
-                                  'Resolve cart items to continue'
+                                  'Resolve cart items to continue',
                               )
                             : payFromSalesScreen || mode === 'payment'
                               ? `${t('CART_ReceivePayment', 'Receive Payment')}  •  $${cart.footer.total.toFixed(2)}`
@@ -834,25 +837,18 @@ export function Cart({
                 onConfirm={confirmPrintOrder}
             />
 
-            <Dialog
-                isVisible={receivePayment}
-                onBackdropPress={() => {
+            <CartPaymentDialog
+                visible={receivePayment}
+                cart={cart}
+                canReceiveChecks={
+                    employee?.roles?.includes(Role.Checks) || false
+                }
+                onClose={() => {
                     setReceivePayment(false);
                     onInteractionComplete();
                 }}
-                supportedOrientations={['landscape']}
-                presentationStyle="fullScreen"
-                overlayStyle={[styles.overlay, localStyles.paymentDialog]}
-            >
-                <CartPayment
-                    total={cart.footer.total}
-                    ebtEligibleTotal={ebtEligibleTotal}
-                    canReceiveChecks={
-                        employee?.roles?.includes(Role.Checks) || false
-                    }
-                    onPaymentEntered={paymentEntered}
-                />
-            </Dialog>
+                onPaymentEntered={paymentEntered}
+            />
 
             {canViewDiscountControls && (
                 <>

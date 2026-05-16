@@ -1,0 +1,16 @@
+{
+    "name": "products-web-feature",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/products/web-feature/src",
+    "projectType": "library",
+    "tags": ["scope:products", "type:feature", "platform:web"],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["libs/products/web-feature/**/*.{ts,tsx,js,jsx}"]
+            }
+        }
+    }
+}

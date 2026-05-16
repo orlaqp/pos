@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
-import { Button, Dialog } from '@rneui/themed';
+import { Alert, StyleSheet, View } from 'react-native';
+import { Button } from '@rneui/themed';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -11,13 +11,8 @@ import {
     payOrder,
 } from '@pos/orders/data-access';
 import { cartActions } from '@pos/sales/data-access';
-import {
-    buildDiscountBreakdown,
-    buildOrderSummary,
-    CartPayment,
-    createCartStyles,
-    OrderSummaryPanel,
-} from '@pos/sales/native-feature';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { CartPaymentDialog } from '../../../../../../sales/native-feature/src/lib/components/cart-payment/cart-payment-dialog';
 import {
     getDefaultPrinter,
     printReceipt,
@@ -31,9 +26,8 @@ import {
 } from '@pos/store-info/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { Role } from '@pos/auth/data-access';
-import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
+import { translateWithFallback } from '@pos/shared/utils';
 
 interface OpenOrderPaymentDialogProps {
     visible: boolean;
@@ -49,9 +43,7 @@ export function OpenOrderPaymentDialog({
     onClose,
 }: OpenOrderPaymentDialogProps) {
     const dispatch = useDispatch();
-    const sharedStyles = useSharedStyles();
     const tokens = useDesignTokens();
-    const summaryStyles = createCartStyles(tokens);
     const styles = useStyles(tokens);
     const defaultPrinter = useSelector(getDefaultPrinter);
     const store = useSelector(selectStore);
@@ -62,14 +54,6 @@ export function OpenOrderPaymentDialog({
     const cart = useMemo(
         () => (order ? OrderEntityMapper.asCartState(order) : undefined),
         [order],
-    );
-    const orderSummary = useMemo(
-        () => (cart ? buildOrderSummary(cart) : undefined),
-        [cart],
-    );
-    const discountBreakdown = useMemo(
-        () => buildDiscountBreakdown(cart?.appliedDiscountSummary),
-        [cart?.appliedDiscountSummary],
     );
     const canReceiveChecks = !!employee?.roles?.includes(Role.Checks);
 
@@ -163,175 +147,64 @@ export function OpenOrderPaymentDialog({
         }
     };
 
-    if (!order || !cart || !orderSummary) {
+    if (!order || !cart) {
         return null;
     }
 
     return (
-        <Dialog
-            isVisible={visible}
-            onBackdropPress={closeDialog}
-            supportedOrientations={['landscape']}
-            presentationStyle="fullScreen"
-            overlayStyle={[sharedStyles.overlay, styles.overlay]}
-        >
-            <View style={styles.surface} testID="open-order-payment-dialog">
-                <View style={styles.columns}>
-                    <View style={styles.summaryColumn}>
-                        <OrderSummaryPanel
-                            styles={summaryStyles}
-                            orderSummary={orderSummary}
-                            discountBreakdown={discountBreakdown}
-                            title={t(
-                                'ORDERPAYMENT_SummaryTitle',
-                                'Order summary',
-                            )}
-                            hint={t(
-                                'ORDERPAYMENT_SummaryHint',
-                                'Review the order details before receiving payment.',
-                            )}
-                            scrollStyle={styles.summaryScroll}
-                            scrollContentStyle={styles.summaryScrollContent}
-                            contentTestID="open-order-payment-summary"
-                            plain={true}
-                            footer={
-                                <View style={summaryStyles.summaryFooter}>
-                                    <View
-                                        style={
-                                            summaryStyles.summaryFooterTotalBlock
-                                        }
-                                    >
-                                        <Text
-                                            style={
-                                                summaryStyles.summaryFooterLabel
-                                            }
-                                        >
-                                            {t('ORDERPAYMENT_Total', 'Total')}
-                                        </Text>
-                                        <Text
-                                            style={
-                                                summaryStyles.summaryFooterValue
-                                            }
-                                        >
-                                            ${orderSummary.total.toFixed(2)}
-                                        </Text>
-                                    </View>
-                                    <View
-                                        style={
-                                            summaryStyles.summaryFooterActions
-                                        }
-                                    >
-                                        <Button
-                                            testID="open-order-payment-print-button"
-                                            onPress={printReference}
-                                            type="clear"
-                                            title={t(
-                                                'ORDERPAYMENT_PrintReference',
-                                                'Print reference',
-                                            )}
-                                            disabled={busy}
-                                            buttonStyle={
-                                                summaryStyles.summarySecondaryButton
-                                            }
-                                            titleStyle={
-                                                summaryStyles.summarySecondaryButtonTitle
-                                            }
-                                        />
-                                    </View>
-                                </View>
-                            }
-                        />
-                    </View>
-
-                    <View style={styles.paymentColumn}>
-                        <View style={styles.paymentSurface}>
-                            <CartPayment
-                                total={orderSummary.total}
-                                ebtEligibleTotal={orderSummary.ebtEligibleTotal}
-                                canReceiveChecks={canReceiveChecks}
-                                onPaymentEntered={receivePayment}
-                                layout="compact"
-                                disableSubmit={busy}
-                                footerActions={
-                                    <View style={styles.secondaryActions}>
-                                        <Button
-                                            testID="open-order-payment-cancel-button"
-                                            type="outline"
-                                            title={t(
-                                                'ORDERPAYMENT_Close',
-                                                'Close',
-                                            )}
-                                            disabled={busy}
-                                            onPress={closeDialog}
-                                            buttonStyle={styles.secondaryButton}
-                                            titleStyle={
-                                                styles.secondaryButtonTitle
-                                            }
-                                        />
-                                        <Button
-                                            testID="open-order-payment-open-in-sales-button"
-                                            type="clear"
-                                            title={t(
-                                                'ORDERPAYMENT_OpenInSales',
-                                                'Open in Sales',
-                                            )}
-                                            disabled={busy}
-                                            onPress={openInSales}
-                                            titleStyle={
-                                                styles.openInSalesButtonTitle
-                                            }
-                                        />
-                                    </View>
-                                }
-                            />
-                        </View>
-                    </View>
+        <CartPaymentDialog
+            visible={visible}
+            cart={cart}
+            canReceiveChecks={canReceiveChecks}
+            busy={busy}
+            onClose={closeDialog}
+            onPaymentEntered={receivePayment}
+            summaryActions={
+                <Button
+                    testID="open-order-payment-print-button"
+                    onPress={printReference}
+                    type="clear"
+                    title={t('ORDERPAYMENT_PrintReference', 'Print reference')}
+                    disabled={busy}
+                    buttonStyle={styles.summarySecondaryButton}
+                    titleStyle={styles.summarySecondaryButtonTitle}
+                />
+            }
+            paymentFooterActions={
+                <View style={styles.secondaryActions}>
+                    <Button
+                        testID="open-order-payment-cancel-button"
+                        type="outline"
+                        title={t('ORDERPAYMENT_Close', 'Close')}
+                        disabled={busy}
+                        onPress={closeDialog}
+                        buttonStyle={styles.secondaryButton}
+                        titleStyle={styles.secondaryButtonTitle}
+                    />
+                    <Button
+                        testID="open-order-payment-open-in-sales-button"
+                        type="clear"
+                        title={t('ORDERPAYMENT_OpenInSales', 'Open in Sales')}
+                        disabled={busy}
+                        onPress={openInSales}
+                        titleStyle={styles.openInSalesButtonTitle}
+                    />
                 </View>
-            </View>
-        </Dialog>
+            }
+        />
     );
 }
 
 const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     StyleSheet.create({
-        overlay: {
-            width: 1220,
-            maxWidth: '96%',
-            padding: 0,
-            borderRadius: 28,
-            overflow: 'hidden',
+        summarySecondaryButton: {
+            minHeight: 44,
+            borderRadius: 16,
+            paddingHorizontal: tokens.spacing.sm,
         },
-        surface: {
-            backgroundColor: '#05080C',
-            padding: tokens.spacing.lg,
-        },
-        columns: {
-            flexDirection: 'row',
-            gap: tokens.spacing.lg,
-            alignItems: 'stretch',
-            minHeight: 620,
-        },
-        summaryColumn: {
-            flex: 1.35,
-        },
-        paymentColumn: {
-            flex: 1,
-            minHeight: 0,
-        },
-        paymentSurface: {
-            flex: 1,
-            minHeight: 0,
-            borderRadius: 28,
-            borderWidth: 1,
-            borderColor: '#C7D0DB33',
-            backgroundColor: '#080B10',
-            padding: tokens.spacing.lg,
-        },
-        summaryScroll: {
-            maxHeight: 540,
-        },
-        summaryScrollContent: {
-            paddingBottom: tokens.spacing.sm,
+        summarySecondaryButtonTitle: {
+            color: tokens.colors.accent,
+            fontWeight: '700',
         },
         secondaryActions: {
             flexDirection: 'row',

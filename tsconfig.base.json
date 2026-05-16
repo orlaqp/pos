@@ -16,10 +16,13 @@
         "baseUrl": ".",
         "typeRoots": ["./types", "./node_modules/@types"],
         "paths": {
+            "@pos/admin/data-access": ["libs/admin/data-access/src/index.ts"],
+            "@pos/admin/web-feature": ["libs/admin/web-feature/src/index.ts"],
             "@pos/auth/data-access": ["libs/auth/data-access/src/index.ts"],
             "@pos/auth/native-feature": [
                 "libs/auth/native-feature/src/index.ts"
             ],
+            "@pos/auth/web-feature": ["libs/auth/web-feature/src/index.ts"],
             "@pos/back-office/native-feature": [
                 "libs/back-office/native-feature/src/index.ts"
             ],
@@ -27,11 +30,15 @@
             "@pos/brands/native-feature": [
                 "libs/brands/native-feature/src/index.ts"
             ],
+            "@pos/brands/web-feature": ["libs/brands/web-feature/src/index.ts"],
             "@pos/categories/data-access": [
                 "libs/categories/data-access/src/index.ts"
             ],
             "@pos/categories/native-feature": [
                 "libs/categories/native-feature/src/index.ts"
+            ],
+            "@pos/categories/web-feature": [
+                "libs/categories/web-feature/src/index.ts"
             ],
             "@pos/discounts/data-access": [
                 "libs/discounts/data-access/src/index.ts"
@@ -52,6 +59,9 @@
             "@pos/inventory/native-feature": [
                 "libs/inventory/native-feature/src/index.ts"
             ],
+            "@pos/inventory/web-feature": [
+                "libs/inventory/web-feature/src/index.ts"
+            ],
             "@pos/orders/data-access": ["libs/orders/data-access/src/index.ts"],
             "@pos/orders/native-feature": [
                 "libs/orders/native-feature/src/index.ts"
@@ -65,8 +75,14 @@
             "@pos/products/data-access": [
                 "libs/products/data-access/src/index.ts"
             ],
+            "@pos/products/data-access/entities": [
+                "libs/products/data-access/src/lib/product.entity.ts"
+            ],
             "@pos/products/native-feature": [
                 "libs/products/native-feature/src/index.ts"
+            ],
+            "@pos/products/web-feature": [
+                "libs/products/web-feature/src/index.ts"
             ],
             "@pos/reporting/data-access": [
                 "libs/reporting/data-access/src/index.ts"
@@ -74,10 +90,14 @@
             "@pos/reporting/native-feature": [
                 "libs/reporting/native-feature/src/index.ts"
             ],
+            "@pos/reporting/web-feature": [
+                "libs/reporting/web-feature/src/index.ts"
+            ],
             "@pos/sales/data-access": ["libs/sales/data-access/src/index.ts"],
             "@pos/sales/native-feature": [
                 "libs/sales/native-feature/src/index.ts"
             ],
+            "@pos/sales/web-feature": ["libs/sales/web-feature/src/index.ts"],
             "@pos/settings/data-access": [
                 "libs/settings/data-access/src/index.ts"
             ],
@@ -89,6 +109,7 @@
             "@pos/shared/data-store": ["libs/shared/data-store/src/index.ts"],
             "@pos/shared/models": ["libs/shared/models/src/index.ts"],
             "@pos/shared/ui-native": ["libs/shared/ui-native/src/index.ts"],
+            "@pos/shared/ui-web": ["libs/shared/ui-web/src/index.ts"],
             "@pos/shared/utils": ["libs/shared/utils/src/index.ts"],
             "@pos/store": ["libs/store/src/index.ts"],
             "@pos/store-info/data-access": [
@@ -106,6 +127,9 @@
             ],
             "@pos/unit-of-measures/native-feature": [
                 "libs/unit-of-measures/native-feature/src/index.ts"
+            ],
+            "@pos/unit-of-measures/web-feature": [
+                "libs/unit-of-measures/web-feature/src/index.ts"
             ]
         }
     },
