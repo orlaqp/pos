@@ -30,6 +30,20 @@ describe('translation helpers', () => {
         ).toBe('Unknown fallback');
     });
 
+    it('interpolates fallback values when the key does not exist', () => {
+        Object.defineProperty(i18next, 'isInitialized', {
+            configurable: true,
+            value: true,
+        });
+        jest.spyOn(i18next, 'exists').mockReturnValue(false);
+
+        expect(
+            translateWithFallback('UNKNOWN_KEY', 'Saved ${{amount}}', {
+                amount: '14.00',
+            }),
+        ).toBe('Saved $14.00');
+    });
+
     it('returns the translated string when present', () => {
         Object.defineProperty(i18next, 'isInitialized', {
             configurable: true,
