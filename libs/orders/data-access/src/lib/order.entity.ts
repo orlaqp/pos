@@ -8,7 +8,7 @@ import {
   restoreDiscountStateFromSummary,
 } from '@pos/discounts/domain';
 import { EmployeeEntity } from '@pos/employees/data-access';
-import type { CartState } from '@pos/sales/data-access';
+import type { CartCustomer, CartState } from '@pos/sales/data-access';
 import { StationService } from '@pos/settings/data-access';
 import { Order, OrderLine, OrderStatus, Payment, PaymentType } from '@pos/shared/models';
 import uuid from 'react-native-uuid';
@@ -53,6 +53,8 @@ export interface OrderEntity {
   payments?: PaymentEntity[] | null;
   paymentInfo?: PaymentInfoEntity | null;
   refundInfo?: RefundInfoEntity | null;
+  customer?: CartCustomer | null;
+  orderCustomerId?: string | null;
   orderDate?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -162,6 +164,46 @@ export class OrderEntityMapper {
     } catch {
       return [];
     }
+  }
+
+  private static fromCustomerModel(customer: NonNullable<Order['Customer']>): CartCustomer | undefined {
+    if (typeof (customer as { get?: unknown }).get === 'function') {
+      return undefined;
+    }
+
+    const eagerCustomer = customer as {
+      id?: string | null;
+      firstName?: string | null;
+      middleName?: string | null;
+      lastName?: string | null;
+      phone?: string | null;
+      email?: string | null;
+      active?: boolean | null;
+      creditLimit?: number | null;
+      creditBalance?: number | null;
+      creditStatus?: string | null;
+    };
+    const displayName = [
+      eagerCustomer.firstName,
+      eagerCustomer.middleName,
+      eagerCustomer.lastName,
+    ]
+      .map((part) => part?.trim())
+      .filter(Boolean)
+      .join(' ');
+
+    return {
+      id: eagerCustomer.id,
+      displayName: displayName || eagerCustomer.firstName || undefined,
+      firstName: eagerCustomer.firstName,
+      lastName: eagerCustomer.lastName,
+      phone: eagerCustomer.phone,
+      email: eagerCustomer.email,
+      active: eagerCustomer.active ?? true,
+      creditLimit: eagerCustomer.creditLimit ?? 0,
+      creditBalance: eagerCustomer.creditBalance ?? 0,
+      creditStatus: eagerCustomer.creditStatus,
+    };
   }
 
   private static scaleDiscountDetail(
@@ -319,6 +361,12 @@ export class OrderEntityMapper {
         employeeName: p.refundInfo?.employeeName,
         comments: p.refundInfo?.comments || undefined,
       },
+      customer: p.Customer
+        ? OrderEntityMapper.fromCustomerModel(p.Customer)
+        : p.orderCustomerId
+          ? { id: p.orderCustomerId }
+          : null,
+      orderCustomerId: p.orderCustomerId,
       orderDate: p.orderDate,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
@@ -372,6 +420,7 @@ export class OrderEntityMapper {
       type: p.type,
       amount: p.amount,
     }));
+    state.customer = o.customer || undefined;
     state.promoCodes = (o.promoCodes || []).map((code) => ({ code }));
     state.appliedDiscountSummary = o.appliedDiscountSummary || undefined;
     const restoredDiscountState = restoreDiscountStateFromSummary(
