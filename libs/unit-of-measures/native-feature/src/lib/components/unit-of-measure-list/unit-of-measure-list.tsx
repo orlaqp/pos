@@ -1,33 +1,22 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
     unitOfMeasuresActions,
-    fetchUnitOfMeasures,
     selectFilteredList,
     selectIsEmpty,
     selectLoadingStatus,
-    subscribeToUnitOfMeasureChanges,
 } from '@pos/unit-of-measures/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import UnitOfMeasureItem from '../unit-of-measure-item/unit-of-measure-item';
-import { useDispatch } from 'react-redux';
 
 export interface UnitOfMeasureListProps {
     navigation: NativeStackNavigationProp<any>;
 }
 
-export function UnitOfMeasureList({ navigation }: UnitOfMeasureListProps) {
-    const dispatch = useDispatch();
-
-    useEffect(() => {
-        const sub = subscribeToUnitOfMeasureChanges(dispatch);
-        return () => {
-            console.log('Closing unit of measures subscription');
-            sub.unsubscribe();
-        };
-    }, [dispatch]);
-
-    const props: ItemListProps<any, any> = {
+export const buildUnitOfMeasureListProps = (
+    navigation: NativeStackNavigationProp<any>
+) =>
+    ({
         ItemComponent: UnitOfMeasureItem,
         formNavName: 'UnitOfMeasure Form',
         navigation: navigation,
@@ -36,8 +25,20 @@ export function UnitOfMeasureList({ navigation }: UnitOfMeasureListProps) {
         filteredListSelector: selectFilteredList,
         clearSelectionAction: unitOfMeasuresActions.clearSelection,
         filterAction: unitOfMeasuresActions.filter,
-        fetchItemsAction: fetchUnitOfMeasures,
-    };
+        fetchItemsAction: undefined,
+        emptyTitle: 'No units yet',
+        emptySubtitle:
+            'Create units of measure before assigning them to products in the catalog.',
+        emptyActionText: 'Add unit',
+        emptyActionIcon: 'scale-balance',
+        headerEyebrow: 'Catalog',
+        headerTitle: 'Units of Measure',
+        headerSubtitle:
+            'Define how products are counted, weighed, and shown during checkout.',
+    } as ItemListProps<any, any>);
+
+export function UnitOfMeasureList({ navigation }: UnitOfMeasureListProps) {
+    const props = buildUnitOfMeasureListProps(navigation);
 
     return <UIGenericItemList {...props} />;
 }

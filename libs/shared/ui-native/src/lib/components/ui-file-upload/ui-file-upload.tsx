@@ -3,27 +3,21 @@ import { useSharedStyles } from '@pos/theme/native';
 import { Icon, useTheme } from '@rneui/themed';
 
 import {
+    Alert,
     View,
     Text,
     Image,
-    ImageSourcePropType,
     TouchableOpacity,
 } from 'react-native';
 import { AssetsService } from '@pos/shared/utils';
 import UISpinner from '../ui-spinner/ui-spinner';
-import { cancellablePromise } from '@pos/shared/utils';
-
-const fakePromise = () => {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => resolve('abc'), 2000);
-    });
-};
 
 /* eslint-disable-next-line */
 export interface UiFileUploadProps {
     message?: string;
     prefix: string;
     imageKey: string | null | undefined;
+    testID?: string;
     width?: number;
     height?: number;
     onAssetUploaded?: (key: string) => void;
@@ -34,6 +28,7 @@ export function UiFileUpload({
     message,
     prefix,
     imageKey,
+    testID,
     height,
     width,
     onAssetUploaded,
@@ -41,79 +36,90 @@ export function UiFileUpload({
 }: UiFileUploadProps) {
     
     const theme = useTheme();
+    const colors = theme?.theme?.colors || { grey1: '#dddddd' };
     const styles = useSharedStyles();
     const [busy, setBusy] = useState<boolean>(false);
     const [s3Key, setS3Key] = useState<string | null | undefined>(imageKey);
     const [imageUri, setImageUri] = useState<string | null | undefined>();
 
+    useEffect(() => {
+        setS3Key(imageKey);
+    }, [imageKey]);
+
     const deleteImage = async () => {
         if (!s3Key) return;
 
         setBusy(true);
-        await AssetsService.deleteAsset(s3Key);
-        
-        if (onAssetRemoved) onAssetRemoved(s3Key);
-
-        setS3Key(null);
-        setBusy(false);
-    }
+        try {
+            await AssetsService.deleteAsset(s3Key);
+            if (onAssetRemoved) onAssetRemoved(s3Key);
+            setS3Key(null);
+            setImageUri(undefined);
+        } finally {
+            setBusy(false);
+        }
+    };
 
     useEffect(() => {
+        let active = true;
+
         if (!s3Key) {
             setBusy(false);
-            return setImageUri(undefined);
+            setImageUri(undefined);
+            return () => {
+                active = false;
+            };
         }
 
         setBusy(true);
 
-        const { promise, cancel } = cancellablePromise<string | undefined>(
-            AssetsService.getImage(s3Key)
-            // CacheService.getImage(s3Key)
-        );
+        void AssetsService.getAssetUri(s3Key)
+            .catch(() => AssetsService.getImage(s3Key))
+            .then((resolvedImage) => {
+                if (!active) return;
+                setImageUri(resolvedImage);
+            })
+            .catch((error) => {
+                console.error('Unable to restore uploaded image', error);
+                if (!active) return;
+                setImageUri(undefined);
+            })
+            .finally(() => {
+                if (!active) return;
+                setBusy(false);
+            });
 
-        promise.then((base64Image: string | undefined) => {
-            setImageUri(base64Image);
-            setBusy(false);
-        });
-
-        return cancel;
-
-
-
-        // if (!s3Key) return setImageUri(undefined);
-        // setBusy(true);
-        // const { promise, cancel } = cancellablePromise<string>(AssetsService.getAssetUri(s3Key));
-
-        // promise.then((uri: string) => {
-        //     setImageUri(uri);
-        //     setBusy(false);
-        // });
-
-        // return cancel;
-    }, [s3Key])
+        return () => {
+            active = false;
+        };
+    }, [s3Key]);
 
     const processUpload = async () => {
         setBusy(true);
-        const res = await AssetsService.uploadAsset('photo', prefix);
+        try {
+            const res = await AssetsService.uploadAsset('photo', prefix);
 
-        if (!res) {
-            return alert(
-                `There was an error uploading your picture.
-                 Please try again later or contact support`
-            );
+            if (!res) {
+                Alert.alert(
+                    'Image upload failed',
+                    'There was an error uploading your picture. Please try again later or contact support.'
+                );
+                return;
+            }
+
+            if (!res.cancel && res.key) {
+                setS3Key(res.key);
+                if (onAssetUploaded) onAssetUploaded(res.key);
+            }
+        } finally {
+            setBusy(false);
         }
-
-        if (!res.cancel && res.key) {
-            setS3Key(res.key);
-            if (onAssetUploaded) onAssetUploaded(res.key);
-        }
-
-        setBusy(false);
     };
 
     return (
         <View style={{ marginRight: 25 }}>
             <TouchableOpacity
+                testID={testID}
                 style={{
                     ...styles.darkBackground,
                     ...styles.centered,
@@ -145,7 +151,7 @@ export function UiFileUpload({
                         />
                         <Text
                             style={{
-                                color: theme.theme.colors.grey1,
+                                color: colors.grey1,
                                 textAlign: 'center',
                             }}
                         >
@@ -156,6 +162,7 @@ export function UiFileUpload({
             </TouchableOpacity>
             { imageUri && 
             <TouchableOpacity
+                testID={testID ? `${testID}-remove` : undefined}
                 style={{ position: 'absolute', top: -12, left: (width || 125) - 14 }}
                 onPress={() => deleteImage()}
             >

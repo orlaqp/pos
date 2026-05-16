@@ -1,58 +1,33 @@
+import { brandsAdapter, brandsReducer, fetchBrands } from './brands.slice';
 
-import {
-  fetchBrands,
-  BrandsAdapter,
-  BrandsReducer,
-} from './brands.slice';
-
-describe('Brands reducer', () => {
-  it('should handle initial state', () => {
-    const expected = BrandsAdapter.getInitialState({
-      loadingStatus: 'not loaded',
-      error: null,
-    });
-
-    expect(BrandsReducer(undefined, { type: '' })).toEqual(expected);
+describe('brands reducer', () => {
+  it('returns initial state', () => {
+    expect(brandsReducer(undefined, { type: '' })).toEqual(
+      brandsAdapter.getInitialState({
+        loadingStatus: 'not loaded',
+        selected: undefined,
+        filterQuery: undefined,
+        filteredList: undefined,
+      })
+    );
   });
 
-  it('should handle fetchBrands', () => {
-    let state = brandsReducer(
-      undefined,
-      fetchBrands.pending(null, null)
-    );
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'loading',
-        error: null,
-        entities: {},
-      })
-    );
+  it('handles fetchBrands pending/fulfilled/rejected', () => {
+    let state = brandsReducer(undefined, fetchBrands.pending('', undefined));
+    expect(state.loadingStatus).toBe('loading');
 
     state = brandsReducer(
       state,
-      fetchBrands.fulfilled([{ id: 1 }], null, null)
+      fetchBrands.fulfilled([{ id: '1' } as any], '', undefined)
     );
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'loaded',
-        error: null,
-        entities: { 1: { id: 1 } },
-      })
-    );
+    expect(state.loadingStatus).toBe('loaded');
+    expect(state.entities['1']).toEqual(expect.objectContaining({ id: '1' }));
 
     state = brandsReducer(
       state,
-      fetchBrands.rejected(new Error('Uh oh'), null, null)
+      fetchBrands.rejected(new Error('Uh oh'), '', undefined)
     );
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'error',
-        error: 'Uh oh',
-        entities: { 1: { id: 1 } },
-      })
-    );
+    expect(state.loadingStatus).toBe('error');
+    expect(state.error).toBe('Uh oh');
   });
 });

@@ -1,9 +1,8 @@
-import { RootState } from '@pos/store';
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export const AWS_CONFIG_FEATURE_KEY = 'awsConfig';
 
-export interface Oauth {}
+export type Oauth = Record<string, never>;
 
 export interface AwsCognitoPasswordProtectionSettings {
     passwordPolicyMinLength: number;
@@ -55,7 +54,9 @@ export const awsConfigReducer = awsConfigSlice.reducer;
 
 export const awsConfigActions = awsConfigSlice.actions;
 
-export const getAwsConfigState = (rootState: RootState): AwsConfigState =>
+export const getAwsConfigState = (
+    rootState: Record<string, AwsConfigState>
+): AwsConfigState =>
     rootState[AWS_CONFIG_FEATURE_KEY];
 
 export const selectAwsConfig = createSelector(

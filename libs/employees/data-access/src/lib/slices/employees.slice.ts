@@ -1,37 +1,53 @@
 
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
 import {
     createAsyncThunk,
     createEntityAdapter,
     createSelector,
     createSlice,
-    EntityId,
     EntityState,
     PayloadAction,
     Update,
 } from '@reduxjs/toolkit';
 import { EmployeeEntity, EmployeeEntityMapper } from '../employee.entity';
 import { EmployeeService } from '../employee.service';
-
 export const EMPLOYEE_FEATURE_KEY = 'employees';
 
-export interface EmployeesState extends EntityState< EmployeeEntity > {
+export interface EmployeesState extends EntityState<EmployeeEntity, string> {
   loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
   error?: string;
   selected?: EmployeeEntity;
   filterQuery?: string;
   filteredList?: EmployeeEntity[];
   loginEmployee?: EmployeeEntity;
+  initialSyncComplete: boolean;
 }
 
-export const employeesAdapter = createEntityAdapter< EmployeeEntity >();
+export const employeesAdapter = createEntityAdapter<EmployeeEntity, string>({
+    selectId: (employee) => employee.id ?? '',
+});
 
 export const fetchEmployees = createAsyncThunk(
   'employees/fetchStatus',
   async (_, thunkAPI) => {
-    const employees = await EmployeeService.getAll();
-    return employees.map(x => EmployeeEntityMapper.fromModel(x));
+    try {
+      const result = await EmployeeService.getSyncedLocalEmployees();
+
+      return {
+        employees: result.employees.map(x => EmployeeEntityMapper.fromModel(x)),
+        initialSyncComplete: result.initialSyncComplete,
+      };
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? `${error.name}: ${error.message}`
+          : typeof error === 'string'
+            ? error
+            : JSON.stringify(error);
+
+      return thunkAPI.rejectWithValue(message);
+    }
   }
 );
 
@@ -42,6 +58,7 @@ export const initialEmployeesState: EmployeesState =
     filterQuery: undefined,
     filteredList: undefined,
     loginEmployee: undefined,
+    initialSyncComplete: false,
   });
 
 export const employeesSlice = createSlice({
@@ -49,15 +66,15 @@ export const employeesSlice = createSlice({
   initialState: initialEmployeesState,
   reducers: {
     add: (state: EmployeesState, action: PayloadAction< EmployeeEntity >) =>{
-        employeesAdapter.addOne(state, action);
+        employeesAdapter.addOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    remove: (state: EmployeesState, action: PayloadAction< EntityId >) => {
-        employeesAdapter.removeOne(state, action);
+    remove: (state: EmployeesState, action: PayloadAction<string>) => {
+        employeesAdapter.removeOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    update: (state: EmployeesState, action: PayloadAction<Update< EmployeeEntity>>) => {
-        employeesAdapter.updateOne(state, action);
+    update: (state: EmployeesState, action: PayloadAction<Update<EmployeeEntity, string>>) => {
+        employeesAdapter.updateOne(state, action.payload);
 
         filterList(state, state.filterQuery);
 
@@ -76,7 +93,7 @@ export const employeesSlice = createSlice({
         state.filterQuery = action.payload;
     },
     loginEmployee: (state: EmployeesState, action: PayloadAction<EmployeeEntity>) => {
-        state.loginEmployee = state.entities[action.payload.id!]; //  action.payload;
+        state.loginEmployee = state.entities[action.payload.id!] ?? action.payload;
     },
     logoffEmployee: (state: EmployeesState) => {
         state.loginEmployee = undefined;
@@ -84,7 +101,19 @@ export const employeesSlice = createSlice({
     setAll: (state: EmployeesState, action: PayloadAction<EmployeeEntity[] >) =>{
         employeesAdapter.setAll(state, action.payload);
         state.loadingStatus = 'loaded';
+        if (action.payload.length > 0) {
+            state.initialSyncComplete = true;
+        }
         filterList(state, state.filterQuery);
+    },
+    markInitialSyncComplete: (
+        state: EmployeesState,
+        action: PayloadAction<boolean | undefined>
+    ) => {
+        state.initialSyncComplete = action.payload ?? true;
+        if (state.loadingStatus === 'not loaded') {
+            state.loadingStatus = 'loaded';
+        }
     },
   },
   extraReducers: (builder) => {
@@ -94,15 +123,20 @@ export const employeesSlice = createSlice({
       })
       .addCase(
         fetchEmployees.fulfilled,
-        (state: EmployeesState, action: PayloadAction<EmployeeEntity[] >) => {
-          employeesAdapter.setAll(state, action.payload);
+        (state: EmployeesState, action: PayloadAction<{ employees: EmployeeEntity[]; initialSyncComplete: boolean }>) => {
+          employeesAdapter.setAll(state, action.payload.employees);
           filterList(state, state.filterQuery);
           state.loadingStatus = 'loaded';
+          state.initialSyncComplete = action.payload.initialSyncComplete;
         }
       )
       .addCase(fetchEmployees.rejected, (state: EmployeesState, action) => {
         state.loadingStatus = 'error';
-        state.error = action.error.message;
+        state.initialSyncComplete = false;
+        state.error =
+            typeof action.payload === 'string'
+                ? action.payload
+                : action.error?.message || 'Failed to load employees';
       });
   },
 });
@@ -113,19 +147,21 @@ export const employeesSlice = createSlice({
 export const employeesReducer = employeesSlice.reducer;
 
 export const employeesActions = employeesSlice.actions;
-const { selectAll, selectEntities } = employeesAdapter.getSelectors();
-
 export const getEmployeesState = (rootState: RootState): EmployeesState =>
   rootState[EMPLOYEE_FEATURE_KEY];
 
+const employeeSelectors = employeesAdapter.getSelectors<RootState>(getEmployeesState);
+
 export const selectAllEmployees = createSelector(
   getEmployeesState,
-  selectAll
+  (state) =>
+      employeeSelectors.selectAll({ [EMPLOYEE_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectEmployeesEntities = createSelector(
   getEmployeesState,
-  selectEntities
+  (state) =>
+      employeeSelectors.selectEntities({ [EMPLOYEE_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectLoadingStatus = createSelector(
@@ -148,12 +184,17 @@ export const selectLoginEmployee = createSelector(
     (state: EmployeesState) => state.loginEmployee
 )
 
+export const selectInitialEmployeeSyncComplete = createSelector(
+    getEmployeesState,
+    (state: EmployeesState) => state.initialSyncComplete
+)
+
 
 
 
 function filterList(state: EmployeesState, query?: string) {
     state.loadingStatus = 'loaded';
-    const all = selectAll(state);
+    const all = employeesAdapter.getSelectors().selectAll(state);
     
     if (!query) {
         state.filteredList = all;
@@ -168,4 +209,3 @@ function filterList(state: EmployeesState, query?: string) {
       || x.phone?.toLowerCase().indexOf(lowerQuery) !== -1
     );
 }
-

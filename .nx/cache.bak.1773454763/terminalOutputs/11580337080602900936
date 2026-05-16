@@ -1,0 +1,21 @@
+(node:18223) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+Linting "mobile-ui"...
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/apps/mobile-ui/src/app/App.tsx[24m[0m
+[0m   [2m2:17[22m  [33mwarning[39m  'useEffect' is defined but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m12:10[22m  [33mwarning[39m  'setI18nConfig' is defined but never used         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m16:11[22m  [33mwarning[39m  'colorScheme' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/apps/mobile-ui/src/app/HomeScreen.tsx[24m[0m
+[0m  [2m22:13[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m30:43[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/apps/mobile-ui/test-setup.ts[24m[0m
+[0m  [2m88:31[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[33m[1m✖ 6 problems (0 errors, 6 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[0m
+✖ 6 problems (0 errors, 6 warnings)
+

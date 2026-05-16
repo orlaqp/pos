@@ -1,11 +1,12 @@
 {
-    "root": "libs/sales/data-access",
+    "name": "sales-data-access",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/sales/data-access/src",
     "projectType": "library",
     "tags": [],
     "targets": {
         "lint": {
-            "executor": "@nrwl/linter:eslint",
+            "executor": "@nx/eslint:lint",
             "outputs": ["{options.outputFile}"],
             "options": {
                 "lintFilePatterns": [
@@ -14,10 +15,10 @@
             }
         },
         "test": {
-            "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/sales/data-access"],
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/sales/data-access"],
             "options": {
-                "jestConfig": "libs/sales/data-access/jest.config.js",
+                "jestConfig": "libs/sales/data-access/jest.config.ts",
                 "passWithNoTests": true
             }
         }

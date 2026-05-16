@@ -1,0 +1,82 @@
+(node:77318) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/sales-screen/[22m[1msales-screen.logic.spec.ts[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/sales-screen/[22m[1msales-screen.spec.tsx[22m
+  [1m● [22mConsole
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/product-selection/[22m[1mproduct-selection.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/product-details/[22m[1mproduct-details.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/cart/[22m[1mcart.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/cart-payment/[22m[1mcart-payment.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/category-selection/[22m[1mcategory-selection.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/product-search/[22m[1mproduct-search.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/cart-line/[22m[1mcart-line.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/cart-payment/[22m[1mcart-payment.logic.spec.ts[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/cart/[22m[1mcart.logic.spec.ts[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/product-details/[22m[1mproduct-details.logic.spec.ts[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/product-selection/[22m[1mproduct-selection.logic.spec.ts[22m
+
+[1mTest Suites: [22m[1m[32m13 passed[39m[22m, 13 total
+[1mTests:       [22m[1m[32m55 passed[39m[22m, 55 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        [1m[33m4.125 s[39m[22m
+[2mRan all test suites[22m[2m.[22m

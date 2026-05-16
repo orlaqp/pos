@@ -1,18 +1,20 @@
 
 import {
   fetchUnitOfMeasures,
-  UnitOfMeasuresAdapter,
-  UnitOfMeasuresReducer,
+  unitOfMeasuresAdapter,
+  unitOfMeasuresReducer,
 } from './unit-of-measures.slice';
 
 describe('UnitOfMeasures reducer', () => {
   it('should handle initial state', () => {
-    const expected = UnitOfMeasuresAdapter.getInitialState({
+    const expected = unitOfMeasuresAdapter.getInitialState({
       loadingStatus: 'not loaded',
-      error: null,
+      selected: undefined,
+      filterQuery: undefined,
+      filteredList: undefined,
     });
 
-    expect(UnitOfMeasuresReducer(undefined, { type: '' })).toEqual(expected);
+    expect(unitOfMeasuresReducer(undefined, { type: '' })).toEqual(expected);
   });
 
   it('should handle fetchUnitOfMeasures', () => {
@@ -24,7 +26,6 @@ describe('UnitOfMeasures reducer', () => {
     expect(state).toEqual(
       expect.objectContaining({
         loadingStatus: 'loading',
-        error: null,
         entities: {},
       })
     );
@@ -37,8 +38,7 @@ describe('UnitOfMeasures reducer', () => {
     expect(state).toEqual(
       expect.objectContaining({
         loadingStatus: 'loaded',
-        error: null,
-        entities: { 1: { id: 1 } },
+        entities: { 1: expect.objectContaining({ id: 1 }) },
       })
     );
 

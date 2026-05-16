@@ -1,4 +1,4 @@
-/* eslint-disable @nrwl/nx/enforce-module-boundaries */
+/* eslint-disable @nx/enforce-module-boundaries */
 import { EmployeeEntity } from '@pos/employees/data-access';
 import { InventoryReceive, InventoryReceiveLine, InventoryReceiveStatus } from '@pos/shared/models';
 import { InventoryReceiveLineDTO } from './inventory-receive-line.entity';
@@ -48,6 +48,7 @@ export class InventoryReceiveMapper {
             productId: x.productId,
             productName: x.productName,
             unitOfMeasure: x.unitOfMeasure,
+            current: Number((x as { current?: number | null }).current || 0),
             received: x.received,
             comments: x.comments,
             createdAt: x.createdAt,
@@ -65,5 +66,4 @@ export class InventoryReceiveMapper {
         }));
     }
 }
-
 

@@ -1,12 +1,16 @@
 import { Dispatch } from '@reduxjs/toolkit';
-import { configureDataStore } from './config';
 import { subscribeEvents } from './events';
 
 export * from './lib/events.slice';
+export * from './lib/observe-query-manager';
 
 export const initializeDataStore = (dispatch: Dispatch) => {
-    console.log('Initializing data store');
-    console.log('Subscribing to data store events');
     subscribeEvents(dispatch);
-    configureDataStore();
 };
+
+export {
+    configureDataStore,
+    enableInventorySync,
+    isInventorySyncEnabled,
+    resetInventorySyncForTests,
+} from './config';

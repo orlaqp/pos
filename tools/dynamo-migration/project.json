@@ -1,0 +1,17 @@
+{
+  "name": "dynamo-migration",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/dynamo-migration/src",
+  "projectType": "library",
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/tools/dynamo-migration"],
+      "options": {
+        "jestConfig": "tools/dynamo-migration/jest.config.ts",
+        "passWithNoTests": false
+      }
+    }
+  },
+  "tags": []
+}

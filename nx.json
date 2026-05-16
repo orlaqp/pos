@@ -1,40 +1,35 @@
 {
-    "npmScope": "pos",
-    "affected": {
-        "defaultBase": "main"
-    },
-    "cli": {
-        "defaultCollection": "@nrwl/react-native"
-    },
-    "implicitDependencies": {
-        "package.json": {
-            "dependencies": "*",
-            "devDependencies": "*"
-        },
-        ".eslintrc.json": "*"
-    },
-    "tasksRunnerOptions": {
-        "default": {
-            "runner": "nx/tasks-runners/default",
-            "options": {
-                "cacheableOperations": ["build", "lint", "test", "e2e"]
-            }
-        }
-    },
-    "targetDependencies": {
-        "build": [
-            {
-                "target": "build",
-                "projects": "dependencies"
-            }
-        ]
+    "namedInputs": {
+        "sharedGlobals": [
+            "{workspaceRoot}/package.json",
+            "{workspaceRoot}/.eslintrc.json"
+        ],
+        "default": ["{projectRoot}/**/*", "sharedGlobals"]
     },
     "defaultProject": "mobile-ui",
     "generators": {
-        "@nrwl/react": {
+        "@nx/react": {
             "application": {
                 "babel": true
             }
         }
-    }
+    },
+    "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "targetDefaults": {
+        "build": {
+            "dependsOn": ["^build"],
+            "cache": true
+        },
+        "lint": {
+            "cache": true
+        },
+        "test": {
+            "cache": true
+        },
+        "e2e": {
+            "cache": true
+        }
+    },
+    "useInferencePlugins": false,
+    "defaultBase": "main"
 }

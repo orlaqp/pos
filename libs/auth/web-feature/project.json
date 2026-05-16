@@ -1,0 +1,16 @@
+{
+    "name": "auth-web-feature",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/auth/web-feature/src",
+    "projectType": "library",
+    "tags": ["scope:auth", "type:feature", "platform:web"],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["libs/auth/web-feature/**/*.{ts,tsx,js,jsx}"]
+            }
+        }
+    }
+}

@@ -1,0 +1,18 @@
+<svg width="2048" height="2048" viewBox="0 0 2048 2048" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cart" x1="618" y1="688" x2="1460" y2="1490" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8FFFB"/>
+      <stop offset="1" stop-color="#D6F4EE"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="1268" y1="486" x2="1568" y2="786" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD96F"/>
+      <stop offset="1" stop-color="#FF8655"/>
+    </linearGradient>
+  </defs>
+  <path d="M644 782H788L888 1234H1356" stroke="url(#cart)" stroke-width="112" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M872 1114H1376L1452 918H816" stroke="url(#cart)" stroke-width="112" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="972" cy="1388" r="80" fill="#DDF7F0"/>
+  <circle cx="1292" cy="1388" r="80" fill="#DDF7F0"/>
+  <path d="M1356 516L1392 592L1468 628L1392 664L1356 740L1320 664L1244 628L1320 592L1356 516Z" fill="url(#accent)"/>
+  <rect x="640" y="560" width="440" height="72" rx="36" fill="#C7FFF1" fill-opacity="0.58"/>
+</svg>

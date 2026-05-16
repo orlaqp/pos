@@ -1,11 +1,11 @@
 import { useSharedStyles } from '@pos/theme/native';
 import { InputProps } from '@rneui/base';
 import { Input, useTheme } from '@rneui/themed';
-import React from 'react';
+import React, { useState } from 'react';
 import { useFormContext, Controller, RegisterOptions } from 'react-hook-form';
 import { TextInput } from 'react-native';
 
-type Props = React.ComponentProps<typeof Input> & {
+type Props = InputProps & {
     name: string;
     placeholder: string;
     rules?: RegisterOptions;
@@ -16,28 +16,31 @@ type Props = React.ComponentProps<typeof Input> & {
     onValid?: () => void;
 };
 
-export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
+export const UIInput: any = React.forwardRef<any, Props>((props, ref) => {
     const theme = useTheme();
     const styles = useSharedStyles();
     const { name, rules, formatter, onValid, lIcon, rIcon, textAlign, ...restOfProps } =
         props;
     const { control } = useFormContext();
+    const [focused, setFocused] = useState(false);
 
     const inputProps = restOfProps as InputProps;
+    const nativeInputTestId =
+        typeof inputProps.testID === 'string' ? inputProps.testID : undefined;
     inputProps.leftIcon = lIcon
         ? {
               name: lIcon,
               type: 'material-community',
               color: theme.theme.colors.grey2,
           }
-        : undefined;
+        : inputProps.leftIcon;
     inputProps.rightIcon = rIcon
         ? {
               name: rIcon,
               type: 'material-community',
               color: theme.theme.colors.grey2,
           }
-        : undefined;
+        : inputProps.rightIcon;
 
     //   const value = watch(name)
 
@@ -56,20 +59,70 @@ export const UIInput = React.forwardRef<TextInput, Props>((props, ref) => {
         <Controller
             control={control}
             name={name}
+            defaultValue=""
             render={({
-                field: { onChange, value, onBlur, ref },
+                field: { onChange, value, onBlur, ref: fieldRef },
                 fieldState: { isTouched, isDirty, error },
             }) => (
                 <Input
-                    ref={ref}
-                    {...restOfProps}
+                    ref={fieldRef as any}
+                    {...inputProps}
+                    inputProps={{
+                        ...inputProps.inputProps,
+                        testID:
+                            inputProps.inputProps?.testID || nativeInputTestId,
+                        nativeID:
+                            inputProps.inputProps?.nativeID || nativeInputTestId,
+                    }}
                     textAlign={textAlign || 'left'}
                     placeholder={props.placeholder}
-                    value={value}
-                    onBlur={onBlur}
+                    value={
+                        typeof value === 'string'
+                            ? value
+                            : value == null
+                            ? ''
+                            : String(value)
+                    }
+                    onBlur={(event) => {
+                        setFocused(false);
+                        onBlur();
+                        inputProps.onBlur?.(event);
+                    }}
+                    onFocus={(event) => {
+                        setFocused(true);
+                        inputProps.onFocus?.(event);
+                    }}
                     onChangeText={onChange}
                     errorMessage={error?.message}
-                    inputContainerStyle={styles.inputContainerStyle}
+                    labelStyle={[
+                        {
+                            color: theme.theme.colors.grey2,
+                            fontSize: 12,
+                            fontWeight: '700',
+                            letterSpacing: 0.6,
+                            textTransform: 'uppercase',
+                            marginBottom: 6,
+                        },
+                        inputProps.labelStyle,
+                    ]}
+                    errorStyle={[
+                        {
+                            color: theme.theme.colors.error,
+                            fontSize: 12,
+                            fontWeight: '600',
+                            marginHorizontal: 6,
+                        },
+                        inputProps.errorStyle,
+                    ]}
+                    inputContainerStyle={[
+                        styles.inputContainerStyle,
+                        focused
+                            ? {
+                                  borderWidth: 1,
+                                  borderColor: theme.theme.colors.primary,
+                              }
+                            : undefined,
+                    ]}
                     inputStyle={styles.inputStyle}
                 />
             )}

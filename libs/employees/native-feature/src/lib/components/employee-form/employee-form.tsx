@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
-import { Alert, View, Text, ScrollView } from 'react-native';
-import { useSharedStyles } from '@pos/theme/native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
     UIActions,
-    UiFileUpload,
+    UICard,
     UIInput,
+    UIScreen,
+    UIStack,
     UISwitch,
-    UIVerticalSpacer,
 } from '@pos/shared/ui-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,8 +15,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { EmployeeEntity, EmployeeService } from '@pos/employees/data-access';
 import { RootState } from '@pos/store';
 import { Employee } from '@pos/shared/models';
-import { CheckBox } from '@rneui/themed';
+import { Button, Icon } from '@rneui/themed';
 import { Role } from '@pos/auth/data-access';
+import { translateWithFallback } from '@pos/shared/utils';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface EmployeeFormParams {
     [name: string]: object | undefined;
@@ -27,13 +29,53 @@ export interface EmployeeFormProps {
     navigation: NativeStackNavigationProp<EmployeeFormParams>;
 }
 
+export const getEmployeeDefaults = (employee?: EmployeeEntity) => ({
+    id: employee?.id,
+    code: employee?.code,
+    firstName: employee?.firstName,
+    lastName: employee?.lastName,
+    middleName: employee?.middleName,
+    dob: employee?.dob,
+    phone: employee?.phone,
+    email: employee?.email,
+    pin: employee?.pin,
+    roles: employee?.roles,
+    active:
+        employee?.active === null || employee?.active === undefined
+            ? true
+            : employee?.active,
+});
+
+export const buildEmployeeRoleMap = (employeeRoles?: string[]) => {
+    const roleMap: Record<string, boolean> = {};
+    Object.values(Role).forEach((role) => {
+        roleMap[role] = !!employeeRoles?.includes(role);
+    });
+    return roleMap;
+};
+
+export const toggleEmployeeRoleSet = (
+    currentRoles: Record<string, boolean>,
+    roleName: string
+) => {
+    const nextRoles = { ...currentRoles, [roleName]: !currentRoles[roleName] };
+    const roleSet = Object.entries(nextRoles).reduce((set, [role, selected]) => {
+        if (selected) set.push(role);
+        return set;
+    }, [] as string[]);
+    return { nextRoles, roleSet };
+};
+
 export function EmployeeForm({ navigation }: EmployeeFormProps) {
+    const t = translateWithFallback;
     const employee = useSelector(
         (state: RootState) => state.employees.selected
     );
     const dispatch = useDispatch();
-    const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const [busy, setBusy] = useState<boolean>(false);
+    const [pinVisible, setPinVisible] = useState(false);
     const [roles, setRoles] = useState<Record<string, boolean>>({});
 
     const save = async () => {
@@ -51,180 +93,478 @@ export function EmployeeForm({ navigation }: EmployeeFormProps) {
 
     const form = useForm<EmployeeEntity>({
         mode: 'onChange',
-        defaultValues: {
-            id: employee?.id,
-            code: employee?.code,
-            firstName: employee?.firstName,
-            lastName: employee?.lastName,
-            middleName: employee?.middleName,
-            dob: employee?.dob,
-            phone: employee?.phone,
-            email: employee?.email,
-            pin: employee?.pin,
-            roles: employee?.roles,
-            active:
-                employee?.active === null || employee?.active === undefined
-                    ? true
-                    : employee?.active,
-        },
+        defaultValues: getEmployeeDefaults(employee),
     });
 
     const roleList = Object.values(Role);
+    const activeRoleCount = Object.values(roles).filter(Boolean).length;
 
     const toggleRole = (name: string) => {
-        const newRoles = { ...roles };
-        newRoles[name] = !newRoles[name];
-
-        const roleSet: string[] = [];
-        Object.entries(newRoles).reduce((set, [role, selected]) => {
-            if (selected) set.push(role);
-            return set;
-        }, roleSet);
-
-        console.log('Role set', roleSet);
+        const { nextRoles, roleSet } = toggleEmployeeRoleSet(roles, name);
 
         form.setValue('roles', roleSet);
-        setRoles(newRoles);
+        setRoles(nextRoles);
+    };
+
+    const setRolesFromList = (selectedRoles: string[]) => {
+        const nextRoles = roleList.reduce((acc, roleName) => {
+            acc[roleName] = selectedRoles.includes(roleName);
+            return acc;
+        }, {} as Record<string, boolean>);
+
+        setRoles(nextRoles);
+        form.setValue('roles', selectedRoles);
+    };
+
+    const selectCommonRoles = () => {
+        const preferredRoles = ['ADMIN', 'SALES', 'PAYMENTS', 'CASHIER'];
+        const common = preferredRoles.filter((roleName) =>
+            roleList.includes(roleName as string)
+        );
+        const defaultSelection = common.length ? common : roleList.slice(0, 2);
+        setRolesFromList(defaultSelection);
+    };
+
+    const clearRoles = () => setRolesFromList([]);
+
+    const resetPin = () => {
+        form.setValue('pin', '');
+        setPinVisible(false);
     };
 
     const confirmCancel = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t(
+                'COMMON_UndoOperationWarning',
+                'You will not be able to undo this operation'
+            ),
             [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => navigation.goBack() },
             ]
         );
     };
 
     useEffect(() => {
         if (!employee?.roles) return;
-
-        const employeeRoles: Record<string, boolean> = {};
-        Object.values(Role).reduce((eRoles, role) => {
-            eRoles[role] = employee.roles.includes(role);
-            return eRoles;
-        }, employeeRoles);
-
-        setRoles(employeeRoles);
+        setRoles(buildEmployeeRoleMap(employee.roles));
     }, [employee]);
 
     return (
-        <ScrollView
-            contentContainerStyle={[styles.page, styles.centeredHorizontally]}
-        >
+        <UIScreen>
             <FormProvider {...form}>
-                <View style={[styles.page, { width: '75%', marginTop: 50 }]}>
-                    <View
-                        style={{
-                            flexDirection: 'row',
-                            justifyContent: 'flex-end',
-                            marginBottom: 10,
-                        }}
-                    >
-                        <View>
-                            <Text
-                                style={[
-                                    styles.primaryText,
-                                    styles.textBold,
-                                    { marginTop: 6, marginRight: 25 },
-                                ]}
-                            >
-                                Is active ?
-                            </Text>
-                        </View>
-                        <View>
-                            <UISwitch name="active" />
-                        </View>
-                    </View>
-                    <View style={styles.row}>
-                        <View style={{ flex: 1 }}>
-                            <UIInput
-                                label="First Name"
-                                name="firstName"
-                                placeholder="First name"
-                            />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <UIInput
-                                label="Last Name"
-                                name="lastName"
-                                placeholder="Last name"
-                            />
-                        </View>
-                    </View>
-                    <View style={styles.row}>
-                        <View style={{ flex: 1 }}>
-                            <UIInput
-                                name="phone"
-                                label="Phone"
-                                keyboardType="phone-pad"
-                                placeholder="Phone Number"
-                            />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <UIInput
-                                name="email"
-                                label="Email"
-                                keyboardType="email-address"
-                                placeholder="Email Address"
-                                autoCapitalize="none"
-                                autoCorrect={false}
-                            />
-                        </View>
-                    </View>
-                    <View style={styles.row}>
-                        <View style={{ flex: 1 }}>
-                            <UIInput
-                                label="Code"
-                                name="code"
-                                placeholder="Code"
-                            />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <UIInput
-                                name="pin"
-                                label="Pin"
-                                keyboardType="decimal-pad"
-                                placeholder="Pin"
-                                rules={{ minLength: 4, maxLength: 4 }}
-                                secureTextEntry={true}
-                            />
-                        </View>
-                    </View>
-                    <View style={{ flexDirection: 'column', marginBottom: 50 }}>
-                        <View
-                            style={{
-                                marginLeft: 10,
-                                marginTop: 10,
-                                marginBottom: 15,
-                            }}
-                        >
-                            <Text style={[styles.primaryText]}>Roles:</Text>
-                        </View>
+                <View style={styles.screen}>
+                    <ScrollView contentContainerStyle={styles.scrollContent}>
+                        <View style={styles.container}>
+                            <UICard style={styles.headerCard} tone="muted" radius="lg">
+                                <View style={styles.headerRow}>
+                                    <View style={styles.headerTitleBlock}>
+                                        <Text style={styles.headerTitle}>
+                                            {t('EMPLOYEE_ProfileTitle', 'Employee Profile')}
+                                        </Text>
+                                        <Text style={styles.headerSubtitle}>
+                                            {t(
+                                                'EMPLOYEE_ProfileSubtitle',
+                                                'Manage identity, access and security settings.'
+                                            )}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.headerStatusBlock}>
+                                        <View
+                                            style={[
+                                                styles.statusBadge,
+                                                form.watch('active')
+                                                    ? styles.statusBadgeActive
+                                                    : styles.statusBadgeInactive,
+                                            ]}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.statusBadgeText,
+                                                    form.watch('active')
+                                                        ? styles.statusBadgeTextActive
+                                                        : styles.statusBadgeTextInactive,
+                                                ]}
+                                            >
+                                                {form.watch('active')
+                                                    ? t('COMMON_Active', 'Active')
+                                                    : t('COMMON_Inactive', 'Inactive')}
+                                            </Text>
+                                        </View>
+                                        <View style={styles.statusSwitchRow}>
+                                            <Text style={styles.toggleLabel}>
+                                                {t('EMPLOYEE_IsActive', 'Is active?')}
+                                            </Text>
+                                            <View style={styles.toggleSwitchWrap}>
+                                                <UISwitch name="active" />
+                                            </View>
+                                        </View>
+                                    </View>
+                                </View>
+                            </UICard>
 
-                        <View style={styles.row}>
-                            {roleList.map((r) => (
-                                <CheckBox
-                                    key={r}
-                                    center
-                                    title={r}
-                                    checked={roles[r]}
-                                    onPress={() => toggleRole(r)}
-                                />
-                            ))}
+                            <UICard style={styles.sectionCard}>
+                                <Text style={styles.sectionTitle}>
+                                    {t('EMPLOYEE_ProfileSection', 'Profile')}
+                                </Text>
+                                <UIStack spacing="sm">
+                                    <View style={styles.row}>
+                                        <View style={styles.column}>
+                                            <UIInput
+                                                label={t('EMPLOYEE_FirstName', 'First Name')}
+                                                name="firstName"
+                                                placeholder={t('EMPLOYEE_FirstNamePlaceholder', 'First name')}
+                                                lIcon="account-outline"
+                                            />
+                                        </View>
+                                        <View style={styles.columnLast}>
+                                            <UIInput
+                                                label={t('EMPLOYEE_LastName', 'Last Name')}
+                                                name="lastName"
+                                                placeholder={t('EMPLOYEE_LastNamePlaceholder', 'Last name')}
+                                                lIcon="account-outline"
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={styles.row}>
+                                        <View style={styles.column}>
+                                            <UIInput
+                                                name="phone"
+                                                label={t('COMMON_Phone', 'Phone')}
+                                                keyboardType="phone-pad"
+                                                placeholder={t('EMPLOYEE_PhonePlaceholder', 'Phone Number')}
+                                                lIcon="phone-outline"
+                                            />
+                                        </View>
+                                        <View style={styles.columnLast}>
+                                            <UIInput
+                                                name="email"
+                                                label={t('COMMON_Email', 'Email')}
+                                                keyboardType="email-address"
+                                                placeholder={t('EMPLOYEE_EmailPlaceholder', 'Email Address')}
+                                                autoCapitalize="none"
+                                                autoCorrect={false}
+                                                lIcon="email-outline"
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={styles.row}>
+                                        <View style={styles.column}>
+                                            <UIInput
+                                                label={t('EMPLOYEE_Code', 'Code')}
+                                                name="code"
+                                                placeholder={t('EMPLOYEE_Code', 'Code')}
+                                                lIcon="badge-account-outline"
+                                            />
+                                        </View>
+                                        <View style={styles.columnLast} />
+                                    </View>
+                                </UIStack>
+                            </UICard>
+
+                            <UICard style={styles.sectionCard}>
+                                <View style={styles.sectionHeaderRow}>
+                                    <View>
+                                        <Text style={styles.sectionTitle}>
+                                            {t('EMPLOYEE_AccessSection', 'Access')}
+                                        </Text>
+                                        <Text style={styles.sectionSubtitle}>
+                                            {t(
+                                                'EMPLOYEE_RoleSelectionCount',
+                                                `${activeRoleCount} role${activeRoleCount === 1 ? '' : 's'} selected`,
+                                                {
+                                                    count: activeRoleCount,
+                                                }
+                                            )}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.sectionHeaderActions}>
+                                        <Button
+                                            title={t('EMPLOYEE_SelectCommonRoles', 'Select common')}
+                                            type="clear"
+                                            titleStyle={styles.helperActionText}
+                                            onPress={selectCommonRoles}
+                                        />
+                                        <Button
+                                            title={t('COMMON_ClearAll', 'Clear all')}
+                                            type="clear"
+                                            titleStyle={styles.helperActionText}
+                                            onPress={clearRoles}
+                                        />
+                                    </View>
+                                </View>
+
+                                <UIStack direction="horizontal" wrap spacing="sm">
+                                    {roleList.map((r) => (
+                                        <Pressable
+                                            key={r}
+                                            testID={`employee-role-${r}`}
+                                            style={[
+                                                styles.roleChip,
+                                                roles[r]
+                                                    ? styles.roleChipActive
+                                                    : styles.roleChipInactive,
+                                            ]}
+                                            onPress={() => toggleRole(r)}
+                                        >
+                                            <Icon
+                                                name={roles[r] ? 'check-circle' : 'circle-outline'}
+                                                type="material-community"
+                                                size={16}
+                                                color={
+                                                    roles[r]
+                                                        ? tokens.colors.accent
+                                                        : tokens.colors.textMuted
+                                                }
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.roleChipText,
+                                                    roles[r] ? styles.roleChipTextActive : undefined,
+                                                ]}
+                                            >
+                                                {r}
+                                            </Text>
+                                        </Pressable>
+                                    ))}
+                                </UIStack>
+                            </UICard>
+
+                            <UICard style={styles.sectionCard}>
+                                <View style={styles.sectionHeaderRow}>
+                                    <View>
+                                        <Text style={styles.sectionTitle}>
+                                            {t('EMPLOYEE_SecuritySection', 'Security')}
+                                        </Text>
+                                        <Text style={styles.sectionSubtitle}>
+                                            {t(
+                                                'EMPLOYEE_SecuritySubtitle',
+                                                'Keep employee sign-in credentials up to date.'
+                                            )}
+                                        </Text>
+                                    </View>
+                                    <Button
+                                        title={t('EMPLOYEE_ResetPin', 'Reset PIN')}
+                                        type="outline"
+                                        buttonStyle={styles.resetPinButton}
+                                        titleStyle={styles.resetPinText}
+                                        onPress={resetPin}
+                                    />
+                                </View>
+                                <View style={styles.row}>
+                                    <View style={styles.column}>
+                                        <UIInput
+                                            name="pin"
+                                            label={t('EMPLOYEE_Pin', 'Pin')}
+                                            keyboardType="decimal-pad"
+                                            placeholder={t('EMPLOYEE_Pin', 'Pin')}
+                                            rules={{ minLength: 4, maxLength: 4 }}
+                                            secureTextEntry={!pinVisible}
+                                            lIcon="lock-outline"
+                                            rightIcon={{
+                                                name: pinVisible ? 'eye-off-outline' : 'eye-outline',
+                                                type: 'material-community',
+                                                color: tokens.colors.textMuted,
+                                                onPress: () => setPinVisible((current) => !current),
+                                            }}
+                                        />
+                                    </View>
+                                    <View style={styles.columnLast} />
+                                </View>
+                            </UICard>
                         </View>
+                    </ScrollView>
+
+                    <View style={styles.actionBar}>
+                        <UICard tone="muted" style={styles.actionBarCard}>
+                            <UIActions
+                                busy={busy}
+                                submitAction={form.handleSubmit(save)}
+                                cancelAction={confirmCancel}
+                            />
+                        </UICard>
                     </View>
-                    <UIActions
-                        busy={busy}
-                        submitAction={form.handleSubmit(save)}
-                        cancelAction={confirmCancel}
-                    />
                 </View>
             </FormProvider>
-        </ScrollView>
+        </UIScreen>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        screen: {
+            flex: 1,
+        },
+        scrollContent: {
+            paddingHorizontal: tokens.spacing.xl,
+            paddingTop: tokens.spacing.lg,
+            paddingBottom: tokens.spacing.xl,
+            alignItems: 'center',
+        },
+        container: {
+            width: '100%',
+            maxWidth: 1220,
+        },
+        headerCard: {
+            marginBottom: tokens.spacing.lg,
+            borderRadius: 26,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
+        },
+        headerRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+        },
+        headerTitleBlock: {
+            flex: 1,
+            paddingRight: tokens.spacing.lg,
+        },
+        headerTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 28,
+            fontWeight: '800',
+            letterSpacing: -0.5,
+        },
+        headerSubtitle: {
+            color: tokens.colors.textSecondary,
+            marginTop: tokens.spacing.xs,
+            fontSize: 15,
+            lineHeight: 21,
+        },
+        headerStatusBlock: {
+            alignItems: 'flex-end',
+        },
+        statusBadge: {
+            borderRadius: tokens.radii.xl,
+            borderWidth: 1,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.xs,
+            marginBottom: tokens.spacing.sm,
+        },
+        statusBadgeActive: {
+            backgroundColor: `${tokens.colors.success}33`,
+            borderColor: `${tokens.colors.success}66`,
+        },
+        statusBadgeInactive: {
+            backgroundColor: `${tokens.colors.danger}22`,
+            borderColor: `${tokens.colors.danger}55`,
+        },
+        statusBadgeText: {
+            fontSize: 12,
+            fontWeight: '700',
+            textTransform: 'uppercase',
+            letterSpacing: 0.7,
+        },
+        statusBadgeTextActive: {
+            color: tokens.colors.success,
+        },
+        statusBadgeTextInactive: {
+            color: tokens.colors.danger,
+        },
+        statusSwitchRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        toggleLabel: {
+            color: tokens.colors.textSecondary,
+            fontSize: 16,
+            fontWeight: '600',
+        },
+        toggleSwitchWrap: {
+            marginLeft: tokens.spacing.md,
+        },
+        sectionCard: {
+            marginBottom: tokens.spacing.lg,
+            borderRadius: 24,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#0E141C',
+        },
+        sectionTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 19,
+            fontWeight: '800',
+            letterSpacing: 0.2,
+            marginBottom: tokens.spacing.md,
+        },
+        sectionSubtitle: {
+            color: tokens.colors.textMuted,
+            fontSize: 14,
+        },
+        sectionHeaderRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: tokens.spacing.sm,
+        },
+        sectionHeaderActions: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        helperActionText: {
+            color: tokens.colors.accent,
+            fontSize: 14,
+            fontWeight: '600',
+        },
+        row: {
+            flexDirection: 'row',
+        },
+        column: {
+            flex: 1,
+            marginRight: tokens.spacing.md,
+        },
+        columnLast: {
+            flex: 1,
+        },
+        roleChip: {
+            borderRadius: tokens.radii.lg,
+            borderWidth: 1,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.sm,
+            flexDirection: 'row',
+            alignItems: 'center',
+            minHeight: 36,
+            marginBottom: tokens.spacing.xs,
+        },
+        roleChipActive: {
+            backgroundColor: `${tokens.colors.accent}22`,
+            borderColor: `${tokens.colors.accent}66`,
+        },
+        roleChipInactive: {
+            backgroundColor: tokens.colors.surfaceMuted,
+            borderColor: tokens.colors.border,
+        },
+        roleChipText: {
+            marginLeft: tokens.spacing.xs,
+            color: tokens.colors.textSecondary,
+            fontWeight: '600',
+        },
+        roleChipTextActive: {
+            color: tokens.colors.textPrimary,
+        },
+        resetPinButton: {
+            borderRadius: tokens.radii.md,
+            borderColor: tokens.colors.border,
+            paddingHorizontal: tokens.spacing.md,
+        },
+        resetPinText: {
+            color: tokens.colors.textSecondary,
+            fontWeight: '600',
+        },
+        actionBar: {
+            paddingHorizontal: tokens.spacing.xl,
+            paddingBottom: tokens.spacing.md,
+            paddingTop: tokens.spacing.xs,
+        },
+        actionBarCard: {
+            maxWidth: 1220,
+            alignSelf: 'center',
+            width: '100%',
+            borderRadius: 24,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
+        },
+    });
 
 export default EmployeeForm;

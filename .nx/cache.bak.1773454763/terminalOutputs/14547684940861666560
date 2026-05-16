@@ -1,0 +1,70 @@
+(node:76426) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+Linting "sales-native-feature"...
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/sales/native-feature/src/lib/components/cart-line/cart-line.spec.tsx[24m[0m
+[0m  [2m3:17[22m  [33mwarning[39m  'Pressable' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m3:28[22m  [33mwarning[39m  'Text' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/sales/native-feature/src/lib/components/cart-payment/cart-payment.spec.tsx[24m[0m
+[0m  [2m3:17[22m  [33mwarning[39m  'Pressable' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m3:28[22m  [33mwarning[39m  'Text' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/sales/native-feature/src/lib/components/cart/cart.logic.spec.ts[24m[0m
+[0m  [2m19:10[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m27:45[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m31:18[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m37:57[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m38:59[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/sales/native-feature/src/lib/components/cart/cart.spec.tsx[24m[0m
+[0m  [2m3:17[22m  [33mwarning[39m  'Pressable' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m3:28[22m  [33mwarning[39m  'Text' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m3:34[22m  [33mwarning[39m  'View' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/sales/native-feature/src/lib/components/product-details/product-details.logic.spec.ts[24m[0m
+[0m  [2m41:14[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/sales/native-feature/src/lib/components/product-details/product-details.spec.tsx[24m[0m
+[0m  [2m3:17[22m  [33mwarning[39m  'Pressable' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m3:28[22m  [33mwarning[39m  'Text' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m3:34[22m  [33mwarning[39m  'View' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/sales/native-feature/src/lib/components/product-search/product-search.spec.tsx[24m[0m
+[0m  [2m3:10[22m  [33mwarning[39m  'Pressable' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m3:21[22m  [33mwarning[39m  'Text' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/sales/native-feature/src/lib/components/product-selection/product-selection.logic.spec.ts[24m[0m
+[0m  [2m14:14[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m15:48[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m27:55[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m29:69[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m32:69[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/sales/native-feature/src/lib/components/sales-screen/sales-screen.logic.spec.ts[24m[0m
+[0m  [2m17:10[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m25:53[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m25:73[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m29:56[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m39:50[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m40:50[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m41:50[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m57:53[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m62:18[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m67:18[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/sales/native-feature/src/lib/components/sales-screen/sales-screen.spec.tsx[24m[0m
+[0m  [2m3:17[22m  [33mwarning[39m  'Pressable' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m3:28[22m  [33mwarning[39m  'Text' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m3:34[22m  [33mwarning[39m  'View' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/sales/native-feature/src/lib/components/sales-screen/sales-screen.tsx[24m[0m
+[0m  [2m162:9[22m   [33mwarning[39m  React Hook useCallback has a missing dependency: 'globalSettings?.enforceSalesBasedOnInventory'. Either include it or remove the dependency array  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m  [2m206:67[22m  [33mwarning[39m  Unexpected any. Specify a different type                                                                                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m247:27[22m  [33mwarning[39m  Forbidden non-null assertion                                                                                                                       [2m@typescript-eslint/no-non-null-assertion[22m[0m
+[0m[0m
+[0m[33m[1m✖ 39 problems (0 errors, 39 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[0m
+✖ 39 problems (0 errors, 39 warnings)
+

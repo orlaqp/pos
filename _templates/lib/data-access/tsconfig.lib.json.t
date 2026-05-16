@@ -8,8 +8,8 @@ to: <%= h.daLib(name) %>/tsconfig.lib.json
     "types": ["node"]
   },
   "files": [
-    "../../../node_modules/@nrwl/react/typings/cssmodule.d.ts",
-    "../../../node_modules/@nrwl/react/typings/image.d.ts"
+    "../../../node_modules/@nx/react/typings/cssmodule.d.ts",
+    "../../../node_modules/@nx/react/typings/image.d.ts"
   ],
   "exclude": [
     "**/*.spec.ts",

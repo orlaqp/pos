@@ -1,0 +1,10 @@
+{
+    "extends": ["plugin:@nx/react", "../../.eslintrc.json"],
+    "ignorePatterns": ["!**/*", ".next", "node_modules"],
+    "overrides": [
+        {
+            "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+            "rules": {}
+        }
+    ]
+}

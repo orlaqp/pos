@@ -1,0 +1,21 @@
+{
+  "run": {
+    "command": "nx run reporting-native-feature:test --runInBand --skip-nx-cache --testPathPattern=report-viewer.spec.tsx",
+    "startTime": "2026-03-14T02:05:24.821Z",
+    "endTime": "2026-03-14T02:05:28.608Z",
+    "inner": false
+  },
+  "tasks": [
+    {
+      "taskId": "reporting-native-feature:test",
+      "target": "test",
+      "projectName": "reporting-native-feature",
+      "hash": "16349436790313716394",
+      "startTime": "2026-03-14T02:05:24.865Z",
+      "endTime": "2026-03-14T02:05:28.608Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 0
+    }
+  ]
+}

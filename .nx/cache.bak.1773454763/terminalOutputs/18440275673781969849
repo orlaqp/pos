@@ -1,0 +1,63 @@
+(node:91976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+Linting "shared-ui-native"...
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/components/stack-navigation/stack-navigation.tsx[24m[0m
+[0m  [2m10:27[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m10:32[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m10:37[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m10:42[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m10:47[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m11:15[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/components/stack-navigation/with-stack-navigation.spec.tsx[24m[0m
+[0m   [2m9:26[22m  [33mwarning[39m  Unexpected any. Specify a different type                                                         [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m10:73[22m  [33mwarning[39m  Fragments should contain more than one child - otherwise, there’s no need for a Fragment at all  [2mreact/jsx-no-useless-fragment[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/components/ui-button/ui-button.tsx[24m[0m
+[0m   [2m6:10[22m  [33mwarning[39m  'StateToString' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m15:67[22m  [33mwarning[39m  Unexpected any. Specify a different type   [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m22:16[22m  [33mwarning[39m  Unexpected any. Specify a different type   [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/components/ui-date-range/ui-date-range.spec.tsx[24m[0m
+[0m  [2m2:8[22m  [33mwarning[39m  'React' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/components/ui-empty-state/ui-empty-state.tsx[24m[0m
+[0m   [2m1:10[22m  [33mwarning[39m  'theme' is defined but never used         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m15:15[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/components/ui-file-upload/ui-file-upload.tsx[24m[0m
+[0m   [2m9:5[22m  [33mwarning[39m  'ImageSourcePropType' is defined but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m16:7[22m  [33mwarning[39m  'fakePromise' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/components/ui-generic-item-list/ui-generic-item-list.tsx[24m[0m
+[0m  [2m23:43[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m29:43[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/components/ui-key-pad/ui-key-pad.tsx[24m[0m
+[0m  [2m2:17[22m  [33mwarning[39m  'useEffect' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/components/ui-label/ui-label.tsx[24m[0m
+[0m  [2m15:44[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/components/ui-numeric-input/ui-numeric-input.spec.tsx[24m[0m
+[0m  [2m1:8[22m   [33mwarning[39m  'React' is defined but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m2:10[22m  [33mwarning[39m  'render' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/components/ui-search-input/ui-search-input.tsx[24m[0m
+[0m  [2m1:17[22m  [33mwarning[39m  'useCallback' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/hocs/with-centered-page/with-centered-page.tsx[24m[0m
+[0m  [2m6:72[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/hocs/with-horizontally-centered-page/with-horizontally-centered-page.tsx[24m[0m
+[0m  [2m6:84[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/shared/ui-native/src/lib/hocs/with-page/with-page.tsx[24m[0m
+[0m  [2m6:64[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[33m[1m✖ 26 problems (0 errors, 26 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[0m
+✖ 26 problems (0 errors, 26 warnings)
+

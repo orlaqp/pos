@@ -1,0 +1,99 @@
+(node:28747) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-overlay-select/[22m[1mui-overlay-select.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-file-upload/[22m[1mui-file-upload.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-generic-item-list/[22m[1mui-generic-item-list.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-switch/[22m[1mui-switch.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-empty-state/[22m[1mui-empty-state.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-alert/[22m[1mui-alert.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-button/[22m[1mui-button.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-spinner/[22m[1mui-spinner.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-search-input/[22m[1mui-search-input.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-key-pad/[22m[1mui-key-pad.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-actions/[22m[1mui-actions.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/stack-navigation/[22m[1mwith-stack-navigation.spec.tsx[22m
+  [1m● [22mConsole
+
+    [2m[33mconsole.warn[39m[22m
+[33m      SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/AppAndFlow/react-native-safe-area-context[39m
+[2m[22m
+[2m    [0m [90m 18 |[39m[0m[22m
+[2m    [0m [90m 19 |[39m     [36mreturn[39m ([0m[22m
+[2m    [0m[31m[1m>[22m[2m[39m[90m 20 |[39m         [33m<[39m[33mSafeAreaView[39m style[33m=[39m{styles[33m.[39mpage}[33m>[39m[0m[22m
+[2m    [0m [90m    |[39m          [31m[1m^[22m[2m[39m[0m[22m
+[2m    [0m [90m 21 |[39m             [33m<[39m[33mStack[39m[33m.[39m[33mNavigator[39m[0m[22m
+[2m    [0m [90m 22 |[39m                 screenOptions[33m=[39m{{[0m[22m
+[2m    [0m [90m 23 |[39m                     headerStyle[33m:[39m styles[33m.[39mnavHeader[33m,[39m[0m[22m
+[2m[22m
+[2m      [2mat warnOnce ([22m[2m../../../node_modules/react-native/Libraries/Utilities/warnOnce.js[2m:27:11)[22m[2m[22m
+[2m      [2mat Object.SafeAreaView ([22m[2m../../../node_modules/react-native/index.js[2m:98:5)[22m[2m[22m
+[2m      [2mat StackNavigation ([22m[2msrc/lib/components/stack-navigation/stack-navigation.tsx[2m:20:10)[22m[2m[22m
+[2m      [2mat Object.react_stack_bottom_frame ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:15670:20)[22m[2m[22m
+[2m      [2mat renderWithHooks ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:4863:22)[22m[2m[22m
+[2m      [2mat updateFunctionComponent ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:7018:19)[22m[2m[22m
+[2m      [2mat beginWork ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:8499:18)[22m[2m[22m
+[2m      [2mat runWithFiberInDEV ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:2315:13)[22m[2m[22m
+[2m      [2mat performUnitOfWork ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:13224:22)[22m[2m[22m
+[2m      [2mat workLoopSync ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:13068:41)[22m[2m[22m
+[2m      [2mat renderRootSync ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:13049:11)[22m[2m[22m
+[2m      [2mat performWorkOnRoot ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:12181:11)[22m[2m[22m
+[2m      [2mat performWorkOnRootViaSchedulerTask ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:2908:7)[22m[2m[22m
+[2m      [2mat flushActQueue ([22m[2m../../../node_modules/react/cjs/react.development.js[2m:590:34)[22m[2m[22m
+[2m      [2mat Object.<anonymous>.process.env.NODE_ENV.exports.act ([22m[2m../../../node_modules/react/cjs/react.development.js[2m:884:10)[22m[2m[22m
+[2m      [2mat renderWithAct ([22m[2m../../../node_modules/@testing-library/react-native/src/render.tsx[2m:67:3)[22m[2m[22m
+[2m      [2mat render ([22m[2m../../../node_modules/@testing-library/react-native/src/render.tsx[2m:33:20)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/lib/components/stack-navigation/with-stack-navigation.spec.tsx[39m[0m[2m:12:37)[22m[2m[22m
+
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-date-range/[22m[1mui-date-range.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-action-message/[22m[1mui-action-message.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/hocs/with-horizontally-centered-page/[22m[1mwith-horizontally-centered-page.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/hocs/with-centered-page/[22m[1mwith-centered-page.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-info/[22m[1mui-info.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-label/[22m[1mui-label.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/hocs/with-page/[22m[1mwith-page.spec.tsx[22m
+  [1m● [22mConsole
+
+    [2m[31mconsole.error[39m[22m
+[31m      Functions are not valid as a React child. This may happen if you return Component instead of <Component /> from render. Or maybe you meant to call this function rather than return it.[39m
+[31m        <withPage>{Component}</withPage>[39m
+[2m[22m
+[2m    [0m [90m  6 |[39m describe([32m'WithPage'[39m[33m,[39m () [33m=>[39m {[0m[22m
+[2m    [0m [90m  7 |[39m     it([32m'should render successfully'[39m[33m,[39m () [33m=>[39m {[0m[22m
+[2m    [0m[31m[1m>[22m[2m[39m[90m  8 |[39m         [36mconst[39m { container } [33m=[39m render([33m<[39m[33mWithPage[39m [33m/[39m[33m>[39m)[33m;[39m[0m[22m
+[2m    [0m [90m    |[39m                                     [31m[1m^[22m[2m[39m[0m[22m
+[2m    [0m [90m  9 |[39m         expect(container)[33m.[39mtoBeTruthy()[33m;[39m[0m[22m
+[2m    [0m [90m 10 |[39m     })[33m;[39m[0m[22m
+[2m    [0m [90m 11 |[39m })[33m;[39m[0m[22m
+[2m[22m
+[2m      [2mat warnOnFunctionTypeImpl ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:3240:21)[22m[2m[22m
+[2m      [2mat warnOnFunctionType ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:3255:11)[22m[2m[22m
+[2m      [2mat reconcileChildFibersImpl ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:4193:11)[22m[2m[22m
+[2m      [2mat [22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:4202:33[22m[2m[22m
+[2m      [2mat reconcileChildren ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:6684:13)[22m[2m[22m
+[2m      [2mat updateFunctionComponent ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:7032:7)[22m[2m[22m
+[2m      [2mat beginWork ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:8499:18)[22m[2m[22m
+[2m      [2mat runWithFiberInDEV ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:2315:13)[22m[2m[22m
+[2m      [2mat performUnitOfWork ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:13224:22)[22m[2m[22m
+[2m      [2mat workLoopSync ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:13068:41)[22m[2m[22m
+[2m      [2mat renderRootSync ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:13049:11)[22m[2m[22m
+[2m      [2mat performWorkOnRoot ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:12181:11)[22m[2m[22m
+[2m      [2mat performWorkOnRootViaSchedulerTask ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:2908:7)[22m[2m[22m
+[2m      [2mat flushActQueue ([22m[2m../../../node_modules/react/cjs/react.development.js[2m:590:34)[22m[2m[22m
+[2m      [2mat Object.<anonymous>.process.env.NODE_ENV.exports.act ([22m[2m../../../node_modules/react/cjs/react.development.js[2m:884:10)[22m[2m[22m
+[2m      [2mat renderWithAct ([22m[2m../../../node_modules/@testing-library/react-native/src/render.tsx[2m:67:3)[22m[2m[22m
+[2m      [2mat render ([22m[2m../../../node_modules/@testing-library/react-native/src/render.tsx[2m:33:20)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/lib/hocs/with-page/with-page.spec.tsx[39m[0m[2m:8:37)[22m[2m[22m
+
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-input/[22m[1mui-input.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-screen/[22m[1mui-screen.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-stack/[22m[1mui-stack.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-card/[22m[1mui-card.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-vertical-spacer/[22m[1mui-vertical-spacer.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-s3-image/[22m[1mui-s3-image.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m shared-ui-native [39m[27m[0m [2mlibs/shared/ui-native/src/lib/components/ui-numeric-input/[22m[1mui-numeric-input.spec.tsx[22m
+
+[1mTest Suites: [22m[1m[32m26 passed[39m[22m, 26 total
+[1mTests:       [22m[1m[32m31 passed[39m[22m, 31 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        2.09 s, estimated 6 s
+[2mRan all test suites[22m[2m.[22m

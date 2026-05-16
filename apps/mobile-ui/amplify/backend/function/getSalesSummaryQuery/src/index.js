@@ -13,14 +13,14 @@ const docClient = new AWS.DynamoDB.DocumentClient();
  exports.handler = async (event) => {
     console.log(`EVENT: ${JSON.stringify(event)}`);
 
-    const orders = await getOrders(event.arguments);
+    const orders = await getOrders(event.arguments, event.identity?.claims?.sub);
     const groups = processGroups(orders, event.arguments);
     const employeeList = Object.values(groups.byEmployee);
     const productList = Object.values(groups.byProduct);
     const dateList = Object.values(groups.byDate);
 
-    sortListBy(productList, 'amount');
-    sortListBy(employeeList, 'amount');
+    sortDescListBy(productList, 'amount');
+    sortDescListBy(employeeList, 'amount');
 
     const res = {
         products: productList,
@@ -33,32 +33,61 @@ const docClient = new AWS.DynamoDB.DocumentClient();
     return res;
 };
 
-async function getOrders(range) {
-    var params = {
+async function getOrders(range, tenantId) {
+    if (!tenantId) {
+        throw new Error('Missing tenant claim');
+    }
+
+    const requestedStatuses = Array.isArray(range.statuses)
+        ? range.statuses.filter(Boolean)
+        : range.status
+        ? [range.status]
+        : [];
+    if (!requestedStatuses.length) {
+        throw new Error('Missing statuses argument');
+    }
+
+    const allOrders = await Promise.all(
+        requestedStatuses.map((status) => queryOrdersForStatus(status, range, tenantId))
+    );
+    const deduped = new Map();
+
+    allOrders.flat().forEach((order) => {
+        if (!order?.id || order._deleted) return;
+        deduped.set(order.id, order);
+    });
+
+    return Array.from(deduped.values());
+}
+
+async function queryOrdersForStatus(status, range, tenantId) {
+    const params = {
         TableName: process.env.API_POS_ORDERTABLE_NAME,
-        // TableName: 'Order-libe2xk2rvftbi24xplh4x5gnm-develop',
         IndexName: 'byStatusByOrderDate',
         KeyConditionExpression: '#status = :status AND #orderDate BETWEEN :from AND :to',
+        FilterExpression: '#tenantId = :tenantId',
         ExpressionAttributeValues: {
-            ':status': 'PAID',
+            ':status': status,
             ':from': range.from,
             ':to': range.to,
+            ':tenantId': tenantId,
         },
         ExpressionAttributeNames: {
             '#status': 'status',
             '#orderDate': 'orderDate',
+            '#tenantId': 'tenantId',
         },
     };
-    
+
     const scanResults = [];
     let data;
     do {
         data = await docClient.query(params).promise();
         data.Items.forEach((item) => scanResults.push(item));
-        params.ExclusiveStartKey  = data.LastEvaluatedKey;
-    } while(typeof data.LastEvaluatedKey !== "undefined");
-    
-    return scanResults.filter(i => !i._deleted);
+        params.ExclusiveStartKey = data.LastEvaluatedKey;
+    } while (typeof data.LastEvaluatedKey !== 'undefined');
+
+    return scanResults;
 }
 
 function processGroups(orders, range) {
@@ -79,15 +108,17 @@ function processGroups(orders, range) {
     console.log('days diff', daysDiff);
 
     orders.forEach((order) => {
-        const employeeGroup = res.byEmployee[order.employeeId] || {
-            employeeId: order.employeeId,
-            employeeName: order.employeeName,
+        const employeeId = order.createdBy?.id || order.employeeId || 'unknown';
+        const employeeName = order.createdBy?.name || order.employeeName || 'Unknown';
+        const employeeGroup = res.byEmployee[employeeId] || {
+            employeeId,
+            employeeName,
             orders: 0,
             amount: 0,
         };
         employeeGroup.orders += 1;
         employeeGroup.amount += order.total;
-        res.byEmployee[order.employeeId] = employeeGroup;
+        res.byEmployee[employeeId] = employeeGroup;
 
         const datePiece = firstXOfDate(order.orderDate, dateGrouping);
         const dateGroup = res.byDate[datePiece] || {
@@ -123,6 +154,15 @@ const sortListBy = (items, key) => {
     items.sort((a, b) => {
         if (a[key] > b[key]) return 1;
         if (a[key] < b[key]) return -1;
+
+        return 0;
+    });
+}
+
+const sortDescListBy = (items, key) => {
+    items.sort((a, b) => {
+        if (a[key] > b[key]) return -1;
+        if (a[key] < b[key]) return 1;
 
         return 0;
     });

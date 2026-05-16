@@ -1,0 +1,16 @@
+{
+    "name": "brands-web-feature",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/brands/web-feature/src",
+    "projectType": "library",
+    "tags": ["scope:brands", "type:feature", "platform:web"],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["libs/brands/web-feature/**/*.{ts,tsx,js,jsx}"]
+            }
+        }
+    }
+}

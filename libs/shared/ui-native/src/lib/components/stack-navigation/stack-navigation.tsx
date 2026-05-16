@@ -1,25 +1,32 @@
 import React from 'react';
 
 import { useSharedStyles } from '@pos/theme/native';
-import { TypedNavigator } from '@react-navigation/native';
 import { useTheme } from '@rneui/themed';
 
-import { SafeAreaView, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export interface StackNavigationProps {
-    Stack: TypedNavigator<any, any, any, any, any>
+    Stack: any;
     children: any;
+    initialRouteName?: string;
 }
 
 /* eslint-disable-next-line */
-export function StackNavigation({ Stack, children }: StackNavigationProps) {
+export function StackNavigation({
+    Stack,
+    children,
+    initialRouteName,
+}: StackNavigationProps) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const styles = useStyles();
 
     return (
         <SafeAreaView style={styles.page}>
             <Stack.Navigator
+                initialRouteName={initialRouteName}
                 screenOptions={{
+                    freezeOnBlur: true,
                     headerStyle: styles.navHeader,
                     headerTitleStyle: styles.headerTitle,
                 }}
@@ -32,17 +39,21 @@ export function StackNavigation({ Stack, children }: StackNavigationProps) {
 
 const useStyles = () => {
     const theme = useTheme();
+    const colors = theme?.theme?.colors || {
+        background: '#000000',
+        grey3: '#8491a2',
+    };
     const sharedStyles = useSharedStyles();
 
     return {
         ...sharedStyles,
         ...StyleSheet.create({
             navHeader: {
-                backgroundColor: theme.theme.colors.background,
-                color: theme.theme.colors.grey3,
+                backgroundColor: colors.background,
+                color: colors.grey3,
             },
             headerTitle: {
-                color: theme.theme.colors.grey3,
+                color: colors.grey3,
             },
         }),
     };

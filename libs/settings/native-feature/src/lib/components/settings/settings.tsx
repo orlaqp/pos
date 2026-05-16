@@ -3,25 +3,30 @@ import {
     selectSettings,
     settingsActions,
     fetchGlobalSettings,
+    updateGlobalSettings,
+    updatePayFromSalesScreen,
+    translate,
 } from '@pos/settings/data-access';
-import { UIInput } from '@pos/shared/ui-native';
-import { useSharedStyles } from '@pos/theme/native';
-import { Button, Input, Switch, useTheme } from '@rneui/themed';
-import { DataStore } from 'aws-amplify';
-import React, { useState } from 'react';
-
-import { View, Text, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch, useSelector } from 'react-redux';
+import { UICard, UIScreen, UIStack } from '@pos/shared/ui-native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { Button, Switch, useTheme } from '@rneui/themed';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from '@pos/store';
 
 /* eslint-disable-next-line */
 export interface SettingsProps {}
 
-export function Settings(props: SettingsProps) {
+export function Settings(_props: SettingsProps) {
     const theme = useTheme();
-    const styles = useStyles();
-    const dispatch = useDispatch();
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
+    const dispatch = useAppDispatch();
     const settings = useSelector(selectSettings);
+    const appVersion = DeviceInfo.getVersion();
+    const buildNumber = DeviceInfo.getBuildNumber();
 
     const updateThemeMode = (dark: boolean) => {
         theme.updateTheme({
@@ -31,60 +36,278 @@ export function Settings(props: SettingsProps) {
     };
 
     const setGlobalSettings = (enforce: boolean) => {
-        dispatch(fetchGlobalSettings({
-            ...settings.globalSettings!,
+        if (!settings.globalSettings) return;
+        dispatch(updateGlobalSettings({
+            ...settings.globalSettings,
             enforceSalesBasedOnInventory: enforce
         }));
     };
 
-    return (
-        <SafeAreaView
-            style={[styles.page, styles.centeredHorizontally, { padding: 40 }]}
-        >
-            <View style={{ width: '65%' }}>
-                <View style={[styles.row, styles.alignEnd]}>
-                    <Text style={[styles.primaryText, { marginRight: 30 }]}>
-                        Use Dark Theme:
-                    </Text>
-                    <Switch
-                        value={settings.darkTheme}
-                        onValueChange={(value) => updateThemeMode(value)}
-                    ></Switch>
-                </View>
+    const setPayFromSales = (enabled: boolean) => {
+        dispatch(updatePayFromSalesScreen(enabled));
+    };
 
-                <View style={[styles.row, styles.alignEnd, { marginTop: 25 }]}>
-                    <Text style={[styles.primaryText, { marginRight: 30 }]}>
-                        Enforce Sales Based on Inventory:
-                    </Text>
-                    <Switch
-                        value={settings.globalSettings?.enforceSalesBasedOnInventory}
-                        onValueChange={(value) => setGlobalSettings(value)}
-                    ></Switch>
+    return (
+        <UIScreen padded scroll testID="settings-screen">
+            <UIStack spacing="xl" align="center" style={styles.pageStack}>
+                <View style={styles.container}>
+                    <UIStack spacing="lg">
+                        <UICard tone="muted" radius="lg">
+                            <View style={styles.headerRow}>
+                                <View style={styles.headerTextWrap}>
+                                    <Text style={styles.title}>
+                                        {translate('SETTINGS_Title')}
+                                    </Text>
+                                    <Text style={styles.subtitle}>
+                                        {translate('SETTINGS_Subtitle')}
+                                    </Text>
+                                </View>
+                                <View style={styles.statusBadge}>
+                                    <Text style={styles.statusText}>
+                                        {translate(
+                                            `SETTINGS_Status_${settings.dataStoreStatus}`
+                                        )}
+                                    </Text>
+                                </View>
+                            </View>
+                        </UICard>
+
+                        <UICard>
+                            <UIStack spacing="lg">
+                                <Text style={styles.sectionTitle}>
+                                    {translate('SETTINGS_Preferences')}
+                                </Text>
+                                <UIStack
+                                    direction="horizontal"
+                                    justify="space-between"
+                                    align="center"
+                                    style={styles.settingRow}
+                                >
+                                    <Text style={styles.settingLabel}>
+                                        {translate('SETTINGS_UseDarkTheme')}
+                                    </Text>
+                                    <Switch
+                                        testID="settings-dark-theme-switch"
+                                        value={settings.darkTheme}
+                                        onValueChange={(value) => updateThemeMode(value)}
+                                    />
+                                </UIStack>
+
+                                <UIStack
+                                    direction="horizontal"
+                                    justify="space-between"
+                                    align="center"
+                                    style={styles.settingRow}
+                                >
+                                    <Text style={styles.settingLabel}>
+                                        {translate(
+                                            'SETTINGS_EnforceInventory'
+                                        )}
+                                    </Text>
+                                    <Switch
+                                        testID="settings-enforce-inventory-switch"
+                                        value={
+                                            settings.globalSettings
+                                                ?.enforceSalesBasedOnInventory
+                                        }
+                                        onValueChange={(value) =>
+                                            setGlobalSettings(value)
+                                        }
+                                    />
+                                </UIStack>
+
+                                <UIStack
+                                    direction="horizontal"
+                                    justify="space-between"
+                                    align="center"
+                                    style={styles.settingRow}
+                                >
+                                    <Text style={styles.settingLabel}>
+                                        {translate(
+                                            'SETTINGS_PayFromSalesScreen'
+                                        )}
+                                    </Text>
+                                    <Switch
+                                        testID="settings-pay-from-sales-screen-switch"
+                                        value={settings.payFromSalesScreen}
+                                        onValueChange={(value) =>
+                                            setPayFromSales(value)
+                                        }
+                                    />
+                                </UIStack>
+
+                                <UIStack spacing="sm">
+                                    <Text style={styles.settingLabel}>
+                                        {translate('SETTINGS_Language')}
+                                    </Text>
+                                    <UIStack direction="horizontal" spacing="sm">
+                                        <Button
+                                            testID="settings-language-en-button"
+                                            title={translate('SETTINGS_English')}
+                                            type={
+                                                settings.languageTag === 'en'
+                                                    ? 'solid'
+                                                    : 'outline'
+                                            }
+                                            buttonStyle={styles.languageButton}
+                                            onPress={() =>
+                                                dispatch(
+                                                    settingsActions.setLanguage(
+                                                        'en'
+                                                    )
+                                                )
+                                            }
+                                        />
+                                        <Button
+                                            testID="settings-language-es-button"
+                                            title={translate('SETTINGS_Spanish')}
+                                            type={
+                                                settings.languageTag === 'es'
+                                                    ? 'solid'
+                                                    : 'outline'
+                                            }
+                                            buttonStyle={styles.languageButton}
+                                            onPress={() =>
+                                                dispatch(
+                                                    settingsActions.setLanguage(
+                                                        'es'
+                                                    )
+                                                )
+                                            }
+                                        />
+                                    </UIStack>
+                                </UIStack>
+                            </UIStack>
+                        </UICard>
+
+                        <UICard tone="muted">
+                            <UIStack spacing="lg">
+                                <Text style={styles.sectionTitle}>
+                                    {translate('SETTINGS_DataManagement')}
+                                </Text>
+                                <Text style={styles.warningText}>
+                                    {translate('SETTINGS_ResetWarning')}
+                                </Text>
+                                <Button
+                                    testID="settings-reset-data-button"
+                                    title={translate('SETTINGS_ResetData')}
+                                    buttonStyle={styles.resetButton}
+                                    titleStyle={styles.resetButtonTitle}
+                                    onPress={() => dispatch(resetDataStore())}
+                                    loading={
+                                        settings.dataStoreStatus === 'resetting'
+                                    }
+                                />
+                            </UIStack>
+                        </UICard>
+
+                        <UICard tone="muted">
+                            <UIStack spacing="sm">
+                                <Text style={styles.sectionTitle}>
+                                    {translate('SETTINGS_AppInfo')}
+                                </Text>
+                                <UIStack
+                                    direction="horizontal"
+                                    justify="space-between"
+                                    align="center"
+                                    style={styles.settingRow}
+                                >
+                                    <Text style={styles.settingLabel}>
+                                        {translate('SETTINGS_Version')}
+                                    </Text>
+                                    <Text
+                                        style={styles.settingValue}
+                                        testID="settings-app-version"
+                                    >
+                                        {appVersion} ({buildNumber})
+                                    </Text>
+                                </UIStack>
+                            </UIStack>
+                        </UICard>
+                    </UIStack>
                 </View>
-                
-                <Text style={[styles.primaryText, { marginTop: 60 }]}>
-                    Important: by clicking the button below you will wipe out
-                    all cached data in this device. Please use it carefully
-                </Text>
-                <Button
-                    style={{ marginTop: 30 }}
-                    title="Reset Data"
-                    onPress={() => dispatch(resetDataStore())}
-                    loading={settings.dataStoreStatus === 'resetting'}
-                />
-            </View>
-        </SafeAreaView>
+            </UIStack>
+        </UIScreen>
     );
 }
 
-const useStyles = () => {
-    const theme = useTheme();
-    const sharedStyles = useSharedStyles();
-
-    return {
-        ...sharedStyles,
-        ...StyleSheet.create({}),
-    };
-};
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        pageStack: {
+            paddingVertical: tokens.spacing.lg,
+        },
+        container: {
+            width: '65%',
+            maxWidth: tokens.layout.contentMaxWidth,
+        },
+        headerRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+        },
+        headerTextWrap: {
+            flex: 1,
+            paddingRight: tokens.spacing.md,
+        },
+        title: {
+            color: tokens.colors.textPrimary,
+            fontSize: 26,
+            fontWeight: '700',
+        },
+        subtitle: {
+            color: tokens.colors.textSecondary,
+            marginTop: tokens.spacing.xs,
+            fontSize: 15,
+        },
+        statusBadge: {
+            borderRadius: tokens.radii.lg,
+            borderWidth: 1,
+            borderColor: `${tokens.colors.border}`,
+            backgroundColor: tokens.colors.surfaceAccent,
+            paddingHorizontal: tokens.spacing.sm,
+            paddingVertical: tokens.spacing.xs,
+        },
+        statusText: {
+            color: tokens.colors.textPrimary,
+            textTransform: 'uppercase',
+            fontSize: 11,
+            fontWeight: '700',
+            letterSpacing: 0.5,
+        },
+        sectionTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 18,
+            fontWeight: '700',
+        },
+        settingRow: {
+            minHeight: 44,
+        },
+        settingLabel: {
+            color: tokens.colors.textPrimary,
+            fontSize: 16,
+            fontWeight: '600',
+        },
+        settingValue: {
+            color: tokens.colors.textSecondary,
+            fontSize: 15,
+            fontWeight: '600',
+        },
+        warningText: {
+            color: tokens.colors.textPrimary,
+            lineHeight: 22,
+        },
+        resetButton: {
+            backgroundColor: '#D97706',
+            borderRadius: tokens.radii.lg,
+        },
+        resetButtonTitle: {
+            fontWeight: '700',
+            color: '#111827',
+        },
+        languageButton: {
+            borderRadius: tokens.radii.lg,
+            minWidth: 120,
+        },
+    });
 
 export default Settings;

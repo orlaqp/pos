@@ -1,33 +1,21 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
     productsActions,
     fetchProducts,
     selectFilteredList,
     selectIsEmpty,
     selectLoadingStatus,
-    subscribeToProductChanges,
 } from '@pos/products/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import ProductItem from '../product-item/product-item';
-import { useDispatch } from 'react-redux';
 
 export interface ProductListProps {
     navigation: NativeStackNavigationProp<any>;
 }
 
-export function ProductList({ navigation }: ProductListProps) {
-    const dispatch = useDispatch();
-
-    useEffect(() => {
-        const sub = subscribeToProductChanges(dispatch);
-        return () => {
-            console.log('Closing products subscription');
-            sub.unsubscribe();
-        };
-    }, [dispatch]);
-
-    const props: ItemListProps<any, any> = {
+export const buildProductListProps = (navigation: NativeStackNavigationProp<any>) =>
+    ({
         ItemComponent: ProductItem,
         formNavName: 'Product Form',
         navigation: navigation,
@@ -37,7 +25,19 @@ export function ProductList({ navigation }: ProductListProps) {
         clearSelectionAction: productsActions.clearSelection,
         filterAction: productsActions.filter as any,
         fetchItemsAction: fetchProducts,
-    };
+        emptyTitle: 'No products yet',
+        emptySubtitle:
+            'Add your first product to start building the catalog available to sales.',
+        emptyActionText: 'Add product',
+        emptyActionIcon: 'plus-box-outline',
+        headerEyebrow: 'Catalog',
+        headerTitle: 'Products',
+        headerSubtitle:
+            'Manage sale-ready items, pricing, inventory behavior, and catalog visibility.',
+    } as ItemListProps<any, any>);
+
+export function ProductList({ navigation }: ProductListProps) {
+    const props = buildProductListProps(navigation);
 
     return <UIGenericItemList {...props} />;
 }

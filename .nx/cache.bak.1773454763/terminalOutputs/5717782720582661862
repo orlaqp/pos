@@ -1,0 +1,182 @@
+(node:93112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m brands-native-feature [39m[27m[0m [2mlibs/brands/native-feature/src/lib/components/brands/[22m[1mbrands.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m brands-native-feature [39m[27m[0m [2mlibs/brands/native-feature/src/lib/components/brand-form/[22m[1mbrand-form.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m brands-native-feature [39m[27m[0m [2mlibs/brands/native-feature/src/lib/components/brand-item/[22m[1mbrand-item.spec.tsx[22m
+  [1m● [22mConsole
+
+    [2m[31mconsole.error[39m[22m
+[31m      Warning: An update to BrandItem inside a test was not wrapped in act(...).[39m
+[31m      [39m
+[31m      When testing, code that causes React state updates should be wrapped into act(...):[39m
+[31m      [39m
+[31m      act(() => {[39m
+[31m        /* fire events that update state */[39m
+[31m      });[39m
+[31m      /* assert on the output */[39m
+[31m      [39m
+[31m      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act[39m
+[31m          at BrandItem (/Users/orlando/dev/pos/libs/brands/native-feature/src/lib/components/brand-item/brand-item.tsx:28:29)[39m
+[2m[22m
+[2m    [0m [90m 34 |[39m[0m[22m
+[2m    [0m [90m 35 |[39m     [36mconst[39m deleteItem [33m=[39m [36masync[39m () [33m=>[39m {[0m[22m
+[2m    [0m[31m[1m>[22m[2m[39m[90m 36 |[39m         setBusy([36mtrue[39m)[33m;[39m[0m[22m
+[2m    [0m [90m    |[39m         [31m[1m^[22m[2m[39m[0m[22m
+[2m    [0m [90m 37 |[39m         [36mawait[39m deleteBrandById([0m[22m
+[2m    [0m [90m 38 |[39m             item[33m.[39mid[33m,[39m[0m[22m
+[2m    [0m [90m 39 |[39m             (id) [33m=>[39m [33mBrandService[39m[33m.[39m[36mdelete[39m(id)[33m,[39m[0m[22m
+[2m[22m
+[2m      [2mat printWarning ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:72:30)[22m[2m[22m
+[2m      [2mat error ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:46:7)[22m[2m[22m
+[2m      [2mat warnIfUpdatesNotWrappedWithActDEV ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:16716:9)[22m[2m[22m
+[2m      [2mat scheduleUpdateOnFiber ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:14916:5)[22m[2m[22m
+[2m      [2mat setBusy ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:6767:7)[22m[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/brand-item/brand-item.tsx[2m:36:9[22m[2m[22m
+[2m      [2mat asyncGeneratorStep ([22m[2m../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js[2m:3:24)[22m[2m[22m
+[2m      [2mat _next ([22m[2m../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js[2m:25:9)[22m[2m[22m
+[2m      [2mat [22m[2m../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js[2m:32:7[22m[2m[22m
+[2m      [2mat apply ([22m[2m../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js[2m:21:12)[22m[2m[22m
+[2m      [2mat deleteItem ([22m[2msrc/lib/components/brand-item/brand-item.tsx[2m:35:21)[22m[2m[22m
+[2m      [2mat Object.onPress ([22m[2msrc/lib/components/brand-item/brand-item.tsx[2m:56:47)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/lib/components/brand-item/brand-item.spec.tsx[39m[0m[2m:76:25)[22m[2m[22m
+[2m      [2mat asyncGeneratorStep ([22m[2m../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js[2m:3:24)[22m[2m[22m
+[2m      [2mat _next ([22m[2m../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js[2m:25:9)[22m[2m[22m
+[2m      [2mat [22m[2m../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js[2m:32:7[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js[2m:21:12)[22m[2m[22m
+
+    [2m[33mconsole.warn[39m[22m
+[33m      Using an insecure random number generator, this should only happen when running in a debugger without support for crypto.getRandomValues[39m
+[2m[22m
+[2m      [2mat insecureRandomValues ([22m[2m../../../node_modules/amazon-cognito-identity-js/lib/utils/getRandomValues.native.js[2m:32:13)[22m[2m[22m
+[2m      [2mat getRandomValues ([22m[2m../../../node_modules/amazon-cognito-identity-js/lib/utils/getRandomValues.native.js[2m:58:14)[22m[2m[22m
+[2m      [2mat cryptoSecureRandomInt ([22m[2m../../../node_modules/amazon-cognito-identity-js/lib/utils/cryptoSecureRandomInt.native.js[2m:12:42)[22m[2m[22m
+[2m      [2mat WordArray.random ([22m[2m../../../node_modules/amazon-cognito-identity-js/lib/utils/WordArray.js[2m:41:56)[22m[2m[22m
+[2m      [2mat randomBytes ([22m[2m../../../node_modules/@aws-amplify/datastore/src/util.ts[2m:511:37)[22m[2m[22m
+[2m      [2mat prng ([22m[2m../../../node_modules/@aws-amplify/datastore/src/util.ts[2m:513:20)[22m[2m[22m
+[2m      [2mat randomChar ([22m[2m../../../node_modules/ulid/dist/index.umd.js[2m:49:27)[22m[2m[22m
+[2m      [2mat encodeRandom ([22m[2m../../../node_modules/ulid/dist/index.umd.js[2m:80:15)[22m[2m[22m
+[2m      [2mat ulid ([22m[2m../../../node_modules/ulid/dist/index.umd.js[2m:158:38)[22m[2m[22m
+[2m      [2mat ulid ([22m[2m../../../node_modules/@aws-amplify/datastore/src/util.ts[2m:518:10)[22m[2m[22m
+[2m      [2mat recipe ([22m[2m../../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:554:10)[22m[2m[22m
+[2m      [2mat Object.produce ([22m[2m../../../node_modules/@aws-amplify/datastore/node_modules/immer/src/core/immerClass.ts[2m:94:14)[22m[2m[22m
+[2m      [2mat new Setting ([22m[2m../../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:529:21)[22m[2m[22m
+[2m      [2mat modelInstanceCreator ([22m[2m../../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:321:9)[22m[2m[22m
+[2m      [2mat [22m[2m../../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:798:5[22m[2m[22m
+[2m      [2mat step ([22m[2m../../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:117:19)[22m[2m[22m
+[2m      [2mat Object.next ([22m[2m../../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:65:14)[22m[2m[22m
+[2m      [2mat fulfilled ([22m[2m../../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:24:24)[22m[2m[22m
+
+    [2m[33mconsole.warn[39m[22m
+[33m      [WARN] 57:36.219 DataStore - Data won't be synchronized. No GraphQL endpoint configured. Did you forget `Amplify.configure(awsconfig)`? {[39m
+[33m        config: {[39m
+[33m          authProviders: undefined,[39m
+[33m          maxRecordsToSync: 10000,[39m
+[33m          syncPageSize: 1000[39m
+[33m        }[39m
+[33m      }[39m
+[2m[22m
+[2m      [2mat ConsoleLogger.apply [as _log] ([22m[2m../../../node_modules/@aws-amplify/core/src/Logger/ConsoleLogger.ts[2m:125:4)[22m[2m[22m
+[2m      [2mat ConsoleLogger.warn ([22m[2m../../../node_modules/@aws-amplify/core/src/Logger/ConsoleLogger.ts[2m:164:12)[22m[2m[22m
+[2m      [2mat DataStore.<anonymous> ([22m[2m../../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:1052:13)[22m[2m[22m
+[2m      [2mat step ([22m[2m../../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:117:19)[22m[2m[22m
+[2m      [2mat Object.next ([22m[2m../../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:65:14)[22m[2m[22m
+[2m      [2mat fulfilled ([22m[2m../../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:24:24)[22m[2m[22m
+
+    [2m[31mconsole.error[39m[22m
+[31m      Brand Id: brand-1 not found[39m
+[2m[22m
+[2m    [0m [90m 40 |[39m         [36mconst[39m item [33m=[39m [36mawait[39m [33mDataStore[39m[33m.[39mquery([33mBrand[39m[33m,[39m id)[33m;[39m[0m[22m
+[2m    [0m [90m 41 |[39m         [36mif[39m ([33m![39mitem)[0m[22m
+[2m    [0m[31m[1m>[22m[2m[39m[90m 42 |[39m             [36mreturn[39m console[33m.[39merror([32m`Brand Id: ${id} not found`[39m)[33m;[39m[0m[22m
+[2m    [0m [90m    |[39m                            [31m[1m^[22m[2m[39m[0m[22m
+[2m    [0m [90m 43 |[39m         [0m[22m
+[2m    [0m [90m 44 |[39m         [90m// TODO: Do any extra cleanup here like for example remove image[39m[0m[22m
+[2m    [0m [90m 45 |[39m         [90m// if (item.picture)[39m[0m[22m
+[2m[22m
+[2m      [2mat Function.<anonymous> ([22m[2m../data-access/src/lib/brand.service.ts[2m:42:28)[22m[2m[22m
+[2m      [2mat asyncGeneratorStep ([22m[2m../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js[2m:3:24)[22m[2m[22m
+[2m      [2mat _next ([22m[2m../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js[2m:25:9)[22m[2m[22m
+
+    [2m[31mconsole.error[39m[22m
+[31m      Warning: An update to BrandItem inside a test was not wrapped in act(...).[39m
+[31m      [39m
+[31m      When testing, code that causes React state updates should be wrapped into act(...):[39m
+[31m      [39m
+[31m      act(() => {[39m
+[31m        /* fire events that update state */[39m
+[31m      });[39m
+[31m      /* assert on the output */[39m
+[31m      [39m
+[31m      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act[39m
+[31m          at BrandItem (/Users/orlando/dev/pos/libs/brands/native-feature/src/lib/components/brand-item/brand-item.tsx:28:29)[39m
+[2m[22m
+[2m    [0m [90m 40 |[39m             (id) [33m=>[39m dispatch(brandsActions[33m.[39mremove(id))[0m[22m
+[2m    [0m [90m 41 |[39m         )[33m;[39m[0m[22m
+[2m    [0m[31m[1m>[22m[2m[39m[90m 42 |[39m         setBusy([36mfalse[39m)[33m;[39m[0m[22m
+[2m    [0m [90m    |[39m         [31m[1m^[22m[2m[39m[0m[22m
+[2m    [0m [90m 43 |[39m     }[33m;[39m[0m[22m
+[2m    [0m [90m 44 |[39m[0m[22m
+[2m    [0m [90m 45 |[39m     [36mconst[39m editItem [33m=[39m () [33m=>[39m {[0m[22m
+[2m[22m
+[2m      [2mat printWarning ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:72:30)[22m[2m[22m
+[2m      [2mat error ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:46:7)[22m[2m[22m
+[2m      [2mat warnIfUpdatesNotWrappedWithActDEV ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:16716:9)[22m[2m[22m
+[2m      [2mat scheduleUpdateOnFiber ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:14916:5)[22m[2m[22m
+[2m      [2mat setBusy ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:6767:7)[22m[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/brand-item/brand-item.tsx[2m:42:9[22m[2m[22m
+[2m      [2mat asyncGeneratorStep ([22m[2m../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js[2m:3:24)[22m[2m[22m
+[2m      [2mat _next ([22m[2m../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js[2m:25:9)[22m[2m[22m
+
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m brands-native-feature [39m[27m[0m [2mlibs/brands/native-feature/src/lib/components/brand-list/[22m[1mbrand-list.spec.tsx[22m
+  [1m● [22mConsole
+
+    [2m[33mconsole.warn[39m[22m
+[33m      Using an insecure random number generator, this should only happen when running in a debugger without support for crypto.getRandomValues[39m
+[2m[22m
+[2m      [2mat insecureRandomValues ([22m[2m../../../node_modules/amazon-cognito-identity-js/lib/utils/getRandomValues.native.js[2m:32:13)[22m[2m[22m
+[2m      [2mat getRandomValues ([22m[2m../../../node_modules/amazon-cognito-identity-js/lib/utils/getRandomValues.native.js[2m:58:14)[22m[2m[22m
+[2m      [2mat cryptoSecureRandomInt ([22m[2m../../../node_modules/amazon-cognito-identity-js/lib/utils/cryptoSecureRandomInt.native.js[2m:12:42)[22m[2m[22m
+[2m      [2mat WordArray.random ([22m[2m../../../node_modules/amazon-cognito-identity-js/lib/utils/WordArray.js[2m:41:56)[22m[2m[22m
+[2m      [2mat randomBytes ([22m[2m../../../node_modules/@aws-amplify/datastore/src/util.ts[2m:511:37)[22m[2m[22m
+[2m      [2mat prng ([22m[2m../../../node_modules/@aws-amplify/datastore/src/util.ts[2m:513:20)[22m[2m[22m
+[2m      [2mat randomChar ([22m[2m../../../node_modules/ulid/dist/index.umd.js[2m:49:27)[22m[2m[22m
+[2m      [2mat encodeRandom ([22m[2m../../../node_modules/ulid/dist/index.umd.js[2m:80:15)[22m[2m[22m
+[2m      [2mat ulid ([22m[2m../../../node_modules/ulid/dist/index.umd.js[2m:158:38)[22m[2m[22m
+[2m      [2mat ulid ([22m[2m../../../node_modules/@aws-amplify/datastore/src/util.ts[2m:518:10)[22m[2m[22m
+[2m      [2mat recipe ([22m[2m../../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:554:10)[22m[2m[22m
+[2m      [2mat Object.produce ([22m[2m../../../node_modules/@aws-amplify/datastore/node_modules/immer/src/core/immerClass.ts[2m:94:14)[22m[2m[22m
+[2m      [2mat new Setting ([22m[2m../../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:529:21)[22m[2m[22m
+[2m      [2mat modelInstanceCreator ([22m[2m../../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:321:9)[22m[2m[22m
+[2m      [2mat [22m[2m../../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:798:5[22m[2m[22m
+[2m      [2mat step ([22m[2m../../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:117:19)[22m[2m[22m
+[2m      [2mat Object.next ([22m[2m../../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:65:14)[22m[2m[22m
+[2m      [2mat fulfilled ([22m[2m../../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:24:24)[22m[2m[22m
+
+    [2m[33mconsole.warn[39m[22m
+[33m      [WARN] 57:36.540 DataStore - Data won't be synchronized. No GraphQL endpoint configured. Did you forget `Amplify.configure(awsconfig)`? {[39m
+[33m        config: {[39m
+[33m          authProviders: undefined,[39m
+[33m          maxRecordsToSync: 10000,[39m
+[33m          syncPageSize: 1000[39m
+[33m        }[39m
+[33m      }[39m
+[2m[22m
+[2m      [2mat ConsoleLogger.apply [as _log] ([22m[2m../../../node_modules/@aws-amplify/core/src/Logger/ConsoleLogger.ts[2m:125:4)[22m[2m[22m
+[2m      [2mat ConsoleLogger.warn ([22m[2m../../../node_modules/@aws-amplify/core/src/Logger/ConsoleLogger.ts[2m:164:12)[22m[2m[22m
+[2m      [2mat DataStore.<anonymous> ([22m[2m../../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:1052:13)[22m[2m[22m
+[2m      [2mat step ([22m[2m../../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:117:19)[22m[2m[22m
+[2m      [2mat Object.next ([22m[2m../../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:65:14)[22m[2m[22m
+[2m      [2mat fulfilled ([22m[2m../../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:24:24)[22m[2m[22m
+
+    [2mconsole.log[22m
+      Closing brands subscription
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/brand-list/brand-list.tsx[2m:32:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+
+[1mTest Suites: [22m[1m[32m4 passed[39m[22m, 4 total
+[1mTests:       [22m[1m[32m12 passed[39m[22m, 12 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        4.216 s, estimated 7 s
+[2mRan all test suites[22m[2m.[22m

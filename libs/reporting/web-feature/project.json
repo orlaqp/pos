@@ -1,0 +1,16 @@
+{
+    "name": "reporting-web-feature",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/reporting/web-feature/src",
+    "projectType": "library",
+    "tags": ["scope:reporting", "type:feature", "platform:web"],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["libs/reporting/web-feature/**/*.{ts,tsx,js,jsx}"]
+            }
+        }
+    }
+}

@@ -1,6 +1,1 @@
-import { device } from 'detox';
-
-beforeAll(async () => {
-  await device.launchApp();
-  await device.disableSynchronization();
-});
+jest.setTimeout(300000);

@@ -1,13 +1,11 @@
 
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
 import {
     createAsyncThunk,
     createEntityAdapter,
     createSelector,
     createSlice,
-    Dictionary,
-    EntityId,
     EntityState,
     PayloadAction,
     Update,
@@ -18,7 +16,7 @@ import { InventoryCountService } from './inventory-count.service';
 
 export const INVENTORY_COUNT_FEATURE_KEY = 'inventoryCount';
 
-export interface InventoryCountState extends EntityState< InventoryCountDTO > {
+export interface InventoryCountState extends EntityState<InventoryCountDTO, string> {
   loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
   error?: string;
   selected?: InventoryCountDTO;
@@ -27,7 +25,9 @@ export interface InventoryCountState extends EntityState< InventoryCountDTO > {
   lines: InventoryCountLineDTO[];
 }
 
-export const inventoryCountAdapter = createEntityAdapter< InventoryCountDTO >();
+export const inventoryCountAdapter = createEntityAdapter<InventoryCountDTO, string>({
+    selectId: (inventoryCount) => inventoryCount.id ?? '',
+});
 
 export const fetchInventoryCount = createAsyncThunk(
   'inventoryCount/fetchStatus',
@@ -74,15 +74,15 @@ export const inventoryCountSlice = createSlice({
         state.loadingStatus = 'loaded';
     },
     add: (state: InventoryCountState, action: PayloadAction< InventoryCountDTO >) =>{
-        inventoryCountAdapter.addOne(state, action);
+        inventoryCountAdapter.addOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    remove: (state: InventoryCountState, action: PayloadAction< EntityId >) => {
-        inventoryCountAdapter.removeOne(state, action);
+    remove: (state: InventoryCountState, action: PayloadAction<string>) => {
+        inventoryCountAdapter.removeOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
-    update: (state: InventoryCountState, action: PayloadAction<Update< InventoryCountDTO>>) => {
-        inventoryCountAdapter.updateOne(state, action);
+    update: (state: InventoryCountState, action: PayloadAction<Update<InventoryCountDTO, string>>) => {
+        inventoryCountAdapter.updateOne(state, action.payload);
         filterList(state, state.filterQuery);
     },
     select: (state: InventoryCountState, action: PayloadAction< InventoryCountDTO >) => {
@@ -105,7 +105,13 @@ export const inventoryCountSlice = createSlice({
       .addCase(
         fetchInventoryCount.fulfilled,
         (state: InventoryCountState, action: PayloadAction< InventoryCountDTO[] >) => {
-          inventoryCountAdapter.setAll(state, action.payload);
+          inventoryCountAdapter.setAll(
+              state,
+              InventoryCountMapper.composeInventoryItems(
+                  action.payload,
+                  state.lines
+              )
+          );
           filterList(state, state.filterQuery);
           state.loadingStatus = 'loaded';
         }
@@ -123,19 +129,22 @@ export const inventoryCountSlice = createSlice({
 export const inventoryCountReducer = inventoryCountSlice.reducer;
 
 export const inventoryCountActions = inventoryCountSlice.actions;
-const { selectAll, selectEntities } = inventoryCountAdapter.getSelectors();
-
 export const getInventoryCountState = (rootState: RootState): InventoryCountState =>
   rootState[INVENTORY_COUNT_FEATURE_KEY];
 
+const inventoryCountSelectors =
+    inventoryCountAdapter.getSelectors<RootState>(getInventoryCountState);
+
 export const selectAllInventoryCount = createSelector(
   getInventoryCountState,
-  selectAll
+  (state) =>
+      inventoryCountSelectors.selectAll({ [INVENTORY_COUNT_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectInventoryCountEntities = createSelector(
   getInventoryCountState,
-  selectEntities
+  (state) =>
+      inventoryCountSelectors.selectEntities({ [INVENTORY_COUNT_FEATURE_KEY]: state } as RootState)
 );
 
 export const selectInventoryCountLoadingStatus = createSelector(
@@ -158,10 +167,18 @@ export const selectInventoryCountSelected = createSelector(
     (state: InventoryCountState) => state.selected
 )
 
+const sortCountsChronologically = (items: InventoryCountDTO[]) =>
+    [...items].sort((left, right) => {
+        const leftTime = new Date(left.createdAt || left.updatedAt || 0).getTime();
+        const rightTime = new Date(right.createdAt || right.updatedAt || 0).getTime();
+        return rightTime - leftTime;
+    });
 
 function filterList(state: InventoryCountState, query?: string) {
     state.loadingStatus = 'loaded';
-    const all = selectAll(state);
+    const all = sortCountsChronologically(
+        inventoryCountAdapter.getSelectors().selectAll(state)
+    );
     
     if (!query) {
         state.filteredList = all;
@@ -171,4 +188,3 @@ function filterList(state: InventoryCountState, query?: string) {
     const lowerQuery = query.toLowerCase();
     state.filteredList = all.filter(x => x.comments?.toLowerCase().indexOf(lowerQuery) !== -1);
 }
-

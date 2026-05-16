@@ -1,15 +1,22 @@
 {
-  "testRunner": "jest",
-  "runnerConfig": "jest.config.json",
+  "testRunner": {
+    "args": {
+      "$0": "./run-jest.js",
+      "config": "jest.config.json"
+    },
+    "jest": {
+      "setupTimeout": 120000
+    }
+  },
   "apps": {
     "ios.debug": {
       "type": "ios.app",
-      "build": "cd ../mobile-ui/ios && xcodebuild -workspace MobileUi.xcworkspace -scheme MobileUi -configuration Debug -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 13' -derivedDataPath ./build -quiet",
+      "build": "cd ../mobile-ui/ios && xcodebuild -workspace MobileUi.xcworkspace -scheme MobileUi -configuration Debug -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPad (A16)' -derivedDataPath ./build -quiet",
       "binaryPath": "../mobile-ui/ios/build/Build/Products/Debug-iphonesimulator/MobileUi.app"
     },
     "ios.release": {
       "type": "ios.app",
-      "build": "cd ../mobile-ui/ios && xcodebuild -workspace MobileUi.xcworkspace -scheme MobileUi -configuration Release -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 13' -derivedDataPath ./build -quiet",
+      "build": "cd ../mobile-ui/ios && xcodebuild -workspace MobileUi.xcworkspace -scheme MobileUi -configuration Release -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPad (A16)' -derivedDataPath ./build -quiet",
       "binaryPath": "../mobile-ui/ios/build/Build/Products/Release-iphonesimulator/MobileUi.app"
     },
     "android.debug": {
@@ -27,7 +34,7 @@
     "simulator": {
       "type": "ios.simulator",
       "device": {
-        "type": "iPhone 13"
+        "type": "iPad (A16)"
       }
     },
     "emulator": {

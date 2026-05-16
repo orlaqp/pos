@@ -1,14 +1,15 @@
 
 import { UnitOfMeasure } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { unitOfMeasuresActions } from './slices/unit-of-measures.slice';
 import { UnitOfMeasureEntity } from './unit-of-measure.entity';
+import { stampTenant } from '@pos/auth/data-access';
 
 export class UnitOfMeasureService {
     static async save(dispatch: Dispatch<any>, unitOfMeasure: UnitOfMeasureEntity) {
         if (!unitOfMeasure.id) {
-            const entity = new UnitOfMeasure(unitOfMeasure);
+            const entity = new UnitOfMeasure(stampTenant(unitOfMeasure) as never);
             const res = await DataStore.save(entity);
 
             unitOfMeasure.id = res.id;
@@ -19,7 +20,7 @@ export class UnitOfMeasureService {
         const existing = await DataStore.query(UnitOfMeasure, unitOfMeasure.id);
 
         if (!existing) {
-            return console.log(`It seems that unitOfMeasure: ${unitOfMeasure.id} has been removed`);
+            return;
         }
 
         await DataStore.save(

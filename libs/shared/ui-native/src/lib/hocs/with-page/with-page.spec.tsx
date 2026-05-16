@@ -5,7 +5,8 @@ import WithPage from './with-page';
 
 describe('WithPage', () => {
     it('should render successfully', () => {
-        const { container } = render(<WithPage />);
-        expect(container).toBeTruthy();
+        const Wrapped = WithPage(() => null);
+        const { toJSON } = render(<Wrapped />);
+        expect(toJSON()).toBeTruthy();
     });
 });

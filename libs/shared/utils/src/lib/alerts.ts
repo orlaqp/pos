@@ -1,7 +1,14 @@
 import { Alert } from 'react-native';
 
 export const confirm = (subject: string, text: string, confirmAction: () => unknown) => {
-    Alert.alert(
+    const alertFn = Alert?.alert;
+
+    if (!alertFn) {
+        confirmAction();
+        return;
+    }
+
+    alertFn(
         subject || 'Are you sure?',
         text || 'You will not be able to undo this operation',
         [

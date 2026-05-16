@@ -1,0 +1,113 @@
+(node:76463) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+Linting "reporting-native-feature"...
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/dashboard/dashboard.spec.tsx[24m[0m
+[0m   [2m15:64[22m  [33mwarning[39m  Fragments should contain more than one child - otherwise, there’s no need for a Fragment at all  [2mreact/jsx-no-useless-fragment[22m[0m
+[0m   [2m16:62[22m  [33mwarning[39m  Fragments should contain more than one child - otherwise, there’s no need for a Fragment at all  [2mreact/jsx-no-useless-fragment[22m[0m
+[0m   [2m17:63[22m  [33mwarning[39m  Fragments should contain more than one child - otherwise, there’s no need for a Fragment at all  [2mreact/jsx-no-useless-fragment[22m[0m
+[0m   [2m29:50[22m  [33mwarning[39m  Fragments should contain more than one child - otherwise, there’s no need for a Fragment at all  [2mreact/jsx-no-useless-fragment[22m[0m
+[0m   [2m34:50[22m  [33mwarning[39m  Fragments should contain more than one child - otherwise, there’s no need for a Fragment at all  [2mreact/jsx-no-useless-fragment[22m[0m
+[0m   [2m47:61[22m  [33mwarning[39m  Fragments should contain more than one child - otherwise, there’s no need for a Fragment at all  [2mreact/jsx-no-useless-fragment[22m[0m
+[0m   [2m75:14[22m  [33mwarning[39m  Unexpected any. Specify a different type                                                         [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m90:24[22m  [33mwarning[39m  Unexpected any. Specify a different type                                                         [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m102:24[22m  [33mwarning[39m  Unexpected any. Specify a different type                                                         [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m114:51[22m  [33mwarning[39m  Unexpected any. Specify a different type                                                         [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/dashboard/dashboard.tsx[24m[0m
+[0m  [2m72:42[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m73:41[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/end-of-day/end-of-day.service.spec.ts[24m[0m
+[0m   [2m6:69[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m7:68[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m19:44[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m20:44[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m31:46[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m32:45[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m36:23[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m58:47[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m73:23[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m86:44[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m87:47[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/end-of-day/end-of-day.spec.tsx[24m[0m
+[0m   [2m44:65[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m47:65[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m84:61[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m85:59[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m86:59[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m87:59[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m90:57[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m91:59[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m94:60[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m95:57[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m96:57[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m97:57[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m117:24[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m118:27[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m119:26[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m120:34[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m121:29[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/end-of-day/end-of-day.tsx[24m[0m
+[0m   [2m33:12[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m36:23[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m54:29[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m54:43[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m57:57[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m100:20[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m103:31[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m106:20[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m108:31[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m154:33[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m154:47[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/end-of-day/order-details.spec.tsx[24m[0m
+[0m  [2m9:22[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/end-of-day/order-line-details.spec.tsx[24m[0m
+[0m  [2m9:21[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/list-widget/list-widget.tsx[24m[0m
+[0m  [2m4:22[22m  [33mwarning[39m  'FlatList' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/report-viewer/report-viewer.spec.tsx[24m[0m
+[0m   [2m7:64[22m  [33mwarning[39m  Fragments should contain more than one child - otherwise, there’s no need for a Fragment at all  [2mreact/jsx-no-useless-fragment[22m[0m
+[0m   [2m8:62[22m  [33mwarning[39m  Fragments should contain more than one child - otherwise, there’s no need for a Fragment at all  [2mreact/jsx-no-useless-fragment[22m[0m
+[0m   [2m9:63[22m  [33mwarning[39m  Fragments should contain more than one child - otherwise, there’s no need for a Fragment at all  [2mreact/jsx-no-useless-fragment[22m[0m
+[0m  [2m27:51[22m  [33mwarning[39m  Fragments should contain more than one child - otherwise, there’s no need for a Fragment at all  [2mreact/jsx-no-useless-fragment[22m[0m
+[0m  [2m28:54[22m  [33mwarning[39m  Fragments should contain more than one child - otherwise, there’s no need for a Fragment at all  [2mreact/jsx-no-useless-fragment[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/report-viewer/report-viewer.tsx[24m[0m
+[0m   [2m32:44[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m104:40[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/sales-by-employee/sales-by-employee.spec.tsx[24m[0m
+[0m  [2m15:56[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m16:58[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m18:14[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/sales-by-employee/sales-by-employee.tsx[24m[0m
+[0m   [2m8:16[22m  [33mwarning[39m  'Text' is defined but never used          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m15:42[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/sales-by-product/sales-by-product.spec.tsx[24m[0m
+[0m  [2m26:14[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m44:84[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m45:84[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m46:87[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m48:18[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m62:87[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m64:18[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/Users/orlando/dev/pos/libs/reporting/native-feature/src/lib/components/sales-by-product/sales-by-product.tsx[24m[0m
+[0m   [2m2:21[22m  [33mwarning[39m  'UIOverlaySelect' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m5:16[22m  [33mwarning[39m  'POUND' is defined but never used            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m23:28[22m  [33mwarning[39m  Unexpected any. Specify a different type     [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[33m[1m✖ 76 problems (0 errors, 76 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[0m
+✖ 76 problems (0 errors, 76 warnings)
+

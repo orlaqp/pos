@@ -1,21 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSharedStyles } from '@pos/theme/native';
 
-import { View, Text, StyleSheet, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Sidebar from '../sidebar/sidebar';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Button, useTheme } from '@rneui/themed';
+import { useTheme } from '@rneui/themed';
 
 import {
     createNativeStackNavigator,
     NativeStackNavigationProp,
 } from '@react-navigation/native-stack';
+import {
+    createNavigationContainerRef,
+    NavigationContainer,
+    NavigationIndependentTree,
+    StackActions,
+} from '@react-navigation/native';
 import { useSelector } from 'react-redux';
-import { selectUser } from '@pos/auth/data-access';
 
 import { Brands } from '@pos/brands/native-feature';
 import { Categories } from '@pos/categories/native-feature';
+import { DiscountEditor, Discounts, PolicyEditor } from '@pos/discounts/native-feature';
 import { Employees } from '@pos/employees/native-feature';
 import { Products } from '@pos/products/native-feature';
 import { UnitOfMeasures } from '@pos/unit-of-measures/native-feature';
@@ -23,79 +29,149 @@ import { PrinterList } from '@pos/printings/native-feature';
 import { StationForm, StoreInfoForm } from '@pos/store-info/native-feature';
 import { LogList, Settings } from '@pos/settings/native-feature';
 import { InventoryCounts, InventoryList, InventoryReceives } from '@pos/inventory/native-feature';
-import { Dashboard, EndOfDay, Sales, SalesByEmployee, SalesByProduct } from '@pos/reporting/native-feature';
+import {
+    CategoryPerformance,
+    Dashboard,
+    DiscountReport,
+    EbtSummary,
+    EndOfDay,
+    HourlySales,
+    LowSalesItems,
+    OpenOrdersAging,
+    PaymentSummary,
+    RefundReport,
+    Sales,
+    SalesByEmployee,
+    SalesByProduct,
+} from '@pos/reporting/native-feature';
 
-import Logo from '../../assets/logo.png';
 import { selectLoginEmployee } from '@pos/employees/data-access';
+import { AuthGlyph } from '@pos/auth/native-feature';
 
 const Stack = createNativeStackNavigator();
+const backOfficeNavigationRef = createNavigationContainerRef();
 
 /* eslint-disable-next-line */
 export interface BackOfficeProps {
     navigation: NativeStackNavigationProp<any>;
+    route?: {
+        params?: {
+            initialScreen?: 'Dashboard' | 'Catalog' | 'Products' | 'Categories';
+            initialScreenParams?: object;
+        };
+    };
 }
 
-export function BackOffice({ navigation }: BackOfficeProps) {
-    const theme = useTheme();
+export function BackOffice({ navigation, route }: BackOfficeProps) {
     const styles = useStyles();
     const employee = useSelector(selectLoginEmployee);
+    const initialScreen = route?.params?.initialScreen || 'Dashboard';
+    const initialScreenParams = route?.params?.initialScreenParams;
+    const sidebarNavigation = {
+        replace: (name: string, params?: object) => {
+            if (!backOfficeNavigationRef.isReady()) return;
+            backOfficeNavigationRef.dispatch(StackActions.replace(name, params));
+        },
+    };
 
-    const confirmGoBack = () => {
-        Alert.alert(
-            'Are you sure?',
-            'Press yes to confirm',
-            [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
-            ]
+    const syncInitialRouteParams = () => {
+        if (!backOfficeNavigationRef.isReady()) return;
+        if (!route?.params?.initialScreen || !initialScreenParams) return;
+
+        backOfficeNavigationRef.dispatch(
+            StackActions.replace(route.params.initialScreen, initialScreenParams)
         );
-    }
+    };
+
+    useEffect(() => {
+        syncInitialRouteParams();
+    }, [route?.params?.initialScreen, initialScreenParams]);
 
     return (
         <SafeAreaView style={styles.page}>
             <View style={[styles.page, styles.row]}>
                 <View style={styles.leftSide}>
-                    <ScrollView>
-                        <View
-                            style={{
-                                position: 'relative',
-                                alignItems: 'flex-start',
-                                marginLeft: 60,
-                                marginBottom: 20,
-                            }}
-                        >
-                            <Image source={Logo} style={styles.logo} />
-                            <Text style={{ color: 'white' }}>
+                    <ScrollView contentContainerStyle={styles.leftScrollContent}>
+                        <View style={styles.sidebarHeader}>
+                            <View style={styles.glyphWrap}>
+                                <AuthGlyph />
+                            </View>
+                            <Text style={styles.employeeName}>
                                 {`${employee?.firstName} ${employee?.lastName}`}
                             </Text>
                         </View>
-                        <View style={{ marginLeft: 10 }}>
-                            <Sidebar navigation={navigation} />
+                        <View style={styles.sidebarNavContainer}>
+                            <Sidebar navigation={sidebarNavigation as any} />
                         </View>
                     </ScrollView>
                 </View>
                 
                 <View style={styles.rightSide}>
-                    <Stack.Navigator screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="Dashboard" component={Dashboard} />
-                        <Stack.Screen name="Sale List" component={Sales} />
-                        <Stack.Screen name="Station" component={StationForm} />
-                        <Stack.Screen name="By Employee" component={SalesByEmployee} />
-                        <Stack.Screen name="By Product" component={SalesByProduct} />
-                        <Stack.Screen name="End of Day" component={EndOfDay} />
-                        <Stack.Screen name="In Stock" component={InventoryList} />
-                        <Stack.Screen name="Counts" component={InventoryCounts} />
-                        <Stack.Screen name="Receives" component={InventoryReceives} />
-                        <Stack.Screen name="Products" component={Products} />
-                        <Stack.Screen name="Brands" component={Brands} />
-                        <Stack.Screen name="U/M" component={UnitOfMeasures} />
-                        <Stack.Screen name="Categories" component={Categories} />
-                        <Stack.Screen name="Printers" component={PrinterList} />
-                        <Stack.Screen name="Store" component={StoreInfoForm} />
-                        <Stack.Screen name="General" component={Settings} />
-                        <Stack.Screen name="Employees" component={Employees} />
-                        <Stack.Screen name="Logs" component={LogList} />
-                    </Stack.Navigator>
+                    <NavigationIndependentTree>
+                        <NavigationContainer
+                            ref={backOfficeNavigationRef}
+                            onReady={syncInitialRouteParams}
+                        >
+                            <Stack.Navigator
+                                id="back-office-navigation"
+                                initialRouteName={initialScreen}
+                                screenOptions={{
+                                    headerShown: false,
+                                    freezeOnBlur: true,
+                                }}
+                            >
+                                <Stack.Screen name="Dashboard" component={Dashboard} />
+                                <Stack.Screen name="Sale List" component={Sales} />
+                                <Stack.Screen name="Station" component={StationForm} />
+                                <Stack.Screen name="By Employee" component={SalesByEmployee} />
+                                <Stack.Screen name="By Product" component={SalesByProduct} />
+                                <Stack.Screen name="End of Day" component={EndOfDay} />
+                                <Stack.Screen
+                                    name="Category Performance"
+                                    component={CategoryPerformance}
+                                />
+                                <Stack.Screen
+                                    name="Payment Summary"
+                                    component={PaymentSummary}
+                                />
+                                <Stack.Screen
+                                    name="Discount Report"
+                                    component={DiscountReport}
+                                />
+                                <Stack.Screen name="Refund Report" component={RefundReport} />
+                                <Stack.Screen name="Hourly Sales" component={HourlySales} />
+                                <Stack.Screen name="EBT Summary" component={EbtSummary} />
+                                <Stack.Screen
+                                    name="Open Orders Aging"
+                                    component={OpenOrdersAging}
+                                />
+                                <Stack.Screen
+                                    name="Low / No Sales Items"
+                                    component={LowSalesItems}
+                                />
+                                <Stack.Screen name="In Stock" component={InventoryList} />
+                                <Stack.Screen name="Counts" component={InventoryCounts} />
+                                <Stack.Screen name="Receives" component={InventoryReceives} />
+                                <Stack.Screen name="Discounts" component={Discounts} />
+                                <Stack.Screen name="Promo Codes" component={Discounts} />
+                                <Stack.Screen name="Policies" component={Discounts} />
+                                <Stack.Screen name="Exceptions" component={Discounts} />
+                                <Stack.Screen name="Discount Form" component={DiscountEditor} />
+                                <Stack.Screen name="Promo Code Form" component={DiscountEditor} />
+                                <Stack.Screen name="Policy Form" component={PolicyEditor} />
+                                <Stack.Screen name="Catalog" component={Products} />
+                                <Stack.Screen name="Products" component={Products} />
+                                <Stack.Screen name="Brands" component={Brands} />
+                                <Stack.Screen name="U/M" component={UnitOfMeasures} />
+                                <Stack.Screen name="Categories" component={Categories} />
+                                <Stack.Screen name="Printers" component={PrinterList} />
+                                <Stack.Screen name="Store" component={StoreInfoForm} />
+                                <Stack.Screen name="General" component={Settings} />
+                                <Stack.Screen name="Employees" component={Employees} />
+                                <Stack.Screen name="Logs" component={LogList} />
+                            </Stack.Navigator>
+                        </NavigationContainer>
+                    </NavigationIndependentTree>
                 </View>
             </View>
         </SafeAreaView>
@@ -112,18 +188,54 @@ const useStyles = () => {
             leftSide: {
                 flex: 2.3,
                 flexDirection: 'column',
+                paddingHorizontal: 14,
+                paddingTop: 10,
+                paddingBottom: 10,
             },
             rightSide: {
                 ...sharedStyles.darkerGrayBackground,
                 ...sharedStyles.rounded,
                 flex: 9,
-                marginLeft: 10,
+                marginLeft: 12,
                 height: '100%',
                 marginBottom: 10,
+                borderWidth: 1,
+                borderColor: `${theme.theme.colors.grey4}22`,
+                overflow: 'hidden',
             },
-            logo: {
-                width: 100,
-                height: 100,
+            leftScrollContent: {
+                paddingTop: 8,
+                paddingBottom: 18,
+            },
+            sidebarHeader: {
+                position: 'relative',
+                alignItems: 'center',
+                marginBottom: 14,
+                paddingTop: 10,
+                paddingBottom: 14,
+                borderRadius: 24,
+                borderWidth: 1,
+                borderColor: `${theme.theme.colors.grey4}33`,
+                backgroundColor: '#0B1119',
+            },
+            glyphWrap: {
+                transform: [{ scale: 0.82 }],
+                marginBottom: -2,
+            },
+            employeeName: {
+                color: theme.theme.colors.grey1,
+                fontWeight: '700',
+                fontSize: 15,
+                marginTop: 4,
+            },
+            sidebarNavContainer: {
+                ...sharedStyles.darkBackground,
+                borderRadius: 24,
+                borderWidth: 1,
+                borderColor: `${theme.theme.colors.grey4}33`,
+                backgroundColor: '#080B10',
+                paddingVertical: 12,
+                paddingHorizontal: 6,
             },
             navHeader: {
                 backgroundColor: theme.theme.colors.background,

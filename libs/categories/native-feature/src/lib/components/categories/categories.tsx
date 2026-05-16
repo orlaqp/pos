@@ -4,14 +4,28 @@ import CategoryList from '../category-list/category-list';
 import CategoryForm from '../category-form/category-form';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StackNavigation } from '@pos/shared/ui-native';
-import { useDispatch } from 'react-redux';
+import { RouteProp } from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
 
-export function Categories() {
+export interface CategoriesRouteParams {
+    initialRouteName?: 'Category List' | 'Category Form';
+}
+
+export interface CategoriesProps {
+    route?: RouteProp<Record<string, CategoriesRouteParams | undefined>, string>;
+}
+
+export function Categories({ route }: CategoriesProps) {
+    const initialRouteName = route?.params?.initialRouteName || 'Category List';
+
     return (
-        <StackNavigation Stack={Stack}>
-            <Stack.Screen name="Category List" component={CategoryList} />
+        <StackNavigation Stack={Stack} initialRouteName={initialRouteName}>
+            <Stack.Screen
+                name="Category List"
+                component={CategoryList}
+                options={{ headerShown: false }}
+            />
             <Stack.Screen name="Category Form" component={CategoryForm} />
         </StackNavigation>
     );

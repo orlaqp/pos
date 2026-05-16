@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { View, Text, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import {
@@ -8,32 +9,64 @@ import {
     ProductEntity,
     ProductService,
 } from '@pos/products/data-access';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { UIS3Image } from '@pos/shared/ui-native';
-import { selectCategory } from '@pos/categories/data-access';
+import { UIEbtRibbon, UIS3Image } from '@pos/shared/ui-native';
 import { Icon } from '@rneui/base';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface ProductItemProps {
     item: ProductEntity;
     navigation: NativeStackNavigationProp<any>;
 }
 
+export interface ProductCodeLine {
+    label: 'UPC' | 'SKU' | 'PLU';
+    value: string;
+}
+
+export const getProductCodeLines = (item: ProductEntity): ProductCodeLine[] => {
+    const lines: ProductCodeLine[] = [];
+    if (item.barcode) lines.push({ label: 'UPC', value: item.barcode });
+    if (item.sku) lines.push({ label: 'SKU', value: item.sku });
+    if (item.plu) lines.push({ label: 'PLU', value: item.plu });
+    return lines;
+};
+
+export const hasProductCodes = (item: ProductEntity) =>
+    getProductCodeLines(item).length > 0;
+
+export const formatProductTitle = (item: ProductEntity) =>
+    `${item.name} (${item.unitOfMeasure})`;
+
+export const deleteProductById = async (
+    id: string | undefined,
+    deleteProduct: (id: string) => Promise<any>,
+    removeProduct: (id: string) => any
+) => {
+    if (!id) return false;
+    await deleteProduct(id);
+    removeProduct(id);
+    return true;
+};
+
 export function ProductItem({ item, navigation }: ProductItemProps) {
+    const t = translateWithFallback;
     const theme = useTheme();
-    const styles = useStyles();
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
-
-    const category = useSelector(selectCategory(item.productCategoryId!));
+    const codeLines = getProductCodeLines(item);
 
     const deleteItem = async () => {
-        if (!item.id) return;
-
         setBusy(true);
-        await ProductService.delete(item.id);
+        await deleteProductById(
+            item.id,
+            (id) => ProductService.delete(id),
+            (id) => dispatch(productsActions.remove(id))
+        );
         setBusy(false);
-        dispatch(productsActions.remove(item.id));
     };
 
     const editItem = () => {
@@ -43,55 +76,55 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
 
     const confirmDeletion = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
-            [{ text: 'No' }, { text: 'Yes', onPress: () => deleteItem() }]
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t('COMMON_UndoOperationWarning', 'You will not be able to undo this operation'),
+            [
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => deleteItem() },
+            ]
         );
     };
 
     return (
         <TouchableOpacity
+            testID={`product-item-${item.id}`}
             style={[
                 styles.dataRow,
-                { justifyContent: 'center', alignItems: 'center' },
+                styles.row,
+                {
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                },
             ]}
             onPress={editItem}
         >
             {busy && <ActivityIndicator size="small" />}
-            {!item.picture && <View style={{ width: 50, height: 50 }} />}
-            <View style={[styles.column, { flex: 1, alignItems: 'center' }]}>
+            <View style={styles.thumbnailSlot}>
                 {item.picture && (
                     <UIS3Image s3Key={item.picture} width={50} height={50} />
                 )}
-                <View
-                    style={{
-                        marginTop: 10,
-                        width: '100%',
-                    }}
-                >
-                    <Text
-                        style={{
-                            ...styles.description,
-                            textAlign: 'center',
-                        }}
-                    >
-                        {category?.name}
-                    </Text>
-                </View>
             </View>
-            <View style={{ flex: 2 }}>
-                <Text style={styles.name}>
-                    {item.name} ({item.unitOfMeasure})
+            <View style={{ flex: 2.6, paddingRight: 8 }}>
+                <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+                    {formatProductTitle(item)}
                 </Text>
-                <Text style={styles.description}>{item.description}</Text>
+                <Text
+                    style={[styles.description, styles.secondaryReadable]}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                >
+                    {item.description}
+                </Text>
             </View>
-            <View style={[styles.column, { flex: 0.7 }]}>
+            <View style={[styles.column, { flex: 0.8 }]}>
                 <Text style={[styles.name, { textAlign: 'right' }]}>
                     $ {item.price.toFixed(2)}
                 </Text>
             </View>
-            <View style={{ flex: 2, flexDirection: 'row', justifyContent: 'center' }}>
-                { (!!item.barcode || !!item.sku || !!item.plu) &&
+            <View style={{ flex: 2.2, flexDirection: 'row', justifyContent: 'center' }}>
+                {hasProductCodes(item) &&
                 <View>
                     <Icon
                         name="barcode"
@@ -101,15 +134,24 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
                 </View>
                 }
                 <View style={{ marginLeft: 10, alignSelf: 'center' }}>
-                    { !!item.barcode &&
-                    <Text style={styles.barcode}>UPC: {item.barcode}</Text>
-                    }
-                    { !!item.sku &&
-                    <Text style={styles.barcode}>SKU: {item.sku}</Text>
-                    }
-                    { !!item.plu &&
-                    <Text style={styles.barcode}>PLU: {item.plu}</Text>
-                    }
+                    {codeLines.map((line) => (
+                        <Text
+                            key={line.label}
+                            style={[styles.barcode, styles.secondaryReadable]}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                        >
+                            {t(
+                                line.label === 'UPC'
+                                    ? 'PRODUCT_Upc'
+                                    : line.label === 'SKU'
+                                      ? 'PRODUCT_Sku'
+                                      : 'PRODUCT_Plu',
+                                line.label
+                            )}
+                            : {line.value}
+                        </Text>
+                    ))}
                 </View>
             </View>
             <View
@@ -129,32 +171,60 @@ export function ProductItem({ item, navigation }: ProductItemProps) {
                     onPress={editItem}
                 /> */}
                 <Button
+                    testID={`product-item-delete-${item.id}`}
                     type="clear"
                     icon={{
                         name: 'trash-can',
                         type: 'material-community',
-                        color: theme.theme.colors.error,
+                        color: theme.theme.colors.grey2,
                     }}
+                    buttonStyle={styles.deleteButton}
                     onPress={confirmDeletion}
                 />
             </View>
+            {item.isEBTEligible && <UIEbtRibbon />}
         </TouchableOpacity>
     );
 }
 
-const useStyles = () => {
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) => {
     const theme = useTheme();
     const sharedStyles = useSharedStyles();
 
     return {
         ...sharedStyles,
         ...StyleSheet.create({
+            row: {
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: '#C7D0DB22',
+                backgroundColor: '#0E141C',
+                marginBottom: tokens.spacing.sm,
+                paddingHorizontal: tokens.spacing.md,
+                paddingVertical: tokens.spacing.md,
+            },
             column: {
                 marginRight: 15,
+            },
+            thumbnailSlot: {
+                width: 70,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 12,
             },
             barcode: {
                 fontSize: 12,
                 color: theme.theme.colors.grey2,
+            },
+            secondaryReadable: {
+                color: theme.theme.colors.grey1,
+            },
+            deleteButton: {
+                opacity: 0.95,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: `${theme.theme.colors.error}55`,
+                backgroundColor: `${theme.theme.colors.error}12`,
             },
         }),
     };

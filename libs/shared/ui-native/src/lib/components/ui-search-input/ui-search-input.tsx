@@ -1,64 +1,127 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { Input, useTheme } from '@rneui/themed';
-import { TextInput } from 'react-native';
+import { NativeSyntheticEvent, TextInput, TextInputFocusEventData } from 'react-native';
 // import debounce from 'lodash/debounce';
 type UiSearchInputProps = React.ComponentProps<typeof TextInput> & {
-    onSubmit: (text: string) => void;
+    onSubmit: (text: string) => void | Promise<unknown>;
     onClear?: () => void;
     debounceTime?: number;
+    clearOnSubmit?: boolean;
+    retainFocusOnSubmit?: boolean;
+    retainFocusOnBlur?: boolean;
 };
 
 export const UISearchInput = React.forwardRef<TextInput, UiSearchInputProps>(
     (props, ref) => {
         const theme = useTheme();
-        const { value, onChange, debounceTime, onSubmit, onClear, ...restOfProps } =
+        const colors = theme?.theme?.colors || {
+            grey5: '#2f3742',
+            grey2: '#8f9baa',
+            grey1: '#ffffff',
+        };
+        const {
+            value,
+            onChangeText,
+            onSubmit,
+            onClear,
+            clearOnSubmit,
+            retainFocusOnSubmit,
+            retainFocusOnBlur,
+            autoFocus,
+            ...restOfProps
+        } =
             props;
-        const [text, setText] = useState<string | undefined>(value);
+        const [text, setText] = useState<string>(typeof value === 'string' ? value : '');
+        const currentText = typeof value === 'string' ? value : text;
+        const inputRef = useMemo(
+            () => ({ current: null as TextInput | null }),
+            []
+        );
 
-        // const debouncedOnChange = useCallback(
-        //     debounce(async (text) => {
-        //         if (!onTextChanged) return;
-                
-        //         const res = await onTextChanged(text);
-        //         console.log('On change text response: ', res);
-                
-        //         setText(res);
-        //     }, debounceTime || 0),
-        //     []
-        // );
+        const setCombinedRef = useCallback(
+            (node: TextInput | null) => {
+                inputRef.current = node;
+                if (typeof ref === 'function') {
+                    ref(node);
+                    return;
+                }
+
+                if (ref) {
+                    ref.current = node;
+                }
+            },
+            [ref, inputRef]
+        );
+
+        const handleChangeText = (nextText: string) => {
+            setText(nextText);
+            onChangeText?.(nextText);
+        };
+
+        const handleSubmit = (submittedText?: string) => {
+            const nextText = submittedText ?? currentText;
+            setText(nextText);
+            void onSubmit(nextText);
+
+            if (clearOnSubmit) {
+                setText('');
+                onChangeText?.('');
+            }
+
+            if (retainFocusOnSubmit) {
+                inputRef.current?.focus?.();
+            }
+        };
+
+        const handleBlur = (
+            event: NativeSyntheticEvent<TextInputFocusEventData>
+        ) => {
+            restOfProps.onBlur?.(event);
+
+            if (retainFocusOnBlur) {
+                setTimeout(() => {
+                    inputRef.current?.focus?.();
+                }, 25);
+            }
+        };
 
         const clearText = () => {
             setText('');
-            if (onSubmit) onSubmit('');
+            onChangeText?.('');
+            void onSubmit('');
             if (onClear) onClear();
-        }
+        };
 
         return (
             <Input
-                ref={ref}
+                ref={setCombinedRef as any}
                 {...restOfProps}
-                // value={text}
+                value={currentText}
                 autoComplete='off'
                 autoCorrect={false}
                 autoCapitalize='none'
                 autoFocus={true}
                 containerStyle={{
-                    backgroundColor: theme.theme.colors.grey5,
+                    backgroundColor: colors.grey5,
                     borderRadius: 20,
                 }}
                 inputContainerStyle={{ borderBottomWidth: 0, paddingLeft: 10 }}
-                inputStyle={{ color: theme.theme.colors.grey1 }}
+                inputStyle={{ color: colors.grey1 }}
                 rightIcon={{
                     name: text ? 'close-circle-outline' : 'magnify',
                     type: 'material-community',
-                    color: theme.theme.colors.grey2,
+                    color: colors.grey2,
                     onPress: clearText,
                 }}
                 multiline={false}
                 renderErrorMessage={false}
                 clearButtonMode='always'
-                onSubmitEditing={(e) => onSubmit(e.nativeEvent.text)}
+                autoFocus={autoFocus ?? true}
+                blurOnSubmit={false}
+                onChangeText={handleChangeText}
+                onBlur={handleBlur}
+                onSubmitEditing={(e) => handleSubmit(e.nativeEvent.text)}
             />
         );
     }

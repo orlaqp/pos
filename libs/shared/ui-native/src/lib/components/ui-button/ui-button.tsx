@@ -17,20 +17,32 @@ export type ButtonItemType = Readonly<ButtonItem & Record<string, any>>;
 /* eslint-disable-next-line */
 export interface UIButtonProps {
     onSelected: (item: ButtonItemType) => void;
+    onLongPress?: (item: ButtonItemType) => void;
     item: ButtonItemType;
     maxTextLength?: number;
-    children?: any; 
+    children?: any;
+    testID?: string;
 }
 
-export function UIButton({ item, onSelected, maxTextLength, children }: UIButtonProps) {
+export function UIButton({
+    item,
+    onSelected,
+    onLongPress,
+    maxTextLength,
+    children,
+    testID,
+}: UIButtonProps) {
     const theme = useTheme();
+    const colors = theme?.theme?.colors || { black: '#ffffff' };
     const styles = useSharedStyles();
     const textLength = maxTextLength || 14;
 
     return (
         <TouchableOpacity
             key={item.id}
+            testID={testID || (item.id ? `ui-button-${item.id}` : undefined)}
             onPress={() => onSelected(item)}
+            onLongPress={onLongPress ? () => onLongPress(item) : undefined}
             style={{ padding: 10 }}
         >
             <View style={[styles.centered]}>
@@ -43,7 +55,7 @@ export function UIButton({ item, onSelected, maxTextLength, children }: UIButton
                 <Text
                     style={{
                         marginTop: 5,
-                        color: theme.theme.colors.black,
+                        color: colors.black,
                         fontSize: 14,
                         textAlign: 'center'
                     }}

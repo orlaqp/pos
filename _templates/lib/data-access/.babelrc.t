@@ -4,7 +4,7 @@ to: <%= h.daLib(name) %>/.babelrc
 {
   "presets": [
     [
-      "@nrwl/react/babel",
+      "@nx/react/babel",
       {
         "runtime": "automatic",
         "useBuiltIns": "usage"

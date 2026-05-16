@@ -5,7 +5,9 @@ import UiActionMessage from './ui-action-message';
 
 describe('UiActionMessage', () => {
   it('should render successfully', () => {
-    const { container } = render(<UiActionMessage />);
-    expect(container).toBeTruthy();
+    const { getByText } = render(
+      <UiActionMessage message="No data" actionTitle="Retry" action={jest.fn()} />
+    );
+    expect(getByText('No data')).toBeTruthy();
   });
 });

@@ -11,14 +11,14 @@ pluralParamCase = h.pluralParamCase(name)
   "tags": [],
   "targets": {
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/<%= pluralParamCase %>/data-access/**/*.{ts,tsx,js,jsx}"]
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
+      "executor": "@nx/jest:jest",
       "outputs": ["coverage/libs/<%= pluralParamCase %>/data-access"],
       "options": {
         "jestConfig": "libs/<%= pluralParamCase %>/data-access/jest.config.js",

@@ -1,13 +1,14 @@
-import { UIActions, UIInput } from '@pos/shared/ui-native';
-import { useSharedStyles } from '@pos/theme/native';
-import { fetchStoreInfo, selectStore, StoreInfoEntity, StoreInfoService } from '@pos/store-info/data-access';
-import React, { useEffect, useState } from 'react';
+import { UIActions, UICard, UIInput, UIScreen, UIStack } from '@pos/shared/ui-native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import React, { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
-import { View, Text, Alert, ScrollView } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { View, Text, Alert, ScrollView, StyleSheet } from 'react-native';
+import { useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { fetchStationInfo, saveStationNumber, selectStation, StationConfig, StationService } from '@pos/settings/data-access';
+import { saveStationNumber, selectStation, StationConfig } from '@pos/settings/data-access';
+import { useAppDispatch } from '@pos/store';
+import { translateWithFallback } from '@pos/shared/utils';
 
 /* eslint-disable-next-line */
 export interface StationFormProps {
@@ -17,8 +18,10 @@ export interface StationFormProps {
 export type CustomStationConfig = Omit<StationConfig, 'orderNumber'> & { orderNumber: string };
 
 export function StationForm({ navigation }: StationFormProps) {
-    const styles = useSharedStyles();
-    const dispatch = useDispatch();
+    const t = translateWithFallback;
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
+    const dispatch = useAppDispatch();
     const stationInfo = useSelector(selectStation);
     const [busy, setBusy] = useState<boolean>(false);
     
@@ -30,22 +33,20 @@ export function StationForm({ navigation }: StationFormProps) {
 
         dispatch(saveStationNumber(formValues.stationNumber));
         
-        Alert.alert('Store information has been updated');
+        Alert.alert(t('STATION_SaveSuccess', 'Station information has been updated'));
         setBusy(false);
     };
 
     const confirmCancel = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t('COMMON_UndoOperationWarning', 'You will not be able to undo this operation'),
             [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => navigation.goBack() },
             ]
         );
     }
-
-    console.log(stationInfo);
 
     const form = useForm< CustomStationConfig >({
         mode: 'onChange',
@@ -57,28 +58,117 @@ export function StationForm({ navigation }: StationFormProps) {
     });
 
     return (
-        <View style={[styles.page, styles.centeredHorizontally]}>
+        <UIScreen padded>
             <FormProvider {...form}>
-                <ScrollView
-                    style={{
-                        width: '60%',
-                        flexDirection: 'column',
-                        marginTop: 50,
-                    }}
-                >
-                    <UIInput name="currentDate" label="Current Date (read only)" placeholder="Current Date" disabled={true} />
-                    <UIInput name="orderNumber" label="Order Number (read only)" placeholder="Order Number" disabled={true} />
-                    <UIInput name="stationNumber" label="Station Number" placeholder="Station Number" rules={{ required: true }} />
-                    
-                    <UIActions
-                        busy={busy}
-                        submitAction={form.handleSubmit(save)}
-                        cancelAction={confirmCancel}
-                    />
-                </ScrollView>
+                <View style={styles.screen}>
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <View style={styles.container}>
+                            <UIStack spacing="lg">
+                                <UICard tone="muted" radius="lg">
+                                    <Text style={styles.title}>
+                                        {t('STATION_ProfileTitle', 'Station Configuration')}
+                                    </Text>
+                                    <Text style={styles.subtitle}>
+                                        {t(
+                                            'STATION_ProfileSubtitle',
+                                            'Configure station identity used to generate order references.'
+                                        )}
+                                    </Text>
+                                </UICard>
+
+                                <UICard>
+                                    <UIStack spacing="lg">
+                                        <Text style={styles.sectionTitle}>
+                                            {t('STATION_DetailsSection', 'Station Details')}
+                                        </Text>
+                                        <View style={styles.twoColumnRow}>
+                                            <View style={styles.column}>
+                                                <UIInput
+                                                    name="currentDate"
+                                                    label={t('STATION_CurrentDateReadonly', 'Current Date (read only)')}
+                                                    placeholder={t('STATION_CurrentDate', 'Current Date')}
+                                                    disabled={true}
+                                                />
+                                            </View>
+                                            <View style={styles.columnSpaced}>
+                                                <UIInput
+                                                    name="orderNumber"
+                                                    label={t('STATION_OrderNumberReadonly', 'Order Number (read only)')}
+                                                    placeholder={t('STATION_OrderNumber', 'Order Number')}
+                                                    disabled={true}
+                                                />
+                                            </View>
+                                        </View>
+
+                                        <UIInput
+                                            name="stationNumber"
+                                            label={t('STATION_Number', 'Station Number')}
+                                            placeholder={t('STATION_Number', 'Station Number')}
+                                            rules={{ required: true }}
+                                        />
+                                    </UIStack>
+                                </UICard>
+
+                                <UIActions
+                                    busy={busy}
+                                    submitTestID="station-save"
+                                    cancelTestID="station-cancel"
+                                    submitAction={form.handleSubmit(save)}
+                                    cancelAction={confirmCancel}
+                                />
+                            </UIStack>
+                        </View>
+                    </ScrollView>
+                </View>
             </FormProvider>
-        </View>
+        </UIScreen>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        screen: {
+            flex: 1,
+        },
+        scrollContent: {
+            paddingHorizontal: tokens.spacing.xl,
+            paddingVertical: tokens.spacing.lg,
+            paddingBottom: tokens.spacing.xl,
+            alignItems: 'center',
+        },
+        container: {
+            width: '100%',
+            maxWidth: 1240,
+        },
+        title: {
+            color: tokens.colors.textPrimary,
+            fontSize: 28,
+            fontWeight: '700',
+        },
+        subtitle: {
+            color: tokens.colors.textSecondary,
+            marginTop: tokens.spacing.xs,
+            fontSize: 15,
+            lineHeight: 21,
+        },
+        sectionTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 19,
+            fontWeight: '700',
+        },
+        twoColumnRow: {
+            flexDirection: 'row',
+        },
+        column: {
+            flex: 1,
+        },
+        columnSpaced: {
+            flex: 1,
+            marginLeft: tokens.spacing.md,
+        },
+    });
 
 export default StationForm;

@@ -1,5 +1,5 @@
 import { Product } from '@pos/shared/models';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 export type ProductEntity = {
     id: string;
     name: string;
@@ -18,9 +18,14 @@ export type ProductEntity = {
     picture: string | null | undefined;
     productCategoryId: string | null | undefined;
     productBrandId: string | null | undefined;
+    discountable?: boolean;
+    minAllowedPrice: number | null | undefined;
+    maxManualDiscountPercent: number | null | undefined;
+    maxManualDiscountAmount: number | null | undefined;
     createdAt?: string | null | undefined;
     updatedAt?: string | null | undefined;
     isActive: boolean;
+    isEBTEligible?: boolean | null | undefined;
 };
 
 export class ProductEntityMapper {
@@ -43,9 +48,14 @@ export class ProductEntityMapper {
             picture: p.picture,
             productCategoryId: p.productCategoryId,
             productBrandId: p.productBrandId,
+            discountable: p.discountable ?? true,
+            minAllowedPrice: p.minAllowedPrice,
+            maxManualDiscountPercent: p.maxManualDiscountPercent,
+            maxManualDiscountAmount: p.maxManualDiscountAmount,
             createdAt: p.createdAt,
             updatedAt: p.updatedAt,
-            isActive: p.isActive
+            isActive: p.isActive,
+            isEBTEligible: p.isEBTEligible ?? false,
         }
     }
 }

@@ -1,0 +1,6 @@
+module Pods_MobileUi {
+  umbrella header "Pods-MobileUi-umbrella.h"
+
+  export *
+  module * { export * }
+}

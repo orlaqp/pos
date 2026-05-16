@@ -1,23 +1,26 @@
 {
-  "root": "libs/shared/ui-native",
-  "sourceRoot": "libs/shared/ui-native/src",
-  "projectType": "library",
-  "tags": [],
-  "targets": {
-    "lint": {
-      "executor": "@nrwl/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["libs/shared/ui-native/**/*.{ts,tsx,js,jsx}"]
-      }
-    },
-    "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/shared/ui-native"],
-      "options": {
-        "jestConfig": "libs/shared/ui-native/jest.config.js",
-        "passWithNoTests": true
-      }
+    "name": "shared-ui-native",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/shared/ui-native/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": [
+                    "libs/shared/ui-native/**/*.{ts,tsx,js,jsx}"
+                ]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/shared/ui-native"],
+            "options": {
+                "jestConfig": "libs/shared/ui-native/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
     }
-  }
 }

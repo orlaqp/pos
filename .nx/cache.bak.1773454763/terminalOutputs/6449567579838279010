@@ -1,0 +1,3191 @@
+(node:18207) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m mobile-ui [39m[27m[0m [2mapps/mobile-ui/src/app/[22m[1mnavigation.spec.tsx[22m
+  [1m● [22mConsole
+
+    [2mconsole.group[22m
+        [1m action storeInfo/fetchStatus/pending @ 19:43:56.210[22m
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6108[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         prev state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'not loaded',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'not loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6343[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         action     {
+        type: 'storeInfo/fetchStatus/pending',
+        payload: undefined,
+        meta: {
+          arg: undefined,
+          requestId: 'YYTJN7dIXhQpJ5Fd-aq7g',
+          requestStatus: 'pending'
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6463[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         next state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'not loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6713[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.group[22m
+        [1m action station/fetchStatus/pending @ 19:43:56.222[22m
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6108[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         prev state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'not loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6343[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         action     {
+        type: 'station/fetchStatus/pending',
+        payload: undefined,
+        meta: {
+          arg: undefined,
+          requestId: 'OvBYTgbUr0b9iWLKqxtDV',
+          requestStatus: 'pending'
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6463[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         next state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loading',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6713[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.group[22m
+        [1m action globalSettings/fetch/pending @ 19:43:56.224[22m
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6108[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         prev state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loading',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6343[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         action     {
+        type: 'globalSettings/fetch/pending',
+        payload: undefined,
+        meta: {
+          arg: undefined,
+          requestId: 'KJjUImaEcHtij5TKNADDv',
+          requestStatus: 'pending'
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6463[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         next state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loading',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6713[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.group[22m
+        [1m action station/fetchStatus/fulfilled @ 19:43:56.755[22m
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6108[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         prev state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loading',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6343[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         action     {
+        type: 'station/fetchStatus/fulfilled',
+        payload: {},
+        meta: {
+          arg: undefined,
+          requestId: 'OvBYTgbUr0b9iWLKqxtDV',
+          requestStatus: 'fulfilled'
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6463[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         next state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6713[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2m[33mconsole.warn[39m[22m
+[33m      Using an insecure random number generator, this should only happen when running in a debugger without support for crypto.getRandomValues[39m
+[2m[22m
+[2m      [2mat insecureRandomValues ([22m[2m../../node_modules/amazon-cognito-identity-js/lib/utils/getRandomValues.native.js[2m:32:13)[22m[2m[22m
+[2m      [2mat getRandomValues ([22m[2m../../node_modules/amazon-cognito-identity-js/lib/utils/getRandomValues.native.js[2m:58:14)[22m[2m[22m
+[2m      [2mat cryptoSecureRandomInt ([22m[2m../../node_modules/amazon-cognito-identity-js/lib/utils/cryptoSecureRandomInt.native.js[2m:12:42)[22m[2m[22m
+[2m      [2mat WordArray.random ([22m[2m../../node_modules/amazon-cognito-identity-js/lib/utils/WordArray.js[2m:41:56)[22m[2m[22m
+[2m      [2mat randomBytes ([22m[2m../../node_modules/@aws-amplify/datastore/src/util.ts[2m:511:37)[22m[2m[22m
+[2m      [2mat prng ([22m[2m../../node_modules/@aws-amplify/datastore/src/util.ts[2m:513:20)[22m[2m[22m
+[2m      [2mat randomChar ([22m[2m../../node_modules/ulid/dist/index.umd.js[2m:49:27)[22m[2m[22m
+[2m      [2mat encodeRandom ([22m[2m../../node_modules/ulid/dist/index.umd.js[2m:80:15)[22m[2m[22m
+[2m      [2mat ulid ([22m[2m../../node_modules/ulid/dist/index.umd.js[2m:158:38)[22m[2m[22m
+[2m      [2mat ulid ([22m[2m../../node_modules/@aws-amplify/datastore/src/util.ts[2m:518:10)[22m[2m[22m
+[2m      [2mat recipe ([22m[2m../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:554:10)[22m[2m[22m
+[2m      [2mat Object.produce ([22m[2m../../node_modules/@aws-amplify/datastore/node_modules/immer/src/core/immerClass.ts[2m:94:14)[22m[2m[22m
+[2m      [2mat new Setting ([22m[2m../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:529:21)[22m[2m[22m
+[2m      [2mat modelInstanceCreator ([22m[2m../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:321:9)[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:798:5[22m[2m[22m
+[2m      [2mat step ([22m[2m../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:114:17)[22m[2m[22m
+[2m      [2mat Object.next ([22m[2m../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:63:14)[22m[2m[22m
+[2m      [2mat fulfilled ([22m[2m../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:22:24)[22m[2m[22m
+
+    [2m[33mconsole.warn[39m[22m
+[33m      [WARN] 43:56.765 DataStore - Data won't be synchronized. No GraphQL endpoint configured. Did you forget `Amplify.configure(awsconfig)`? {[39m
+[33m        config: {[39m
+[33m          authProviders: undefined,[39m
+[33m          maxRecordsToSync: 10000,[39m
+[33m          syncPageSize: 1000[39m
+[33m        }[39m
+[33m      }[39m
+[2m[22m
+[2m      [2mat ConsoleLogger.apply [as _log] ([22m[2m../../node_modules/@aws-amplify/core/src/Logger/ConsoleLogger.ts[2m:125:4)[22m[2m[22m
+[2m      [2mat ConsoleLogger.warn ([22m[2m../../node_modules/@aws-amplify/core/src/Logger/ConsoleLogger.ts[2m:164:12)[22m[2m[22m
+[2m      [2mat DataStore.<anonymous> ([22m[2m../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:1052:13)[22m[2m[22m
+[2m      [2mat step ([22m[2m../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:114:17)[22m[2m[22m
+[2m      [2mat Object.next ([22m[2m../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:63:14)[22m[2m[22m
+[2m      [2mat fulfilled ([22m[2m../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:22:24)[22m[2m[22m
+
+    [2mconsole.group[22m
+        [1m action globalSettings/fetch/fulfilled @ 19:43:56.934[22m
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6108[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         prev state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6343[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         action     {
+        type: 'globalSettings/fetch/fulfilled',
+        payload: null,
+        meta: {
+          arg: undefined,
+          requestId: 'KJjUImaEcHtij5TKNADDv',
+          requestStatus: 'fulfilled'
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6463[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         next state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6713[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.group[22m
+        [1m action storeInfo/fetchStatus/fulfilled @ 19:43:56.935[22m
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6108[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         prev state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6343[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         action     {
+        type: 'storeInfo/fetchStatus/fulfilled',
+        payload: undefined,
+        meta: {
+          arg: undefined,
+          requestId: 'YYTJN7dIXhQpJ5Fd-aq7g',
+          requestStatus: 'fulfilled'
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6463[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         next state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loaded',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6713[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+[1m[31m  [1m● [22m[1mNavigation › should render successfully[39m[22m
+
+    Incompatible React versions: The "react" and "react-native-renderer" packages must have the exact same version. Instead got:
+      - react:                  19.2.4
+      - react-native-renderer:  19.2.3
+    Learn more: https://react.dev/warnings/version-mismatch
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js[2m:19460:13[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m../../node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js[2m:19667:4)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m../../node_modules/react-native/Libraries/Renderer/shims/ReactNative.js[2m:21:17)[22m[2m[22m
+[2m      [2mat getRenderer ([22m[2m../../node_modules/react-native/Libraries/ReactNative/RendererImplementation.js[2m:35:27)[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/react-native/Libraries/ReactNative/RendererImplementation.js[2m:54:20[22m[2m[22m
+[2m      [2mat attachNativeEventImpl ([22m[2m../../node_modules/react-native/Libraries/Animated/AnimatedEvent.js[2m:69:33)[22m[2m[22m
+[2m      [2mat AnimatedEvent.__attach ([22m[2m../../node_modules/react-native/Libraries/Animated/AnimatedEvent.js[2m:185:27)[22m[2m[22m
+[2m      [2mat effect ([22m[2m../../node_modules/react-native/src/private/animated/createAnimatedPropsHook.js[2m:198:21)[22m[2m[22m
+[2m      [2mat ref ([22m[2m../../node_modules/react-native/Libraries/Utilities/useRefEffect.js[2m:40:30)[22m[2m[22m
+[2m      [2mat map ([22m[2m../../node_modules/react-native/Libraries/Utilities/useMergeRefs.js[2m:35:50)[22m[2m[22m
+[2m          at Array.map (<anonymous>)[22m
+[2m      [2mat effect ([22m[2m../../node_modules/react-native/Libraries/Utilities/useMergeRefs.js[2m:29:66)[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/react-native/Libraries/Utilities/useRefEffect.js[2m:40:30[22m[2m[22m
+[2m      [2mat commitAttachRef ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:9763:44)[22m[2m[22m
+[2m      [2mat runWithFiberInDEV ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:2315:13)[22m[2m[22m
+[2m      [2mat safelyAttachRef ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:9781:9)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10083:26)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10202:17)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10168:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10210:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10210:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10210:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10118:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10010:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10210:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10210:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10210:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10118:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10010:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10210:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10210:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10210:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10210:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10210:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10210:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+[2m      [2mat commitLayoutEffectOnFiber ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10005:11)[22m[2m[22m
+[2m      [2mat recursivelyTraverseLayoutEffects ([22m[2m../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:10892:11)[22m[2m[22m
+
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m mobile-ui [39m[27m[0m [2mapps/mobile-ui/src/app/[22m[1mApp.spec.tsx[22m
+  [1m● [22mConsole
+
+    [2mconsole.group[22m
+        [1m action storeInfo/fetchStatus/pending @ 19:43:57.250[22m
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6108[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         prev state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'not loaded',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'not loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6343[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         action     {
+        type: 'storeInfo/fetchStatus/pending',
+        payload: undefined,
+        meta: {
+          arg: undefined,
+          requestId: 'HmMuVhh_H5Td5MTOKQw8A',
+          requestStatus: 'pending'
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6463[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         next state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'not loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6713[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.group[22m
+        [1m action station/fetchStatus/pending @ 19:43:57.252[22m
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6108[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         prev state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'not loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6343[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         action     {
+        type: 'station/fetchStatus/pending',
+        payload: undefined,
+        meta: {
+          arg: undefined,
+          requestId: '29QOdeCj6gLpg5dlP4EWy',
+          requestStatus: 'pending'
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6463[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         next state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loading',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6713[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.group[22m
+        [1m action globalSettings/fetch/pending @ 19:43:57.253[22m
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6108[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         prev state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loading',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6343[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         action     {
+        type: 'globalSettings/fetch/pending',
+        payload: undefined,
+        meta: {
+          arg: undefined,
+          requestId: '82sxwaeFSnAx-54U8paS8',
+          requestStatus: 'pending'
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6463[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         next state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loading',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6713[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.group[22m
+        [1m action station/fetchStatus/fulfilled @ 19:43:57.325[22m
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6108[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         prev state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loading',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6343[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         action     {
+        type: 'station/fetchStatus/fulfilled',
+        payload: {},
+        meta: {
+          arg: undefined,
+          requestId: '29QOdeCj6gLpg5dlP4EWy',
+          requestStatus: 'fulfilled'
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6463[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         next state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6713[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2m[33mconsole.warn[39m[22m
+[33m      Using an insecure random number generator, this should only happen when running in a debugger without support for crypto.getRandomValues[39m
+[2m[22m
+[2m      [2mat insecureRandomValues ([22m[2m../../node_modules/amazon-cognito-identity-js/lib/utils/getRandomValues.native.js[2m:32:13)[22m[2m[22m
+[2m      [2mat getRandomValues ([22m[2m../../node_modules/amazon-cognito-identity-js/lib/utils/getRandomValues.native.js[2m:58:14)[22m[2m[22m
+[2m      [2mat cryptoSecureRandomInt ([22m[2m../../node_modules/amazon-cognito-identity-js/lib/utils/cryptoSecureRandomInt.native.js[2m:12:42)[22m[2m[22m
+[2m      [2mat WordArray.random ([22m[2m../../node_modules/amazon-cognito-identity-js/lib/utils/WordArray.js[2m:41:56)[22m[2m[22m
+[2m      [2mat randomBytes ([22m[2m../../node_modules/@aws-amplify/datastore/src/util.ts[2m:511:37)[22m[2m[22m
+[2m      [2mat prng ([22m[2m../../node_modules/@aws-amplify/datastore/src/util.ts[2m:513:20)[22m[2m[22m
+[2m      [2mat randomChar ([22m[2m../../node_modules/ulid/dist/index.umd.js[2m:49:27)[22m[2m[22m
+[2m      [2mat encodeRandom ([22m[2m../../node_modules/ulid/dist/index.umd.js[2m:80:15)[22m[2m[22m
+[2m      [2mat ulid ([22m[2m../../node_modules/ulid/dist/index.umd.js[2m:158:38)[22m[2m[22m
+[2m      [2mat ulid ([22m[2m../../node_modules/@aws-amplify/datastore/src/util.ts[2m:518:10)[22m[2m[22m
+[2m      [2mat recipe ([22m[2m../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:554:10)[22m[2m[22m
+[2m      [2mat Object.produce ([22m[2m../../node_modules/@aws-amplify/datastore/node_modules/immer/src/core/immerClass.ts[2m:94:14)[22m[2m[22m
+[2m      [2mat new Setting ([22m[2m../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:529:21)[22m[2m[22m
+[2m      [2mat modelInstanceCreator ([22m[2m../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:321:9)[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:798:5[22m[2m[22m
+[2m      [2mat step ([22m[2m../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:114:17)[22m[2m[22m
+[2m      [2mat Object.next ([22m[2m../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:63:14)[22m[2m[22m
+[2m      [2mat fulfilled ([22m[2m../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:22:24)[22m[2m[22m
+
+    [2m[33mconsole.warn[39m[22m
+[33m      [WARN] 43:57.327 DataStore - Data won't be synchronized. No GraphQL endpoint configured. Did you forget `Amplify.configure(awsconfig)`? {[39m
+[33m        config: {[39m
+[33m          authProviders: undefined,[39m
+[33m          maxRecordsToSync: 10000,[39m
+[33m          syncPageSize: 1000[39m
+[33m        }[39m
+[33m      }[39m
+[2m[22m
+[2m      [2mat ConsoleLogger.apply [as _log] ([22m[2m../../node_modules/@aws-amplify/core/src/Logger/ConsoleLogger.ts[2m:125:4)[22m[2m[22m
+[2m      [2mat ConsoleLogger.warn ([22m[2m../../node_modules/@aws-amplify/core/src/Logger/ConsoleLogger.ts[2m:164:12)[22m[2m[22m
+[2m      [2mat DataStore.<anonymous> ([22m[2m../../node_modules/@aws-amplify/datastore/src/datastore/datastore.ts[2m:1052:13)[22m[2m[22m
+[2m      [2mat step ([22m[2m../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:114:17)[22m[2m[22m
+[2m      [2mat Object.next ([22m[2m../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:63:14)[22m[2m[22m
+[2m      [2mat fulfilled ([22m[2m../../node_modules/@aws-amplify/datastore/lib/datastore/datastore.js[2m:22:24)[22m[2m[22m
+
+    [2mconsole.group[22m
+        [1m action globalSettings/fetch/fulfilled @ 19:43:57.333[22m
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6108[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         prev state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6343[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         action     {
+        type: 'globalSettings/fetch/fulfilled',
+        payload: null,
+        meta: {
+          arg: undefined,
+          requestId: '82sxwaeFSnAx-54U8paS8',
+          requestStatus: 'fulfilled'
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6463[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         error      Error: Incompatible React versions: The "react" and "react-native-renderer" packages must have the exact same version. Instead got:
+        - react:                  19.2.4
+        - react-native-renderer:  19.2.3
+      Learn more: https://react.dev/warnings/version-mismatch
+          at /Users/orlando/dev/pos/node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js:19460:13
+          at Object.<anonymous> (/Users/orlando/dev/pos/node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js:19667:4)
+          at Runtime._execModule (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:1439:24)
+          at Runtime._loadModule (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:1022:12)
+          at Runtime.requireModule (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:882:12)
+          at Runtime.require [as requireModuleOrMock] (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:1048:21)
+          at Object.<anonymous> (/Users/orlando/dev/pos/node_modules/react-native/Libraries/Renderer/shims/ReactNative.js:21:17)
+          at Runtime._execModule (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:1439:24)
+          at Runtime._loadModule (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:1022:12)
+          at Runtime.requireModule (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:882:12)
+          at Runtime.require [as requireModuleOrMock] (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:1048:21)
+          at getRenderer (/Users/orlando/dev/pos/node_modules/react-native/Libraries/ReactNative/RendererImplementation.js:35:27)
+          at /Users/orlando/dev/pos/node_modules/react-native/Libraries/ReactNative/RendererImplementation.js:54:20
+          at Object.notify (/Users/orlando/dev/pos/node_modules/react-redux/lib/utils/Subscription.js:19:7)
+          at Object.notifyNestedSubs (/Users/orlando/dev/pos/node_modules/react-redux/lib/utils/Subscription.js:92:15)
+          at handleChangeWrapper (/Users/orlando/dev/pos/node_modules/react-redux/lib/utils/Subscription.js:97:20)
+          at dispatch (/Users/orlando/dev/pos/node_modules/redux/lib/redux.js:305:7)
+          at /Users/orlando/dev/pos/node_modules/redux-logger/dist/redux-logger.js:1:7971
+          at /Users/orlando/dev/pos/node_modules/@reduxjs/toolkit/src/serializableStateInvariantMiddleware.ts:172:20
+          at /Users/orlando/dev/pos/node_modules/redux-thunk/lib/index.js:27:16
+          at /Users/orlando/dev/pos/node_modules/@reduxjs/toolkit/src/immutableStateInvariantMiddleware.ts:258:32
+          at dispatch (/Users/orlando/dev/pos/node_modules/redux/lib/redux.js:699:28)
+          at /Users/orlando/dev/pos/node_modules/@reduxjs/toolkit/src/createAsyncThunk.ts:651:11
+          at step (/Users/orlando/dev/pos/node_modules/@reduxjs/toolkit/dist/redux-toolkit.cjs.development.js:38:23)
+          at Object.next (/Users/orlando/dev/pos/node_modules/@reduxjs/toolkit/dist/redux-toolkit.cjs.development.js:19:53)
+          at fulfilled (/Users/orlando/dev/pos/node_modules/@reduxjs/toolkit/dist/redux-toolkit.cjs.development.js:97:32)
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6587[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         next state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6713[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.group[22m
+        [1m action storeInfo/fetchStatus/fulfilled @ 19:43:57.354[22m
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6108[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         prev state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loading',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6343[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         action     {
+        type: 'storeInfo/fetchStatus/fulfilled',
+        payload: undefined,
+        meta: {
+          arg: undefined,
+          requestId: 'HmMuVhh_H5Td5MTOKQw8A',
+          requestStatus: 'fulfilled'
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6463[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         error      Error: Incompatible React versions: The "react" and "react-native-renderer" packages must have the exact same version. Instead got:
+        - react:                  19.2.4
+        - react-native-renderer:  19.2.3
+      Learn more: https://react.dev/warnings/version-mismatch
+          at /Users/orlando/dev/pos/node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js:19460:13
+          at Object.<anonymous> (/Users/orlando/dev/pos/node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js:19667:4)
+          at Runtime._execModule (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:1439:24)
+          at Runtime._loadModule (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:1022:12)
+          at Runtime.requireModule (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:882:12)
+          at Runtime.require [as requireModuleOrMock] (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:1048:21)
+          at Object.<anonymous> (/Users/orlando/dev/pos/node_modules/react-native/Libraries/Renderer/shims/ReactNative.js:21:17)
+          at Runtime._execModule (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:1439:24)
+          at Runtime._loadModule (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:1022:12)
+          at Runtime.requireModule (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:882:12)
+          at Runtime.require [as requireModuleOrMock] (/Users/orlando/dev/pos/node_modules/jest-runtime/build/index.js:1048:21)
+          at getRenderer (/Users/orlando/dev/pos/node_modules/react-native/Libraries/ReactNative/RendererImplementation.js:35:27)
+          at /Users/orlando/dev/pos/node_modules/react-native/Libraries/ReactNative/RendererImplementation.js:54:20
+          at Object.notify (/Users/orlando/dev/pos/node_modules/react-redux/lib/utils/Subscription.js:19:7)
+          at Object.notifyNestedSubs (/Users/orlando/dev/pos/node_modules/react-redux/lib/utils/Subscription.js:92:15)
+          at handleChangeWrapper (/Users/orlando/dev/pos/node_modules/react-redux/lib/utils/Subscription.js:97:20)
+          at dispatch (/Users/orlando/dev/pos/node_modules/redux/lib/redux.js:305:7)
+          at /Users/orlando/dev/pos/node_modules/redux-logger/dist/redux-logger.js:1:7971
+          at /Users/orlando/dev/pos/node_modules/@reduxjs/toolkit/src/serializableStateInvariantMiddleware.ts:172:20
+          at /Users/orlando/dev/pos/node_modules/redux-thunk/lib/index.js:27:16
+          at /Users/orlando/dev/pos/node_modules/@reduxjs/toolkit/src/immutableStateInvariantMiddleware.ts:258:32
+          at dispatch (/Users/orlando/dev/pos/node_modules/redux/lib/redux.js:699:28)
+          at /Users/orlando/dev/pos/node_modules/@reduxjs/toolkit/src/createAsyncThunk.ts:651:11
+          at step (/Users/orlando/dev/pos/node_modules/@reduxjs/toolkit/dist/redux-toolkit.cjs.development.js:38:23)
+          at Object.next (/Users/orlando/dev/pos/node_modules/@reduxjs/toolkit/dist/redux-toolkit.cjs.development.js:19:53)
+          at fulfilled (/Users/orlando/dev/pos/node_modules/@reduxjs/toolkit/dist/redux-toolkit.cjs.development.js:97:32)
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6587[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+         next state {
+        awsConfig: {},
+        auth: { user: undefined, error: undefined, signInStatus: 'not-started' },
+        categories: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'new',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        employees: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          loginEmployee: undefined
+        },
+        products: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        brands: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        unitOfMeasures: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined
+        },
+        cart: {
+          id: undefined,
+          header: undefined,
+          items: [],
+          footer: { discount: 0, subtotal: 0, tax: 0, total: 0 },
+          selected: undefined
+        },
+        orders: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          submitStatus: 'not saved',
+          selected: undefined,
+          filterQuery: { status: 'OPEN' },
+          filteredList: undefined
+        },
+        printings: { defaultPrinter: undefined },
+        storeInfo: {
+          deviceId: 'unknown',
+          loadingStatus: 'loaded',
+          error: undefined,
+          store: undefined
+        },
+        settings: {
+          darkTheme: false,
+          dataStoreStatus: 'not synced',
+          languageTag: 'en',
+          globalSettings: null
+        },
+        station: {
+          loadingStatus: 'loaded',
+          error: undefined,
+          stationNumber: undefined,
+          currentDate: undefined,
+          orderNumber: undefined
+        },
+        inventoryCount: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        inventoryReceive: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          selected: undefined,
+          filterQuery: undefined,
+          filteredList: undefined,
+          lines: []
+        },
+        events: {
+          ids: [],
+          entities: {},
+          loadingStatus: 'not loaded',
+          error: undefined
+        }
+      }
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:6713[22m[2m[22m
+[2m          at Array.forEach (<anonymous>)[22m
+
+[1m[31m  [1m● [22m[1mrenders correctly[39m[22m
+
+    Incompatible React versions: The "react" and "react-native-renderer" packages must have the exact same version. Instead got:
+      - react:                  19.2.4
+      - react-native-renderer:  19.2.3
+    Learn more: https://react.dev/warnings/version-mismatch
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js[2m:19460:13[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m../../node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js[2m:19667:4)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m../../node_modules/react-native/Libraries/Renderer/shims/ReactNative.js[2m:21:17)[22m[2m[22m
+[2m      [2mat getRenderer ([22m[2m../../node_modules/react-native/Libraries/ReactNative/RendererImplementation.js[2m:35:27)[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/react-native/Libraries/ReactNative/RendererImplementation.js[2m:54:20[22m[2m[22m
+[2m      [2mat Object.notify ([22m[2m../../node_modules/react-redux/lib/utils/Subscription.js[2m:19:7)[22m[2m[22m
+[2m      [2mat Object.notifyNestedSubs ([22m[2m../../node_modules/react-redux/lib/utils/Subscription.js[2m:92:15)[22m[2m[22m
+[2m      [2mat handleChangeWrapper ([22m[2m../../node_modules/react-redux/lib/utils/Subscription.js[2m:97:20)[22m[2m[22m
+[2m      [2mat dispatch ([22m[2m../../node_modules/redux/lib/redux.js[2m:305:7)[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:7971[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/@reduxjs/toolkit/src/serializableStateInvariantMiddleware.ts[2m:172:20[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-thunk/lib/index.js[2m:27:16[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/@reduxjs/toolkit/src/immutableStateInvariantMiddleware.ts[2m:258:32[22m[2m[22m
+[2m      [2mat dispatch ([22m[2m../../node_modules/redux/lib/redux.js[2m:699:28)[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/@reduxjs/toolkit/src/createAsyncThunk.ts[2m:651:11[22m[2m[22m
+[2m      [2mat step ([22m[2m../../node_modules/@reduxjs/toolkit/dist/redux-toolkit.cjs.development.js[2m:38:23)[22m[2m[22m
+[2m      [2mat Object.next ([22m[2m../../node_modules/@reduxjs/toolkit/dist/redux-toolkit.cjs.development.js[2m:19:53)[22m[2m[22m
+[2m      [2mat fulfilled ([22m[2m../../node_modules/@reduxjs/toolkit/dist/redux-toolkit.cjs.development.js[2m:97:32)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mrenders correctly[39m[22m
+
+    Incompatible React versions: The "react" and "react-native-renderer" packages must have the exact same version. Instead got:
+      - react:                  19.2.4
+      - react-native-renderer:  19.2.3
+    Learn more: https://react.dev/warnings/version-mismatch
+[2m[22m
+[2m      [2mat [22m[2m../../node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js[2m:19460:13[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m../../node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js[2m:19667:4)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m../../node_modules/react-native/Libraries/Renderer/shims/ReactNative.js[2m:21:17)[22m[2m[22m
+[2m      [2mat getRenderer ([22m[2m../../node_modules/react-native/Libraries/ReactNative/RendererImplementation.js[2m:35:27)[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/react-native/Libraries/ReactNative/RendererImplementation.js[2m:54:20[22m[2m[22m
+[2m      [2mat Object.notify ([22m[2m../../node_modules/react-redux/lib/utils/Subscription.js[2m:19:7)[22m[2m[22m
+[2m      [2mat Object.notifyNestedSubs ([22m[2m../../node_modules/react-redux/lib/utils/Subscription.js[2m:92:15)[22m[2m[22m
+[2m      [2mat handleChangeWrapper ([22m[2m../../node_modules/react-redux/lib/utils/Subscription.js[2m:97:20)[22m[2m[22m
+[2m      [2mat dispatch ([22m[2m../../node_modules/redux/lib/redux.js[2m:305:7)[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-logger/dist/redux-logger.js[2m:1:7971[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/@reduxjs/toolkit/src/serializableStateInvariantMiddleware.ts[2m:172:20[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/redux-thunk/lib/index.js[2m:27:16[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/@reduxjs/toolkit/src/immutableStateInvariantMiddleware.ts[2m:258:32[22m[2m[22m
+[2m      [2mat dispatch ([22m[2m../../node_modules/redux/lib/redux.js[2m:699:28)[22m[2m[22m
+[2m      [2mat [22m[2m../../node_modules/@reduxjs/toolkit/src/createAsyncThunk.ts[2m:651:11[22m[2m[22m
+[2m      [2mat step ([22m[2m../../node_modules/@reduxjs/toolkit/dist/redux-toolkit.cjs.development.js[2m:38:23)[22m[2m[22m
+[2m      [2mat Object.next ([22m[2m../../node_modules/@reduxjs/toolkit/dist/redux-toolkit.cjs.development.js[2m:19:53)[22m[2m[22m
+[2m      [2mat fulfilled ([22m[2m../../node_modules/@reduxjs/toolkit/dist/redux-toolkit.cjs.development.js[2m:97:32)[22m[2m[22m
+
+[1mTest Suites: [22m[1m[31m2 failed[39m[22m, 2 total
+[1mTests:       [22m[1m[31m2 failed[39m[22m, 2 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        4.208 s, estimated 7 s
+[2mRan all test suites[22m[2m.[22m

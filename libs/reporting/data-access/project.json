@@ -1,11 +1,12 @@
 {
-    "root": "libs/reporting/data-access",
+    "name": "reporting-data-access",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/reporting/data-access/src",
     "projectType": "library",
     "tags": [],
     "targets": {
         "lint": {
-            "executor": "@nrwl/linter:eslint",
+            "executor": "@nx/eslint:lint",
             "outputs": ["{options.outputFile}"],
             "options": {
                 "lintFilePatterns": [
@@ -14,10 +15,10 @@
             }
         },
         "test": {
-            "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/reporting/data-access"],
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/reporting/data-access"],
             "options": {
-                "jestConfig": "libs/reporting/data-access/jest.config.js",
+                "jestConfig": "libs/reporting/data-access/jest.config.ts",
                 "passWithNoTests": true
             }
         }

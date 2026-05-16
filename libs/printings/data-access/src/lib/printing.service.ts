@@ -1,5 +1,3 @@
-import { StoreInfoEntity } from '@pos/store-info/data-access';
-import { CartState } from '@pos/sales/data-access';
 import {
     InterfaceType,
     StarConnectionSettings,
@@ -12,9 +10,208 @@ import { PrinterEntity } from './slices/printer.entity';
 import { Alert } from 'react-native';
 import { CutType } from 'react-native-star-io10/src/StarXpandCommand/Printer/CutType';
 import { Alignment } from 'react-native-star-io10/src/StarXpandCommand/Printer/Alignment';
-import { OrderEntity } from '@pos/orders/data-access';
+import {
+    isE2EPrinterSpyEnabled,
+    recordE2EPrintJob,
+    translateWithFallback,
+} from '@pos/shared/utils';
+import type { OrderTicketPrintModel } from '@pos/orders/data-access';
+import { PrinterService } from './slices/printer.service';
+
+type ReceiptStoreInfo = {
+    name?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    phone?: string;
+    fax?: string;
+    email?: string;
+    disclaimer?: string;
+};
+
+type ReceiptLayoutProfile = {
+    paperWidthMm: number;
+    totalColumns: number;
+    qtyWidth: number;
+    descriptionWidth: number;
+    amountWidth: number;
+    detailIndent: number;
+    totalLabelWidth: number;
+    totalAmountWidth: number;
+};
+
+export type ReceiptPreviewPayload = {
+    copyType?: 'CUSTOMER' | 'MERCHANT';
+    orderNo?: string;
+    receiptText: string;
+};
 
 let starManager: StarDeviceDiscoveryManager;
+let receiptPreviewHandler:
+    | ((payload: ReceiptPreviewPayload) => void)
+    | null = null;
+
+const NARROW_RECEIPT_LAYOUT_PROFILE: ReceiptLayoutProfile = {
+    paperWidthMm: 58,
+    totalColumns: 32,
+    qtyWidth: 5,
+    descriptionWidth: 15,
+    amountWidth: 8,
+    detailIndent: 6,
+    totalLabelWidth: 20,
+    totalAmountWidth: 12,
+};
+
+const WIDE_RECEIPT_LAYOUT_PROFILE: ReceiptLayoutProfile = {
+    paperWidthMm: 80,
+    totalColumns: 42,
+    qtyWidth: 5,
+    descriptionWidth: 25,
+    amountWidth: 8,
+    detailIndent: 8,
+    totalLabelWidth: 28,
+    totalAmountWidth: 14,
+};
+
+const DEFAULT_RECEIPT_LAYOUT_PROFILE = NARROW_RECEIPT_LAYOUT_PROFILE;
+
+const logReceiptTiming = (step: string, details?: Record<string, unknown>) => {
+    void step;
+    void details;
+};
+
+const buildStoreHeaderText = (store: ReceiptStoreInfo) => {
+    const lines = [store.name, store.address, `${store.city ?? ''}, ${store.state ?? ''} ${store.zipCode ?? ''}`.trim()]
+        .filter((line) => !!line && line.trim().length > 0);
+
+    if (store.phone) {
+        lines.push(store.phone);
+    }
+
+    if (store.fax) {
+        lines.push(store.fax);
+    }
+
+    if (store.email) {
+        lines.push(store.email);
+    }
+
+    return `${lines.join('\n')}\n\n`;
+};
+
+const isFiniteNumber = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isFinite(value);
+
+const resolveReceiptLayoutProfileFromDetectedWidth = (
+    detectedPaperWidth?: number | null
+): ReceiptLayoutProfile | undefined => {
+    if (!isFiniteNumber(detectedPaperWidth)) {
+        return undefined;
+    }
+
+    const width = Math.abs(detectedPaperWidth);
+
+    if (width >= 500) {
+        return WIDE_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    if (width >= 300) {
+        return NARROW_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    if (width >= 70) {
+        return WIDE_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    if (width >= 45) {
+        return NARROW_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    if (width >= 3) {
+        return WIDE_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    if (width >= 2) {
+        return NARROW_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    return undefined;
+};
+
+const resolveReceiptLayoutProfileFromModel = (
+    model?: string | null
+): ReceiptLayoutProfile | undefined => {
+    const normalizedModel = String(model || '').trim();
+
+    if (!normalizedModel) {
+        return undefined;
+    }
+
+    const wideModels = new Set(['mC_Print3', 'TSP800II', 'SK1_3xx']);
+    const narrowModels = new Set(['mC_Print2', 'SM_S210i', 'SM_S230i', 'SM_L200']);
+
+    if (wideModels.has(normalizedModel)) {
+        return WIDE_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    if (narrowModels.has(normalizedModel)) {
+        return NARROW_RECEIPT_LAYOUT_PROFILE;
+    }
+
+    return undefined;
+};
+
+export const resolveReceiptLayoutProfile = ({
+    detectedPaperWidth,
+    model,
+}: {
+    detectedPaperWidth?: number | null;
+    model?: string | null;
+} = {}): ReceiptLayoutProfile =>
+    resolveReceiptLayoutProfileFromDetectedWidth(detectedPaperWidth) ||
+    resolveReceiptLayoutProfileFromModel(model) ||
+    DEFAULT_RECEIPT_LAYOUT_PROFILE;
+
+const detectReceiptLayoutProfile = async (
+    printerInfo: PrinterEntity
+): Promise<ReceiptLayoutProfile> => {
+    const settings = new StarConnectionSettings();
+    settings.interfaceType = InterfaceType.Lan;
+    settings.identifier = printerInfo.identifier;
+
+    const printer = new StarPrinter(settings);
+    let detectedPaperWidth: number | undefined;
+    let model = printerInfo.model;
+
+    try {
+        await printer.open();
+        model = String(printer.information?.model || model || '');
+
+        try {
+            const status = await printer.getStatus();
+            detectedPaperWidth = status?.detail?.detectedPaperWidth;
+        } catch {
+            // Fall back to model/default if runtime width cannot be read.
+        }
+    } catch {
+        return resolveReceiptLayoutProfile({ model });
+    } finally {
+        try {
+            await printer.close();
+        } catch {
+            // Ignore close errors during capability detection fallback.
+        }
+
+        try {
+            await printer.dispose();
+        } catch {
+            // Ignore disposal errors during capability detection fallback.
+        }
+    }
+
+    return resolveReceiptLayoutProfile({ detectedPaperWidth, model });
+};
 
 
 export const discoverStarPrinters = async (): Promise<StarPrinter[]> => {
@@ -34,13 +231,11 @@ export const discoverStarPrinters = async (): Promise<StarPrinter[]> => {
                 // Callback for printer found.
                 manager.onPrinterFound = (printer: StarPrinter) => {
                     printers.push(printer);
-                    console.log(printer);
                 };
 
                 // Callback for discovery finished. (option)
                 manager.onDiscoveryFinished = () => {
                     resolve(printers);
-                    console.log(`Discovery finished.`);
                 };
 
                 // Start discovery.
@@ -52,32 +247,150 @@ export const discoverStarPrinters = async (): Promise<StarPrinter[]> => {
             })
             .catch((error) => {
                 console.error('Error while searching for printers...', error);
+                reject(error);
             });
     });
 };
 
 export const stopDiscovery = () => {
-    starManager.stopDiscovery();
-};
-
-export const printReceipt = async (
-    store: StoreInfoEntity,
-    printerInfo: PrinterEntity,
-    cart: CartState,
-    order?: OrderEntity,
-) => {
-    if (!store || !printerInfo) {
-        Alert.alert('Store and printer should be available in order to print..');
+    if (!starManager) {
         return;
     }
 
-    // TODO: Restore printing service
-    // return;
+    try {
+        starManager.stopDiscovery();
+    } catch (error) {
+        console.error('Error while stopping printer discovery...', error);
+    }
+};
 
-    // return print(printerInfo, (builder) => buildData(builder));
+export const printReceipt = async (
+    store: ReceiptStoreInfo,
+    printerInfo: PrinterEntity | undefined,
+    ticket: OrderTicketPrintModel
+) => {
+    const startedAt = Date.now();
+    if (!store) {
+        Alert.alert(
+            translateWithFallback(
+                'PRINTING_StoreInfoRequired',
+                'Store information should be available in order to preview or print.',
+            ),
+        );
+        return;
+    }
 
-    print(printerInfo, (builder) => {
-        const date = new Date();
+    const resolvedPrinterInfo = printerInfo ?? (await PrinterService.getDefaultPrinter());
+
+    if (!resolvedPrinterInfo) {
+        const previewReceiptText = buildReceiptPreviewText(
+            store,
+            ticket,
+            undefined,
+            DEFAULT_RECEIPT_LAYOUT_PROFILE
+        );
+
+        if (isE2EPrinterSpyEnabled()) {
+            recordE2EPrintJob({
+                timestamp: new Date().toISOString(),
+                printerIdentifier: undefined,
+                orderId: ticket.orderId,
+                orderNo: ticket.orderNo,
+                copyType: ticket.copyType,
+                copyLabel: getReceiptCopyLabel(ticket),
+                total: ticket.totals.total,
+                paymentSummaryText: getReceiptPaymentsText(ticket),
+                receiptText: previewReceiptText,
+            });
+            return;
+        }
+
+        if (!receiptPreviewHandler) {
+            Alert.alert(
+                translateWithFallback(
+                    'PRINTING_NoPrinterConfigured',
+                    'No printer is configured for this device.',
+                ),
+            );
+            return;
+        }
+
+        receiptPreviewHandler({
+            copyType: ticket.copyType,
+            orderNo: ticket.orderNo,
+            receiptText: previewReceiptText,
+        });
+        return;
+    }
+
+    logReceiptTiming('print-receipt-start', {
+        orderId: ticket.orderId,
+        orderNo: ticket.orderNo,
+        copyType: ticket.copyType,
+        printerIdentifier: resolvedPrinterInfo.identifier,
+    });
+    await printSingleReceipt(store, resolvedPrinterInfo as PrinterEntity, ticket);
+    logReceiptTiming('print-receipt-end', {
+        orderId: ticket.orderId,
+        orderNo: ticket.orderNo,
+        copyType: ticket.copyType,
+        printerIdentifier: resolvedPrinterInfo.identifier,
+        durationMs: Date.now() - startedAt,
+    });
+};
+
+export const registerReceiptPreviewHandler = (
+    handler: (payload: ReceiptPreviewPayload) => void
+) => {
+    receiptPreviewHandler = handler;
+
+    return () => {
+        if (receiptPreviewHandler === handler) {
+            receiptPreviewHandler = null;
+        }
+    };
+};
+
+const printSingleReceipt = async (
+    store: ReceiptStoreInfo,
+    printerInfo: PrinterEntity,
+    ticket: OrderTicketPrintModel
+) => {
+    const date = new Date();
+    const layoutProfile = isE2EPrinterSpyEnabled()
+        ? resolveReceiptLayoutProfile({ model: printerInfo.model })
+        : await detectReceiptLayoutProfile(printerInfo);
+    const separatorLine = `${'-'.repeat(layoutProfile.totalColumns)}\n`;
+    const receiptLines = buildReceiptLines(ticket, layoutProfile);
+    const receiptTotalsBreakdown = buildReceiptTotalsBreakdownText(
+        ticket,
+        layoutProfile
+    );
+    const totalPaymentsText = getReceiptPaymentsText(ticket);
+    const copyLabel = getReceiptCopyLabel(ticket);
+    const receiptText = buildReceiptPreviewText(
+        store,
+        ticket,
+        date,
+        layoutProfile
+    );
+
+    if (isE2EPrinterSpyEnabled()) {
+        recordE2EPrintJob({
+            timestamp: date.toISOString(),
+            printerIdentifier: printerInfo.identifier,
+            orderId: ticket.orderId,
+            orderNo: ticket.orderNo,
+            copyType: ticket.copyType,
+            copyLabel,
+            total: ticket.totals.total,
+            paymentSummaryText: totalPaymentsText,
+            receiptText,
+        });
+        return;
+    }
+
+    await print(printerInfo, (builder) => {
 
         const printerBuilder = new StarXpandCommand.PrinterBuilder()
             .styleInternationalCharacter(
@@ -87,10 +400,7 @@ export const printReceipt = async (
             .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
             .styleBold(true)
             .actionPrintText(`${store.name}\n`)
-            // .styleBold(false)
-            .actionPrintText(
-                `${store.address}\n${store.city}, ${store.state} ${store.zipCode}\nP: ${store.phone}\nF: ${store.fax}\n${store.email}\n\n`
-            )
+            .actionPrintText(buildStoreHeaderText({ ...store, name: undefined }))
             .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
             .actionPrintText(
                 `Date:${date.toLocaleString()}\n` +
@@ -98,40 +408,36 @@ export const printReceipt = async (
                     '\n'
             )
             .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
-            .actionPrintText(
-                // 'SKU   Description        Total\n' +
-                // 'Description        Qty    Total\n' +
-                'Qty    Description        Total\n' +
-                '-------------------------------\n' +
-                    // cart.items.map(i => `${i.product.sku?.padEnd(5, ' ')} ${i.quantity.toString().padStart(2, ' ')}x${i.product.name.substring(0, 13).padEnd(13, ' ')} ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`).join('\n') +
-                    cart.items
-                        .map((i) =>
-                                `${(i.quantity % 1 === 0 ? i.quantity.toString() : i.quantity.toFixed(2)).padEnd(5, ' ')}  ${i.product.name.substring(0, 15).padEnd(15, ' ')}  ${(i.product.price * i.quantity).toFixed(2).padStart(7, ' ')}`
-                        )
-                        .join('\n') +
-                    '\n\n' +
-                    // `Subtotal                 ${cart.footer.subtotal.toFixed(2).padStart(7, ' ')}\n` +
-                    // 'Tax                         0.00\n' +
-                    '--------------------------------\n'
-            )
-            .actionPrintText('Total     ')
+            .actionPrintText(receiptLines)
+            .actionPrintText(receiptTotalsBreakdown)
+            .actionPrintText(separatorLine)
+            .styleBold(true)
+            .actionPrintText('Total\n')
             .add(
                 new StarXpandCommand.PrinterBuilder()
+                    .styleAlignment(StarXpandCommand.Printer.Alignment.Right)
+                    .styleBold(true)
                     .styleMagnification(
                         new StarXpandCommand.MagnificationParameter(2, 2)
                     )
                     .actionPrintText(
-                        `     ${cart.footer.total.toFixed(2).padStart(7, '')}\n`
+                        `${formatReceiptCurrency(ticket.totals.total)}\n`
                     )
             )
-            .actionPrintText('--------------------------------\n')
+            .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
+            .styleBold(true)
+            .actionPrintText(
+                ticket.promoCodes?.length
+                    ? ticket.promoCodes
+                          .map((promo) => `Promo · ${promo}`)
+                          .join('\n') + '\n'
+                    : ''
+            )
             
-        if (order?.id) {
+        if (ticket.isReceipt && ticket.orderId) {
             printerBuilder
                 .styleAlignment(StarXpandCommand.Printer.Alignment.Right)
-                .actionPrintText(
-                    order.paymentInfo?.payments?.map(p => `${p.type}: $ ${p.amount.toFixed(2)}`).join('\n') || ''
-                )
+                .actionPrintText(totalPaymentsText ? `${totalPaymentsText}\n` : '')
                 .actionFeedLine(2)
                 .styleAlignment(StarXpandCommand.Printer.Alignment.Center)
                 .add(
@@ -141,18 +447,18 @@ export const printReceipt = async (
                         .actionPrintText(` ${store.disclaimer} \n`)
                 )
                 .actionFeedLine(1)
-                .actionPrintText(order.status === 'OPEN' ? '** Customer Copy **' : '** Merchant Copy **')
+                .actionPrintText(copyLabel)
                 .actionFeedLine(1)
                 .actionPrintQRCode(
                     new StarXpandCommand.Printer.QRCodeParameter(
-                        `${order?.orderNo}\n`
+                        `${ticket.orderNo}\n`
                     )
                         .setModel(StarXpandCommand.Printer.QRCodeModel.Model2)
                         .setLevel(StarXpandCommand.Printer.QRCodeLevel.L)
                         .setCellSize(8)
                 )
                 .actionFeedLine(1)
-                .actionPrintText(`${order?.orderNo}\n`)
+                .actionPrintText(`${ticket.orderNo}\n`)
                 .actionFeedLine(1);
         } else {
             printerBuilder
@@ -173,31 +479,266 @@ export const print = async (
     printerInfo: PrinterEntity,
     dataBuilder: (builder: StarXpandCommand.StarXpandCommandBuilder) => void
 ): Promise<void> => {
-    // Specify your printer connection settings.
+    const startedAt = Date.now();
     const settings = new StarConnectionSettings();
     settings.interfaceType = InterfaceType.Lan;
-    settings.identifier = printerInfo.identifier; // '0011621BF5B2';
+    settings.identifier = printerInfo.identifier;
+
     const printer = new StarPrinter(settings);
 
     try {
-        // Connect to the printer.
+        const openStartedAt = Date.now();
         await printer.open();
-
-        // create printing data. (Please refer to 'Create Printing data')
+        logReceiptTiming('printer-open-complete', {
+            printerIdentifier: printerInfo.identifier,
+            durationMs: Date.now() - openStartedAt,
+        });
         const builder = new StarXpandCommand.StarXpandCommandBuilder();
         dataBuilder(builder);
         const commands = await builder.getCommands();
-
-        // Print.
+        const printStartedAt = Date.now();
         await printer.print(commands);
+        logReceiptTiming('printer-print-complete', {
+            printerIdentifier: printerInfo.identifier,
+            durationMs: Date.now() - printStartedAt,
+        });
     } catch (error) {
-        // Error.
-        console.log(error);
+        console.error(error);
     } finally {
-        // Disconnect from the printer and dispose object.
+        const closeStartedAt = Date.now();
         await printer.close();
         await printer.dispose();
+        logReceiptTiming('printer-close-complete', {
+            printerIdentifier: printerInfo.identifier,
+            durationMs: Date.now() - closeStartedAt,
+            totalDurationMs: Date.now() - startedAt,
+        });
     }
+};
+
+const getReceiptPaymentsText = (ticket: OrderTicketPrintModel) =>
+    (ticket.paymentRows || [])
+        .map((row) =>
+            row.kind === 'heading'
+                ? row.label
+                : `${row.label}: ${formatPaymentCurrency(Number(row.amount || 0))}`
+        )
+        .join('\n');
+
+const buildReceiptTotalsBreakdownText = (
+    ticket: OrderTicketPrintModel,
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) => {
+    const rows: string[] = [];
+    const baseSubtotal = ticket.totals.subtotal;
+    const discountTotal = ticket.totals.discount;
+    const tax = ticket.totals.tax;
+
+    rows.push(formatTotalRow('Subtotal', baseSubtotal, layoutProfile));
+
+    if (discountTotal > 0) {
+        rows.push(formatTotalRow('Discounts', -discountTotal, layoutProfile));
+    }
+
+    if (tax > 0) {
+        rows.push(formatTotalRow('Tax', tax, layoutProfile));
+    }
+
+    return rows.join('');
+};
+
+const formatTotalRow = (
+    label: string,
+    amount: number,
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) =>
+    `${label.padEnd(layoutProfile.totalLabelWidth, ' ')}${amount
+        .toFixed(2)
+        .padStart(layoutProfile.totalAmountWidth, ' ')}\n`;
+
+const formatReceiptCurrency = (amount: number) => `$ ${amount.toFixed(2)}`;
+const formatReceiptDetailAmount = (amount: number) => amount.toFixed(2);
+const formatPaymentCurrency = (amount: number) =>
+    amount < 0
+        ? `-$ ${Math.abs(amount).toFixed(2)}`
+        : `$ ${amount.toFixed(2)}`;
+
+const buildReceiptTotalsText = (
+    ticket: OrderTicketPrintModel,
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) => {
+    const rows = [buildReceiptTotalsBreakdownText(ticket, layoutProfile)];
+    rows.push(`${'-'.repeat(layoutProfile.totalColumns)}\n`);
+    rows.push(formatTotalRow('Total', ticket.totals.total, layoutProfile));
+
+    if (ticket.promoCodes?.length) {
+        rows.push(
+            ticket.promoCodes.map((promo) => `Promo · ${promo}`).join('\n') + '\n'
+        );
+    }
+
+    return rows.join('');
+};
+
+export const buildReceiptPreviewText = (
+    store: ReceiptStoreInfo,
+    ticket: OrderTicketPrintModel,
+    date = new Date(),
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) => {
+    const receiptLines = buildReceiptLines(ticket, layoutProfile);
+    const totalPaymentsText = getReceiptPaymentsText(ticket);
+    const copyLabel = getReceiptCopyLabel(ticket);
+    const totalText = buildReceiptTotalsText(ticket, layoutProfile);
+    const footerText = ticket.isReceipt && ticket.orderId
+        ? `${totalPaymentsText ? `${totalPaymentsText}\n\n` : ''}${store.disclaimer ?? ''}\n${copyLabel}\n${ticket.orderNo ?? ''}\n`
+        : '*** NOT A RECEIPT ***\n';
+
+    return `${store.name ?? ''}\n${buildStoreHeaderText({
+        ...store,
+        name: undefined,
+    })}Date:${date.toLocaleString()}\n\n${receiptLines}${totalText}${footerText}`;
+};
+
+const formatQty = (quantity: number) =>
+    quantity % 1 === 0 ? quantity.toString() : quantity.toFixed(2);
+
+const formatLine = (
+    qty: number,
+    name: string,
+    amount: number,
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) =>
+    `${formatQty(qty).padEnd(layoutProfile.qtyWidth, ' ')}  ${name
+        .substring(0, layoutProfile.descriptionWidth)
+        .padEnd(layoutProfile.descriptionWidth, ' ')}  ${amount
+        .toFixed(2)
+        .padStart(layoutProfile.amountWidth, ' ')}`;
+
+export const getReceiptCopyLabel = (ticket?: OrderTicketPrintModel) =>
+    ticket?.copyType === 'CUSTOMER'
+        ? '** Customer Copy **'
+        : ticket?.copyType === 'MERCHANT'
+        ? '** Merchant Copy **'
+        : !ticket?.isReceipt
+        ? '** Customer Copy **'
+        : '** Merchant Copy **';
+
+const buildReceiptHeaderRow = (
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) =>
+    `${'Qty'.padEnd(layoutProfile.qtyWidth, ' ')}  ${'Description'
+        .substring(0, layoutProfile.descriptionWidth)
+        .padEnd(layoutProfile.descriptionWidth, ' ')}  ${'Total'.padStart(
+        layoutProfile.amountWidth,
+        ' '
+    )}`;
+
+const formatReceiptLineRow = (
+    row: OrderTicketPrintModel['sections'][number]['rows'][number],
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) => {
+    const lines = [formatLine(row.quantity, row.name, row.amount, layoutProfile)];
+
+    for (const detailRow of row.detailRows || []) {
+        const detailAmount = Number(detailRow.amount || 0);
+        const amountText =
+            detailAmount < 0
+                ? `-${formatReceiptDetailAmount(Math.abs(detailAmount))}`
+                : formatReceiptDetailAmount(detailAmount);
+        const prefix = `${' '.repeat(layoutProfile.detailIndent)}${detailRow.label}`;
+        lines.push(
+            `${prefix.padEnd(
+                Math.max(layoutProfile.totalColumns - amountText.length, prefix.length),
+                ' '
+            )}${amountText}`
+        );
+    }
+
+    return lines.join('\n');
+};
+
+const formatReceiptDetailRow = (
+    detailRow: OrderTicketPrintModel['sections'][number]['postItemDetailRows'][number],
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) => {
+    const detailAmount = Number(detailRow.amount || 0);
+    const amountText =
+        detailAmount < 0
+            ? `-${formatReceiptDetailAmount(Math.abs(detailAmount))}`
+            : formatReceiptDetailAmount(detailAmount);
+    const prefix = `${' '.repeat(layoutProfile.detailIndent)}${detailRow.label}`;
+
+    return `${prefix.padEnd(
+        Math.max(layoutProfile.totalColumns - amountText.length, prefix.length),
+        ' '
+    )}${amountText}`;
+};
+
+const buildClassicLines = (
+    section: OrderTicketPrintModel['sections'][number],
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) => {
+    const body = section.rows.length
+        ? section.rows.map((row) => formatReceiptLineRow(row, layoutProfile)).join('\n')
+        : section.emptyLabel;
+    const postItemDetails = (section.postItemDetailRows || []).length
+        ? `\n${section.postItemDetailRows
+              ?.map((detailRow) => formatReceiptDetailRow(detailRow, layoutProfile))
+              .join('\n')}`
+        : '';
+
+    return (
+        `${buildReceiptHeaderRow(layoutProfile)}\n` +
+        `${'-'.repeat(layoutProfile.totalColumns)}\n` +
+        body +
+        postItemDetails +
+        '\n\n' +
+        `${'-'.repeat(layoutProfile.totalColumns)}\n`
+    );
+};
+
+const buildReceiptSection = (
+    section: OrderTicketPrintModel['sections'][number],
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) => {
+    const body = section.rows.length
+        ? section.rows.map((entry) => formatReceiptLineRow(entry, layoutProfile)).join('\n')
+        : section.emptyLabel;
+    const postItemDetails = (section.postItemDetailRows || []).length
+        ? `\n${section.postItemDetailRows
+              ?.map((detailRow) => formatReceiptDetailRow(detailRow, layoutProfile))
+              .join('\n')}`
+        : '';
+
+    return (
+        `${section.title}\n` +
+        `${buildReceiptHeaderRow(layoutProfile)}\n` +
+        `${'-'.repeat(layoutProfile.totalColumns)}\n` +
+        body +
+        postItemDetails +
+        '\n\n'
+    );
+};
+
+export const buildReceiptLines = (
+    ticket: OrderTicketPrintModel,
+    layoutProfile: ReceiptLayoutProfile = DEFAULT_RECEIPT_LAYOUT_PROFILE
+) => {
+    const hasMultipleSections = ticket.sections.length > 1;
+
+    if (hasMultipleSections) {
+        return (
+            ticket.sections
+                .map((section) => buildReceiptSection(section, layoutProfile))
+                .join('') + `${'-'.repeat(layoutProfile.totalColumns)}\n`
+        );
+    }
+
+    return buildClassicLines(
+        ticket.sections[0] || { title: '', emptyLabel: 'No items', rows: [] },
+        layoutProfile
+    );
 };
 
 export const buildData = (

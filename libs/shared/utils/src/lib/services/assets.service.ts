@@ -1,4 +1,4 @@
-import { Storage } from 'aws-amplify';
+import { Storage } from '@pos/shared/amplify';
 import { launchImageLibrary, MediaType } from 'react-native-image-picker';
 import { Readable } from 'stream';
 import { blobToBase64 } from './conversion.service';
@@ -11,6 +11,8 @@ export interface UploadResponse {
 }
 
 export type GetAssetResponse = Readable | ReadableStream | Blob | undefined;
+
+const pendingBinaryDownloads = new Map<string, Promise<string>>();
 
 export class AssetsService {
     static async uploadAsset(mediaType: MediaType, keyPrefix: string): Promise<UploadResponse | null> {
@@ -50,12 +52,41 @@ export class AssetsService {
         return Storage.get(key, { download: false });
     }
 
+    static getCachedImage(key: string) {
+        return FsService.get(key);
+    }
+
+    static getCachedImagePath(key: string) {
+        return FsService.getFileUri(key);
+    }
+
+    static async ensureImageDownloaded(key: string): Promise<string> {
+        const cached = await AssetsService.getCachedImagePath(key);
+
+        if (cached) {
+            return cached;
+        }
+
+        const inflight = pendingBinaryDownloads.get(key);
+        if (inflight) {
+            return inflight;
+        }
+
+        const request = AssetsService.getAssetUri(key)
+            .then((uri) => FsService.download(key, uri))
+            .finally(() => {
+                pendingBinaryDownloads.delete(key);
+            });
+
+        pendingBinaryDownloads.set(key, request);
+        return request;
+    }
+
     static async getImage(key: string): Promise<string> {
         // check if image is stored in cache
-        const content = await FsService.get(key);
+        const content = await AssetsService.getCachedImage(key);
 
         if (content) {
-            console.log(`returned from cache: ${key}`);
             return content;
         }
 
@@ -69,10 +100,23 @@ export class AssetsService {
 
         return base64 as string;
     }
+
+    static async warmImageCache(key: string) {
+        try {
+            const cached = await AssetsService.getCachedImage(key);
+            if (cached) {
+                return cached;
+            }
+
+            return await AssetsService.getImage(key);
+        } catch (error) {
+            console.error('Unable to warm image cache', error);
+            return null;
+        }
+    }
     
     static deleteAsset(key: string) {
         return Storage.remove(key);
     }
 
 }
-

@@ -1,0 +1,29 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="72" y1="86" x2="948" y2="940" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#121936"/>
+      <stop offset="0.48" stop-color="#153360"/>
+      <stop offset="1" stop-color="#14756A"/>
+    </linearGradient>
+    <linearGradient id="tile" x1="248" y1="228" x2="758" y2="792" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#34E5C0"/>
+      <stop offset="1" stop-color="#3775FF"/>
+    </linearGradient>
+    <linearGradient id="cart" x1="318" y1="344" x2="700" y2="706" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8FFFB"/>
+      <stop offset="1" stop-color="#D6F4EE"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="650" y1="238" x2="804" y2="392" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD96F"/>
+      <stop offset="1" stop-color="#FF8655"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect x="224" y="202" width="576" height="620" rx="146" fill="url(#tile)"/>
+  <path d="M322 392H394L444 618H678" stroke="url(#cart)" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M436 558H688L726 460H408" stroke="url(#cart)" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="486" cy="694" r="40" fill="#DDF7F0"/>
+  <circle cx="646" cy="694" r="40" fill="#DDF7F0"/>
+  <path d="M678 258L696 296L734 314L696 332L678 370L660 332L622 314L660 296L678 258Z" fill="url(#accent)"/>
+  <rect x="320" y="280" width="220" height="36" rx="18" fill="#C7FFF1" fill-opacity="0.58"/>
+</svg>

@@ -1,9 +1,14 @@
 import { Product } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { productsActions } from './slices/products.slice';
 import { ProductEntity } from './product.entity';
+
+const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
+    !!item && item._deleted !== true;
 import { Alert } from 'react-native';
+import { stampTenant } from '@pos/auth/data-access';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface ProductSearchRequest {
     text?: string;
@@ -19,6 +24,138 @@ export interface ProductSearchResponse {
 }
 
 export class ProductService {
+    private static normalizePlu(plu?: string | null) {
+        if (!plu) {
+            return '';
+        }
+
+        return plu.replace(/^0+/, '') || '0';
+    }
+
+    private static getWeightedBarcodeCandidates(code: string) {
+        const candidates: Array<{ plu: string; totalPrice: number }> = [];
+
+        if (!/^\d+$/.test(code) || code.length <= 11) {
+            return candidates;
+        }
+
+        if (code.length >= 12) {
+            candidates.push({
+                plu: ProductService.normalizePlu(code.substring(2, 6)),
+                totalPrice: +code.substring(7, 11),
+            });
+        }
+
+        if (code.length >= 13 && code.startsWith('02')) {
+            candidates.push({
+                plu: ProductService.normalizePlu(code.substring(2, 7)),
+                totalPrice: +code.substring(7, 12),
+            });
+        }
+
+        return candidates;
+    }
+
+    private static findWeightedBarcodeMatch(
+        products: ProductEntity[],
+        code: string,
+        onlyActive: boolean
+    ): ProductSearchResponse | null {
+        const candidates = ProductService.getWeightedBarcodeCandidates(code);
+
+        for (const candidate of candidates) {
+            const prod = products.find((p) => {
+                const matches = ProductService.normalizePlu(p.plu) === candidate.plu;
+                return onlyActive ? p.isActive && matches : matches;
+            });
+
+            if (!prod) {
+                continue;
+            }
+
+            const quantity = candidate.totalPrice / 100 / prod.price;
+
+            return {
+                items: [prod],
+                allNumbers: true,
+                price: candidate.totalPrice,
+                quantity,
+            };
+        }
+
+        return null;
+    }
+
+    private static findWeightedBarcodeMatchInCandidate(
+        products: ProductEntity[],
+        code: string,
+        onlyActive: boolean
+    ): ProductSearchResponse | null {
+        for (let start = 0; start <= code.length - 12; start += 1) {
+            const weightedMatch = ProductService.findWeightedBarcodeMatch(
+                products,
+                code.slice(start),
+                onlyActive
+            );
+
+            if (weightedMatch) {
+                return weightedMatch;
+            }
+        }
+
+        return null;
+    }
+
+    private static matchesBarcodeOrSku(
+        product: ProductEntity,
+        code: string
+    ): boolean {
+        return (
+            (!!product.barcode && product.barcode === code) ||
+            (!!product.sku && product.sku === code)
+        );
+    }
+
+    private static matchesBarcodeSkuOrPlu(
+        product: ProductEntity,
+        code: string
+    ): boolean {
+        return ProductService.matchesBarcodeOrSku(product, code) || (!!product.plu && product.plu === code);
+    }
+
+    private static findByBarcodeOrSku(
+        products: ProductEntity[],
+        code: string,
+        onlyActive: boolean
+    ): ProductEntity[] {
+        return products.filter((p) =>
+            onlyActive
+                ? p.isActive && ProductService.matchesBarcodeOrSku(p, code)
+                : ProductService.matchesBarcodeOrSku(p, code)
+        );
+    }
+
+    private static findByEmbeddedNumericCode(
+        products: ProductEntity[],
+        candidate: string,
+        onlyActive: boolean
+    ): ProductEntity[] {
+        const isNumericCode = (code?: string): boolean =>
+            !!code && /^\d{4,}$/.test(code);
+
+        return products.filter((p) => {
+            if (onlyActive && !p.isActive) return false;
+
+            const barcode = p.barcode || '';
+            const sku = p.sku || '';
+            const barcodeMatches =
+                isNumericCode(barcode) && candidate.includes(barcode);
+            const skuMatches = isNumericCode(sku) && candidate.includes(sku);
+
+            return barcodeMatches || skuMatches;
+        });
+    }
+
     static async save(
         dispatch: Dispatch<any>,
         product: ProductEntity
@@ -29,13 +166,24 @@ export class ProductService {
 
         if (!product.id) {
             if (!validationRes) return false;
+            const normalizedProduct: ProductEntity = {
+                ...product,
+                quantity: 0,
+                isEBTEligible: product.isEBTEligible ?? false,
+                discountable: product.discountable ?? true,
+            };
 
-            const entity = new Product(product);
+            const entity = new Product(stampTenant(normalizedProduct) as never);
             const res = await DataStore.save(entity);
 
             product.id = res.id;
 
-            dispatch(productsActions.add(product));
+            dispatch(
+                productsActions.add({
+                    ...normalizedProduct,
+                    id: res.id,
+                })
+            );
 
             return true;
         }
@@ -43,10 +191,6 @@ export class ProductService {
         const existing = await DataStore.query(Product, product.id);
 
         if (!existing) {
-            console.log(
-                `It seems that product: ${product.id} has been removed`
-            );
-
             return false;
         }
 
@@ -68,17 +212,25 @@ export class ProductService {
                 updated.productCategoryId = product?.productCategoryId;
                 updated.productBrandId = product?.productBrandId;
                 updated.isActive = product.isActive;
+                updated.isEBTEligible = product.isEBTEligible ?? false;
+                updated.discountable = product.discountable ?? true;
+                updated.minAllowedPrice = product.minAllowedPrice;
+                updated.maxManualDiscountPercent = product.maxManualDiscountPercent;
+                updated.maxManualDiscountAmount = product.maxManualDiscountAmount;
             })
         );
 
-        dispatch(productsActions.update({ id: product.id, changes: product }));
+        const { quantity: _quantity, ...catalogChanges } = product;
+        dispatch(productsActions.update({ id: product.id, changes: catalogChanges }));
 
         return true;
     }
 
     static getAll() {
         try {
-            return DataStore.query(Product);
+            return DataStore.query(Product).then((items) =>
+                items.filter((item) => isNotDeleted(item as { _deleted?: boolean | null }))
+            );
         } catch (error) {
             console.error('error querying products', error);
             return [];
@@ -100,6 +252,8 @@ export class ProductService {
         products: ProductEntity[],
         { categoryId, text, onlyActive = false }: ProductSearchRequest,
     ): ProductSearchResponse {
+        const normalizedText = (text || '').replace(/[\r\n\t]/g, '').trim();
+
         if (categoryId)
             return {
                 items: products.filter(
@@ -112,48 +266,33 @@ export class ProductService {
                 allNumbers: false,
             };
 
-        if (!text) {
+        if (!normalizedText) {
             return {
                 items: products,
                 allNumbers: false,
             };
         }
 
-        const allNumbers = !!text?.match(/^\d*$/);
+        const allNumbers = !!normalizedText.match(/^\d+$/);
         // ex: 206110115089
-        if (allNumbers && text.length > 11) {
-            // Toledo code
-            // const plu = text.substring(2, 6);
-            // DLP-300
-            const plu = text.substring(2, 6);
-            const prod = products.find((p) => {
-                return onlyActive
-                    ? p.isActive && p.plu === plu
-                    : p.plu === plu;
-            });
+        if (allNumbers && normalizedText.length > 11) {
+            const weightedMatch = ProductService.findWeightedBarcodeMatch(
+                products,
+                normalizedText,
+                onlyActive
+            );
 
-            if (prod) {
-                // Toledo code
-                // const totalPrice = +text.substring(7, 11);
-                // DLP-300
-                const totalPrice = +text.substring(7, 11);
-                const quantity = totalPrice / 100 / prod.price; 
-
-                return {
-                    items: [prod],
-                    allNumbers: true,
-                    price: totalPrice,
-                    quantity
-                };
+            if (weightedMatch) {
+                return weightedMatch;
             }
         }
 
-        if (allNumbers && text.length > 3) {
+        if (allNumbers && normalizedText.length > 3) {
             const items = products.filter(
                 (p) => {
                     return onlyActive 
-                        ? p.isActive && ((p.barcode && p.barcode === text!) || (p.sku && p.sku === text!))
-                        : (p.barcode && p.barcode === text!) || (p.sku && p.sku === text!);
+                        ? p.isActive && ProductService.matchesBarcodeSkuOrPlu(p, normalizedText)
+                        : ProductService.matchesBarcodeSkuOrPlu(p, normalizedText);
                 }
             );
 
@@ -163,7 +302,54 @@ export class ProductService {
             };
         }
 
-        const lower = text.toLowerCase();
+        const numericMatches: string[] = normalizedText.match(/\d{4,}/g) ?? [];
+        const numericCandidates = Array.from(
+            new Set(
+                numericMatches.sort(
+                    (a, b) => b.length - a.length
+                )
+            )
+        );
+
+        for (const code of numericCandidates) {
+            const weightedMatch = ProductService.findWeightedBarcodeMatchInCandidate(
+                products,
+                code,
+                onlyActive
+            );
+
+            if (weightedMatch) {
+                return weightedMatch;
+            }
+
+            const exactItems = ProductService.findByBarcodeOrSku(
+                products,
+                code,
+                onlyActive
+            );
+
+            if (exactItems.length > 0) {
+                return {
+                    items: exactItems,
+                    allNumbers: true,
+                };
+            }
+
+            const embeddedItems = ProductService.findByEmbeddedNumericCode(
+                products,
+                code,
+                onlyActive
+            );
+
+            if (embeddedItems.length > 0) {
+                return {
+                    items: embeddedItems,
+                    allNumbers: true,
+                };
+            }
+        }
+
+        const lower = normalizedText.toLowerCase();
 
         const filteredItems = products.filter(
             (p) => {
@@ -171,10 +357,12 @@ export class ProductService {
                     ?  p.isActive && (p.name.toLowerCase().indexOf(lower) !== -1 ||
                         (p.barcode && p.barcode?.toLowerCase().indexOf(lower) !== -1) ||
                         (p.sku && p.sku?.toLowerCase().indexOf(lower) !== -1) ||
+                        (p.plu && p.plu?.toLowerCase().indexOf(lower) !== -1) ||
                         (p.description && p.description?.toLowerCase().indexOf(lower) !== -1))
                     : p.name.toLowerCase().indexOf(lower) !== -1 ||
                         (p.barcode && p.barcode?.toLowerCase().indexOf(lower) !== -1) ||
                         (p.sku && p.sku?.toLowerCase().indexOf(lower) !== -1) ||
+                        (p.plu && p.plu?.toLowerCase().indexOf(lower) !== -1) ||
                         (p.description && p.description?.toLowerCase().indexOf(lower) !== -1);
             }
                 
@@ -187,53 +375,85 @@ export class ProductService {
     }
 
     static async searchByCode(code: string) {
-        return DataStore.query(Product, (x) =>
-            x.or((p) => p.barcode('eq', code).sku('eq', code))
-        );
+        const items = await DataStore.query(Product);
+        return items.filter((item) => item.barcode === code || item.sku === code);
     }
 }
 
 async function validateNameBarcodeAndSku(
     product: ProductEntity
 ): Promise<boolean> {
-    const withSameName = await DataStore.query(Product, (p) =>
-        p.name('eq', product.name)
-    );
+    const normalize = (value: string | null | undefined) =>
+        (value || '').trim().toLowerCase();
 
-    if (withSameName.length && product.id !== withSameName[0].id) {
-        Alert.alert('A product with same name already exist');
+    const existing = product.id ? await DataStore.query(Product, product.id) : undefined;
+    const isEdit = !!existing;
+
+    const normalizedName = (product.name || '').trim().toLowerCase();
+    const nameChanged = !isEdit || normalize(existing?.name) !== normalizedName;
+    const allProducts = await DataStore.query(Product);
+    const withSameName = allProducts.find((p) => {
+        if (p.id === product.id) return false;
+        return (p.name || '').trim().toLowerCase() === normalizedName;
+    });
+
+    if (nameChanged && withSameName) {
+        Alert.alert(
+            translateWithFallback(
+                'PRODUCT_DuplicateName',
+                'A product with same name already exist',
+            ),
+        );
         return false;
     }
 
-    if (product.barcode) {
-        const withSameBarcode = await DataStore.query(Product, (p) =>
-            p.barcode('eq', product.barcode!).id('ne', product.id)
-        );
+        const barcodeChanged = !isEdit || normalize(existing?.barcode) !== normalize(product.barcode);
+        if (product.barcode && barcodeChanged) {
+            const withSameBarcode = allProducts.filter(
+                (p) => p.id !== product.id && p.barcode === product.barcode
+            );
 
         if (withSameBarcode.length) {
-            Alert.alert('A product with same barcode already exist');
+            Alert.alert(
+                translateWithFallback(
+                    'PRODUCT_DuplicateBarcode',
+                    'A product with same barcode already exist',
+                ),
+            );
             return false;
         }
     }
 
-    if (product.sku) {
-        const withSameSku = await DataStore.query(Product, (p) =>
-            p.sku('eq', product.sku!).id('ne', product.id)
-        );
+        const skuChanged = !isEdit || normalize(existing?.sku) !== normalize(product.sku);
+        if (product.sku && skuChanged) {
+            const withSameSku = allProducts.filter(
+                (p) => p.id !== product.id && p.sku === product.sku
+            );
 
         if (withSameSku.length) {
-            Alert.alert('A product with same sku already exist');
+            Alert.alert(
+                translateWithFallback(
+                    'PRODUCT_DuplicateSku',
+                    'A product with same sku already exist',
+                ),
+            );
             return false;
         }
     }
 
-    if (product.plu) {
-        const withSamePlu = await DataStore.query(Product, (p) =>
-            p.plu('eq', product.plu!).id('ne', product.id)
-        );
+        const pluChanged = !isEdit || normalize(existing?.plu) !== normalize(product.plu);
+        if (product.plu && pluChanged) {
+            const withSamePlu = allProducts.filter(
+                (p) => p.id !== product.id && p.plu === product.plu
+            );
 
         if (withSamePlu.length) {
-            Alert.alert('A product with same plu already exist');
+            Alert.alert(
+                translateWithFallback(
+                    'PRODUCT_DuplicatePlu',
+                    'A product with same plu already exist',
+                ),
+            );
             return false;
         }
     }

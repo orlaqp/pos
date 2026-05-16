@@ -1,5 +1,104 @@
-type Store @model @auth(rules: [{allow: public}]) {
+enum TenantUserRole {
+  OWNER
+  ADMIN
+}
+
+type Tenant @model @auth(rules: [{ allow: owner, ownerField: "ownerUserId", identityClaim: "sub" }]) {
   id: ID!
+  name: String!
+  slug: String! @index(name: "bySlug", queryField: "tenantBySlug")
+  ownerUserId: String!
+}
+
+type TenantUser @model @auth(rules: [{ allow: owner, ownerField: "userId", identityClaim: "sub" }]) {
+  id: ID!
+  tenantId: ID! @index(name: "byTenantId", queryField: "tenantUsersByTenant")
+  userId: String! @index(name: "byUserId", queryField: "tenantUsersByUser")
+  role: TenantUserRole!
+}
+
+enum CategoryDiscountPolicyMode {
+  DEFAULT
+  FORCE_INCLUDE
+  FORCE_EXCLUDE
+}
+
+enum DiscountDefinitionStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
+enum DiscountDefinitionType {
+  MANUAL
+  AUTOMATIC
+  PROMO_CODE
+}
+
+enum DiscountMethod {
+  PERCENT
+  AMOUNT
+  FINAL_PRICE
+}
+
+enum DiscountScope {
+  LINE
+  ORDER
+}
+
+enum DiscountStackMode {
+  EXCLUSIVE
+  STACKABLE
+  BEST_PRICE_ONLY
+}
+
+enum DiscountApplicationType {
+  MANUAL_LINE_DISCOUNT
+  MANUAL_ORDER_DISCOUNT
+  AUTOMATIC_DISCOUNT
+  PROMO_CODE
+  PRICE_OVERRIDE
+}
+
+enum DiscountApprovalStatus {
+  NOT_REQUIRED
+  APPROVED
+  REJECTED
+}
+
+enum DiscountSourceKind {
+  manual
+  automatic
+  promo
+  override
+}
+
+enum PricingApprovalType {
+  DISCOUNT
+  PRICE_OVERRIDE
+}
+
+enum PricingApprovalDecision {
+  APPROVED
+  REJECTED
+}
+
+enum PricingSource {
+  ONLINE_VALIDATED
+  OFFLINE_LOCAL
+}
+
+enum ReconciliationStatus {
+  NOT_REQUIRED
+  PENDING
+  RECONCILED
+  RECONCILED_WITH_EXCEPTION
+}
+
+type Store @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+  id: ID!
+  tenantId: ID!
   name: String!
   address: String!
   city: String!
@@ -10,25 +109,31 @@ type Store @model @auth(rules: [{allow: public}]) {
   fax: String
   email: String!
   disclaimer: String
+  timezone: String!
 }
 
-type Brand @model @auth(rules: [{allow: public}]) {
+type Brand @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
+  tenantId: ID!
   name: String!
   description: String
 }
 
-type Category @model @auth(rules: [{allow: public}]) {
+type Category @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
+  tenantId: ID!
   name: String!
   description: String
   code: String
   color: String
   picture: String
+  discountable: Boolean! @default(value: "true")
+  discountPolicyMode: CategoryDiscountPolicyMode! @default(value: "DEFAULT")
 }
 
-type Customer @model @auth(rules: [{allow: public}]) {
+type Customer @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
+  tenantId: ID!
   firstName: String!
   lastName: String
   middleName: String
@@ -37,8 +142,9 @@ type Customer @model @auth(rules: [{allow: public}]) {
   email: String
 }
 
-type Employee @model @auth(rules: [{allow: public}]) {
+type Employee @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
+  tenantId: ID!
   code: String!
   firstName: String!
   lastName: String
@@ -49,6 +155,8 @@ type Employee @model @auth(rules: [{allow: public}]) {
   pin: String!
   roles: [String]!
   active: Boolean!
+  discountPolicyId: ID
+  policyProfileKey: String
 }
 
 type PaymentInfo {
@@ -68,22 +176,198 @@ type ByEmployee {
     name: String!
 }
 
-type Order @model @auth(rules: [{allow: public}]) {
+type AppliedDiscountDetailSnapshot {
+  discountApplicationId: String!
+  discountDefinitionId: String
+  orderDiscountSnapshotId: String
+  applicationType: DiscountApplicationType!
+  scope: DiscountScope!
+  method: DiscountMethod!
+  name: String!
+  code: String
+  stackMode: DiscountStackMode!
+  source: DiscountSourceKind!
+  value: Float!
+  originalAmount: Float!
+  discountAmount: Float!
+  finalAmount: Float!
+  quantityBasis: Float
+  reasonCode: String
+  reasonNote: String
+  appliedByEmployeeId: String
+  appliedByEmployeeName: String
+  approvedByEmployeeId: String
+  approvedByEmployeeName: String
+  approvalRequired: Boolean
+  approvalStatus: DiscountApprovalStatus
+  approvalReference: String
+  sourceSnapshot: String
+  appliedAt: AWSDateTime!
+}
+
+type PricingApprovalEventSnapshot {
+  id: String!
+  approvalType: PricingApprovalType!
+  requestingEmployeeId: String!
+  approvingEmployeeId: String!
+  requestedAction: String!
+  reasonCode: String
+  reasonNote: String
+  policySnapshot: String
+  status: PricingApprovalDecision!
+  createdAt: AWSDateTime!
+}
+
+type AppliedLineDiscountSummarySnapshot {
+  lineId: String!
+  discounts: [AppliedDiscountDetailSnapshot!]!
+  lineDiscountTotal: Float!
+  allocatedOrderDiscountTotal: Float!
+  lineTotalBeforeTax: Float!
+}
+
+type AppliedDiscountSummarySnapshot {
+  applications: [AppliedDiscountDetailSnapshot!]!
+  approvalEvents: [PricingApprovalEventSnapshot!]!
+  lineSummaries: [AppliedLineDiscountSummarySnapshot!]!
+  orderLevelAdjustments: [AppliedDiscountDetailSnapshot!]!
+  warnings: [String!]!
+  pricingGeneratedAt: AWSDateTime!
+}
+
+enum InventoryApplyState {
+  PENDING
+  APPLYING
+  APPLIED
+  FAILED
+}
+
+enum RefundType {
+  PARTIAL
+  FULL
+}
+
+enum OrderRefundStatus {
+  COMPLETED
+  FAILED
+}
+
+input ByEmployeeInput {
+  id: String!
+  name: String!
+}
+
+type Order @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam, operations: [read, update]}]) {
   id: ID!
+  tenantId: ID!
   orderNo: String! @index(name: "byOrderNo")
   orderDate: AWSDateTime! @index(name: "byOrderDate")
+  baseSubtotal: Float
   subtotal: Float!
+  lineDiscountTotal: Float
+  orderDiscountTotal: Float
+  discountTotal: Float
+  savingsTotal: Float
   tax: Float!
   total: Float!
+  currentSubtotal: Float
+  currentDiscountTotal: Float
+  currentTax: Float
+  currentTotal: Float
+  promoCodes: [String]
+  pricingVersion: String
+  pricingSnapshotHash: String
+  pricingSource: PricingSource
+  reconciliationStatus: ReconciliationStatus
+  appliedDiscountSummary: AppliedDiscountSummarySnapshot
   status: OrderStatus! @index(name: "byStatusByOrderDate", sortKeyFields: ["orderDate"])
   employeeId: String!
   employeeName: String!
   lines: [OrderLine]!
-  paymentInfo: PaymentInfo 
+  paymentInfo: PaymentInfo
   refundInfo: RefundInfo
   createdBy: ByEmployee
   updatedBy: ByEmployee
+  inventoryApplyState: InventoryApplyState
+  inventoryAppliedAt: AWSDateTime
+  inventoryApplyOperationId: ID
+  inventoryApplyError: String
   Customer: Customer @hasOne
+}
+
+type OrderRefund @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam, operations: [read, update]}]) {
+  id: ID!
+  tenantId: ID!
+  orderId: ID! @index(name: "byOrderId", sortKeyFields: ["refundDate"])
+  orderNo: String!
+  refundDate: AWSDateTime! @index(name: "byRefundDate")
+  refundType: RefundType!
+  status: OrderRefundStatus!
+  refundAmount: Float!
+  refundReason: String
+  refundPayments: [Payment!]
+  createdByEmployeeId: String!
+  createdByEmployeeName: String!
+  inventoryApplyState: InventoryApplyState
+  inventoryAppliedAt: AWSDateTime
+  inventoryApplyOperationId: ID
+  inventoryApplyError: String
+}
+
+type OrderRefundLine @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam, operations: [read, update]}]) {
+  id: ID!
+  tenantId: ID!
+  refundId: ID! @index(name: "byRefundId", sortKeyFields: ["refundDate"])
+  orderId: ID! @index(name: "byOrderIdByRefundDate", sortKeyFields: ["refundDate"])
+  refundDate: AWSDateTime!
+  orderLineIdentifier: String!
+  productId: String!
+  productName: String!
+  unitOfMeasure: String!
+  categoryId: String
+  quantityRefunded: Float!
+  unitRefundAmount: Float!
+  lineRefundAmount: Float!
+}
+
+type OrderDiscountDefinitionSnapshot @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam, operations: [read]}]) {
+  id: ID!
+  tenantId: ID!
+  orderId: ID! @index(name: "byOrderId", sortKeyFields: ["discountDefinitionId"])
+  discountDefinitionId: ID!
+  name: String!
+  code: String
+  description: String
+  status: DiscountDefinitionStatus!
+  type: DiscountDefinitionType!
+  method: DiscountMethod!
+  scope: DiscountScope!
+  value: Float!
+  priority: Int
+  stackMode: DiscountStackMode!
+  approvalRequired: Boolean
+  reasonRequired: Boolean
+  startDate: AWSDate
+  endDate: AWSDate
+  daysOfWeek: [String]
+  startTime: AWSTime
+  endTime: AWSTime
+  minSubtotal: Float
+  minQuantity: Float
+  usageLimitTotal: Int
+  usageCountTotal: Int
+  applicableProductIds: [ID]
+  applicableCategoryIds: [ID]
+  excludedProductIds: [ID]
+  excludedCategoryIds: [ID]
+  excludeAlreadyDiscountedItems: Boolean
+  appliesToAllProducts: Boolean
+  stationIds: [String]
+  active: Boolean
+  pricingGeneratedAt: AWSDateTime
+  pricingTimezone: String
+  pricingStoreId: String
+  pricingStationId: String
 }
 
 type OrderLine {
@@ -96,27 +380,47 @@ type OrderLine {
   quantity: Float!
   tax: Float!
   price: Float!
+  basePrice: Float
+  overridePrice: Float
+  netUnitPrice: Float
+  lineSubtotalBeforeOrderDiscount: Float
+  lineDiscountTotal: Float
+  allocatedOrderDiscountTotal: Float
+  lineTotalBeforeTax: Float
+  lineTotalAfterTax: Float
+  appliedDiscounts: [AppliedDiscountDetailSnapshot!]
+  categoryId: String
+  discountable: Boolean
+  minAllowedPrice: Float
+  maxManualDiscountPercent: Float
+  maxManualDiscountAmount: Float
+  isEBTEligible: Boolean
+  ebtPaidAmount: Float
+  nonEbtPaidAmount: Float
 }
 
 enum PaymentType {
     CASH
     CHECK
     CC
+    EBT
 }
 
 type Payment {
     type: PaymentType!
-    amount: Float! 
+    amount: Float!
 }
 
 enum OrderStatus {
   OPEN
+  PARTIALLY_REFUNDED
   REFUNDED
   PAID
 }
 
-type Product @model @auth(rules: [{allow: public}]) {
+type Product @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam, operations: [read, update]}]) {
   id: ID!
+  tenantId: ID!
   name: String!
   description: String
   price: Float!
@@ -127,65 +431,33 @@ type Product @model @auth(rules: [{allow: public}]) {
   plu: String
   quantity: Float!
   unitOfMeasure: String!
-  trackStock: Boolean! 
+  trackStock: Boolean!
   reorderPoint: Float
   reorderQuantity: Float
   picture: String
   Category: Category @hasOne
   Brand: Brand @hasOne
   isActive: Boolean!
+  isEBTEligible: Boolean
+  discountable: Boolean! @default(value: "true")
+  minAllowedPrice: Float
+  maxManualDiscountPercent: Float
+  maxManualDiscountAmount: Float
 }
 
-# type PurchaseOrder @model @auth(rules: [{allow: public}]) {
-#   id: ID!
-#   Supplier: Supplier @hasOne
-#   purchaseDate: AWSDateTime
-#   amount: Float
-# }
-
-# type PurchaseOrderLine @model @auth(rules: [{allow: public}]) {
-#   id: ID!
-#   Product: Product @hasOne
-#   unitPrice: Float
-#   quantity: Float
-# }
-
-
-# type Supplier @model @auth(rules: [{allow: public}]) {
-#   id: ID!
-#   code: String
-#   name: String!
-# }
-
-# type Stock @model @auth(rules: [{allow: public}]) {
-#   id: ID!
-#   Product: Product @hasOne
-#   quantity: Float!
-#   updatedAt: AWSDateTime
-# }
-
-# type Tag @model @auth(rules: [{allow: public}]) {
-#   id: ID!
-#   name: String!
-# }
-
-type UnitOfMeasure @model @auth(rules: [{allow: public}]) {
+type UnitOfMeasure @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
   id: ID!
+  tenantId: ID!
   name: String!
   description: String
 }
 
-# type Inventory @model @auth(rules: [{allow: public}]) {
-#     id: ID!
-#     quantity: Float!
-#     Product: Product @hasOne
-# }
-
-type InventoryChanges @model @auth(rules: [{allow: public}]) {
+type InventoryChanges @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
     id: ID!
+    tenantId: ID!
     timestamp: AWSDateTime!
-    type: String! # type of operation Purchase Order/Inventory count
-    typeId: String # identifier to that type
+    type: String!
+    typeId: String
     quantityIn: Int!
     quantityOut: Int!
     Product: Product @hasOne
@@ -196,19 +468,25 @@ enum InventoryCountStatus {
   COMPLETED
 }
 
-type InventoryCount @model @auth(rules: [{allow: public}]) {
+type InventoryCount @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam}]) {
     id: ID!
+    tenantId: ID!
     comments: String
     status: InventoryCountStatus!
     createdBy: ByEmployee!
+    inventoryApplyState: InventoryApplyState
+    inventoryAppliedAt: AWSDateTime
+    inventoryApplyOperationId: ID
+    inventoryApplyError: String
 }
 
-type InventoryCountLine @model @auth(rules: [{allow: public}]) {
+type InventoryCountLine @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam}]) {
     id: ID!
+    tenantId: ID!
     productId: String!
     productName: String!
     unitOfMeasure: String!
-    current: Float!
+    current: Float
     newCount: Float!
     comments: String
     InventoryCount: InventoryCount @hasOne
@@ -219,25 +497,33 @@ enum InventoryReceiveStatus {
   COMPLETED
 }
 
-type InventoryReceive @model @auth(rules: [{allow: public}]) {
+type InventoryReceive @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam}]) {
     id: ID!
-    comments: String   
-    status: InventoryReceiveStatus! 
+    tenantId: ID!
+    comments: String
+    status: InventoryReceiveStatus!
     createdBy: ByEmployee!
+    inventoryApplyState: InventoryApplyState
+    inventoryAppliedAt: AWSDateTime
+    inventoryApplyOperationId: ID
+    inventoryApplyError: String
 }
 
-type InventoryReceiveLine @model @auth(rules: [{allow: public}]) {
+type InventoryReceiveLine @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}, {allow: private, provider: iam}]) {
     id: ID!
+    tenantId: ID!
     productId: String!
     productName: String!
     unitOfMeasure: String!
+    current: Float
     received: Float!
     comments: String
     InventoryReceive: InventoryReceive @hasOne
 }
 
-type Printer @model @auth(rules: [{allow: public}]) {
+type Printer @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
     id: ID!
+    tenantId: ID!
     deviceId: String!
     identifier: String!
     interfaceType: String!
@@ -246,15 +532,160 @@ type Printer @model @auth(rules: [{allow: public}]) {
     alias: String
 }
 
-type Station @model @auth(rules: [{allow: public}]) {
+type Station @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
     id: ID!
+    tenantId: ID!
     deviceId: String!
     alias: String!
 }
 
-type GlobalSettings @model @auth(rules: [{allow: public}]) {
+type GlobalSettings @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
     enforceSalesBasedOnInventory: Boolean! @default(value: "false")
+    timezone: String! @default(value: "America/New_York")
 }
+
+type DiscountDefinition @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    name: String!
+    code: String
+    description: String
+    status: DiscountDefinitionStatus!
+    type: DiscountDefinitionType!
+    method: DiscountMethod!
+    scope: DiscountScope!
+    value: Float!
+    priority: Int
+    stackMode: DiscountStackMode!
+    approvalRequired: Boolean
+    reasonRequired: Boolean
+    startDate: AWSDateTime
+    endDate: AWSDateTime
+    daysOfWeek: [String]
+    startTime: String
+    endTime: String
+    minSubtotal: Float
+    minQuantity: Float
+    usageLimitTotal: Int
+    usageCountTotal: Int
+    applicableProductIds: [String]
+    applicableCategoryIds: [String]
+    excludedProductIds: [String]
+    excludedCategoryIds: [String]
+    excludeAlreadyDiscountedItems: Boolean
+    appliesToAllProducts: Boolean
+    storeIds: [String]
+    stationIds: [String]
+    active: Boolean!
+}
+
+type DiscountReasonCode @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    code: String!
+    label: String!
+    description: String
+    active: Boolean!
+    requiresNote: Boolean
+    appliesTo: [String]
+}
+
+type EmployeeDiscountPolicy @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    employeeId: ID
+    roleKey: String
+    maxManualPercentDiscount: Float
+    maxManualAmountDiscount: Float
+    maxPriceOverrideAmount: Float
+    maxPriceOverridePercentBelowBase: Float
+    canApplyOrderDiscount: Boolean
+    canOverridePrice: Boolean
+    canApproveDiscounts: Boolean
+    canApprovePriceOverrides: Boolean
+    canUsePromoCodes: Boolean
+    requireReasonForManualDiscounts: Boolean
+    requireReasonForOverrides: Boolean
+    requireApprovalForOrderDiscount: Boolean
+    requireApprovalForAnyPriceOverride: Boolean
+    allowExclusiveDiscountOverride: Boolean
+    active: Boolean!
+}
+
+type DiscountPreset @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    name: String!
+    scope: DiscountScope!
+    method: DiscountMethod!
+    value: Float
+    promptForCustomValue: Boolean
+    active: Boolean!
+    sortOrder: Int
+}
+
+type DiscountApplication @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    transactionId: ID!
+    lineId: String
+    discountDefinitionId: ID
+    applicationType: DiscountApplicationType!
+    scope: DiscountScope!
+    method: DiscountMethod!
+    name: String!
+    code: String
+    stackMode: DiscountStackMode!
+    originalAmount: Float!
+    discountAmount: Float!
+    finalAmount: Float!
+    quantityBasis: Float
+    reasonCode: String
+    reasonNote: String
+    appliedByEmployeeId: ID
+    appliedByEmployeeName: String
+    approvedByEmployeeId: ID
+    approvedByEmployeeName: String
+    approvalRequired: Boolean
+    approvalStatus: DiscountApprovalStatus
+    approvalReference: String
+    sourceSnapshot: AWSJSON
+    appliedAt: AWSDateTime!
+    syncStatus: String
+}
+
+type ApprovalEvent @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    transactionId: ID!
+    lineId: String
+    approvalType: String!
+    requestingEmployeeId: ID!
+    approvingEmployeeId: ID!
+    requestedAction: String!
+    reasonCode: String
+    reasonNote: String
+    policySnapshot: AWSJSON
+    status: String!
+    syncStatus: String
+}
+
+type DiscountReconciliationException @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
+    id: ID!
+    tenantId: ID!
+    transactionId: ID!
+    discountApplicationId: ID
+    exceptionType: String!
+    severity: String!
+    message: String!
+    backendSnapshot: AWSJSON
+    resolved: Boolean!
+    resolvedByEmployeeId: ID
+    resolvedAt: AWSDateTime
+}
+
 # Reporting
 
 type ProductSaleSummary {
@@ -286,7 +717,59 @@ type SalesSummary {
     totalOrders: Float!
 }
 
+input FinalizeInventoryReceiveLineInput {
+  id: ID
+  productId: String!
+  productName: String!
+  unitOfMeasure: String!
+  received: Float!
+  comments: String
+}
+
+input FinalizeInventoryCountLineInput {
+  id: ID
+  productId: String!
+  productName: String!
+  unitOfMeasure: String!
+  current: Float!
+  newCount: Float!
+  comments: String
+}
+
+input FinalizeInventoryReceiveInput {
+  receiveId: ID
+  operationId: ID!
+  comments: String
+  createdBy: ByEmployeeInput!
+  lines: [FinalizeInventoryReceiveLineInput!]!
+}
+
+input FinalizeInventoryCountInput {
+  countId: ID
+  operationId: ID!
+  comments: String
+  createdBy: ByEmployeeInput!
+  lines: [FinalizeInventoryCountLineInput!]!
+}
+
+type InventoryProductFinalizeResult {
+  productId: ID!
+  finalQuantity: Float!
+  appliedDelta: Float!
+}
+
+type InventoryFinalizeResult {
+  sourceId: ID!
+  sourceType: String!
+  status: InventoryApplyState!
+  appliedAt: AWSDateTime
+  error: String
+  affectedProducts: [InventoryProductFinalizeResult!]!
+}
+
 type Query {
-  getSales(status: OrderStatus!, from: String!, to: String!): [Order] @function (name: "getSales-${env}")
-  getSalesSummary(status: OrderStatus!, from: String!, to: String!): SalesSummary @function (name: "getSalesSummaryQuery-${env}")
+  getSales(statuses: [OrderStatus!]!, from: String!, to: String!): [Order] @function (name: "getSales-${env}")
+  getSalesSummary(statuses: [OrderStatus!]!, from: String!, to: String!): SalesSummary @function (name: "getSalesSummaryQuery-${env}")
+  finalizeInventoryReceive(input: FinalizeInventoryReceiveInput!): InventoryFinalizeResult @function(name: "inventoryLifecycle-${env}")
+  finalizeInventoryCount(input: FinalizeInventoryCountInput!): InventoryFinalizeResult @function(name: "inventoryLifecycle-${env}")
 }

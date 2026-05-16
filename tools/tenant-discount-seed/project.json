@@ -1,0 +1,19 @@
+{
+  "name": "tenant-discount-seed",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/tenant-discount-seed/src",
+  "projectType": "library",
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/tools/tenant-discount-seed"
+      ],
+      "options": {
+        "jestConfig": "tools/tenant-discount-seed/jest.config.ts",
+        "passWithNoTests": false
+      }
+    }
+  },
+  "tags": []
+}

@@ -1,33 +1,48 @@
 import React, { useState } from 'react';
 
 import { View, Text, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { categoriesActions, CategoryEntity, CategoryService } from '@pos/categories/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UIS3Image } from '@pos/shared/ui-native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 
 export interface CategoryItemProps {
     item: CategoryEntity;
     navigation: NativeStackNavigationProp<any>;
 }
 
+export const deleteCategoryById = async (
+    id: string | undefined,
+    deleteCategory: (id: string) => Promise<any>,
+    removeCategory: (id: string) => any
+) => {
+    if (!id) return false;
+    await deleteCategory(id);
+    removeCategory(id);
+    return true;
+};
+
 export function CategoryItem({ item, navigation }: CategoryItemProps) {
+    const t = translateWithFallback;
     const theme = useTheme();
-    const styles = useStyles();
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const dispatch = useDispatch();
     const [busy, setBusy] = useState<boolean>(false);
 
     const deleteItem = async () => {
-        if (!item.id) return;
-
         setBusy(true);
-        await CategoryService.delete(item.id);
+        await deleteCategoryById(
+            item.id,
+            (id) => CategoryService.delete(id),
+            (id) => dispatch(categoriesActions.remove(id))
+        );
         setBusy(false);
-        dispatch(categoriesActions.remove(item.id));
-
-    }
+    };
 
     const editItem = () => {
         dispatch(categoriesActions.select(item));
@@ -36,32 +51,32 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
 
     const confirmDeletion = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t('COMMON_UndoOperationWarning', 'You will not be able to undo this operation'),
             [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => deleteItem() },
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => deleteItem() },
             ]
         );
     }
 
     return (
-        <TouchableOpacity style={styles.dataRow} onPress={editItem}>
+        <TouchableOpacity style={[styles.dataRow, styles.row]} onPress={editItem}>
             { busy &&
             <ActivityIndicator size='small' />
             }
-            <UIS3Image s3Key={item.picture} width={50} height={50} />
-            <View style={{ flex: 5 }}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.description}>{item.description}</Text>
+            <View style={styles.thumbnailSlot}>
+                <UIS3Image s3Key={item.picture} width={50} height={50} />
             </View>
-            <View
-                style={{
-                    flex: 2,
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                }}
-            >
+            <View style={styles.contentColumn}>
+                <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+                    {item.name}
+                </Text>
+                <Text style={[styles.description, styles.secondaryReadable]} numberOfLines={1} ellipsizeMode="tail">
+                    {item.description}
+                </Text>
+            </View>
+            <View style={styles.actionsColumn}>
                 {/* <Button
                     type="clear"
                     title="Edit"
@@ -78,6 +93,7 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
                         type: 'material-community',
                         color: theme.theme.colors.error,
                     }}
+                    buttonStyle={styles.deleteButton}
                     onPress={confirmDeletion}
                 />
             </View>
@@ -85,21 +101,57 @@ export function CategoryItem({ item, navigation }: CategoryItemProps) {
     );
 }
 
-const useStyles = () => {
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) => {
     const theme = useTheme();
     const sharedStyles = useSharedStyles();
 
     return {
         ...sharedStyles,
         ...StyleSheet.create({
+            row: {
+                alignItems: 'center',
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: '#C7D0DB22',
+                backgroundColor: '#0E141C',
+                marginBottom: tokens.spacing.sm,
+                paddingHorizontal: tokens.spacing.md,
+                paddingVertical: tokens.spacing.md,
+            },
+            thumbnailSlot: {
+                width: 70,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: tokens.spacing.md,
+            },
+            contentColumn: {
+                flex: 1,
+                paddingRight: tokens.spacing.md,
+            },
+            actionsColumn: {
+                width: 70,
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+            },
             name: {
                 fontSize: 18,
                 color: theme.theme.colors.grey0,
+                fontWeight: '800',
                 marginBottom: 5,
             },
             description: {
                 fontSize: 14,
                 color: theme.theme.colors.grey3,
+            },
+            secondaryReadable: {
+                color: theme.theme.colors.grey1,
+            },
+            deleteButton: {
+                opacity: 0.95,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: `${theme.theme.colors.error}55`,
+                backgroundColor: `${theme.theme.colors.error}12`,
             },
         }),
     };

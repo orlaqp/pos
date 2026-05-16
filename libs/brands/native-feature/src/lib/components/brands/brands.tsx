@@ -11,7 +11,11 @@ const Stack = createNativeStackNavigator();
 export function Brands() {
   return (
     <StackNavigation Stack={Stack}>
-        <Stack.Screen name="Brand List"  component={BrandList} />
+        <Stack.Screen
+            name="Brand List"
+            component={BrandList}
+            options={{ headerShown: false }}
+        />
         <Stack.Screen name="Brand Form" component={BrandForm} />
     </StackNavigation>
   );

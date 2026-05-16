@@ -4,7 +4,7 @@ import {
     createSlice,
     PayloadAction,
 } from '@reduxjs/toolkit';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
 import { StationConfig, StationService } from '../services/station.service';
 
@@ -71,7 +71,7 @@ export const stationSlice = createSlice({
                 fetchStationInfo.rejected,
                 (state: StationState, action) => {
                     state.loadingStatus = 'error';
-                    state.error = action.error.message;
+                    state.error = action.error?.message || 'Failed to load station info';
                 }
             )
             .addCase(saveStationNumber.fulfilled, (state: StationState, action) => {
@@ -91,4 +91,3 @@ export const getState = (rootState: RootState): StationState =>
 
 export const selectStation = createSelector(getState, (state) => state);
 export const selectStationLoadindStatus = createSelector(getState, (state) => state.loadingStatus);
-

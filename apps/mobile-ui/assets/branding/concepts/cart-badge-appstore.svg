@@ -1,0 +1,32 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="84" y1="76" x2="944" y2="944" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#151638"/>
+      <stop offset="0.5" stop-color="#1B2E64"/>
+      <stop offset="1" stop-color="#12706D"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="214" y1="200" x2="802" y2="812" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F6FFF9"/>
+      <stop offset="1" stop-color="#D9F7EF"/>
+    </linearGradient>
+    <linearGradient id="cart" x1="292" y1="364" x2="682" y2="690" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#31E3BE"/>
+      <stop offset="1" stop-color="#2F7AFF"/>
+    </linearGradient>
+    <linearGradient id="coin" x1="618" y1="246" x2="792" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD772"/>
+      <stop offset="1" stop-color="#FF8656"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect x="186" y="188" width="652" height="648" rx="138" fill="url(#panel)"/>
+  <rect x="286" y="276" width="332" height="44" rx="22" fill="#9EDFD1"/>
+  <rect x="286" y="344" width="244" height="38" rx="19" fill="#C7ECE4"/>
+  <path d="M318 430H380L430 626H682" stroke="url(#cart)" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M424 570H696L736 470H398" stroke="url(#cart)" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="474" cy="708" r="42" fill="#2CAAD8"/>
+  <circle cx="650" cy="708" r="42" fill="#2CAAD8"/>
+  <circle cx="710" cy="312" r="92" fill="url(#coin)"/>
+  <path d="M681 258C681 241 695 227 712 227H736C784 227 823 266 823 314C823 362 784 401 736 401H712C695 401 681 387 681 370V258Z" fill="#FFF8EF"/>
+  <path d="M736 281H723V346H736C755 346 770 331 770 314C770 296 755 281 736 281Z" fill="#FF8A56"/>
+</svg>

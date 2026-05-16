@@ -1,26 +1,31 @@
 import React, { useEffect, useState } from 'react';
 
-import { Alert, TextInput, View, Text } from 'react-native';
-import { useSharedStyles } from '@pos/theme/native';
+import { Alert, ScrollView, StyleSheet, View, Text } from 'react-native';
 import {
     UIActions,
+    UICard,
     UiFileUpload,
     UIInput,
     UINumericInput,
     UIOverlaySelect,
+    UIScreen,
+    UIStack,
     UISwitch,
-    UIVerticalSpacer,
 } from '@pos/shared/ui-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { ProductEntity, ProductService } from '@pos/products/data-access';
-import { RootState } from '@pos/store';
+import { RootState, useAppDispatch } from '@pos/store';
 import { Product } from '@pos/shared/models';
-import { selectAllCategories } from '@pos/categories/data-access';
+import { translateWithFallback } from '@pos/shared/utils';
 import { selectAllBrands } from '@pos/brands/data-access';
+import { selectAllCategories } from '@pos/categories/data-access';
 import { selectAllUnitOfMeasures } from '@pos/unit-of-measures/data-access';
-import { useTheme, Input } from '@rneui/themed';
+import { requireCurrentTenantId } from '@pos/auth/data-access';
+import { useTheme } from '@rneui/themed';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { getThemeColors } from '@pos/theme/native';
 
 export interface ProductFormParams {
     [name: string]: object | undefined;
@@ -32,40 +37,19 @@ export interface ProductFormProps {
 }
 
 export function ProductForm({ navigation }: ProductFormProps) {
+    const t = translateWithFallback;
     const product = useSelector((state: RootState) => state.products.selected);
     const categories = useSelector(selectAllCategories);
     const brands = useSelector(selectAllBrands);
     const ums = useSelector(selectAllUnitOfMeasures);
-    const dispatch = useDispatch();
-    const barcodeRef = React.createRef<TextInput>();
-    const skuRef = React.createRef<TextInput>();
-    const pluRef = React.createRef<TextInput>();
+    const dispatch = useAppDispatch();
+    const tenantId = requireCurrentTenantId();
 
     const theme = useTheme();
-    const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const colors = getThemeColors(theme);
+    const styles = useStyles(tokens, colors);
     const [busy, setBusy] = useState<boolean>(false);
-
-    const updatePicture = (key: string) => {
-        form.setValue('picture', key);
-    };
-
-    const save = async () => {
-        setBusy(true);
-        const formValues: ProductEntity = form.getValues();
-        formValues.cost = formValues.cost ? +formValues.cost : null;
-        formValues.price = +formValues.price;
-        
-        if (!formValues.id) {
-            delete formValues.id;
-        }
-
-        const res = await ProductService.save(dispatch, formValues);
-
-        setBusy(false);
-
-        if (!res) return;
-        navigation.goBack();
-    };
 
     const form = useForm<ProductEntity>({
         mode: 'onChange',
@@ -79,192 +63,678 @@ export function ProductForm({ navigation }: ProductFormProps) {
             barcode: product?.barcode,
             sku: product?.sku,
             plu: product?.plu,
-            quantity: product?.quantity || 0,
-            unitOfMeasure: product?.unitOfMeasure,
-            trackStock: true,
+            unitOfMeasure:
+                product?.unitOfMeasure ||
+                (ums.length === 1 ? ums[0]?.name : undefined),
+            trackStock: product?.trackStock ?? true,
             reorderPoint: product?.reorderPoint,
             reorderQuantity: product?.reorderQuantity,
             picture: product?.picture,
             productCategoryId: product?.productCategoryId,
             productBrandId: product?.productBrandId,
-            isActive: product?.isActive,
+            isActive: product?.isActive ?? true,
+            isEBTEligible: product?.isEBTEligible ?? false,
         },
     });
 
-    const confirmCancel = () => {
-        Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
-            [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
-            ]
-        );
+    const updatePicture = (key: string) => {
+        form.setValue('picture', key);
     };
 
     useEffect(() => {
-        const values = form.getValues();
-        barcodeRef.current?.setNativeProps({ text: values.barcode });
-        skuRef.current?.setNativeProps({ text: values.sku });
-        pluRef.current?.setNativeProps({ text: values.plu });
-    }, [barcodeRef, skuRef, pluRef, form]);
+        if (product?.id) {
+            return;
+        }
+
+        const selectedUnit = form.getValues('unitOfMeasure');
+        if (!selectedUnit && ums.length === 1 && ums[0]?.name) {
+            form.setValue('unitOfMeasure', ums[0].name, {
+                shouldValidate: true,
+            });
+        }
+    }, [form, product?.id, ums]);
+
+    const save = async () => {
+        setBusy(true);
+        try {
+            const rawValues = {
+                ...(form.getValues() as ProductEntity),
+            } as Partial<ProductEntity>;
+            if (!rawValues.id && product?.id) {
+                rawValues.id = product.id;
+            }
+            rawValues.cost = rawValues.cost ? +rawValues.cost : null;
+            rawValues.price = +rawValues.price;
+
+            if (!rawValues.id) {
+                delete rawValues.id;
+            }
+
+            const { quantity: _quantity, ...catalogValues } =
+                rawValues as Partial<ProductEntity> & { quantity?: number };
+
+            const res = await ProductService.save(
+                dispatch,
+                catalogValues as ProductEntity,
+            );
+            if (!res) {
+                return;
+            }
+
+            navigation.goBack();
+        } catch (error) {
+            const message =
+                error instanceof Error ? error.message : String(error);
+            console.error('Unable to save product', error);
+            Alert.alert(
+                t('PRODUCT_SaveErrorTitle', 'Unable to save product'),
+                message ||
+                    t(
+                        'PRODUCT_SaveErrorMessage',
+                        'The product could not be saved.',
+                    ),
+            );
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const handleInvalidSubmit = (
+        errors: Partial<Record<keyof ProductEntity, { message?: string }>>,
+    ) => {
+        const fieldLabels: Partial<Record<keyof ProductEntity, string>> = {
+            name: t('COMMON_Name', 'Name'),
+            price: t('COMMON_Price', 'Price'),
+            unitOfMeasure: t('PRODUCT_UnitOfMeasure', 'Unit of Measure'),
+        };
+        const fields = Object.keys(errors)
+            .map((fieldName) => fieldLabels[fieldName as keyof ProductEntity])
+            .filter((field): field is string => !!field);
+
+        const message = fields.length
+            ? t(
+                  'PRODUCT_CompleteRequiredFieldsList',
+                  `Complete the required field${fields.length === 1 ? '' : 's'}: ${fields.join(', ')}.`,
+                  { fields: fields.join(', ') },
+              )
+            : t(
+                  'PRODUCT_CompleteRequiredFields',
+                  'Complete the required fields before saving this product.',
+              );
+
+        Alert.alert(
+            t('COMMON_MissingInformation', 'Missing information'),
+            message,
+        );
+    };
+
+    const confirmCancel = () => {
+        Alert.alert(
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t(
+                'COMMON_UndoOperationWarning',
+                'You will not be able to undo this operation',
+            ),
+            [
+                { text: t('COMMON_No', 'No') },
+                {
+                    text: t('COMMON_Yes', 'Yes'),
+                    onPress: () => navigation.goBack(),
+                },
+            ],
+        );
+    };
 
     return (
-        <FormProvider {...form}>
-            <View style={[styles.page, { padding: 25 }]}>
-                <View style={[styles.row]}>
-                    <View style={{ flex: 1 }}>
-                        <View style={{ marginTop: 25 }}>
-                            <UiFileUpload
-                                prefix="products"
-                                imageKey={form.getValues().picture}
-                                onAssetUploaded={updatePicture}
-                                onAssetRemoved={updatePicture}
-                            />
-                        </View>
-                    </View>
-                    <View style={{ flex: 4 }}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <UIOverlaySelect
-                                name="productCategoryId"
-                                title={'Select Category'}
-                                list={categories}
-                                selectedId={product?.productCategoryId}
-                                rules={{ required: true }}
-                            />
-                            <UIOverlaySelect
-                                name="productBrandId"
-                                title={'Select Brand'}
-                                list={brands}
-                                selectedId={product?.productBrandId}
-                            />
-                            <UIOverlaySelect
-                                name="unitOfMeasure"
-                                title={'Select U/of Measure'}
-                                list={ums.map((u) => ({
-                                    id: u.name,
-                                    name: u.name,
-                                }))}
-                                selectedId={product?.unitOfMeasure}
-                                rules={{ required: true }}
-                            />
-                            <View style={[styles.row, { marginTop: 12, marginLeft: 90, alignItems: 'center' }]}>
-                                <Text style={[styles.primaryText, { marginRight: 30 }]}>
-                                    Available for sale: 
-                                </Text>
-                                <View style={{ flex: 1, paddingLeft: 15 }}>
-                                    <UISwitch name='isActive' />
+        <UIScreen>
+            <FormProvider {...form}>
+                <View style={styles.screen}>
+                    <ScrollView contentContainerStyle={styles.scrollContent}>
+                        <View style={styles.container}>
+                            <UICard
+                                style={styles.headerCard}
+                                tone="muted"
+                                radius="lg"
+                            >
+                                <View style={styles.headerRow}>
+                                    <View style={styles.headerTitleBlock}>
+                                        <Text style={styles.headerTitle}>
+                                            {t(
+                                                'PRODUCT_ProfileTitle',
+                                                'Product Profile',
+                                            )}
+                                        </Text>
+                                        <Text style={styles.headerSubtitle}>
+                                            {t(
+                                                'PRODUCT_ProfileSubtitle',
+                                                'Configure catalog details, pricing and identifiers.',
+                                            )}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.headerStatusBlock}>
+                                        <View
+                                            style={[
+                                                styles.statusBadge,
+                                                form.watch('isActive')
+                                                    ? styles.statusBadgeActive
+                                                    : styles.statusBadgeInactive,
+                                            ]}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.statusBadgeText,
+                                                    form.watch('isActive')
+                                                        ? styles.statusBadgeTextActive
+                                                        : styles.statusBadgeTextInactive,
+                                                ]}
+                                            >
+                                                {form.watch('isActive')
+                                                    ? t(
+                                                          'PRODUCT_StatusAvailable',
+                                                          'Available',
+                                                      )
+                                                    : t(
+                                                          'PRODUCT_StatusHidden',
+                                                          'Hidden',
+                                                      )}
+                                            </Text>
+                                        </View>
+                                        <View
+                                            style={[
+                                                styles.statusBadge,
+                                                form.watch('isEBTEligible')
+                                                    ? styles.statusBadgeEbt
+                                                    : styles.statusBadgeDefault,
+                                            ]}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.statusBadgeText,
+                                                    form.watch('isEBTEligible')
+                                                        ? styles.statusBadgeTextEbt
+                                                        : styles.statusBadgeTextDefault,
+                                                ]}
+                                            >
+                                                {form.watch('isEBTEligible')
+                                                    ? t(
+                                                          'PRODUCT_StatusEbtEligible',
+                                                          'EBT Eligible',
+                                                      )
+                                                    : t(
+                                                          'PRODUCT_StatusRegular',
+                                                          'Regular Product',
+                                                      )}
+                                            </Text>
+                                        </View>
+                                    </View>
                                 </View>
-                            </View>
+                            </UICard>
+
+                            <UICard style={styles.sectionCard}>
+                                <Text style={styles.sectionTitle}>
+                                    {t('PRODUCT_CatalogSection', 'Catalog')}
+                                </Text>
+                                <View style={styles.catalogRow}>
+                                    <View style={styles.imageColumn}>
+                                        <UiFileUpload
+                                            testID="product-picture-upload"
+                                            prefix={`${tenantId}/products`}
+                                            imageKey={form.getValues().picture}
+                                            onAssetUploaded={updatePicture}
+                                            onAssetRemoved={updatePicture}
+                                        />
+                                    </View>
+                                    <View style={styles.catalogFieldsColumn}>
+                                        <View style={styles.controlsGrid}>
+                                            <View style={styles.controlsColumn}>
+                                                <View
+                                                    style={
+                                                        styles.overlaySelectSlot
+                                                    }
+                                                >
+                                                    <UIOverlaySelect
+                                                        name="productBrandId"
+                                                        title={t(
+                                                            'PRODUCT_SelectBrand',
+                                                            'Select Brand',
+                                                        )}
+                                                        list={brands}
+                                                        selectedId={
+                                                            product?.productBrandId
+                                                        }
+                                                    />
+                                                </View>
+                                                <View
+                                                    style={
+                                                        styles.overlaySelectSlot
+                                                    }
+                                                >
+                                                    <UIOverlaySelect
+                                                        name="productCategoryId"
+                                                        title={t(
+                                                            'PRODUCT_SelectCategory',
+                                                            'Select Category',
+                                                        )}
+                                                        list={categories}
+                                                        selectedId={
+                                                            product?.productCategoryId
+                                                        }
+                                                        searchable
+                                                        searchPlaceholder={t(
+                                                            'PRODUCT_SearchCategories',
+                                                            'Search categories',
+                                                        )}
+                                                        clearable
+                                                        clearTitle={t(
+                                                            'PRODUCT_ClearCategory',
+                                                            'Clear category',
+                                                        )}
+                                                    />
+                                                </View>
+                                                <View
+                                                    style={
+                                                        styles.overlaySelectSlot
+                                                    }
+                                                >
+                                                    <UIOverlaySelect
+                                                        name="unitOfMeasure"
+                                                        title={t(
+                                                            'PRODUCT_SelectUnitOfMeasure',
+                                                            'Select U/of Measure',
+                                                        )}
+                                                        list={ums.map((u) => ({
+                                                            id: u.name,
+                                                            name: u.name,
+                                                        }))}
+                                                        selectedId={
+                                                            product?.unitOfMeasure
+                                                        }
+                                                        rules={{
+                                                            required: true,
+                                                        }}
+                                                    />
+                                                </View>
+                                            </View>
+                                            <View style={styles.switchesColumn}>
+                                                <View style={styles.toggleItem}>
+                                                    <Text
+                                                        style={
+                                                            styles.toggleLabel
+                                                        }
+                                                    >
+                                                        {t(
+                                                            'PRODUCT_AvailableForSale',
+                                                            'Available for sale',
+                                                        )}
+                                                    </Text>
+                                                    <View
+                                                        style={
+                                                            styles.toggleSwitchWrap
+                                                        }
+                                                    >
+                                                        <UISwitch name="isActive" />
+                                                    </View>
+                                                </View>
+                                                <View style={styles.toggleItem}>
+                                                    <Text
+                                                        style={
+                                                            styles.toggleLabel
+                                                        }
+                                                    >
+                                                        {t(
+                                                            'PRODUCT_EbtEligibleLabel',
+                                                            'EBT eligible',
+                                                        )}
+                                                    </Text>
+                                                    <View
+                                                        style={
+                                                            styles.toggleSwitchWrap
+                                                        }
+                                                    >
+                                                        <UISwitch name="isEBTEligible" />
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    </View>
+                                </View>
+                            </UICard>
+
+                            <UICard style={styles.sectionCard}>
+                                <Text style={styles.sectionTitle}>
+                                    {t('COMMON_Details', 'Details')}
+                                </Text>
+                                <UIStack spacing="sm">
+                                    <UIInput
+                                        name="name"
+                                        testID="product-input-name"
+                                        label={t('COMMON_Name', 'Name')}
+                                        placeholder={t('COMMON_Name', 'Name')}
+                                        rules={{
+                                            required: t(
+                                                'COMMON_NameRequired',
+                                                'Name is required',
+                                            ),
+                                        }}
+                                    />
+                                    <UIInput
+                                        name="description"
+                                        testID="product-input-description"
+                                        placeholder={t(
+                                            'COMMON_Description',
+                                            'Description',
+                                        )}
+                                        label={t(
+                                            'COMMON_Description',
+                                            'Description',
+                                        )}
+                                        multiline
+                                        numberOfLines={2}
+                                        style={styles.descriptionInput}
+                                    />
+                                    <View style={styles.row}>
+                                        <View style={styles.column}>
+                                            <UINumericInput
+                                                keyboardType="decimal-pad"
+                                                name="cost"
+                                                testID="product-input-cost"
+                                                label={t(
+                                                    'PRODUCT_Cost',
+                                                    'Cost',
+                                                )}
+                                                allowDecimals
+                                                placeholder={t(
+                                                    'PRODUCT_Cost',
+                                                    'Cost',
+                                                )}
+                                                textAlign="right"
+                                                lIcon="currency-usd"
+                                            />
+                                        </View>
+                                        <View style={styles.columnLast}>
+                                            <UINumericInput
+                                                keyboardType="decimal-pad"
+                                                name="price"
+                                                testID="product-input-price"
+                                                label={t(
+                                                    'COMMON_Price',
+                                                    'Price',
+                                                )}
+                                                allowDecimals
+                                                placeholder={t(
+                                                    'COMMON_Price',
+                                                    'Price',
+                                                )}
+                                                textAlign="right"
+                                                rules={{
+                                                    required: t(
+                                                        'PRODUCT_PriceRequired',
+                                                        'Price is required',
+                                                    ),
+                                                }}
+                                                lIcon="currency-usd"
+                                            />
+                                        </View>
+                                    </View>
+                                </UIStack>
+                            </UICard>
+
+                            <UICard style={styles.sectionCard}>
+                                <Text style={styles.sectionTitle}>
+                                    {t(
+                                        'PRODUCT_IdentifiersSection',
+                                        'Identifiers',
+                                    )}
+                                </Text>
+                                <View style={styles.row}>
+                                    <View style={styles.column}>
+                                        <UIInput
+                                            name="barcode"
+                                            testID="product-input-barcode"
+                                            placeholder={t(
+                                                'PRODUCT_Upc',
+                                                'UPC',
+                                            )}
+                                            label={t('PRODUCT_Upc', 'UPC')}
+                                            lIcon="barcode"
+                                        />
+                                    </View>
+                                    <View style={styles.column}>
+                                        <UIInput
+                                            name="sku"
+                                            testID="product-input-sku"
+                                            placeholder={t(
+                                                'PRODUCT_Sku',
+                                                'SKU',
+                                            )}
+                                            label={t('PRODUCT_Sku', 'SKU')}
+                                            lIcon="barcode"
+                                        />
+                                    </View>
+                                    <View style={styles.columnLast}>
+                                        <UIInput
+                                            name="plu"
+                                            testID="product-input-plu"
+                                            placeholder={t(
+                                                'PRODUCT_Plu',
+                                                'PLU',
+                                            )}
+                                            label={t('PRODUCT_Plu', 'PLU')}
+                                            lIcon="barcode"
+                                        />
+                                    </View>
+                                </View>
+                            </UICard>
                         </View>
-                        <UIVerticalSpacer size="large" />
-                        <UIVerticalSpacer size="medium" />
-                        <UIInput
-                            name="name"
-                            label='Name'
-                            placeholder="Name"
-                            rules={{ required: 'Name is required' }}
-                        />
-                        <UIInput
-                            name="description"
-                            placeholder="Description"
-                            label='Description'
-                            multiline={true}
-                            numberOfLines={2}
-                            style={{
-                                height: 65,
-                                textAlignVertical: 'top',
-                            }}
-                        />
-                        <View style={{ flexDirection: 'row' }}>
-                            <View style={{ flex: 1 }}>
-                                <UINumericInput
-                                    keyboardType="decimal-pad"
-                                    name="cost"
-                                    label='Cost'
-                                    allowDecimals={true}
-                                    placeholder="Cost"
-                                    textAlign="right"
-                                    lIcon="currency-usd"
-                                />
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <UINumericInput
-                                    keyboardType="number-pad"
-                                    name="price"
-                                    label='Price'
-                                    allowDecimals={true}
-                                    placeholder="Price"
-                                    textAlign="right"
-                                    rules={{
-                                        required: 'Price is required',
-                                    }}
-                                    lIcon="currency-usd"
-                                />
-                            </View>
-                        </View>
-                        <View style={{ flexDirection: 'row' }}>
-                            <View style={{ flex: 1 }}>
-                                <Input
-                                    ref={barcodeRef}
-                                    placeholder='UPC'
-                                    label='UPC'
-                                    inputContainerStyle={styles.inputContainerStyle}
-                                    inputStyle={styles.inputStyle}
-                                    leftIcon={{
-                                        name: 'barcode',
-                                        type: 'material-community',
-                                        color: theme.theme.colors.grey2,
-                                    }}
-                                    onBlur={(e) => form.setValue('barcode', e.nativeEvent.text)}
-                                />
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <Input
-                                    ref={skuRef}
-                                    placeholder='SKU'
-                                    label='SKU'
-                                    inputContainerStyle={styles.inputContainerStyle}
-                                    inputStyle={styles.inputStyle}
-                                    leftIcon={{
-                                        name: 'barcode',
-                                        type: 'material-community',
-                                        color: theme.theme.colors.grey2,
-                                    }}
-                                    onBlur={(e) => {
-                                        form.setValue('sku', e.nativeEvent.text)
-                                    }}
-                                />
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <Input
-                                    ref={pluRef}
-                                    placeholder='PLU'
-                                    label='PLU'
-                                    inputContainerStyle={styles.inputContainerStyle}
-                                    inputStyle={styles.inputStyle}
-                                    leftIcon={{
-                                        name: 'barcode',
-                                        type: 'material-community',
-                                        color: theme.theme.colors.grey2,
-                                    }}
-                                    onBlur={(e) => {
-                                        form.setValue('plu', e.nativeEvent.text)
-                                    }}
-                                />
-                            </View>
-                        </View>
+                    </ScrollView>
+                    <View style={styles.actionBar}>
+                        <UICard tone="muted" style={styles.actionBarCard}>
+                            <UIActions
+                                busy={busy}
+                                submitTestID="product-save"
+                                cancelTestID="product-cancel"
+                                submitAction={form.handleSubmit(
+                                    save,
+                                    handleInvalidSubmit,
+                                )}
+                                cancelAction={confirmCancel}
+                            />
+                        </UICard>
                     </View>
                 </View>
-                <UIVerticalSpacer size="small" />
-                <UIActions
-                    busy={busy}
-                    submitAction={form.handleSubmit(save)}
-                    cancelAction={confirmCancel}
-                />
-            </View>
-        </FormProvider>
+            </FormProvider>
+        </UIScreen>
     );
 }
+
+const useStyles = (
+    tokens: ReturnType<typeof useDesignTokens>,
+    colors: ReturnType<typeof getThemeColors>,
+) =>
+    StyleSheet.create({
+        screen: {
+            flex: 1,
+        },
+        scrollContent: {
+            paddingHorizontal: tokens.spacing.xl,
+            paddingTop: tokens.spacing.lg,
+            paddingBottom: tokens.spacing.xl,
+            alignItems: 'center',
+        },
+        container: {
+            width: '100%',
+            maxWidth: 1240,
+        },
+        headerCard: {
+            marginBottom: tokens.spacing.lg,
+            borderRadius: 26,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
+        },
+        headerRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+        },
+        headerTitleBlock: {
+            flex: 1,
+            paddingRight: tokens.spacing.lg,
+        },
+        headerTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 28,
+            fontWeight: '800',
+            letterSpacing: -0.5,
+        },
+        headerSubtitle: {
+            color: tokens.colors.textSecondary,
+            marginTop: tokens.spacing.xs,
+            fontSize: 15,
+            lineHeight: 21,
+        },
+        headerStatusBlock: {
+            alignItems: 'flex-end',
+        },
+        statusBadge: {
+            borderRadius: tokens.radii.xl,
+            borderWidth: 1,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.xs,
+            marginBottom: tokens.spacing.xs,
+        },
+        statusBadgeActive: {
+            backgroundColor: `${tokens.colors.success}22`,
+            borderColor: `${tokens.colors.success}66`,
+        },
+        statusBadgeInactive: {
+            backgroundColor: `${tokens.colors.danger}22`,
+            borderColor: `${tokens.colors.danger}66`,
+        },
+        statusBadgeEbt: {
+            backgroundColor: `${tokens.colors.accent}22`,
+            borderColor: `${tokens.colors.accent}66`,
+        },
+        statusBadgeDefault: {
+            backgroundColor: `${tokens.colors.textMuted}22`,
+            borderColor: `${tokens.colors.textMuted}66`,
+        },
+        statusBadgeText: {
+            fontSize: 12,
+            fontWeight: '700',
+            textTransform: 'uppercase',
+            letterSpacing: 0.6,
+        },
+        statusBadgeTextActive: {
+            color: tokens.colors.success,
+        },
+        statusBadgeTextInactive: {
+            color: tokens.colors.danger,
+        },
+        statusBadgeTextEbt: {
+            color: tokens.colors.accent,
+        },
+        statusBadgeTextDefault: {
+            color: tokens.colors.textMuted,
+        },
+        sectionCard: {
+            marginBottom: tokens.spacing.lg,
+            borderRadius: 24,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#0E141C',
+        },
+        sectionTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 19,
+            fontWeight: '800',
+            letterSpacing: 0.2,
+            marginBottom: tokens.spacing.md,
+        },
+        catalogRow: {
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+        },
+        imageColumn: {
+            width: 230,
+            marginRight: tokens.spacing.lg,
+            paddingTop: tokens.spacing.md,
+            paddingLeft: tokens.spacing.sm,
+            paddingBottom: tokens.spacing.sm,
+        },
+        catalogFieldsColumn: {
+            flex: 1,
+        },
+        controlsGrid: {
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+        },
+        controlsColumn: {
+            flex: 1.4,
+            marginLeft: -10,
+            marginRight: tokens.spacing.md,
+        },
+        switchesColumn: {
+            flex: 1,
+            justifyContent: 'center',
+            paddingTop: tokens.spacing.xs,
+        },
+        overlaySelectSlot: {
+            minWidth: 240,
+            marginBottom: tokens.spacing.xs,
+        },
+        toggleItem: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            minHeight: 44,
+            marginBottom: tokens.spacing.xs,
+        },
+        toggleLabel: {
+            color: tokens.colors.textSecondary,
+            fontSize: 16,
+            fontWeight: '600',
+        },
+        toggleSwitchWrap: {
+            marginLeft: tokens.spacing.sm,
+        },
+        descriptionInput: {
+            height: 70,
+            textAlignVertical: 'top',
+        },
+        row: {
+            flexDirection: 'row',
+        },
+        column: {
+            flex: 1,
+            marginRight: tokens.spacing.md,
+        },
+        columnLast: {
+            flex: 1,
+        },
+        inputContainerStyle: {
+            marginTop: 10,
+            borderRadius: 5,
+            borderBottomWidth: 0,
+            paddingLeft: 10,
+            backgroundColor: colors.grey5,
+        },
+        inputStyle: {
+            color: colors.grey1,
+            paddingHorizontal: 10,
+            textAlign: 'right',
+        },
+        actionBar: {
+            paddingHorizontal: tokens.spacing.xl,
+            paddingBottom: tokens.spacing.md,
+            paddingTop: tokens.spacing.xs,
+        },
+        actionBarCard: {
+            maxWidth: 1240,
+            alignSelf: 'center',
+            width: '100%',
+            borderRadius: 24,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
+        },
+    });
 
 export default ProductForm;

@@ -1,8 +1,7 @@
-/* eslint-disable @nrwl/nx/enforce-module-boundaries */
+/* eslint-disable @nx/enforce-module-boundaries */
 import { EmployeeEntity } from '@pos/employees/data-access';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
-import { Alert } from 'react-native';
 
 const STATION_CONFIG = 'stationConfig';
 
@@ -15,15 +14,22 @@ export interface StationConfig {
 export class StationService {
     static async getConfig(): Promise<StationConfig> {
         const stationConfigString = await AsyncStorage.getItem(STATION_CONFIG);
-        return stationConfigString
-            ? JSON.parse(stationConfigString)
-            : {};
+        if (!stationConfigString) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(stationConfigString);
+        } catch (error) {
+            console.error('Invalid station config payload', error);
+            return {};
+        }
     }
 
     static async saveStationNo(stationNumber: string) {
         const config = await StationService.getConfig();
         config.stationNumber = stationNumber;
-        StationService.save(config);
+        StationService.saveConfig(config);
     }
 
     static async isStationNumberSet() {
@@ -33,11 +39,32 @@ export class StationService {
 
     static async getNextOrderNumber(employee: EmployeeEntity) {
         const config = await StationService.getConfig();
+        const { orderNo, config: nextConfig } = StationService.reserveNextOrderNumber(
+            config,
+            employee
+        );
 
+        await StationService.saveConfig(nextConfig);
+
+        return orderNo;
+    }
+
+    static reserveNextOrderNumber(
+        config: StationConfig,
+        employee: EmployeeEntity
+    ) {
+        const nextConfig: StationConfig = {
+            ...config,
+        };
         if (!config.stationNumber) {
-            Alert.alert(
-                'Error',
+            throw new Error(
                 'You cannot make sales before configuring the station code'
+            );
+        }
+
+        if (!employee.code?.trim()) {
+            throw new Error(
+                'You cannot make sales until the employee code is available'
             );
         }
 
@@ -45,22 +72,25 @@ export class StationService {
         const orderDateString = today.format('YYMMDD');
 
         if (
-            !config.currentDate ||
-            !config.orderNumber ||
-            config.currentDate !== orderDateString
+            !nextConfig.currentDate ||
+            !nextConfig.orderNumber ||
+            nextConfig.currentDate !== orderDateString
         ) {
-            config.currentDate = orderDateString;
-            config.orderNumber = 0;
+            nextConfig.currentDate = orderDateString;
+            nextConfig.orderNumber = 0;
         }
 
-        config.orderNumber += 1;
+        nextConfig.orderNumber += 1;
 
-        await StationService.save(config);
-
-        return `${config.stationNumber}-${employee.code}-${orderDateString}-${config.orderNumber.toString().padStart(4, '0')}`;
+        return {
+            orderNo: `${nextConfig.stationNumber}-${employee.code}-${orderDateString}-${nextConfig.orderNumber
+                .toString()
+                .padStart(4, '0')}`,
+            config: nextConfig,
+        };
     }
 
-    private static save(info: StationConfig) {
+    static saveConfig(info: StationConfig) {
         return AsyncStorage.setItem(
             STATION_CONFIG,
             JSON.stringify(info)

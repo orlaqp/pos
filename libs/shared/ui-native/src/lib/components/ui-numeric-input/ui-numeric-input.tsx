@@ -1,10 +1,10 @@
 import { useSharedStyles } from '@pos/theme/native';
 import { InputProps } from '@rneui/base';
 import { Input, useTheme } from '@rneui/themed';
-import React from 'react';
+import React, { useState } from 'react';
 import { useFormContext, Controller, RegisterOptions } from 'react-hook-form';
 
-type Props = React.ComponentProps<typeof Input> & {
+type Props = InputProps & {
     name: string;
     allowDecimals?: boolean;
     rules?: RegisterOptions;
@@ -12,40 +12,44 @@ type Props = React.ComponentProps<typeof Input> & {
     rIcon?: string;
 };
 
-export const UINumericInput = React.forwardRef<typeof Input, Props>(
+export const UINumericInput = React.forwardRef<any, Props>(
     (props, ref) => {
         const theme = useTheme();
         const styles = useSharedStyles();
+        const [focused, setFocused] = useState(false);
         const { name, allowDecimals, rules, lIcon, rIcon, ...restOfProps } =
             props;
         const { control } = useFormContext();
 
         const inputProps = restOfProps as InputProps;
+        const nativeInputTestId =
+            typeof inputProps.testID === 'string' ? inputProps.testID : undefined;
         inputProps.leftIcon = lIcon
             ? {
                   name: lIcon,
                   type: 'material-community',
                   color: theme.theme.colors.grey2,
               }
-            : undefined;
+            : inputProps.leftIcon;
         inputProps.rightIcon = rIcon
             ? {
                   name: rIcon,
                   type: 'material-community',
                   color: theme.theme.colors.grey2,
               }
-            : undefined;
+            : inputProps.rightIcon;
 
         const mergedRules = {
-            // ...rules,
-            pattern: {
-                value: allowDecimals
-                    ? /^(?:0\.(?:0[0-9]|[0-9]\d?)|[0-9]\d*(?:\.\d{1,2})?)(?:e[+-]?\d+)?$/
-                    : /^([0-9]+)$/,
-                message: allowDecimals
-                    ? 'Only numbers are allowed here'
-                    : 'Only integers are allowed here',
-            },
+            ...rules,
+            pattern:
+                rules?.pattern || {
+                    value: allowDecimals
+                        ? /^(?:0\.(?:0[0-9]|[0-9]\d?)|[0-9]\d*(?:\.\d{1,2})?)(?:e[+-]?\d+)?$/
+                        : /^([0-9]+)$/,
+                    message: allowDecimals
+                        ? 'Only numbers are allowed here'
+                        : 'Only integers are allowed here',
+                },
         };
 
         // const validate = (value: string) => {
@@ -60,16 +64,28 @@ export const UINumericInput = React.forwardRef<typeof Input, Props>(
             <Controller
                 control={control}
                 name={name}
-                render={({
-                    field: { onChange, value, onBlur, ref },
-                    fieldState: { isTouched, isDirty, error },
-                }) => (
+                render={({ field: { onChange, value, onBlur, ref }, fieldState: { error } }) => (
                     <Input
-                        ref={ref}
+                        ref={ref as any}
                         {...restOfProps}
+                        inputProps={{
+                            ...inputProps.inputProps,
+                            testID:
+                                inputProps.inputProps?.testID || nativeInputTestId,
+                            nativeID:
+                                inputProps.inputProps?.nativeID || nativeInputTestId,
+                        }}
                         placeholder={props.placeholder}
                         value={value?.toString()}
-                        onBlur={onBlur}
+                        onBlur={(event) => {
+                            setFocused(false);
+                            onBlur();
+                            props.onBlur?.(event);
+                        }}
+                        onFocus={(event) => {
+                            setFocused(true);
+                            props.onFocus?.(event);
+                        }}
                         onChange={onChange}
                         onChangeText={(text) => {
                             onChange(text);
@@ -77,7 +93,35 @@ export const UINumericInput = React.forwardRef<typeof Input, Props>(
                         }}
                         // onChangeText={(text)=>onChange(validate(text))}
                         errorMessage={error?.message}
-                        inputContainerStyle={styles.inputContainerStyle}
+                        labelStyle={[
+                            {
+                                color: theme.theme.colors.grey2,
+                                fontSize: 12,
+                                fontWeight: '700',
+                                letterSpacing: 0.6,
+                                textTransform: 'uppercase',
+                                marginBottom: 6,
+                            },
+                            inputProps.labelStyle,
+                        ]}
+                        errorStyle={[
+                            {
+                                color: theme.theme.colors.error,
+                                fontSize: 12,
+                                fontWeight: '600',
+                                marginHorizontal: 6,
+                            },
+                            inputProps.errorStyle,
+                        ]}
+                        inputContainerStyle={[
+                            styles.inputContainerStyle,
+                            focused
+                                ? {
+                                      borderWidth: 1,
+                                      borderColor: theme.theme.colors.primary,
+                                  }
+                                : undefined,
+                        ]}
                         inputStyle={styles.inputStyle}
                     />
                 )}

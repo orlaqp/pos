@@ -9,3 +9,7 @@ export * from './lib/services/conversion.service';
 export * from './lib/services/math.service';
 export * from './lib/services/transform.service';
 export * from './lib/services/identifier.service';
+export * from './lib/e2e-support';
+export * from './lib/e2e-credentials';
+export * from './lib/sync-debug';
+export * from './lib/translation';

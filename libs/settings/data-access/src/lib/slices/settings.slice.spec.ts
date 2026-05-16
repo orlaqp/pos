@@ -1,57 +1,81 @@
 import {
-    fetchSettings,
-    settingsAdapter,
-    settingsReducer,
+  fetchDeviceSettings,
+  fetchGlobalSettings,
+  initialSettingsState,
+  resetDataStore,
+  settingsActions,
+  settingsReducer,
 } from './settings.slice';
 
 describe('settings reducer', () => {
-    it('should handle initial state', () => {
-        const expected = settingsAdapter.getInitialState({
-            loadingStatus: 'not loaded',
-            error: null,
-        });
+  it('returns initial state', () => {
+    expect(settingsReducer(undefined, { type: '' })).toEqual(initialSettingsState);
+  });
 
-        expect(settingsReducer(undefined, { type: '' })).toEqual(expected);
-    });
+  it('handles local actions', () => {
+    let state = settingsReducer(undefined, settingsActions.set(true));
+    expect(state.darkTheme).toBe(true);
 
-    it('should handle fetchSettingss', () => {
-        let state = settingsReducer(
-            undefined,
-            fetchSettings.pending(null, null)
-        );
+    state = settingsReducer(state, settingsActions.setLanguage('es'));
+    expect(state.languageTag).toBe('es');
 
-        expect(state).toEqual(
-            expect.objectContaining({
-                loadingStatus: 'loading',
-                error: null,
-                entities: {},
-            })
-        );
+    state = settingsReducer(state, settingsActions.setPayFromSalesScreen(true));
+    expect(state.payFromSalesScreen).toBe(true);
 
-        state = settingsReducer(
-            state,
-            fetchSettings.fulfilled([{ id: 1 }], null, null)
-        );
+    state = settingsReducer(state, settingsActions.setGlobalSettings({ taxValue: 7 } as any));
+    expect(state.globalSettings).toEqual(expect.objectContaining({ taxValue: 7 }));
+  });
 
-        expect(state).toEqual(
-            expect.objectContaining({
-                loadingStatus: 'loaded',
-                error: null,
-                entities: { 1: { id: 1 } },
-            })
-        );
+  it('handles resetDataStore lifecycle', () => {
+    let state = settingsReducer(undefined, resetDataStore.pending('', undefined));
+    expect(state.dataStoreStatus).toBe('resetting');
 
-        state = settingsReducer(
-            state,
-            fetchSettings.rejected(new Error('Uh oh'), null, null)
-        );
+    state = settingsReducer(state, resetDataStore.fulfilled(undefined, '', undefined));
+    expect(state.dataStoreStatus).toBe('synced');
 
-        expect(state).toEqual(
-            expect.objectContaining({
-                loadingStatus: 'error',
-                error: 'Uh oh',
-                entities: { 1: { id: 1 } },
-            })
-        );
-    });
+    state = settingsReducer(
+      state,
+      resetDataStore.rejected(new Error('fail'), '', undefined)
+    );
+    expect(state.dataStoreStatus).toBe('error');
+  });
+
+  it('handles fetchGlobalSettings.fulfilled', () => {
+    const payload = { ebtEnabled: true } as any;
+    const state = settingsReducer(
+      undefined,
+      fetchGlobalSettings.fulfilled(payload, '', undefined)
+    );
+    expect(state.globalSettings).toEqual(payload);
+    expect(state.globalSettingsStatus).toBe('loaded');
+  });
+
+  it('handles fetchGlobalSettings pending/rejected', () => {
+    let state = settingsReducer(undefined, fetchGlobalSettings.pending('', undefined));
+    expect(state.globalSettingsStatus).toBe('loading');
+
+    state = settingsReducer(
+      state,
+      fetchGlobalSettings.rejected(new Error('fail'), '', undefined)
+    );
+    expect(state.globalSettingsStatus).toBe('error');
+  });
+
+  it('handles fetchDeviceSettings lifecycle', () => {
+    let state = settingsReducer(undefined, fetchDeviceSettings.pending('', undefined));
+    expect(state.deviceSettingsStatus).toBe('loading');
+
+    state = settingsReducer(
+      state,
+      fetchDeviceSettings.fulfilled({ payFromSalesScreen: true }, '', undefined)
+    );
+    expect(state.deviceSettingsStatus).toBe('loaded');
+    expect(state.payFromSalesScreen).toBe(true);
+
+    state = settingsReducer(
+      state,
+      fetchDeviceSettings.rejected(new Error('fail'), '', undefined)
+    );
+    expect(state.deviceSettingsStatus).toBe('error');
+  });
 });

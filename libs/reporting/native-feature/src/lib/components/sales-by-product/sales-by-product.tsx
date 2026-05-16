@@ -1,55 +1,93 @@
-import { getSalesSummaryForRange } from '@pos/reporting/data-access';
-import { DateRange, UIOverlaySelect } from '@pos/shared/ui-native';
+import {
+    buildSalesByProductRows,
+    getOrdersForStatuses,
+    getRefundLinesForRefundIds,
+    getRefundsForRange,
+} from '@pos/reporting/data-access';
+import { DateRange } from '@pos/shared/ui-native';
 import { sortDescListBy } from '@pos/shared/utils';
 import { useSharedStyles } from '@pos/theme/native';
-import { EACH, POUND, selectAllUnitOfMeasures } from '@pos/unit-of-measures/data-access';
-import { ButtonGroup } from '@rneui/themed';
-import React, { useState } from 'react';
+import React from 'react';
+import { OrderStatus } from '@pos/shared/models';
+import i18next from 'i18next';
 
 import { View } from 'react-native';
-import { useSelector } from 'react-redux';
 import ReportViewer, { ReportHeader } from '../report-viewer/report-viewer';
 
 /* eslint-disable-next-line */
-export interface SalesByProductProps {
-}
+export interface SalesByProductProps {}
+
+export const toSalesByProductRows = (
+    rows: Array<{ productId: string; quantity: number }>,
+    orders: Array<{ lines?: Array<{ productId?: string; productName?: string | null } | null> | null }>
+) => {
+    const productNamesById = new Map<string, string>();
+    orders.forEach((order) => {
+        (order.lines || []).forEach((line) => {
+            if (line?.productId && line.productName && !productNamesById.has(line.productId)) {
+                productNamesById.set(line.productId, line.productName);
+            }
+        });
+    });
+
+    const items = [...rows];
+    sortDescListBy(items as any, 'quantity');
+
+    return items.map((item) => ({
+        product: productNamesById.get(item.productId) || 'Unknown',
+        amount: Number(item.quantity || 0).toFixed(2),
+    }));
+};
+
+export const normalizeSalesByProductRange = (range: DateRange): DateRange => ({
+    ...range,
+    startDate: range.startDate.clone().startOf('day'),
+    endDate: range.endDate.clone().endOf('day'),
+});
 
 export function SalesByProduct(props: SalesByProductProps) {
     const styles = useSharedStyles();
+    const t = (key: string, fallback: string) =>
+        i18next.isInitialized && i18next.exists(key)
+            ? String(i18next.t(key))
+            : fallback;
+
     const headers: ReportHeader[] = [
-        { label: 'Product', field: 'product', width: 5 },
-        { label: 'Quantity', field: 'amount', width: 1, align: 'right' },
+        { label: t('REPORT_Header_Product', 'Product'), field: 'product', width: 5 },
+        { label: t('REPORT_Header_Quantity', 'Quantity'), field: 'amount', width: 1, align: 'right' },
     ];
-    const unitOfMeasures = useSelector(selectAllUnitOfMeasures);
-    const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
-    const getData = (range: DateRange) => {
-        range.startDate = range.startDate.startOf('day');
-        range.endDate = range.endDate.endOf('day');
+    const getData = async (range: DateRange) => {
+        const normalizedRange = normalizeSalesByProductRange(range);
+        const [orders, refunds] = await Promise.all([
+            getOrdersForStatuses({
+                statuses: [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+                range: normalizedRange,
+            }),
+            getRefundsForRange({ range: normalizedRange }),
+        ]);
+        const refundLines = await getRefundLinesForRefundIds(
+            refunds.map((refund) => refund.id).filter(Boolean)
+        );
 
-        return getSalesSummaryForRange('PAID', range).then((summary) => {
-            const list = summary?.products?.filter(p => p?.unitOfMeasure === unitOfMeasures[selectedIndex]?.name);
-            sortDescListBy(list as any, 'quantity');
-            return list?.map((e) => ({
-                product: `${e?.productName} (${e?.unitOfMeasure})`,
-                amount: e?.unitOfMeasure === EACH ? e.quantity : e?.quantity.toFixed(2),
-            }));
-        });
+        return toSalesByProductRows(
+            buildSalesByProductRows(orders, refundLines),
+            orders
+        );
     };
 
     return (
         <View style={styles.page}>
-            <View style={{ justifyContent: 'center' }}>
-                <ButtonGroup
-                    buttons={unitOfMeasures?.map((u, index) => u.name)}
-                    selectedIndex={selectedIndex}
-                    onPress={(value) => {
-                        setSelectedIndex(value);
-                    }}
-                    containerStyle={{ marginBottom: 20, backgroundColor: 'transparent', borderWidth: 0 }}
-                />
-            </View>
-            <ReportViewer getData={getData} headers={headers} />
+            <ReportViewer
+                title={t('REPORT_ByProductTitle', 'Sales By Product')}
+                subtitle={t(
+                    'REPORT_ByProductSubtitle',
+                    'Compare sold quantities grouped by product.'
+                )}
+                total={0}
+                getData={getData}
+                headers={headers}
+            />
         </View>
     );
 }

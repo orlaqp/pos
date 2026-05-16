@@ -4,29 +4,45 @@ import {
     createSlice,
     PayloadAction,
 } from '@reduxjs/toolkit';
-import { StoreInfoEntity, StoreInfoEntityMapper } from './store-info.entity';
+import {
+    selectPreferredStore,
+    StoreInfoEntity,
+    StoreInfoEntityMapper,
+} from './store-info.entity';
 import DeviceInfo from 'react-native-device-info';
 import { StoreInfoService } from './store-info.service';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { RootState } from '@pos/store';
 
 export const STORE_INFO_FEATURE_KEY = 'storeInfo';
-const deviceId = DeviceInfo.getUniqueId();
+const deviceId = DeviceInfo.getUniqueIdSync();
 
 export interface StoreInfoState {
     deviceId: string;
     loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
     store?: StoreInfoEntity;
     error?: string;
+    initialSyncComplete: boolean;
 }
 
 export const fetchStoreInfo = createAsyncThunk(
     'storeInfo/fetchStatus',
     async (_, thunkAPI) => {
-        const store = await StoreInfoService.getStore();
-        if (!store.length) return undefined;
+        try {
+            const stores = await StoreInfoService.getStore();
+            const preferredStore = selectPreferredStore(stores);
 
-        return StoreInfoEntityMapper.fromModel(store[0]);
+            return {
+                store: preferredStore
+                    ? StoreInfoEntityMapper.fromModel(preferredStore)
+                    : undefined,
+                initialSyncComplete: true,
+            };
+        } catch (error) {
+            return thunkAPI.rejectWithValue(
+                error instanceof Error ? error.message : String(error)
+            );
+        }
     }
 );
 
@@ -35,6 +51,7 @@ export const initialStoreInfoState: StoreInfoState = {
     loadingStatus: 'not loaded',
     error: undefined,
     store: undefined,
+    initialSyncComplete: false,
 };
 
 export const storeInfoSlice = createSlice({
@@ -54,17 +71,22 @@ export const storeInfoSlice = createSlice({
                 fetchStoreInfo.fulfilled,
                 (
                     state: StoreInfoState,
-                    action: PayloadAction<StoreInfoEntity | undefined>
+                    action: PayloadAction<{
+                        store: StoreInfoEntity | undefined;
+                        initialSyncComplete: boolean;
+                    }>
                 ) => {
-                    state.store = action.payload;
+                    state.store = action.payload.store;
                     state.loadingStatus = 'loaded';
+                    state.initialSyncComplete = action.payload.initialSyncComplete;
                 }
             )
             .addCase(
                 fetchStoreInfo.rejected,
                 (state: StoreInfoState, action) => {
                     state.loadingStatus = 'error';
-                    state.error = action.error.message;
+                    state.initialSyncComplete = false;
+                    state.error = action.error?.message || 'Failed to load store info';
                 }
             );
     },
@@ -81,4 +103,7 @@ export const getState = (rootState: RootState): StoreInfoState =>
 
 export const selectStore = createSelector(getState, (state) => state.store);
 export const selectLoadindStatus = createSelector(getState, (state) => state.loadingStatus);
-
+export const selectInitialStoreSyncComplete = createSelector(
+    getState,
+    (state) => state.initialSyncComplete
+);

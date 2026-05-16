@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
-import { Alert, View } from 'react-native';
-import { useSharedStyles } from '@pos/theme/native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
     UIActions,
+    UICard,
     UiFileUpload,
     UIInput,
-    UIVerticalSpacer,
+    UIScreen,
 } from '@pos/shared/ui-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,6 +17,9 @@ import {
 } from '@pos/categories/data-access';
 import { RootState } from '@pos/store';
 import { Category } from '@pos/shared/models';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { requireCurrentTenantId } from '@pos/auth/data-access';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface CategoryFormParams {
     [name: string]: object | undefined;
@@ -29,9 +32,12 @@ export interface CategoryFormProps {
 }
 
 export function CategoryForm({ navigation }: CategoryFormProps) {
+    const t = translateWithFallback;
     const category = useSelector((state: RootState) => state.categories.selected);
     const dispatch = useDispatch();
-    const styles = useSharedStyles();
+    const tenantId = requireCurrentTenantId();
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const [busy, setBusy] = useState<boolean>(false);
 
     const updatePicture = (key: string) => {
@@ -40,15 +46,26 @@ export function CategoryForm({ navigation }: CategoryFormProps) {
 
     const save = async () => {
         setBusy(true);
-        const cat: CategoryEntity = form.getValues();
-        
-        if (!cat.id) {
-            delete cat.id;
-        }
+        try {
+            const cat: CategoryEntity = form.getValues();
 
-        await CategoryService.save(dispatch, cat);
-        navigation.goBack();
-        setBusy(false);
+            if (!cat.id) {
+                delete cat.id;
+            }
+
+            await CategoryService.save(dispatch, cat);
+            navigation.goBack();
+        } catch (error) {
+            const message =
+                error instanceof Error ? error.message : String(error);
+            console.error('Unable to save category', error);
+            Alert.alert(
+                t('CATEGORY_SaveErrorTitle', 'Unable to save category'),
+                message || t('CATEGORY_SaveErrorMessage', 'The category could not be saved.')
+            );
+        } finally {
+            setBusy(false);
+        }
     };
 
     const form = useForm<Category>({
@@ -64,11 +81,14 @@ export function CategoryForm({ navigation }: CategoryFormProps) {
 
     const confirmCancel = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t(
+                'COMMON_UndoOperationWarning',
+                'You will not be able to undo this operation'
+            ),
             [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => navigation.goBack() },
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => navigation.goBack() },
             ]
         );
     }
@@ -78,46 +98,134 @@ export function CategoryForm({ navigation }: CategoryFormProps) {
     form.control.register('id', { required: false });
 
     return (
-        <View style={[styles.page, styles.centeredHorizontally]}>
+        <UIScreen>
             <FormProvider {...form}>
-                <View
-                    style={{
-                        width: '60%',
-                        flexDirection: 'column',
-                        marginTop: 50,
-                    }}
-                >
-                    <UiFileUpload
-                        prefix='categories'
-                        imageKey={form.getValues().picture}
-                        onAssetUploaded={updatePicture}
-                        onAssetRemoved={updatePicture}
-                    />
-                    <UIVerticalSpacer size="large" />
-                    <UIInput
-                        name="name"
-                        label="Name"
-                        placeholder="Name"
-                        rules={{ required: 'Name is required' }}
-                    />
-                    <UIInput
-                        name="description"
-                        label="Description"
-                        placeholder="Description"
-                        multiline={true}
-                        numberOfLines={3}
-                        style={{ height: 100, textAlignVertical: 'top' }}
-                    />
-                    <UIVerticalSpacer size="small" />
-                    <UIActions
-                        busy={busy}
-                        submitAction={form.handleSubmit(save)}
-                        cancelAction={confirmCancel}
-                    />
+                <View style={styles.screen}>
+                    <ScrollView contentContainerStyle={styles.scrollContent}>
+                        <View style={styles.container}>
+                            <UICard tone="muted" radius="lg" style={styles.headerCard}>
+                                <Text style={styles.headerTitle}>
+                                    {t('CATEGORY_ProfileTitle', 'Category Profile')}
+                                </Text>
+                                <Text style={styles.headerSubtitle}>
+                                    {t(
+                                        'CATEGORY_ProfileSubtitle',
+                                        'Define a category with image and metadata.'
+                                    )}
+                                </Text>
+                            </UICard>
+
+                            <UICard style={styles.sectionCard}>
+                                <Text style={styles.sectionTitle}>
+                                    {t('CATEGORY_CatalogSection', 'Catalog')}
+                                </Text>
+                                <View style={styles.uploadWrap}>
+                                    <UiFileUpload
+                                        prefix={`${tenantId}/categories`}
+                                        imageKey={form.getValues().picture}
+                                        onAssetUploaded={updatePicture}
+                                        onAssetRemoved={updatePicture}
+                                    />
+                                </View>
+                                <UIInput
+                                    name="name"
+                                    label={t('COMMON_Name', 'Name')}
+                                    placeholder={t('COMMON_Name', 'Name')}
+                                    rules={{ required: t('CATEGORY_NameRequired', 'Name is required') }}
+                                />
+                                <UIInput
+                                    name="description"
+                                    label={t('COMMON_Description', 'Description')}
+                                    placeholder={t('COMMON_Description', 'Description')}
+                                    multiline
+                                    numberOfLines={3}
+                                    style={styles.descriptionInput}
+                                />
+                            </UICard>
+                        </View>
+                    </ScrollView>
+                    <View style={styles.actionBar}>
+                        <UICard tone="muted" style={styles.actionBarCard}>
+                            <UIActions
+                                busy={busy}
+                                submitAction={form.handleSubmit(save)}
+                                cancelAction={confirmCancel}
+                            />
+                        </UICard>
+                    </View>
                 </View>
             </FormProvider>
-        </View>
+        </UIScreen>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        screen: {
+            flex: 1,
+        },
+        scrollContent: {
+            paddingHorizontal: tokens.spacing.xl,
+            paddingTop: tokens.spacing.lg,
+            paddingBottom: tokens.spacing.xl,
+            alignItems: 'center',
+        },
+        container: {
+            width: '100%',
+            maxWidth: 980,
+        },
+        headerCard: {
+            marginBottom: tokens.spacing.lg,
+            borderRadius: 26,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
+        },
+        headerTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 28,
+            fontWeight: '800',
+            letterSpacing: -0.5,
+        },
+        headerSubtitle: {
+            color: tokens.colors.textSecondary,
+            marginTop: tokens.spacing.xs,
+            fontSize: 15,
+            lineHeight: 21,
+        },
+        sectionCard: {
+            marginBottom: tokens.spacing.lg,
+            borderRadius: 24,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#0E141C',
+        },
+        sectionTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 19,
+            fontWeight: '800',
+            letterSpacing: 0.2,
+            marginBottom: tokens.spacing.md,
+        },
+        uploadWrap: {
+            marginBottom: tokens.spacing.sm,
+            paddingTop: tokens.spacing.xs,
+        },
+        descriptionInput: {
+            height: 100,
+            textAlignVertical: 'top',
+        },
+        actionBar: {
+            paddingHorizontal: tokens.spacing.xl,
+            paddingBottom: tokens.spacing.md,
+            paddingTop: tokens.spacing.xs,
+        },
+        actionBarCard: {
+            maxWidth: 980,
+            alignSelf: 'center',
+            width: '100%',
+            borderRadius: 24,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
+        },
+    });
 
 export default CategoryForm;

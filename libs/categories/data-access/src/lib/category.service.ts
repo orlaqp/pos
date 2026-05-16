@@ -1,22 +1,33 @@
 import { Category } from '@pos/shared/models';
 import { AssetsService } from '@pos/shared/utils';
 import { Dispatch } from '@reduxjs/toolkit';
-import { DataStore } from 'aws-amplify';
+import { DataStore } from '@pos/shared/amplify';
 import { CategoryEntity } from './category.entity';
 import { categoriesActions } from './slices/categories.slice';
+import { stampTenant } from '@pos/auth/data-access';
+
+const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
+    !!item && item._deleted !== true;
 
 export class CategoryService {
     static async save(dispatch: Dispatch<any>, category: CategoryEntity) {
         if (!category.id) {
-            const cat = new Category(category);
-            await DataStore.save(cat);
+            const cat = new Category(
+                stampTenant({
+                    ...category,
+                    discountable: category.discountable ?? true,
+                    discountPolicyMode: category.discountPolicyMode || 'DEFAULT',
+                }) as never
+            );
+            const saved = await DataStore.save(cat);
+            category.id = saved.id;
             return dispatch(categoriesActions.add(category));
         }
         
         const cat = await DataStore.query(Category, category.id);
 
         if (!cat) {
-            return console.log(`It seems that category: ${category.id} has been removed`);
+            return;
         }
 
         await DataStore.save(
@@ -26,6 +37,8 @@ export class CategoryService {
                 updated.description = category.description;
                 updated.name = category.name;
                 updated.picture = category.picture;
+                updated.discountable = category.discountable ?? true;
+                updated.discountPolicyMode = category.discountPolicyMode || 'DEFAULT';
             })
         );
         
@@ -33,7 +46,9 @@ export class CategoryService {
     }
 
     static getAll() {
-        return DataStore.query(Category);
+        return DataStore.query(Category).then((items) =>
+            items.filter((item) => isNotDeleted(item as { _deleted?: boolean | null }))
+        );
     }
 
     static async delete(id: string) {

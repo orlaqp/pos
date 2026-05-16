@@ -24,12 +24,16 @@
     ],
     "aliasAttributes": [],
     "userpoolClientGenerateSecret": false,
-    "userpoolClientRefreshTokenValidity": 30,
+    "userpoolClientRefreshTokenValidity": 3650,
     "userpoolClientWriteAttributes": [
-      "email"
+      "email",
+      "name",
+      "custom:businessName"
     ],
     "userpoolClientReadAttributes": [
-      "email"
+      "email",
+      "name",
+      "custom:businessName"
     ],
     "userpoolClientLambdaRole": "pos0610614c248_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": false,

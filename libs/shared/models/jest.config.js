@@ -1,6 +1,6 @@
 module.exports = {
   displayName: 'models',
-  preset: '../../jest.preset.js',
+  preset: '../../../jest.preset.js',
   transform: {
     '^.+\\.[tj]sx?$': 'babel-jest',
   },

@@ -1,0 +1,24 @@
+{
+  "name": "discounts-domain",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/discounts/domain/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/discounts/domain/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/discounts/domain"],
+      "options": {
+        "jestConfig": "libs/discounts/domain/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

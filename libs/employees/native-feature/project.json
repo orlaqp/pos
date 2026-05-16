@@ -1,26 +1,28 @@
-
 {
-  "root": "libs/employees/native",
-  "sourceRoot": "libs/employees/native/src",
-  "projectType": "library",
-  "tags": [],
-  "targets": {
-    "lint": {
-      "executor": "@nrwl/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": [
-          "libs/employees/native/**/*.{ts,tsx,js,jsx}"
-        ]
-      }
-    },
-    "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/employees/native"],
-      "options": {
-        "jestConfig": "libs/employees/native/jest.config.js",
-        "passWithNoTests": true
-      }
+    "name": "employees-native-feature",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/employees/native-feature/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": [
+                    "libs/employees/native-feature/**/*.{ts,tsx,js,jsx}"
+                ]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": [
+                "{workspaceRoot}/coverage/libs/employees/native-feature"
+            ],
+            "options": {
+                "jestConfig": "libs/employees/native-feature/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
     }
-  }
 }

@@ -11,7 +11,11 @@ const Stack = createNativeStackNavigator();
 export function UnitOfMeasures() {
   return (
     <StackNavigation Stack={Stack}>
-        <Stack.Screen name="UnitOfMeasure List"  component={UnitOfMeasureList} />
+        <Stack.Screen
+            name="UnitOfMeasure List"
+            component={UnitOfMeasureList}
+            options={{ headerShown: false }}
+        />
         <Stack.Screen name="UnitOfMeasure Form" component={UnitOfMeasureForm} />
     </StackNavigation>
   );

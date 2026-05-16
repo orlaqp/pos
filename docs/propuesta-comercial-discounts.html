@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Propuesta Comercial - Discounts POS</title>
+    <style>
+      :root {
+        --text: #1f2937;
+        --muted: #4b5563;
+        --line: #d1d5db;
+        --accent: #0f4c81;
+        --paper: #ffffff;
+        --bg: #f3f4f6;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        color: var(--text);
+        background: var(--bg);
+        line-height: 1.55;
+      }
+
+      .page {
+        width: 8.5in;
+        margin: 0 auto;
+        background: var(--paper);
+        padding: 0.7in 0.72in 0.8in;
+      }
+
+      .header {
+        border-bottom: 3px solid var(--accent);
+        padding-bottom: 18px;
+        margin-bottom: 28px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+        color: var(--accent);
+        letter-spacing: 0.2px;
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .meta div {
+        margin: 3px 0;
+      }
+
+      h2 {
+        font-size: 18px;
+        margin: 28px 0 10px;
+        color: var(--accent);
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 6px;
+      }
+
+      h3 {
+        font-size: 15px;
+        margin: 18px 0 8px;
+        color: #111827;
+      }
+
+      p {
+        margin: 10px 0;
+        font-size: 13.5px;
+      }
+
+      ol {
+        margin: 8px 0 14px 20px;
+        padding: 0;
+      }
+
+      li {
+        margin: 5px 0;
+        font-size: 13.5px;
+      }
+
+      .price-box {
+        margin: 16px 0;
+        padding: 16px 18px;
+        border: 1px solid var(--line);
+        border-left: 6px solid var(--accent);
+        background: #f8fafc;
+      }
+
+      .price-box strong {
+        display: block;
+        font-size: 22px;
+        color: #111827;
+        margin-top: 4px;
+      }
+
+      .closing {
+        margin-top: 26px;
+      }
+
+      @media print {
+        body {
+          background: #fff;
+        }
+
+        .page {
+          margin: 0;
+          width: auto;
+          min-height: auto;
+          padding: 0.45in 0.55in 0.55in;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="header">
+        <h1>Propuesta Comercial</h1>
+        <div class="meta">
+          <div><strong>Proyecto:</strong> Implementación de Feature Discounts para POS</div>
+          <div><strong>Fecha:</strong> 24 de marzo de 2026</div>
+          <div><strong>Cliente:</strong> Casa Martinez de Kendall</div>
+          <div><strong>Proveedor:</strong> Bincrafters LLC</div>
+        </div>
+      </section>
+
+      <h2>1. Resumen Ejecutivo</h2>
+      <p>
+        Se propone la implementación del feature <strong>Discounts</strong> dentro del sistema
+        POS, con el objetivo de habilitar descuentos controlados, configurables y auditables
+        directamente en la operación de caja.
+      </p>
+      <p>
+        Esta funcionalidad permitirá al cliente ejecutar promociones, descuentos manuales y
+        reglas de aprobación con mayor control operativo, reduciendo errores en caja y mejorando
+        la trazabilidad de cada ajuste de precio aplicado durante la venta.
+      </p>
+
+      <h2>2. Objetivo del Feature</h2>
+      <p>El feature <strong>Discounts</strong> busca incorporar al POS una capa de control comercial para:</p>
+      <ol>
+        <li>Aplicar descuentos a nivel de orden o de producto.</li>
+        <li>Habilitar promociones por código promocional.</li>
+        <li>Restringir quién puede aplicar descuentos y bajo qué límites.</li>
+        <li>Registrar reglas de aprobación cuando un descuento exceda parámetros definidos.</li>
+        <li>Mantener visibilidad operativa y trazabilidad sobre el impacto de descuentos en ventas.</li>
+      </ol>
+
+      <h2>3. Alcance Incluido</h2>
+      <p>La propuesta contempla la implementación de los siguientes componentes:</p>
+
+      <h3>3.1 Configuración de descuentos</h3>
+      <ol>
+        <li>Creación y edición de definiciones de descuentos.</li>
+        <li>Soporte para descuentos manuales, automáticos y por promo code.</li>
+        <li>Aplicación por porcentaje, monto fijo o precio final.</li>
+        <li>Aplicación a nivel de orden completa o por línea/producto.</li>
+        <li>Activación y desactivación de descuentos.</li>
+      </ol>
+
+      <h3>3.2 Reglas de aplicación</h3>
+      <ol>
+        <li>Configuración de subtotal mínimo y cantidad mínima cuando aplique.</li>
+        <li>Restricciones por categoría o producto.</li>
+        <li>Exclusiones de productos o categorías específicas.</li>
+        <li>Soporte para vigencia por fecha, día y horario.</li>
+        <li>Alcance por tienda o estación, cuando sea requerido.</li>
+      </ol>
+
+      <h3>3.3 Promo Codes</h3>
+      <ol>
+        <li>Creación y administración de códigos promocionales.</li>
+        <li>Aplicación del código directamente desde el flujo de venta.</li>
+        <li>Validación del descuento asociado al código.</li>
+        <li>Registro del promo code aplicado dentro de la orden.</li>
+      </ol>
+
+      <h3>3.4 Políticas y control por empleado/rol</h3>
+      <ol>
+        <li>Políticas de descuento por empleado o por rol.</li>
+        <li>Límite máximo de descuento manual en porcentaje.</li>
+        <li>Límite máximo de descuento manual en monto.</li>
+        <li>Límite máximo para price override.</li>
+        <li>Reglas para requerir razón o aprobación según el tipo de ajuste.</li>
+        <li>Habilitación o bloqueo del uso de promo codes según perfil.</li>
+      </ol>
+
+      <h3>3.5 Integración con la venta y reporting</h3>
+      <ol>
+        <li>Reflejo inmediato del descuento en el carrito y totales de la orden.</li>
+        <li>Persistencia del resumen de descuentos aplicados en la venta.</li>
+        <li>Trazabilidad del uso de descuentos dentro del historial de órdenes.</li>
+        <li>Visibilidad del impacto de descuentos en reportes operativos.</li>
+      </ol>
+
+      <h2>4. Beneficios para el Cliente</h2>
+      <ol>
+        <li>Mayor control sobre promociones y descuentos aplicados en caja.</li>
+        <li>Reducción de descuentos no autorizados.</li>
+        <li>Protección de márgenes mediante límites y aprobaciones.</li>
+        <li>Mejor experiencia operativa para cajeros y gerencia.</li>
+        <li>Mayor visibilidad para auditoría y revisión de ventas.</li>
+      </ol>
+
+      <h2>5. Entregables</h2>
+      <p>Como resultado de este trabajo se entregará:</p>
+      <ol>
+        <li>Feature <strong>Discounts</strong> implementado en el repositorio del POS.</li>
+        <li>Flujo de administración de descuentos y promo codes.</li>
+        <li>Reglas de políticas por empleado/rol integradas al flujo de venta.</li>
+        <li>Integración de descuentos en cálculo de orden, resumen y persistencia.</li>
+        <li>Validación técnica del feature dentro del alcance definido.</li>
+      </ol>
+
+      <h2>6. Exclusiones</h2>
+      <ol>
+        <li>Integraciones con plataformas externas de cupones o loyalty.</li>
+        <li>Motores promocionales avanzados tipo BOGO o campañas complejas de marketing.</li>
+        <li>Rediseño integral de Back Office o POS fuera de lo requerido para este feature.</li>
+        <li>Nuevos requerimientos no descritos en este documento.</li>
+      </ol>
+
+      <h2>7. Inversión</h2>
+      <div class="price-box">
+        Monto fijo por implementación del feature Discounts
+        <strong>USD 1,200.00</strong>
+      </div>
+      <p>
+        Este monto incluye el desarrollo, integración funcional y validación técnica dentro del
+        alcance descrito.
+      </p>
+
+      <h2>8. Condiciones Comerciales</h2>
+      <ol>
+        <li>Moneda: dólares estadounidenses (USD).</li>
+        <li>Modalidad: precio fijo por alcance definido.</li>
+        <li>Vigencia de la propuesta: 15 días calendario desde la fecha de emisión.</li>
+        <li>Cualquier ajuste o ampliación de alcance será cotizado por separado.</li>
+      </ol>
+
+      <h2>9. Esquema de Pago Sugerido</h2>
+      <ol>
+        <li>50% al aprobar la propuesta e iniciar el trabajo.</li>
+        <li>50% contra entrega del feature y validación final.</li>
+      </ol>
+
+      <h2>10. Criterios de Aceptación</h2>
+      <p>El feature se considerará entregado cuando:</p>
+      <ol>
+        <li>Se puedan crear y administrar descuentos según el alcance descrito.</li>
+        <li>Se puedan aplicar descuentos y promo codes en el flujo de venta.</li>
+        <li>Las políticas por rol o empleado se reflejen correctamente en la operación.</li>
+        <li>Los descuentos se vean reflejados en los totales y datos de la orden.</li>
+        <li>El comportamiento haya sido validado técnicamente en el entorno acordado.</li>
+      </ol>
+
+      <h2>11. Cierre</h2>
+      <p class="closing">
+        La implementación de <strong>Discounts</strong> agrega una capacidad comercial importante al
+        POS, permitiendo ejecutar promociones con control, flexibilidad y trazabilidad operativa.
+      </p>
+      <p>
+        En caso de aprobación, el siguiente paso sería confirmar por escrito el visto bueno sobre
+        alcance, monto y prioridad de implementación.
+      </p>
+    </main>
+  </body>
+</html>

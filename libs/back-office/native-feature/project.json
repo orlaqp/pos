@@ -1,25 +1,28 @@
 {
-  "root": "libs/back-office/native-feature",
-  "sourceRoot": "libs/back-office/native-feature/src",
-  "projectType": "library",
-  "tags": [],
-  "targets": {
-    "lint": {
-      "executor": "@nrwl/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": [
-          "libs/back-office/native-feature/**/*.{ts,tsx,js,jsx}"
-        ]
-      }
-    },
-    "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/back-office/native-feature"],
-      "options": {
-        "jestConfig": "libs/back-office/native-feature/jest.config.js",
-        "passWithNoTests": true
-      }
+    "name": "back-office-native-feature",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/back-office/native-feature/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": [
+                    "libs/back-office/native-feature/**/*.{ts,tsx,js,jsx}"
+                ]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": [
+                "{workspaceRoot}/coverage/libs/back-office/native-feature"
+            ],
+            "options": {
+                "jestConfig": "libs/back-office/native-feature/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
     }
-  }
 }

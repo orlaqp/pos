@@ -1,0 +1,5 @@
+${PODS_ROOT}/Target Support Files/Pods-MobileUi/Pods-MobileUi-frameworks.sh
+${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React
+${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies
+${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermesvm.framework/hermesvm
+${PODS_XCFRAMEWORKS_BUILD_DIR}/react-native-star-io10/StarIO10.framework/StarIO10

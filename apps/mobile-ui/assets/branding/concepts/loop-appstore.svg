@@ -1,0 +1,24 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="70" y1="90" x2="954" y2="934" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F1A34"/>
+      <stop offset="0.54" stop-color="#0D3F61"/>
+      <stop offset="1" stop-color="#0F786B"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="294" y1="226" x2="754" y2="800" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2DE4BE"/>
+      <stop offset="0.52" stop-color="#2BA0FF"/>
+      <stop offset="1" stop-color="#7B61FF"/>
+    </linearGradient>
+    <linearGradient id="tag" x1="598" y1="274" x2="754" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE07A"/>
+      <stop offset="1" stop-color="#FF8556"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <path d="M512 224C671 224 800 353 800 512C800 671 671 800 512 800C353 800 224 671 224 512C224 353 353 224 512 224ZM512 332C413 332 332 413 332 512C332 611 413 692 512 692C611 692 692 611 692 512C692 413 611 332 512 332Z" fill="url(#ring)"/>
+  <path d="M448 390C448 370 464 354 484 354H511C598 354 668 425 668 512C668 598 598 669 511 669H484C464 669 448 653 448 633V390Z" fill="#F1FFFB"/>
+  <path d="M511 428H496V595H511C557 595 594 558 594 512C594 465 557 428 511 428Z" fill="#239AF3"/>
+  <path d="M730 250L754 304L808 328L754 352L730 406L706 352L652 328L706 304L730 250Z" fill="url(#tag)"/>
+  <path d="M260 760C340 828 423 862 510 862C589 862 671 833 758 774" stroke="#9DE5D9" stroke-width="34" stroke-linecap="round" opacity="0.62"/>
+</svg>

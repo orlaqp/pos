@@ -1,11 +1,12 @@
 {
-    "root": "libs/store-info/native-feature",
+    "name": "store-info-native-feature",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/store-info/native-feature/src",
     "projectType": "library",
     "tags": [],
     "targets": {
         "lint": {
-            "executor": "@nrwl/linter:eslint",
+            "executor": "@nx/eslint:lint",
             "outputs": ["{options.outputFile}"],
             "options": {
                 "lintFilePatterns": [
@@ -14,10 +15,12 @@
             }
         },
         "test": {
-            "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/store-info/native-feature"],
+            "executor": "@nx/jest:jest",
+            "outputs": [
+                "{workspaceRoot}/coverage/libs/store-info/native-feature"
+            ],
             "options": {
-                "jestConfig": "libs/store-info/native-feature/jest.config.js",
+                "jestConfig": "libs/store-info/native-feature/jest.config.ts",
                 "passWithNoTests": true
             }
         }

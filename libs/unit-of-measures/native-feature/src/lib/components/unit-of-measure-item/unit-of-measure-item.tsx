@@ -1,12 +1,14 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 
-import { View, Text, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, Alert, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
-import { Button, useTheme } from '@rneui/themed';
-import { unitOfMeasuresActions, UnitOfMeasureEntity, UnitOfMeasureService } from '@pos/unit-of-measures/data-access';
+import { unitOfMeasuresActions, UnitOfMeasureEntity } from '@pos/unit-of-measures/data-access';
 import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTheme } from '@rneui/themed';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface UnitOfMeasureItemProps {
     item: UnitOfMeasureEntity;
@@ -14,24 +16,16 @@ export interface UnitOfMeasureItemProps {
 }
 
 export function UnitOfMeasureItem({ item, navigation }: UnitOfMeasureItemProps) {
-    const theme = useTheme();
-    const styles = useSharedStyles();
+    const t = translateWithFallback;
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const dispatch = useDispatch();
-    const [busy, setBusy] = useState<boolean>(false);
-
-    const deleteItem = async () => {
-        if (!item.id) return;
-
-        setBusy(true);
-        await UnitOfMeasureService.delete(item.id);
-        setBusy(false);
-        dispatch(unitOfMeasuresActions.remove(item.id));
-
-    }
 
     const editItem = () => {
         if (item.name === 'ea') {
-            Alert.alert('This item cannot be changed');
+            Alert.alert(
+                t('UOM_DefaultUnitLocked', 'This item cannot be changed'),
+            );
             return;
         }
 
@@ -39,54 +33,76 @@ export function UnitOfMeasureItem({ item, navigation }: UnitOfMeasureItemProps) 
         navigation.navigate('UnitOfMeasure Form');
     }
 
-    const confirmDeletion = () => {
-        Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
-            [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => deleteItem() },
-            ]
-        );
-    }
-
     return (
-        <TouchableOpacity style={styles.dataRow} onPress={editItem}>
-            { busy &&
-            <ActivityIndicator size='small' />
-            }
-            <View style={{ flex: 5 }}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.description}>{item.description}</Text>
+        <TouchableOpacity style={[styles.dataRow, styles.row]} onPress={editItem}>
+            <View style={styles.badgeSlot}>
+                <View style={styles.unitBadge}>
+                    <Text style={styles.unitText}>{item.name?.toUpperCase()}</Text>
+                </View>
             </View>
-            {/* <View
-                style={{
-                    flex: 2,
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                }}
-            >
-                <Button
-                    type="clear"
-                    title="Edit"
-                    icon={{
-                        name: 'pencil-outline',
-                        type: 'material-community',
-                    }}
-                    onPress={editItem}
-                />
-                <Button
-                    type="clear"
-                    icon={{
-                        name: 'trash-can',
-                        type: 'material-community',
-                        color: theme.theme.colors.error,
-                    }}
-                    onPress={confirmDeletion}
-                />
-            </View> */}
+            <View style={styles.contentColumn}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={[styles.description, styles.secondaryReadable]}>
+                    {item.description}
+                </Text>
+            </View>
         </TouchableOpacity>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) => {
+    const theme = useTheme();
+    const sharedStyles = useSharedStyles();
+
+    return {
+        ...sharedStyles,
+        ...StyleSheet.create({
+            row: {
+                alignItems: 'center',
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: '#C7D0DB22',
+                backgroundColor: '#0E141C',
+                marginBottom: tokens.spacing.sm,
+                paddingHorizontal: tokens.spacing.md,
+                paddingVertical: tokens.spacing.md,
+            },
+            badgeSlot: {
+                width: 70,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: tokens.spacing.md,
+            },
+            unitBadge: {
+                minWidth: 44,
+                height: 32,
+                paddingHorizontal: tokens.spacing.sm,
+                borderRadius: tokens.radii.md,
+                borderWidth: 1,
+                borderColor: `${theme.theme.colors.grey3}66`,
+                backgroundColor: `${theme.theme.colors.grey5}55`,
+                alignItems: 'center',
+                justifyContent: 'center',
+            },
+            unitText: {
+                color: theme.theme.colors.grey1,
+                fontWeight: '700',
+                fontSize: 12,
+            },
+            contentColumn: {
+                flex: 1,
+                paddingRight: tokens.spacing.md,
+            },
+            name: {
+                color: theme.theme.colors.white,
+                fontSize: 17,
+                fontWeight: '800',
+            },
+            secondaryReadable: {
+                color: theme.theme.colors.grey1,
+            },
+        }),
+    };
+};
 
 export default UnitOfMeasureItem;

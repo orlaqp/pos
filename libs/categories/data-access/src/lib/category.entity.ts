@@ -7,6 +7,8 @@ export type CategoryEntity = {
     code?: string | null,
     color?: string | null,
     picture?: string | null,
+    discountable?: boolean,
+    discountPolicyMode?: string,
     createdAt?: string | null | undefined,
     updatedAt?: string | null | undefined,
 };
@@ -20,6 +22,8 @@ export class CategoryEntityMapper {
             code: c.code,
             color: c.color,
             picture: c.picture,
+            discountable: c.discountable ?? true,
+            discountPolicyMode: c.discountPolicyMode ?? 'DEFAULT',
             createdAt: c.createdAt,
             updatedAt: c.updatedAt
         }

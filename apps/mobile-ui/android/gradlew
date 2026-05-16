@@ -46,6 +46,15 @@ APP_BASE_NAME=`basename "$0"`
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
 DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
 
+# Workaround for Prefab CLI hangs on some macOS environments when JNA is loaded.
+# Keeping this at wrapper level ensures spawned Java processes inherit it.
+if [ -n "$JAVA_TOOL_OPTIONS" ] ; then
+    JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Djna.noclasspath=true -Djna.nosys=true"
+else
+    JAVA_TOOL_OPTIONS="-Djna.noclasspath=true -Djna.nosys=true"
+fi
+export JAVA_TOOL_OPTIONS
+
 # Use the maximum available, or set MAX_FD != -1 to use that value.
 MAX_FD="maximum"
 

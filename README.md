@@ -4,8 +4,15 @@
 
 ## Specifications
 
-- NodeJS: 16.13.0
+- NodeJS: 20.19.4
+- Yarn: 1.22.22
 - Release always go to main branch
+
+## Dependency management
+
+- Root `package.json` is the install source of truth for the workspace.
+- `apps/mobile-ui/package.json` mirrors React Native app dependencies for native tooling and autolinking.
+- Run `yarn deps:check-mobile` after dependency changes to keep the versions aligned.
 
 
 

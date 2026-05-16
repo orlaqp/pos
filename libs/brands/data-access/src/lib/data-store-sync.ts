@@ -1,27 +1,43 @@
-import { DataStore } from 'aws-amplify';
 import { Dispatch } from '@reduxjs/toolkit';
+import { DataStore } from '@pos/shared/amplify';
+import { createSharedObserveQueryManager } from '@pos/shared/data-store';
 import { Brand } from '@pos/shared/models';
-import { brandsActions } from './slices/brands.slice';
-import { BrandEntityMapper } from './brand.entity';
 import { sortListBy } from '@pos/shared/utils';
+import { BrandEntityMapper } from './brand.entity';
+import { brandsActions } from './slices/brands.slice';
 
-export const syncBrands = (dispatch: Dispatch) => {
-    console.log('Syncing brands to the store');
-    DataStore.query(Brand).then((brands) => updateStore(dispatch, brands));
-};
-
-export const subscribeToBrandChanges = (dispatch: Dispatch) => {
-    return DataStore.observeQuery(Brand).subscribe(({ isSynced, items }) => {
-        if (isSynced) {
-            console.log('Brand changes detected');
-            updateStore(dispatch, items);
-        }
-    });
-};
+const BRAND_SYNC_MODEL = 'brands';
 
 const updateStore = (dispatch: Dispatch, items: Brand[]) => {
     sortListBy(items, 'name');
     dispatch(
-        brandsActions.setAll(items.map((b) => BrandEntityMapper.fromModel(b)))
+        brandsActions.setAll(items.map((brand) => BrandEntityMapper.fromModel(brand)))
     );
 };
+
+const brandSyncManager = createSharedObserveQueryManager<Brand, Brand[]>({
+    model: BRAND_SYNC_MODEL,
+    trackKey: 'brands.observeQuery',
+    observeQuery: () => DataStore.observeQuery(Brand),
+    mapSnapshot: ({ items }) => items,
+    publishSnapshot: (dispatch, items) => {
+        updateStore(dispatch, items);
+    },
+});
+
+export const syncBrands = async (dispatch: Dispatch) => {
+    updateStore(dispatch, await DataStore.query(Brand));
+};
+
+export const ensureBrandSyncHealthy = async (
+    dispatch: Dispatch,
+    options?: {
+        staleAfterMs?: number;
+        tenantId?: string;
+    }
+) => brandSyncManager.ensureHealthy(dispatch, options);
+
+export const subscribeToBrandChanges = (
+    dispatch: Dispatch,
+    tenantId?: string
+) => brandSyncManager.subscribe(dispatch, tenantId);

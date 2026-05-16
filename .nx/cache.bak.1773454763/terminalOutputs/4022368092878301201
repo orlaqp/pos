@@ -1,0 +1,113 @@
+(node:27766) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/sales-screen/[22m[1msales-screen.spec.tsx[22m ([0m[1m[41m6.091 s[49m[22m[0m)
+  [1m● [22mConsole
+
+    [2m[33mconsole.warn[39m[22m
+[33m      SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/AppAndFlow/react-native-safe-area-context[39m
+[2m[22m
+[2m    [0m [90m 46 |[39m[0m[22m
+[2m    [0m [90m 47 |[39m     [36mreturn[39m ([0m[22m
+[2m    [0m[31m[1m>[22m[2m[39m[90m 48 |[39m         [33m<[39m[33mSafeAreaView[39m[0m[22m
+[2m    [0m [90m    |[39m          [31m[1m^[22m[2m[39m[0m[22m
+[2m    [0m [90m 49 |[39m             testID[33m=[39m{testID}[0m[22m
+[2m    [0m [90m 50 |[39m             style[33m=[39m{[styles[33m.[39msafeArea[33m,[39m { backgroundColor[33m:[39m tokens[33m.[39mcolors[33m.[39mcanvas }[33m,[39m style]}[0m[22m
+[2m    [0m [90m 51 |[39m         [33m>[39m[0m[22m
+[2m[22m
+[2m      [2mat warnOnce ([22m[2m../../../node_modules/react-native/Libraries/Utilities/warnOnce.js[2m:27:11)[22m[2m[22m
+[2m      [2mat Object.SafeAreaView ([22m[2m../../../node_modules/react-native/index.js[2m:98:5)[22m[2m[22m
+[2m      [2mat UIScreen ([22m[2m../../shared/ui-native/src/lib/components/ui-screen/ui-screen.tsx[2m:48:10)[22m[2m[22m
+[2m      [2mat Object.react_stack_bottom_frame ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:15670:20)[22m[2m[22m
+[2m      [2mat renderWithHooks ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:4863:22)[22m[2m[22m
+[2m      [2mat updateFunctionComponent ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:7018:19)[22m[2m[22m
+[2m      [2mat beginWork ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:8499:18)[22m[2m[22m
+[2m      [2mat runWithFiberInDEV ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:2315:13)[22m[2m[22m
+[2m      [2mat performUnitOfWork ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:13224:22)[22m[2m[22m
+[2m      [2mat workLoopSync ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:13068:41)[22m[2m[22m
+[2m      [2mat renderRootSync ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:13049:11)[22m[2m[22m
+[2m      [2mat performWorkOnRoot ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:12181:11)[22m[2m[22m
+[2m      [2mat performWorkOnRootViaSchedulerTask ([22m[2m../../../node_modules/react-test-renderer/cjs/react-test-renderer.development.js[2m:2908:7)[22m[2m[22m
+[2m      [2mat flushActQueue ([22m[2m../../../node_modules/react/cjs/react.development.js[2m:590:34)[22m[2m[22m
+[2m      [2mat Object.<anonymous>.process.env.NODE_ENV.exports.act ([22m[2m../../../node_modules/react/cjs/react.development.js[2m:884:10)[22m[2m[22m
+[2m      [2mat renderWithAct ([22m[2m../../../node_modules/@testing-library/react-native/src/render.tsx[2m:67:3)[22m[2m[22m
+[2m      [2mat render ([22m[2m../../../node_modules/@testing-library/react-native/src/render.tsx[2m:33:20)[22m[2m[22m
+[2m      [2mat renderSalesScreen ([22m[2m[0m[36msrc/lib/components/sales-screen/sales-screen.spec.tsx[39m[0m[2m:245:15)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/lib/components/sales-screen/sales-screen.spec.tsx[39m[0m[2m:253:33)[22m[2m[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+[2m          at Set.forEach (<anonymous>)[22m
+
+    [2mconsole.log[22m
+      Closing sales subscriptions
+[2m[22m
+[2m      [2mat [22m[2msrc/lib/components/sales-screen/sales-screen.tsx[2m:197:21[22m[2m[22m
+
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/product-selection/[22m[1mproduct-selection.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/cart/[22m[1mcart.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/product-details/[22m[1mproduct-details.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/cart-payment/[22m[1mcart-payment.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/sales-screen/[22m[1msales-screen.logic.spec.ts[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/category-selection/[22m[1mcategory-selection.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/cart-line/[22m[1mcart-line.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/product-search/[22m[1mproduct-search.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/cart/[22m[1mcart.logic.spec.ts[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/cart-payment/[22m[1mcart-payment.logic.spec.ts[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/product-selection/[22m[1mproduct-selection.logic.spec.ts[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m sales-native-feature [39m[27m[0m [2mlibs/sales/native-feature/src/lib/components/product-details/[22m[1mproduct-details.logic.spec.ts[22m
+
+[1mTest Suites: [22m[1m[32m13 passed[39m[22m, 13 total
+[1mTests:       [22m[1m[32m55 passed[39m[22m, 55 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        [1m[33m7.552 s[39m[22m
+[2mRan all test suites[22m[2m.[22m

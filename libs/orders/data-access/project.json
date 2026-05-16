@@ -1,24 +1,26 @@
-
 {
-  "root": "libs/orders/data-access",
-  "sourceRoot": "libs/orders/data-access/src",
-  "projectType": "library",
-  "tags": [],
-  "targets": {
-    "lint": {
-      "executor": "@nrwl/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["libs/orders/data-access/**/*.{ts,tsx,js,jsx}"]
-      }
-    },
-    "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/orders/data-access"],
-      "options": {
-        "jestConfig": "libs/orders/data-access/jest.config.js",
-        "passWithNoTests": true
-      }
+    "name": "orders-data-access",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/orders/data-access/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": [
+                    "libs/orders/data-access/**/*.{ts,tsx,js,jsx}"
+                ]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/orders/data-access"],
+            "options": {
+                "jestConfig": "libs/orders/data-access/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
     }
-  }
 }

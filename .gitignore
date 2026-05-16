@@ -4,6 +4,7 @@
 /dist
 /tmp
 /out-tsc
+**/.next/
 
 # dependencies
 node_modules
@@ -28,6 +29,11 @@ node_modules
 /.sass-cache
 /connect.lock
 /coverage
+**/coverage/
+**/lcov.info
+**/clover.xml
+**/coverage-final.json
+**/coverage-summary.json
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log
@@ -55,6 +61,7 @@ xcuserdata
 *.xccheckout
 *.moved-aside
 DerivedData
+**/ios/.derived-data/
 *.hmap
 *.ipa
 *.xcuserstate
@@ -113,3 +120,10 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
+.nx/cache
+.nx/workspace-data
+.nx/polygraph
+**/.derived-data
+libs/inventory/data-access/src/lib/receive/inventory-receive.service.ts
+tools-output/
+.playwright-cli/

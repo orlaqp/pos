@@ -1,4 +1,4 @@
-/* eslint-disable @nrwl/nx/enforce-module-boundaries */
+/* eslint-disable @nx/enforce-module-boundaries */
 import { syncBrands } from '@pos/brands/data-access';
 import { syncCategories } from '@pos/categories/data-access';
 import { syncEmployees } from '@pos/employees/data-access';
@@ -9,9 +9,10 @@ import { syncProducts } from '@pos/products/data-access';
 import { syncStoreInfo } from '@pos/store-info/data-access';
 import { syncUnitOfMeasures } from '@pos/unit-of-measures/data-access';
 import { Dispatch } from '@reduxjs/toolkit';
+import { logSyncDebug } from '@pos/shared/utils';
 
 export const syncModelsWithStore = (dispatch: Dispatch, model: string) => {
-    console.log(`*** Syncing ${model} with store ***`);
+    logSyncDebug('model-sync', 'hub-triggered-sync', { model });
 
     switch (model) {
         case 'Printer':

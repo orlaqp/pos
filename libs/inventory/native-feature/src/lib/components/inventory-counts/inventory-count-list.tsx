@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
     inventoryCountActions,
     fetchInventoryCount,
@@ -9,29 +9,67 @@ import {
     subscribeToInventoryCountLineChanges,
 } from '@pos/inventory/data-access';
 import { ItemListProps, UIGenericItemList } from '@pos/shared/ui-native';
+import { enableInventorySync } from '@pos/shared/data-store';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import InventoryCountItem from './inventory-count-item';
+import { ActivityIndicator, View } from 'react-native';
 import { useDispatch } from 'react-redux';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { Text } from '@rneui/themed';
+
+type InventoryNavigationParams = Record<string, object | undefined>;
 
 export interface InventoryListProps {
-    navigation: NativeStackNavigationProp<any>;
+    navigation: NativeStackNavigationProp<InventoryNavigationParams>;
 }
 
 export function InventoryCountList({ navigation }: InventoryListProps) {
     const dispatch = useDispatch();
+    const tokens = useDesignTokens();
+    const [isPreparingInventorySync, setIsPreparingInventorySync] = React.useState(true);
 
-    useEffect(() => {
-        const counts = subscribeToInventoryCountChanges(dispatch);
-        const lines = subscribeToInventoryCountLineChanges(dispatch);
-        
+    React.useEffect(() => {
+        let active = true;
+        let counts: { unsubscribe: () => void } | undefined;
+        let lines: { unsubscribe: () => void } | undefined;
+
+        void (async () => {
+            await enableInventorySync();
+            if (!active) return;
+            counts = subscribeToInventoryCountChanges(dispatch);
+            lines = subscribeToInventoryCountLineChanges(dispatch);
+            await dispatch(fetchInventoryCount());
+            if (!active) return;
+            setIsPreparingInventorySync(false);
+        })();
+
         return () => {
-            console.log('Closing inventory count subscription');
-            counts.unsubscribe();
-            lines.unsubscribe();
+            active = false;
+            counts?.unsubscribe();
+            lines?.unsubscribe();
         };
     }, [dispatch]);
 
-    const props: ItemListProps<any, any> = {
+    if (isPreparingInventorySync) {
+        return (
+            <View
+                style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: tokens.spacing.lg,
+                    backgroundColor: tokens.colors.canvas,
+                }}
+            >
+                <ActivityIndicator size="large" color={tokens.colors.primary} />
+                <Text style={{ marginTop: tokens.spacing.md, color: tokens.colors.text }}>
+                    Loading inventory records...
+                </Text>
+            </View>
+        );
+    }
+
+    const props: ItemListProps<unknown, unknown> = {
         ItemComponent: InventoryCountItem,
         formNavName: 'Inventory Count Form',
         navigation: navigation,
@@ -41,6 +79,7 @@ export function InventoryCountList({ navigation }: InventoryListProps) {
         clearSelectionAction: inventoryCountActions.clearSelection,
         filterAction: inventoryCountActions.filter,
         fetchItemsAction: fetchInventoryCount,
+        plainHeader: true,
     };
 
     return <UIGenericItemList {...props} />;

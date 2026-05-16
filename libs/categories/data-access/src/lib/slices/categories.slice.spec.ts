@@ -1,57 +1,38 @@
 import {
-  fetchCategories,
   categoriesAdapter,
+  categoriesActions,
   categoriesReducer,
+  fetchCategories,
+  initialCategoriesState,
 } from './categories.slice';
 
 describe('categories reducer', () => {
-  it('should handle initial state', () => {
-    const expected = categoriesAdapter.getInitialState({
-      loadingStatus: 'not loaded',
-      error: null,
-    });
-
-    expect(categoriesReducer(undefined, { type: '' })).toEqual(expected);
+  it('returns initial state', () => {
+    expect(categoriesReducer(undefined, { type: '' })).toEqual(initialCategoriesState);
   });
 
-  it('should handle fetchCategoriess', () => {
-    let state = categoriesReducer(
-      undefined,
-      fetchCategories.pending(null, null)
-    );
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'loading',
-        error: null,
-        entities: {},
-      })
-    );
+  it('handles fetchCategories pending/fulfilled/rejected', () => {
+    let state = categoriesReducer(undefined, fetchCategories.pending('', undefined));
+    expect(state.loadingStatus).toBe('loading');
 
     state = categoriesReducer(
       state,
-      fetchCategories.fulfilled([{ id: 1 }], null, null)
+      fetchCategories.fulfilled([{ id: '1' } as any], '', undefined)
     );
-
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'loaded',
-        error: null,
-        entities: { 1: { id: 1 } },
-      })
-    );
+    expect(state.loadingStatus).toBe('loaded');
+    expect(state.entities['1']).toEqual(expect.objectContaining({ id: '1' }));
 
     state = categoriesReducer(
       state,
-      fetchCategories.rejected(new Error('Uh oh'), null, null)
+      fetchCategories.rejected(new Error('Uh oh'), '', undefined)
     );
+    expect(state.loadingStatus).toBe('error');
+    expect(state.error).toBe('Uh oh');
+  });
 
-    expect(state).toEqual(
-      expect.objectContaining({
-        loadingStatus: 'error',
-        error: 'Uh oh',
-        entities: { 1: { id: 1 } },
-      })
-    );
+  it('adds/removes entities', () => {
+    let state = categoriesReducer(undefined, { type: '' });
+    state = categoriesReducer(state, categoriesActions.add({ id: '2' } as any));
+    expect(categoriesAdapter.getSelectors().selectById(state, '2')).toBeTruthy();
   });
 });

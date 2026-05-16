@@ -1,51 +1,78 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-import { View, Text, Alert } from 'react-native';
+import { StyleSheet, View, Text, Alert } from 'react-native';
 import { useSharedStyles } from '@pos/theme/native';
 import { Button, useTheme } from '@rneui/themed';
 import { InventoryCountLineDTO } from '@pos/inventory/data-access';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { TextInput } from 'react-native-gesture-handler';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
+import { translateWithFallback } from '@pos/shared/utils';
 
 export interface InventoryCountLineProps {
     readOnly: boolean;
     item: InventoryCountLineDTO;
-    navigation: NativeStackNavigationProp<any>;
     onUpdate: (item: InventoryCountLineDTO) => void;
     onDelete: (item: InventoryCountLineDTO) => void;
 }
 
+const toTestKey = (value: string) =>
+    value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
 export function InventoryCountLine({
     readOnly,
     item,
-    navigation,
     onUpdate,
     onDelete,
 }: InventoryCountLineProps) {
+    const t = translateWithFallback;
     const theme = useTheme();
     const styles = useSharedStyles();
+    const tokens = useDesignTokens();
+    const local = useStyles(tokens);
     const [count, setCount] = useState<string | undefined>(item.newCount?.toString());
+    const countRef = useRef<string | undefined>(item.newCount?.toString());
     const [comment, setComment] = useState<string | undefined>(
         item.comments || undefined
     );
+    const productKey = toTestKey(item.productName);
     
     const originalCount = item.newCount;
     const originalComment = item.comments;
+    const beforeQuantity = Number(item.current || 0);
+    const countedQuantity = Number(item.newCount ?? 0);
+    const afterQuantity = countedQuantity;
+    const beforeLabel = t('INVENTORY_Before', 'Before');
+    const afterLabel = t('INVENTORY_After', 'After');
+
+    const formatQuantity = (value: number) =>
+        Number.isInteger(value) ? `${value}` : value.toFixed(2);
 
     const confirmDeletion = () => {
         Alert.alert(
-            'Are you sure?',
-            'You will not be able to undo this operation',
-            [{ text: 'No' }, { text: 'Yes', onPress: () => onDelete(item) }]
+            t('COMMON_AreYouSure', 'Are you sure?'),
+            t(
+                'COMMON_UndoOperationWarning',
+                'You will not be able to undo this operation'
+            ),
+            [
+                { text: t('COMMON_No', 'No') },
+                { text: t('COMMON_Yes', 'Yes'), onPress: () => onDelete(item) },
+            ]
         );
     };
 
     const updateCount = (count: string) => {
         if (!count) {
+            countRef.current = originalCount?.toString();
             setCount(originalCount?.toString());
             return;
         }
 
+        countRef.current = count;
         setCount(count);
         onUpdate({ ...item, newCount: +count });
     };
@@ -55,46 +82,83 @@ export function InventoryCountLine({
         onUpdate({ ...item, comments: finalComment });
     };
 
+    /* eslint-disable react-hooks/set-state-in-effect -- Local draft fields intentionally resync when the selected line changes. */
+    useEffect(() => {
+        const nextCount = item.newCount?.toString();
+        countRef.current = nextCount;
+        setCount(nextCount);
+        setComment(item.comments || undefined);
+    }, [item.comments, item.newCount, item.productId]);
+    /* eslint-enable react-hooks/set-state-in-effect */
+
     return (
-        <View style={[styles.smallDataRow, styles.centered]}>
-            <View style={{ flex: 4, flexDirection: 'row' }}>
-                <Text style={styles.name}>{item.productName}</Text>
+        <View style={[local.row, readOnly && local.readOnlyRow]}>
+            <View style={local.productColumn}>
+                <Text style={local.productName}>{item.productName}</Text>
+                <Text style={local.productMeta}>
+                    {readOnly
+                        ? `${beforeLabel}: ${formatQuantity(beforeQuantity)} • ${afterLabel}: ${formatQuantity(afterQuantity)}`
+                        : t('INVENTORY_CurrentCount', 'Current: {{count}}', {
+                              count: item.current.toFixed(2),
+                          })}
+                </Text>
             </View>
-            <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.current.toFixed(2)}</Text>
+            <View style={local.quantityColumn}>
+                <Text style={local.inputLabel}>
+                    {readOnly
+                        ? t('INVENTORY_Counted', 'Counted')
+                        : t('INVENTORY_NewCount', 'New count')}
+                </Text>
+                {readOnly ? (
+                    <Text style={local.readOnlyValue}>
+                        {formatQuantity(countedQuantity)}
+                    </Text>
+                ) : (
+                    <TextInput
+                        testID={`inventory-count-qty-${productKey}`}
+                        value={count}
+                        onChangeText={(text) => {
+                            countRef.current = text;
+                            setCount(text);
+                            updateCount(text);
+                        }}
+                        placeholder={t('COMMON_NumberSign', '#')}
+                        style={[
+                            styles.input, styles.primaryText,
+                            local.input,
+                        ]}
+                        onFocus={() => {
+                            countRef.current = '';
+                            setCount('');
+                        }}
+                        onBlur={() => updateCount(countRef.current || '')}
+                        editable={!readOnly}
+                    />
+                )}
             </View>
-            <View style={{ flex: 1 }}>
-                <TextInput
-                    value={count}
-                    onChangeText={(text) => { setCount(text); updateCount(text); }}
-                    placeholder='#'
-                    style={[
-                        styles.input, styles.primaryText,
-                        { marginRight: 25 },
-                    ]}
-                    onFocus={() => setCount('')}
-                    // onBlur={(e) => updateCount(e.nativeEvent.text)}
-                    editable={!readOnly}
-                />
-            </View>
-            <View style={{ flex: 3 }}>
-                <TextInput
-                    value={comment}
-                    onChangeText={setComment}
-                    placeholder='comments ...'
-                    onBlur={(e) => updateComment(e.nativeEvent.text)}
-                    style={[styles.input, styles.primaryText]}
-                    editable={!readOnly}
-                />
+            <View style={local.commentColumn}>
+                <Text style={local.inputLabel}>
+                    {readOnly
+                        ? t('INVENTORY_After', 'After')
+                        : t('COMMON_Comments', 'Comments')}
+                </Text>
+                {readOnly ? (
+                    <Text style={local.readOnlyValue}>
+                        {formatQuantity(afterQuantity)}
+                    </Text>
+                ) : (
+                    <TextInput
+                        value={comment}
+                        onChangeText={setComment}
+                        placeholder={t('COMMON_CommentsPlaceholder', 'comments ...')}
+                        onBlur={() => updateComment(comment || '')}
+                        style={[styles.input, styles.primaryText, local.input]}
+                        editable={!readOnly}
+                    />
+                )}
             </View>
             { !readOnly &&
-            <View
-                style={{
-                    flex: 1,
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                }}
-            >
+            <View style={local.actionsColumn}>
                 <Button
                     type="clear"
                     icon={{
@@ -109,5 +173,74 @@ export function InventoryCountLine({
         </View>
     );
 }
+
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
+    StyleSheet.create({
+        row: {
+            alignItems: 'center',
+            backgroundColor: '#0B1119',
+            borderColor: '#1D2A3B',
+            borderRadius: 18,
+            borderWidth: 1,
+            flexDirection: 'row',
+            marginBottom: tokens.spacing.sm,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.sm,
+        },
+        readOnlyRow: {
+            opacity: 0.78,
+        },
+        productColumn: {
+            flex: 4,
+            paddingRight: tokens.spacing.md,
+        },
+        productName: {
+            color: tokens.colors.textPrimary,
+            fontSize: 16,
+            fontWeight: '800',
+        },
+        productMeta: {
+            color: tokens.colors.textMuted,
+            fontSize: 12,
+            fontWeight: '700',
+            marginTop: 4,
+        },
+        quantityColumn: {
+            flex: 1.2,
+            paddingRight: tokens.spacing.sm,
+        },
+        commentColumn: {
+            flex: 3,
+            paddingRight: tokens.spacing.sm,
+        },
+        inputLabel: {
+            color: tokens.colors.textMuted,
+            fontSize: 10,
+            fontWeight: '800',
+            letterSpacing: 0.8,
+            marginBottom: 4,
+            textTransform: 'uppercase',
+        },
+        input: {
+            backgroundColor: '#111923',
+            borderColor: '#26364C',
+            borderRadius: 14,
+            borderWidth: 1,
+            marginRight: 0,
+            paddingHorizontal: tokens.spacing.sm,
+        },
+        readOnlyValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 15,
+            fontWeight: '800',
+            minHeight: 28,
+            paddingVertical: 6,
+        },
+        actionsColumn: {
+            flex: 0.8,
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+        },
+    });
 
 export default InventoryCountLine;

@@ -1,24 +1,28 @@
-
 {
-  "root": "libs/unit-of-measures/data-access",
-  "sourceRoot": "libs/unit-of-measures/data-access/src",
-  "projectType": "library",
-  "tags": [],
-  "targets": {
-    "lint": {
-      "executor": "@nrwl/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["libs/unit-of-measures/data-access/**/*.{ts,tsx,js,jsx}"]
-      }
-    },
-    "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/unit-of-measures/data-access"],
-      "options": {
-        "jestConfig": "libs/unit-of-measures/data-access/jest.config.js",
-        "passWithNoTests": true
-      }
+    "name": "unit-of-measures-data-access",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/unit-of-measures/data-access/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": [
+                    "libs/unit-of-measures/data-access/**/*.{ts,tsx,js,jsx}"
+                ]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": [
+                "{workspaceRoot}/coverage/libs/unit-of-measures/data-access"
+            ],
+            "options": {
+                "jestConfig": "libs/unit-of-measures/data-access/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
     }
-  }
 }

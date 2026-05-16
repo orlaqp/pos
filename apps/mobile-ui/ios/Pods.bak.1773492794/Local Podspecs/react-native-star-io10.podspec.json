@@ -1,0 +1,31 @@
+{
+  "name": "react-native-star-io10",
+  "version": "1.10.3",
+  "summary": "react-native-star-io10 is a library for supporting application development for Star Micronics devices.",
+  "description": "react-native-star-io10",
+  "homepage": "https://github.com/github_account/react-native-star-io10",
+  "license": "MIT",
+  "authors": {
+    "Your Name": "yourname@email.com"
+  },
+  "platforms": {
+    "ios": "9.0"
+  },
+  "source": {
+    "git": "https://github.com/github_account/react-native-star-io10.git",
+    "tag": "1.10.3"
+  },
+  "source_files": "ios/**/*.{h,m,swift}",
+  "requires_arc": true,
+  "dependencies": {
+    "React": [
+
+    ]
+  },
+  "pod_target_xcconfig": {
+    "EXCLUDED_ARCHS[sdk=iphoneos*]": "x86_64",
+    "EXCLUDED_SOURCE_FILE_NAMES[sdk=iphoneos*]": "$(PODS_TARGET_SRCROOT)/ios/libs/StarIO10.xcframework/ios-arm64_x86_64-simulator/*.*",
+    "FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]": "$(SRCROOT)/libs/** $(PODS_TARGET_SRCROOT)/ios/libs $(PODS_TARGET_SRCROOT)/ios/libs/StarIO10.xcframework/ios-arm64"
+  },
+  "vendored_frameworks": "ios/libs/StarIO10.xcframework"
+}

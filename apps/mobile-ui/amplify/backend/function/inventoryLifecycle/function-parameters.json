@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "storage": {
+      "Product:@model(appsync)": [
+        "read",
+        "update"
+      ],
+      "InventoryCount:@model(appsync)": [
+        "read",
+        "update",
+        "create"
+      ],
+      "InventoryCountLine:@model(appsync)": [
+        "read",
+        "update",
+        "create",
+        "delete"
+      ],
+      "InventoryReceive:@model(appsync)": [
+        "read",
+        "update",
+        "create"
+      ],
+      "InventoryReceiveLine:@model(appsync)": [
+        "read",
+        "update",
+        "create",
+        "delete"
+      ]
+    }
+  },
+  "lambdaLayers": []
+}

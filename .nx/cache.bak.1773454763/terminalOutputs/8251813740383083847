@@ -1,0 +1,10 @@
+(node:27929) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m settings-native-feature [39m[27m[0m [2mlibs/settings/native-feature/src/lib/components/log-list/[22m[1mlog-list.spec.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [0m[7m[37m settings-native-feature [39m[27m[0m [2mlibs/settings/native-feature/src/lib/components/settings/[22m[1msettings.spec.tsx[22m
+
+[1mTest Suites: [22m[1m[32m2 passed[39m[22m, 2 total
+[1mTests:       [22m[1m[32m5 passed[39m[22m, 5 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        [1m[33m2.711 s[39m[22m
+[2mRan all test suites[22m[2m.[22m

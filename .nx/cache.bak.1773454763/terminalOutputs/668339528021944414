@@ -1,0 +1,742 @@
+(node:89492) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:89494) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[36m[1minfo[22m[39m [0mBuilding the app...[0m
+> Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:shared:processResources NO-SOURCE
+> Task :gradle-plugin:settings-plugin:pluginDescriptors
+> Task :gradle-plugin:settings-plugin:processResources
+> Task :gradle-plugin:shared:compileKotlin
+> Task :gradle-plugin:shared:compileJava NO-SOURCE
+> Task :gradle-plugin:shared:classes UP-TO-DATE
+> Task :gradle-plugin:shared:jar
+> Task :gradle-plugin:settings-plugin:compileKotlin
+> Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:settings-plugin:classes
+> Task :gradle-plugin:settings-plugin:jar
+> Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors
+> Task :gradle-plugin:react-native-gradle-plugin:processResources
+> Task :gradle-plugin:react-native-gradle-plugin:compileKotlin
+> Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:react-native-gradle-plugin:classes
+> Task :gradle-plugin:react-native-gradle-plugin:jar
+
+> Configure project :app
+Reading env from: .env
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-async-storage_async-storage
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-community_netinfo
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-config
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-date-picker
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-device-info
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-fast-image
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-fs
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-gesture-handler
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-image-picker
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-localize
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-reanimated
+Android gradle plugin: 8.6.0
+Gradle: 8.10.2
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+Checking the license for package NDK (Side by side) 26.1.10909125 in /Users/orlando/Library/Android/sdk/licenses
+License for package NDK (Side by side) 26.1.10909125 accepted.
+Preparing "Install NDK (Side by side) 26.1.10909125 v.26.1.10909125".
+"Install NDK (Side by side) 26.1.10909125 v.26.1.10909125" ready.
+Installing NDK (Side by side) 26.1.10909125 in /Users/orlando/Library/Android/sdk/ndk/26.1.10909125
+"Install NDK (Side by side) 26.1.10909125 v.26.1.10909125" complete.
+"Install NDK (Side by side) 26.1.10909125 v.26.1.10909125" finished.
+
+> Configure project :react-native-safe-area-context
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-screens
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-star-io10
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+WARNING: Using flatDir2 should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-svg
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :react-native-vector-icons
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Task :app:generateAutolinkingPackageList UP-TO-DATE
+> Task :app:generateCodegenSchemaFromJavaScript SKIPPED
+> Task :app:generateCodegenArtifactsFromSchema SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :react-native-async-storage_async-storage:preBuild UP-TO-DATE
+> Task :react-native-async-storage_async-storage:preDebugBuild UP-TO-DATE
+> Task :react-native-async-storage_async-storage:generateDebugResValues
+> Task :react-native-async-storage_async-storage:generateDebugResources
+> Task :react-native-async-storage_async-storage:packageDebugResources
+> Task :react-native-community_netinfo:preBuild UP-TO-DATE
+> Task :react-native-community_netinfo:preDebugBuild UP-TO-DATE
+> Task :react-native-community_netinfo:generateDebugResValues
+> Task :react-native-community_netinfo:generateDebugResources
+> Task :react-native-community_netinfo:packageDebugResources
+> Task :react-native-config:preBuild UP-TO-DATE
+> Task :react-native-config:preDebugBuild UP-TO-DATE
+> Task :react-native-config:generateDebugResValues
+> Task :react-native-config:generateDebugResources
+> Task :react-native-config:packageDebugResources
+> Task :react-native-date-picker:preBuild UP-TO-DATE
+> Task :react-native-date-picker:preDebugBuild UP-TO-DATE
+> Task :react-native-date-picker:generateDebugResValues
+> Task :react-native-date-picker:generateDebugResources
+> Task :react-native-date-picker:packageDebugResources
+> Task :react-native-device-info:preBuild UP-TO-DATE
+> Task :react-native-device-info:preDebugBuild UP-TO-DATE
+> Task :react-native-device-info:generateDebugResValues
+> Task :react-native-device-info:generateDebugResources
+> Task :react-native-device-info:packageDebugResources
+> Task :react-native-fast-image:preBuild UP-TO-DATE
+> Task :react-native-fast-image:preDebugBuild UP-TO-DATE
+> Task :react-native-fast-image:generateDebugResValues
+> Task :react-native-fast-image:generateDebugResources
+> Task :react-native-fast-image:packageDebugResources
+> Task :react-native-fs:preBuild UP-TO-DATE
+> Task :react-native-fs:preDebugBuild UP-TO-DATE
+> Task :react-native-fs:generateDebugResValues
+> Task :react-native-fs:generateDebugResources
+> Task :react-native-fs:packageDebugResources
+> Task :react-native-gesture-handler:preBuild UP-TO-DATE
+> Task :react-native-gesture-handler:preDebugBuild UP-TO-DATE
+> Task :react-native-gesture-handler:generateDebugResValues
+> Task :react-native-gesture-handler:generateDebugResources
+> Task :react-native-gesture-handler:packageDebugResources
+> Task :react-native-image-picker:preBuild UP-TO-DATE
+> Task :react-native-image-picker:preDebugBuild UP-TO-DATE
+> Task :react-native-image-picker:generateDebugResValues
+> Task :react-native-image-picker:generateDebugResources
+> Task :react-native-image-picker:packageDebugResources
+> Task :react-native-localize:preBuild UP-TO-DATE
+> Task :react-native-localize:preDebugBuild UP-TO-DATE
+> Task :react-native-localize:generateDebugResValues
+> Task :react-native-localize:generateDebugResources
+> Task :react-native-localize:packageDebugResources
+> Task :react-native-reanimated:assertLatestReactNativeWithNewArchitectureTask SKIPPED
+> Task :react-native-reanimated:assertMinimalReactNativeVersionTask SKIPPED
+> Task :react-native-reanimated:prepareReanimatedHeadersForPrefabs
+> Task :react-native-reanimated:prepareWorkletsHeadersForPrefabs
+> Task :react-native-reanimated:preBuild
+> Task :react-native-reanimated:preDebugBuild
+> Task :react-native-reanimated:generateDebugResValues
+> Task :react-native-reanimated:generateDebugResources
+> Task :react-native-reanimated:packageDebugResources
+> Task :react-native-safe-area-context:preBuild UP-TO-DATE
+> Task :react-native-safe-area-context:preDebugBuild UP-TO-DATE
+> Task :react-native-safe-area-context:generateDebugResValues
+> Task :react-native-safe-area-context:generateDebugResources
+> Task :react-native-safe-area-context:packageDebugResources
+> Task :react-native-screens:preBuild UP-TO-DATE
+> Task :react-native-screens:preDebugBuild UP-TO-DATE
+> Task :react-native-screens:generateDebugResValues
+> Task :react-native-screens:generateDebugResources
+> Task :react-native-screens:packageDebugResources
+> Task :react-native-star-io10:preBuild UP-TO-DATE
+> Task :react-native-star-io10:preDebugBuild UP-TO-DATE
+> Task :react-native-star-io10:generateDebugResValues
+> Task :react-native-star-io10:generateDebugResources
+> Task :react-native-star-io10:packageDebugResources
+> Task :react-native-svg:preBuild UP-TO-DATE
+> Task :react-native-svg:preDebugBuild UP-TO-DATE
+> Task :react-native-svg:generateDebugResValues
+> Task :react-native-svg:generateDebugResources
+> Task :react-native-svg:packageDebugResources
+> Task :react-native-vector-icons:preBuild UP-TO-DATE
+> Task :react-native-vector-icons:preDebugBuild UP-TO-DATE
+> Task :react-native-vector-icons:generateDebugResValues
+> Task :react-native-vector-icons:generateDebugResources
+> Task :react-native-vector-icons:packageDebugResources
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-async-storage_async-storage:extractDeepLinksDebug
+> Task :react-native-community_netinfo:extractDeepLinksDebug
+> Task :react-native-config:extractDeepLinksDebug
+> Task :react-native-date-picker:extractDeepLinksDebug
+> Task :react-native-device-info:extractDeepLinksDebug
+> Task :react-native-fast-image:extractDeepLinksDebug
+> Task :react-native-fs:extractDeepLinksDebug
+> Task :react-native-gesture-handler:extractDeepLinksDebug
+
+> Task :react-native-fast-image:processDebugManifest
+package="com.dylanvann.fastimage" found in source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-fast-image/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.dylanvann.fastimage" from the source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-fast-image/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-device-info:processDebugManifest
+package="com.learnium.RNDeviceInfo" found in source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-device-info/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.learnium.RNDeviceInfo" from the source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-device-info/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-image-picker:extractDeepLinksDebug
+
+> Task :react-native-config:processDebugManifest
+package="com.lugg.ReactNativeConfig" found in source AndroidManifest.xml: /Users/orlando/dev/pos/node_modules/react-native-config/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.lugg.ReactNativeConfig" from the source AndroidManifest.xml: /Users/orlando/dev/pos/node_modules/react-native-config/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-gesture-handler:processDebugManifest
+
+> Task :react-native-community_netinfo:processDebugManifest
+package="com.reactnativecommunity.netinfo" found in source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/@react-native-community/netinfo/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.reactnativecommunity.netinfo" from the source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/@react-native-community/netinfo/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-date-picker:processDebugManifest
+package="com.henninghall.date_picker" found in source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-date-picker/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.henninghall.date_picker" from the source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-date-picker/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-fs:processDebugManifest
+package="com.rnfs" found in source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-fs/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.rnfs" from the source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-fs/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-async-storage_async-storage:processDebugManifest
+package="com.reactnativecommunity.asyncstorage" found in source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/@react-native-async-storage/async-storage/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.reactnativecommunity.asyncstorage" from the source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/@react-native-async-storage/async-storage/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-localize:extractDeepLinksDebug
+> Task :react-native-reanimated:extractDeepLinksDebug
+
+> Task :react-native-localize:processDebugManifest
+package="com.zoontek.rnlocalize" found in source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-localize/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.zoontek.rnlocalize" from the source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-localize/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-safe-area-context:extractDeepLinksDebug
+> Task :react-native-reanimated:processDebugManifest
+
+> Task :react-native-image-picker:processDebugManifest
+package="com.imagepicker" found in source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-image-picker/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.imagepicker" from the source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-image-picker/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-screens:extractDeepLinksDebug
+
+> Task :react-native-safe-area-context:processDebugManifest
+package="com.th3rdwave.safeareacontext" found in source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-safe-area-context/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.th3rdwave.safeareacontext" from the source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-safe-area-context/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-star-io10:extractDeepLinksDebug
+
+> Task :react-native-screens:processDebugManifest
+package="com.swmansion.rnscreens" found in source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.swmansion.rnscreens" from the source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-svg:extractDeepLinksDebug
+
+> Task :react-native-star-io10:processDebugManifest
+package="com.stario10module" found in source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.stario10module" from the source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-vector-icons:extractDeepLinksDebug
+
+> Task :react-native-svg:processDebugManifest
+package="com.horcrux.svg" found in source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.horcrux.svg" from the source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-async-storage_async-storage:writeDebugAarMetadata
+> Task :react-native-community_netinfo:writeDebugAarMetadata
+
+> Task :react-native-vector-icons:processDebugManifest
+package="com.oblador.vectoricons" found in source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-vector-icons/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.oblador.vectoricons" from the source AndroidManifest.xml: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-vector-icons/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-config:writeDebugAarMetadata
+> Task :react-native-date-picker:writeDebugAarMetadata
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:processApplicationManifestDebugForBundle
+> Task :react-native-device-info:writeDebugAarMetadata
+> Task :react-native-fast-image:writeDebugAarMetadata
+> Task :react-native-fs:writeDebugAarMetadata
+> Task :react-native-gesture-handler:writeDebugAarMetadata
+> Task :react-native-image-picker:writeDebugAarMetadata
+> Task :react-native-localize:writeDebugAarMetadata
+> Task :react-native-reanimated:writeDebugAarMetadata
+> Task :react-native-safe-area-context:writeDebugAarMetadata
+> Task :react-native-screens:writeDebugAarMetadata
+> Task :react-native-star-io10:writeDebugAarMetadata
+> Task :react-native-svg:writeDebugAarMetadata
+> Task :react-native-vector-icons:writeDebugAarMetadata
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-async-storage_async-storage:compileDebugLibraryResources
+> Task :app:processDebugManifestForPackage
+> Task :react-native-community_netinfo:compileDebugLibraryResources
+> Task :app:checkDebugAarMetadata
+> Task :react-native-config:compileDebugLibraryResources
+> Task :react-native-async-storage_async-storage:parseDebugLocalResources
+> Task :react-native-community_netinfo:parseDebugLocalResources
+> Task :react-native-config:parseDebugLocalResources
+> Task :app:mergeDebugResources
+> Task :react-native-date-picker:parseDebugLocalResources
+> Task :react-native-async-storage_async-storage:generateDebugRFile
+> Task :react-native-community_netinfo:generateDebugRFile
+> Task :react-native-date-picker:compileDebugLibraryResources
+> Task :react-native-config:generateDebugRFile
+> Task :react-native-device-info:compileDebugLibraryResources
+> Task :react-native-date-picker:generateDebugRFile
+> Task :react-native-device-info:parseDebugLocalResources
+> Task :react-native-fast-image:compileDebugLibraryResources
+> Task :react-native-device-info:generateDebugRFile
+> Task :react-native-fast-image:parseDebugLocalResources
+> Task :react-native-fs:compileDebugLibraryResources
+> Task :react-native-fs:parseDebugLocalResources
+> Task :react-native-fast-image:generateDebugRFile
+> Task :react-native-gesture-handler:compileDebugLibraryResources
+> Task :react-native-fs:generateDebugRFile
+> Task :react-native-gesture-handler:parseDebugLocalResources
+> Task :react-native-image-picker:compileDebugLibraryResources
+> Task :react-native-image-picker:parseDebugLocalResources
+> Task :react-native-gesture-handler:generateDebugRFile
+> Task :react-native-image-picker:generateDebugRFile
+> Task :react-native-localize:compileDebugLibraryResources
+> Task :react-native-localize:parseDebugLocalResources
+> Task :react-native-reanimated:compileDebugLibraryResources
+> Task :react-native-localize:generateDebugRFile
+> Task :react-native-reanimated:parseDebugLocalResources
+> Task :react-native-safe-area-context:compileDebugLibraryResources
+> Task :react-native-reanimated:generateDebugRFile
+> Task :react-native-safe-area-context:parseDebugLocalResources
+> Task :react-native-safe-area-context:generateDebugRFile
+> Task :react-native-star-io10:compileDebugLibraryResources
+> Task :react-native-screens:parseDebugLocalResources
+> Task :react-native-screens:compileDebugLibraryResources
+> Task :react-native-star-io10:parseDebugLocalResources
+> Task :react-native-svg:compileDebugLibraryResources
+> Task :react-native-screens:generateDebugRFile
+> Task :react-native-svg:parseDebugLocalResources
+> Task :react-native-star-io10:generateDebugRFile
+> Task :react-native-vector-icons:compileDebugLibraryResources
+> Task :react-native-svg:generateDebugRFile
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :react-native-vector-icons:parseDebugLocalResources
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :react-native-vector-icons:generateDebugRFile
+> Task :react-native-async-storage_async-storage:mergeDebugShaders
+> Task :react-native-async-storage_async-storage:compileDebugShaders NO-SOURCE
+> Task :react-native-async-storage_async-storage:generateDebugAssets UP-TO-DATE
+> Task :react-native-async-storage_async-storage:packageDebugAssets
+> Task :react-native-community_netinfo:mergeDebugShaders
+> Task :react-native-community_netinfo:compileDebugShaders NO-SOURCE
+> Task :react-native-community_netinfo:generateDebugAssets UP-TO-DATE
+> Task :react-native-community_netinfo:packageDebugAssets
+> Task :react-native-config:mergeDebugShaders
+> Task :react-native-config:compileDebugShaders NO-SOURCE
+> Task :react-native-config:generateDebugAssets UP-TO-DATE
+> Task :react-native-config:packageDebugAssets
+> Task :react-native-date-picker:mergeDebugShaders
+> Task :react-native-date-picker:compileDebugShaders NO-SOURCE
+> Task :react-native-date-picker:generateDebugAssets UP-TO-DATE
+> Task :react-native-date-picker:packageDebugAssets
+> Task :react-native-device-info:mergeDebugShaders
+> Task :react-native-device-info:compileDebugShaders NO-SOURCE
+> Task :react-native-device-info:generateDebugAssets UP-TO-DATE
+> Task :react-native-device-info:packageDebugAssets
+> Task :react-native-fast-image:mergeDebugShaders
+> Task :react-native-fast-image:compileDebugShaders NO-SOURCE
+> Task :react-native-fast-image:generateDebugAssets UP-TO-DATE
+> Task :react-native-fast-image:packageDebugAssets
+> Task :react-native-fs:mergeDebugShaders
+> Task :react-native-fs:compileDebugShaders NO-SOURCE
+> Task :react-native-fs:generateDebugAssets UP-TO-DATE
+> Task :react-native-fs:packageDebugAssets
+> Task :react-native-gesture-handler:mergeDebugShaders
+> Task :react-native-gesture-handler:compileDebugShaders NO-SOURCE
+> Task :react-native-gesture-handler:generateDebugAssets UP-TO-DATE
+> Task :react-native-gesture-handler:packageDebugAssets
+> Task :react-native-image-picker:mergeDebugShaders
+> Task :react-native-image-picker:compileDebugShaders NO-SOURCE
+> Task :react-native-image-picker:generateDebugAssets UP-TO-DATE
+> Task :react-native-image-picker:packageDebugAssets
+> Task :react-native-localize:mergeDebugShaders
+> Task :react-native-localize:compileDebugShaders NO-SOURCE
+> Task :react-native-localize:generateDebugAssets UP-TO-DATE
+> Task :react-native-localize:packageDebugAssets
+> Task :react-native-reanimated:mergeDebugShaders
+> Task :react-native-reanimated:compileDebugShaders NO-SOURCE
+> Task :react-native-reanimated:generateDebugAssets UP-TO-DATE
+> Task :react-native-reanimated:packageDebugAssets
+> Task :react-native-safe-area-context:mergeDebugShaders
+> Task :react-native-safe-area-context:compileDebugShaders NO-SOURCE
+> Task :react-native-safe-area-context:generateDebugAssets UP-TO-DATE
+> Task :react-native-safe-area-context:packageDebugAssets
+> Task :react-native-screens:mergeDebugShaders
+> Task :react-native-screens:compileDebugShaders NO-SOURCE
+> Task :react-native-screens:generateDebugAssets UP-TO-DATE
+> Task :react-native-screens:packageDebugAssets
+> Task :react-native-star-io10:mergeDebugShaders
+> Task :react-native-star-io10:compileDebugShaders NO-SOURCE
+> Task :react-native-star-io10:generateDebugAssets UP-TO-DATE
+> Task :react-native-star-io10:packageDebugAssets
+> Task :react-native-svg:mergeDebugShaders
+> Task :react-native-svg:compileDebugShaders NO-SOURCE
+> Task :react-native-svg:generateDebugAssets UP-TO-DATE
+> Task :react-native-svg:packageDebugAssets
+> Task :react-native-vector-icons:mergeDebugShaders
+> Task :react-native-vector-icons:compileDebugShaders NO-SOURCE
+> Task :react-native-vector-icons:generateDebugAssets UP-TO-DATE
+> Task :react-native-vector-icons:packageDebugAssets
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :react-native-gesture-handler:checkKotlinGradlePluginConfigurationErrors
+> Task :react-native-gesture-handler:generateDebugBuildConfig
+> Task :react-native-reanimated:generateDebugBuildConfig
+> Task :react-native-reanimated:packageNdkLibs NO-SOURCE
+> Task :react-native-reanimated:javaPreCompileDebug
+> Task :react-native-gesture-handler:javaPreCompileDebug
+> Task :app:processDebugResources
+
+> Task :react-native-reanimated:compileDebugJavaWithJavac
+
+> Task :react-native-safe-area-context:checkKotlinGradlePluginConfigurationErrors
+> Task :react-native-safe-area-context:generateDebugBuildConfig
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+> Task :react-native-reanimated:bundleLibCompileToJarDebug
+> Task :react-native-screens:checkKotlinGradlePluginConfigurationErrors
+> Task :react-native-screens:generateDebugBuildConfig
+> Task :react-native-safe-area-context:javaPreCompileDebug
+> Task :app:bundleDebugResources
+> Task :react-native-star-io10:checkKotlinGradlePluginConfigurationErrors
+> Task :react-native-screens:javaPreCompileDebug
+> Task :react-native-star-io10:generateDebugBuildConfig
+> Task :react-native-star-io10:javaPreCompileDebug
+> Task :react-native-async-storage_async-storage:generateDebugBuildConfig
+> Task :react-native-async-storage_async-storage:javaPreCompileDebug
+> Task :react-native-community_netinfo:generateDebugBuildConfig
+
+> Task :react-native-async-storage_async-storage:compileDebugJavaWithJavac
+
+> Task :react-native-community_netinfo:javaPreCompileDebug
+> Task :react-native-async-storage_async-storage:bundleLibRuntimeToJarDebug
+> Task :react-native-config:generateDebugBuildConfig
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/@react-native-async-storage/async-storage/android/src/main/java/com/reactnativecommunity/asyncstorage/AsyncStorageModule.java:84: warning: [removal] onCatalystInstanceDestroy() in NativeModule has been deprecated and marked for removal
+  public void onCatalystInstanceDestroy() {
+              ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/@react-native-async-storage/async-storage/android/src/javaPackage/java/com/reactnativecommunity/asyncstorage/AsyncStoragePackage.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+1 warning
+
+> Task :react-native-community_netinfo:compileDebugJavaWithJavac
+
+> Task :react-native-community_netinfo:bundleLibRuntimeToJarDebug
+> Task :react-native-config:javaPreCompileDebug
+> Task :react-native-device-info:generateDebugBuildConfig
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/@react-native-community/netinfo/android/src/main/java/com/reactnativecommunity/netinfo/NetInfoModule.java:45: warning: [removal] onCatalystInstanceDestroy() in NativeModule has been deprecated and marked for removal
+    public void onCatalystInstanceDestroy() {
+                ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+1 warning
+> Task :react-native-config:compileDebugJavaWithJavac
+> Task :react-native-config:bundleLibRuntimeToJarDebug
+> Task :react-native-device-info:javaPreCompileDebug
+> Task :react-native-fast-image:generateDebugBuildConfig
+
+> Task :react-native-device-info:compileDebugJavaWithJavac
+
+> Task :react-native-device-info:bundleLibRuntimeToJarDebug
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-device-info/android/src/main/java/com/learnium/RNDeviceInfo/RNDeviceModule.java:155: warning: [removal] onCatalystInstanceDestroy() in NativeModule has been deprecated and marked for removal
+  public void onCatalystInstanceDestroy() {
+              ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+1 warning
+> Task :react-native-fast-image:javaPreCompileDebug
+> Task :react-native-fs:generateDebugBuildConfig
+
+> Task :react-native-safe-area-context:compileDebugKotlin
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaContextPackage.kt:27:11 'constructor ReactModuleInfo(String, String, Boolean, Boolean, Boolean, Boolean, Boolean)' is deprecated. use ReactModuleInfo(String, String, boolean, boolean, boolean, boolean)]
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaContextPackage.kt:33:27 'getter for hasConstants: Boolean' is deprecated. This property is unused and it's planning to be removed in a future version of
+        React Native. Please refrain from using it.
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:59:23 'getter for uiImplementation: UIImplementation!' is deprecated. Deprecated in Java
+
+> Task :react-native-fast-image:compileDebugJavaWithJavac
+Note: [2] Wrote GeneratedAppGlideModule with: [com.bumptech.glide.integration.okhttp3.OkHttpLibraryGlideModule, com.dylanvann.fastimage.FastImageOkHttpProgressGlideModule]
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-star-io10:compileDebugKotlin
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarDeviceDiscoveryManagerWrapper.kt:42:21 Parameter 'eventName' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarDeviceDiscoveryManagerWrapper.kt:47:25 Parameter 'count' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarDeviceDiscoveryManagerWrapper.kt:92:74 Right operand of elvis operator (?:) is useless if it is null
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarDeviceDiscoveryManagerWrapper.kt:97:73 Right operand of elvis operator (?:) is useless if it is null
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarDeviceDiscoveryManagerWrapper.kt:102:77 Right operand of elvis operator (?:) is useless if it is null
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarDeviceDiscoveryManagerWrapper.kt:107:80 Right operand of elvis operator (?:) is useless if it is null
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarDeviceDiscoveryManagerWrapper.kt:112:72 Right operand of elvis operator (?:) is useless if it is null
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarDeviceDiscoveryManagerWrapper.kt:117:79 Right operand of elvis operator (?:) is useless if it is null
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarIO10ValueConverter.kt:857:49 Unchecked cast: ArrayList<Any> to ArrayList<T>
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarIO10ValueConverter.kt:892:74 Unchecked cast: Any? to Map<String, Any?>
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarIO10ValueConverter.kt:896:78 Unchecked cast: Any? to Array<Any?>
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarIO10ValueConverter.kt:936:72 Unchecked cast: Any? to Map<String, Any?>
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarIO10ValueConverter.kt:940:76 Unchecked cast: Any? to Array<Any?>
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarPrinterSettingFirmwareWrapper.kt:44:21 Parameter 'eventName' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarPrinterSettingFirmwareWrapper.kt:49:25 Parameter 'count' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarPrinterWrapper.kt:29:21 Parameter 'eventName' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarPrinterWrapper.kt:34:25 Parameter 'count' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarPrinterWrapper.kt:93:51 The corresponding parameter in the supertype 'PrinterDelegate' is named 'e'. This may cause problems when calling this function with named arguments.
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarPrinterWrapper.kt:116:56 The corresponding parameter in the supertype 'DrawerDelegate' is named 'openCloseSignal'. This may cause problems when calling this function with named arguments.
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarPrinterWrapper.kt:130:51 The corresponding parameter in the supertype 'DrawerDelegate' is named 'e'. This may cause problems when calling this function with named arguments.
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarPrinterWrapper.kt:180:51 The corresponding parameter in the supertype 'InputDeviceDelegate' is named 'e'. This may cause problems when calling this function with named arguments.
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-star-io10/android/src/main/java/com/stario10module/StarPrinterWrapper.kt:217:51 The corresponding parameter in the supertype 'DisplayDelegate' is named 'e'. This may cause problems when calling this function with named arguments.
+
+> Task :react-native-safe-area-context:compileDebugJavaWithJavac
+
+> Task :react-native-safe-area-context:bundleLibRuntimeToJarDebug
+Note: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-safe-area-context/android/src/paper/java/com/th3rdwave/safeareacontext/NativeSafeAreaContextSpec.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+> Task :react-native-star-io10:compileDebugJavaWithJavac
+> Task :react-native-star-io10:bundleLibRuntimeToJarDebug
+> Task :react-native-fs:javaPreCompileDebug
+> Task :react-native-fast-image:bundleLibRuntimeToJarDebug
+> Task :react-native-image-picker:generateDebugBuildConfig
+
+> Task :react-native-fs:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-fs:bundleLibRuntimeToJarDebug
+> Task :react-native-image-picker:javaPreCompileDebug
+> Task :react-native-localize:generateDebugBuildConfig
+
+> Task :react-native-gesture-handler:compileDebugKotlin
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/RNGestureHandlerPackage.kt:69:42 'constructor ReactModuleInfo(String, String, Boolean, Boolean, Boolean, Boolean, Boolean)' is deprecated. use ReactModuleInfo(String, String, boolean, boolean, boolean, boolean)]
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/core/FlingGestureHandler.kt:25:26 Parameter 'event' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerButtonViewManager.kt:72:62 The corresponding parameter in the supertype 'ViewGroupManager' is named 'borderRadius'. This may cause problems when calling this function with named arguments.
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerButtonViewManager.kt:77:63 The corresponding parameter in the supertype 'ViewGroupManager' is named 'borderRadius'. This may cause problems when calling this function with named arguments.
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerButtonViewManager.kt:82:65 The corresponding parameter in the supertype 'ViewGroupManager' is named 'borderRadius'. This may cause problems when calling this function with named arguments.
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerButtonViewManager.kt:87:66 The corresponding parameter in the supertype 'ViewGroupManager' is named 'borderRadius'. This may cause problems when calling this function with named arguments.
+
+> Task :react-native-image-picker:compileDebugJavaWithJavac
+Note: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/Utils.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-screens:compileDebugKotlin
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt:19:53 'FrameCallback' is deprecated. Use Choreographer.FrameCallback instead
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt:20:38 'FrameCallback' is deprecated. Use Choreographer.FrameCallback instead
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:64:17 'constructor ReactModuleInfo(String, String, Boolean, Boolean, Boolean, Boolean, Boolean)' is deprecated. use ReactModuleInfo(String, String, boolean, boolean, boolean, boolean)]
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:45:77 Unchecked cast: CoordinatorLayout.Behavior<(raw) View!>? to BottomSheetBehavior<Screen>
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenContainer.kt:33:53 'FrameCallback' is deprecated. Use Choreographer.FrameCallback instead
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenContainer.kt:34:38 'FrameCallback' is deprecated. Use Choreographer.FrameCallback instead
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenFooter.kt:252:9 Parameter 'changed' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenFooter.kt:253:9 Parameter 'left' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenFooter.kt:254:9 Parameter 'top' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenFooter.kt:255:9 Parameter 'right' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenFooter.kt:256:9 Parameter 'bottom' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:257:31 'setter for targetElevation: Float' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:260:13 'setHasOptionsMenu(Boolean): Unit' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:496:22 'onPrepareOptionsMenu(Menu): Unit' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:504:22 'onCreateOptionsMenu(Menu, MenuInflater): Unit' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfig.kt:100:38 'getter for systemWindowInsetTop: Int' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfigViewManager.kt:7:34 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfigViewManager.kt:209:9 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfigViewManager.kt:211:13 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfigViewManager.kt:213:13 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:7:34 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:375:48 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:376:49 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:377:45 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:378:52 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:379:48 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:380:51 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:381:56 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:382:57 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:383:51 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:55:42 'replaceSystemWindowInsets(Int, Int, Int, Int): WindowInsetsCompat' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:56:39 'getter for systemWindowInsetLeft: Int' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:58:39 'getter for systemWindowInsetRight: Int' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:59:39 'getter for systemWindowInsetBottom: Int' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:98:53 'getter for statusBarColor: Int' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:109:48 'getter for statusBarColor: Int' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:112:32 'setter for statusBarColor: Int' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:208:72 'getter for navigationBarColor: Int' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:214:16 'setter for navigationBarColor: Int' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:5:34 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:138:66 Elvis operator (?:) always returns the left operand of non-nullable type Boolean
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:142:9 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:144:13 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:146:13 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:148:13 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:150:13 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:152:13 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:154:13 'MapBuilder' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarView.kt:153:43 Parameter 'flag' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:7:34 'ReactFeatureFlags' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:25:13 'ReactFeatureFlags' is deprecated. Deprecated in Java
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/paper/java/com/swmansion/rnscreens/FabricEnabledHeaderConfigViewGroup.kt:17:25 Parameter 'wrapper' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/paper/java/com/swmansion/rnscreens/FabricEnabledViewGroup.kt:10:25 Parameter 'wrapper' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/paper/java/com/swmansion/rnscreens/FabricEnabledViewGroup.kt:13:9 Parameter 'width' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/paper/java/com/swmansion/rnscreens/FabricEnabledViewGroup.kt:14:9 Parameter 'height' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/paper/java/com/swmansion/rnscreens/FabricEnabledViewGroup.kt:15:9 Parameter 'headerHeight' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/paper/java/com/swmansion/rnscreens/NativeProxy.kt:7:36 Parameter 'fabricUIManager' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/paper/java/com/swmansion/rnscreens/NativeProxy.kt:11:13 Parameter 'tag' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/paper/java/com/swmansion/rnscreens/NativeProxy.kt:12:13 Parameter 'view' is never used
+w: file:///Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/paper/java/com/swmansion/rnscreens/NativeProxy.kt:15:33 Parameter 'tag' is never used
+
+> Task :react-native-gesture-handler:compileDebugJavaWithJavac
+
+> Task :react-native-gesture-handler:bundleLibRuntimeToJarDebug
+Note: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-gesture-handler/android/paper/src/main/java/com/swmansion/gesturehandler/NativeRNGestureHandlerModuleSpec.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-screens:compileDebugJavaWithJavac
+
+> Task :react-native-localize:javaPreCompileDebug
+> Task :react-native-image-picker:bundleLibRuntimeToJarDebug
+> Task :react-native-reanimated:bundleLibRuntimeToJarDebug
+> Task :react-native-screens:bundleLibRuntimeToJarDebug
+Note: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-screens/android/src/paper/java/com/swmansion/rnscreens/NativeScreensModuleSpec.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-localize:compileDebugJavaWithJavac
+
+> Task :react-native-localize:bundleLibRuntimeToJarDebug
+> Task :react-native-svg:generateDebugBuildConfig
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-localize/android/src/main/java/com/zoontek/rnlocalize/RNLocalizeModule.java:101: warning: [removal] onCatalystInstanceDestroy() in NativeModule has been deprecated and marked for removal
+  public void onCatalystInstanceDestroy() {
+              ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-localize/android/src/main/java/com/zoontek/rnlocalize/RNLocalizeModule.java:102: warning: [removal] onCatalystInstanceDestroy() in NativeModule has been deprecated and marked for removal
+    super.onCatalystInstanceDestroy();
+         ^
+Note: /Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-localize/android/src/main/java/com/zoontek/rnlocalize/RNLocalizeModule.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+2 warnings
+> Task :react-native-svg:javaPreCompileDebug
+> Task :react-native-vector-icons:generateDebugBuildConfig
+
+> Task :react-native-svg:compileDebugJavaWithJavac FAILED
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/VirtualView.java:107: error: setPointerEvents(PointerEvents) in VirtualView cannot override setPointerEvents(PointerEvents) in ReactViewGroup
+  void setPointerEvents(PointerEvents pointerEvents) {
+       ^
+  attempting to assign weaker access privileges; was public
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/RenderableViewManager.java:370: warning: [removal] processTransform(ReadableArray,double[]) in TransformHelper has been deprecated and marked for removal
+    TransformHelper.processTransform(transforms, sTransformDecompositionArray);
+                   ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgViewManager.java:179: warning: [removal] setBorderRadius(ReactViewGroup,int,float) in ReactViewManager has been deprecated and marked for removal
+    super.setBorderRadius(view, 6, value);
+         ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgViewManager.java:184: warning: [removal] setBorderRadius(ReactViewGroup,int,float) in ReactViewManager has been deprecated and marked for removal
+    super.setBorderRadius(view, 7, value);
+         ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgViewManager.java:244: warning: [removal] setBorderRadius(ReactViewGroup,int,float) in ReactViewManager has been deprecated and marked for removal
+    super.setBorderRadius(view, 8, value);
+         ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgViewManager.java:264: warning: [removal] setBorderRadius(ReactViewGroup,int,float) in ReactViewManager has been deprecated and marked for removal
+    super.setBorderRadius(view, 5, value);
+         ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgViewManager.java:336: warning: [removal] setBorderRadius(ReactViewGroup,int,float) in ReactViewManager has been deprecated and marked for removal
+    super.setBorderRadius(view, 0, (float) value);
+         ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgViewManager.java:341: warning: [removal] setBorderRadius(ReactViewGroup,int,float) in ReactViewManager has been deprecated and marked for removal
+    super.setBorderRadius(view, 1, (float) value);
+         ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgViewManager.java:346: warning: [removal] setBorderRadius(ReactViewGroup,int,float) in ReactViewManager has been deprecated and marked for removal
+    super.setBorderRadius(view, 2, (float) value);
+         ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgViewManager.java:351: warning: [removal] setBorderRadius(ReactViewGroup,int,float) in ReactViewManager has been deprecated and marked for removal
+    super.setBorderRadius(view, 3, (float) value);
+         ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgViewManager.java:356: warning: [removal] setBorderRadius(ReactViewGroup,int,float) in ReactViewManager has been deprecated and marked for removal
+    super.setBorderRadius(view, 4, (float) value);
+         ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgViewManager.java:361: warning: [removal] setBorderRadius(ReactViewGroup,int,float) in ReactViewManager has been deprecated and marked for removal
+    super.setBorderRadius(view, 9, (float) value);
+         ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgViewManager.java:366: warning: [removal] setBorderRadius(ReactViewGroup,int,float) in ReactViewManager has been deprecated and marked for removal
+    super.setBorderRadius(view, 10, (float) value);
+         ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgViewManager.java:371: warning: [removal] setBorderRadius(ReactViewGroup,int,float) in ReactViewManager has been deprecated and marked for removal
+    super.setBorderRadius(view, 11, (float) value);
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+274 actionable tasks: 265 executed, 9 up-to-date
+         ^
+/Users/orlando/dev/pos/apps/mobile-ui/node_modules/react-native-svg/android/src/main/java/com/horcrux/svg/SvgViewManager.java:376: warning: [removal] setBorderRadius(ReactViewGroup,int,float) in ReactViewManager has been deprecated and marked for removal
+    super.setBorderRadius(view, 12, (float) value);
+         ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+1 error
+14 warnings
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':react-native-svg:compileDebugJavaWithJavac'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 1m 16s
+
+[36m[1minfo[22m[39m [0m[2m[2m💡 Tip: Make sure that you have set up your development environment correctly, by running[22m[2m [0m[0m[1mnpx react-native doctor[22m[2m[0m[0m. [2mTo read more about doctor command visit: https://github.com/react-native-community/cli/blob/main/packages/cli-doctor/README.md#doctor [22m[2m[22m[0m
+[0m[2m[2m[22m[2m[22m[0m
+[31m[1merror[22m[39m [0mFailed to build the app.[0m
+[0mError: Command failed with exit code 1: ./gradlew app:bundleDebug[0m
+[0m    at makeError (/Users/orlando/dev/pos/node_modules/execa/lib/error.js:60:11)[0m
+[0m    at module.exports.sync (/Users/orlando/dev/pos/node_modules/execa/index.js:194:17)[0m
+[0m    at build (/Users/orlando/dev/pos/node_modules/@react-native-community/cli-platform-android/build/commands/buildAndroid/index.js:74:22)[0m
+[0m    at Object.buildAndroid [as func] (/Users/orlando/dev/pos/node_modules/@react-native-community/cli-platform-android/build/commands/buildAndroid/index.js:66:10)[0m
+[0m    at Command.handleAction (/Users/orlando/dev/pos/node_modules/@react-native-community/cli/build/index.js:126:23)[0m
+[0m    at Command.listener [as _actionHandler] (/Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:482:17)[0m
+[0m    at /Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:1283:65[0m
+[0m    at Command._chainOrCall (/Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:1177:12)[0m
+[0m    at Command._parseCommand (/Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:1283:27)[0m
+[0m    at /Users/orlando/dev/pos/node_modules/@react-native-community/cli/node_modules/commander/lib/command.js:1081:27[0m
+[36m[1minfo[22m[39m [0m[2mRun CLI with [0m[0m--verbose[0m[0m [2mflag for more details.[22m[2m[22m[0m
+
+ NX   1
+
+
