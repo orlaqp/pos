@@ -2,7 +2,7 @@
 
 export default {
     displayName: 'customers-native-feature',
-    preset: '../../../jest.react-native.preset.js',
+    preset: './jest.react-native.preset.js',
 
     resolver: '@nx/jest/plugins/resolver',
     moduleFileExtensions: ['ts', 'js', 'html', 'tsx', 'jsx'],

@@ -65,6 +65,7 @@ jest.mock('@react-navigation/native-stack', () => ({
 
 jest.mock('@pos/brands/native-feature', () => ({ Brands: () => null }));
 jest.mock('@pos/categories/native-feature', () => ({ Categories: () => null }));
+jest.mock('@pos/customers/native-feature', () => ({ Customers: () => null }));
 jest.mock('@pos/discounts/native-feature', () => ({
   DiscountEditor: () => null,
   Discounts: () => null,
@@ -113,6 +114,7 @@ describe('BackOffice', () => {
 
     expect(getByText('Dashboard')).toBeTruthy();
     expect(getByText('Sale List')).toBeTruthy();
+    expect(getByText('Customers')).toBeTruthy();
     expect(getByText('In Stock')).toBeTruthy();
     expect(getByText('Logs')).toBeTruthy();
   });

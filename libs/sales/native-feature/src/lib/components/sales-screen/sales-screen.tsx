@@ -90,7 +90,12 @@ import { SalesCurrentDealsDialog } from './sales-current-deals-dialog';
 export interface NavigationParamList {
     [key: string]: object | undefined;
     BackOffice: {
-        initialScreen?: 'Dashboard' | 'Products' | 'Categories';
+        initialScreen?:
+            | 'Dashboard'
+            | 'Catalog'
+            | 'Products'
+            | 'Categories'
+            | 'Customers';
         initialScreenParams?: {
             initialRouteName?: string;
         };

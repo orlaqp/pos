@@ -2,7 +2,7 @@
 
 export default {
     displayName: 'customers-data-access',
-    preset: '../../../jest.preset.js',
+    preset: './jest.preset.js',
     transform: {
         '^.+\\.[tj]sx?$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json', diagnostics: false }],
     },

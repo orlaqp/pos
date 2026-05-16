@@ -55,6 +55,12 @@ export const customersSlice = createSlice({
         ) => {
             state.ledger = action.payload;
         },
+        addLedgerTransaction: (
+            state: CustomersState,
+            action: PayloadAction<CreditTransactionEntity>
+        ) => {
+            state.ledger = [action.payload, ...state.ledger];
+        },
         clearLedger: (state: CustomersState) => {
             state.ledger = [];
         },

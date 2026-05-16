@@ -1,11 +1,141 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { Alert } from 'react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Role } from '@pos/auth/data-access';
 
 import CustomerForm from './customer-form';
 
+const mockSave = jest.fn();
+
+jest.mock('@pos/customers/data-access', () => ({
+    CustomerService: {
+        save: (...args: unknown[]) => mockSave(...args),
+    },
+}));
+
 describe('CustomerForm', () => {
-    it('renders successfully', () => {
-        const { getByText } = render(<CustomerForm />);
-        expect(getByText('Customer form')).toBeTruthy();
+    beforeEach(() => {
+        jest.clearAllMocks();
+        jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
+    });
+
+    it('requires first name before saving', () => {
+        const { getByTestId } = render(
+            <CustomerForm tenantId="tenant-1" currentEmployee={{ roles: [Role.Admin] }} />
+        );
+
+        fireEvent.press(getByTestId('customer-form-save'));
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'First name required',
+            'Enter a first name before saving this customer.'
+        );
+        expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it('requires phone or email before saving', () => {
+        const { getByTestId } = render(
+            <CustomerForm tenantId="tenant-1" currentEmployee={{ roles: [Role.Admin] }} />
+        );
+
+        fireEvent.changeText(getByTestId('customer-form-first-name'), 'Ada');
+        fireEvent.press(getByTestId('customer-form-save'));
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Contact required',
+            'Enter a phone number or email before saving this customer.'
+        );
+        expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it('saves contact and credit fields when the user can manage credit', async () => {
+        const onSaved = jest.fn();
+        const { getByTestId } = render(
+            <CustomerForm
+                tenantId="tenant-1"
+                currentEmployee={{ roles: [Role.CreateCustomers, Role.ManageCustomerCredit] }}
+                onSaved={onSaved}
+            />
+        );
+
+        mockSave.mockResolvedValueOnce({
+            id: 'customer-1',
+            firstName: 'Ada',
+            phone: '555-0100',
+            creditLimit: 250,
+        });
+
+        fireEvent.changeText(getByTestId('customer-form-first-name'), 'Ada');
+        fireEvent.changeText(getByTestId('customer-form-phone'), '555-0100');
+        fireEvent.changeText(getByTestId('customer-form-credit-limit'), '250');
+        fireEvent.press(getByTestId('customer-form-save'));
+
+        await waitFor(() => {
+            expect(mockSave).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    tenantId: 'tenant-1',
+                    firstName: 'Ada',
+                    phone: '555-0100',
+                    creditLimit: 250,
+                })
+            );
+            expect(onSaved).toHaveBeenCalledWith(expect.objectContaining({ id: 'customer-1' }));
+        });
+    });
+
+    it('preserves credit fields when employee cannot manage credit', async () => {
+        const { getByTestId, queryByTestId } = render(
+            <CustomerForm
+                tenantId="tenant-1"
+                currentEmployee={{ roles: [Role.CreateCustomers] }}
+                customer={{
+                    id: 'customer-1',
+                    tenantId: 'tenant-1',
+                    firstName: 'Ada',
+                    phone: '555-0100',
+                    active: false,
+                    creditLimit: 100,
+                }}
+            />
+        );
+
+        mockSave.mockResolvedValueOnce({ id: 'customer-1', firstName: 'Ada' });
+
+        expect(queryByTestId('customer-form-credit-limit')).toBeNull();
+        fireEvent.changeText(getByTestId('customer-form-first-name'), 'Ada Edited');
+        fireEvent.press(getByTestId('customer-form-save'));
+
+        await waitFor(() => {
+            expect(mockSave).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    firstName: 'Ada Edited',
+                    active: false,
+                    creditLimit: 100,
+                })
+            );
+        });
+    });
+
+    it('blocks save when the employee cannot edit customers', () => {
+        const { getByTestId } = render(
+            <CustomerForm
+                tenantId="tenant-1"
+                currentEmployee={{ roles: [] }}
+                customer={{
+                    id: 'customer-1',
+                    tenantId: 'tenant-1',
+                    firstName: 'Ada',
+                    phone: '555-0100',
+                }}
+            />
+        );
+
+        fireEvent.press(getByTestId('customer-form-save'));
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Permission required',
+            'You do not have access to edit this customer.'
+        );
+        expect(mockSave).not.toHaveBeenCalled();
     });
 });

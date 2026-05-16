@@ -21,6 +21,7 @@ import { useSelector } from 'react-redux';
 
 import { Brands } from '@pos/brands/native-feature';
 import { Categories } from '@pos/categories/native-feature';
+import { Customers } from '@pos/customers/native-feature';
 import { DiscountEditor, Discounts, PolicyEditor } from '@pos/discounts/native-feature';
 import { Employees } from '@pos/employees/native-feature';
 import { Products } from '@pos/products/native-feature';
@@ -56,7 +57,7 @@ export interface BackOfficeProps {
     navigation: NativeStackNavigationProp<any>;
     route?: {
         params?: {
-            initialScreen?: 'Dashboard' | 'Catalog' | 'Products' | 'Categories';
+            initialScreen?: 'Dashboard' | 'Catalog' | 'Products' | 'Categories' | 'Customers';
             initialScreenParams?: object;
         };
     };
@@ -167,6 +168,7 @@ export function BackOffice({ navigation, route }: BackOfficeProps) {
                                 <Stack.Screen name="Printers" component={PrinterList} />
                                 <Stack.Screen name="Store" component={StoreInfoForm} />
                                 <Stack.Screen name="General" component={Settings} />
+                                <Stack.Screen name="Customers" component={Customers} />
                                 <Stack.Screen name="Employees" component={Employees} />
                                 <Stack.Screen name="Logs" component={LogList} />
                             </Stack.Navigator>

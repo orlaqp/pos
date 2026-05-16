@@ -59,7 +59,7 @@ describe('customers reducer', () => {
         expect(state.selected).toBeUndefined();
     });
 
-    it('stores and clears customer ledger history', () => {
+    it('stores, prepends, and clears customer ledger history', () => {
         let state = customersReducer(
             undefined,
             customersActions.setLedger([
@@ -77,12 +77,28 @@ describe('customers reducer', () => {
                 },
             ])
         );
+        state = customersReducer(
+            state,
+            customersActions.addLedgerTransaction({
+                id: 'tx-2',
+                customerId: 'customer-1',
+                customerDisplayName: 'Ada Lovelace',
+                transactionDate: '2026-05-16T13:00:00.000Z',
+                type: 'ACCOUNT_PAYMENT',
+                amount: 10,
+                balanceAfter: 15,
+                referenceKey: 'payment-1',
+                employeeId: 'employee-1',
+                employeeName: 'Employee One',
+            })
+        );
 
         expect(
             selectCustomerLedger({
                 [CUSTOMERS_FEATURE_KEY]: state,
             } as unknown as Parameters<typeof selectCustomerLedger>[0])
         ).toEqual([
+            expect.objectContaining({ id: 'tx-2' }),
             expect.objectContaining({ id: 'tx-1' }),
         ]);
 
