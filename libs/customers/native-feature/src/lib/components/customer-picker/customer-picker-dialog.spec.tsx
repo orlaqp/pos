@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { ScrollView } from 'react-native';
 import { Role } from '@pos/auth/data-access';
 import { CustomerEntity } from '@pos/customers/data-access';
@@ -22,6 +22,34 @@ describe('CustomerPickerDialog', () => {
         const { UNSAFE_getByType } = render(<CustomerPickerDialog customers={customers} />);
 
         expect(UNSAFE_getByType(ScrollView).props.keyboardShouldPersistTaps).toBe('always');
+    });
+
+    it('selects a filtered customer after typing in search', () => {
+        const onSelect = jest.fn();
+        const { getByTestId } = render(
+            <CustomerPickerDialog
+                customers={[
+                    {
+                        id: 'customer-1',
+                        firstName: 'John',
+                        lastName: 'Doe',
+                        phone: '3053053055',
+                        email: 'email@address.com',
+                    },
+                ]}
+                onSelect={onSelect}
+            />
+        );
+
+        fireEvent.changeText(getByTestId('customer-picker-search'), 'Jo');
+        fireEvent.press(getByTestId('customer-picker-item-customer-1'));
+
+        expect(onSelect).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: 'customer-1',
+                firstName: 'John',
+            })
+        );
     });
 
     it('gates customer creation by role', () => {

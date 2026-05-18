@@ -6,6 +6,7 @@ import {
     StyleSheet,
     Text,
     TextInput,
+    TouchableOpacity,
     View,
 } from 'react-native';
 import { CustomerEntity } from '@pos/customers/data-access';
@@ -97,20 +98,26 @@ export function CustomerPickerDialog({
                     />
                     <ScrollView style={styles.list} keyboardShouldPersistTaps="always">
                         {filteredCustomers.map((customer) => (
-                            <Pressable
+                            <TouchableOpacity
                                 key={customer.id ?? getDisplayName(customer)}
                                 testID={`customer-picker-item-${customer.id ?? customer.firstName}`}
+                                accessibilityRole="button"
+                                activeOpacity={0.72}
+                                hitSlop={4}
                                 onPress={() => onSelect?.(customer)}
                                 style={styles.row}
                             >
-                                <Text style={styles.name}>{getDisplayName(customer)}</Text>
-                                {customer.phone ? (
-                                    <Text style={styles.meta}>{customer.phone}</Text>
-                                ) : null}
-                                {customer.email ? (
-                                    <Text style={styles.meta}>{customer.email}</Text>
-                                ) : null}
-                            </Pressable>
+                                <View style={styles.customerInfo}>
+                                    <Text style={styles.name}>{getDisplayName(customer)}</Text>
+                                    {customer.phone ? (
+                                        <Text style={styles.meta}>{customer.phone}</Text>
+                                    ) : null}
+                                    {customer.email ? (
+                                        <Text style={styles.meta}>{customer.email}</Text>
+                                    ) : null}
+                                </View>
+                                <Text style={styles.selectText}>Select</Text>
+                            </TouchableOpacity>
                         ))}
                         {!filteredCustomers.length ? (
                             <Text style={styles.empty}>No matching customers.</Text>
@@ -197,12 +204,19 @@ const useStyles = () =>
             maxHeight: 420,
         },
         row: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
             borderWidth: 1,
             borderColor: '#2A3544',
             borderRadius: 8,
             padding: 12,
             marginBottom: 8,
             backgroundColor: '#0B1119',
+        },
+        customerInfo: {
+            flex: 1,
+            paddingRight: 12,
         },
         name: {
             color: '#F7FAFC',
@@ -216,6 +230,10 @@ const useStyles = () =>
             color: '#AAB6C5',
             paddingVertical: 16,
             textAlign: 'center',
+        },
+        selectText: {
+            color: '#4AA3EB',
+            fontWeight: '800',
         },
         closeButton: {
             alignSelf: 'flex-end',
