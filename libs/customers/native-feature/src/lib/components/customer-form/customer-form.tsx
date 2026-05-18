@@ -1,36 +1,96 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FormProvider, useForm } from 'react-hook-form';
+import { Button } from '@rneui/themed';
+import { useDispatch, useSelector } from 'react-redux';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { selectCurrentTenantId } from '@pos/auth/data-access';
 import {
-    Alert,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TextInput,
-    View,
-} from 'react-native';
-import { CustomerEntity, CustomerService } from '@pos/customers/data-access';
+    CreditTransactionEntity,
+    CustomerCreditService,
+    CustomerEntity,
+    CustomerService,
+    customersActions,
+    selectCustomerLedger,
+    selectSelectedCustomer,
+} from '@pos/customers/data-access';
+import { selectLoginEmployee } from '@pos/employees/data-access';
+import { CustomerCreditStatus } from '@pos/shared/models';
+import {
+    UIActions,
+    UICard,
+    UIInput,
+    UIScreen,
+    UIStack,
+    UISwitch,
+} from '@pos/shared/ui-native';
+import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import {
     canCreateCustomers,
     canManageCustomerCredit,
+    canReceiveCustomerCreditPayments,
     CustomerPermissionSubject,
 } from '../../customer-permissions';
+import CustomerCreditHistory from '../customer-credit/customer-credit-history';
+
+type CustomerStackParamList = {
+    'Customer Payment': undefined;
+};
 
 export interface CustomerFormProps {
     customer?: CustomerEntity;
     tenantId?: string;
     currentEmployee?: CustomerPermissionSubject;
+    navigation?: NativeStackNavigationProp<CustomerStackParamList>;
     onCancel?: () => void;
     onSaved?: (customer: CustomerEntity) => void;
 }
 
-const toText = (value?: string | number | null) =>
-    value === null || value === undefined ? '' : String(value);
+type CustomerFormValues = CustomerEntity;
 
-const toAmount = (value: string) => {
-    const parsed = Number(value);
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+});
+
+const formatCurrency = (value?: number | null) => currencyFormatter.format(value ?? 0);
+
+const getAvailableCredit = (customer?: CustomerEntity) =>
+    (customer?.creditLimit ?? 0) - (customer?.creditBalance ?? 0);
+
+const getCreditStatus = (customer?: CustomerEntity) =>
+    (customer?.creditBalance ?? 0) > (customer?.creditLimit ?? 0)
+        ? CustomerCreditStatus.OVER_LIMIT
+        : CustomerCreditStatus.OK;
+
+const getDisplayName = (customer?: CustomerEntity) =>
+    customer
+        ? customer.displayName ||
+          [customer.firstName, customer.middleName, customer.lastName]
+              .filter(Boolean)
+              .join(' ') ||
+          'Unnamed customer'
+        : 'New customer';
+
+const toAmount = (value?: string | number | null) => {
+    const parsed = Number(value ?? 0);
     return Number.isFinite(parsed) ? parsed : 0;
 };
+
+export const getCustomerDefaults = (customer?: CustomerEntity): CustomerFormValues => ({
+    id: customer?.id,
+    tenantId: customer?.tenantId,
+    firstName: customer?.firstName ?? '',
+    lastName: customer?.lastName ?? '',
+    middleName: customer?.middleName ?? '',
+    dob: customer?.dob ?? '',
+    phone: customer?.phone ?? '',
+    email: customer?.email ?? '',
+    active: customer?.active ?? true,
+    creditLimit: customer?.creditLimit ?? 0,
+    creditBalance: customer?.creditBalance ?? 0,
+    creditStatus: customer?.creditStatus ?? CustomerCreditStatus.OK,
+});
 
 const getDuplicateContactMessage = (error: unknown) => {
     const message = error instanceof Error ? error.message : String(error);
@@ -50,68 +110,125 @@ export function CustomerForm({
     customer,
     tenantId,
     currentEmployee,
+    navigation,
     onCancel,
     onSaved,
 }: CustomerFormProps) {
-    const canCreate = canCreateCustomers(currentEmployee);
-    const canManageCredit = canManageCustomerCredit(currentEmployee);
+    const dispatch = useDispatch();
+    const selectedCustomer = useSelector(selectSelectedCustomer);
+    const loginEmployee = useSelector(selectLoginEmployee);
+    const currentTenantId = useSelector(selectCurrentTenantId);
+    const storedLedger = useSelector(selectCustomerLedger);
+    const effectiveCustomer = customer ?? selectedCustomer;
+    const effectiveEmployee = currentEmployee ?? loginEmployee;
+    const effectiveTenantId = tenantId ?? effectiveCustomer?.tenantId ?? currentTenantId;
+    const canCreate = canCreateCustomers(effectiveEmployee);
+    const canManageCredit = canManageCustomerCredit(effectiveEmployee);
+    const canReceivePayments = canReceiveCustomerCreditPayments(effectiveEmployee);
     const canEditCustomer = canCreate || canManageCredit;
-    const styles = useStyles();
-    const [firstName, setFirstName] = useState(toText(customer?.firstName));
-    const [lastName, setLastName] = useState(toText(customer?.lastName));
-    const [phone, setPhone] = useState(toText(customer?.phone));
-    const [email, setEmail] = useState(toText(customer?.email));
-    const [dob, setDob] = useState(toText(customer?.dob));
-    const [active, setActive] = useState(customer?.active ?? true);
-    const [creditLimit, setCreditLimit] = useState(toText(customer?.creditLimit ?? 0));
+    const tokens = useDesignTokens();
+    const styles = useStyles(tokens);
     const [busy, setBusy] = useState(false);
+    const [ledger, setLedger] = useState<CreditTransactionEntity[]>(storedLedger);
+    const form = useForm<CustomerFormValues>({
+        mode: 'onChange',
+        defaultValues: getCustomerDefaults(effectiveCustomer),
+    });
+    const active = form.watch('active') !== false;
+    const watchedLimit = toAmount(form.watch('creditLimit'));
+    const watchedBalance = effectiveCustomer?.creditBalance ?? 0;
+    const previewCustomer = {
+        ...effectiveCustomer,
+        creditLimit: watchedLimit,
+        creditBalance: watchedBalance,
+    };
 
-    const save = async () => {
-        if (!customer?.id && !canCreate) {
-            Alert.alert(
-                'Permission required',
-                'You do not have access to create customers.'
-            );
+    useEffect(() => {
+        let mounted = true;
+
+        if (!effectiveCustomer?.id) {
+            setLedger([]);
+            dispatch(customersActions.clearLedger());
+            return () => {
+                mounted = false;
+            };
+        }
+
+        CustomerCreditService.getLedgerForCustomer(effectiveCustomer.id)
+            .then((items) => {
+                if (!mounted) return;
+                setLedger(items);
+                dispatch(customersActions.setLedger(items));
+            })
+            .catch(() => {
+                if (!mounted) return;
+                setLedger([]);
+                dispatch(customersActions.clearLedger());
+            });
+
+        return () => {
+            mounted = false;
+        };
+    }, [dispatch, effectiveCustomer?.id]);
+
+    const cancel = () => {
+        if (onCancel) {
+            onCancel();
             return;
         }
 
-        if (customer?.id && !canEditCustomer) {
-            Alert.alert(
-                'Permission required',
-                'You do not have access to edit this customer.'
-            );
+        navigation?.goBack();
+    };
+
+    const openPayment = () => {
+        if (!effectiveCustomer?.id) return;
+        dispatch(customersActions.select(effectiveCustomer));
+        navigation?.navigate('Customer Payment');
+    };
+
+    const save = async (values: CustomerFormValues) => {
+        if (!effectiveCustomer?.id && !canCreate) {
+            Alert.alert('Permission required', 'You do not have access to create customers.');
             return;
         }
 
-        const trimmedFirstName = firstName.trim();
+        if (effectiveCustomer?.id && !canEditCustomer) {
+            Alert.alert('Permission required', 'You do not have access to edit this customer.');
+            return;
+        }
+
+        const trimmedFirstName = values.firstName?.trim();
+        const phone = values.phone?.trim();
+        const email = values.email?.trim();
 
         if (!trimmedFirstName) {
-            Alert.alert(
-                'First name required',
-                'Enter a first name before saving this customer.'
-            );
+            Alert.alert('First name required', 'Enter a first name before saving this customer.');
             return;
         }
 
-        if (!phone.trim() && !email.trim()) {
-            Alert.alert(
-                'Contact required',
-                'Enter a phone number or email before saving this customer.'
-            );
+        if (!phone && !email) {
+            Alert.alert('Contact required', 'Enter a phone number or email before saving this customer.');
             return;
         }
 
         const payload: CustomerEntity = {
-            ...customer,
-            tenantId: customer?.tenantId ?? tenantId,
+            ...effectiveCustomer,
+            id: effectiveCustomer?.id,
+            tenantId: effectiveCustomer?.tenantId ?? effectiveTenantId,
             firstName: trimmedFirstName,
-            lastName: lastName.trim() || null,
-            phone: phone.trim() || null,
-            email: email.trim() || null,
-            dob: dob.trim() || null,
-            active: canManageCredit ? active : customer?.active ?? true,
-            creditLimit: canManageCredit ? toAmount(creditLimit) : customer?.creditLimit ?? 0,
+            lastName: values.lastName?.trim() || null,
+            middleName: values.middleName?.trim() || null,
+            phone: phone || null,
+            email: email || null,
+            dob: values.dob?.trim() || null,
+            active: canManageCredit ? values.active ?? true : effectiveCustomer?.active ?? true,
+            creditLimit: canManageCredit
+                ? toAmount(values.creditLimit)
+                : effectiveCustomer?.creditLimit ?? 0,
+            creditBalance: effectiveCustomer?.creditBalance ?? 0,
         };
+
+        payload.creditStatus = getCreditStatus(payload);
 
         if (!payload.id) {
             delete payload.id;
@@ -120,7 +237,10 @@ export function CustomerForm({
         try {
             setBusy(true);
             const saved = await CustomerService.save(payload);
+            dispatch(customersActions.upsert(saved));
+            dispatch(customersActions.select(saved));
             onSaved?.(saved);
+            if (!onSaved) navigation?.goBack();
         } catch (error) {
             Alert.alert('Customer not saved', getDuplicateContactMessage(error));
         } finally {
@@ -129,203 +249,380 @@ export function CustomerForm({
     };
 
     return (
-        <ScrollView
-            testID="customer-form-screen"
-            style={styles.scroll}
-            contentContainerStyle={styles.container}
-            keyboardShouldPersistTaps="handled"
-        >
-            <View style={styles.header}>
-                <Text style={styles.title}>
-                    {customer?.id ? 'Edit customer' : 'Create customer'}
-                </Text>
-                <Text style={styles.subtitle}>
-                    Manage contact details and account status.
-                </Text>
-            </View>
+        <UIScreen>
+            <FormProvider {...form}>
+                <View testID="customer-form-screen" style={styles.screen}>
+                    <ScrollView contentContainerStyle={styles.scrollContent}>
+                        <View style={styles.container}>
+                            <UICard style={styles.headerCard} tone="muted" radius="lg">
+                                <View style={styles.headerRow}>
+                                    <View style={styles.headerTitleBlock}>
+                                        <Text style={styles.headerTitle}>
+                                            {effectiveCustomer?.id ? 'Customer Profile' : 'Create Customer'}
+                                        </Text>
+                                        <Text style={styles.headerSubtitle}>
+                                            Manage customer identity, contact details, and account credit.
+                                        </Text>
+                                    </View>
+                                    <View style={styles.headerStatusBlock}>
+                                        <View
+                                            style={[
+                                                styles.statusBadge,
+                                                active
+                                                    ? styles.statusBadgeActive
+                                                    : styles.statusBadgeInactive,
+                                            ]}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.statusBadgeText,
+                                                    active
+                                                        ? styles.statusBadgeTextActive
+                                                        : styles.statusBadgeTextInactive,
+                                                ]}
+                                            >
+                                                {active ? 'Active' : 'Inactive'}
+                                            </Text>
+                                        </View>
+                                        {canManageCredit ? (
+                                            <View style={styles.statusSwitchRow}>
+                                                <Text style={styles.toggleLabel}>Is active?</Text>
+                                                <View style={styles.toggleSwitchWrap}>
+                                                    <UISwitch
+                                                        testID="customer-form-active"
+                                                        name="active"
+                                                    />
+                                                </View>
+                                            </View>
+                                        ) : null}
+                                    </View>
+                                </View>
+                            </UICard>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Profile</Text>
-                <TextInput
-                    testID="customer-form-first-name"
-                    value={firstName}
-                    onChangeText={setFirstName}
-                    placeholder="First name"
-                    style={styles.input}
-                />
-                <TextInput
-                    testID="customer-form-last-name"
-                    value={lastName}
-                    onChangeText={setLastName}
-                    placeholder="Last name"
-                    style={styles.input}
-                />
-                <TextInput
-                    testID="customer-form-phone"
-                    value={phone}
-                    onChangeText={setPhone}
-                    placeholder="Phone"
-                    keyboardType="phone-pad"
-                    style={styles.input}
-                />
-                <TextInput
-                    testID="customer-form-email"
-                    value={email}
-                    onChangeText={setEmail}
-                    placeholder="Email"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    style={styles.input}
-                />
-                <TextInput
-                    testID="customer-form-dob"
-                    value={dob}
-                    onChangeText={setDob}
-                    placeholder="Date of birth"
-                    style={styles.input}
-                />
-            </View>
+                            <UICard style={styles.sectionCard}>
+                                <Text style={styles.sectionTitle}>Profile</Text>
+                                <UIStack spacing="sm">
+                                    <View style={styles.row}>
+                                        <View style={styles.column}>
+                                            <UIInput
+                                                testID="customer-form-first-name"
+                                                name="firstName"
+                                                label="First Name"
+                                                placeholder="First name"
+                                                lIcon="account-outline"
+                                            />
+                                        </View>
+                                        <View style={styles.columnLast}>
+                                            <UIInput
+                                                testID="customer-form-last-name"
+                                                name="lastName"
+                                                label="Last Name"
+                                                placeholder="Last name"
+                                                lIcon="account-outline"
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={styles.row}>
+                                        <View style={styles.column}>
+                                            <UIInput
+                                                testID="customer-form-phone"
+                                                name="phone"
+                                                label="Phone"
+                                                placeholder="Phone Number"
+                                                keyboardType="phone-pad"
+                                                lIcon="phone-outline"
+                                            />
+                                        </View>
+                                        <View style={styles.columnLast}>
+                                            <UIInput
+                                                testID="customer-form-email"
+                                                name="email"
+                                                label="Email"
+                                                placeholder="Email Address"
+                                                keyboardType="email-address"
+                                                autoCapitalize="none"
+                                                autoCorrect={false}
+                                                lIcon="email-outline"
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={styles.row}>
+                                        <View style={styles.column}>
+                                            <UIInput
+                                                testID="customer-form-dob"
+                                                name="dob"
+                                                label="Date of Birth"
+                                                placeholder="YYYY-MM-DD"
+                                                lIcon="calendar-outline"
+                                            />
+                                        </View>
+                                        <View style={styles.columnLast} />
+                                    </View>
+                                </UIStack>
+                            </UICard>
 
-            {canManageCredit ? (
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Credit account</Text>
-                    <View style={styles.toggleRow}>
-                        <View>
-                            <Text style={styles.label}>Active</Text>
-                            <Text style={styles.hint}>Allow this customer account to be used.</Text>
+                            <UICard style={styles.sectionCard}>
+                                <View style={styles.sectionHeaderRow}>
+                                    <View>
+                                        <Text style={styles.sectionTitle}>Credit Account</Text>
+                                        <Text style={styles.sectionSubtitle}>
+                                            {getDisplayName(effectiveCustomer)}
+                                        </Text>
+                                    </View>
+                                    {effectiveCustomer?.id && canReceivePayments ? (
+                                        <Button
+                                            testID="customer-form-receive-payment"
+                                            title="Receive payment"
+                                            type="outline"
+                                            buttonStyle={styles.paymentButton}
+                                            titleStyle={styles.paymentButtonText}
+                                            onPress={openPayment}
+                                        />
+                                    ) : null}
+                                </View>
+
+                                <View style={styles.metricRow}>
+                                    <View style={styles.metric}>
+                                        <Text style={styles.metricLabel}>Balance</Text>
+                                        <Text style={styles.metricValue}>
+                                            {formatCurrency(effectiveCustomer?.creditBalance)}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.metric}>
+                                        <Text style={styles.metricLabel}>Available</Text>
+                                        <Text
+                                            testID="customer-form-available-credit"
+                                            style={styles.metricValue}
+                                        >
+                                            {formatCurrency(getAvailableCredit(previewCustomer))}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.metricLast}>
+                                        <Text style={styles.metricLabel}>Status</Text>
+                                        <Text
+                                            testID="customer-form-credit-status"
+                                            style={styles.metricValue}
+                                        >
+                                            {getCreditStatus(previewCustomer)}
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                {canManageCredit ? (
+                                    <View style={styles.row}>
+                                        <View style={styles.column}>
+                                            <UIInput
+                                                testID="customer-form-credit-limit"
+                                                name="creditLimit"
+                                                label="Credit Limit"
+                                                placeholder="0.00"
+                                                keyboardType="decimal-pad"
+                                                lIcon="cash-multiple"
+                                            />
+                                        </View>
+                                        <View style={styles.columnLast} />
+                                    </View>
+                                ) : null}
+                            </UICard>
+
+                            {effectiveCustomer?.id ? (
+                                <UICard style={styles.sectionCard}>
+                                    <Text style={styles.sectionTitle}>Credit History</Text>
+                                    <CustomerCreditHistory
+                                        customerId={effectiveCustomer.id}
+                                        transactions={ledger}
+                                    />
+                                </UICard>
+                            ) : null}
                         </View>
-                        <Switch
-                            testID="customer-form-active"
-                            value={active}
-                            onValueChange={setActive}
-                        />
-                    </View>
-                    <TextInput
-                        testID="customer-form-credit-limit"
-                        value={creditLimit}
-                        onChangeText={setCreditLimit}
-                        placeholder="Credit limit"
-                        keyboardType="decimal-pad"
-                        style={styles.input}
-                    />
-                </View>
-            ) : null}
+                    </ScrollView>
 
-            <View style={styles.actions}>
-                {onCancel ? (
-                    <Pressable
-                        testID="customer-form-cancel"
-                        onPress={onCancel}
-                        style={[styles.button, styles.secondaryButton]}
-                    >
-                        <Text style={styles.secondaryButtonText}>Cancel</Text>
-                    </Pressable>
-                ) : null}
-                <Pressable
-                    testID="customer-form-save"
-                    disabled={busy}
-                    onPress={save}
-                    style={[styles.button, styles.primaryButton, busy && styles.disabledButton]}
-                >
-                    <Text style={styles.primaryButtonText}>{busy ? 'Saving...' : 'Save'}</Text>
-                </Pressable>
-            </View>
-        </ScrollView>
+                    <View style={styles.actionBar}>
+                        <UICard tone="muted" style={styles.actionBarCard}>
+                            <UIActions
+                                busy={busy}
+                                submitTestID="customer-form-save"
+                                cancelTestID="customer-form-cancel"
+                                submitAction={form.handleSubmit(save)}
+                                cancelAction={cancel}
+                            />
+                        </UICard>
+                    </View>
+                </View>
+            </FormProvider>
+        </UIScreen>
     );
 }
 
-const useStyles = () =>
+const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     StyleSheet.create({
-        scroll: {
+        screen: {
             flex: 1,
             backgroundColor: '#080B10',
         },
+        scrollContent: {
+            paddingHorizontal: tokens.spacing.xl,
+            paddingTop: tokens.spacing.lg,
+            paddingBottom: tokens.spacing.xl,
+            alignItems: 'center',
+        },
         container: {
-            padding: 20,
+            width: '100%',
+            maxWidth: 1220,
+        },
+        headerCard: {
+            marginBottom: tokens.spacing.lg,
+            borderRadius: 26,
+            borderColor: '#C7D0DB22',
             backgroundColor: '#080B10',
         },
-        header: {
-            marginBottom: 18,
+        headerRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
         },
-        title: {
-            color: '#F7FAFC',
-            fontSize: 24,
+        headerTitleBlock: {
+            flex: 1,
+            paddingRight: tokens.spacing.lg,
+        },
+        headerTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 28,
             fontWeight: '800',
         },
-        subtitle: {
-            color: '#AAB6C5',
-            marginTop: 4,
-            fontSize: 14,
+        headerSubtitle: {
+            color: tokens.colors.textSecondary,
+            marginTop: tokens.spacing.xs,
+            fontSize: 15,
+            lineHeight: 21,
         },
-        section: {
-            backgroundColor: '#101821',
-            borderColor: '#C7D0DB22',
+        headerStatusBlock: {
+            alignItems: 'flex-end',
+        },
+        statusBadge: {
+            borderRadius: tokens.radii.xl,
             borderWidth: 1,
-            borderRadius: 8,
-            padding: 16,
-            marginBottom: 16,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.xs,
+            marginBottom: tokens.spacing.sm,
         },
-        sectionTitle: {
-            color: '#F7FAFC',
+        statusBadgeActive: {
+            backgroundColor: `${tokens.colors.success}33`,
+            borderColor: `${tokens.colors.success}66`,
+        },
+        statusBadgeInactive: {
+            backgroundColor: `${tokens.colors.danger}22`,
+            borderColor: `${tokens.colors.danger}55`,
+        },
+        statusBadgeText: {
+            fontSize: 12,
+            fontWeight: '700',
+            textTransform: 'uppercase',
+        },
+        statusBadgeTextActive: {
+            color: tokens.colors.success,
+        },
+        statusBadgeTextInactive: {
+            color: tokens.colors.danger,
+        },
+        statusSwitchRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        toggleLabel: {
+            color: tokens.colors.textSecondary,
             fontSize: 16,
-            fontWeight: '800',
-            marginBottom: 12,
+            fontWeight: '600',
         },
-        input: {
-            minHeight: 44,
-            borderRadius: 8,
-            borderWidth: 1,
-            borderColor: '#2A3544',
-            backgroundColor: '#0B1119',
-            color: '#F7FAFC',
-            paddingHorizontal: 12,
-            marginBottom: 10,
+        toggleSwitchWrap: {
+            marginLeft: tokens.spacing.md,
         },
-        toggleRow: {
+        sectionCard: {
+            marginBottom: tokens.spacing.lg,
+            borderRadius: 24,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#0E141C',
+        },
+        sectionHeaderRow: {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: 12,
+            marginBottom: tokens.spacing.md,
         },
-        label: {
-            color: '#F7FAFC',
-            fontWeight: '700',
+        sectionTitle: {
+            color: tokens.colors.textPrimary,
+            fontSize: 19,
+            fontWeight: '800',
+            marginBottom: tokens.spacing.md,
         },
-        hint: {
-            color: '#8A98AA',
-            marginTop: 2,
+        sectionSubtitle: {
+            color: tokens.colors.textMuted,
+            fontSize: 14,
         },
-        actions: {
+        row: {
             flexDirection: 'row',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
         },
-        button: {
-            minHeight: 44,
-            minWidth: 110,
-            borderRadius: 8,
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingHorizontal: 18,
-            marginLeft: 10,
+        column: {
+            flex: 1,
+            marginRight: tokens.spacing.md,
         },
-        primaryButton: {
-            backgroundColor: '#2F80ED',
+        columnLast: {
+            flex: 1,
         },
-        secondaryButton: {
+        metricRow: {
+            flexDirection: 'row',
+            marginBottom: tokens.spacing.lg,
+        },
+        metric: {
+            flex: 1,
+            marginRight: tokens.spacing.md,
+            borderRadius: tokens.radii.lg,
             borderWidth: 1,
-            borderColor: '#2A3544',
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
+            padding: tokens.spacing.md,
         },
-        disabledButton: {
-            opacity: 0.6,
+        metricLast: {
+            flex: 1,
+            borderRadius: tokens.radii.lg,
+            borderWidth: 1,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
+            padding: tokens.spacing.md,
         },
-        primaryButtonText: {
-            color: '#FFFFFF',
+        metricLabel: {
+            color: tokens.colors.textMuted,
+            fontSize: 12,
+            fontWeight: '700',
+            textTransform: 'uppercase',
+            marginBottom: 4,
+        },
+        metricValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 18,
             fontWeight: '800',
         },
-        secondaryButtonText: {
-            color: '#D9E2EC',
-            fontWeight: '700',
+        paymentButton: {
+            borderRadius: tokens.radii.md,
+            borderColor: tokens.colors.border,
+            paddingHorizontal: tokens.spacing.md,
+        },
+        paymentButtonText: {
+            color: tokens.colors.textSecondary,
+            fontWeight: '600',
+        },
+        actionBar: {
+            paddingHorizontal: tokens.spacing.xl,
+            paddingBottom: tokens.spacing.md,
+            paddingTop: tokens.spacing.xs,
+        },
+        actionBarCard: {
+            maxWidth: 1220,
+            alignSelf: 'center',
+            width: '100%',
+            borderRadius: 24,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#080B10',
         },
     });
 

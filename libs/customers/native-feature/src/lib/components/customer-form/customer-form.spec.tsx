@@ -6,20 +6,48 @@ import { Role } from '@pos/auth/data-access';
 import CustomerForm from './customer-form';
 
 const mockSave = jest.fn();
+const mockDispatch = jest.fn();
+const mockGetLedgerForCustomer = jest.fn();
 
-jest.mock('@pos/customers/data-access', () => ({
-    CustomerService: {
-        save: (...args: unknown[]) => mockSave(...args),
-    },
+jest.mock('react-redux', () => ({
+    useDispatch: () => mockDispatch,
+    useSelector: (selector: (state: unknown) => unknown) =>
+        selector({
+            tenantSession: { currentTenantId: 'tenant-1' },
+            employees: {
+                loginEmployee: { id: 'emp-1', firstName: 'Admin', roles: ['Admin'] },
+            },
+            customers: {
+                ids: [],
+                entities: {},
+                selected: undefined,
+                ledger: [],
+                loadingStatus: 'loaded',
+            },
+        } as never),
 }));
+
+jest.mock('@pos/customers/data-access', () => {
+    const actual = jest.requireActual('@pos/customers/data-access');
+    return {
+        ...actual,
+        CustomerService: {
+            save: (...args: unknown[]) => mockSave(...args),
+        },
+        CustomerCreditService: {
+            getLedgerForCustomer: (...args: unknown[]) => mockGetLedgerForCustomer(...args),
+        },
+    };
+});
 
 describe('CustomerForm', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        mockGetLedgerForCustomer.mockResolvedValue([]);
         jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
     });
 
-    it('requires first name before saving', () => {
+    it('requires first name before saving', async () => {
         const { getByTestId } = render(
             <CustomerForm tenantId="tenant-1" currentEmployee={{ roles: [Role.Admin] }} />
         );
@@ -30,14 +58,16 @@ describe('CustomerForm', () => {
 
         fireEvent.press(getByTestId('customer-form-save'));
 
-        expect(Alert.alert).toHaveBeenCalledWith(
-            'First name required',
-            'Enter a first name before saving this customer.'
-        );
+        await waitFor(() => {
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'First name required',
+                'Enter a first name before saving this customer.'
+            );
+        });
         expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('requires phone or email before saving', () => {
+    it('requires phone or email before saving', async () => {
         const { getByTestId } = render(
             <CustomerForm tenantId="tenant-1" currentEmployee={{ roles: [Role.Admin] }} />
         );
@@ -45,10 +75,12 @@ describe('CustomerForm', () => {
         fireEvent.changeText(getByTestId('customer-form-first-name'), 'Ada');
         fireEvent.press(getByTestId('customer-form-save'));
 
-        expect(Alert.alert).toHaveBeenCalledWith(
-            'Contact required',
-            'Enter a phone number or email before saving this customer.'
-        );
+        await waitFor(() => {
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Contact required',
+                'Enter a phone number or email before saving this customer.'
+            );
+        });
         expect(mockSave).not.toHaveBeenCalled();
     });
 
@@ -120,7 +152,7 @@ describe('CustomerForm', () => {
         });
     });
 
-    it('blocks save when the employee cannot edit customers', () => {
+    it('blocks save when the employee cannot edit customers', async () => {
         const { getByTestId } = render(
             <CustomerForm
                 tenantId="tenant-1"
@@ -136,10 +168,12 @@ describe('CustomerForm', () => {
 
         fireEvent.press(getByTestId('customer-form-save'));
 
-        expect(Alert.alert).toHaveBeenCalledWith(
-            'Permission required',
-            'You do not have access to edit this customer.'
-        );
+        await waitFor(() => {
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Permission required',
+                'You do not have access to edit this customer.'
+            );
+        });
         expect(mockSave).not.toHaveBeenCalled();
     });
 });
