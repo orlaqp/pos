@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import {
-    Modal,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -9,6 +8,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { Dialog } from '@rneui/themed';
 import { CustomerEntity } from '@pos/customers/data-access';
 import {
     canCreateCustomers,
@@ -147,19 +147,28 @@ export function CustomerPickerDialog({
     }
 
     return (
-        <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-            <View style={styles.modalBackdrop}>{content}</View>
-        </Modal>
+        <Dialog
+            testID="customer-picker-dialog"
+            isVisible={visible}
+            onBackdropPress={onClose}
+            supportedOrientations={['landscape-left', 'landscape-right']}
+            presentationStyle="fullScreen"
+            overlayStyle={styles.dialogOverlay}
+        >
+            {content}
+        </Dialog>
     );
 }
 
 const useStyles = () =>
     StyleSheet.create({
-        modalBackdrop: {
-            flex: 1,
-            backgroundColor: '#00000099',
-            justifyContent: 'center',
-            padding: 24,
+        dialogOverlay: {
+            width: '92%',
+            maxWidth: 1120,
+            backgroundColor: 'transparent',
+            padding: 0,
+            borderWidth: 0,
+            shadowOpacity: 0,
         },
         container: {
             maxHeight: '90%',

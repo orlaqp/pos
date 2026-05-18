@@ -6,6 +6,26 @@ import { CustomerEntity } from '@pos/customers/data-access';
 
 import CustomerPickerDialog from './customer-picker-dialog';
 
+jest.mock('@rneui/themed', () => {
+    const React = require('react');
+    const RN = require('react-native');
+
+    return {
+        Dialog: ({
+            isVisible,
+            children,
+            ...props
+        }: {
+            isVisible?: boolean;
+            children?: unknown;
+            [key: string]: unknown;
+        }) =>
+            isVisible
+                ? React.createElement(RN.View, props, children)
+                : null,
+    };
+});
+
 describe('CustomerPickerDialog', () => {
     const customers: CustomerEntity[] = [
         { id: 'customer-1', firstName: 'Ada', phone: '555-0100' },
@@ -48,6 +68,22 @@ describe('CustomerPickerDialog', () => {
             expect.objectContaining({
                 id: 'customer-1',
                 firstName: 'John',
+            })
+        );
+    });
+
+    it('uses the sales dialog host when shown as a dismissible overlay', () => {
+        const { getByTestId } = render(
+            <CustomerPickerDialog customers={customers} onClose={jest.fn()} />
+        );
+
+        expect(getByTestId('customer-picker-dialog').props).toEqual(
+            expect.objectContaining({
+                presentationStyle: 'fullScreen',
+                supportedOrientations: expect.arrayContaining([
+                    'landscape-left',
+                    'landscape-right',
+                ]),
             })
         );
     });
