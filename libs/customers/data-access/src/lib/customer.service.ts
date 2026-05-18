@@ -32,6 +32,24 @@ const normalizeCustomerForSave = (customer: CustomerEntity): CustomerEntity => {
     };
 };
 
+const toCustomerModelInput = (customer: CustomerEntity) =>
+    Object.fromEntries(
+        Object.entries({
+            id: customer.id,
+            tenantId: customer.tenantId,
+            firstName: customer.firstName,
+            lastName: customer.lastName,
+            middleName: customer.middleName,
+            dob: customer.dob,
+            phone: customer.phone,
+            email: customer.email,
+            active: customer.active,
+            creditLimit: customer.creditLimit,
+            creditBalance: customer.creditBalance,
+            creditStatus: customer.creditStatus,
+        }).filter(([, value]) => value !== undefined)
+    );
+
 const duplicateContactError = (duplicates: DuplicateCustomerContactResult) => {
     if (duplicates.phone) {
         return new Error(`Customer phone ${duplicates.phone.value} already exists`);
@@ -139,7 +157,9 @@ export class CustomerService {
         }
 
         if (!stamped.id) {
-            const saved = await DataStore.save(new Customer(stamped as never));
+            const saved = await DataStore.save(
+                new Customer(toCustomerModelInput(stamped) as never)
+            );
             return CustomerEntityMapper.fromModel(saved);
         }
 
@@ -154,7 +174,7 @@ export class CustomerService {
         const saved = await DataStore.save(
             Customer.copyOf(existing, (updated) => {
                 Object.assign(updated, {
-                    ...stamped,
+                    ...toCustomerModelInput(stamped),
                     tenantId: existing.tenantId,
                 });
             })

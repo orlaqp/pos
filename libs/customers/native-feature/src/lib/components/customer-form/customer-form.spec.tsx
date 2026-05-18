@@ -24,6 +24,10 @@ describe('CustomerForm', () => {
             <CustomerForm tenantId="tenant-1" currentEmployee={{ roles: [Role.Admin] }} />
         );
 
+        expect(getByTestId('customer-form-screen')).toHaveStyle({
+            backgroundColor: '#080B10',
+        });
+
         fireEvent.press(getByTestId('customer-form-save'));
 
         expect(Alert.alert).toHaveBeenCalledWith(

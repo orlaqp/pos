@@ -177,6 +177,7 @@ describe('CustomerService', () => {
                 creditStatus: 'OK',
             })
         );
+        expect(saveMock.mock.calls[0][0]).not.toHaveProperty('displayName');
     });
 
     it('rejects saving duplicate phone or email contacts', async () => {
@@ -242,6 +243,7 @@ describe('CustomerService', () => {
                 creditStatus: 'OVER_LIMIT',
             })
         );
+        expect(saveMock.mock.calls[0][0]).not.toHaveProperty('displayName');
     });
 
     it('rejects updates and deletes when tenant ownership does not match', async () => {

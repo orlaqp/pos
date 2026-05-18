@@ -130,6 +130,7 @@ export function CustomerForm({
 
     return (
         <ScrollView
+            testID="customer-form-screen"
             style={styles.scroll}
             contentContainerStyle={styles.container}
             keyboardShouldPersistTaps="handled"
@@ -237,9 +238,11 @@ const useStyles = () =>
     StyleSheet.create({
         scroll: {
             flex: 1,
+            backgroundColor: '#080B10',
         },
         container: {
             padding: 20,
+            backgroundColor: '#080B10',
         },
         header: {
             marginBottom: 18,
