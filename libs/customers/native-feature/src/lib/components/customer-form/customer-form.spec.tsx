@@ -119,6 +119,38 @@ describe('CustomerForm', () => {
         });
     });
 
+    it('uses a date picker for date of birth and saves the selected date', async () => {
+        const { getByTestId } = render(
+            <CustomerForm
+                tenantId="tenant-1"
+                currentEmployee={{ roles: [Role.CreateCustomers] }}
+            />
+        );
+        const selectedDate = new Date('1990-03-15T12:00:00.000Z');
+
+        mockSave.mockResolvedValueOnce({
+            id: 'customer-1',
+            firstName: 'Ada',
+            phone: '555-0100',
+            dob: selectedDate.toISOString(),
+        });
+
+        fireEvent.press(getByTestId('ui-date-time-field-dob'));
+        fireEvent(getByTestId('ui-date-picker-modal-input'), 'onChange', {}, selectedDate);
+        fireEvent.press(getByTestId('ui-date-picker-modal-confirm'));
+        fireEvent.changeText(getByTestId('customer-form-first-name'), 'Ada');
+        fireEvent.changeText(getByTestId('customer-form-phone'), '555-0100');
+        fireEvent.press(getByTestId('customer-form-save'));
+
+        await waitFor(() => {
+            expect(mockSave).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    dob: selectedDate.toISOString(),
+                })
+            );
+        });
+    });
+
     it('preserves credit fields when employee cannot manage credit', async () => {
         const { getByTestId, queryByTestId } = render(
             <CustomerForm

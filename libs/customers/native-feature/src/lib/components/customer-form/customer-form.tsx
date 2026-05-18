@@ -19,6 +19,7 @@ import { CustomerCreditStatus } from '@pos/shared/models';
 import {
     UIActions,
     UICard,
+    UIDateTimeField,
     UIInput,
     UIScreen,
     UIStack,
@@ -348,12 +349,13 @@ export function CustomerForm({
                                     </View>
                                     <View style={styles.row}>
                                         <View style={styles.column}>
-                                            <UIInput
-                                                testID="customer-form-dob"
+                                            <UIDateTimeField
                                                 name="dob"
                                                 label="Date of Birth"
-                                                placeholder="YYYY-MM-DD"
-                                                lIcon="calendar-outline"
+                                                placeholder="Select date"
+                                                mode="date"
+                                                title="Date of Birth"
+                                                clearable
                                             />
                                         </View>
                                         <View style={styles.columnLast} />
