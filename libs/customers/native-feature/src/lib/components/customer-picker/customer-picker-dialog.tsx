@@ -95,7 +95,7 @@ export function CustomerPickerDialog({
                         placeholder="Search customers"
                         style={styles.input}
                     />
-                    <ScrollView style={styles.list} keyboardShouldPersistTaps="handled">
+                    <ScrollView style={styles.list} keyboardShouldPersistTaps="always">
                         {filteredCustomers.map((customer) => (
                             <Pressable
                                 key={customer.id ?? getDisplayName(customer)}

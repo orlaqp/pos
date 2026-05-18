@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import { ScrollView } from 'react-native';
 import { Role } from '@pos/auth/data-access';
 import { CustomerEntity } from '@pos/customers/data-access';
 
@@ -15,6 +16,12 @@ describe('CustomerPickerDialog', () => {
 
         expect(getByText('Ada')).toBeTruthy();
         expect(getByText('555-0100')).toBeTruthy();
+    });
+
+    it('keeps row taps active while the search field is focused', () => {
+        const { UNSAFE_getByType } = render(<CustomerPickerDialog customers={customers} />);
+
+        expect(UNSAFE_getByType(ScrollView).props.keyboardShouldPersistTaps).toBe('always');
     });
 
     it('gates customer creation by role', () => {
