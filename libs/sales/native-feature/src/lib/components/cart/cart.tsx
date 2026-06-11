@@ -22,7 +22,7 @@ import { selectLoginEmployee } from '@pos/employees/data-access';
 import { Role } from '@pos/auth/data-access';
 import { ProductEntity } from '@pos/products/data-access';
 import { selectStore } from '@pos/store-info/data-access';
-import { selectStation } from '@pos/settings/data-access';
+import { getGlobalSettings, selectStation } from '@pos/settings/data-access';
 import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
 import {
     buildDiscountBreakdown,
@@ -114,6 +114,7 @@ export function Cart({
     const employee = useSelector(selectLoginEmployee);
     const storeInfo = useSelector(selectStore);
     const stationInfo = useSelector(selectStation);
+    const globalSettings = useSelector(getGlobalSettings);
     const [receivePayment, setReceivePayment] = useState<boolean>(false);
     const [discountsLoading, setDiscountsLoading] = useState(false);
     const [discountError, setDiscountError] = useState<string>();
@@ -311,10 +312,12 @@ export function Cart({
                 storeId: storeInfo?.id,
                 // Discount definitions are authored against the configured station number.
                 stationId: stationInfo?.stationNumber,
+                taxRate: (globalSettings?.taxValue ?? 0) / 100,
             }),
         );
     }, [
         dispatch,
+        globalSettings?.taxValue,
         stationInfo?.stationNumber,
         storeInfo?.id,
         storeInfo?.timezone,

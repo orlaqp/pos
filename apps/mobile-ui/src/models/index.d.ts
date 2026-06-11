@@ -328,6 +328,7 @@ type EagerOrderLine = {
   readonly appliedDiscounts?: AppliedDiscountDetailSnapshot[] | null;
   readonly categoryId?: string | null;
   readonly discountable?: boolean | null;
+  readonly taxable?: boolean | null;
   readonly minAllowedPrice?: number | null;
   readonly maxManualDiscountPercent?: number | null;
   readonly maxManualDiscountAmount?: number | null;
@@ -357,6 +358,7 @@ type LazyOrderLine = {
   readonly appliedDiscounts?: AppliedDiscountDetailSnapshot[] | null;
   readonly categoryId?: string | null;
   readonly discountable?: boolean | null;
+  readonly taxable?: boolean | null;
   readonly minAllowedPrice?: number | null;
   readonly maxManualDiscountPercent?: number | null;
   readonly maxManualDiscountAmount?: number | null;

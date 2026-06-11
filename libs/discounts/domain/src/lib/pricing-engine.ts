@@ -510,7 +510,9 @@ export class PricingEngine {
         lineDiscountTotal: roundCurrency(lineBaseAmount - lineSubtotalBeforeOrderDiscount),
         allocatedOrderDiscountTotal: 0,
         lineTotalBeforeTax: lineSubtotalBeforeOrderDiscount,
+        tax: 0,
         lineTotalAfterTax: lineSubtotalBeforeOrderDiscount,
+        taxable: line.taxable ?? false,
         appliedDiscounts: lineApplications,
       });
     });
@@ -616,11 +618,15 @@ export class PricingEngine {
       const allocated = roundCurrency(allocations[line.lineId] || 0);
       line.allocatedOrderDiscountTotal = allocated;
       line.lineTotalBeforeTax = roundCurrency(line.lineSubtotalBeforeOrderDiscount - allocated);
-      line.lineTotalAfterTax = roundCurrency(line.lineTotalBeforeTax * (1 + taxRate));
+      const sourceLine = input.lines.find((candidate) => candidate.lineId === line.lineId);
+      line.tax = sourceLine?.taxable
+        ? roundCurrency(line.lineTotalBeforeTax * taxRate)
+        : 0;
+      line.lineTotalAfterTax = roundCurrency(line.lineTotalBeforeTax + line.tax);
     });
 
     const subtotal = roundCurrency(orderLines.reduce((sum, line) => sum + line.lineTotalBeforeTax, 0));
-    const tax = roundCurrency(orderLines.reduce((sum, line) => sum + (line.lineTotalAfterTax - line.lineTotalBeforeTax), 0));
+    const tax = roundCurrency(orderLines.reduce((sum, line) => sum + line.tax, 0));
     const total = roundCurrency(subtotal + tax);
     const lineDiscountTotal = roundCurrency(orderLines.reduce((sum, line) => sum + line.lineDiscountTotal, 0));
     const orderDiscountTotal = roundCurrency(orderLines.reduce((sum, line) => sum + line.allocatedOrderDiscountTotal, 0));

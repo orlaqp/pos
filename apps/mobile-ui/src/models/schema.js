@@ -5044,6 +5044,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "taxable": {
+                    "name": "taxable",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "minAllowedPrice": {
                     "name": "minAllowedPrice",
                     "isArray": false,
@@ -5337,5 +5344,5 @@ export const schema = {
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "c3f7ba4dc1ed1e3658bbecb807184d8b"
+    "version": "d30639b7061b719297d30eef2adc91f9"
 };

@@ -247,6 +247,7 @@ describe('cart.slice', () => {
                     price: 2.5,
                     unitOfMeasure: 'EA',
                     isEBTEligible: true,
+                    taxable: true,
                 },
             ],
         };
@@ -256,6 +257,7 @@ describe('cart.slice', () => {
         expect(state.orderNo).toBe('51-AAA-260313-0001');
         expect(state.items).toHaveLength(1);
         expect(state.items[0].product.name).toBe('Apple');
+        expect(state.items[0].product.taxable).toBe(true);
         expect(state.payments).toEqual([]);
 
         state = cartReducer(state, cartActions.reset());
@@ -341,6 +343,33 @@ describe('cart.slice', () => {
 
         expect(noMatch.footer.discount).toBe(0);
         expect(matched.footer.discount).toBe(0.25);
+    });
+
+    it('applies configured tax only to taxable cart products', () => {
+        const base = {
+            ...initialCartState,
+            items: [
+                {
+                    identifier: 'line-1',
+                    product: { ...eachProduct, taxable: true } as any,
+                    quantity: 2,
+                },
+                {
+                    identifier: 'line-2',
+                    product: { ...weightProduct, taxable: false } as any,
+                    quantity: 1,
+                },
+            ],
+        };
+
+        const state = cartReducer(
+            base as any,
+            cartActions.setPricingContext({ taxRate: 0.1 } as any)
+        );
+
+        expect(state.footer.subtotal).toBe(8.5);
+        expect(state.footer.tax).toBe(0.5);
+        expect(state.footer.total).toBe(9);
     });
 
     it('applies line manual discounts and price overrides and removes the conflicting line discount', () => {

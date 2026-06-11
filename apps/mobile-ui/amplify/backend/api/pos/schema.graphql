@@ -391,6 +391,7 @@ type OrderLine {
   appliedDiscounts: [AppliedDiscountDetailSnapshot!]
   categoryId: String
   discountable: Boolean
+  taxable: Boolean
   minAllowedPrice: Float
   maxManualDiscountPercent: Float
   maxManualDiscountAmount: Float

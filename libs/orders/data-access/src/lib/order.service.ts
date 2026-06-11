@@ -2258,6 +2258,7 @@ export class OrderService {
                 unitOfMeasure: item.product.unitOfMeasure,
                 categoryId: item.product.categoryId,
                 discountable: item.product.discountable ?? true,
+                taxable: item.product.taxable ?? false,
                 minAllowedPrice: item.product.minAllowedPrice,
                 maxManualDiscountPercent: item.product.maxManualDiscountPercent,
                 maxManualDiscountAmount: item.product.maxManualDiscountAmount,
@@ -2266,6 +2267,7 @@ export class OrderService {
             priceOverrides: cart.priceOverrides,
             promoCodes: cart.promoCodes,
             approvalEvents: cart.approvalEvents,
+            taxRate: cart.pricingContext?.taxRate ?? 0,
             pricingSource: order.pricingSource,
         });
     }
@@ -2648,11 +2650,12 @@ function buildOrderLines(
             (discount) => discount.applicationType === 'PRICE_OVERRIDE'
         );
         const lineTotal = lineSummary?.lineTotalBeforeTax ?? getLineTotal(i.quantity, i.product.price);
+        const lineTax = lineSummary?.tax ?? 0;
         const allocation = allocations?.[identifier];
         const lineInit: ConstructorParameters<typeof OrderLine>[0] = {
             identifier,
             quantity: i.quantity,
-            tax: 0,
+            tax: lineTax,
             price: basePrice,
             basePrice,
             overridePrice: overrideApplication?.value ?? null,
@@ -2662,7 +2665,7 @@ function buildOrderLines(
             lineDiscountTotal: lineSummary?.lineDiscountTotal ?? 0,
             allocatedOrderDiscountTotal: lineSummary?.allocatedOrderDiscountTotal ?? 0,
             lineTotalBeforeTax: lineTotal,
-            lineTotalAfterTax: lineTotal,
+            lineTotalAfterTax: lineSummary?.lineTotalAfterTax ?? lineTotal + lineTax,
             appliedDiscounts: lineDiscounts.length
                 ? lineDiscounts.map(toAppliedDiscountDetailSnapshot)
                 : undefined,
@@ -2673,6 +2676,7 @@ function buildOrderLines(
             productName: i.product.name,
             unitOfMeasure: i.product.unitOfMeasure,
             discountable: i.product.discountable ?? true,
+            taxable: i.product.taxable ?? lineSummary?.taxable ?? false,
             minAllowedPrice: i.product.minAllowedPrice ?? null,
             maxManualDiscountPercent: i.product.maxManualDiscountPercent ?? null,
             maxManualDiscountAmount: i.product.maxManualDiscountAmount ?? null,
