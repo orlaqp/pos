@@ -171,6 +171,7 @@ export class ProductService {
                 quantity: 0,
                 isEBTEligible: product.isEBTEligible ?? false,
                 discountable: product.discountable ?? true,
+                taxable: product.taxable ?? false,
             };
 
             const entity = new Product(stampTenant(normalizedProduct) as never);
@@ -214,6 +215,7 @@ export class ProductService {
                 updated.isActive = product.isActive;
                 updated.isEBTEligible = product.isEBTEligible ?? false;
                 updated.discountable = product.discountable ?? true;
+                updated.taxable = product.taxable ?? false;
                 updated.minAllowedPrice = product.minAllowedPrice;
                 updated.maxManualDiscountPercent = product.maxManualDiscountPercent;
                 updated.maxManualDiscountAmount = product.maxManualDiscountAmount;

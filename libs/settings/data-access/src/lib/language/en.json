@@ -797,6 +797,7 @@
     "PRODUCT_SelectUnitOfMeasure": "Select U/of Measure",
     "PRODUCT_AvailableForSale": "Available for sale",
     "PRODUCT_EbtEligibleLabel": "EBT eligible",
+    "PRODUCT_ApplyTaxLabel": "Apply tax",
     "PRODUCT_Cost": "Cost",
     "PRODUCT_PriceRequired": "Price is required",
     "PRODUCT_IdentifiersSection": "Identifiers",
