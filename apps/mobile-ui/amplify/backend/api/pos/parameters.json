@@ -2,5 +2,5 @@
   "AppSyncApiName": "pos",
   "DynamoDBBillingMode": "PAY_PER_REQUEST",
   "DynamoDBEnableServerSideEncryption": false,
-  "AuthCognitoUserPoolId": "us-east-1_hy5DTn55H"
+  "AuthCognitoUserPoolId": "us-east-1_6VlAKbfN0"
 }
