@@ -59,6 +59,7 @@ export const getSales = /* GraphQL */ `query GetSales($statuses: [OrderStatus!]!
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -971,6 +972,7 @@ export const getOrder = /* GraphQL */ `query GetOrder($id: ID!) {
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount

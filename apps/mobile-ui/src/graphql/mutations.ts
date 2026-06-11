@@ -587,6 +587,7 @@ export const createOrder = /* GraphQL */ `mutation CreateOrder(
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -703,6 +704,7 @@ export const updateOrder = /* GraphQL */ `mutation UpdateOrder(
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -819,6 +821,7 @@ export const deleteOrder = /* GraphQL */ `mutation DeleteOrder(
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount

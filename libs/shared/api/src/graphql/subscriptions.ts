@@ -587,6 +587,7 @@ export const onCreateOrder = /* GraphQL */ `subscription OnCreateOrder(
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -703,6 +704,7 @@ export const onUpdateOrder = /* GraphQL */ `subscription OnUpdateOrder(
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -819,6 +821,7 @@ export const onDeleteOrder = /* GraphQL */ `subscription OnDeleteOrder(
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
