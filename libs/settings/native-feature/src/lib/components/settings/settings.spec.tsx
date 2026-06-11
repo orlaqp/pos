@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 
 const mockDispatch = jest.fn();
 const mockUpdateTheme = jest.fn();
@@ -34,6 +35,7 @@ const mockSettingsState = {
     globalSettings: {
         id: 'global-settings-id',
         enforceSalesBasedOnInventory: false,
+        taxValue: 0,
     },
 };
 
@@ -149,6 +151,10 @@ jest.mock('@pos/settings/data-access', () => ({
             SETTINGS_EnforceInventory: 'Enforce Sales Based on Inventory:',
             SETTINGS_PayFromSalesScreen:
                 'Receive payment directly from Sales screen:',
+            SETTINGS_TaxPercentage: 'Tax percentage',
+            SETTINGS_TaxPercentageInvalid:
+                'Enter a tax percentage from 0 to 100',
+            SETTINGS_SaveTaxPercentage: 'Save tax',
             SETTINGS_Language: 'Language:',
             SETTINGS_English: 'English',
             SETTINGS_Spanish: 'Español',
@@ -184,6 +190,7 @@ describe('Settings', () => {
         mockSettingsState.globalSettings = {
             id: 'global-settings-id',
             enforceSalesBasedOnInventory: false,
+            taxValue: 0,
         };
     });
 
@@ -201,6 +208,7 @@ describe('Settings', () => {
         expect(
             getByText('Receive payment directly from Sales screen:')
         ).toBeTruthy();
+        expect(getByText('Tax percentage')).toBeTruthy();
         expect(getByText('Language:')).toBeTruthy();
         expect(getByText('English')).toBeTruthy();
         expect(getByText('Español')).toBeTruthy();
@@ -234,14 +242,45 @@ describe('Settings', () => {
         expect(mockUpdateGlobalSettings).toHaveBeenCalledWith({
             id: 'global-settings-id',
             enforceSalesBasedOnInventory: true,
+            taxValue: 0,
         });
         expect(mockDispatch).toHaveBeenCalledWith({
             type: 'gllbalSettings/update/pending',
             payload: {
                 id: 'global-settings-id',
                 enforceSalesBasedOnInventory: true,
+                taxValue: 0,
             },
         });
+    });
+
+    it('dispatches global settings update when tax percentage is saved', () => {
+        const { getByTestId } = render(<Settings />);
+
+        fireEvent.changeText(getByTestId('settings-tax-percentage-input'), '8.25');
+        fireEvent.press(getByTestId('settings-save-tax-percentage-button'));
+
+        expect(mockUpdateGlobalSettings).toHaveBeenCalledWith({
+            id: 'global-settings-id',
+            enforceSalesBasedOnInventory: false,
+            taxValue: 8.25,
+        });
+    });
+
+    it('does not save invalid tax percentage values', () => {
+        const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation();
+        const { getByTestId } = render(<Settings />);
+
+        fireEvent.changeText(getByTestId('settings-tax-percentage-input'), '-1');
+        fireEvent.press(getByTestId('settings-save-tax-percentage-button'));
+
+        expect(mockUpdateGlobalSettings).not.toHaveBeenCalled();
+        expect(alertSpy).toHaveBeenCalledWith(
+            'Tax percentage',
+            'Enter a tax percentage from 0 to 100'
+        );
+
+        alertSpy.mockRestore();
     });
 
     it('dispatches device settings update when pay from sales changes', () => {

@@ -11,7 +11,7 @@ import { UICard, UIScreen, UIStack } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, Switch, useTheme } from '@rneui/themed';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@pos/store';
@@ -27,6 +27,13 @@ export function Settings(_props: SettingsProps) {
     const settings = useSelector(selectSettings);
     const appVersion = DeviceInfo.getVersion();
     const buildNumber = DeviceInfo.getBuildNumber();
+    const [taxInput, setTaxInput] = React.useState(
+        String(settings.globalSettings?.taxValue ?? 0)
+    );
+
+    React.useEffect(() => {
+        setTaxInput(String(settings.globalSettings?.taxValue ?? 0));
+    }, [settings.globalSettings?.taxValue]);
 
     const updateThemeMode = (dark: boolean) => {
         theme.updateTheme({
@@ -40,6 +47,24 @@ export function Settings(_props: SettingsProps) {
         dispatch(updateGlobalSettings({
             ...settings.globalSettings,
             enforceSalesBasedOnInventory: enforce
+        }));
+    };
+
+    const saveTaxValue = () => {
+        if (!settings.globalSettings) return;
+
+        const parsed = Number(taxInput || 0);
+        if (!Number.isFinite(parsed) || parsed < 0 || parsed > 100) {
+            Alert.alert(
+                translate('SETTINGS_TaxPercentage'),
+                translate('SETTINGS_TaxPercentageInvalid')
+            );
+            return;
+        }
+
+        dispatch(updateGlobalSettings({
+            ...settings.globalSettings,
+            taxValue: parsed,
         }));
     };
 
@@ -134,6 +159,31 @@ export function Settings(_props: SettingsProps) {
                                             setPayFromSales(value)
                                         }
                                     />
+                                </UIStack>
+
+                                <UIStack spacing="sm">
+                                    <Text style={styles.settingLabel}>
+                                        {translate('SETTINGS_TaxPercentage')}
+                                    </Text>
+                                    <UIStack
+                                        direction="horizontal"
+                                        spacing="sm"
+                                        align="center"
+                                    >
+                                        <TextInput
+                                            testID="settings-tax-percentage-input"
+                                            value={taxInput}
+                                            onChangeText={setTaxInput}
+                                            keyboardType="decimal-pad"
+                                            style={styles.taxInput}
+                                        />
+                                        <Button
+                                            testID="settings-save-tax-percentage-button"
+                                            title={translate('SETTINGS_SaveTaxPercentage')}
+                                            buttonStyle={styles.taxButton}
+                                            onPress={saveTaxValue}
+                                        />
+                                    </UIStack>
                                 </UIStack>
 
                                 <UIStack spacing="sm">
@@ -305,6 +355,20 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             color: '#111827',
         },
         languageButton: {
+            borderRadius: tokens.radii.lg,
+            minWidth: 120,
+        },
+        taxInput: {
+            minWidth: 120,
+            borderRadius: tokens.radii.lg,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            color: tokens.colors.textPrimary,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.xs,
+            fontSize: 16,
+        },
+        taxButton: {
             borderRadius: tokens.radii.lg,
             minWidth: 120,
         },
