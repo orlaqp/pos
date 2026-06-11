@@ -3,6 +3,7 @@ import { GlobalSettings } from '@pos/shared/models';
 export type GlobalSettingsDTO = {
     id: string;
     enforceSalesBasedOnInventory: boolean;
+    taxValue: number;
     timezone?: string;
     createdAt?: string | null;
     updatedAt?: string | null;
@@ -15,6 +16,7 @@ export class GlobalSettingsEntityMapper {
         return {
             id: p.id,
             enforceSalesBasedOnInventory: p.enforceSalesBasedOnInventory,
+            taxValue: p.taxValue ?? 0,
             timezone: p.timezone,
             createdAt: p.createdAt,
             updatedAt: p.updatedAt

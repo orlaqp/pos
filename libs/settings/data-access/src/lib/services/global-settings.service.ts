@@ -23,12 +23,14 @@ export class GlobalSettingsService {
             return DataStore.save(
                 GlobalSettings.copyOf(settings, (updated) => {
                     updated.enforceSalesBasedOnInventory = newSettings.enforceSalesBasedOnInventory;
+                    updated.taxValue = Number.isFinite(newSettings.taxValue) ? newSettings.taxValue : 0;
                     updated.timezone = newSettings.timezone || settings.timezone || 'America/New_York';
                 })
             );
 
         return DataStore.save(new GlobalSettings(stampTenant({
             enforceSalesBasedOnInventory: newSettings.enforceSalesBasedOnInventory || false,
+            taxValue: Number.isFinite(newSettings.taxValue) ? newSettings.taxValue : 0,
             timezone: newSettings.timezone || 'America/New_York',
         }) as never));
     }
