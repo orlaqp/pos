@@ -1297,6 +1297,7 @@ export const createProduct = /* GraphQL */ `mutation CreateProduct(
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1367,6 +1368,7 @@ export const updateProduct = /* GraphQL */ `mutation UpdateProduct(
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1437,6 +1439,7 @@ export const deleteProduct = /* GraphQL */ `mutation DeleteProduct(
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1549,6 +1552,7 @@ export const createInventoryChanges = /* GraphQL */ `mutation CreateInventoryCha
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1606,6 +1610,7 @@ export const updateInventoryChanges = /* GraphQL */ `mutation UpdateInventoryCha
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1663,6 +1668,7 @@ export const deleteInventoryChanges = /* GraphQL */ `mutation DeleteInventoryCha
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -2267,6 +2273,7 @@ export const createGlobalSettings = /* GraphQL */ `mutation CreateGlobalSettings
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    taxValue
     createdAt
     updatedAt
     _version
@@ -2288,6 +2295,7 @@ export const updateGlobalSettings = /* GraphQL */ `mutation UpdateGlobalSettings
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    taxValue
     createdAt
     updatedAt
     _version
@@ -2309,6 +2317,7 @@ export const deleteGlobalSettings = /* GraphQL */ `mutation DeleteGlobalSettings
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    taxValue
     createdAt
     updatedAt
     _version

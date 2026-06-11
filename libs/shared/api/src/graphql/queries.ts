@@ -1592,6 +1592,7 @@ export const getProduct = /* GraphQL */ `query GetProduct($id: ID!) {
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1635,6 +1636,7 @@ export const listProducts = /* GraphQL */ `query ListProducts(
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1688,6 +1690,7 @@ export const syncProducts = /* GraphQL */ `query SyncProducts(
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1816,6 +1819,7 @@ export const getInventoryChanges = /* GraphQL */ `query GetInventoryChanges($id:
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -2499,6 +2503,7 @@ export const getGlobalSettings = /* GraphQL */ `query GetGlobalSettings($id: ID!
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    taxValue
     createdAt
     updatedAt
     _version
@@ -2522,6 +2527,7 @@ export const listGlobalSettings = /* GraphQL */ `query ListGlobalSettings(
       tenantId
       enforceSalesBasedOnInventory
       timezone
+      taxValue
       createdAt
       updatedAt
       _version
@@ -2555,6 +2561,7 @@ export const syncGlobalSettings = /* GraphQL */ `query SyncGlobalSettings(
       tenantId
       enforceSalesBasedOnInventory
       timezone
+      taxValue
       createdAt
       updatedAt
       _version

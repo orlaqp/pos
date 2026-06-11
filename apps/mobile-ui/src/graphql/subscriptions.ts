@@ -1306,6 +1306,7 @@ export const onCreateProduct = /* GraphQL */ `subscription OnCreateProduct(
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1376,6 +1377,7 @@ export const onUpdateProduct = /* GraphQL */ `subscription OnUpdateProduct(
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1446,6 +1448,7 @@ export const onDeleteProduct = /* GraphQL */ `subscription OnDeleteProduct(
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1558,6 +1561,7 @@ export const onCreateInventoryChanges = /* GraphQL */ `subscription OnCreateInve
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1615,6 +1619,7 @@ export const onUpdateInventoryChanges = /* GraphQL */ `subscription OnUpdateInve
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1672,6 +1677,7 @@ export const onDeleteInventoryChanges = /* GraphQL */ `subscription OnDeleteInve
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -2276,6 +2282,7 @@ export const onCreateGlobalSettings = /* GraphQL */ `subscription OnCreateGlobal
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    taxValue
     createdAt
     updatedAt
     _version
@@ -2297,6 +2304,7 @@ export const onUpdateGlobalSettings = /* GraphQL */ `subscription OnUpdateGlobal
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    taxValue
     createdAt
     updatedAt
     _version
@@ -2318,6 +2326,7 @@ export const onDeleteGlobalSettings = /* GraphQL */ `subscription OnDeleteGlobal
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    taxValue
     createdAt
     updatedAt
     _version

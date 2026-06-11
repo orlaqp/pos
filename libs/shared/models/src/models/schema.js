@@ -1995,6 +1995,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "taxable": {
+                    "name": "taxable",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "minAllowedPrice": {
                     "name": "minAllowedPrice",
                     "isArray": false,
@@ -3010,6 +3017,13 @@ export const schema = {
                     "isArray": false,
                     "type": "String",
                     "isRequired": true,
+                    "attributes": []
+                },
+                "taxValue": {
+                    "name": "taxValue",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
                     "attributes": []
                 },
                 "createdAt": {
@@ -5323,5 +5337,5 @@ export const schema = {
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "e4036b45ef8c8b244ee41ba665eb1d36"
+    "version": "c3f7ba4dc1ed1e3658bbecb807184d8b"
 };

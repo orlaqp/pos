@@ -1121,6 +1121,7 @@ type EagerProduct = {
   readonly isActive: boolean;
   readonly isEBTEligible?: boolean | null;
   readonly discountable: boolean;
+  readonly taxable?: boolean | null;
   readonly minAllowedPrice?: number | null;
   readonly maxManualDiscountPercent?: number | null;
   readonly maxManualDiscountAmount?: number | null;
@@ -1152,6 +1153,7 @@ type LazyProduct = {
   readonly isActive: boolean;
   readonly isEBTEligible?: boolean | null;
   readonly discountable: boolean;
+  readonly taxable?: boolean | null;
   readonly minAllowedPrice?: number | null;
   readonly maxManualDiscountPercent?: number | null;
   readonly maxManualDiscountAmount?: number | null;
@@ -1426,6 +1428,7 @@ type EagerGlobalSettings = {
   readonly tenantId: string;
   readonly enforceSalesBasedOnInventory: boolean;
   readonly timezone: string;
+  readonly taxValue?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -1435,6 +1438,7 @@ type LazyGlobalSettings = {
   readonly tenantId: string;
   readonly enforceSalesBasedOnInventory: boolean;
   readonly timezone: string;
+  readonly taxValue?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
