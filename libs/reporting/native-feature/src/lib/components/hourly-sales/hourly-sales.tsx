@@ -28,6 +28,14 @@ export function HourlySales() {
             sum: true,
         },
         {
+            label: t('REPORT_Header_Tax', 'Tax'),
+            field: 'tax',
+            width: 1,
+            align: 'right',
+            format: 'money',
+            sum: true,
+        },
+        {
             label: t('REPORT_Header_Orders', 'Orders'),
             field: 'orders',
             width: 1,

@@ -241,7 +241,12 @@ const getActiveLineAmount = (
     const refundedAmount = getLineRefundedAmount(orderId, line, refundedAmountsByLineKey);
 
     if (refundedAmount > 0) {
-        return Math.max(0, round(originalAmount - refundedAmount));
+        const lineTotalAfterTax = Number(line?.lineTotalAfterTax);
+        const preTaxRefundAmount =
+            Number.isFinite(lineTotalAfterTax) && lineTotalAfterTax > 0
+                ? round(refundedAmount * (originalAmount / lineTotalAfterTax))
+                : refundedAmount;
+        return Math.max(0, round(originalAmount - preTaxRefundAmount));
     }
 
     const originalQuantity = Number(line?.quantity || 0);
@@ -270,12 +275,31 @@ const getOrderNetRatio = (
     return Math.max(0, Math.min(1, getOrderNetAmount(order, refundedAmountsByOrderId) / total));
 };
 
+const getOrderNetTax = (
+    order: Order,
+    refundedAmountsByOrderId: Record<string, number>
+) => round(Number(order.tax || 0) * getOrderNetRatio(order, refundedAmountsByOrderId));
+
+const getLineActiveTax = (
+    orderId: string | undefined | null,
+    line: NonNullable<Order['lines']>[number],
+    refundedQuantitiesByLineKey: Record<string, number>
+) => {
+    const originalQuantity = Number(line?.quantity || 0);
+    if (originalQuantity <= 0) {
+        return Math.max(0, round(Number(line?.tax || 0)));
+    }
+
+    const activeQuantity = getActiveLineQuantity(orderId, line, refundedQuantitiesByLineKey);
+    return Math.max(0, round(Number(line?.tax || 0) * (activeQuantity / originalQuantity)));
+};
+
 export const buildSalesByEmployeeRows = (
     orders: Order[],
     refunds: OrderRefund[] = []
 ) => {
     const refundedAmountsByOrderId = getRefundAmountByOrderId(refunds);
-    const totals = new Map<string, number>();
+    const totals = new Map<string, { amount: number; tax: number }>();
 
     orders.forEach((order) => {
         const amount = getOrderNetAmount(order, refundedAmountsByOrderId);
@@ -284,11 +308,18 @@ export const buildSalesByEmployeeRows = (
         }
 
         const employee = order.createdBy?.name || order.employeeName || 'Unknown';
-        totals.set(employee, round((totals.get(employee) || 0) + amount));
+        const current = totals.get(employee) || { amount: 0, tax: 0 };
+        current.amount = round(current.amount + amount);
+        current.tax = round(current.tax + getOrderNetTax(order, refundedAmountsByOrderId));
+        totals.set(employee, current);
     });
 
     return Array.from(totals.entries())
-        .map(([employeeName, amount]) => ({ employeeName, amount }))
+        .map(([employeeName, value]) => ({
+            employeeName,
+            amount: value.amount,
+            tax: value.tax,
+        }))
         .sort((a, b) => b.amount - a.amount);
 };
 
@@ -331,7 +362,7 @@ export const buildCategoryPerformanceRows = (
     refundLines: OrderRefundLine[] = []
 ) => {
     const refundedLineMaps = buildRefundedLineMaps(refundLines);
-    const totals = new Map<string, { sales: number; units: number }>();
+    const totals = new Map<string, { sales: number; tax: number; units: number }>();
 
     orders.forEach((order) => {
         (order.lines || []).forEach((line) => {
@@ -351,8 +382,13 @@ export const buildCategoryPerformanceRows = (
             }
 
             const categoryId = line?.categoryId || 'unknown';
-            const current = totals.get(categoryId) || { sales: 0, units: 0 };
+            const current = totals.get(categoryId) || { sales: 0, tax: 0, units: 0 };
             current.sales += activeAmount;
+            current.tax += getLineActiveTax(
+                order.id,
+                line,
+                refundedLineMaps.quantity
+            );
             current.units += activeQuantity;
             totals.set(categoryId, current);
         });
@@ -361,13 +397,15 @@ export const buildCategoryPerformanceRows = (
     return Array.from(totals.entries())
         .map(([categoryId, value]) => ({
             category: categoriesById[categoryId] || 'Unknown',
-            sales: value.sales,
+            sales: round(value.sales),
+            tax: round(value.tax),
             units: round(value.units),
         }))
         .sort((a, b) => b.sales - a.sales)
         .map((item) => ({
             category: item.category,
             sales: item.sales,
+            tax: item.tax,
             units: item.units,
         }));
 };
@@ -671,7 +709,7 @@ export const buildHourlySalesRows = (
     refunds: OrderRefund[] = []
 ) => {
     const refundedAmountsByOrderId = getRefundAmountByOrderId(refunds);
-    const totals = new Map<string, { amount: number; orders: number }>();
+    const totals = new Map<string, { amount: number; tax: number; orders: number }>();
 
     orders.forEach((order) => {
         const amount = getOrderNetAmount(order, refundedAmountsByOrderId);
@@ -683,8 +721,9 @@ export const buildHourlySalesRows = (
         if (!source) return;
         const hour = source.substring(11, 13);
         const key = `${hour}:00`;
-        const current = totals.get(key) || { amount: 0, orders: 0 };
-        current.amount += amount;
+        const current = totals.get(key) || { amount: 0, tax: 0, orders: 0 };
+        current.amount = round(current.amount + amount);
+        current.tax = round(current.tax + getOrderNetTax(order, refundedAmountsByOrderId));
         current.orders += 1;
         totals.set(key, current);
     });
@@ -693,6 +732,7 @@ export const buildHourlySalesRows = (
         .map(([hour, value]) => ({
             hour,
             sales: value.amount,
+            tax: value.tax,
             orders: value.orders,
             averageTicket: value.orders ? value.amount / value.orders : 0,
         }))

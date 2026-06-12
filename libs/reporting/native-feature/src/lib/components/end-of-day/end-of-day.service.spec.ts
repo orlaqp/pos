@@ -201,6 +201,7 @@ describe('end-of-day.service', () => {
             grossSales: 20,
             discounts: 0,
             refunds: 5,
+            tax: 0,
             netSales: 15,
         });
     });

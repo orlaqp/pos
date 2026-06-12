@@ -22,6 +22,7 @@ describe('report-aggregations', () => {
         status: OrderStatus.PAID,
         employeeName: 'Ada',
         total: 15.5,
+        tax: 0,
         discountTotal: 1.25,
         appliedDiscountSummary: JSON.stringify({
             applications: [{ name: 'Oil Promo', amount: 1.25 }],
@@ -81,8 +82,8 @@ describe('report-aggregations', () => {
         expect(
             buildCategoryPerformanceRows([paidOrder], { c1: 'Oils', c2: 'Baking' })
         ).toEqual([
-            { category: 'Oils', sales: 10, units: 2 },
-            { category: 'Baking', sales: 5.5, units: 1 },
+            { category: 'Oils', sales: 10, tax: 0, units: 2 },
+            { category: 'Baking', sales: 5.5, tax: 0, units: 1 },
         ]);
 
         expect(buildPaymentSummaryRows([paidOrder])).toEqual([
@@ -95,7 +96,7 @@ describe('report-aggregations', () => {
         ]);
 
         expect(buildHourlySalesRows([paidOrder])).toEqual([
-            { hour: '09:00', sales: 15.5, orders: 1, averageTicket: 15.5 },
+            { hour: '09:00', sales: 15.5, tax: 0, orders: 1, averageTicket: 15.5 },
         ]);
 
         expect(buildEbtSummaryRows([paidOrder])).toEqual([
@@ -198,7 +199,7 @@ describe('report-aggregations', () => {
 
     it('nets partial refunds out of sales-facing aggregations', () => {
         expect(buildSalesByEmployeeRows([paidOrder] as any, [partialRefund] as any)).toEqual([
-            { employeeName: 'Ada', amount: 10.5 },
+            { employeeName: 'Ada', amount: 10.5, tax: 0 },
         ]);
 
         expect(buildSalesByProductRows([paidOrder] as any, partialRefundLines as any)).toEqual([
@@ -213,12 +214,12 @@ describe('report-aggregations', () => {
                 partialRefundLines as any
             )
         ).toEqual([
-            { category: 'Baking', sales: 5.5, units: 1 },
-            { category: 'Oils', sales: 5, units: 1 },
+            { category: 'Baking', sales: 5.5, tax: 0, units: 1 },
+            { category: 'Oils', sales: 5, tax: 0, units: 1 },
         ]);
 
         expect(buildHourlySalesRows([paidOrder] as any, [partialRefund] as any)).toEqual([
-            { hour: '09:00', sales: 10.5, orders: 1, averageTicket: 10.5 },
+            { hour: '09:00', sales: 10.5, tax: 0, orders: 1, averageTicket: 10.5 },
         ]);
 
         expect(
@@ -302,5 +303,52 @@ describe('report-aggregations', () => {
                 { product: 'Zucchini', quantity: 3, sales: 6, status: 'Low sales' },
             ])
         );
+    });
+
+    it('nets tax into sales-facing aggregations when orders are partially refunded', () => {
+        const taxableOrder: any = {
+            ...paidOrder,
+            id: 'tax-order',
+            total: 22,
+            tax: 2,
+            lines: [
+                {
+                    identifier: 'tax-line',
+                    productId: 'p1',
+                    productName: 'Oil',
+                    categoryId: 'c1',
+                    quantity: 2,
+                    price: 10,
+                    lineTotalBeforeTax: 20,
+                    lineTotalAfterTax: 22,
+                    tax: 2,
+                    taxable: true,
+                },
+            ],
+        };
+        const taxRefund: any = {
+            orderId: 'tax-order',
+            refundAmount: 11,
+        };
+        const taxRefundLines: any[] = [
+            {
+                orderId: 'tax-order',
+                orderLineIdentifier: 'tax-line',
+                quantityRefunded: 1,
+                lineRefundAmount: 11,
+            },
+        ];
+
+        expect(buildSalesByEmployeeRows([taxableOrder], [taxRefund])).toEqual([
+            { employeeName: 'Ada', amount: 11, tax: 1 },
+        ]);
+
+        expect(
+            buildCategoryPerformanceRows([taxableOrder], { c1: 'Oils' }, taxRefundLines)
+        ).toEqual([{ category: 'Oils', sales: 10, tax: 1, units: 1 }]);
+
+        expect(buildHourlySalesRows([taxableOrder], [taxRefund])).toEqual([
+            { hour: '09:00', sales: 11, tax: 1, orders: 1, averageTicket: 11 },
+        ]);
     });
 });
