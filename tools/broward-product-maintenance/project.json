@@ -1,0 +1,18 @@
+{
+  "name": "broward-product-maintenance",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/broward-product-maintenance/src",
+  "projectType": "library",
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/tools/broward-product-maintenance"],
+      "options": {
+        "jestConfig": "tools/broward-product-maintenance/jest.config.ts",
+        "passWithNoTests": false
+      }
+    }
+  },
+  "tags": []
+}
+
