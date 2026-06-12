@@ -18,7 +18,7 @@ import ReportViewer, { ReportHeader } from '../report-viewer/report-viewer';
 export interface SalesByProductProps {}
 
 export const toSalesByProductRows = (
-    rows: Array<{ productId: string; quantity: number }>,
+    rows: Array<{ productId: string; quantity: number; sales?: number; tax?: number }>,
     orders: Array<{ lines?: Array<{ productId?: string; productName?: string | null } | null> | null }>
 ) => {
     const productNamesById = new Map<string, string>();
@@ -35,7 +35,9 @@ export const toSalesByProductRows = (
 
     return items.map((item) => ({
         product: productNamesById.get(item.productId) || 'Unknown',
-        amount: Number(item.quantity || 0).toFixed(2),
+        quantity: Number(item.quantity || 0).toFixed(2),
+        tax: Number(item.tax || 0),
+        sales: Number(item.sales || 0),
     }));
 };
 
@@ -53,8 +55,10 @@ export function SalesByProduct(props: SalesByProductProps) {
             : fallback;
 
     const headers: ReportHeader[] = [
-        { label: t('REPORT_Header_Product', 'Product'), field: 'product', width: 5 },
-        { label: t('REPORT_Header_Quantity', 'Quantity'), field: 'amount', width: 1, align: 'right' },
+        { label: t('REPORT_Header_Product', 'Product'), field: 'product', width: 4 },
+        { label: t('REPORT_Header_Quantity', 'Quantity'), field: 'quantity', width: 1, align: 'right' },
+        { label: t('REPORT_Header_Tax', 'Tax'), field: 'tax', width: 1, align: 'right', format: 'money', sum: true },
+        { label: t('REPORT_Header_Sales', 'Sales'), field: 'sales', width: 1.5, align: 'right', format: 'money', sum: true },
     ];
 
     const getData = async (range: DateRange) => {

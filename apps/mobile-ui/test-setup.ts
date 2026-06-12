@@ -42,6 +42,10 @@ jest.mock('react-native-localize', () => ({
         languageTag: 'en',
         isRTL: false,
     })),
+    findBestLanguageTag: jest.fn(() => ({
+        languageTag: 'en',
+        isRTL: false,
+    })),
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
 }));
@@ -94,5 +98,19 @@ jest.mock('react-native-chart-kit', () => {
         ContributionGraph: MockChart,
         ProgressChart: MockChart,
         StackedBarChart: MockChart,
+    };
+});
+jest.mock('@react-native-community/datetimepicker', () => {
+    const React = jest.requireActual('react');
+    const { View } = jest.requireActual('react-native');
+    const MockDateTimePicker = (props: Record<string, unknown>) =>
+        React.createElement(View, {
+            ...props,
+            testID: props.testID || 'mock-date-time-picker',
+        });
+
+    return {
+        __esModule: true,
+        default: MockDateTimePicker,
     };
 });

@@ -1,6 +1,6 @@
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
 import {
@@ -362,8 +362,8 @@ export function EndOfDay(props: EndOfDayProps) {
     const [closedByValue, setClosedByValue] = useState(null);
     const [filtersCollapsed, setFiltersCollapsed] = useState(false);
     const [summaryCollapsed, setSummaryCollapsed] = useState(false);
-    const emptyOpacity = useRef(new Animated.Value(0)).current;
-    const emptyTranslateY = useRef(new Animated.Value(12)).current;
+    const [emptyOpacity] = useState(() => new Animated.Value(0));
+    const [emptyTranslateY] = useState(() => new Animated.Value(12));
     const filterConfigs = buildEndOfDayFilterConfigs({
         employeesOpen,
         employeeValue,

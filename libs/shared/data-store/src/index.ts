@@ -13,4 +13,5 @@ export {
     enableInventorySync,
     isInventorySyncEnabled,
     resetInventorySyncForTests,
+    setDataStoreTenantProvider,
 } from './config';

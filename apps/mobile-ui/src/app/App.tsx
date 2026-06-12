@@ -57,6 +57,7 @@ import {
 } from '@pos/printings/data-access';
 import {
     ensureProductSyncHealthy,
+    setProductTenantProvider,
     subscribeToProductChanges,
 } from '@pos/products/data-access';
 import { ensureOrderSyncHealthy } from '@pos/orders/data-access';
@@ -743,7 +744,8 @@ const AppContent = () => {
             }
 
             const finishConfigure = startSyncMeasure('app-bootstrap', 'datastore.configure');
-            configureDataStore();
+            setProductTenantProvider(() => user.tenantId);
+            configureDataStore(user.tenantId);
             finishConfigure();
             void bootstrapTenantSession(user).catch((error) => {
                 logBootstrapStageError('bootstrapTenantSession()', error);

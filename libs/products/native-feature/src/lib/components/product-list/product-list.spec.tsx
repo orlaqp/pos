@@ -1,5 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import ProductItem from '../product-item/product-item';
+import ProductList, { buildProductListProps } from './product-list';
 
 jest.mock('@pos/theme/native', () => ({
     getThemeColors: () => ({
@@ -15,9 +17,6 @@ jest.mock('@pos/theme/native', () => ({
         detailsPage: {},
     }),
 }));
-
-import ProductItem from '../product-item/product-item';
-import ProductList, { buildProductListProps } from './product-list';
 
 describe('ProductList', () => {
     beforeEach(() => {

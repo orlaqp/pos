@@ -316,6 +316,7 @@ describe('OrderService', () => {
         footer: {
           baseSubtotal: 4.59,
           subtotal: 4.59,
+          tax: 0.37,
           total: 4.59,
           lineDiscountTotal: 0,
           orderDiscountTotal: 0,
@@ -334,6 +335,8 @@ describe('OrderService', () => {
     expect(saveMock).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'PAID',
+        tax: 0.37,
+        currentTax: 0.37,
         inventoryApplyState: 'PENDING',
         inventoryApplyOperationId: 'ORDER:order-1:PAID',
         inventoryAppliedAt: null,
@@ -385,6 +388,7 @@ describe('OrderService', () => {
         footer: {
           baseSubtotal: 4.59,
           subtotal: 4.59,
+          tax: 0.37,
           total: 4.59,
           lineDiscountTotal: 0,
           orderDiscountTotal: 0,
@@ -403,6 +407,8 @@ describe('OrderService', () => {
       expect.objectContaining({
         id: 'generated-cart-id',
         status: 'PAID',
+        tax: 0.37,
+        currentTax: 0.37,
         inventoryApplyState: 'PENDING',
         inventoryApplyOperationId: 'ORDER:generated-cart-id:PAID',
       })
@@ -708,6 +714,7 @@ describe('OrderService', () => {
         footer: {
           baseSubtotal: 0,
           subtotal: 0,
+          tax: 0.99,
           total: 0,
           lineDiscountTotal: 0,
           orderDiscountTotal: 0,
@@ -726,6 +733,8 @@ describe('OrderService', () => {
       expect.objectContaining({
         id: 'generated-cart-id',
         orderNo: '51-25-260316-0099',
+        tax: 0.99,
+        currentTax: 0.99,
       })
     );
   });
@@ -744,6 +753,7 @@ describe('OrderService', () => {
         footer: {
           baseSubtotal: 0,
           subtotal: 0,
+          tax: 0.99,
           total: 0,
           lineDiscountTotal: 0,
           orderDiscountTotal: 0,
@@ -760,6 +770,8 @@ describe('OrderService', () => {
     expect(saveMock).toHaveBeenCalledWith(
       expect.objectContaining({
         id: 'generated-order-id',
+        tax: 0.99,
+        currentTax: 0.99,
       })
     );
   });

@@ -34,7 +34,7 @@ jest.mock('@pos/shared/models', () => {
     };
 });
 
-import { ProductService } from './product.service';
+import { ProductService, setProductTenantProvider } from './product.service';
 import { DataStore } from '@pos/shared/amplify';
 import { ProductEntityMapper } from './product.entity';
 
@@ -225,6 +225,10 @@ describe('ProductService.search barcode handling', () => {
 });
 
 describe('ProductService.save inventory ownership', () => {
+    beforeEach(() => {
+        setProductTenantProvider(() => undefined);
+    });
+
     const dispatch = jest.fn();
     const mockedSave = jest.mocked(DataStore.save);
     const mockedQuery = jest.mocked(DataStore.query);
@@ -334,6 +338,38 @@ describe('ProductService.save inventory ownership', () => {
                     taxable: false,
                 }),
             })
+        );
+    });
+
+    it('stamps new products with the configured tenant provider', async () => {
+        setProductTenantProvider(() => 'tenant-123');
+
+        await ProductService.save(
+            jest.fn(),
+            {
+                name: 'Tenant Product',
+                description: '',
+                price: 9,
+                tags: '',
+                cost: null,
+                barcode: null,
+                unitOfMeasure: 'EA',
+                quantity: 0,
+                trackStock: false,
+                reorderPoint: null,
+                reorderQuantity: null,
+                picture: null,
+                productCategoryId: null,
+                productBrandId: null,
+                minAllowedPrice: null,
+                maxManualDiscountPercent: null,
+                maxManualDiscountAmount: null,
+                isActive: true,
+            } as any
+        );
+
+        expect(DataStore.save).toHaveBeenCalledWith(
+            expect.objectContaining({ tenantId: 'tenant-123' })
         );
     });
 

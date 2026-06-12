@@ -203,8 +203,8 @@ describe('report-aggregations', () => {
         ]);
 
         expect(buildSalesByProductRows([paidOrder] as any, partialRefundLines as any)).toEqual([
-            { productId: 'p1', quantity: 1 },
-            { productId: 'p2', quantity: 1 },
+            { productId: 'p1', quantity: 1, sales: 5, tax: 0 },
+            { productId: 'p2', quantity: 1, sales: 5.5, tax: 0 },
         ]);
 
         expect(
@@ -346,6 +346,10 @@ describe('report-aggregations', () => {
         expect(
             buildCategoryPerformanceRows([taxableOrder], { c1: 'Oils' }, taxRefundLines)
         ).toEqual([{ category: 'Oils', sales: 10, tax: 1, units: 1 }]);
+
+        expect(buildSalesByProductRows([taxableOrder], taxRefundLines)).toEqual([
+            { productId: 'p1', quantity: 1, sales: 10, tax: 1 },
+        ]);
 
         expect(buildHourlySalesRows([taxableOrder], [taxRefund])).toEqual([
             { hour: '09:00', sales: 11, tax: 1, orders: 1, averageTicket: 11 },

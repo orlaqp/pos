@@ -26,6 +26,7 @@ export function OrderLineDetails({
             Number(line.allocatedOrderDiscountTotal || 0)
     );
     const discountAmount = Math.max(0, Number(line.lineDiscountTotal || 0));
+    const taxAmount = Math.max(0, Number(line.tax || 0));
     return (
         <View>
             <View style={[styles.row, local.itemRow]}>
@@ -55,6 +56,22 @@ export function OrderLineDetails({
                         ]}
                     >
                         - $ {discountAmount.toFixed(2)}
+                    </Text>
+                </View>
+            )}
+            {taxAmount > 0 && (
+                <View style={[styles.row, local.adjustmentRow]}>
+                    <Text style={[styles.secondaryText, local.adjustmentLabel]}>
+                        Tax
+                    </Text>
+                    <Text
+                        style={[
+                            styles.secondaryText,
+                            styles.textRight,
+                            local.taxValue,
+                        ]}
+                    >
+                        $ {taxAmount.toFixed(2)}
                     </Text>
                 </View>
             )}
@@ -107,6 +124,11 @@ const local = StyleSheet.create({
     discountValue: {
         flex: 1,
         color: '#8BC34A',
+        fontSize: 12,
+    },
+    taxValue: {
+        flex: 1,
+        color: '#26A69A',
         fontSize: 12,
     },
     refundValue: {

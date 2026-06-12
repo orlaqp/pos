@@ -22,7 +22,7 @@ export const toSalesByEmployeeRows = (summary?: SalesSummary) => {
     return summary?.employees?.map((e) => ({
         employee: e?.employeeName,
         amount: e?.amount,
-        tax: 0,
+        tax: Number((e as { tax?: number } | undefined)?.tax || 0),
     }));
 };
 

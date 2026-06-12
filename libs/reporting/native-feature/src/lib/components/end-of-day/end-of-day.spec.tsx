@@ -1,6 +1,18 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { InteractionManager } from 'react-native';
+import EndOfDay, {
+    buildRefundedLineAmountsForOrder,
+    buildEndOfDayWidgets,
+    buildEndOfDayFilterConfigs,
+    buildDayRange,
+    createDateUpdater,
+    formatPaymentAmount,
+    getPaymentMethodsTotal,
+    loadEndOfDayDataForRange,
+    loadPaidSalesForRange,
+} from './end-of-day';
+import { buildEndOfDayReferenceSummary, filterOrders } from './end-of-day.service';
 
 jest.spyOn(InteractionManager, 'runAfterInteractions').mockImplementation((task: any) => {
     task?.();
@@ -33,19 +45,6 @@ jest.mock('@pos/shared/ui-native', () => {
         ),
     };
 });
-
-import EndOfDay, {
-    buildRefundedLineAmountsForOrder,
-    buildEndOfDayWidgets,
-    buildEndOfDayFilterConfigs,
-    buildDayRange,
-    createDateUpdater,
-    formatPaymentAmount,
-    getPaymentMethodsTotal,
-    loadEndOfDayDataForRange,
-    loadPaidSalesForRange,
-} from './end-of-day';
-import { buildEndOfDayReferenceSummary, filterOrders } from './end-of-day.service';
 
 describe('EndOfDay', () => {
     it('should render successfully', () => {

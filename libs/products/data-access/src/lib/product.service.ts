@@ -1,14 +1,26 @@
 import { Product } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from '@pos/shared/amplify';
+import { Alert } from 'react-native';
+import { translateWithFallback } from '@pos/shared/utils';
 import { productsActions } from './slices/products.slice';
 import { ProductEntity } from './product.entity';
 
 const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
     !!item && item._deleted !== true;
-import { Alert } from 'react-native';
-import { stampTenant } from '@pos/auth/data-access';
-import { translateWithFallback } from '@pos/shared/utils';
+
+type TenantIdProvider = () => string | null | undefined;
+
+let tenantIdProvider: TenantIdProvider = () => undefined;
+
+export const setProductTenantProvider = (provider: TenantIdProvider) => {
+    tenantIdProvider = provider;
+};
+
+const stampProductTenant = <T extends Record<string, unknown>>(value: T) => {
+    const tenantId = tenantIdProvider();
+    return tenantId ? { ...value, tenantId } : value;
+};
 
 export interface ProductSearchRequest {
     text?: string;
@@ -174,7 +186,7 @@ export class ProductService {
                 taxable: product.taxable ?? false,
             };
 
-            const entity = new Product(stampTenant(normalizedProduct) as never);
+            const entity = new Product(stampProductTenant(normalizedProduct) as never);
             const res = await DataStore.save(entity);
 
             product.id = res.id;

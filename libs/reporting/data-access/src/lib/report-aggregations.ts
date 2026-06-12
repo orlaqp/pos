@@ -328,7 +328,7 @@ export const buildSalesByProductRows = (
     refundLines: OrderRefundLine[] = []
 ) => {
     const refundedLineMaps = buildRefundedLineMaps(refundLines);
-    const totals = new Map<string, number>();
+    const totals = new Map<string, { quantity: number; sales: number; tax: number }>();
 
     orders.forEach((order) => {
         (order.lines || []).forEach((line) => {
@@ -345,14 +345,32 @@ export const buildSalesByProductRows = (
                 return;
             }
 
-            const current = totals.get(line.productId) || 0;
-            totals.set(line.productId, round(current + activeQuantity));
+            const activeAmount = getActiveLineAmount(
+                order.id,
+                line,
+                refundedLineMaps.quantity,
+                refundedLineMaps.amount
+            );
+            const current = totals.get(line.productId) || {
+                quantity: 0,
+                sales: 0,
+                tax: 0,
+            };
+            current.quantity = round(current.quantity + activeQuantity);
+            current.sales = round(current.sales + activeAmount);
+            current.tax = round(
+                current.tax +
+                    getLineActiveTax(order.id, line, refundedLineMaps.quantity)
+            );
+            totals.set(line.productId, current);
         });
     });
 
-    return Array.from(totals.entries()).map(([productId, quantity]) => ({
+    return Array.from(totals.entries()).map(([productId, value]) => ({
         productId,
-        quantity,
+        quantity: value.quantity,
+        sales: value.sales,
+        tax: value.tax,
     }));
 };
 

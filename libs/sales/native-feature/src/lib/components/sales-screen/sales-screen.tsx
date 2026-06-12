@@ -67,7 +67,7 @@ import {
     stationActions,
     StationService,
 } from '@pos/settings/data-access';
-import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
+import { translateWithFallback } from '@pos/shared/utils';
 import { Role } from '@pos/auth/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { EACH } from '@pos/unit-of-measures/data-access';

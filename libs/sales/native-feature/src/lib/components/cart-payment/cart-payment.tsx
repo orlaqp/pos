@@ -10,7 +10,7 @@ import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button } from '@rneui/themed';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
+import { translateWithFallback } from '@pos/shared/utils';
 import {
     getAutoFillAmount,
     getRestoredValue,
