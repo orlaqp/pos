@@ -74,7 +74,11 @@ export const buildDayRange = (date: Date) => ({
 });
 
 export const getPaymentMethodsTotal = (summary: PaymentMethodsSummary) =>
-    summary.CASH + summary.CC + summary.CHECK + summary.EBT;
+    summary.CASH +
+    summary.CC +
+    summary.CHECK +
+    summary.EBT +
+    summary.PROCESSING_FEE_RECOVERY;
 
 export const formatPaymentAmount = (amount: number) =>
     `$${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
@@ -148,6 +152,7 @@ export const buildEndOfDayWidgets = (
         tax: string;
         netSales: string;
         creditCard: string;
+        processingFeeRecovery: string;
         cash: string;
         checks: string;
         ebt: string;
@@ -159,6 +164,7 @@ export const buildEndOfDayWidgets = (
         tax: 'Tax',
         netSales: 'Collected Sales',
         creditCard: 'Credit Card',
+        processingFeeRecovery: 'Processing Fee Recovery',
         cash: 'Cash',
         checks: 'Checks',
         ebt: 'EBT',
@@ -204,6 +210,12 @@ export const buildEndOfDayWidgets = (
         text: labels.creditCard,
         value: formatPaymentAmount(summary.CC),
         backgroundColor: '#1976d2',
+        flex: 1,
+    },
+    {
+        text: labels.processingFeeRecovery,
+        value: formatPaymentAmount(summary.PROCESSING_FEE_RECOVERY),
+        backgroundColor: '#6d4c41',
         flex: 1,
     },
     {
@@ -339,6 +351,7 @@ export function EndOfDay(props: EndOfDayProps) {
             CASH: 0,
             CHECK: 0,
             EBT: 0,
+            PROCESSING_FEE_RECOVERY: 0,
         });
     const [referenceSummary, setReferenceSummary] = useState(() =>
         buildEndOfDayReferenceSummary([], [], [], {}),
@@ -404,6 +417,10 @@ export function EndOfDay(props: EndOfDayProps) {
             tax: t('EOD_Tax', 'Tax'),
             netSales: t('EOD_NetSales', 'Collected Sales'),
             creditCard: t('EOD_CreditCard', 'Credit Card'),
+            processingFeeRecovery: t(
+                'EOD_ProcessingFeeRecovery',
+                'Processing Fee Recovery'
+            ),
             cash: t('EOD_Cash', 'Cash'),
             checks: t('EOD_Checks', 'Checks'),
             ebt: t('EOD_EBT', 'EBT'),

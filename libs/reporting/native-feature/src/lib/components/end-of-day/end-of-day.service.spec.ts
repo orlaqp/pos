@@ -72,6 +72,7 @@ describe('end-of-day.service', () => {
             CC: 5,
             CHECK: 0,
             EBT: 0,
+            PROCESSING_FEE_RECOVERY: 0,
         });
         expect(result.totalAmount).toBe(0);
     });
@@ -120,11 +121,30 @@ describe('end-of-day.service', () => {
         const onlyP2 = filterOrders(orders as any, { productId: 'p2' });
 
         expect(all.orders).toHaveLength(2);
-        expect(all.summary).toEqual({ CASH: 2, CC: 3, CHECK: 0, EBT: 4 });
+        expect(all.summary).toEqual({
+            CASH: 2,
+            CC: 3,
+            CHECK: 0,
+            EBT: 4,
+            PROCESSING_FEE_RECOVERY: 0,
+        });
         expect(all.totalAmount).toBe(9);
         expect(onlyP2.orders).toHaveLength(1);
         expect(onlyP2.orders[0].lines[0].productId).toBe('p2');
-        expect(onlyP2.summary).toEqual({ CASH: 0, CC: 3, CHECK: 0, EBT: 4 });
+        expect(all.summary).toEqual({
+            CASH: 2,
+            CC: 3,
+            CHECK: 0,
+            EBT: 4,
+            PROCESSING_FEE_RECOVERY: 0,
+        });
+        expect(onlyP2.summary).toEqual({
+            CASH: 0,
+            CC: 3,
+            CHECK: 0,
+            EBT: 4,
+            PROCESSING_FEE_RECOVERY: 0,
+        });
         expect(onlyP2.totalAmount).toBe(7);
     });
 
@@ -195,6 +215,7 @@ describe('end-of-day.service', () => {
             CC: 12,
             CHECK: 0,
             EBT: 0,
+            PROCESSING_FEE_RECOVERY: 0,
         });
         expect(result.totalAmount).toBe(15);
         expect(result.references).toEqual({
@@ -273,6 +294,7 @@ describe('end-of-day.service', () => {
             CASH: 24,
             CHECK: 0,
             EBT: 0,
+            PROCESSING_FEE_RECOVERY: 0,
         });
         expect(result.totalAmount).toBe(45);
     });
@@ -310,5 +332,106 @@ describe('end-of-day.service', () => {
             { type: 'CC', amount: 20, kind: 'payment' },
             { type: 'CC', amount: 5, kind: 'refund' },
         ]);
+    });
+
+    it('tracks processing fee recovery separately from credit card totals', () => {
+        const orders: any[] = [
+            {
+                id: 'order-1',
+                total: 101.8,
+                paymentInfo: {
+                    payments: [
+                        { type: 'CC', amount: 60, surchargeAmount: 1.8 },
+                        { type: 'CASH', amount: 40 },
+                    ],
+                },
+                lines: [
+                    {
+                        identifier: 'line-1',
+                        productId: 'p1',
+                        quantity: 1,
+                        lineTotalBeforeTax: 60,
+                        ebtPaidAmount: 0,
+                        nonEbtPaidAmount: 60,
+                    },
+                    {
+                        identifier: 'line-2',
+                        productId: 'p2',
+                        quantity: 1,
+                        lineTotalBeforeTax: 40,
+                        ebtPaidAmount: 0,
+                        nonEbtPaidAmount: 40,
+                    },
+                ],
+            },
+        ];
+
+        const result = filterOrders(orders as any, {});
+
+        expect(result.summary).toEqual({
+            CASH: 40,
+            CC: 60,
+            CHECK: 0,
+            EBT: 0,
+            PROCESSING_FEE_RECOVERY: 1.8,
+        });
+        expect(result.totalAmount).toBe(100);
+        expect(result.references).toEqual({
+            grossSales: 100,
+            discounts: 0,
+            refunds: 0,
+            tax: 0,
+            netSales: 100,
+        });
+    });
+
+    it('does not subtract processing fee recovery on refunds without explicit surcharge refund fields', () => {
+        const order: any = {
+            id: 'order-1',
+            total: 101.8,
+            paymentInfo: {
+                payments: [{ type: 'CC', amount: 60, surchargeAmount: 1.8 }],
+            },
+            lines: [
+                {
+                    identifier: 'line-1',
+                    quantity: 1,
+                    lineTotalBeforeTax: 60,
+                    ebtPaidAmount: 0,
+                    nonEbtPaidAmount: 60,
+                },
+            ],
+        };
+        const refunds: any[] = [
+            {
+                id: 'refund-1',
+                orderId: 'order-1',
+                refundAmount: 10,
+                refundPayments: [{ type: 'CC', amount: 10 }],
+            },
+        ];
+
+        expect(buildOrderPaymentDetailRows(order, refunds as any, [])).toEqual([
+            { type: 'CC', amount: 60, kind: 'payment' },
+            { type: 'Processing Fee Recovery', amount: 1.8, kind: 'payment' },
+            { type: 'CC', amount: 10, kind: 'refund' },
+        ]);
+
+        expect(filterOrders([order] as any, {}, refunds as any, []).summary).toEqual({
+            CASH: 0,
+            CC: 50,
+            CHECK: 0,
+            EBT: 0,
+            PROCESSING_FEE_RECOVERY: 1.8,
+        });
+        expect(
+            filterOrders([order] as any, {}, refunds as any, []).references
+        ).toEqual({
+            grossSales: 100,
+            discounts: 0,
+            refunds: 10,
+            tax: 0,
+            netSales: 90,
+        });
     });
 });

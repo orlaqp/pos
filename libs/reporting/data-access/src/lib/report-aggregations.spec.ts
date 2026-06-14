@@ -197,6 +197,36 @@ describe('report-aggregations', () => {
         ]);
     });
 
+    it('reports processing fee recovery separately from base card sales', () => {
+        const surchargeOrder: any = {
+            ...paidOrder,
+            id: 'order-surcharge-1',
+            total: 101.8,
+            paymentInfo: {
+                payments: [
+                    { type: 'CC', amount: 60, surchargeAmount: 1.8 },
+                    { type: 'CASH', amount: 40 },
+                ],
+            },
+        };
+
+        expect(buildPaymentSummaryRows([surchargeOrder] as any)).toEqual([
+            { paymentType: 'Cards', amount: 60, count: 1, percent: '59%' },
+            {
+                paymentType: 'Cash',
+                amount: 40,
+                count: 1,
+                percent: '39%',
+            },
+            {
+                paymentType: 'Processing Fee Recovery',
+                amount: 1.8,
+                count: 1,
+                percent: '2%',
+            },
+        ]);
+    });
+
     it('nets partial refunds out of sales-facing aggregations', () => {
         expect(buildSalesByEmployeeRows([paidOrder] as any, [partialRefund] as any)).toEqual([
             { employeeName: 'Ada', amount: 10.5, tax: 0 },
