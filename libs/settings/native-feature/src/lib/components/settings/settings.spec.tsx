@@ -36,6 +36,7 @@ const mockSettingsState = {
         id: 'global-settings-id',
         enforceSalesBasedOnInventory: false,
         taxValue: 0,
+        creditCardSurchargePercent: 0,
     },
 };
 
@@ -155,6 +156,11 @@ jest.mock('@pos/settings/data-access', () => ({
             SETTINGS_TaxPercentageInvalid:
                 'Enter a tax percentage from 0 to 100',
             SETTINGS_SaveTaxPercentage: 'Save tax',
+            SETTINGS_CreditCardSurchargePercentage:
+                'Credit card surcharge %',
+            SETTINGS_CreditCardSurchargePercentageInvalid:
+                'Enter a credit card surcharge percentage from 0 to 100',
+            SETTINGS_SaveCreditCardSurchargePercentage: 'Save surcharge',
             SETTINGS_Language: 'Language:',
             SETTINGS_English: 'English',
             SETTINGS_Spanish: 'Español',
@@ -191,6 +197,7 @@ describe('Settings', () => {
             id: 'global-settings-id',
             enforceSalesBasedOnInventory: false,
             taxValue: 0,
+            creditCardSurchargePercent: 0,
         };
     });
 
@@ -209,6 +216,7 @@ describe('Settings', () => {
             getByText('Receive payment directly from Sales screen:')
         ).toBeTruthy();
         expect(getByText('Tax percentage')).toBeTruthy();
+        expect(getByText('Credit card surcharge %')).toBeTruthy();
         expect(getByText('Language:')).toBeTruthy();
         expect(getByText('English')).toBeTruthy();
         expect(getByText('Español')).toBeTruthy();
@@ -243,6 +251,7 @@ describe('Settings', () => {
             id: 'global-settings-id',
             enforceSalesBasedOnInventory: true,
             taxValue: 0,
+            creditCardSurchargePercent: 0,
         });
         expect(mockDispatch).toHaveBeenCalledWith({
             type: 'gllbalSettings/update/pending',
@@ -250,6 +259,7 @@ describe('Settings', () => {
                 id: 'global-settings-id',
                 enforceSalesBasedOnInventory: true,
                 taxValue: 0,
+                creditCardSurchargePercent: 0,
             },
         });
     });
@@ -264,6 +274,21 @@ describe('Settings', () => {
             id: 'global-settings-id',
             enforceSalesBasedOnInventory: false,
             taxValue: 8.25,
+            creditCardSurchargePercent: 0,
+        });
+    });
+
+    it('dispatches global settings update when credit card surcharge is saved', () => {
+        const { getByTestId } = render(<Settings />);
+
+        fireEvent.changeText(getByTestId('settings-card-surcharge-input'), '3.5');
+        fireEvent.press(getByTestId('settings-save-card-surcharge-button'));
+
+        expect(mockUpdateGlobalSettings).toHaveBeenCalledWith({
+            id: 'global-settings-id',
+            enforceSalesBasedOnInventory: false,
+            taxValue: 0,
+            creditCardSurchargePercent: 3.5,
         });
     });
 
@@ -278,6 +303,22 @@ describe('Settings', () => {
         expect(alertSpy).toHaveBeenCalledWith(
             'Tax percentage',
             'Enter a tax percentage from 0 to 100'
+        );
+
+        alertSpy.mockRestore();
+    });
+
+    it('does not save invalid credit card surcharge values', () => {
+        const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation();
+        const { getByTestId } = render(<Settings />);
+
+        fireEvent.changeText(getByTestId('settings-card-surcharge-input'), '-1');
+        fireEvent.press(getByTestId('settings-save-card-surcharge-button'));
+
+        expect(mockUpdateGlobalSettings).not.toHaveBeenCalled();
+        expect(alertSpy).toHaveBeenCalledWith(
+            'Credit card surcharge %',
+            'Enter a credit card surcharge percentage from 0 to 100'
         );
 
         alertSpy.mockRestore();

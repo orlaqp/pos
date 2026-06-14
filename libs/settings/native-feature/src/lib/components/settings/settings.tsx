@@ -30,10 +30,19 @@ export function Settings(_props: SettingsProps) {
     const [taxInput, setTaxInput] = React.useState(
         String(settings.globalSettings?.taxValue ?? 0)
     );
+    const [cardSurchargeInput, setCardSurchargeInput] = React.useState(
+        String(settings.globalSettings?.creditCardSurchargePercent ?? 0)
+    );
 
     React.useEffect(() => {
         setTaxInput(String(settings.globalSettings?.taxValue ?? 0));
     }, [settings.globalSettings?.taxValue]);
+
+    React.useEffect(() => {
+        setCardSurchargeInput(
+            String(settings.globalSettings?.creditCardSurchargePercent ?? 0)
+        );
+    }, [settings.globalSettings?.creditCardSurchargePercent]);
 
     const updateThemeMode = (dark: boolean) => {
         theme.updateTheme({
@@ -66,6 +75,26 @@ export function Settings(_props: SettingsProps) {
             ...settings.globalSettings,
             taxValue: parsed,
         }));
+    };
+
+    const saveCardSurchargeValue = () => {
+        if (!settings.globalSettings) return;
+
+        const parsed = Number(cardSurchargeInput || 0);
+        if (!Number.isFinite(parsed) || parsed < 0 || parsed > 100) {
+            Alert.alert(
+                translate('SETTINGS_CreditCardSurchargePercentage'),
+                translate('SETTINGS_CreditCardSurchargePercentageInvalid')
+            );
+            return;
+        }
+
+        dispatch(
+            updateGlobalSettings({
+                ...settings.globalSettings,
+                creditCardSurchargePercent: parsed,
+            })
+        );
     };
 
     const setPayFromSales = (enabled: boolean) => {
@@ -182,6 +211,35 @@ export function Settings(_props: SettingsProps) {
                                             title={translate('SETTINGS_SaveTaxPercentage')}
                                             buttonStyle={styles.taxButton}
                                             onPress={saveTaxValue}
+                                        />
+                                    </UIStack>
+                                </UIStack>
+
+                                <UIStack spacing="sm">
+                                    <Text style={styles.settingLabel}>
+                                        {translate(
+                                            'SETTINGS_CreditCardSurchargePercentage'
+                                        )}
+                                    </Text>
+                                    <UIStack
+                                        direction="horizontal"
+                                        spacing="sm"
+                                        align="center"
+                                    >
+                                        <TextInput
+                                            testID="settings-card-surcharge-input"
+                                            value={cardSurchargeInput}
+                                            onChangeText={setCardSurchargeInput}
+                                            keyboardType="decimal-pad"
+                                            style={styles.taxInput}
+                                        />
+                                        <Button
+                                            testID="settings-save-card-surcharge-button"
+                                            title={translate(
+                                                'SETTINGS_SaveCreditCardSurchargePercentage'
+                                            )}
+                                            buttonStyle={styles.taxButton}
+                                            onPress={saveCardSurchargeValue}
                                         />
                                     </UIStack>
                                 </UIStack>

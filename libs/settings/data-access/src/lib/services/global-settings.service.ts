@@ -3,6 +3,10 @@ import { GlobalSettings } from '@pos/shared/models';
 import { DataStore } from '@pos/shared/amplify';
 import { GlobalSettingsDTO, GlobalSettingsEntityMapper } from './../global-settings.dto';
 import { stampTenant } from '@pos/auth/data-access';
+
+const normalizePercent = (value: number) =>
+    Number.isFinite(value) ? value : 0;
+
 export class GlobalSettingsService {
 
     static async fetch() {
@@ -23,14 +27,20 @@ export class GlobalSettingsService {
             return DataStore.save(
                 GlobalSettings.copyOf(settings, (updated) => {
                     updated.enforceSalesBasedOnInventory = newSettings.enforceSalesBasedOnInventory;
-                    updated.taxValue = Number.isFinite(newSettings.taxValue) ? newSettings.taxValue : 0;
+                    updated.taxValue = normalizePercent(newSettings.taxValue);
+                    (updated as any).creditCardSurchargePercent = normalizePercent(
+                        newSettings.creditCardSurchargePercent
+                    );
                     updated.timezone = newSettings.timezone || settings.timezone || 'America/New_York';
                 })
             );
 
         return DataStore.save(new GlobalSettings(stampTenant({
             enforceSalesBasedOnInventory: newSettings.enforceSalesBasedOnInventory || false,
-            taxValue: Number.isFinite(newSettings.taxValue) ? newSettings.taxValue : 0,
+            taxValue: normalizePercent(newSettings.taxValue),
+            creditCardSurchargePercent: normalizePercent(
+                newSettings.creditCardSurchargePercent
+            ),
             timezone: newSettings.timezone || 'America/New_York',
         }) as never));
     }

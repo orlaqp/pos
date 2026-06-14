@@ -1,3 +1,37 @@
+const mockDataStoreQuery = jest.fn();
+const mockDataStoreSave = jest.fn();
+const mockStampTenant = jest.fn((value) => value);
+
+class MockGlobalSettings {
+  constructor(init?: Record<string, unknown>) {
+    Object.assign(this, init);
+  }
+
+  static copyOf(
+    source: Record<string, unknown>,
+    mutator: (draft: Record<string, unknown>) => void
+  ) {
+    const draft = { ...source };
+    mutator(draft);
+    return draft;
+  }
+}
+
+jest.mock('@pos/shared/amplify', () => ({
+  DataStore: {
+    query: (...args: unknown[]) => mockDataStoreQuery(...args),
+    save: (...args: unknown[]) => mockDataStoreSave(...args),
+  },
+}));
+
+jest.mock('@pos/shared/models', () => ({
+  GlobalSettings: MockGlobalSettings,
+}));
+
+jest.mock('@pos/auth/data-access', () => ({
+  stampTenant: (...args: unknown[]) => mockStampTenant(...args),
+}));
+
 import {
   fetchDeviceSettings,
   fetchGlobalSettings,
@@ -7,8 +41,13 @@ import {
   settingsReducer,
 } from './settings.slice';
 import { GlobalSettingsEntityMapper } from '../global-settings.dto';
+import { GlobalSettingsService } from '../services/global-settings.service';
 
 describe('settings reducer', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('returns initial state', () => {
     expect(settingsReducer(undefined, { type: '' })).toEqual(initialSettingsState);
   });
@@ -23,8 +62,16 @@ describe('settings reducer', () => {
     state = settingsReducer(state, settingsActions.setPayFromSalesScreen(true));
     expect(state.payFromSalesScreen).toBe(true);
 
-    state = settingsReducer(state, settingsActions.setGlobalSettings({ taxValue: 7 } as any));
-    expect(state.globalSettings).toEqual(expect.objectContaining({ taxValue: 7 }));
+    state = settingsReducer(
+      state,
+      settingsActions.setGlobalSettings({
+        taxValue: 7,
+        creditCardSurchargePercent: 3.5,
+      } as any)
+    );
+    expect(state.globalSettings).toEqual(
+      expect.objectContaining({ taxValue: 7, creditCardSurchargePercent: 3.5 })
+    );
   });
 
   it('handles resetDataStore lifecycle', () => {
@@ -42,7 +89,7 @@ describe('settings reducer', () => {
   });
 
   it('handles fetchGlobalSettings.fulfilled', () => {
-    const payload = { ebtEnabled: true } as any;
+    const payload = { ebtEnabled: true, creditCardSurchargePercent: 2 } as any;
     const state = settingsReducer(
       undefined,
       fetchGlobalSettings.fulfilled(payload, '', undefined)
@@ -58,8 +105,11 @@ describe('settings reducer', () => {
         enforceSalesBasedOnInventory: false,
         timezone: 'America/New_York',
         taxValue: undefined,
+        creditCardSurchargePercent: undefined,
       } as any)
-    ).toEqual(expect.objectContaining({ taxValue: 0 }));
+    ).toEqual(
+      expect.objectContaining({ taxValue: 0, creditCardSurchargePercent: 0 })
+    );
   });
 
   it('maps persisted global tax settings', () => {
@@ -69,8 +119,74 @@ describe('settings reducer', () => {
         enforceSalesBasedOnInventory: false,
         timezone: 'America/New_York',
         taxValue: 8.25,
+        creditCardSurchargePercent: 3.5,
       } as any)
-    ).toEqual(expect.objectContaining({ taxValue: 8.25 }));
+    ).toEqual(
+      expect.objectContaining({
+        taxValue: 8.25,
+        creditCardSurchargePercent: 3.5,
+      })
+    );
+  });
+
+  it('saves surcharge updates onto existing global settings', async () => {
+    mockDataStoreQuery.mockResolvedValueOnce([
+      {
+        id: 'settings-1',
+        enforceSalesBasedOnInventory: false,
+        taxValue: 8.25,
+        creditCardSurchargePercent: 1,
+        timezone: 'America/New_York',
+      },
+    ]);
+    mockDataStoreSave.mockResolvedValueOnce(undefined);
+
+    await GlobalSettingsService.updateSettings({
+      id: 'settings-1',
+      enforceSalesBasedOnInventory: true,
+      taxValue: 8.25,
+      creditCardSurchargePercent: 3.5,
+      timezone: 'America/Chicago',
+    });
+
+    expect(mockDataStoreSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enforceSalesBasedOnInventory: true,
+        taxValue: 8.25,
+        creditCardSurchargePercent: 3.5,
+        timezone: 'America/Chicago',
+      })
+    );
+  });
+
+  it('defaults invalid surcharge values to zero when creating global settings', async () => {
+    mockDataStoreQuery.mockResolvedValueOnce([]);
+    mockDataStoreSave.mockResolvedValueOnce(undefined);
+
+    await GlobalSettingsService.updateSettings({
+      id: 'settings-1',
+      enforceSalesBasedOnInventory: false,
+      taxValue: 8.25,
+      creditCardSurchargePercent: Number.NaN,
+      timezone: 'America/New_York',
+    });
+
+    expect(mockStampTenant).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enforceSalesBasedOnInventory: false,
+        taxValue: 8.25,
+        creditCardSurchargePercent: 0,
+        timezone: 'America/New_York',
+      })
+    );
+    expect(mockDataStoreSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enforceSalesBasedOnInventory: false,
+        taxValue: 8.25,
+        creditCardSurchargePercent: 0,
+        timezone: 'America/New_York',
+      })
+    );
   });
 
   it('handles fetchGlobalSettings pending/rejected', () => {
