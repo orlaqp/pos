@@ -1431,6 +1431,7 @@ type EagerGlobalSettings = {
   readonly enforceSalesBasedOnInventory: boolean;
   readonly timezone: string;
   readonly taxValue?: number | null;
+  readonly creditCardSurchargePercent?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -1441,6 +1442,7 @@ type LazyGlobalSettings = {
   readonly enforceSalesBasedOnInventory: boolean;
   readonly timezone: string;
   readonly taxValue?: number | null;
+  readonly creditCardSurchargePercent?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

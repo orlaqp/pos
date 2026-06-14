@@ -18,8 +18,7 @@ export class GlobalSettingsEntityMapper {
             id: p.id,
             enforceSalesBasedOnInventory: p.enforceSalesBasedOnInventory,
             taxValue: p.taxValue ?? 0,
-            creditCardSurchargePercent:
-                (p as any).creditCardSurchargePercent ?? 0,
+            creditCardSurchargePercent: p.creditCardSurchargePercent ?? 0,
             timezone: p.timezone,
             createdAt: p.createdAt,
             updatedAt: p.updatedAt

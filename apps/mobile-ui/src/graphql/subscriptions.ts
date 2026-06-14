@@ -2286,6 +2286,7 @@ export const onCreateGlobalSettings = /* GraphQL */ `subscription OnCreateGlobal
     enforceSalesBasedOnInventory
     timezone
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version
@@ -2308,6 +2309,7 @@ export const onUpdateGlobalSettings = /* GraphQL */ `subscription OnUpdateGlobal
     enforceSalesBasedOnInventory
     timezone
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version
@@ -2330,6 +2332,7 @@ export const onDeleteGlobalSettings = /* GraphQL */ `subscription OnDeleteGlobal
     enforceSalesBasedOnInventory
     timezone
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version

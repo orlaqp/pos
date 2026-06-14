@@ -28,7 +28,7 @@ export class GlobalSettingsService {
                 GlobalSettings.copyOf(settings, (updated) => {
                     updated.enforceSalesBasedOnInventory = newSettings.enforceSalesBasedOnInventory;
                     updated.taxValue = normalizePercent(newSettings.taxValue);
-                    (updated as any).creditCardSurchargePercent = normalizePercent(
+                    updated.creditCardSurchargePercent = normalizePercent(
                         newSettings.creditCardSurchargePercent
                     );
                     updated.timezone = newSettings.timezone || settings.timezone || 'America/New_York';

@@ -2277,6 +2277,7 @@ export const createGlobalSettings = /* GraphQL */ `mutation CreateGlobalSettings
     enforceSalesBasedOnInventory
     timezone
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version
@@ -2299,6 +2300,7 @@ export const updateGlobalSettings = /* GraphQL */ `mutation UpdateGlobalSettings
     enforceSalesBasedOnInventory
     timezone
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version
@@ -2321,6 +2323,7 @@ export const deleteGlobalSettings = /* GraphQL */ `mutation DeleteGlobalSettings
     enforceSalesBasedOnInventory
     timezone
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version

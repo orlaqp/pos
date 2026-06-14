@@ -3026,6 +3026,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "creditCardSurchargePercent": {
+                    "name": "creditCardSurchargePercent",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,

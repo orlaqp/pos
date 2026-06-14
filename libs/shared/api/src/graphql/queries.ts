@@ -2506,6 +2506,7 @@ export const getGlobalSettings = /* GraphQL */ `query GetGlobalSettings($id: ID!
     enforceSalesBasedOnInventory
     timezone
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version
@@ -2530,6 +2531,7 @@ export const listGlobalSettings = /* GraphQL */ `query ListGlobalSettings(
       enforceSalesBasedOnInventory
       timezone
       taxValue
+      creditCardSurchargePercent
       createdAt
       updatedAt
       _version
@@ -2564,6 +2566,7 @@ export const syncGlobalSettings = /* GraphQL */ `query SyncGlobalSettings(
       enforceSalesBasedOnInventory
       timezone
       taxValue
+      creditCardSurchargePercent
       createdAt
       updatedAt
       _version

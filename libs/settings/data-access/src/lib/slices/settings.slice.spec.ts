@@ -42,6 +42,7 @@ import {
 } from './settings.slice';
 import { GlobalSettingsEntityMapper } from '../global-settings.dto';
 import { GlobalSettingsService } from '../services/global-settings.service';
+import { schema as sharedSchema } from '../../../../../shared/models/src/models/schema';
 
 describe('settings reducer', () => {
   beforeEach(() => {
@@ -96,6 +97,18 @@ describe('settings reducer', () => {
     );
     expect(state.globalSettings).toEqual(payload);
     expect(state.globalSettingsStatus).toBe('loaded');
+  });
+
+  it('includes creditCardSurchargePercent in the shared GlobalSettings schema', () => {
+    expect(
+      sharedSchema.models.GlobalSettings.fields.creditCardSurchargePercent
+    ).toEqual(
+      expect.objectContaining({
+        name: 'creditCardSurchargePercent',
+        type: 'Float',
+        isRequired: false,
+      })
+    );
   });
 
   it('maps missing global tax settings to zero', () => {
