@@ -71,6 +71,14 @@ export const getSales = /* GraphQL */ `query GetSales($statuses: [OrderStatus!]!
     paymentInfo {
       employeeId
       employeeName
+      payments {
+        type
+        amount
+        baseAmount
+        surchargeRate
+        surchargeAmount
+        __typename
+      }
       __typename
     }
     refundInfo {
@@ -984,6 +992,14 @@ export const getOrder = /* GraphQL */ `query GetOrder($id: ID!) {
     paymentInfo {
       employeeId
       employeeName
+      payments {
+        type
+        amount
+        baseAmount
+        surchargeRate
+        surchargeAmount
+        __typename
+      }
       __typename
     }
     refundInfo {

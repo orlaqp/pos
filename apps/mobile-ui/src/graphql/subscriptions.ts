@@ -599,6 +599,14 @@ export const onCreateOrder = /* GraphQL */ `subscription OnCreateOrder(
     paymentInfo {
       employeeId
       employeeName
+      payments {
+        type
+        amount
+        baseAmount
+        surchargeRate
+        surchargeAmount
+        __typename
+      }
       __typename
     }
     refundInfo {
@@ -716,6 +724,14 @@ export const onUpdateOrder = /* GraphQL */ `subscription OnUpdateOrder(
     paymentInfo {
       employeeId
       employeeName
+      payments {
+        type
+        amount
+        baseAmount
+        surchargeRate
+        surchargeAmount
+        __typename
+      }
       __typename
     }
     refundInfo {
@@ -833,6 +849,14 @@ export const onDeleteOrder = /* GraphQL */ `subscription OnDeleteOrder(
     paymentInfo {
       employeeId
       employeeName
+      payments {
+        type
+        amount
+        baseAmount
+        surchargeRate
+        surchargeAmount
+        __typename
+      }
       __typename
     }
     refundInfo {

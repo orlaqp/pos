@@ -737,6 +737,9 @@ export type PaymentInfoInput = {
 export type PaymentInput = {
   type: PaymentType,
   amount: number,
+  baseAmount?: number | null,
+  surchargeRate?: number | null,
+  surchargeAmount?: number | null,
 };
 
 export enum PaymentType {
@@ -985,6 +988,9 @@ export type Payment = {
   __typename: "Payment",
   type: PaymentType,
   amount: number,
+  baseAmount?: number | null,
+  surchargeRate?: number | null,
+  surchargeAmount?: number | null,
 };
 
 export type RefundInfo = {
@@ -4968,6 +4974,14 @@ export type CreateOrderMutation = {
       __typename: "PaymentInfo",
       employeeId: string,
       employeeName: string,
+      payments?:  Array< {
+        __typename: "Payment",
+        type: PaymentType,
+        amount: number,
+        baseAmount?: number | null,
+        surchargeRate?: number | null,
+        surchargeAmount?: number | null,
+      } | null > | null,
     } | null,
     refundInfo?:  {
       __typename: "RefundInfo",
@@ -5084,6 +5098,14 @@ export type UpdateOrderMutation = {
       __typename: "PaymentInfo",
       employeeId: string,
       employeeName: string,
+      payments?:  Array< {
+        __typename: "Payment",
+        type: PaymentType,
+        amount: number,
+        baseAmount?: number | null,
+        surchargeRate?: number | null,
+        surchargeAmount?: number | null,
+      } | null > | null,
     } | null,
     refundInfo?:  {
       __typename: "RefundInfo",
@@ -5200,6 +5222,14 @@ export type DeleteOrderMutation = {
       __typename: "PaymentInfo",
       employeeId: string,
       employeeName: string,
+      payments?:  Array< {
+        __typename: "Payment",
+        type: PaymentType,
+        amount: number,
+        baseAmount?: number | null,
+        surchargeRate?: number | null,
+        surchargeAmount?: number | null,
+      } | null > | null,
     } | null,
     refundInfo?:  {
       __typename: "RefundInfo",
@@ -7423,6 +7453,14 @@ export type GetSalesQuery = {
       __typename: "PaymentInfo",
       employeeId: string,
       employeeName: string,
+      payments?:  Array< {
+        __typename: "Payment",
+        type: PaymentType,
+        amount: number,
+        baseAmount?: number | null,
+        surchargeRate?: number | null,
+        surchargeAmount?: number | null,
+      } | null > | null,
     } | null,
     refundInfo?:  {
       __typename: "RefundInfo",
@@ -8287,6 +8325,14 @@ export type GetOrderQuery = {
       __typename: "PaymentInfo",
       employeeId: string,
       employeeName: string,
+      payments?:  Array< {
+        __typename: "Payment",
+        type: PaymentType,
+        amount: number,
+        baseAmount?: number | null,
+        surchargeRate?: number | null,
+        surchargeAmount?: number | null,
+      } | null > | null,
     } | null,
     refundInfo?:  {
       __typename: "RefundInfo",
@@ -11138,6 +11184,14 @@ export type OnCreateOrderSubscription = {
       __typename: "PaymentInfo",
       employeeId: string,
       employeeName: string,
+      payments?:  Array< {
+        __typename: "Payment",
+        type: PaymentType,
+        amount: number,
+        baseAmount?: number | null,
+        surchargeRate?: number | null,
+        surchargeAmount?: number | null,
+      } | null > | null,
     } | null,
     refundInfo?:  {
       __typename: "RefundInfo",
@@ -11254,6 +11308,14 @@ export type OnUpdateOrderSubscription = {
       __typename: "PaymentInfo",
       employeeId: string,
       employeeName: string,
+      payments?:  Array< {
+        __typename: "Payment",
+        type: PaymentType,
+        amount: number,
+        baseAmount?: number | null,
+        surchargeRate?: number | null,
+        surchargeAmount?: number | null,
+      } | null > | null,
     } | null,
     refundInfo?:  {
       __typename: "RefundInfo",
@@ -11370,6 +11432,14 @@ export type OnDeleteOrderSubscription = {
       __typename: "PaymentInfo",
       employeeId: string,
       employeeName: string,
+      payments?:  Array< {
+        __typename: "Payment",
+        type: PaymentType,
+        amount: number,
+        baseAmount?: number | null,
+        surchargeRate?: number | null,
+        surchargeAmount?: number | null,
+      } | null > | null,
     } | null,
     refundInfo?:  {
       __typename: "RefundInfo",

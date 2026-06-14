@@ -374,11 +374,17 @@ export declare const OrderLine: (new (init: ModelInit<OrderLine>) => OrderLine)
 type EagerPayment = {
   readonly type: PaymentType | keyof typeof PaymentType;
   readonly amount: number;
+  readonly baseAmount?: number | null;
+  readonly surchargeRate?: number | null;
+  readonly surchargeAmount?: number | null;
 }
 
 type LazyPayment = {
   readonly type: PaymentType | keyof typeof PaymentType;
   readonly amount: number;
+  readonly baseAmount?: number | null;
+  readonly surchargeRate?: number | null;
+  readonly surchargeAmount?: number | null;
 }
 
 export declare type Payment = LazyLoading extends LazyLoadingDisabled ? EagerPayment : LazyPayment

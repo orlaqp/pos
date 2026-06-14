@@ -599,6 +599,14 @@ export const createOrder = /* GraphQL */ `mutation CreateOrder(
     paymentInfo {
       employeeId
       employeeName
+      payments {
+        type
+        amount
+        baseAmount
+        surchargeRate
+        surchargeAmount
+        __typename
+      }
       __typename
     }
     refundInfo {
@@ -716,6 +724,14 @@ export const updateOrder = /* GraphQL */ `mutation UpdateOrder(
     paymentInfo {
       employeeId
       employeeName
+      payments {
+        type
+        amount
+        baseAmount
+        surchargeRate
+        surchargeAmount
+        __typename
+      }
       __typename
     }
     refundInfo {
@@ -833,6 +849,14 @@ export const deleteOrder = /* GraphQL */ `mutation DeleteOrder(
     paymentInfo {
       employeeId
       employeeName
+      payments {
+        type
+        amount
+        baseAmount
+        surchargeRate
+        surchargeAmount
+        __typename
+      }
       __typename
     }
     refundInfo {
