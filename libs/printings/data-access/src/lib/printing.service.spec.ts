@@ -298,6 +298,31 @@ describe('printing.service ticket rendering', () => {
     expect(receiptText).not.toContain('Original Payments');
   });
 
+  it('renders surcharge payment rows using the existing payment row formatting', () => {
+    const receiptText = buildReceiptPreviewText(
+      store,
+      {
+        ...standardTicket,
+        paymentRows: [
+          { kind: 'payment' as const, label: 'CC', amount: 60 },
+          {
+            kind: 'payment' as const,
+            label: 'Credit Card Surcharge',
+            amount: 1.8,
+          },
+        ],
+        totals: {
+          ...standardTicket.totals,
+          total: 60,
+        },
+      },
+      new Date('2026-04-21T17:31:14.000Z')
+    );
+
+    expect(receiptText).toContain('CC: $ 60.00');
+    expect(receiptText).toContain('Credit Card Surcharge: $ 1.80');
+  });
+
   it('routes printerless previews through the registered preview handler', async () => {
     const handler = jest.fn();
     const unsubscribe = registerReceiptPreviewHandler(handler);

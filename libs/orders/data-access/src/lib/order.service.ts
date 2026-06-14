@@ -1458,7 +1458,11 @@ export class OrderService {
 
     private static buildTicketPaymentRows(
         originalPayments:
-            | Array<{ type?: string | null; amount?: number | null }>
+            | Array<{
+                  type?: string | null;
+                  amount?: number | null;
+                  surchargeAmount?: number | null;
+              }>
             | null
             | undefined,
         refundPayments:
@@ -1467,12 +1471,35 @@ export class OrderService {
             | undefined
     ): OrderTicketPrintPaymentRow[] {
         const originalRows = (originalPayments || [])
-            .map((payment) => ({
-                kind: 'payment' as const,
-                label: String(payment?.type || '').trim(),
-                amount: roundMoney(Number(payment?.amount || 0)),
-            }))
-            .filter((payment) => payment.label && payment.amount > 0);
+            .flatMap((payment) => {
+                const label = String(payment?.type || '').trim();
+                const amount = roundMoney(Number(payment?.amount || 0));
+                const surchargeAmount = roundMoney(
+                    Math.max(0, Number(payment?.surchargeAmount || 0))
+                );
+
+                if (!label || amount <= 0) {
+                    return [];
+                }
+
+                const rows: OrderTicketPrintPaymentRow[] = [
+                    {
+                        kind: 'payment',
+                        label,
+                        amount,
+                    },
+                ];
+
+                if (label.toUpperCase() === 'CC' && surchargeAmount > 0) {
+                    rows.push({
+                        kind: 'payment',
+                        label: 'Credit Card Surcharge',
+                        amount: surchargeAmount,
+                    });
+                }
+
+                return rows;
+            });
         const refundRows = (refundPayments || [])
             .map((payment) => ({
                 kind: 'payment' as const,

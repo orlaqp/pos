@@ -2377,6 +2377,79 @@ describe('OrderService', () => {
     });
   });
 
+  it('adds a separate surcharge payment row for positive original credit card payments', () => {
+    const ticket = OrderService.buildPrintTicketForOrderEntitySnapshot(
+      {
+        id: 'order-ticket-cc-surcharge',
+        orderNo: '1-OWNER-260422-0002',
+        status: 'PAID',
+        baseSubtotal: 60,
+        subtotal: 60,
+        discountTotal: 0,
+        tax: 0,
+        total: 60,
+        lines: [
+          {
+            identifier: 'line-1',
+            productId: 'product-1',
+            productName: 'Rice',
+            quantity: 1,
+            price: 60,
+            unitOfMeasure: 'EA',
+            lineDiscountTotal: 0,
+            allocatedOrderDiscountTotal: 0,
+            lineTotalBeforeTax: 60,
+          },
+        ],
+        paymentInfo: {
+          payments: [{ type: 'CC', amount: 60, surchargeAmount: 1.8 }],
+        },
+        promoCodes: [],
+      } as any,
+      { copyType: 'CUSTOMER' }
+    );
+
+    expect(ticket.paymentRows).toEqual([
+      { kind: 'payment', label: 'CC', amount: 60 },
+      { kind: 'payment', label: 'Credit Card Surcharge', amount: 1.8 },
+    ]);
+  });
+
+  it('keeps legacy credit card receipt rows unchanged when surcharge data is absent', () => {
+    const ticket = OrderService.buildPrintTicketForOrderEntitySnapshot(
+      {
+        id: 'order-ticket-legacy-cc',
+        orderNo: '1-OWNER-260422-0003',
+        status: 'PAID',
+        baseSubtotal: 60,
+        subtotal: 60,
+        discountTotal: 0,
+        tax: 0,
+        total: 60,
+        lines: [
+          {
+            identifier: 'line-1',
+            productId: 'product-1',
+            productName: 'Rice',
+            quantity: 1,
+            price: 60,
+            unitOfMeasure: 'EA',
+            lineDiscountTotal: 0,
+            allocatedOrderDiscountTotal: 0,
+            lineTotalBeforeTax: 60,
+          },
+        ],
+        paymentInfo: {
+          payments: [{ type: 'CC', amount: 60 }],
+        },
+        promoCodes: [],
+      } as any,
+      { copyType: 'CUSTOMER' }
+    );
+
+    expect(ticket.paymentRows).toEqual([{ kind: 'payment', label: 'CC', amount: 60 }]);
+  });
+
   it('uses the current open balance for additional refunds when no applied discount snapshots exist', async () => {
     const queryMock = jest.mocked(DataStore.query);
     const sharedModels = jest.requireMock('@pos/shared/models');
