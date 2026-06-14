@@ -61,6 +61,9 @@ export interface OrderEntity {
 export interface PaymentEntity {
   type: PaymentType | keyof typeof PaymentType;
   amount: number;
+  baseAmount?: number | null;
+  surchargeRate?: number | null;
+  surchargeAmount?: number | null;
 }
 
 export interface OrderLineEntity {
@@ -380,9 +383,13 @@ export class OrderEntityMapper {
           maxManualDiscountAmount: i.maxManualDiscountAmount ?? null,
         },
       })) || [];
-    state.payments = o.payments?.map((p) => ({
+    const restoredPayments = o.payments || o.paymentInfo?.payments;
+    state.payments = restoredPayments?.map((p) => ({
       type: p.type,
       amount: p.amount,
+      baseAmount: p.baseAmount,
+      surchargeRate: p.surchargeRate,
+      surchargeAmount: p.surchargeAmount,
     }));
     state.promoCodes = (o.promoCodes || []).map((code) => ({ code }));
     state.appliedDiscountSummary = o.appliedDiscountSummary || undefined;
@@ -564,6 +571,9 @@ export class OrderEntityMapper {
     return {
       type: p.type,
       amount: p.amount,
+      baseAmount: (p as Payment & { baseAmount?: number | null }).baseAmount,
+      surchargeRate: (p as Payment & { surchargeRate?: number | null }).surchargeRate,
+      surchargeAmount: (p as Payment & { surchargeAmount?: number | null }).surchargeAmount,
     };
   }
 }

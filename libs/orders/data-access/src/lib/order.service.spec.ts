@@ -421,6 +421,83 @@ describe('OrderService', () => {
     );
   });
 
+  it('persists surcharge payment snapshot fields when creating a paid order', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+
+    saveMock.mockResolvedValue({
+      id: 'order-cc-surcharge',
+      status: 'PAID',
+      orderNo: '51-25-260316-0009',
+      lines: [],
+      paymentInfo: { payments: [] },
+      inventoryApplyState: 'PENDING',
+      inventoryApplyOperationId: 'ORDER:generated-cart-id:PAID',
+    } as any);
+
+    await OrderService.createPaidOrder({
+      by: {
+        id: 'employee-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+      } as any,
+      order: {
+        id: 'generated-cart-id',
+        orderNo: '51-25-260316-0009',
+        items: [],
+        footer: {
+          baseSubtotal: 10,
+          subtotal: 10,
+          tax: 0.8,
+          total: 10.8,
+          lineDiscountTotal: 0,
+          orderDiscountTotal: 0,
+          discount: 0,
+          savingsTotal: 0,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+        },
+        promoCodes: [],
+        appliedDiscountSummary: undefined,
+      } as any,
+      payments: [
+        {
+          type: 'CC',
+          amount: 10.8,
+          baseAmount: 10,
+          surchargeRate: 0.03,
+          surchargeAmount: 0.8,
+        },
+        {
+          type: 'CASH',
+          amount: 2,
+        },
+      ],
+    });
+
+    expect(saveMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentInfo: expect.objectContaining({
+          payments: [
+            expect.objectContaining({
+              type: 'CC',
+              amount: 10.8,
+              baseAmount: 10,
+              surchargeRate: 0.03,
+              surchargeAmount: 0.8,
+            }),
+            expect.objectContaining({
+              type: 'CASH',
+              amount: 2,
+              baseAmount: undefined,
+              surchargeRate: undefined,
+              surchargeAmount: undefined,
+            }),
+          ],
+        }),
+      })
+    );
+  });
+
   it('blocks EBT overpayment against discounted eligible totals when creating a paid order', async () => {
     const saveMock = jest.mocked(DataStore.save);
 
@@ -691,6 +768,89 @@ describe('OrderService', () => {
 
   it('uses a negative quantity delta for paid orders', () => {
     expect(getInventoryQuantityDelta('PAID', 3)).toBe(-3);
+  });
+
+  it('persists surcharge payment snapshot fields when closing an existing order', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+    const queryMock = jest.mocked(DataStore.query);
+    const existingOrder = {
+      id: 'order-close-cc',
+      status: 'OPEN',
+      tenantId: 'tenant-1',
+      paymentInfo: { payments: [] },
+      lines: [],
+    } as any;
+
+    queryMock.mockResolvedValue(existingOrder);
+    saveMock.mockResolvedValue({
+      ...existingOrder,
+      status: 'PAID',
+      paymentInfo: { payments: [] },
+    } as any);
+
+    await OrderService.closeOrder({
+      id: 'order-close-cc',
+      by: {
+        id: 'employee-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+      } as any,
+      order: {
+        id: 'order-close-cc',
+        orderNo: '51-25-260316-0010',
+        items: [],
+        footer: {
+          baseSubtotal: 10,
+          subtotal: 10,
+          tax: 0.8,
+          total: 10.8,
+          lineDiscountTotal: 0,
+          orderDiscountTotal: 0,
+          discount: 0,
+          savingsTotal: 0,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+        },
+        promoCodes: [],
+        appliedDiscountSummary: undefined,
+      } as any,
+      payments: [
+        {
+          type: 'CC',
+          amount: 10.8,
+          baseAmount: 10,
+          surchargeRate: 0.03,
+          surchargeAmount: 0.8,
+        },
+        {
+          type: 'CASH',
+          amount: 2,
+        },
+      ],
+    });
+
+    expect(saveMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentInfo: expect.objectContaining({
+          payments: [
+            expect.objectContaining({
+              type: 'CC',
+              amount: 10.8,
+              baseAmount: 10,
+              surchargeRate: 0.03,
+              surchargeAmount: 0.8,
+            }),
+            expect.objectContaining({
+              type: 'CASH',
+              amount: 2,
+              baseAmount: undefined,
+              surchargeRate: undefined,
+              surchargeAmount: undefined,
+            }),
+          ],
+        }),
+      })
+    );
   });
 
   it('uses a positive quantity delta for refunded orders', () => {

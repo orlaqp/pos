@@ -286,6 +286,21 @@ const normalizeRefundPayments = (
     }));
 };
 
+const toPaymentSnapshot = (payment: {
+    type: string;
+    amount: number;
+    baseAmount?: number | null;
+    surchargeRate?: number | null;
+    surchargeAmount?: number | null;
+}) =>
+    new Payment({
+        type: payment.type.toUpperCase() as any,
+        amount: +payment.amount,
+        baseAmount: payment.baseAmount,
+        surchargeRate: payment.surchargeRate,
+        surchargeAmount: payment.surchargeAmount,
+    });
+
 const getLineOriginalAmount = (line: {
     lineTotalBeforeTax?: number | null;
     lineDiscountTotal?: number | null;
@@ -693,12 +708,7 @@ export class OrderService {
             paymentInfo: {
                 employeeId: request.by.id,
                 employeeName: `${request.by.firstName} ${request.by.lastName}`,
-                payments: request.payments?.map((payment) =>
-                    new Payment({
-                        type: payment.type.toUpperCase() as any,
-                        amount: +payment.amount,
-                    })
-                ),
+                payments: request.payments?.map(toPaymentSnapshot),
             },
             inventoryApplyState: 'PENDING',
             inventoryAppliedAt: null,
@@ -795,10 +805,7 @@ export class OrderService {
             o.paymentInfo = {
                 employeeId: request.by.id,
                 employeeName: `${request.by.firstName} ${request.by.lastName}`,
-                payments: request.payments?.map(p => new Payment({
-                    type: p.type.toUpperCase() as any,
-                    amount: +p.amount
-                    }))
+                payments: request.payments?.map(toPaymentSnapshot)
             };
             o.inventoryApplyState = 'PENDING';
             o.inventoryAppliedAt = null;

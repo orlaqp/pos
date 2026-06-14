@@ -176,6 +176,105 @@ describe('OrderEntityMapper', () => {
         ]);
     });
 
+    it('maps optional surcharge payment snapshot fields from order model', () => {
+        const orderEntity = OrderEntityMapper.fromModel({
+            id: 'o-2b',
+            orderNo: '51-TEST-0002B',
+            subtotal: 40,
+            tax: 0,
+            total: 40,
+            status: 'PAID',
+            employeeId: 'e-1',
+            employeeName: 'Tester',
+            orderDate: '2026-03-12T00:00:00.000Z',
+            createdAt: '2026-03-12T00:00:00.000Z',
+            updatedAt: '2026-03-12T00:00:00.000Z',
+            lines: [],
+            paymentInfo: {
+                employeeId: 'e-1',
+                employeeName: 'Tester',
+                payments: [
+                    {
+                        type: 'CC',
+                        amount: 10.8,
+                        baseAmount: 10,
+                        surchargeRate: 0.03,
+                        surchargeAmount: 0.8,
+                    },
+                ],
+            },
+            refundInfo: null,
+        } as any);
+
+        expect(orderEntity.paymentInfo?.payments).toEqual([
+            {
+                type: 'CC',
+                amount: 10.8,
+                baseAmount: 10,
+                surchargeRate: 0.03,
+                surchargeAmount: 0.8,
+            },
+        ]);
+    });
+
+    it('preserves optional surcharge payment fields when restoring cart payments', () => {
+        const cart = OrderEntityMapper.asCartState({
+            id: 'o-restore-1',
+            orderNo: '51-TEST-0004',
+            baseSubtotal: 10,
+            subtotal: 10,
+            lineDiscountTotal: 0,
+            orderDiscountTotal: 0,
+            discountTotal: 0,
+            savingsTotal: 0,
+            tax: 0.8,
+            total: 10.8,
+            status: 'PAID',
+            employeeId: 'e-1',
+            employeeName: 'Tester',
+            pricingSource: 'OFFLINE_LOCAL',
+            reconciliationStatus: 'PENDING',
+            orderDate: '2026-03-12T00:00:00.000Z',
+            lines: [],
+            payments: null,
+            paymentInfo: {
+                employeeId: 'e-1',
+                employeeName: 'Tester',
+                payments: [
+                    {
+                        type: 'CC',
+                        amount: 10.8,
+                        baseAmount: 10,
+                        surchargeRate: 0.03,
+                        surchargeAmount: 0.8,
+                    },
+                    {
+                        type: 'CASH',
+                        amount: 5,
+                    },
+                ],
+            },
+            refundInfo: null,
+        });
+
+        expect(cart.payments).toEqual([
+            {
+                type: 'CC',
+                amount: 10.8,
+                baseAmount: 10,
+                surchargeRate: 0.03,
+                surchargeAmount: 0.8,
+            },
+            {
+                type: 'CASH',
+                amount: 5,
+                baseAmount: undefined,
+                surchargeRate: undefined,
+                surchargeAmount: undefined,
+            },
+        ]);
+    });
+
     it('does not crash on malformed applied discount summary values', () => {
         const orderEntity = OrderEntityMapper.fromModel({
             id: 'o-3',
