@@ -420,7 +420,7 @@ describe('EndOfDay', () => {
             [
                 {
                     id: 'o-1',
-                    total: 101.8,
+                    total: 100,
                     paymentInfo: {
                         employeeId: 'closer-1',
                         payments: [

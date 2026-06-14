@@ -338,7 +338,7 @@ describe('end-of-day.service', () => {
         const orders: any[] = [
             {
                 id: 'order-1',
-                total: 101.8,
+                total: 100,
                 paymentInfo: {
                     payments: [
                         { type: 'CC', amount: 60, surchargeAmount: 1.8 },
@@ -388,7 +388,7 @@ describe('end-of-day.service', () => {
     it('does not subtract processing fee recovery on refunds without explicit surcharge refund fields', () => {
         const order: any = {
             id: 'order-1',
-            total: 101.8,
+            total: 100,
             paymentInfo: {
                 payments: [{ type: 'CC', amount: 60, surchargeAmount: 1.8 }],
             },

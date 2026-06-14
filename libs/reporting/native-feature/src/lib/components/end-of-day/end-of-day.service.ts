@@ -78,14 +78,6 @@ const getOrderProcessingFeeRecovery = (order: Order) =>
         )
     );
 
-const getOrderSalesTotal = (order: Order) =>
-    roundMoney(
-        Math.max(
-            0,
-            Number(order.total || 0) - getOrderProcessingFeeRecovery(order)
-        )
-    );
-
 const compareOrdersByTicketCreatedAtDesc = (left: Order, right: Order) => {
     const leftCreated = String(
         left.createdAt || left.orderDate || left.updatedAt || ''
@@ -251,8 +243,7 @@ const getScopedTaxForOrder = (
     }
 
     const total = Number(order.total || 0);
-    const salesTotal = getOrderSalesTotal(order);
-    if (salesTotal <= 0) {
+    if (total <= 0) {
         return roundMoney(Number(order.tax || 0));
     }
 
@@ -264,7 +255,7 @@ const getScopedTaxForOrder = (
     );
     const activeRatio = Math.max(
         0,
-        Math.min(1, (salesTotal - refundedAmount) / salesTotal)
+        Math.min(1, (total - refundedAmount) / total)
     );
     return roundMoney(Number(order.tax || 0) * activeRatio);
 };
@@ -399,7 +390,7 @@ const buildOrderPaymentSummary = (
                 0
             )
         );
-        const orderTotal = getOrderSalesTotal(order);
+        const orderTotal = Number(order.total || 0);
         const activeAmount = Math.max(
             0,
             roundMoney(
@@ -627,7 +618,7 @@ export const buildEndOfDayReferenceSummary = (
     );
     const grossSales = orders.reduce(
         (sum, order) =>
-            sum + getOrderSalesTotal(order) + getOrderDiscountReference(order),
+            sum + Number(order.total || 0) + getOrderDiscountReference(order),
         0
     );
     const refundsTotal = orders.reduce(

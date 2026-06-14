@@ -201,7 +201,7 @@ describe('report-aggregations', () => {
         const surchargeOrder: any = {
             ...paidOrder,
             id: 'order-surcharge-1',
-            total: 101.8,
+            total: 100,
             paymentInfo: {
                 payments: [
                     { type: 'CC', amount: 60, surchargeAmount: 1.8 },
@@ -224,6 +224,10 @@ describe('report-aggregations', () => {
                 count: 1,
                 percent: '2%',
             },
+        ]);
+
+        expect(buildHourlySalesRows([surchargeOrder] as any)).toEqual([
+            { hour: '09:00', sales: 100, tax: 0, orders: 1, averageTicket: 100 },
         ]);
     });
 
