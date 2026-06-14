@@ -914,6 +914,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
+            gap: tokens.spacing.sm,
             paddingHorizontal: tokens.spacing.xs,
             paddingTop: 4,
         },
@@ -932,9 +933,13 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontSize: 12,
         },
         summaryMetaLabel: {
+            flex: 1,
+            minWidth: 0,
+            flexShrink: 1,
             color: tokens.colors.textMuted,
             fontSize: 12,
             fontWeight: '600',
+            lineHeight: 16,
         },
         summaryFooterValue: {
             color: tokens.colors.textPrimary,
@@ -945,6 +950,8 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             color: tokens.colors.textPrimary,
             fontSize: 14,
             fontWeight: '700',
+            flexShrink: 0,
+            textAlign: 'right',
         },
         summaryFooterValueCompact: {
             fontSize: 20,

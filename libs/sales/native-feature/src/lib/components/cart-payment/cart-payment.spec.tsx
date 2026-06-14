@@ -318,10 +318,21 @@ describe('CartPayment integration', () => {
 
         fireEvent.press(getByTestId('payment-card-cc'));
 
-        expect(getByText('Credit Card Surcharge')).toBeTruthy();
-        expect(getByText('$ 3.00')).toBeTruthy();
-        expect(getByText('Charge to card')).toBeTruthy();
-        expect(getByText('$ 103.00')).toBeTruthy();
+        const surchargeLabel = getByText('Credit Card Surcharge');
+        const surchargeAmount = getByText('$ 3.00');
+        const chargeLabel = getByText('Charge to card');
+        const chargeAmount = getByText('$ 103.00');
+
+        expect(surchargeLabel).toHaveStyle({ flex: 1, minWidth: 0 });
+        expect(surchargeAmount).toHaveStyle({
+            flexShrink: 0,
+            textAlign: 'right',
+        });
+        expect(chargeLabel).toHaveStyle({ flex: 1, minWidth: 0 });
+        expect(chargeAmount).toHaveStyle({
+            flexShrink: 0,
+            textAlign: 'right',
+        });
 
         fireEvent.press(getByTestId('payment-submit-button'));
 
