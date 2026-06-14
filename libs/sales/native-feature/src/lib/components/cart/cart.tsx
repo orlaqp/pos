@@ -168,6 +168,8 @@ export function Cart({
     const canViewDiscountControls =
         DISCOUNT_CONTROLS_ENABLED && hasDiscountAccess;
     const payFromSalesScreen = mode === 'order' && preferPayFromSalesScreen;
+    const creditCardSurchargePercent =
+        globalSettings?.creditCardSurchargePercent ?? 0;
     const selectedLineHasManualAdjustment =
         !!selectedItem?.identifier &&
         (cart.manualDiscounts.some(
@@ -847,6 +849,7 @@ export function Cart({
                 canReceiveChecks={
                     employee?.roles?.includes(Role.Checks) || false
                 }
+                creditCardSurchargePercent={creditCardSurchargePercent}
                 onClose={() => {
                     setReceivePayment(false);
                     onInteractionComplete();

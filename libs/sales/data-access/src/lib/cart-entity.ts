@@ -63,6 +63,9 @@ export interface CartPromoCode {
 export interface CartPayment {
     type: string;
     amount: number;
+    baseAmount?: number | null;
+    surchargeRate?: number | null;
+    surchargeAmount?: number | null;
 }
 
 export interface CartFooter {
