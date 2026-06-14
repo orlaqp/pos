@@ -126,6 +126,9 @@ function trimOrderForReports(order) {
                 payments: (order.paymentInfo.payments || []).map((payment) => ({
                     type: payment?.type,
                     amount: payment?.amount,
+                    baseAmount: payment?.baseAmount,
+                    surchargeRate: payment?.surchargeRate,
+                    surchargeAmount: payment?.surchargeAmount,
                 })),
             }
             : null,
