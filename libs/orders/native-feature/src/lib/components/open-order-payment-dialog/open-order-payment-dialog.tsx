@@ -27,7 +27,7 @@ import {
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { Role } from '@pos/auth/data-access';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-import { translateWithFallback } from '@pos/shared/utils';
+import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
 
 interface OpenOrderPaymentDialogProps {
     visible: boolean;
