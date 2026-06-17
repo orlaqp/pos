@@ -20,6 +20,12 @@ describe('Sales', () => {
                     createdAt: '2026-04-21T13:00:00.000Z',
                     total: 148.95,
                     employeeName: 'Cashier B',
+                    paymentInfo: {
+                        payments: [
+                            { type: 'CREDIT', amount: 50 },
+                            { type: 'CASH', amount: 98.95 },
+                        ],
+                    },
                 },
             ] as any,
             [
@@ -40,6 +46,7 @@ describe('Sales', () => {
             expect.objectContaining({
                 orderNo: '002',
                 employee: 'Cashier B',
+                paymentBreakdown: 'Customer Credit: $50.00, Cash: $98.95',
                 amount: 148.95,
             })
         );

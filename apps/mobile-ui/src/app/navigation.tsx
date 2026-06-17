@@ -47,7 +47,12 @@ export interface NavigationParamList {
     Payments: undefined;
     BackOffice:
         | {
-              initialScreen?: 'Dashboard' | 'Products' | 'Categories';
+              initialScreen?:
+                  | 'Dashboard'
+                  | 'Catalog'
+                  | 'Products'
+                  | 'Categories'
+                  | 'Customers';
               initialScreenParams?: {
                   initialRouteName?: string;
               };

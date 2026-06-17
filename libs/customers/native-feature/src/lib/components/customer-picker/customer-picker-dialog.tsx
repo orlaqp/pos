@@ -1,0 +1,262 @@
+import React, { useMemo, useState } from 'react';
+import {
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { Dialog } from '@rneui/themed';
+import { CustomerEntity } from '@pos/customers/data-access';
+import {
+    canCreateCustomers,
+    CustomerPermissionSubject,
+} from '../../customer-permissions';
+import CustomerForm from '../customer-form/customer-form';
+
+export interface CustomerPickerDialogProps {
+    visible?: boolean;
+    customers?: CustomerEntity[];
+    tenantId?: string;
+    currentEmployee?: CustomerPermissionSubject;
+    onClose?: () => void;
+    onSelect?: (customer: CustomerEntity) => void;
+    onCreated?: (customer: CustomerEntity) => void;
+}
+
+const getDisplayName = (customer: CustomerEntity) =>
+    customer.displayName ||
+    [customer.firstName, customer.lastName].filter(Boolean).join(' ') ||
+    'Unnamed customer';
+
+export function CustomerPickerDialog({
+    visible = true,
+    customers = [],
+    tenantId,
+    currentEmployee,
+    onClose,
+    onSelect,
+    onCreated,
+}: CustomerPickerDialogProps) {
+    const styles = useStyles();
+    const [query, setQuery] = useState('');
+    const [creating, setCreating] = useState(false);
+    const canCreate = canCreateCustomers(currentEmployee);
+    const filteredCustomers = useMemo(() => {
+        const normalized = query.trim().toLowerCase();
+        if (!normalized) return customers;
+
+        return customers.filter((customer) =>
+            [
+                customer.displayName,
+                customer.firstName,
+                customer.lastName,
+                customer.phone,
+                customer.email,
+            ]
+                .filter(Boolean)
+                .some((value) => value?.toLowerCase().includes(normalized))
+        );
+    }, [customers, query]);
+
+    const content = (
+        <View style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.title}>Select customer</Text>
+                {canCreate ? (
+                    <Pressable
+                        testID="customer-picker-create"
+                        style={styles.createButton}
+                        onPress={() => setCreating(true)}
+                    >
+                        <Text style={styles.createButtonText}>New</Text>
+                    </Pressable>
+                ) : null}
+            </View>
+
+            {creating ? (
+                <CustomerForm
+                    tenantId={tenantId}
+                    currentEmployee={currentEmployee}
+                    onCancel={() => setCreating(false)}
+                    onSaved={(customer) => {
+                        setCreating(false);
+                        onCreated?.(customer);
+                        onSelect?.(customer);
+                    }}
+                />
+            ) : (
+                <>
+                    <TextInput
+                        testID="customer-picker-search"
+                        value={query}
+                        onChangeText={setQuery}
+                        placeholder="Search customers"
+                        style={styles.input}
+                    />
+                    <ScrollView style={styles.list} keyboardShouldPersistTaps="always">
+                        {filteredCustomers.map((customer) => (
+                            <TouchableOpacity
+                                key={customer.id ?? getDisplayName(customer)}
+                                testID={`customer-picker-item-${customer.id ?? customer.firstName}`}
+                                accessibilityRole="button"
+                                activeOpacity={0.72}
+                                hitSlop={4}
+                                onPress={() => onSelect?.(customer)}
+                                style={styles.row}
+                            >
+                                <View style={styles.customerInfo}>
+                                    <Text style={styles.name}>{getDisplayName(customer)}</Text>
+                                    {customer.phone ? (
+                                        <Text style={styles.meta}>{customer.phone}</Text>
+                                    ) : null}
+                                    {customer.email ? (
+                                        <Text style={styles.meta}>{customer.email}</Text>
+                                    ) : null}
+                                </View>
+                                <Text style={styles.selectText}>Select</Text>
+                            </TouchableOpacity>
+                        ))}
+                        {!filteredCustomers.length ? (
+                            <Text style={styles.empty}>No matching customers.</Text>
+                        ) : null}
+                    </ScrollView>
+                </>
+            )}
+
+            {onClose ? (
+                <Pressable
+                    testID="customer-picker-close"
+                    onPress={onClose}
+                    style={styles.closeButton}
+                >
+                    <Text style={styles.closeButtonText}>Close</Text>
+                </Pressable>
+            ) : null}
+        </View>
+    );
+
+    if (!visible) {
+        return null;
+    }
+
+    if (!onClose) {
+        return content;
+    }
+
+    return (
+        <Dialog
+            testID="customer-picker-dialog"
+            isVisible={visible}
+            onBackdropPress={onClose}
+            supportedOrientations={['landscape-left', 'landscape-right']}
+            presentationStyle="fullScreen"
+            overlayStyle={styles.dialogOverlay}
+        >
+            {content}
+        </Dialog>
+    );
+}
+
+const useStyles = () =>
+    StyleSheet.create({
+        dialogOverlay: {
+            width: '92%',
+            maxWidth: 1120,
+            backgroundColor: 'transparent',
+            padding: 0,
+            borderWidth: 0,
+            shadowOpacity: 0,
+        },
+        container: {
+            maxHeight: '90%',
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: '#C7D0DB22',
+            backgroundColor: '#101821',
+            padding: 16,
+        },
+        header: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 12,
+        },
+        title: {
+            color: '#F7FAFC',
+            fontSize: 20,
+            fontWeight: '800',
+        },
+        createButton: {
+            borderRadius: 8,
+            backgroundColor: '#2F80ED',
+            paddingHorizontal: 14,
+            paddingVertical: 9,
+        },
+        createButtonText: {
+            color: '#FFFFFF',
+            fontWeight: '800',
+        },
+        input: {
+            minHeight: 44,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: '#2A3544',
+            backgroundColor: '#0B1119',
+            color: '#F7FAFC',
+            paddingHorizontal: 12,
+            marginBottom: 10,
+        },
+        list: {
+            maxHeight: 420,
+        },
+        row: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderWidth: 1,
+            borderColor: '#2A3544',
+            borderRadius: 8,
+            padding: 12,
+            marginBottom: 8,
+            backgroundColor: '#0B1119',
+        },
+        customerInfo: {
+            flex: 1,
+            paddingRight: 12,
+        },
+        name: {
+            color: '#F7FAFC',
+            fontWeight: '800',
+        },
+        meta: {
+            color: '#AAB6C5',
+            marginTop: 2,
+        },
+        empty: {
+            color: '#AAB6C5',
+            paddingVertical: 16,
+            textAlign: 'center',
+        },
+        selectText: {
+            color: '#4AA3EB',
+            fontWeight: '800',
+        },
+        closeButton: {
+            alignSelf: 'flex-end',
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: '#2A3544',
+            paddingHorizontal: 14,
+            paddingVertical: 9,
+            marginTop: 10,
+        },
+        closeButtonText: {
+            color: '#D9E2EC',
+            fontWeight: '700',
+        },
+    });
+
+export default CustomerPickerDialog;

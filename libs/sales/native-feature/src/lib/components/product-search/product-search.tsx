@@ -1,6 +1,6 @@
 import { UISearchInput } from '@pos/shared/ui-native';
 import { translateWithFallback } from '@pos/shared/utils';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 import { TextInput, View } from 'react-native';
 import { Button, useTheme } from '@rneui/themed';
@@ -19,15 +19,7 @@ export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((pr
     const theme = useTheme();
     const [showSoftInputOnFocus, setShowSoftInputOnFocus] = useState(false);
 
-    const searchRef = useMemo(() => {
-        if (typeof ref === 'function') {
-            return {
-                current: null as TextInput | null,
-            };
-        }
-
-        return ref ?? { current: null as TextInput | null };
-    }, [ref]);
+    const searchRef = useRef<TextInput | null>(null);
 
     const setCombinedRef = useCallback(
         (node: TextInput | null) => {
@@ -37,11 +29,11 @@ export const ProductSearch = React.forwardRef<TextInput, ProductSearchProps>((pr
                 return;
             }
 
-            if (ref) {
+            if (ref && 'current' in ref) {
                 ref.current = node;
             }
         },
-        [ref, searchRef]
+        [ref]
     );
 
     const toggleSoftInput = () => {

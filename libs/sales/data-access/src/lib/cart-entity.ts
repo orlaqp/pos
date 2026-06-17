@@ -61,6 +61,21 @@ export interface CartPromoCode {
 export interface CartPayment {
     type: string;
     amount: number;
+    customerId?: string | null;
+    customerDisplayName?: string | null;
+}
+
+export interface CartCustomer {
+    id?: string | null;
+    displayName?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    active?: boolean | null;
+    creditLimit?: number | null;
+    creditBalance?: number | null;
+    creditStatus?: string | null;
 }
 
 export interface CartFooter {
@@ -89,6 +104,7 @@ export interface CartState {
     header?: CartHeader;
     items: CartItem[];
     payments?: CartPayment[];
+    customer?: CartCustomer;
     footer: CartFooter;
     pricingContext?: CartPricingContext;
     policy?: EmployeeDiscountPolicy;

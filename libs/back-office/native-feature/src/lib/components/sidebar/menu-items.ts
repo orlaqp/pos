@@ -10,12 +10,14 @@ export const menuItems: SidebarItem[] = [
         role: Role.Admin,
         group: 'Core',
     },
-    // {
-    //     id: '2',
-    //     title: 'Customers',
-    //     icon: 'account-box-multiple-outline',
-    //     role: Role.Admin,
-    // },
+    {
+        id: '2',
+        title: 'Customers',
+        labelKey: 'SIDEBAR_Customers',
+        icon: 'account-box-multiple-outline',
+        role: Role.Admin,
+        group: 'Management',
+    },
     {
         id: '3',
         title: 'Reports',

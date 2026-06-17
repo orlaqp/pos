@@ -40,6 +40,12 @@
             "@pos/categories/web-feature": [
                 "libs/categories/web-feature/src/index.ts"
             ],
+            "@pos/customers/data-access": [
+                "libs/customers/data-access/src/index.ts"
+            ],
+            "@pos/customers/native-feature": [
+                "libs/customers/native-feature/src/index.ts"
+            ],
             "@pos/discounts/data-access": [
                 "libs/discounts/data-access/src/index.ts"
             ],

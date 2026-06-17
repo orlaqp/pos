@@ -11,6 +11,7 @@ import { API, DataStore } from '@pos/shared/amplify';
 import { StationService } from '@pos/settings/data-access';
 import { stampTenant } from '@pos/auth/data-access';
 import { Alert } from 'react-native';
+import { CustomerCreditService, CustomerService } from '@pos/customers/data-access';
 
 jest.mock('@pos/shared/amplify', () => ({
   API: {
@@ -38,6 +39,21 @@ jest.mock('@pos/employees/data-access', () => ({
     getById: jest.fn(),
   },
 }));
+
+jest.mock('@pos/customers/data-access', () => {
+  const actual = jest.requireActual('@pos/customers/data-access');
+
+  return {
+    ...actual,
+    CustomerService: {
+      getById: jest.fn(),
+    },
+    CustomerCreditService: {
+      recordCreditPurchase: jest.fn(),
+      recordRefundReversal: jest.fn(),
+    },
+  };
+});
 
 jest.mock('react-native-uuid', () => ({
   v4: jest.fn(() => 'generated-order-id'),
@@ -273,6 +289,47 @@ describe('OrderService', () => {
     jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
   });
 
+  it('persists the selected customer when saving an open order', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+
+    await OrderService.create({
+      by: {
+        id: 'employee-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+      } as any,
+      order: {
+        id: 'open-order-1',
+        customer: {
+          id: 'customer-1',
+          displayName: 'Ada Lovelace',
+        },
+        items: [],
+        footer: {
+          baseSubtotal: 0,
+          subtotal: 0,
+          total: 0,
+          lineDiscountTotal: 0,
+          orderDiscountTotal: 0,
+          discount: 0,
+          savingsTotal: 0,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+        },
+        promoCodes: [],
+        appliedDiscountSummary: undefined,
+      } as any,
+    });
+
+    expect(saveMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'open-order-1',
+        status: 'OPEN',
+        orderCustomerId: 'customer-1',
+      })
+    );
+  });
+
   it('marks a closed order as pending inventory application instead of updating products directly', async () => {
     const saveMock = jest.mocked(DataStore.save);
     const queryMock = jest.mocked(DataStore.query);
@@ -413,6 +470,154 @@ describe('OrderService', () => {
         status: 'PAID',
       })
     );
+  });
+
+  it('persists the selected customer and records credit purchases after one-step checkout closes', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+    const customerServiceMock = jest.mocked(CustomerService.getById);
+    const recordCreditPurchaseMock = jest.mocked(
+      CustomerCreditService.recordCreditPurchase
+    );
+
+    customerServiceMock.mockResolvedValue({
+      id: 'customer-1',
+      tenantId: 'tenant-1',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      active: true,
+      creditLimit: 100,
+      creditBalance: 10,
+    });
+    saveMock.mockResolvedValue({
+      id: 'order-credit',
+      tenantId: 'tenant-1',
+      status: 'PAID',
+      orderNo: '51-25-260316-0010',
+      lines: [],
+      paymentInfo: { payments: [] },
+    } as any);
+
+    await OrderService.createPaidOrder({
+      by: {
+        id: 'employee-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+      } as any,
+      order: {
+        id: 'order-credit',
+        orderNo: '51-25-260316-0010',
+        customer: {
+          id: 'customer-1',
+          displayName: 'Ada Lovelace',
+          active: true,
+          creditLimit: 100,
+          creditBalance: 10,
+        },
+        items: [
+          {
+            identifier: 'line-1',
+            quantity: 1,
+            product: {
+              id: 'product-1',
+              name: 'Rice',
+              price: 30,
+              unitOfMeasure: 'ea',
+              isEBTEligible: false,
+            },
+          },
+        ],
+        footer: {
+          baseSubtotal: 30,
+          subtotal: 30,
+          total: 30,
+          lineDiscountTotal: 0,
+          orderDiscountTotal: 0,
+          discount: 0,
+          savingsTotal: 0,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+        },
+        promoCodes: [],
+        appliedDiscountSummary: undefined,
+      } as any,
+      payments: [
+        { type: 'CREDIT', amount: 20, customerId: 'customer-1' },
+        { type: 'cash', amount: 10 },
+      ],
+    });
+
+    expect(saveMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'order-credit',
+        status: 'PAID',
+        orderCustomerId: 'customer-1',
+      })
+    );
+    expect(recordCreditPurchaseMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customerId: 'customer-1',
+        tenantId: 'tenant-1',
+        amount: 20,
+        referenceKey: 'order-credit:CREDIT:1',
+        orderId: 'order-credit',
+        orderNo: '51-25-260316-0010',
+      })
+    );
+  });
+
+  it('rechecks available customer credit before saving a paid order', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+    jest.mocked(CustomerService.getById).mockResolvedValue({
+      id: 'customer-1',
+      firstName: 'Ada',
+      active: true,
+      creditLimit: 25,
+      creditBalance: 20,
+    });
+
+    await expect(
+      OrderService.createPaidOrder({
+        by: {
+          id: 'employee-1',
+          firstName: 'Orlando',
+          lastName: 'Quero',
+        } as any,
+        order: {
+          id: 'order-credit-denied',
+          customer: {
+            id: 'customer-1',
+            displayName: 'Ada Lovelace',
+          },
+          items: [
+            {
+              identifier: 'line-1',
+              quantity: 1,
+              product: {
+                id: 'product-1',
+                name: 'Rice',
+                price: 10,
+                unitOfMeasure: 'ea',
+              },
+            },
+          ],
+          footer: {
+            baseSubtotal: 10,
+            subtotal: 10,
+            total: 10,
+            lineDiscountTotal: 0,
+            orderDiscountTotal: 0,
+            discount: 0,
+            savingsTotal: 0,
+            pricingSource: 'OFFLINE_LOCAL',
+            reconciliationStatus: 'PENDING',
+          },
+          promoCodes: [],
+        } as any,
+        payments: [{ type: 'CREDIT', amount: 10, customerId: 'customer-1' }],
+      })
+    ).rejects.toThrow('Insufficient customer credit');
+
+    expect(saveMock).not.toHaveBeenCalled();
   });
 
   it('blocks EBT overpayment against discounted eligible totals when creating a paid order', async () => {
@@ -1012,6 +1217,95 @@ describe('OrderService', () => {
         status: 'COMPLETED',
         inventoryApplyState: 'PENDING',
         inventoryApplyOperationId: 'ORDER_REFUND:order-1:generated-order-id',
+      })
+    );
+  });
+
+  it('records a customer credit reversal when refunding a credit-paid order', async () => {
+    const queryMock = jest.mocked(DataStore.query);
+    const recordRefundReversalMock = jest.mocked(
+      CustomerCreditService.recordRefundReversal
+    );
+
+    jest.mocked(CustomerService.getById).mockResolvedValue({
+      id: 'customer-1',
+      tenantId: 'tenant-1',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      active: true,
+      creditLimit: 100,
+      creditBalance: 30,
+    });
+    queryMock.mockResolvedValueOnce({
+      id: 'order-credit-refund',
+      tenantId: 'tenant-1',
+      orderCustomerId: 'customer-1',
+      status: 'PAID',
+      employeeId: 'employee-1',
+      orderNo: '51-25-260316-0020',
+      subtotal: 20,
+      tax: 0,
+      total: 20,
+      paymentInfo: {
+        payments: [{ type: 'CREDIT', amount: 20 }],
+      },
+      lines: [
+        {
+          identifier: 'line-1',
+          productId: 'product-1',
+          productName: 'Rice',
+          quantity: 2,
+          price: 10,
+          unitOfMeasure: 'EA',
+          barcode: null,
+          sku: null,
+        },
+      ],
+      orderDate: '2026-03-16T12:00:00.000Z',
+    } as any);
+    queryMock.mockResolvedValueOnce([]);
+
+    await OrderService.refund({
+      id: 'order-credit-refund',
+      by: {
+        id: 'employee-2',
+        firstName: 'Refund',
+        lastName: 'Cashier',
+      } as any,
+      order: {
+        id: 'order-credit-refund',
+        orderNo: '51-25-260316-0020',
+        subtotal: 20,
+        tax: 0,
+        total: 20,
+        status: 'PAID',
+        orderCustomerId: 'customer-1',
+        customer: { id: 'customer-1' },
+        paymentInfo: {
+          payments: [{ type: 'CREDIT', amount: 20 }],
+        },
+        lines: [
+          {
+            identifier: 'line-1',
+            productId: 'product-1',
+            productName: 'Rice',
+            quantity: 2,
+            price: 10,
+            unitOfMeasure: 'EA',
+          },
+        ],
+      } as any,
+      refundedLines: [{ identifier: 'line-1', quantity: 1 }],
+    });
+
+    expect(recordRefundReversalMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customerId: 'customer-1',
+        tenantId: 'tenant-1',
+        amount: 10,
+        referenceKey: 'order-credit-refund:REFUND:generated-order-id:CREDIT:1',
+        orderId: 'order-credit-refund',
+        orderNo: '51-25-260316-0020',
       })
     );
   });

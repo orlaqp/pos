@@ -74,7 +74,7 @@ export const buildDayRange = (date: Date) => ({
 });
 
 export const getPaymentMethodsTotal = (summary: PaymentMethodsSummary) =>
-    summary.CASH + summary.CC + summary.CHECK + summary.EBT;
+    summary.CASH + summary.CC + summary.CHECK + summary.EBT + summary.CREDIT;
 
 export const formatPaymentAmount = (amount: number) =>
     `$${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
@@ -149,6 +149,7 @@ export const buildEndOfDayWidgets = (
         cash: string;
         checks: string;
         ebt: string;
+        customerCredit: string;
     } = {
         sales: 'Sales',
         grossSales: 'Gross Sales',
@@ -159,6 +160,7 @@ export const buildEndOfDayWidgets = (
         cash: 'Cash',
         checks: 'Checks',
         ebt: 'EBT',
+        customerCredit: 'Customer Credit',
     },
 ): EndOfDayWidget[] => [
     {
@@ -213,6 +215,12 @@ export const buildEndOfDayWidgets = (
         text: labels.ebt,
         value: formatPaymentAmount(summary.EBT),
         backgroundColor: '#00695c',
+        flex: 1,
+    },
+    {
+        text: labels.customerCredit,
+        value: formatPaymentAmount(summary.CREDIT),
+        backgroundColor: '#455a64',
         flex: 1,
     },
 ];
@@ -330,6 +338,7 @@ export function EndOfDay(props: EndOfDayProps) {
             CASH: 0,
             CHECK: 0,
             EBT: 0,
+            CREDIT: 0,
         });
     const [referenceSummary, setReferenceSummary] = useState(() =>
         buildEndOfDayReferenceSummary([], [], [], {}),
@@ -396,6 +405,7 @@ export function EndOfDay(props: EndOfDayProps) {
             cash: t('EOD_Cash', 'Cash'),
             checks: t('EOD_Checks', 'Checks'),
             ebt: t('EOD_EBT', 'EBT'),
+            customerCredit: t('EOD_CustomerCredit', 'Customer Credit'),
         },
     );
     const hasFilteredData = filteredOrders.length > 0;

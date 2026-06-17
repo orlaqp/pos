@@ -86,6 +86,18 @@ export enum ReconciliationStatus {
   RECONCILED_WITH_EXCEPTION = "RECONCILED_WITH_EXCEPTION"
 }
 
+export enum CustomerCreditStatus {
+  OK = "OK",
+  OVER_LIMIT = "OVER_LIMIT"
+}
+
+export enum CustomerCreditTransactionType {
+  CREDIT_PURCHASE = "CREDIT_PURCHASE",
+  ACCOUNT_PAYMENT = "ACCOUNT_PAYMENT",
+  REFUND_REVERSAL = "REFUND_REVERSAL",
+  ADJUSTMENT = "ADJUSTMENT"
+}
+
 export enum InventoryApplyState {
   PENDING = "PENDING",
   APPLYING = "APPLYING",
@@ -107,7 +119,8 @@ export enum PaymentType {
   CASH = "CASH",
   CHECK = "CHECK",
   CC = "CC",
-  EBT = "EBT"
+  EBT = "EBT",
+  CREDIT = "CREDIT"
 }
 
 export enum OrderStatus {
@@ -519,6 +532,10 @@ type CustomerMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
+type CustomerCreditTransactionMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
 type EmployeeMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
@@ -764,6 +781,10 @@ type EagerCustomer = {
   readonly dob?: string | null;
   readonly phone?: string | null;
   readonly email?: string | null;
+  readonly active?: boolean | null;
+  readonly creditLimit?: number | null;
+  readonly creditBalance?: number | null;
+  readonly creditStatus?: CustomerCreditStatus | keyof typeof CustomerCreditStatus | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -777,6 +798,10 @@ type LazyCustomer = {
   readonly dob?: string | null;
   readonly phone?: string | null;
   readonly email?: string | null;
+  readonly active?: boolean | null;
+  readonly creditLimit?: number | null;
+  readonly creditBalance?: number | null;
+  readonly creditStatus?: CustomerCreditStatus | keyof typeof CustomerCreditStatus | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -785,6 +810,60 @@ export declare type Customer = LazyLoading extends LazyLoadingDisabled ? EagerCu
 
 export declare const Customer: (new (init: ModelInit<Customer, CustomerMetaData>) => Customer) & {
   copyOf(source: Customer, mutator: (draft: MutableModel<Customer, CustomerMetaData>) => MutableModel<Customer, CustomerMetaData> | void): Customer;
+}
+
+type EagerCustomerCreditTransaction = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly customerId: string;
+  readonly customerDisplayName: string;
+  readonly customerPhone?: string | null;
+  readonly customerEmail?: string | null;
+  readonly transactionDate: string;
+  readonly type: CustomerCreditTransactionType | keyof typeof CustomerCreditTransactionType;
+  readonly amount: number;
+  readonly balanceAfter: number;
+  readonly paymentMethod?: PaymentType | keyof typeof PaymentType | null;
+  readonly orderId?: string | null;
+  readonly orderNo?: string | null;
+  readonly referenceKey: string;
+  readonly employeeId: string;
+  readonly employeeName: string;
+  readonly storeId?: string | null;
+  readonly stationId?: string | null;
+  readonly notes?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyCustomerCreditTransaction = {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly customerId: string;
+  readonly customerDisplayName: string;
+  readonly customerPhone?: string | null;
+  readonly customerEmail?: string | null;
+  readonly transactionDate: string;
+  readonly type: CustomerCreditTransactionType | keyof typeof CustomerCreditTransactionType;
+  readonly amount: number;
+  readonly balanceAfter: number;
+  readonly paymentMethod?: PaymentType | keyof typeof PaymentType | null;
+  readonly orderId?: string | null;
+  readonly orderNo?: string | null;
+  readonly referenceKey: string;
+  readonly employeeId: string;
+  readonly employeeName: string;
+  readonly storeId?: string | null;
+  readonly stationId?: string | null;
+  readonly notes?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type CustomerCreditTransaction = LazyLoading extends LazyLoadingDisabled ? EagerCustomerCreditTransaction : LazyCustomerCreditTransaction
+
+export declare const CustomerCreditTransaction: (new (init: ModelInit<CustomerCreditTransaction, CustomerCreditTransactionMetaData>) => CustomerCreditTransaction) & {
+  copyOf(source: CustomerCreditTransaction, mutator: (draft: MutableModel<CustomerCreditTransaction, CustomerCreditTransactionMetaData>) => MutableModel<CustomerCreditTransaction, CustomerCreditTransactionMetaData> | void): CustomerCreditTransaction;
 }
 
 type EagerEmployee = {

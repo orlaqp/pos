@@ -8,6 +8,27 @@ import moment from 'moment';
 import i18next from 'i18next';
 import { normalizeReportRange } from '../report-utils';
 
+const paymentLabelByType: Record<string, string> = {
+    CC: 'Card',
+    CASH: 'Cash',
+    CHECK: 'Check',
+    EBT: 'EBT',
+    CREDIT: 'Customer Credit',
+};
+
+const buildPaymentBreakdown = (
+    payments: Array<{ type?: string | null; amount?: number | null }> | null | undefined
+) =>
+    (payments || [])
+        .map((payment) => {
+            const type = String(payment?.type || '').toUpperCase();
+            const amount = Number(payment?.amount || 0);
+            if (!type || amount <= 0) return undefined;
+            return `${paymentLabelByType[type] || type}: $${amount.toFixed(2)}`;
+        })
+        .filter(Boolean)
+        .join(', ');
+
 /* eslint-disable-next-line */
 export interface SalesProps {}
 
@@ -41,6 +62,7 @@ export const buildSalesRows = (orders: Order[], refunds: OrderRefund[] = []) => 
                 orderDate: moment(order.orderDate).format('YYYY-MM-DD hh:MM'),
                 createdAt: order.createdAt || order.orderDate || order.updatedAt,
                 employee: order.createdBy?.name || order.employeeName,
+                paymentBreakdown: buildPaymentBreakdown(order.paymentInfo?.payments),
                 amount: roundCurrency(
                     Math.max(0, Number(order.total || 0) - refundedAmount)
                 ),
@@ -56,6 +78,7 @@ export function Sales(_props: SalesProps) {
     const headers: ReportHeader[] = [
         { label: t('REPORT_Header_Number', 'Number'), field: 'orderNo', width: 3 },
         { label: t('REPORT_Header_Employee', 'Employee'), field: 'employee', width: 3 },
+        { label: t('REPORT_Header_Payments', 'Payments'), field: 'paymentBreakdown', width: 3 },
         { label: t('REPORT_Header_Amount', 'Amount'), field: 'amount', width: 1, format: 'money', align: 'right', sum: true },
     ];
 

@@ -12,6 +12,7 @@ import {
     OrderStatus,
     Payment,
     PaymentInfo,
+    PaymentType,
     Product,
     RefundInfo,
 } from '@pos/shared/models';
@@ -42,6 +43,12 @@ import {
     getOrder,
     updateOrder,
 } from '@pos/shared/api';
+import {
+    canUseCustomerCredit,
+    CustomerCreditService,
+    CustomerService,
+} from '@pos/customers/data-access';
+import type { CustomerEntity } from '@pos/customers/data-access';
 
 export interface FilterRequest {
     status: OrderStatus;
@@ -176,7 +183,8 @@ const buildRefundInventoryOperationId = (
 ) => `ORDER_REFUND:${orderId}:${refundId}`;
 
 const REFUND_QUANTITY_EPSILON = 0.0001;
-const PAYMENT_TYPES = new Set(['CASH', 'CHECK', 'CC', 'EBT']);
+const PAYMENT_TYPES = new Set(['CASH', 'CHECK', 'CC', 'EBT', 'CREDIT']);
+const CREDIT_PAYMENT_TYPE = 'CREDIT';
 
 const normalizeRefundRequests = (
     refundedLines: Array<{ identifier: string; quantity: number }>
@@ -281,6 +289,100 @@ const normalizeRefundPayments = (
         type,
         amount,
     }));
+};
+
+const getCreditPayments = (
+    payments: Array<{ type?: string | null; amount?: number | null }> | null | undefined
+) =>
+    (payments || [])
+        .map((payment) => ({
+            type: normalizePaymentType(payment?.type),
+            amount: roundMoney(Math.max(0, Number(payment?.amount || 0))),
+        }))
+        .filter(
+            (payment): payment is { type: typeof CREDIT_PAYMENT_TYPE; amount: number } =>
+                payment.type === CREDIT_PAYMENT_TYPE && payment.amount > 0
+        );
+
+const getEmployeeName = (employee: Pick<EmployeeEntity, 'firstName' | 'lastName'>) =>
+    `${employee.firstName} ${employee.lastName}`;
+
+const cartCustomerToEntity = (cart: CartState): CustomerEntity | null => {
+    const customer = cart.customer;
+    if (!customer?.id) {
+        return null;
+    }
+
+    return {
+        id: customer.id,
+        firstName: customer.firstName || customer.displayName || 'Customer',
+        lastName: customer.lastName,
+        phone: customer.phone,
+        email: customer.email,
+        active: customer.active ?? true,
+        creditLimit: customer.creditLimit ?? 0,
+        creditBalance: customer.creditBalance ?? 0,
+        creditStatus: customer.creditStatus as CustomerEntity['creditStatus'],
+    };
+};
+
+const resolveCreditCustomerForCart = async (
+    cart: CartState,
+    payments: CartPayment[]
+): Promise<CustomerEntity | null> => {
+    const customerId =
+        cart.customer?.id ||
+        payments.find((payment) => normalizePaymentType(payment.type) === CREDIT_PAYMENT_TYPE)
+            ?.customerId;
+
+    if (!customerId) {
+        return null;
+    }
+
+    return (await CustomerService.getById(customerId)) || cartCustomerToEntity(cart);
+};
+
+const resolveCreditCustomerForOrder = async (
+    order: Order | OrderEntity,
+    fallback?: OrderEntity | null
+): Promise<CustomerEntity | null> => {
+    const customerId =
+        fallback?.customer?.id ||
+        fallback?.orderCustomerId ||
+        (order as Order).orderCustomerId ||
+        ((order as Order).Customer && typeof ((order as Order).Customer as { get?: unknown }).get !== 'function'
+            ? ((order as Order).Customer as { id?: string | null }).id
+            : undefined);
+
+    return customerId ? CustomerService.getById(customerId) : null;
+};
+
+const assertCustomerCreditPaymentsAllowed = async (
+    cart: CartState,
+    payments: CartPayment[]
+) => {
+    const creditTotal = sumPayments(getCreditPayments(payments));
+
+    if (creditTotal <= 0) {
+        return null;
+    }
+
+    const customer = await resolveCreditCustomerForCart(cart, payments);
+    const result = canUseCustomerCredit(customer, creditTotal);
+
+    if (!result.allowed) {
+        if (result.reason === 'NO_CUSTOMER') {
+            throw new Error('Customer is required for customer credit payment');
+        }
+
+        if (result.reason === 'INSUFFICIENT_CREDIT') {
+            throw new Error('Insufficient customer credit');
+        }
+
+        throw new Error(`Customer credit unavailable: ${result.reason}`);
+    }
+
+    return customer;
 };
 
 const getLineOriginalAmount = (line: {
@@ -434,6 +536,83 @@ const buildSnapshotIdMapForAppliedSummary = (
 };
 
 export class OrderService {
+    private static async recordCreditPurchasesForPaidOrder(
+        order: Order,
+        cart: CartState,
+        payments: CartPayment[],
+        employee: Pick<EmployeeEntity, 'id' | 'firstName' | 'lastName'>
+    ) {
+        const creditPayments = getCreditPayments(payments);
+        if (!creditPayments.length) {
+            return;
+        }
+
+        const customer = await resolveCreditCustomerForCart(cart, payments);
+        if (!customer?.id) {
+            throw new Error('Customer is required for customer credit payment');
+        }
+
+        await Promise.all(
+            creditPayments.map((payment, index) =>
+                CustomerCreditService.recordCreditPurchase({
+                    customerId: customer.id!,
+                    tenantId:
+                        order.tenantId ||
+                        customer.tenantId ||
+                        requireCurrentTenantId(),
+                    amount: payment.amount,
+                    referenceKey: `${order.id}:CREDIT:${index + 1}`,
+                    employeeId: employee.id!,
+                    employeeName: getEmployeeName(employee),
+                    paymentMethod: PaymentType.CREDIT,
+                    orderId: order.id,
+                    orderNo: order.orderNo,
+                    storeId: cart.pricingContext?.storeId,
+                    stationId: cart.pricingContext?.stationId,
+                    notes: 'Customer credit purchase',
+                })
+            )
+        );
+    }
+
+    private static async recordCreditRefundReversals(
+        sourceOrder: Order,
+        sourceSnapshot: OrderEntity,
+        refund: OrderRefund,
+        refundPayments: CartPayment[],
+        employee: Pick<EmployeeEntity, 'id' | 'firstName' | 'lastName'>
+    ) {
+        const creditPayments = getCreditPayments(refundPayments);
+        if (!creditPayments.length) {
+            return;
+        }
+
+        const customer = await resolveCreditCustomerForOrder(sourceOrder, sourceSnapshot);
+        if (!customer?.id) {
+            throw new Error('Customer is required for customer credit refund');
+        }
+
+        await Promise.all(
+            creditPayments.map((payment, index) =>
+                CustomerCreditService.recordRefundReversal({
+                    customerId: customer.id!,
+                    tenantId:
+                        sourceOrder.tenantId ||
+                        customer.tenantId ||
+                        requireCurrentTenantId(),
+                    amount: payment.amount,
+                    referenceKey: `${sourceOrder.id}:REFUND:${refund.id}:CREDIT:${index + 1}`,
+                    employeeId: employee.id!,
+                    employeeName: getEmployeeName(employee),
+                    paymentMethod: PaymentType.CREDIT,
+                    orderId: sourceOrder.id,
+                    orderNo: sourceOrder.orderNo,
+                    notes: 'Customer credit refund reversal',
+                })
+            )
+        );
+    }
+
     private static async fetchRemoteOrder(
         id: string
     ): Promise<(Order & { _version?: number | null }) | null> {
@@ -558,6 +737,7 @@ export class OrderService {
             appliedDiscountSummary: toAppliedDiscountSummarySnapshot(
                 request.order.appliedDiscountSummary
             ),
+            orderCustomerId: request.order.customer?.id || null,
             employeeId: request.by.id!,
             employeeName: `${request.by.firstName} ${request.by.lastName}`,
             lines: buildOrderLines(request.order),
@@ -627,6 +807,7 @@ export class OrderService {
             );
             return null;
         }
+        await assertCustomerCreditPaymentsAllowed(request.order, request.payments);
 
         const allocations = buildEbtAllocations(
             buildEbtPricingLines(request.order),
@@ -676,6 +857,7 @@ export class OrderService {
             appliedDiscountSummary: toAppliedDiscountSummarySnapshot(
                 orderForPersistence.appliedDiscountSummary
             ),
+            orderCustomerId: orderForPersistence.customer?.id || null,
             employeeId: request.by.id!,
             employeeName: `${request.by.firstName} ${request.by.lastName}`,
             lines: buildOrderLines(orderForPersistence, allocations),
@@ -708,6 +890,12 @@ export class OrderService {
         }) as never);
 
         const savedOrder = await DataStore.save(order);
+        await OrderService.recordCreditPurchasesForPaidOrder(
+            savedOrder,
+            orderForPersistence,
+            request.payments,
+            request.by
+        );
         await OrderService.persistAppliedDiscountSnapshotsForPaidOrder(
             savedOrder,
             request.order,
@@ -738,6 +926,7 @@ export class OrderService {
             );
             return null;
         }
+        await assertCustomerCreditPaymentsAllowed(request.order, request.payments);
 
         const allocations = buildEbtAllocations(
             buildEbtPricingLines(request.order),
@@ -783,6 +972,7 @@ export class OrderService {
             o.appliedDiscountSummary = toAppliedDiscountSummarySnapshot(
                 orderForPersistence.appliedDiscountSummary
             );
+            o.orderCustomerId = orderForPersistence.customer?.id || order.orderCustomerId || null;
             o.status = 'PAID';
             o.lines = buildOrderLines(orderForPersistence, allocations);
             o.updatedBy = {
@@ -807,6 +997,12 @@ export class OrderService {
         });
 
         const closedOrder = await DataStore.save(updatedOrder);
+        await OrderService.recordCreditPurchasesForPaidOrder(
+            closedOrder,
+            orderForPersistence,
+            request.payments,
+            request.by
+        );
         await OrderService.persistAppliedDiscountSnapshotsForPaidOrder(
             closedOrder,
             request.order,
@@ -858,7 +1054,8 @@ export class OrderService {
                 ? request.refundPayments
                 : allocatePaymentsToTotal(
                       sourceOrder.paymentInfo?.payments ||
-                          request.order?.paymentInfo?.payments,
+                          (request.order as unknown as OrderEntity | undefined)?.paymentInfo
+                              ?.payments,
                       refundAmount
                   )
         );
@@ -929,7 +1126,14 @@ export class OrderService {
             }) as never
         );
 
-        await DataStore.save(refundRecord);
+        const savedRefund = await DataStore.save(refundRecord);
+        await OrderService.recordCreditRefundReversals(
+            existing,
+            sourceOrder,
+            savedRefund,
+            refundPayments,
+            request.by
+        );
 
         return savedOrder;
     }

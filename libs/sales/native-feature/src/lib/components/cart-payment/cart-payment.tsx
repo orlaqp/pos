@@ -1,4 +1,11 @@
-import type { CartPayment as ICartPayment } from '@pos/sales/data-access';
+import type {
+    CartCustomer,
+    CartPayment as ICartPayment,
+} from '@pos/sales/data-access';
+import {
+    canUseCustomerCredit,
+    CustomerEntity,
+} from '@pos/customers/data-access';
 import { PaymentType } from '@pos/shared/api';
 import {
     UICard,
@@ -10,7 +17,7 @@ import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button } from '@rneui/themed';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
+import { translateWithFallback } from '@pos/shared/utils';
 import {
     getAutoFillAmount,
     getRestoredValue,
@@ -46,6 +53,11 @@ const PaymentMethod = {
         label: 'Check',
         type: PaymentType.CHECK,
     },
+    credit: {
+        labelKey: 'PAYMENT_Method_CustomerCredit',
+        label: 'Customer Credit',
+        type: PaymentType.CREDIT,
+    },
     ebt: {
         labelKey: 'PAYMENT_Method_EBT',
         label: 'EBT',
@@ -54,9 +66,27 @@ const PaymentMethod = {
 } as const;
 
 const PAYMENT_METHOD_ROWS: PaymentKey[][] = [
-    ['cc', 'cash'],
-    ['check', 'ebt'],
+    ['credit', 'cash'],
+    ['cc', 'check'],
+    ['ebt'],
 ];
+
+const toCreditCustomer = (customer?: CartCustomer): CustomerEntity | undefined =>
+    customer?.id
+        ? {
+              id: customer.id,
+              tenantId: undefined,
+              displayName: customer.displayName || undefined,
+              firstName: customer.firstName || customer.displayName || 'Customer',
+              lastName: customer.lastName || undefined,
+              phone: customer.phone || undefined,
+              email: customer.email || undefined,
+              active: customer.active,
+              creditLimit: customer.creditLimit,
+              creditBalance: customer.creditBalance,
+              creditStatus: customer.creditStatus as CustomerEntity['creditStatus'],
+          }
+        : undefined;
 
 interface PaymentInfo {
     withcash: boolean;
@@ -65,6 +95,8 @@ interface PaymentInfo {
     check: number;
     withcc: boolean;
     cc: number;
+    withcredit: boolean;
+    credit: number;
     withebt: boolean;
     ebt: number;
 }
@@ -73,6 +105,7 @@ interface PaymentInfo {
 export interface CartPaymentProps {
     total: number;
     ebtEligibleTotal: number;
+    customer?: CartCustomer;
     canReceiveChecks: boolean;
     onPaymentEntered: (payments: ICartPayment[]) => void;
     footerActions?: React.ReactNode;
@@ -83,6 +116,7 @@ export interface CartPaymentProps {
 export function CartPayment({
     total,
     ebtEligibleTotal,
+    customer,
     canReceiveChecks,
     onPaymentEntered,
     footerActions,
@@ -104,6 +138,8 @@ export function CartPayment({
             check: 0,
             withcc: false,
             cc: 0,
+            withcredit: false,
+            credit: 0,
             withebt: false,
             ebt: 0,
         },
@@ -135,6 +171,22 @@ export function CartPayment({
     const remainingTotal = Math.max(0, balanceDelta);
     const isExactPayment = roundedReceivedTotal === roundedTotal;
     const isOverPayment = roundedReceivedTotal > roundedTotal;
+    const creditCustomer = toCreditCustomer(customer);
+    const creditAvailability = canUseCustomerCredit(
+        creditCustomer,
+        toNumber(watchedValues.credit),
+    );
+    const creditDisabledReason = !customer?.id
+        ? t(
+              'PAYMENT_CustomerCreditRequiresCustomer',
+              'Add a customer to the cart before using customer credit.',
+          )
+        : customer.active === false
+          ? t(
+                'PAYMENT_CustomerCreditInactive',
+                'Customer credit is inactive for this account.',
+            )
+          : '';
 
     const restoreIfEmpty = (method: PaymentKey) => {
         const currentValue = form.getValues(method);
@@ -151,6 +203,14 @@ export function CartPayment({
     ) => !!value[getMethodEnabledKey(method)];
 
     const setMethodActive = (method: PaymentKey, active: boolean) => {
+        if (method === 'credit' && active && creditDisabledReason) {
+            Alert.alert(
+                t('PAYMENT_CustomerCreditUnavailable', 'Customer credit unavailable'),
+                creditDisabledReason,
+            );
+            return;
+        }
+
         const currentValues = form.getValues() as PaymentInfo;
         const enabledKey = getMethodEnabledKey(method);
 
@@ -200,7 +260,16 @@ export function CartPayment({
             const amount = +(info[method] || 0);
             if (amount <= 0) return;
 
-            result.push({ type: PaymentMethod[method].type, amount });
+            result.push({
+                type: PaymentMethod[method].type,
+                amount,
+                customerId: method === 'credit' ? customer?.id : undefined,
+                customerDisplayName:
+                    method === 'credit'
+                        ? customer?.displayName ||
+                          [customer?.firstName, customer?.lastName].filter(Boolean).join(' ')
+                        : undefined,
+            });
             received += amount;
 
             if (method === 'ebt') {
@@ -213,6 +282,18 @@ export function CartPayment({
                 t(
                     'PAYMENT_ReceivedMustMatchTotal',
                     'Received payment must match the total exactly',
+                ),
+            );
+            return;
+        }
+
+        const creditReceived = toNumber(info.credit);
+        if (creditReceived > 0 && !canUseCustomerCredit(creditCustomer, creditReceived).allowed) {
+            Alert.alert(
+                t('PAYMENT_CustomerCreditDeclined', 'Customer credit declined'),
+                t(
+                    'PAYMENT_CustomerCreditDeclinedMessage',
+                    'This customer does not have enough available credit for the credit payment.',
                 ),
             );
             return;
@@ -363,6 +444,9 @@ export function CartPayment({
                                         m,
                                         formValue,
                                     );
+                                    const isCredit = m === 'credit';
+                                    const isDisabledCredit =
+                                        isCredit && !!creditDisabledReason;
 
                                     return (
                                         <Pressable
@@ -397,6 +481,8 @@ export function CartPayment({
                                                     isActive
                                                         ? local.methodCardActive
                                                         : local.methodCardInactive,
+                                                    isDisabledCredit &&
+                                                        local.methodCardDisabled,
                                                 ]}
                                             >
                                                 <View style={local.methodBody}>
@@ -406,6 +492,8 @@ export function CartPayment({
                                                             isActive
                                                                 ? local.methodCaptionActive
                                                                 : local.methodCaptionInactive,
+                                                            isDisabledCredit &&
+                                                                local.methodCaptionDisabled,
                                                         ]}
                                                     >
                                                         {t(
@@ -415,6 +503,36 @@ export function CartPayment({
                                                                 .label,
                                                         )}
                                                     </Text>
+                                                    {isCredit && customer?.id ? (
+                                                        <Text
+                                                            style={
+                                                                local.methodSubcaption
+                                                            }
+                                                        >
+                                                            {t(
+                                                                'PAYMENT_CustomerCreditAvailable',
+                                                                'Available',
+                                                            )}{' '}
+                                                            ${(
+                                                                (customer.creditLimit ??
+                                                                    0) -
+                                                                (customer.creditBalance ??
+                                                                    0)
+                                                            ).toFixed(2)}
+                                                        </Text>
+                                                    ) : null}
+                                                    {isDisabledCredit ? (
+                                                        <Text
+                                                            style={
+                                                                local.methodSubcaptionMuted
+                                                            }
+                                                        >
+                                                            {t(
+                                                                'PAYMENT_SelectCustomerFirst',
+                                                                'Select customer first',
+                                                            )}
+                                                        </Text>
+                                                    ) : null}
                                                     <View
                                                         style={
                                                             local.methodInputWrap
@@ -424,6 +542,9 @@ export function CartPayment({
                                                             testID={`payment-input-${m}`}
                                                             keyboardType="decimal-pad"
                                                             name={m}
+                                                            disabled={
+                                                                isDisabledCredit
+                                                            }
                                                             allowDecimals={true}
                                                             textAlign="right"
                                                             lIcon="currency-usd"
@@ -457,7 +578,7 @@ export function CartPayment({
                                                                 );
                                                                 form.setValue(
                                                                     m,
-                                                                    '' as any,
+                                                                    '' as unknown as PaymentInfo[typeof m],
                                                                 );
                                                             }}
                                                             onBlur={() =>
@@ -494,6 +615,8 @@ export function CartPayment({
                                                                 isCompact &&
                                                                     local.methodInputTextCompact,
                                                                 !isActive &&
+                                                                    local.methodInputTextInactive,
+                                                                isDisabledCredit &&
                                                                     local.methodInputTextInactive,
                                                             ]}
                                                         />
@@ -564,6 +687,14 @@ export function CartPayment({
                                 )}
                             </Text>
                         )}
+                        {toNumber(watchedValues.credit) > 0 && !creditAvailability.allowed ? (
+                            <Text style={local.pendingHint}>
+                                {t(
+                                    'PAYMENT_CustomerCreditInsufficient',
+                                    'Customer credit exceeds available credit',
+                                )}
+                            </Text>
+                        ) : null}
                     </UICard>
                     <View
                         style={[
@@ -581,7 +712,12 @@ export function CartPayment({
                                 local.ctaButton,
                                 isCompact && local.ctaButtonCompact,
                             ]}
-                            disabled={!isExactPayment || disableSubmit}
+                            disabled={
+                                !isExactPayment ||
+                                disableSubmit ||
+                                (toNumber(watchedValues.credit) > 0 &&
+                                    !creditAvailability.allowed)
+                            }
                             icon={{
                                 name: 'check',
                                 type: 'material-community',
@@ -758,6 +894,9 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             borderColor: '#2A3442',
             backgroundColor: '#121922',
         },
+        methodCardDisabled: {
+            opacity: 0.58,
+        },
         methodBody: {
             flex: 1,
             justifyContent: 'space-between',
@@ -774,6 +913,23 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         methodCaptionInactive: {
             color: '#8A98AA',
+        },
+        methodCaptionDisabled: {
+            color: '#667386',
+        },
+        methodSubcaption: {
+            color: tokens.colors.success,
+            fontSize: 11,
+            fontWeight: '700',
+            marginTop: -tokens.spacing.xs,
+            marginBottom: tokens.spacing.xs,
+        },
+        methodSubcaptionMuted: {
+            color: tokens.colors.textMuted,
+            fontSize: 11,
+            fontWeight: '700',
+            marginTop: -tokens.spacing.xs,
+            marginBottom: tokens.spacing.xs,
         },
         methodInputWrap: {
             width: '100%',

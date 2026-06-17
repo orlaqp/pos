@@ -21,11 +21,7 @@ jest.mock('@pos/shared/ui-native', () => ({
                 { onSubmit }: { onSubmit: (value: string) => void },
                 ref: React.ForwardedRef<any>
             ) => {
-                if (typeof ref === 'function') {
-                    ref({ focus: mockFocus });
-                } else if (ref) {
-                    ref.current = { focus: mockFocus };
-                }
+                React.useImperativeHandle(ref, () => ({ focus: mockFocus }));
 
                 return (
                     <Pressable testID="product-search-submit" onPress={() => onSubmit('apple')}>

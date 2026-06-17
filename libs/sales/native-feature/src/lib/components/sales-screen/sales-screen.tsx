@@ -67,7 +67,7 @@ import {
     stationActions,
     StationService,
 } from '@pos/settings/data-access';
-import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
+import { translateWithFallback } from '@pos/shared/utils';
 import { Role } from '@pos/auth/data-access';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { EACH } from '@pos/unit-of-measures/data-access';
@@ -90,7 +90,12 @@ import { SalesCurrentDealsDialog } from './sales-current-deals-dialog';
 export interface NavigationParamList {
     [key: string]: object | undefined;
     BackOffice: {
-        initialScreen?: 'Dashboard' | 'Products' | 'Categories';
+        initialScreen?:
+            | 'Dashboard'
+            | 'Catalog'
+            | 'Products'
+            | 'Categories'
+            | 'Customers';
         initialScreenParams?: {
             initialRouteName?: string;
         };

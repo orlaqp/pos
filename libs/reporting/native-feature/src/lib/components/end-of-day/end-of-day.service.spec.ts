@@ -72,6 +72,7 @@ describe('end-of-day.service', () => {
             CC: 5,
             CHECK: 0,
             EBT: 0,
+            CREDIT: 0,
         });
         expect(result.totalAmount).toBe(0);
     });
@@ -120,12 +121,60 @@ describe('end-of-day.service', () => {
         const onlyP2 = filterOrders(orders as any, { productId: 'p2' });
 
         expect(all.orders).toHaveLength(2);
-        expect(all.summary).toEqual({ CASH: 2, CC: 3, CHECK: 0, EBT: 4 });
+        expect(all.summary).toEqual({ CASH: 2, CC: 3, CHECK: 0, EBT: 4, CREDIT: 0 });
         expect(all.totalAmount).toBe(9);
         expect(onlyP2.orders).toHaveLength(1);
         expect(onlyP2.orders[0].lines[0].productId).toBe('p2');
-        expect(onlyP2.summary).toEqual({ CASH: 0, CC: 3, CHECK: 0, EBT: 4 });
+        expect(onlyP2.summary).toEqual({ CASH: 0, CC: 3, CHECK: 0, EBT: 4, CREDIT: 0 });
         expect(onlyP2.totalAmount).toBe(7);
+    });
+
+    it('includes customer credit in end-of-day payment summaries and refund rows', () => {
+        const orders: any[] = [
+            {
+                id: 'credit-order',
+                total: 25,
+                paymentInfo: {
+                    payments: [
+                        { type: 'CREDIT', amount: 15 },
+                        { type: 'CASH', amount: 10 },
+                    ],
+                },
+                lines: [
+                    {
+                        identifier: 'line-1',
+                        productId: 'p1',
+                        quantity: 1,
+                        lineTotalBeforeTax: 25,
+                        ebtPaidAmount: 0,
+                        nonEbtPaidAmount: 25,
+                    },
+                ],
+            },
+        ];
+        const refunds: any[] = [
+            {
+                id: 'credit-refund',
+                orderId: 'credit-order',
+                refundAmount: 5,
+                refundPayments: [{ type: 'CREDIT', amount: 5 }],
+            },
+        ];
+
+        const result = filterOrders(orders as any, {}, refunds as any, []);
+
+        expect(result.summary).toEqual({
+            CASH: 10,
+            CC: 0,
+            CHECK: 0,
+            EBT: 0,
+            CREDIT: 10,
+        });
+        expect(buildOrderPaymentDetailRows(orders[0], refunds as any, [])).toEqual([
+            { type: 'CREDIT', amount: 15, kind: 'payment' },
+            { type: 'CASH', amount: 10, kind: 'payment' },
+            { type: 'CREDIT', amount: 5, kind: 'refund' },
+        ]);
     });
 
     it('sorts filtered orders by ticket creation time descending', () => {
@@ -195,6 +244,7 @@ describe('end-of-day.service', () => {
             CC: 12,
             CHECK: 0,
             EBT: 0,
+            CREDIT: 0,
         });
         expect(result.totalAmount).toBe(15);
         expect(result.references).toEqual({
@@ -272,6 +322,7 @@ describe('end-of-day.service', () => {
             CASH: 24,
             CHECK: 0,
             EBT: 0,
+            CREDIT: 0,
         });
         expect(result.totalAmount).toBe(45);
     });

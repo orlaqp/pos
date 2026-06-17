@@ -11,6 +11,7 @@ import {
     PayloadAction,
 } from '@reduxjs/toolkit';
 import {
+    CartCustomer,
     CartItem,
     CartPayment,
     CartState,
@@ -62,6 +63,7 @@ type OrderEntityLike = {
     tax: number;
     total: number;
     lines?: OrderLineLike[];
+    customer?: CartCustomer;
 };
 
 const parseAppliedDiscountSummary = (
@@ -108,6 +110,7 @@ export const initialCartState: CartState = {
     approvalEvents: [],
     selected: undefined,
     activeProduct: undefined,
+    customer: undefined,
 };
 
 export const cartSlice = createSlice({
@@ -171,6 +174,7 @@ export const cartSlice = createSlice({
             state.priceOverrides = restoredDiscountState.priceOverrides;
             state.approvalEvents = state.appliedDiscountSummary?.approvalEvents || [];
             state.payments = [];
+            state.customer = o.customer || undefined;
             state.selected = initialCartState.selected;
             state.activeProduct = initialCartState.activeProduct;
         },
@@ -179,6 +183,9 @@ export const cartSlice = createSlice({
         },
         setActiveProduct: (state: CartState, action: PayloadAction<CartItem | undefined>) => {
             state.activeProduct = action.payload;
+        },
+        selectCustomer: (state: CartState, action: PayloadAction<CartCustomer | undefined>) => {
+            state.customer = action.payload;
         },
         upsert: (state: CartState, action: PayloadAction<CartItem>) => {
             const normalizedUnitOfMeasure =
@@ -372,6 +379,7 @@ export const cartSlice = createSlice({
             state.selected = undefined;
             state.activeProduct = undefined;
             state.payments = [];
+            state.customer = undefined;
         },
     },
 });

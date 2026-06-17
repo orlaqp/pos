@@ -1,9 +1,9 @@
-export type PaymentKey = 'cash' | 'check' | 'cc' | 'ebt';
+export type PaymentKey = 'cash' | 'check' | 'cc' | 'credit' | 'ebt';
 
 type NumericMap = Partial<Record<PaymentKey, number | string>>;
 
 export const toNumber = (value: unknown) => {
-    const n = +value;
+    const n = Number(value);
     return Number.isFinite(n) ? n : 0;
 };
 

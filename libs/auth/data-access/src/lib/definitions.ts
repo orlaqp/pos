@@ -11,4 +11,7 @@ export const Role = {
     Checks: 'Receive Check Payment',
     VoidOrder: 'Void Sales',
     RemoveSale: 'Remove Sales',
+    CreateCustomers: 'Create Customers',
+    ManageCustomerCredit: 'Manage Customer Credit',
+    ReceiveCustomerCreditPayments: 'Receive Customer Credit Payments',
 }

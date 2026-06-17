@@ -101,6 +101,10 @@ export const getSales = /* GraphQL */ `query GetSales($statuses: [OrderStatus!]!
       dob
       phone
       email
+      active
+      creditLimit
+      creditBalance
+      creditStatus
       createdAt
       updatedAt
       _version
@@ -732,6 +736,10 @@ export const getCustomer = /* GraphQL */ `query GetCustomer($id: ID!) {
     dob
     phone
     email
+    active
+    creditLimit
+    creditBalance
+    creditStatus
     createdAt
     updatedAt
     _version
@@ -759,6 +767,10 @@ export const listCustomers = /* GraphQL */ `query ListCustomers(
       dob
       phone
       email
+      active
+      creditLimit
+      creditBalance
+      creditStatus
       createdAt
       updatedAt
       _version
@@ -796,6 +808,10 @@ export const syncCustomers = /* GraphQL */ `query SyncCustomers(
       dob
       phone
       email
+      active
+      creditLimit
+      creditBalance
+      creditStatus
       createdAt
       updatedAt
       _version
@@ -811,6 +827,133 @@ export const syncCustomers = /* GraphQL */ `query SyncCustomers(
 ` as GeneratedQuery<
   APITypes.SyncCustomersQueryVariables,
   APITypes.SyncCustomersQuery
+>;
+export const getCustomerCreditTransaction = /* GraphQL */ `query GetCustomerCreditTransaction($id: ID!) {
+  getCustomerCreditTransaction(id: $id) {
+    id
+    tenantId
+    customerId
+    customerDisplayName
+    customerPhone
+    customerEmail
+    transactionDate
+    type
+    amount
+    balanceAfter
+    paymentMethod
+    orderId
+    orderNo
+    referenceKey
+    employeeId
+    employeeName
+    storeId
+    stationId
+    notes
+    createdAt
+    updatedAt
+    _version
+    _deleted
+    _lastChangedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetCustomerCreditTransactionQueryVariables,
+  APITypes.GetCustomerCreditTransactionQuery
+>;
+export const listCustomerCreditTransactions = /* GraphQL */ `query ListCustomerCreditTransactions(
+  $filter: ModelCustomerCreditTransactionFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listCustomerCreditTransactions(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      tenantId
+      customerId
+      customerDisplayName
+      customerPhone
+      customerEmail
+      transactionDate
+      type
+      amount
+      balanceAfter
+      paymentMethod
+      orderId
+      orderNo
+      referenceKey
+      employeeId
+      employeeName
+      storeId
+      stationId
+      notes
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListCustomerCreditTransactionsQueryVariables,
+  APITypes.ListCustomerCreditTransactionsQuery
+>;
+export const syncCustomerCreditTransactions = /* GraphQL */ `query SyncCustomerCreditTransactions(
+  $filter: ModelCustomerCreditTransactionFilterInput
+  $limit: Int
+  $nextToken: String
+  $lastSync: AWSTimestamp
+) {
+  syncCustomerCreditTransactions(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    lastSync: $lastSync
+  ) {
+    items {
+      id
+      tenantId
+      customerId
+      customerDisplayName
+      customerPhone
+      customerEmail
+      transactionDate
+      type
+      amount
+      balanceAfter
+      paymentMethod
+      orderId
+      orderNo
+      referenceKey
+      employeeId
+      employeeName
+      storeId
+      stationId
+      notes
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+    nextToken
+    startedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.SyncCustomerCreditTransactionsQueryVariables,
+  APITypes.SyncCustomerCreditTransactionsQuery
 >;
 export const getEmployee = /* GraphQL */ `query GetEmployee($id: ID!) {
   getEmployee(id: $id) {
@@ -1013,6 +1156,10 @@ export const getOrder = /* GraphQL */ `query GetOrder($id: ID!) {
       dob
       phone
       email
+      active
+      creditLimit
+      creditBalance
+      creditStatus
       createdAt
       updatedAt
       _version

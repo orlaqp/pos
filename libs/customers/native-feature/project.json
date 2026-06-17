@@ -1,0 +1,26 @@
+{
+    "name": "customers-native-feature",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/customers/native-feature/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": [
+                    "libs/customers/native-feature/**/*.{ts,tsx,js,jsx}"
+                ]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/customers/native-feature"],
+            "options": {
+                "jestConfig": "libs/customers/native-feature/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
+    }
+}

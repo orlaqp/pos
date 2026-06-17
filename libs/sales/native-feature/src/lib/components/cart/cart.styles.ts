@@ -43,6 +43,44 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         actionsWrap: {
             marginTop: tokens.spacing.md,
         },
+        customerBar: {
+            minHeight: 56,
+            borderRadius: tokens.radii.md,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            backgroundColor: tokens.colors.surface,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.sm,
+            marginBottom: tokens.spacing.sm,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: tokens.spacing.sm,
+        },
+        customerBarMain: {
+            flex: 1,
+        },
+        customerBarLabel: {
+            color: tokens.colors.textMuted,
+            fontSize: 11,
+            fontWeight: '800',
+            textTransform: 'uppercase',
+            letterSpacing: 0.7,
+        },
+        customerBarName: {
+            color: tokens.colors.textPrimary,
+            fontSize: 16,
+            fontWeight: '800',
+            marginTop: 2,
+        },
+        customerCreditMeta: {
+            alignItems: 'flex-end',
+        },
+        customerCreditText: {
+            color: tokens.colors.textSecondary,
+            fontSize: 12,
+            fontWeight: '700',
+        },
         e2eShortcutContainer: {
             alignItems: 'flex-start',
             marginBottom: tokens.spacing.xs,
