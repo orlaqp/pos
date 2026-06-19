@@ -3012,6 +3012,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "scaleBarcodePriceFormat": {
+                    "name": "scaleBarcodePriceFormat",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,

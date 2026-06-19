@@ -544,6 +544,7 @@ type GlobalSettings @model @auth(rules: [{allow: owner, ownerField: "tenantId", 
     tenantId: ID!
     enforceSalesBasedOnInventory: Boolean! @default(value: "false")
     timezone: String! @default(value: "America/New_York")
+    scaleBarcodePriceFormat: String @default(value: "LEGACY_4_DIGIT_PRICE")
 }
 
 type DiscountDefinition @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {

@@ -135,6 +135,102 @@ describe('ProductService.search barcode handling', () => {
         expect(res.quantity).toBeCloseTo(1, 5);
     });
 
+    it('defaults to legacy weighted barcode parsing when no scale profile is provided', () => {
+        const res = ProductService.search(products, {
+            text: '204015001990',
+            onlyActive: true,
+        });
+
+        expect(res.items).toHaveLength(1);
+        expect(res.items[0].id).toBe('p2');
+        expect(res.price).toBe(199);
+        expect(res.quantity).toBeCloseTo(1, 5);
+    });
+
+    it('parses migrated EAN-13 scale labels with five digit PLU and price', () => {
+        const res = ProductService.search(products, {
+            text: '0206245212998',
+            onlyActive: true,
+            scaleBarcodePriceFormat: 'EAN13_02_5_PLU_5_PRICE',
+        });
+
+        expect(res.items).toHaveLength(1);
+        expect(res.items[0].id).toBe('p4');
+        expect(res.price).toBe(21299);
+        expect(res.quantity).toBeCloseTo(21299 / 100 / 4.25, 5);
+    });
+
+    it('falls back to legacy weighted labels for migrated tenants when new profile does not resolve', () => {
+        const res = ProductService.search(products, {
+            text: '204015001990',
+            onlyActive: true,
+            scaleBarcodePriceFormat: 'EAN13_02_5_PLU_5_PRICE',
+        });
+
+        expect(res.items).toHaveLength(1);
+        expect(res.items[0].id).toBe('p2');
+        expect(res.price).toBe(199);
+    });
+
+    it('prioritizes exact full barcode over weighted label parsing', () => {
+        const res = ProductService.search(
+            [
+                ...products,
+                {
+                    id: 'full-barcode',
+                    name: 'Full Barcode Product',
+                    description: 'normal barcode',
+                    barcode: '0206245212998',
+                    sku: null,
+                    plu: null,
+                    price: 9.99,
+                    quantity: 10,
+                    unitOfMeasure: 'EA',
+                    isActive: true,
+                },
+            ] as any,
+            {
+                text: '0206245212998',
+                onlyActive: true,
+                scaleBarcodePriceFormat: 'EAN13_02_5_PLU_5_PRICE',
+            },
+        );
+
+        expect(res.items).toHaveLength(1);
+        expect(res.items[0].id).toBe('full-barcode');
+        expect(res.price).toBeUndefined();
+        expect(res.quantity).toBeUndefined();
+    });
+
+    it('prefers migrated profile when migrated and legacy candidates resolve different products', () => {
+        const res = ProductService.search(
+            [
+                ...products,
+                {
+                    id: 'legacy-conflict',
+                    name: 'Legacy Conflict',
+                    description: 'legacy candidate',
+                    barcode: null,
+                    sku: null,
+                    plu: '0624',
+                    price: 1,
+                    quantity: 10,
+                    unitOfMeasure: 'LB',
+                    isActive: true,
+                },
+            ] as any,
+            {
+                text: '0206245212998',
+                onlyActive: true,
+                scaleBarcodePriceFormat: 'EAN13_02_5_PLU_5_PRICE',
+            },
+        );
+
+        expect(res.items).toHaveLength(1);
+        expect(res.items[0].id).toBe('p4');
+        expect(res.price).toBe(21299);
+    });
+
     it('matches a weighted barcode when scanner sends prefixed mixed text', () => {
         const res = ProductService.search(products, {
             text: ']C1204015001990',

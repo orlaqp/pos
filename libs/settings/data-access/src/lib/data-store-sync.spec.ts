@@ -19,6 +19,7 @@ jest.mock('@pos/shared/amplify', () => ({
             subscribe: mockSubscribe,
         })),
     },
+    getDataStoreLifecycleState: jest.fn(() => 'started'),
 }));
 
 describe('settings data-store sync', () => {

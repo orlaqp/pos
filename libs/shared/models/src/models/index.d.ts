@@ -1426,6 +1426,7 @@ type EagerGlobalSettings = {
   readonly tenantId: string;
   readonly enforceSalesBasedOnInventory: boolean;
   readonly timezone: string;
+  readonly scaleBarcodePriceFormat?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -1435,6 +1436,7 @@ type LazyGlobalSettings = {
   readonly tenantId: string;
   readonly enforceSalesBasedOnInventory: boolean;
   readonly timezone: string;
+  readonly scaleBarcodePriceFormat?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

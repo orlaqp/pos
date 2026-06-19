@@ -1,19 +1,20 @@
 import { Product } from '@pos/shared/models';
 import { Dispatch } from '@reduxjs/toolkit';
 import { DataStore } from '@pos/shared/amplify';
+import { Alert } from 'react-native';
+import { stampTenant } from '@pos/auth/data-access';
+import { translateWithFallback } from '@pos/shared/utils';
 import { productsActions } from './slices/products.slice';
 import { ProductEntity } from './product.entity';
 
 const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
     !!item && item._deleted !== true;
-import { Alert } from 'react-native';
-import { stampTenant } from '@pos/auth/data-access';
-import { translateWithFallback } from '@pos/shared/utils';
 
 export interface ProductSearchRequest {
     text?: string;
     categoryId?: string;
     onlyActive?: boolean;
+    scaleBarcodePriceFormat?: ScaleBarcodePriceFormat | null;
 }
 
 export interface ProductSearchResponse {
@@ -23,7 +24,25 @@ export interface ProductSearchResponse {
     quantity?: number;
 }
 
+export type ScaleBarcodePriceFormat =
+    | 'LEGACY_4_DIGIT_PRICE'
+    | 'EAN13_02_5_PLU_5_PRICE';
+
+type WeightedBarcodeCandidate = {
+    format: ScaleBarcodePriceFormat;
+    plu: string;
+    totalPrice: number;
+};
+
 export class ProductService {
+    private static getScaleBarcodePriceFormat(
+        format?: ScaleBarcodePriceFormat | null
+    ): ScaleBarcodePriceFormat {
+        return format === 'EAN13_02_5_PLU_5_PRICE'
+            ? 'EAN13_02_5_PLU_5_PRICE'
+            : 'LEGACY_4_DIGIT_PRICE';
+    }
+
     private static normalizePlu(plu?: string | null) {
         if (!plu) {
             return '';
@@ -32,25 +51,66 @@ export class ProductService {
         return plu.replace(/^0+/, '') || '0';
     }
 
-    private static getWeightedBarcodeCandidates(code: string) {
-        const candidates: Array<{ plu: string; totalPrice: number }> = [];
+    private static getLegacyWeightedBarcodeCandidate(
+        code: string
+    ): WeightedBarcodeCandidate | null {
+        if (code.length < 12) {
+            return null;
+        }
+
+        return {
+            format: 'LEGACY_4_DIGIT_PRICE',
+            plu: ProductService.normalizePlu(code.substring(2, 6)),
+            totalPrice: +code.substring(7, 11),
+        };
+    }
+
+    private static getEan13FiveDigitWeightedBarcodeCandidate(
+        code: string
+    ): WeightedBarcodeCandidate | null {
+        if (code.length < 13 || !code.startsWith('02')) {
+            return null;
+        }
+
+        return {
+            format: 'EAN13_02_5_PLU_5_PRICE',
+            plu: ProductService.normalizePlu(code.substring(2, 7)),
+            totalPrice: +code.substring(7, 12),
+        };
+    }
+
+    private static getWeightedBarcodeCandidates(
+        code: string,
+        scaleBarcodePriceFormat?: ScaleBarcodePriceFormat | null
+    ): WeightedBarcodeCandidate[] {
+        const candidates: WeightedBarcodeCandidate[] = [];
 
         if (!/^\d+$/.test(code) || code.length <= 11) {
             return candidates;
         }
 
-        if (code.length >= 12) {
-            candidates.push({
-                plu: ProductService.normalizePlu(code.substring(2, 6)),
-                totalPrice: +code.substring(7, 11),
-            });
-        }
+        const profile = ProductService.getScaleBarcodePriceFormat(
+            scaleBarcodePriceFormat
+        );
+        const legacyCandidate =
+            ProductService.getLegacyWeightedBarcodeCandidate(code);
+        const ean13FiveDigitCandidate =
+            ProductService.getEan13FiveDigitWeightedBarcodeCandidate(code);
 
-        if (code.length >= 13 && code.startsWith('02')) {
-            candidates.push({
-                plu: ProductService.normalizePlu(code.substring(2, 7)),
-                totalPrice: +code.substring(7, 12),
-            });
+        if (profile === 'EAN13_02_5_PLU_5_PRICE') {
+            if (ean13FiveDigitCandidate) {
+                candidates.push(ean13FiveDigitCandidate);
+            }
+            if (legacyCandidate) {
+                candidates.push(legacyCandidate);
+            }
+        } else {
+            if (legacyCandidate) {
+                candidates.push(legacyCandidate);
+            }
+            if (ean13FiveDigitCandidate) {
+                candidates.push(ean13FiveDigitCandidate);
+            }
         }
 
         return candidates;
@@ -59,9 +119,13 @@ export class ProductService {
     private static findWeightedBarcodeMatch(
         products: ProductEntity[],
         code: string,
-        onlyActive: boolean
+        onlyActive: boolean,
+        scaleBarcodePriceFormat?: ScaleBarcodePriceFormat | null
     ): ProductSearchResponse | null {
-        const candidates = ProductService.getWeightedBarcodeCandidates(code);
+        const candidates = ProductService.getWeightedBarcodeCandidates(
+            code,
+            scaleBarcodePriceFormat
+        );
 
         for (const candidate of candidates) {
             const prod = products.find((p) => {
@@ -70,6 +134,10 @@ export class ProductService {
             });
 
             if (!prod) {
+                continue;
+            }
+
+            if (!Number.isFinite(prod.price) || prod.price <= 0) {
                 continue;
             }
 
@@ -89,13 +157,15 @@ export class ProductService {
     private static findWeightedBarcodeMatchInCandidate(
         products: ProductEntity[],
         code: string,
-        onlyActive: boolean
+        onlyActive: boolean,
+        scaleBarcodePriceFormat?: ScaleBarcodePriceFormat | null
     ): ProductSearchResponse | null {
         for (let start = 0; start <= code.length - 12; start += 1) {
             const weightedMatch = ProductService.findWeightedBarcodeMatch(
                 products,
                 code.slice(start),
-                onlyActive
+                onlyActive,
+                scaleBarcodePriceFormat
             );
 
             if (weightedMatch) {
@@ -116,11 +186,8 @@ export class ProductService {
         );
     }
 
-    private static matchesBarcodeSkuOrPlu(
-        product: ProductEntity,
-        code: string
-    ): boolean {
-        return ProductService.matchesBarcodeOrSku(product, code) || (!!product.plu && product.plu === code);
+    private static matchesPlu(product: ProductEntity, code: string): boolean {
+        return !!product.plu && product.plu === code;
     }
 
     private static findByBarcodeOrSku(
@@ -250,7 +317,12 @@ export class ProductService {
 
     static search(
         products: ProductEntity[],
-        { categoryId, text, onlyActive = false }: ProductSearchRequest,
+        {
+            categoryId,
+            text,
+            onlyActive = false,
+            scaleBarcodePriceFormat,
+        }: ProductSearchRequest,
     ): ProductSearchResponse {
         const normalizedText = (text || '').replace(/[\r\n\t]/g, '').trim();
 
@@ -274,12 +346,28 @@ export class ProductService {
         }
 
         const allNumbers = !!normalizedText.match(/^\d+$/);
+        if (allNumbers && normalizedText.length > 3) {
+            const exactCodeItems = ProductService.findByBarcodeOrSku(
+                products,
+                normalizedText,
+                onlyActive
+            );
+
+            if (exactCodeItems.length > 0) {
+                return {
+                    items: exactCodeItems,
+                    allNumbers,
+                };
+            }
+        }
+
         // ex: 206110115089
         if (allNumbers && normalizedText.length > 11) {
             const weightedMatch = ProductService.findWeightedBarcodeMatch(
                 products,
                 normalizedText,
-                onlyActive
+                onlyActive,
+                scaleBarcodePriceFormat
             );
 
             if (weightedMatch) {
@@ -290,9 +378,9 @@ export class ProductService {
         if (allNumbers && normalizedText.length > 3) {
             const items = products.filter(
                 (p) => {
-                    return onlyActive 
-                        ? p.isActive && ProductService.matchesBarcodeSkuOrPlu(p, normalizedText)
-                        : ProductService.matchesBarcodeSkuOrPlu(p, normalizedText);
+                    return onlyActive
+                        ? p.isActive && ProductService.matchesPlu(p, normalizedText)
+                        : ProductService.matchesPlu(p, normalizedText);
                 }
             );
 
@@ -315,7 +403,8 @@ export class ProductService {
             const weightedMatch = ProductService.findWeightedBarcodeMatchInCandidate(
                 products,
                 code,
-                onlyActive
+                onlyActive,
+                scaleBarcodePriceFormat
             );
 
             if (weightedMatch) {
