@@ -11,7 +11,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		1F92AA4D281EC6CC0072EFF2 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = 1F92AA4C281EC6CC0072EFF2 /* fonts */; };
-		6B4DFA0B8EA54BA2A67261E1 /* AppLifecycleNativeDiagnostics.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C147658A2494986963A13CB /* AppLifecycleNativeDiagnostics.m */; };
+		6B4DFA0B8EA54BA2A67261E1 /* MobileUi/AppLifecycleNativeDiagnostics.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C147658A2494986963A13CB /* MobileUi/AppLifecycleNativeDiagnostics.m */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		AA8C7D53C9039F21BD898276 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = CCFFC7756DF0C3D73C216B1F /* PrivacyInfo.xcprivacy */; };
 		D42BE245A8A843850B153E94 /* libPods-MobileUi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 40385188F4FA0839EC2BFB56 /* libPods-MobileUi.a */; };
@@ -25,12 +25,12 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = MobileUi/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = MobileUi/main.m; sourceTree = "<group>"; };
 		1F92AA4C281EC6CC0072EFF2 /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = fonts; sourceTree = "<group>"; };
-		2C147658A2494986963A13CB /* AppLifecycleNativeDiagnostics.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MobileUi/AppLifecycleNativeDiagnostics.m; sourceTree = "<group>"; };
+		2C147658A2494986963A13CB /* MobileUi/AppLifecycleNativeDiagnostics.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MobileUi/AppLifecycleNativeDiagnostics.m; sourceTree = "<group>"; };
 		40385188F4FA0839EC2BFB56 /* libPods-MobileUi.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MobileUi.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		485C137B9CF9BFB494C9A30B /* Pods-MobileUi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileUi.release.xcconfig"; path = "Target Support Files/Pods-MobileUi/Pods-MobileUi.release.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = MobileUi/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		954FC00181340AF919459BB4 /* Pods-MobileUi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileUi.debug.xcconfig"; path = "Target Support Files/Pods-MobileUi/Pods-MobileUi.debug.xcconfig"; sourceTree = "<group>"; };
-		9D50E31B28754B109EDDB80B /* AppLifecycleNativeDiagnostics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MobileUi/AppLifecycleNativeDiagnostics.h; sourceTree = "<group>"; };
+		9D50E31B28754B109EDDB80B /* MobileUi/AppLifecycleNativeDiagnostics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MobileUi/AppLifecycleNativeDiagnostics.h; sourceTree = "<group>"; };
 		CCFFC7756DF0C3D73C216B1F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = MobileUi/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -52,8 +52,8 @@
 			children = (
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
-				9D50E31B28754B109EDDB80B /* AppLifecycleNativeDiagnostics.h */,
-				2C147658A2494986963A13CB /* AppLifecycleNativeDiagnostics.m */,
+				9D50E31B28754B109EDDB80B /* MobileUi/AppLifecycleNativeDiagnostics.h */,
+				2C147658A2494986963A13CB /* MobileUi/AppLifecycleNativeDiagnostics.m */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
@@ -244,9 +244,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MobileUi/Pods-MobileUi-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MobileUi/Pods-MobileUi-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -261,9 +265,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MobileUi/Pods-MobileUi-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MobileUi/Pods-MobileUi-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -298,7 +306,7 @@
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
-				6B4DFA0B8EA54BA2A67261E1 /* AppLifecycleNativeDiagnostics.m in Sources */,
+				6B4DFA0B8EA54BA2A67261E1 /* MobileUi/AppLifecycleNativeDiagnostics.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,7 +319,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4HWK3UZ45Y;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = MobileUi/Info.plist;
@@ -321,7 +329,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -342,7 +350,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4HWK3UZ45Y;
 				INFOPLIST_FILE = MobileUi/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
@@ -351,7 +359,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -434,10 +442,7 @@
 					"$(inherited)",
 					"-DRCT_REMOVE_LEGACY_ARCH=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -507,10 +512,7 @@
 					"$(inherited)",
 					"-DRCT_REMOVE_LEGACY_ARCH=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;

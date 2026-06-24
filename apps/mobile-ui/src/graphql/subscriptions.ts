@@ -2276,6 +2276,7 @@ export const onCreateGlobalSettings = /* GraphQL */ `subscription OnCreateGlobal
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    scaleBarcodePriceFormat
     createdAt
     updatedAt
     _version
@@ -2297,6 +2298,7 @@ export const onUpdateGlobalSettings = /* GraphQL */ `subscription OnUpdateGlobal
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    scaleBarcodePriceFormat
     createdAt
     updatedAt
     _version
@@ -2318,6 +2320,7 @@ export const onDeleteGlobalSettings = /* GraphQL */ `subscription OnDeleteGlobal
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    scaleBarcodePriceFormat
     createdAt
     updatedAt
     _version

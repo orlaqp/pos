@@ -147,24 +147,24 @@ describe('ProductService.search barcode handling', () => {
         expect(res.quantity).toBeCloseTo(1, 5);
     });
 
-    it('parses migrated EAN-13 scale labels with five digit PLU and price', () => {
+    it('parses migrated EAN-13 scale labels with four digit PLU and five digit price', () => {
         const res = ProductService.search(products, {
-            text: '0206245212998',
+            text: '0262452129987',
             onlyActive: true,
-            scaleBarcodePriceFormat: 'EAN13_02_5_PLU_5_PRICE',
+            scaleBarcodePriceFormat: 'EAN13_02_4_PLU_5_PRICE',
         });
 
         expect(res.items).toHaveLength(1);
         expect(res.items[0].id).toBe('p4');
-        expect(res.price).toBe(21299);
-        expect(res.quantity).toBeCloseTo(21299 / 100 / 4.25, 5);
+        expect(res.price).toBe(12998);
+        expect(res.quantity).toBeCloseTo(12998 / 100 / 4.25, 5);
     });
 
     it('falls back to legacy weighted labels for migrated tenants when new profile does not resolve', () => {
         const res = ProductService.search(products, {
             text: '204015001990',
             onlyActive: true,
-            scaleBarcodePriceFormat: 'EAN13_02_5_PLU_5_PRICE',
+            scaleBarcodePriceFormat: 'EAN13_02_4_PLU_5_PRICE',
         });
 
         expect(res.items).toHaveLength(1);
@@ -180,7 +180,7 @@ describe('ProductService.search barcode handling', () => {
                     id: 'full-barcode',
                     name: 'Full Barcode Product',
                     description: 'normal barcode',
-                    barcode: '0206245212998',
+                    barcode: '0262452129987',
                     sku: null,
                     plu: null,
                     price: 9.99,
@@ -190,9 +190,9 @@ describe('ProductService.search barcode handling', () => {
                 },
             ] as any,
             {
-                text: '0206245212998',
+                text: '0262452129987',
                 onlyActive: true,
-                scaleBarcodePriceFormat: 'EAN13_02_5_PLU_5_PRICE',
+                scaleBarcodePriceFormat: 'EAN13_02_4_PLU_5_PRICE',
             },
         );
 
@@ -212,7 +212,7 @@ describe('ProductService.search barcode handling', () => {
                     description: 'legacy candidate',
                     barcode: null,
                     sku: null,
-                    plu: '0624',
+                    plu: '624',
                     price: 1,
                     quantity: 10,
                     unitOfMeasure: 'LB',
@@ -220,15 +220,15 @@ describe('ProductService.search barcode handling', () => {
                 },
             ] as any,
             {
-                text: '0206245212998',
+                text: '0262452129987',
                 onlyActive: true,
-                scaleBarcodePriceFormat: 'EAN13_02_5_PLU_5_PRICE',
+                scaleBarcodePriceFormat: 'EAN13_02_4_PLU_5_PRICE',
             },
         );
 
         expect(res.items).toHaveLength(1);
         expect(res.items[0].id).toBe('p4');
-        expect(res.price).toBe(21299);
+        expect(res.price).toBe(12998);
     });
 
     it('matches a weighted barcode when scanner sends prefixed mixed text', () => {
@@ -258,18 +258,19 @@ describe('ProductService.search barcode handling', () => {
         expect(res.quantity).toBeCloseTo(2618 / 100 / 2.99, 5);
     });
 
-    it('matches the weighed barcode regression sample 0206245212998', () => {
+    it('matches the migrated weighed barcode regression sample 0262452129987', () => {
         const res = ProductService.search(products, {
-            text: '0206245212998',
+            text: '0262452129987',
             onlyActive: true,
+            scaleBarcodePriceFormat: 'EAN13_02_4_PLU_5_PRICE',
         });
 
         expect(res.items).toHaveLength(1);
         expect(res.items[0].id).toBe('p4');
         expect(res.items[0].plu).toBe('6245');
         expect(res.allNumbers).toBe(true);
-        expect(res.price).toBe(21299);
-        expect(res.quantity).toBeCloseTo(21299 / 100 / 4.25, 5);
+        expect(res.price).toBe(12998);
+        expect(res.quantity).toBeCloseTo(12998 / 100 / 4.25, 5);
     });
 
     it('matches a product by direct plu search', () => {

@@ -2,7 +2,7 @@ import { GlobalSettings } from '@pos/shared/models';
 
 export type ScaleBarcodePriceFormat =
     | 'LEGACY_4_DIGIT_PRICE'
-    | 'EAN13_02_5_PLU_5_PRICE';
+    | 'EAN13_02_4_PLU_5_PRICE';
 
 export type GlobalSettingsDTO = {
     id: string;
@@ -16,8 +16,9 @@ export type GlobalSettingsDTO = {
 const normalizeScaleBarcodePriceFormat = (
     value?: string | null
 ): ScaleBarcodePriceFormat =>
+    value === 'EAN13_02_4_PLU_5_PRICE' ||
     value === 'EAN13_02_5_PLU_5_PRICE'
-        ? 'EAN13_02_5_PLU_5_PRICE'
+        ? 'EAN13_02_4_PLU_5_PRICE'
         : 'LEGACY_4_DIGIT_PRICE';
 
 export class GlobalSettingsEntityMapper {

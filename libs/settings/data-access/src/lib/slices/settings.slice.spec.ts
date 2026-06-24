@@ -88,11 +88,11 @@ describe('settings reducer', () => {
         taxValue: 0,
         creditCardSurchargePercent: 0,
         timezone: 'America/New_York',
-        scaleBarcodePriceFormat: 'EAN13_02_5_PLU_5_PRICE',
+        scaleBarcodePriceFormat: 'EAN13_02_4_PLU_5_PRICE',
       } as any)
     ).toEqual(
       expect.objectContaining({
-        scaleBarcodePriceFormat: 'EAN13_02_5_PLU_5_PRICE',
+        scaleBarcodePriceFormat: 'EAN13_02_4_PLU_5_PRICE',
       })
     );
   });

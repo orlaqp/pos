@@ -7,11 +7,13 @@ import {
     updatePayFromSalesScreen,
     translate,
 } from '@pos/settings/data-access';
+import { Role } from '@pos/auth/data-access';
+import { selectLoginEmployee } from '@pos/employees/data-access';
 import { UICard, UIScreen, UIStack } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, Switch, useTheme } from '@rneui/themed';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@pos/store';
@@ -19,14 +21,27 @@ import { useAppDispatch } from '@pos/store';
 /* eslint-disable-next-line */
 export interface SettingsProps {}
 
+const LEGACY_SCALE_PRICE_FORMAT = 'LEGACY_4_DIGIT_PRICE';
+const EXPANDED_SCALE_PRICE_FORMAT = 'EAN13_02_4_PLU_5_PRICE';
+type ScaleLabelFormat =
+    | typeof LEGACY_SCALE_PRICE_FORMAT
+    | typeof EXPANDED_SCALE_PRICE_FORMAT;
+
 export function Settings(_props: SettingsProps) {
     const theme = useTheme();
     const tokens = useDesignTokens();
     const styles = useStyles(tokens);
     const dispatch = useAppDispatch();
     const settings = useSelector(selectSettings);
+    const employee = useSelector(selectLoginEmployee);
     const appVersion = DeviceInfo.getVersion();
     const buildNumber = DeviceInfo.getBuildNumber();
+    const canManageScaleFormat = !!employee?.roles?.includes(Role.Admin);
+    const scaleBarcodePriceFormat =
+        settings.globalSettings?.scaleBarcodePriceFormat ===
+        EXPANDED_SCALE_PRICE_FORMAT
+            ? EXPANDED_SCALE_PRICE_FORMAT
+            : LEGACY_SCALE_PRICE_FORMAT;
 
     const updateThemeMode = (dark: boolean) => {
         theme.updateTheme({
@@ -35,12 +50,51 @@ export function Settings(_props: SettingsProps) {
         dispatch(settingsActions.set(dark));
     };
 
-    const setGlobalSettings = (enforce: boolean) => {
+    const setEnforceInventory = (enforce: boolean) => {
         if (!settings.globalSettings) return;
         dispatch(updateGlobalSettings({
             ...settings.globalSettings,
             enforceSalesBasedOnInventory: enforce
         }));
+    };
+
+    const setScaleBarcodePriceFormat = (format: ScaleLabelFormat) => {
+        if (!settings.globalSettings) return;
+        dispatch(
+            updateGlobalSettings({
+                ...settings.globalSettings,
+                scaleBarcodePriceFormat: format,
+            })
+        );
+    };
+
+    const confirmExpandedScaleFormat = () => {
+        Alert.alert(
+            translate('SETTINGS_ScaleLabelConfirmTitle'),
+            translate('SETTINGS_ScaleLabelConfirmMessage'),
+            [
+                {
+                    text: translate('SETTINGS_Cancel'),
+                    style: 'cancel',
+                },
+                {
+                    text: translate('SETTINGS_Confirm'),
+                    onPress: () =>
+                        setScaleBarcodePriceFormat(EXPANDED_SCALE_PRICE_FORMAT),
+                },
+            ]
+        );
+    };
+
+    const onScaleFormatPress = (format: ScaleLabelFormat) => {
+        if (format === scaleBarcodePriceFormat) return;
+
+        if (format === EXPANDED_SCALE_PRICE_FORMAT) {
+            confirmExpandedScaleFormat();
+            return;
+        }
+
+        setScaleBarcodePriceFormat(LEGACY_SCALE_PRICE_FORMAT);
     };
 
     const setPayFromSales = (enabled: boolean) => {
@@ -111,7 +165,7 @@ export function Settings(_props: SettingsProps) {
                                                 ?.enforceSalesBasedOnInventory
                                         }
                                         onValueChange={(value) =>
-                                            setGlobalSettings(value)
+                                            setEnforceInventory(value)
                                         }
                                     />
                                 </UIStack>
@@ -135,6 +189,54 @@ export function Settings(_props: SettingsProps) {
                                         }
                                     />
                                 </UIStack>
+
+                                {canManageScaleFormat ? (
+                                    <UIStack spacing="sm">
+                                        <Text style={styles.settingLabel}>
+                                            {translate(
+                                                'SETTINGS_ScaleLabelFormat'
+                                            )}
+                                        </Text>
+                                        <UIStack direction="horizontal" spacing="sm">
+                                            <Button
+                                                testID="settings-scale-format-legacy-button"
+                                                title={translate(
+                                                    'SETTINGS_ScaleLabelLegacy'
+                                                )}
+                                                type={
+                                                    scaleBarcodePriceFormat ===
+                                                    LEGACY_SCALE_PRICE_FORMAT
+                                                        ? 'solid'
+                                                        : 'outline'
+                                                }
+                                                buttonStyle={styles.scaleButton}
+                                                onPress={() =>
+                                                    onScaleFormatPress(
+                                                        LEGACY_SCALE_PRICE_FORMAT
+                                                    )
+                                                }
+                                            />
+                                            <Button
+                                                testID="settings-scale-format-expanded-button"
+                                                title={translate(
+                                                    'SETTINGS_ScaleLabelExpanded'
+                                                )}
+                                                type={
+                                                    scaleBarcodePriceFormat ===
+                                                    EXPANDED_SCALE_PRICE_FORMAT
+                                                        ? 'solid'
+                                                        : 'outline'
+                                                }
+                                                buttonStyle={styles.scaleButton}
+                                                onPress={() =>
+                                                    onScaleFormatPress(
+                                                        EXPANDED_SCALE_PRICE_FORMAT
+                                                    )
+                                                }
+                                            />
+                                        </UIStack>
+                                    </UIStack>
+                                ) : null}
 
                                 <UIStack spacing="sm">
                                     <Text style={styles.settingLabel}>
@@ -307,6 +409,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         languageButton: {
             borderRadius: tokens.radii.lg,
             minWidth: 120,
+        },
+        scaleButton: {
+            borderRadius: tokens.radii.lg,
+            minWidth: 150,
         },
     });
 

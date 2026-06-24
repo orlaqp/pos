@@ -2499,6 +2499,7 @@ export const getGlobalSettings = /* GraphQL */ `query GetGlobalSettings($id: ID!
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    scaleBarcodePriceFormat
     createdAt
     updatedAt
     _version
@@ -2522,6 +2523,7 @@ export const listGlobalSettings = /* GraphQL */ `query ListGlobalSettings(
       tenantId
       enforceSalesBasedOnInventory
       timezone
+      scaleBarcodePriceFormat
       createdAt
       updatedAt
       _version
@@ -2555,6 +2557,7 @@ export const syncGlobalSettings = /* GraphQL */ `query SyncGlobalSettings(
       tenantId
       enforceSalesBasedOnInventory
       timezone
+      scaleBarcodePriceFormat
       createdAt
       updatedAt
       _version

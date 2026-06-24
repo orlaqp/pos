@@ -2267,6 +2267,7 @@ export const createGlobalSettings = /* GraphQL */ `mutation CreateGlobalSettings
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    scaleBarcodePriceFormat
     createdAt
     updatedAt
     _version
@@ -2288,6 +2289,7 @@ export const updateGlobalSettings = /* GraphQL */ `mutation UpdateGlobalSettings
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    scaleBarcodePriceFormat
     createdAt
     updatedAt
     _version
@@ -2309,6 +2311,7 @@ export const deleteGlobalSettings = /* GraphQL */ `mutation DeleteGlobalSettings
     tenantId
     enforceSalesBasedOnInventory
     timezone
+    scaleBarcodePriceFormat
     createdAt
     updatedAt
     _version

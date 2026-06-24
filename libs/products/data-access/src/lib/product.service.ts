@@ -26,7 +26,7 @@ export interface ProductSearchResponse {
 
 export type ScaleBarcodePriceFormat =
     | 'LEGACY_4_DIGIT_PRICE'
-    | 'EAN13_02_5_PLU_5_PRICE';
+    | 'EAN13_02_4_PLU_5_PRICE';
 
 type WeightedBarcodeCandidate = {
     format: ScaleBarcodePriceFormat;
@@ -38,8 +38,9 @@ export class ProductService {
     private static getScaleBarcodePriceFormat(
         format?: ScaleBarcodePriceFormat | null
     ): ScaleBarcodePriceFormat {
-        return format === 'EAN13_02_5_PLU_5_PRICE'
-            ? 'EAN13_02_5_PLU_5_PRICE'
+        return (format as string) === 'EAN13_02_4_PLU_5_PRICE' ||
+            (format as string) === 'EAN13_02_5_PLU_5_PRICE'
+            ? 'EAN13_02_4_PLU_5_PRICE'
             : 'LEGACY_4_DIGIT_PRICE';
     }
 
@@ -65,7 +66,7 @@ export class ProductService {
         };
     }
 
-    private static getEan13FiveDigitWeightedBarcodeCandidate(
+    private static getEan13FourDigitPluFiveDigitPriceWeightedBarcodeCandidate(
         code: string
     ): WeightedBarcodeCandidate | null {
         if (code.length < 13 || !code.startsWith('02')) {
@@ -73,8 +74,8 @@ export class ProductService {
         }
 
         return {
-            format: 'EAN13_02_5_PLU_5_PRICE',
-            plu: ProductService.normalizePlu(code.substring(2, 7)),
+            format: 'EAN13_02_4_PLU_5_PRICE',
+            plu: ProductService.normalizePlu(code.substring(2, 6)),
             totalPrice: +code.substring(7, 12),
         };
     }
@@ -94,12 +95,14 @@ export class ProductService {
         );
         const legacyCandidate =
             ProductService.getLegacyWeightedBarcodeCandidate(code);
-        const ean13FiveDigitCandidate =
-            ProductService.getEan13FiveDigitWeightedBarcodeCandidate(code);
+        const ean13FourPluFivePriceCandidate =
+            ProductService.getEan13FourDigitPluFiveDigitPriceWeightedBarcodeCandidate(
+                code
+            );
 
-        if (profile === 'EAN13_02_5_PLU_5_PRICE') {
-            if (ean13FiveDigitCandidate) {
-                candidates.push(ean13FiveDigitCandidate);
+        if (profile === 'EAN13_02_4_PLU_5_PRICE') {
+            if (ean13FourPluFivePriceCandidate) {
+                candidates.push(ean13FourPluFivePriceCandidate);
             }
             if (legacyCandidate) {
                 candidates.push(legacyCandidate);
@@ -108,8 +111,8 @@ export class ProductService {
             if (legacyCandidate) {
                 candidates.push(legacyCandidate);
             }
-            if (ean13FiveDigitCandidate) {
-                candidates.push(ean13FiveDigitCandidate);
+            if (ean13FourPluFivePriceCandidate) {
+                candidates.push(ean13FourPluFivePriceCandidate);
             }
         }
 
