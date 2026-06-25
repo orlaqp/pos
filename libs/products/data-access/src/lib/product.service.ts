@@ -10,6 +10,19 @@ import { ProductEntity } from './product.entity';
 const isNotDeleted = (item: { _deleted?: boolean | null } | null | undefined) =>
     !!item && item._deleted !== true;
 
+type TenantIdProvider = () => string | null | undefined;
+
+let tenantIdProvider: TenantIdProvider = () => undefined;
+
+export const setProductTenantProvider = (provider: TenantIdProvider) => {
+    tenantIdProvider = provider;
+};
+
+const stampProductTenant = <T extends Record<string, unknown>>(value: T) => {
+    const tenantId = tenantIdProvider();
+    return tenantId ? { ...value, tenantId } : stampTenant(value);
+};
+
 export interface ProductSearchRequest {
     text?: string;
     categoryId?: string;
@@ -241,9 +254,10 @@ export class ProductService {
                 quantity: 0,
                 isEBTEligible: product.isEBTEligible ?? false,
                 discountable: product.discountable ?? true,
+                taxable: product.taxable ?? false,
             };
 
-            const entity = new Product(stampTenant(normalizedProduct) as never);
+            const entity = new Product(stampProductTenant(normalizedProduct) as never);
             const res = await DataStore.save(entity);
 
             product.id = res.id;
@@ -284,6 +298,7 @@ export class ProductService {
                 updated.isActive = product.isActive;
                 updated.isEBTEligible = product.isEBTEligible ?? false;
                 updated.discountable = product.discountable ?? true;
+                updated.taxable = product.taxable ?? false;
                 updated.minAllowedPrice = product.minAllowedPrice;
                 updated.maxManualDiscountPercent = product.maxManualDiscountPercent;
                 updated.maxManualDiscountAmount = product.maxManualDiscountAmount;

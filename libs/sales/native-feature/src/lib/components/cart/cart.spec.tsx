@@ -12,6 +12,7 @@ let mockCartState: any;
 let mockEmployeeState: any;
 let mockStoreState: any;
 let mockStationState: any;
+let mockGlobalSettingsState: any;
 
 jest.mock('react-redux', () => ({
     useDispatch: () => mockDispatch,
@@ -21,6 +22,9 @@ jest.mock('react-redux', () => ({
             employee: mockEmployeeState,
             store: mockStoreState,
             station: mockStationState,
+            settings: {
+                globalSettings: mockGlobalSettingsState,
+            },
         }),
 }));
 
@@ -82,6 +86,7 @@ jest.mock('@pos/store-info/data-access', () => ({
 
 jest.mock('@pos/settings/data-access', () => ({
     selectStation: (state: any) => state.station,
+    getGlobalSettings: (state: any) => state.settings.globalSettings,
 }));
 
 jest.mock('@pos/auth/data-access', () => ({
@@ -347,6 +352,7 @@ describe('Cart', () => {
         };
         mockStoreState = { id: 'store-1', timezone: 'America/New_York' };
         mockStationState = { stationNumber: '25' };
+        mockGlobalSettingsState = { taxValue: 8.25 };
         DiscountService.listDefinitions.mockResolvedValue([]);
     });
 
@@ -387,6 +393,7 @@ describe('Cart', () => {
                         storeId: 'store-1',
                         timezone: 'America/New_York',
                         stationId: '25',
+                        taxRate: 0.0825,
                     }),
                 }),
             ),

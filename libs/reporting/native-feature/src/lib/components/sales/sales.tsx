@@ -41,6 +41,19 @@ export const buildSalesRows = (orders: Order[], refunds: OrderRefund[] = []) => 
                 orderDate: moment(order.orderDate).format('YYYY-MM-DD hh:MM'),
                 createdAt: order.createdAt || order.orderDate || order.updatedAt,
                 employee: order.createdBy?.name || order.employeeName,
+                tax: roundCurrency(
+                    Number(order.tax || 0) *
+                        (Number(order.total || 0) > 0
+                            ? Math.max(
+                                  0,
+                                  Math.min(
+                                      1,
+                                      (Number(order.total || 0) - refundedAmount) /
+                                          Number(order.total || 0)
+                                  )
+                              )
+                            : 0)
+                ),
                 amount: roundCurrency(
                     Math.max(0, Number(order.total || 0) - refundedAmount)
                 ),
@@ -56,6 +69,7 @@ export function Sales(_props: SalesProps) {
     const headers: ReportHeader[] = [
         { label: t('REPORT_Header_Number', 'Number'), field: 'orderNo', width: 3 },
         { label: t('REPORT_Header_Employee', 'Employee'), field: 'employee', width: 3 },
+        { label: t('REPORT_Header_Tax', 'Tax'), field: 'tax', width: 1, format: 'money', align: 'right', sum: true },
         { label: t('REPORT_Header_Amount', 'Amount'), field: 'amount', width: 1, format: 'money', align: 'right', sum: true },
     ];
 

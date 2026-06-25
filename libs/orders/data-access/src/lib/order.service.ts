@@ -198,6 +198,9 @@ const normalizePaymentType = (type: string | null | undefined) => {
     return PAYMENT_TYPES.has(normalized) ? normalized : null;
 };
 
+const getCartTaxTotal = (cart: Pick<CartState, 'footer'>) =>
+    roundMoney(Number(cart.footer.tax || 0));
+
 const sumPayments = (
     payments: Array<{ amount?: number | null }> | null | undefined
 ) =>
@@ -540,11 +543,11 @@ export class OrderService {
             status: 'OPEN',
             baseSubtotal: request.order.footer.baseSubtotal,
             subtotal: request.order.footer.subtotal,
-            tax: 0,
+            tax: getCartTaxTotal(request.order),
             total: request.order.footer.total,
             currentSubtotal: request.order.footer.baseSubtotal,
             currentDiscountTotal: request.order.footer.discount,
-            currentTax: 0,
+            currentTax: getCartTaxTotal(request.order),
             currentTotal: request.order.footer.total,
             lineDiscountTotal: request.order.footer.lineDiscountTotal,
             orderDiscountTotal: request.order.footer.orderDiscountTotal,
@@ -658,11 +661,11 @@ export class OrderService {
             status: 'PAID',
             baseSubtotal: orderForPersistence.footer.baseSubtotal,
             subtotal: orderForPersistence.footer.subtotal,
-            tax: 0,
+            tax: getCartTaxTotal(orderForPersistence),
             total: orderForPersistence.footer.total,
             currentSubtotal: orderForPersistence.footer.baseSubtotal,
             currentDiscountTotal: orderForPersistence.footer.discount,
-            currentTax: 0,
+            currentTax: getCartTaxTotal(orderForPersistence),
             currentTotal: orderForPersistence.footer.total,
             lineDiscountTotal: orderForPersistence.footer.lineDiscountTotal,
             orderDiscountTotal: orderForPersistence.footer.orderDiscountTotal,
@@ -765,11 +768,11 @@ export class OrderService {
             o.tenantId = order.tenantId || requireCurrentTenantId();
             o.baseSubtotal = orderForPersistence.footer.baseSubtotal;
             o.subtotal = orderForPersistence.footer.subtotal;
-            o.tax = 0;
+            o.tax = getCartTaxTotal(orderForPersistence);
             o.total = orderForPersistence.footer.total;
             o.currentSubtotal = orderForPersistence.footer.baseSubtotal;
             o.currentDiscountTotal = orderForPersistence.footer.discount;
-            o.currentTax = 0;
+            o.currentTax = getCartTaxTotal(orderForPersistence);
             o.currentTotal = orderForPersistence.footer.total;
             o.lineDiscountTotal = orderForPersistence.footer.lineDiscountTotal;
             o.orderDiscountTotal = orderForPersistence.footer.orderDiscountTotal;
@@ -2258,6 +2261,7 @@ export class OrderService {
                 unitOfMeasure: item.product.unitOfMeasure,
                 categoryId: item.product.categoryId,
                 discountable: item.product.discountable ?? true,
+                taxable: item.product.taxable ?? false,
                 minAllowedPrice: item.product.minAllowedPrice,
                 maxManualDiscountPercent: item.product.maxManualDiscountPercent,
                 maxManualDiscountAmount: item.product.maxManualDiscountAmount,
@@ -2266,6 +2270,7 @@ export class OrderService {
             priceOverrides: cart.priceOverrides,
             promoCodes: cart.promoCodes,
             approvalEvents: cart.approvalEvents,
+            taxRate: cart.pricingContext?.taxRate ?? 0,
             pricingSource: order.pricingSource,
         });
     }
@@ -2370,11 +2375,11 @@ export class OrderService {
         return Order.copyOf(existing, (o) => {
             o.baseSubtotal = req.order.footer.baseSubtotal;
             o.subtotal = req.order.footer.subtotal;
-            o.tax = 0;
+            o.tax = getCartTaxTotal(req.order);
             o.total = req.order.footer.total;
             o.currentSubtotal = req.order.footer.baseSubtotal;
             o.currentDiscountTotal = req.order.footer.discount;
-            o.currentTax = 0;
+            o.currentTax = getCartTaxTotal(req.order);
             o.currentTotal = req.order.footer.total;
             o.lineDiscountTotal = req.order.footer.lineDiscountTotal;
             o.orderDiscountTotal = req.order.footer.orderDiscountTotal;
@@ -2648,11 +2653,12 @@ function buildOrderLines(
             (discount) => discount.applicationType === 'PRICE_OVERRIDE'
         );
         const lineTotal = lineSummary?.lineTotalBeforeTax ?? getLineTotal(i.quantity, i.product.price);
+        const lineTax = lineSummary?.tax ?? 0;
         const allocation = allocations?.[identifier];
         const lineInit: ConstructorParameters<typeof OrderLine>[0] = {
             identifier,
             quantity: i.quantity,
-            tax: 0,
+            tax: lineTax,
             price: basePrice,
             basePrice,
             overridePrice: overrideApplication?.value ?? null,
@@ -2662,7 +2668,7 @@ function buildOrderLines(
             lineDiscountTotal: lineSummary?.lineDiscountTotal ?? 0,
             allocatedOrderDiscountTotal: lineSummary?.allocatedOrderDiscountTotal ?? 0,
             lineTotalBeforeTax: lineTotal,
-            lineTotalAfterTax: lineTotal,
+            lineTotalAfterTax: lineSummary?.lineTotalAfterTax ?? lineTotal + lineTax,
             appliedDiscounts: lineDiscounts.length
                 ? lineDiscounts.map(toAppliedDiscountDetailSnapshot)
                 : undefined,
@@ -2673,6 +2679,7 @@ function buildOrderLines(
             productName: i.product.name,
             unitOfMeasure: i.product.unitOfMeasure,
             discountable: i.product.discountable ?? true,
+            taxable: i.product.taxable ?? lineSummary?.taxable ?? false,
             minAllowedPrice: i.product.minAllowedPrice ?? null,
             maxManualDiscountPercent: i.product.maxManualDiscountPercent ?? null,
             maxManualDiscountAmount: i.product.maxManualDiscountAmount ?? null,

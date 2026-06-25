@@ -215,6 +215,28 @@ describe('OrderEntityMapper', () => {
         expect(line.appliedDiscounts).toEqual([]);
     });
 
+    it('preserves line tax and taxable snapshots', () => {
+        const line = OrderEntityMapper.fromLine({
+            identifier: 'line-tax',
+            productId: 'p-tax',
+            barcode: null,
+            sku: null,
+            productName: 'Coffee',
+            quantity: 2,
+            price: 10,
+            basePrice: 10,
+            tax: 1.5,
+            taxable: true,
+            lineTotalBeforeTax: 15,
+            lineTotalAfterTax: 16.5,
+            unitOfMeasure: 'EA',
+        });
+
+        expect(line.tax).toBe(1.5);
+        expect(line.taxable).toBe(true);
+        expect(line.lineTotalAfterTax).toBe(16.5);
+    });
+
     it('rebuilds refunded cart even when incoming cart header is missing', async () => {
         const refundedCart = await OrderEntityMapper.fromRefundedCart(
             {
@@ -236,6 +258,7 @@ describe('OrderEntityMapper', () => {
                             barcode: null,
                             sku: null,
                             isEBTEligible: true,
+                            taxable: true,
                         },
                     },
                 ],
@@ -279,6 +302,7 @@ describe('OrderEntityMapper', () => {
                             barcode: null,
                             sku: null,
                             isEBTEligible: true,
+                            taxable: true,
                         },
                     },
                 ],
@@ -288,9 +312,9 @@ describe('OrderEntityMapper', () => {
                     lineDiscountTotal: 2,
                     orderDiscountTotal: 3,
                     subtotal: 15,
-                    tax: 0,
+                    tax: 1.5,
                     savingsTotal: 5,
-                    total: 15,
+                    total: 16.5,
                     pricingSource: 'OFFLINE_LOCAL',
                     reconciliationStatus: 'PENDING',
                 },
@@ -358,9 +382,11 @@ describe('OrderEntityMapper', () => {
             orderDiscountTotal: 1.5,
             discount: 2.5,
             subtotal: 7.5,
-            total: 7.5,
+            tax: 0.75,
+            total: 8.25,
             savingsTotal: 2.5,
         });
+        expect(refundedCart.items[0].product.taxable).toBe(true);
         expect(refundedCart.promoCodes).toEqual([{ code: 'SAVE5' }]);
         expect(refundedCart.manualDiscounts).toEqual([
             expect.objectContaining({

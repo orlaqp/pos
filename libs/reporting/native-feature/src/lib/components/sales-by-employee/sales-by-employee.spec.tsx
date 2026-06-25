@@ -10,8 +10,8 @@ describe('SalesByEmployee', () => {
         } as any);
 
         expect(rows).toEqual([
-            { employee: 'Grace', amount: 25 },
-            { employee: 'Ada', amount: 10 },
+            { employee: 'Grace', amount: 25, tax: 0 },
+            { employee: 'Ada', amount: 10, tax: 0 },
         ]);
     });
 });

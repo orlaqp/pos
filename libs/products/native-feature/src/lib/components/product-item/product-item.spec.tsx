@@ -2,17 +2,16 @@
 import React from 'react';
 import { Alert, TouchableOpacity } from 'react-native';
 import { render } from '@testing-library/react-native';
-
-jest.mock('@pos/shared/utils', () => ({
-    translateWithFallback: (_key: string, fallback: string) => fallback,
-}));
-
 import ProductItem, {
     deleteProductById,
     formatProductTitle,
     getProductCodeLines,
     hasProductCodes,
 } from './product-item';
+
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
 
 describe('ProductItem', () => {
     beforeEach(() => {

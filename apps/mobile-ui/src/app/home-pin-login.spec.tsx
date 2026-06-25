@@ -3,6 +3,10 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 import { HomePinLogin } from './home-pin-login';
 
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 jest.mock('@rneui/themed', () => ({
     Text: ({ children }: { children: React.ReactNode }) => {
         const { Text } = require('react-native');

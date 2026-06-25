@@ -27,6 +27,7 @@ export class GlobalSettingsService {
                         newSettings.scaleBarcodePriceFormat ||
                         settings.scaleBarcodePriceFormat ||
                         'LEGACY_4_DIGIT_PRICE';
+                    updated.taxValue = Number.isFinite(newSettings.taxValue) ? newSettings.taxValue : 0;
                     updated.timezone = newSettings.timezone || settings.timezone || 'America/New_York';
                 })
             );
@@ -35,6 +36,7 @@ export class GlobalSettingsService {
             enforceSalesBasedOnInventory: newSettings.enforceSalesBasedOnInventory || false,
             scaleBarcodePriceFormat:
                 newSettings.scaleBarcodePriceFormat || 'LEGACY_4_DIGIT_PRICE',
+            taxValue: Number.isFinite(newSettings.taxValue) ? newSettings.taxValue : 0,
             timezone: newSettings.timezone || 'America/New_York',
         }) as never));
     }

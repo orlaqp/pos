@@ -1,6 +1,18 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { InteractionManager } from 'react-native';
+import EndOfDay, {
+    buildRefundedLineAmountsForOrder,
+    buildEndOfDayWidgets,
+    buildEndOfDayFilterConfigs,
+    buildDayRange,
+    createDateUpdater,
+    formatPaymentAmount,
+    getPaymentMethodsTotal,
+    loadEndOfDayDataForRange,
+    loadPaidSalesForRange,
+} from './end-of-day';
+import { buildEndOfDayReferenceSummary, filterOrders } from './end-of-day.service';
 
 jest.spyOn(InteractionManager, 'runAfterInteractions').mockImplementation((task: any) => {
     task?.();
@@ -33,19 +45,6 @@ jest.mock('@pos/shared/ui-native', () => {
         ),
     };
 });
-
-import EndOfDay, {
-    buildRefundedLineAmountsForOrder,
-    buildEndOfDayWidgets,
-    buildEndOfDayFilterConfigs,
-    buildDayRange,
-    createDateUpdater,
-    formatPaymentAmount,
-    getPaymentMethodsTotal,
-    loadEndOfDayDataForRange,
-    loadPaidSalesForRange,
-} from './end-of-day';
-import { buildEndOfDayReferenceSummary, filterOrders } from './end-of-day.service';
 
 describe('EndOfDay', () => {
     it('should render successfully', () => {
@@ -115,6 +114,7 @@ describe('EndOfDay', () => {
             18.5,
             2.5,
             1.5,
+            1.25,
             17,
             { CC: 10, CASH: 5, CHECK: 2, EBT: 0 },
             '#111'
@@ -125,6 +125,7 @@ describe('EndOfDay', () => {
             { text: 'Gross Sales', value: '$18.5', backgroundColor: '#111', flex: 1 },
             { text: 'Discounts', value: '$2.5', backgroundColor: '#5d4037', flex: 1 },
             { text: 'Refunds', value: '$1.5', backgroundColor: '#8e24aa', flex: 1 },
+            { text: 'Tax', value: '$1.25', backgroundColor: '#00796b', flex: 1 },
             { text: 'Collected Sales', value: '$17', backgroundColor: '#111', flex: 1 },
             { text: 'Credit Card', value: '$10', backgroundColor: '#1976d2', flex: 1 },
             { text: 'Cash', value: '$5', backgroundColor: '#e91e63', flex: 1 },
@@ -210,7 +211,7 @@ describe('EndOfDay', () => {
             buildEndOfDayReferenceSummary(
                 [
                     { id: 'o-1', total: 20, discountTotal: 3 },
-                    { id: 'o-2', total: 10, discountTotal: 1 },
+                    { id: 'o-2', total: 10, discountTotal: 1, tax: 1 },
                 ] as any,
                 [
                     { id: 'r-1', orderId: 'o-1', refundAmount: 2.5 },
@@ -223,7 +224,30 @@ describe('EndOfDay', () => {
             grossSales: 34,
             discounts: 4,
             refunds: 2.5,
+            tax: 1,
             netSales: 27.5,
+        });
+    });
+
+    it('nets end-of-day tax proportionally for partially refunded orders', () => {
+        expect(
+            buildEndOfDayReferenceSummary(
+                [
+                    { id: 'o-1', total: 22, discountTotal: 0, tax: 2 },
+                    { id: 'o-2', total: 11, discountTotal: 0, tax: 1 },
+                ] as any,
+                [
+                    { id: 'r-1', orderId: 'o-1', refundAmount: 11 },
+                ] as any,
+                [],
+                {}
+            )
+        ).toEqual({
+            grossSales: 33,
+            discounts: 0,
+            refunds: 11,
+            tax: 2,
+            netSales: 22,
         });
     });
 
@@ -284,6 +308,7 @@ describe('EndOfDay', () => {
             grossSales: 29,
             discounts: 4,
             refunds: 2,
+            tax: 0,
             netSales: 23,
         });
         expect(result.totalAmount).toBe(23);

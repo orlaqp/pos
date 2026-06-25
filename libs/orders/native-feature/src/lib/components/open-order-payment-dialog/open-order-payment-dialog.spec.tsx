@@ -91,6 +91,10 @@ jest.mock('@pos/theme/native/design-tokens', () => ({
     }),
 }));
 
+jest.mock('@pos/shared/utils', () => ({
+    translateWithFallback: (_key: string, fallback: string) => fallback,
+}));
+
 jest.mock('@rneui/themed', () => ({
     Dialog: ({
         children,

@@ -587,6 +587,7 @@ export const createOrder = /* GraphQL */ `mutation CreateOrder(
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -703,6 +704,7 @@ export const updateOrder = /* GraphQL */ `mutation UpdateOrder(
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -819,6 +821,7 @@ export const deleteOrder = /* GraphQL */ `mutation DeleteOrder(
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1297,6 +1300,7 @@ export const createProduct = /* GraphQL */ `mutation CreateProduct(
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1367,6 +1371,7 @@ export const updateProduct = /* GraphQL */ `mutation UpdateProduct(
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1437,6 +1442,7 @@ export const deleteProduct = /* GraphQL */ `mutation DeleteProduct(
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1549,6 +1555,7 @@ export const createInventoryChanges = /* GraphQL */ `mutation CreateInventoryCha
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1606,6 +1613,7 @@ export const updateInventoryChanges = /* GraphQL */ `mutation UpdateInventoryCha
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1663,6 +1671,7 @@ export const deleteInventoryChanges = /* GraphQL */ `mutation DeleteInventoryCha
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -2268,6 +2277,7 @@ export const createGlobalSettings = /* GraphQL */ `mutation CreateGlobalSettings
     enforceSalesBasedOnInventory
     timezone
     scaleBarcodePriceFormat
+    taxValue
     createdAt
     updatedAt
     _version
@@ -2290,6 +2300,7 @@ export const updateGlobalSettings = /* GraphQL */ `mutation UpdateGlobalSettings
     enforceSalesBasedOnInventory
     timezone
     scaleBarcodePriceFormat
+    taxValue
     createdAt
     updatedAt
     _version
@@ -2312,6 +2323,7 @@ export const deleteGlobalSettings = /* GraphQL */ `mutation DeleteGlobalSettings
     enforceSalesBasedOnInventory
     timezone
     scaleBarcodePriceFormat
+    taxValue
     createdAt
     updatedAt
     _version

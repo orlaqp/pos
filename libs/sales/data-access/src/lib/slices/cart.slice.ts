@@ -36,6 +36,7 @@ type OrderLineLike = {
     unitOfMeasure: string;
     categoryId?: string | null;
     discountable?: boolean | null;
+    taxable?: boolean | null;
     minAllowedPrice?: number | null;
     maxManualDiscountPercent?: number | null;
     maxManualDiscountAmount?: number | null;
@@ -151,6 +152,7 @@ export const cartSlice = createSlice({
                     categoryId: i?.categoryId,
                     isEBTEligible: i?.isEBTEligible ?? false,
                     discountable: i?.discountable ?? true,
+                    taxable: i?.taxable ?? false,
                     minAllowedPrice: i?.minAllowedPrice,
                     maxManualDiscountPercent: i?.maxManualDiscountPercent,
                     maxManualDiscountAmount: i?.maxManualDiscountAmount,
@@ -409,6 +411,7 @@ const updateTotals = (state: CartState) => {
             unitOfMeasure: item.product.unitOfMeasure,
             categoryId: item.product.categoryId,
             discountable: item.product.discountable ?? true,
+            taxable: item.product.taxable ?? false,
             minAllowedPrice: item.product.minAllowedPrice,
             maxManualDiscountPercent: item.product.maxManualDiscountPercent,
             maxManualDiscountAmount: item.product.maxManualDiscountAmount,
@@ -417,6 +420,7 @@ const updateTotals = (state: CartState) => {
         priceOverrides: state.priceOverrides,
         promoCodes: state.promoCodes,
         approvalEvents: state.approvalEvents,
+        taxRate: state.pricingContext?.taxRate ?? 0,
         pricingSource: 'OFFLINE_LOCAL',
     });
 

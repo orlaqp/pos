@@ -36,6 +36,8 @@ const mockSettingsState = {
     globalSettings: {
         id: 'global-settings-id',
         enforceSalesBasedOnInventory: false,
+        scaleBarcodePriceFormat: 'LEGACY_4_DIGIT_PRICE',
+        taxValue: 0,
     },
 };
 
@@ -176,6 +178,10 @@ jest.mock('@pos/settings/data-access', () => ({
                 'Enable this only after the store scales are configured for 5-digit prices.',
             SETTINGS_Cancel: 'Cancel',
             SETTINGS_Confirm: 'Confirm',
+            SETTINGS_TaxPercentage: 'Tax percentage',
+            SETTINGS_TaxPercentageInvalid:
+                'Enter a tax percentage from 0 to 100',
+            SETTINGS_SaveTaxPercentage: 'Save tax',
             SETTINGS_Language: 'Language:',
             SETTINGS_English: 'English',
             SETTINGS_Spanish: 'Español',
@@ -211,6 +217,8 @@ describe('Settings', () => {
         mockSettingsState.globalSettings = {
             id: 'global-settings-id',
             enforceSalesBasedOnInventory: false,
+            scaleBarcodePriceFormat: 'LEGACY_4_DIGIT_PRICE',
+            taxValue: 0,
         };
         mockLoginEmployee.roles = ['Admin'];
     });
@@ -232,6 +240,7 @@ describe('Settings', () => {
         expect(getByText('Scale label format:')).toBeTruthy();
         expect(getByText('Legacy')).toBeTruthy();
         expect(getByText('5-digit price')).toBeTruthy();
+        expect(getByText('Tax percentage')).toBeTruthy();
         expect(getByText('Language:')).toBeTruthy();
         expect(getByText('English')).toBeTruthy();
         expect(getByText('Español')).toBeTruthy();
@@ -274,14 +283,48 @@ describe('Settings', () => {
         expect(mockUpdateGlobalSettings).toHaveBeenCalledWith({
             id: 'global-settings-id',
             enforceSalesBasedOnInventory: true,
+            scaleBarcodePriceFormat: 'LEGACY_4_DIGIT_PRICE',
+            taxValue: 0,
         });
         expect(mockDispatch).toHaveBeenCalledWith({
             type: 'gllbalSettings/update/pending',
             payload: {
                 id: 'global-settings-id',
                 enforceSalesBasedOnInventory: true,
+                scaleBarcodePriceFormat: 'LEGACY_4_DIGIT_PRICE',
+                taxValue: 0,
             },
         });
+    });
+
+    it('dispatches global settings update when tax percentage is saved', () => {
+        const { getByTestId } = render(<Settings />);
+
+        fireEvent.changeText(getByTestId('settings-tax-percentage-input'), '8.25');
+        fireEvent.press(getByTestId('settings-save-tax-percentage-button'));
+
+        expect(mockUpdateGlobalSettings).toHaveBeenCalledWith({
+            id: 'global-settings-id',
+            enforceSalesBasedOnInventory: false,
+            scaleBarcodePriceFormat: 'LEGACY_4_DIGIT_PRICE',
+            taxValue: 8.25,
+        });
+    });
+
+    it('does not save invalid tax percentage values', () => {
+        const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation();
+        const { getByTestId } = render(<Settings />);
+
+        fireEvent.changeText(getByTestId('settings-tax-percentage-input'), '-1');
+        fireEvent.press(getByTestId('settings-save-tax-percentage-button'));
+
+        expect(mockUpdateGlobalSettings).not.toHaveBeenCalled();
+        expect(alertSpy).toHaveBeenCalledWith(
+            'Tax percentage',
+            'Enter a tax percentage from 0 to 100'
+        );
+
+        alertSpy.mockRestore();
     });
 
     it('dispatches device settings update when pay from sales changes', () => {
@@ -322,6 +365,7 @@ describe('Settings', () => {
             id: 'global-settings-id',
             enforceSalesBasedOnInventory: false,
             scaleBarcodePriceFormat: 'EAN13_02_4_PLU_5_PRICE',
+            taxValue: 0,
         });
         alertSpy.mockRestore();
     });

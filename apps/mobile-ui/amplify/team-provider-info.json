@@ -179,8 +179,14 @@
         },
         "pos0614c248": {},
         "pos": {},
-        "inventoryLifecycle": {},
-        "orderInventoryLifecycle": {}
+        "inventoryLifecycle": {
+          "deploymentBucketName": "amplify-pos-uat-ff8a9-deployment",
+          "s3Key": "amplify-builds/inventoryLifecycle-534c7a31762b4438724a-build.zip"
+        },
+        "orderInventoryLifecycle": {
+          "deploymentBucketName": "amplify-pos-uat-ff8a9-deployment",
+          "s3Key": "amplify-builds/orderInventoryLifecycle-62396e484c6f7a363443-build.zip"
+        }
       },
       "api": {
         "pos": {}

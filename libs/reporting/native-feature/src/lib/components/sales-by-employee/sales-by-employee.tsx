@@ -22,6 +22,7 @@ export const toSalesByEmployeeRows = (summary?: SalesSummary) => {
     return summary?.employees?.map((e) => ({
         employee: e?.employeeName,
         amount: e?.amount,
+        tax: Number((e as { tax?: number } | undefined)?.tax || 0),
     }));
 };
 
@@ -32,7 +33,8 @@ export function SalesByEmployee(props: SalesByEmployeeProps) {
             ? String(i18next.t(key))
             : fallback;
     const headers: ReportHeader[] = [
-        { label: t('REPORT_Header_Employee', 'Employee'), field: 'employee', width: 5 },
+        { label: t('REPORT_Header_Employee', 'Employee'), field: 'employee', width: 4 },
+        { label: t('REPORT_Header_Tax', 'Tax'), field: 'tax', width: 1, align: 'right', sum: true, format: 'money' },
         { label: t('REPORT_Header_Amount', 'Amount'), field: 'amount', width: 1, align: 'right', sum: true, format: 'money' },
     ];
 
@@ -48,6 +50,7 @@ export function SalesByEmployee(props: SalesByEmployeeProps) {
 
         return buildSalesByEmployeeRows(orders, refunds).map((row) => ({
             employee: row.employeeName,
+            tax: row.tax,
             amount: row.amount,
         }));
     };

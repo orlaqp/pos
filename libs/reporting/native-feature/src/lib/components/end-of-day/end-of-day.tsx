@@ -1,6 +1,6 @@
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
 import {
@@ -136,6 +136,7 @@ export const buildEndOfDayWidgets = (
     grossSales: number,
     discounts: number,
     refunds: number,
+    tax: number,
     netSales: number,
     summary: PaymentMethodsSummary,
     defaultBackgroundColor: string,
@@ -144,6 +145,7 @@ export const buildEndOfDayWidgets = (
         grossSales: string;
         discounts: string;
         refunds: string;
+        tax: string;
         netSales: string;
         creditCard: string;
         cash: string;
@@ -154,6 +156,7 @@ export const buildEndOfDayWidgets = (
         grossSales: 'Gross Sales',
         discounts: 'Discounts',
         refunds: 'Refunds',
+        tax: 'Tax',
         netSales: 'Collected Sales',
         creditCard: 'Credit Card',
         cash: 'Cash',
@@ -183,6 +186,12 @@ export const buildEndOfDayWidgets = (
         text: labels.refunds,
         value: formatPaymentAmount(refunds),
         backgroundColor: '#8e24aa',
+        flex: 1,
+    },
+    {
+        text: labels.tax,
+        value: formatPaymentAmount(tax),
+        backgroundColor: '#00796b',
         flex: 1,
     },
     {
@@ -353,8 +362,8 @@ export function EndOfDay(props: EndOfDayProps) {
     const [closedByValue, setClosedByValue] = useState(null);
     const [filtersCollapsed, setFiltersCollapsed] = useState(false);
     const [summaryCollapsed, setSummaryCollapsed] = useState(false);
-    const emptyOpacity = useRef(new Animated.Value(0)).current;
-    const emptyTranslateY = useRef(new Animated.Value(12)).current;
+    const [emptyOpacity] = useState(() => new Animated.Value(0));
+    const [emptyTranslateY] = useState(() => new Animated.Value(12));
     const filterConfigs = buildEndOfDayFilterConfigs({
         employeesOpen,
         employeeValue,
@@ -383,6 +392,7 @@ export function EndOfDay(props: EndOfDayProps) {
         referenceSummary.grossSales,
         referenceSummary.discounts,
         referenceSummary.refunds,
+        referenceSummary.tax,
         referenceSummary.netSales,
         paymentMethodsSummary,
         styles.dataRow.backgroundColor,
@@ -391,6 +401,7 @@ export function EndOfDay(props: EndOfDayProps) {
             grossSales: t('EOD_GrossSales', 'Gross Sales'),
             discounts: t('EOD_Discounts', 'Discounts'),
             refunds: t('EOD_Refunds', 'Refunds'),
+            tax: t('EOD_Tax', 'Tax'),
             netSales: t('EOD_NetSales', 'Collected Sales'),
             creditCard: t('EOD_CreditCard', 'Credit Card'),
             cash: t('EOD_Cash', 'Cash'),

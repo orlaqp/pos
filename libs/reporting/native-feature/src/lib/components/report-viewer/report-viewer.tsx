@@ -8,7 +8,7 @@ import {
 } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import moment from 'moment';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import * as RNFS from 'react-native-fs';
 import { Icon } from '@rneui/themed';
 import i18next from 'i18next';
@@ -179,13 +179,12 @@ export function ReportViewer({
     const styles = useStyles(tokens);
     const { height: windowHeight } = useWindowDimensions();
     const [loading, setLoading] = useState<boolean>(true);
-    const [totals, setTotals] = useState<Record<string, number>>();
     const [items, setItems] = useState<any[]>([]);
     const [query, setQuery] = useState('');
     const [debouncedQuery, setDebouncedQuery] = useState('');
     const [sortState, setSortState] = useState<SortState | null>(null);
-    const emptyOpacity = useRef(new Animated.Value(0)).current;
-    const emptyTranslateY = useRef(new Animated.Value(12)).current;
+    const [emptyOpacity] = useState(() => new Animated.Value(0));
+    const [emptyTranslateY] = useState(() => new Animated.Value(12));
     const t = (key: string, fallback: string) =>
         i18next.isInitialized && i18next.exists(key)
             ? String(i18next.t(key))
@@ -216,6 +215,22 @@ export function ReportViewer({
         () => sortReportItems(filteredItems, headers, sortState),
         [filteredItems, headers, sortState]
     );
+    const totals = useMemo(() => {
+        if (!visibleItems.length) {
+            return undefined;
+        }
+
+        return visibleItems.reduce<Record<string, number>>((total, item) => {
+            headers.forEach((h) => {
+                if (h.sum) {
+                    total[h.field] =
+                        (total[h.field] || 0) + Number(item[h.field] || 0);
+                }
+            });
+
+            return total;
+        }, {});
+    }, [headers, visibleItems]);
 
     const toggleSort = (field: string) => {
         setSortState((current) => {
@@ -264,9 +279,13 @@ export function ReportViewer({
         }
     };
 
+    const handleRangeChange = (range: DateRange) => {
+        setLoading(true);
+        setDateRange(range);
+    };
+
     useEffect(() => {
         let cancelled = false;
-        setLoading(true);
         const task = InteractionManager.runAfterInteractions(() => {
             getData(dateRange)
                 .then((res) => {
@@ -291,26 +310,6 @@ export function ReportViewer({
             task.cancel?.();
         };
     }, [getData, dateRange]);
-
-    useEffect(() => {
-        if (!visibleItems.length) {
-            setTotals(undefined);
-            return;
-        }
-
-        const totals: Record<string, number> = {};
-        visibleItems.reduce((total, item) => {
-            headers.forEach((h) => {
-                if (h.sum) {
-                    total[h.field] = (total[h.field] || 0) + Number(item[h.field] || 0);
-                }
-            });
-
-            return total;
-        }, totals);
-
-        setTotals(totals);
-    }, [headers, visibleItems]);
 
     useEffect(() => {
         if (loading || visibleItems.length) return;
@@ -346,7 +345,7 @@ export function ReportViewer({
                             </View>
                             <UIDateRange
                                 initialRange={dateRange}
-                                onRangeChange={setDateRange}
+                                onRangeChange={handleRangeChange}
                                 showSummary={false}
                                 rightAction={
                                     <Pressable

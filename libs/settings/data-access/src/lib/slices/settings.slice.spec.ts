@@ -51,6 +51,28 @@ describe('settings reducer', () => {
     expect(state.globalSettingsStatus).toBe('loaded');
   });
 
+  it('maps missing global tax settings to zero', () => {
+    expect(
+      GlobalSettingsEntityMapper.from({
+        id: 'settings-1',
+        enforceSalesBasedOnInventory: false,
+        timezone: 'America/New_York',
+        taxValue: undefined,
+      } as any)
+    ).toEqual(expect.objectContaining({ taxValue: 0 }));
+  });
+
+  it('maps persisted global tax settings', () => {
+    expect(
+      GlobalSettingsEntityMapper.from({
+        id: 'settings-1',
+        enforceSalesBasedOnInventory: false,
+        timezone: 'America/New_York',
+        taxValue: 8.25,
+      } as any)
+    ).toEqual(expect.objectContaining({ taxValue: 8.25 }));
+  });
+
   it('handles fetchGlobalSettings pending/rejected', () => {
     let state = settingsReducer(undefined, fetchGlobalSettings.pending('', undefined));
     expect(state.globalSettingsStatus).toBe('loading');

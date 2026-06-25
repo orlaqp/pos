@@ -16,14 +16,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useSharedStyles } from '@pos/theme/native';
 
 import CartLine from '../cart-line/cart-line';
-import EmptyCart from '../../../../../../../apps/mobile-ui/assets/illustrations/empty-cart-1600.png';
 import CartPaymentDialog from '../cart-payment/cart-payment-dialog';
 import { selectLoginEmployee } from '@pos/employees/data-access';
 import { Role } from '@pos/auth/data-access';
 import { ProductEntity } from '@pos/products/data-access';
 import { selectStore } from '@pos/store-info/data-access';
-import { selectStation } from '@pos/settings/data-access';
-import { translateWithFallback } from '../../../../../../shared/utils/src/lib/translation';
+import { getGlobalSettings, selectStation } from '@pos/settings/data-access';
+import { translateWithFallback } from '@pos/shared/utils';
 import {
     buildDiscountBreakdown,
     buildOrderSummary,
@@ -54,6 +53,8 @@ import {
     getAvailableManualDefinitions,
 } from './cart-discount.helpers';
 import { isE2EEnabled } from '@pos/shared/utils';
+
+const EmptyCart = require('../../../assets/images/empty-cart.png');
 
 export type CartMode = 'order' | 'payment';
 
@@ -114,6 +115,7 @@ export function Cart({
     const employee = useSelector(selectLoginEmployee);
     const storeInfo = useSelector(selectStore);
     const stationInfo = useSelector(selectStation);
+    const globalSettings = useSelector(getGlobalSettings);
     const [receivePayment, setReceivePayment] = useState<boolean>(false);
     const [discountsLoading, setDiscountsLoading] = useState(false);
     const [discountError, setDiscountError] = useState<string>();
@@ -311,10 +313,12 @@ export function Cart({
                 storeId: storeInfo?.id,
                 // Discount definitions are authored against the configured station number.
                 stationId: stationInfo?.stationNumber,
+                taxRate: (globalSettings?.taxValue ?? 0) / 100,
             }),
         );
     }, [
         dispatch,
+        globalSettings?.taxValue,
         stationInfo?.stationNumber,
         storeInfo?.id,
         storeInfo?.timezone,

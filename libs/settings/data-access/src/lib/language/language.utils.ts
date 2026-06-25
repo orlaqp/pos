@@ -2,10 +2,7 @@ import * as RNLocalize from 'react-native-localize';
 import memoize from 'lodash/memoize';
 import i18next, { TOptions } from 'i18next';
 import { I18nManager } from 'react-native';
-export {
-    hasTranslationKey,
-    translateWithFallback,
-} from '../../../../../shared/utils/src/lib/translation';
+export { hasTranslationKey, translateWithFallback } from '@pos/shared/utils';
 
 const translationGetters = {
     // lazy requires

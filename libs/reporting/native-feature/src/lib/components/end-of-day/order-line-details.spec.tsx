@@ -29,6 +29,7 @@ describe('OrderLine', () => {
             lineDiscountTotal: 2,
             allocatedOrderDiscountTotal: 1,
             lineTotalBeforeTax: 9.5,
+            tax: 0.81,
         };
         const { getByText } = render(
             <OrderLineDetails
@@ -40,6 +41,8 @@ describe('OrderLine', () => {
 
         expect(getByText('Discount')).toBeTruthy();
         expect(getByText('- $ 2.00')).toBeTruthy();
+        expect(getByText('Tax')).toBeTruthy();
+        expect(getByText('$ 0.81')).toBeTruthy();
         expect(getByText('Refund')).toBeTruthy();
         expect(getByText('- $ 4.25')).toBeTruthy();
         expect(getByText('$ 10.50')).toBeTruthy();

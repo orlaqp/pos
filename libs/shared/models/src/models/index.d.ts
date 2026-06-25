@@ -328,6 +328,7 @@ type EagerOrderLine = {
   readonly appliedDiscounts?: AppliedDiscountDetailSnapshot[] | null;
   readonly categoryId?: string | null;
   readonly discountable?: boolean | null;
+  readonly taxable?: boolean | null;
   readonly minAllowedPrice?: number | null;
   readonly maxManualDiscountPercent?: number | null;
   readonly maxManualDiscountAmount?: number | null;
@@ -357,6 +358,7 @@ type LazyOrderLine = {
   readonly appliedDiscounts?: AppliedDiscountDetailSnapshot[] | null;
   readonly categoryId?: string | null;
   readonly discountable?: boolean | null;
+  readonly taxable?: boolean | null;
   readonly minAllowedPrice?: number | null;
   readonly maxManualDiscountPercent?: number | null;
   readonly maxManualDiscountAmount?: number | null;
@@ -1121,6 +1123,7 @@ type EagerProduct = {
   readonly isActive: boolean;
   readonly isEBTEligible?: boolean | null;
   readonly discountable: boolean;
+  readonly taxable?: boolean | null;
   readonly minAllowedPrice?: number | null;
   readonly maxManualDiscountPercent?: number | null;
   readonly maxManualDiscountAmount?: number | null;
@@ -1152,6 +1155,7 @@ type LazyProduct = {
   readonly isActive: boolean;
   readonly isEBTEligible?: boolean | null;
   readonly discountable: boolean;
+  readonly taxable?: boolean | null;
   readonly minAllowedPrice?: number | null;
   readonly maxManualDiscountPercent?: number | null;
   readonly maxManualDiscountAmount?: number | null;
@@ -1427,6 +1431,7 @@ type EagerGlobalSettings = {
   readonly enforceSalesBasedOnInventory: boolean;
   readonly timezone: string;
   readonly scaleBarcodePriceFormat?: string | null;
+  readonly taxValue?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -1437,6 +1442,7 @@ type LazyGlobalSettings = {
   readonly enforceSalesBasedOnInventory: boolean;
   readonly timezone: string;
   readonly scaleBarcodePriceFormat?: string | null;
+  readonly taxValue?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

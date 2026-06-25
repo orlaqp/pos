@@ -1995,6 +1995,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "taxable": {
+                    "name": "taxable",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "minAllowedPrice": {
                     "name": "minAllowedPrice",
                     "isArray": false,
@@ -3016,6 +3023,13 @@ export const schema = {
                     "name": "scaleBarcodePriceFormat",
                     "isArray": false,
                     "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "taxValue": {
+                    "name": "taxValue",
+                    "isArray": false,
+                    "type": "Float",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -5037,6 +5051,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "taxable": {
+                    "name": "taxable",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "minAllowedPrice": {
                     "name": "minAllowedPrice",
                     "isArray": false,
@@ -5330,5 +5351,5 @@ export const schema = {
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "b580e4a8a0905f7145fa086e7d8724e9"
+    "version": "1a5f7f9c4c7e2b5d8f604bc12d2f4f3a"
 };

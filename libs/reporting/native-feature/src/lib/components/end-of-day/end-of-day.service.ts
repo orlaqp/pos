@@ -47,6 +47,7 @@ export interface EndOfDayReferenceSummary {
     grossSales: number;
     discounts: number;
     refunds: number;
+    tax: number;
     netSales: number;
 }
 
@@ -202,6 +203,43 @@ const getLineActiveRatio = (line: Order['lines'][number], refundedQuantity: numb
 
     const remainingQuantity = Math.max(0, originalQuantity - Number(refundedQuantity || 0));
     return remainingQuantity / originalQuantity;
+};
+
+const getScopedTaxForOrder = (
+    order: Order,
+    request: OrdersFilterRequest,
+    refunds: OrderRefund[],
+    refundLines: OrderRefundLine[]
+) => {
+    if (request.productId) {
+        const refundedQuantities = buildRefundedQuantityMap(order.id, refundLines);
+        return (order.lines || [])
+            .filter((line) => line?.productId === request.productId)
+            .reduce((sum, line) => {
+                const ratio = getLineActiveRatio(
+                    line,
+                    refundedQuantities.get(String(line?.identifier || '')) || 0
+                );
+                return roundMoney(sum + Number(line?.tax || 0) * ratio);
+            }, 0);
+    }
+
+    const total = Number(order.total || 0);
+    if (total <= 0) {
+        return roundMoney(Number(order.tax || 0));
+    }
+
+    const refundedAmount = getScopedRefundAmountForOrder(
+        order.id,
+        request,
+        refunds,
+        refundLines
+    );
+    const activeRatio = Math.max(
+        0,
+        Math.min(1, (total - refundedAmount) / total)
+    );
+    return roundMoney(Number(order.tax || 0) * activeRatio);
 };
 
 const getLineTenderAmounts = (line: Order['lines'][number], ratio: number) => {
@@ -549,11 +587,17 @@ export const buildEndOfDayReferenceSummary = (
             getScopedRefundAmountForOrder(order.id, request, refunds, refundLines),
         0
     );
+    const tax = orders.reduce(
+        (sum, order) =>
+            sum + getScopedTaxForOrder(order, request, refunds, refundLines),
+        0
+    );
 
     return {
         grossSales,
         discounts,
         refunds: roundMoney(refundsTotal),
+        tax: roundMoney(tax),
         netSales: roundMoney(grossSales - discounts - refundsTotal),
     };
 };

@@ -21,10 +21,6 @@ jest.mock('@pos/shared/amplify', () => ({
     syncExpression: (...args: unknown[]) => mockSyncExpression(...args),
 }));
 
-jest.mock('@pos/auth/data-access', () => ({
-    getCurrentTenantId: jest.fn(() => 'tenant-123'),
-}));
-
 const mockSubtract = jest.fn(() => ({
     toISOString: () => '2026-01-01T00:00:00.000Z',
 }));
@@ -44,6 +40,7 @@ const {
     configureDataStore,
     enableInventorySync,
     resetInventorySyncForTests,
+    setDataStoreTenantProvider,
 } = require('./config');
 
 describe('configureDataStore', () => {
@@ -57,6 +54,7 @@ describe('configureDataStore', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         resetInventorySyncForTests();
+        setDataStoreTenantProvider(() => 'tenant-123');
         mockHandleDataStoreUnauthorizedError.mockReturnValue(true);
     });
 

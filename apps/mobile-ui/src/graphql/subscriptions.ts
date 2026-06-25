@@ -587,6 +587,7 @@ export const onCreateOrder = /* GraphQL */ `subscription OnCreateOrder(
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -703,6 +704,7 @@ export const onUpdateOrder = /* GraphQL */ `subscription OnUpdateOrder(
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -819,6 +821,7 @@ export const onDeleteOrder = /* GraphQL */ `subscription OnDeleteOrder(
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1306,6 +1309,7 @@ export const onCreateProduct = /* GraphQL */ `subscription OnCreateProduct(
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1376,6 +1380,7 @@ export const onUpdateProduct = /* GraphQL */ `subscription OnUpdateProduct(
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1446,6 +1451,7 @@ export const onDeleteProduct = /* GraphQL */ `subscription OnDeleteProduct(
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1558,6 +1564,7 @@ export const onCreateInventoryChanges = /* GraphQL */ `subscription OnCreateInve
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1615,6 +1622,7 @@ export const onUpdateInventoryChanges = /* GraphQL */ `subscription OnUpdateInve
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1672,6 +1680,7 @@ export const onDeleteInventoryChanges = /* GraphQL */ `subscription OnDeleteInve
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -2277,6 +2286,7 @@ export const onCreateGlobalSettings = /* GraphQL */ `subscription OnCreateGlobal
     enforceSalesBasedOnInventory
     timezone
     scaleBarcodePriceFormat
+    taxValue
     createdAt
     updatedAt
     _version
@@ -2299,6 +2309,7 @@ export const onUpdateGlobalSettings = /* GraphQL */ `subscription OnUpdateGlobal
     enforceSalesBasedOnInventory
     timezone
     scaleBarcodePriceFormat
+    taxValue
     createdAt
     updatedAt
     _version
@@ -2321,6 +2332,7 @@ export const onDeleteGlobalSettings = /* GraphQL */ `subscription OnDeleteGlobal
     enforceSalesBasedOnInventory
     timezone
     scaleBarcodePriceFormat
+    taxValue
     createdAt
     updatedAt
     _version
