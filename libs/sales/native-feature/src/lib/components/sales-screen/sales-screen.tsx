@@ -505,6 +505,7 @@ export function SalesScreen({
         const res = await ProductService.search(allProducts, {
             text: normalizedText,
             onlyActive: true,
+            scaleBarcodePriceFormat: globalSettings?.scaleBarcodePriceFormat,
         });
 
         if (shouldSetFilteredProducts(text, res.allNumbers)) {

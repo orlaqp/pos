@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 
 const mockDispatch = jest.fn();
 const mockUpdateTheme = jest.fn();
@@ -25,6 +26,7 @@ const mockUpdatePayFromSalesScreen = jest.fn((payload) => ({
 }));
 const mockGetVersion = jest.fn(() => '2.0');
 const mockGetBuildNumber = jest.fn(() => '1');
+const mockSelectLoginEmployee = jest.fn();
 
 const mockSettingsState = {
     darkTheme: false,
@@ -37,9 +39,16 @@ const mockSettingsState = {
     },
 };
 
+const mockLoginEmployee = {
+    id: 'employee-1',
+    roles: ['Admin'],
+};
+
 jest.mock('react-redux', () => ({
     useDispatch: () => mockDispatch,
-    useSelector: jest.fn(() => mockSettingsState),
+    useSelector: jest.fn((selector) =>
+        selector === mockSelectLoginEmployee ? mockLoginEmployee : mockSettingsState
+    ),
 }));
 
 jest.mock('@pos/store', () => ({
@@ -49,6 +58,16 @@ jest.mock('@pos/store', () => ({
 jest.mock('react-native-device-info', () => ({
     getVersion: () => mockGetVersion(),
     getBuildNumber: () => mockGetBuildNumber(),
+}));
+
+jest.mock('@pos/auth/data-access', () => ({
+    Role: {
+        Admin: 'Admin',
+    },
+}));
+
+jest.mock('@pos/employees/data-access', () => ({
+    selectLoginEmployee: mockSelectLoginEmployee,
 }));
 
 jest.mock('@pos/theme/native/design-tokens', () => ({
@@ -149,6 +168,14 @@ jest.mock('@pos/settings/data-access', () => ({
             SETTINGS_EnforceInventory: 'Enforce Sales Based on Inventory:',
             SETTINGS_PayFromSalesScreen:
                 'Receive payment directly from Sales screen:',
+            SETTINGS_ScaleLabelFormat: 'Scale label format:',
+            SETTINGS_ScaleLabelLegacy: 'Legacy',
+            SETTINGS_ScaleLabelExpanded: '5-digit price',
+            SETTINGS_ScaleLabelConfirmTitle: 'Use 5-digit scale prices?',
+            SETTINGS_ScaleLabelConfirmMessage:
+                'Enable this only after the store scales are configured for 5-digit prices.',
+            SETTINGS_Cancel: 'Cancel',
+            SETTINGS_Confirm: 'Confirm',
             SETTINGS_Language: 'Language:',
             SETTINGS_English: 'English',
             SETTINGS_Spanish: 'Español',
@@ -185,6 +212,7 @@ describe('Settings', () => {
             id: 'global-settings-id',
             enforceSalesBasedOnInventory: false,
         };
+        mockLoginEmployee.roles = ['Admin'];
     });
 
     it('renders sections and labels', () => {
@@ -201,12 +229,24 @@ describe('Settings', () => {
         expect(
             getByText('Receive payment directly from Sales screen:')
         ).toBeTruthy();
+        expect(getByText('Scale label format:')).toBeTruthy();
+        expect(getByText('Legacy')).toBeTruthy();
+        expect(getByText('5-digit price')).toBeTruthy();
         expect(getByText('Language:')).toBeTruthy();
         expect(getByText('English')).toBeTruthy();
         expect(getByText('Español')).toBeTruthy();
         expect(getByText('Reset Data')).toBeTruthy();
         expect(getByText('App Info')).toBeTruthy();
         expect(getByTestId('settings-app-version')).toHaveTextContent('2.0 (1)');
+    });
+
+    it('hides scale label format controls for non-admin employees', () => {
+        mockLoginEmployee.roles = ['Sales'];
+
+        const { queryByText } = render(<Settings />);
+
+        expect(queryByText('Scale label format:')).toBeNull();
+        expect(queryByText('5-digit price')).toBeNull();
     });
 
     it('dispatches theme action and updates theme mode when dark theme changes', () => {
@@ -258,6 +298,32 @@ describe('Settings', () => {
             type: 'settings/device/updatePayFromSalesScreen/pending',
             payload: true,
         });
+    });
+
+    it('confirms and dispatches global settings update when expanded scale pricing is selected', () => {
+        const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation();
+        const { getByTestId } = render(<Settings />);
+
+        fireEvent.press(getByTestId('settings-scale-format-expanded-button'));
+
+        expect(alertSpy).toHaveBeenCalledWith(
+            'Use 5-digit scale prices?',
+            'Enable this only after the store scales are configured for 5-digit prices.',
+            expect.any(Array)
+        );
+
+        const buttons = alertSpy.mock.calls[0][2] as Array<{
+            text: string;
+            onPress?: () => void;
+        }>;
+        buttons.find((button) => button.text === 'Confirm')?.onPress?.();
+
+        expect(mockUpdateGlobalSettings).toHaveBeenCalledWith({
+            id: 'global-settings-id',
+            enforceSalesBasedOnInventory: false,
+            scaleBarcodePriceFormat: 'EAN13_02_4_PLU_5_PRICE',
+        });
+        alertSpy.mockRestore();
     });
 
     it('dispatches reset datastore when reset button is pressed', () => {

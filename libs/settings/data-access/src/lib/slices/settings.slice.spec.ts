@@ -6,6 +6,7 @@ import {
   settingsActions,
   settingsReducer,
 } from './settings.slice';
+import { GlobalSettingsEntityMapper } from '../global-settings.dto';
 
 describe('settings reducer', () => {
   it('returns initial state', () => {
@@ -77,5 +78,38 @@ describe('settings reducer', () => {
       fetchDeviceSettings.rejected(new Error('fail'), '', undefined)
     );
     expect(state.deviceSettingsStatus).toBe('error');
+  });
+
+  it('maps scale barcode price format from global settings', () => {
+    expect(
+      GlobalSettingsEntityMapper.from({
+        id: 'settings-1',
+        enforceSalesBasedOnInventory: false,
+        taxValue: 0,
+        creditCardSurchargePercent: 0,
+        timezone: 'America/New_York',
+        scaleBarcodePriceFormat: 'EAN13_02_4_PLU_5_PRICE',
+      } as any)
+    ).toEqual(
+      expect.objectContaining({
+        scaleBarcodePriceFormat: 'EAN13_02_4_PLU_5_PRICE',
+      })
+    );
+  });
+
+  it('defaults missing scale barcode price format to legacy', () => {
+    expect(
+      GlobalSettingsEntityMapper.from({
+        id: 'settings-1',
+        enforceSalesBasedOnInventory: false,
+        taxValue: 0,
+        creditCardSurchargePercent: 0,
+        timezone: 'America/New_York',
+      } as any)
+    ).toEqual(
+      expect.objectContaining({
+        scaleBarcodePriceFormat: 'LEGACY_4_DIGIT_PRICE',
+      })
+    );
   });
 });

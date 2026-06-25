@@ -23,12 +23,18 @@ export class GlobalSettingsService {
             return DataStore.save(
                 GlobalSettings.copyOf(settings, (updated) => {
                     updated.enforceSalesBasedOnInventory = newSettings.enforceSalesBasedOnInventory;
+                    updated.scaleBarcodePriceFormat =
+                        newSettings.scaleBarcodePriceFormat ||
+                        settings.scaleBarcodePriceFormat ||
+                        'LEGACY_4_DIGIT_PRICE';
                     updated.timezone = newSettings.timezone || settings.timezone || 'America/New_York';
                 })
             );
 
         return DataStore.save(new GlobalSettings(stampTenant({
             enforceSalesBasedOnInventory: newSettings.enforceSalesBasedOnInventory || false,
+            scaleBarcodePriceFormat:
+                newSettings.scaleBarcodePriceFormat || 'LEGACY_4_DIGIT_PRICE',
             timezone: newSettings.timezone || 'America/New_York',
         }) as never));
     }
