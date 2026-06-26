@@ -382,6 +382,58 @@ describe('Cart', () => {
         expect(getByText('Cart is empty')).toBeTruthy();
     });
 
+    it('hides the tax totals block when the cart has no tax', () => {
+        mockCartState.footer.subtotal = 6.99;
+        mockCartState.footer.tax = 0;
+        mockCartState.footer.total = 6.99;
+        mockGlobalSettingsState = { taxValue: 7 };
+
+        const { queryByTestId, getByText } = renderCart('order', {
+            preferPayFromSalesScreen: true,
+        });
+
+        expect(queryByTestId('cart-tax-totals')).toBeNull();
+        expect(getByText('Receive Payment  •  $6.99')).toBeTruthy();
+    });
+
+    it('shows subtotal tax and total when the cart has tax', () => {
+        mockCartState.footer.subtotal = 6.99;
+        mockCartState.footer.tax = 0.49;
+        mockCartState.footer.total = 7.48;
+        mockGlobalSettingsState = { taxValue: 7 };
+
+        const { getByTestId, getByText } = renderCart('order', {
+            preferPayFromSalesScreen: true,
+        });
+
+        expect(getByTestId('cart-tax-totals')).toBeTruthy();
+        expect(getByText('Subtotal')).toBeTruthy();
+        expect(getByText('$6.99')).toBeTruthy();
+        expect(getByText('Tax (7%)')).toBeTruthy();
+        expect(getByText('$0.49')).toBeTruthy();
+        expect(getByText('Total')).toBeTruthy();
+        expect(getByText('$7.48')).toBeTruthy();
+        expect(getByText('Receive Payment  •  $7.48')).toBeTruthy();
+    });
+
+    it('uses a plain tax label when the configured tax rate is unavailable', () => {
+        mockCartState.footer.subtotal = 6.99;
+        mockCartState.footer.tax = 0.49;
+        mockCartState.footer.total = 7.48;
+        mockGlobalSettingsState = {};
+
+        const { getByTestId, getByText, queryByText } = renderCart('order', {
+            preferPayFromSalesScreen: true,
+        });
+
+        expect(getByTestId('cart-tax-totals')).toBeTruthy();
+        expect(getByText('Tax')).toBeTruthy();
+        expect(getByText('$0.49')).toBeTruthy();
+        expect(getByText('$7.48')).toBeTruthy();
+        expect(getByText('Receive Payment  •  $7.48')).toBeTruthy();
+        expect(queryByText('Tax (7%)')).toBeNull();
+    });
+
     it('uses the configured station number in pricing context', async () => {
         renderCart('order');
 

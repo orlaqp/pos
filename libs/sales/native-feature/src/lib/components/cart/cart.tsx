@@ -52,6 +52,7 @@ import {
     baseAmountForDisplay,
     getAvailableManualDefinitions,
 } from './cart-discount.helpers';
+import { CartTaxTotals } from './cart-tax-totals';
 import { isE2EEnabled } from '@pos/shared/utils';
 
 const EmptyCart = require('../../../assets/images/empty-cart.png');
@@ -774,6 +775,13 @@ export function Cart({
                               )}
                     </Text>
                 ) : null}
+                <CartTaxTotals
+                    styles={localStyles}
+                    subtotal={cart.footer.subtotal}
+                    tax={cart.footer.tax}
+                    total={cart.footer.total}
+                    taxValue={globalSettings?.taxValue}
+                />
                 {payFromSalesScreen ? (
                     <Button
                         testID="cart-save-open-order-button"

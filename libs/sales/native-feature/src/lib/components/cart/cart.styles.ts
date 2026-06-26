@@ -79,6 +79,48 @@ export const createCartStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontSize: 16,
             fontWeight: '700',
         },
+        taxTotalsCard: {
+            borderRadius: tokens.radii.md,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            backgroundColor: tokens.colors.surfaceMuted,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.sm,
+            marginBottom: tokens.spacing.sm,
+        },
+        taxTotalsRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: tokens.spacing.sm,
+            minHeight: 26,
+        },
+        taxTotalsRowStrong: {
+            marginTop: tokens.spacing.xs,
+            paddingTop: tokens.spacing.xs,
+            borderTopWidth: 1,
+            borderTopColor: tokens.colors.border,
+        },
+        taxTotalsLabel: {
+            color: tokens.colors.textSecondary,
+            fontSize: 14,
+            fontWeight: '700',
+        },
+        taxTotalsLabelStrong: {
+            color: tokens.colors.textPrimary,
+            fontSize: 15,
+            fontWeight: '800',
+        },
+        taxTotalsValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 14,
+            fontWeight: '800',
+        },
+        taxTotalsValueStrong: {
+            color: tokens.colors.textPrimary,
+            fontSize: 18,
+            fontWeight: '800',
+        },
         discountActionCard: {
             borderRadius: tokens.radii.md,
             borderWidth: 1,
