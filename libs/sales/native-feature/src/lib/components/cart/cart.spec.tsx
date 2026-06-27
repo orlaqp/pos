@@ -13,6 +13,7 @@ let mockEmployeeState: any;
 let mockStoreState: any;
 let mockStationState: any;
 let mockGlobalSettingsState: any;
+let lastCartPaymentDialogProps: any;
 
 jest.mock('react-redux', () => ({
     useDispatch: () => mockDispatch,
@@ -268,11 +269,19 @@ jest.mock('../cart-payment/cart-payment-dialog', () => ({
         visible,
         onPaymentEntered,
         onClose,
+        ...rest
     }: {
         visible: boolean;
         onPaymentEntered: (payments: any[]) => void;
         onClose: () => void;
+        creditCardSurchargePercent?: number;
     }) =>
+        ((lastCartPaymentDialogProps = {
+            visible,
+            onPaymentEntered,
+            onClose,
+            ...rest,
+        }),
         visible
             ? (() => {
                   const { Pressable, Text } = require('react-native');
@@ -297,7 +306,7 @@ jest.mock('../cart-payment/cart-payment-dialog', () => ({
                       </>
                   );
               })()
-            : null,
+            : null),
 }));
 
 const { Cart } = require('./cart');
@@ -308,6 +317,7 @@ describe('Cart', () => {
         jest.clearAllMocks();
         jest.useFakeTimers();
         jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+        lastCartPaymentDialogProps = undefined;
         mockSubscribeDefinitionChanges.mockImplementation(
             (callback: (definitions: any[]) => void) => {
                 callback([]);
@@ -526,6 +536,12 @@ describe('Cart', () => {
         const { getByText, getByTestId } = renderCart('payment');
         fireEvent.press(getByText(/Receive Payment/));
         expect(mockOnInteractionComplete).not.toHaveBeenCalled();
+        expect(lastCartPaymentDialogProps).toEqual(
+            expect.objectContaining({
+                visible: true,
+                creditCardSurchargePercent: 0,
+            }),
+        );
         fireEvent.press(getByTestId('cart-payment-entered'));
         expect(mockOnSubmit).toHaveBeenCalledWith(
             mockCartState,
@@ -535,6 +551,23 @@ describe('Cart', () => {
             expect.objectContaining({ intent: 'receive_payment' }),
         );
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
+    });
+
+    it('passes the global credit card surcharge percent into the payment dialog', () => {
+        mockGlobalSettingsState = {
+            ...mockGlobalSettingsState,
+            creditCardSurchargePercent: 3,
+        };
+
+        const { getByText } = renderCart('payment');
+        fireEvent.press(getByText(/Receive Payment/));
+
+        expect(lastCartPaymentDialogProps).toEqual(
+            expect.objectContaining({
+                visible: true,
+                creditCardSurchargePercent: 3,
+            }),
+        );
     });
 
     it('shows receive payment as primary and keeps save open order when pay from sales is enabled', () => {

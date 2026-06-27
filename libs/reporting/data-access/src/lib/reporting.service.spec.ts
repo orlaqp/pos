@@ -149,6 +149,17 @@ describe('reporting.service', () => {
                         id: 'o1',
                         status: 'PAID',
                         createdAt: '2026-03-10T10:00:00.000Z',
+                        paymentInfo: {
+                            payments: [
+                                {
+                                    type: 'CC',
+                                    amount: 60,
+                                    baseAmount: 60,
+                                    surchargeRate: 3,
+                                    surchargeAmount: 1.8,
+                                },
+                            ],
+                        },
                     },
                 ],
             },
@@ -175,11 +186,28 @@ describe('reporting.service', () => {
         );
         expect(mockGraphql).toHaveBeenCalledWith(
             expect.objectContaining({
+                query: expect.stringContaining(`payments {
+            type
+            amount
+            baseAmount
+            surchargeRate
+            surchargeAmount`),
+            })
+        );
+        expect(mockGraphql).toHaveBeenCalledWith(
+            expect.objectContaining({
                 query: expect.not.stringContaining(`orderDate
       createdAt
       updatedAt`),
             })
         );
+        expect(result[0].paymentInfo?.payments?.[0]).toEqual({
+            type: 'CC',
+            amount: 60,
+            baseAmount: 60,
+            surchargeRate: 3,
+            surchargeAmount: 1.8,
+        });
     });
 
     it('returns an empty list when remote sales query fails', async () => {

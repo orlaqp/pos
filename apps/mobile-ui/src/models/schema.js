@@ -3033,6 +3033,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "creditCardSurchargePercent": {
+                    "name": "creditCardSurchargePercent",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -5120,6 +5127,27 @@ export const schema = {
                     "type": "Float",
                     "isRequired": true,
                     "attributes": []
+                },
+                "baseAmount": {
+                    "name": "baseAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "surchargeRate": {
+                    "name": "surchargeRate",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "surchargeAmount": {
+                    "name": "surchargeAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
                 }
             }
         },
@@ -5351,5 +5379,5 @@ export const schema = {
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "1a5f7f9c4c7e2b5d8f604bc12d2f4f3a"
+    "version": "57863bbf1529891d6a8fab7d147db686"
 };

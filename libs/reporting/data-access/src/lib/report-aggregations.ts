@@ -14,7 +14,12 @@ const PAYMENT_TYPE_LABELS: Record<string, string> = {
     [PaymentType.CASH]: 'Cash',
     [PaymentType.EBT]: 'EBT',
     [PaymentType.CHECK]: 'Checks',
+    PROCESSING_FEE_RECOVERY: 'Processing Fee Recovery',
 };
+
+const getPaymentSurchargeAmount = (payment: {
+    surchargeAmount?: number | null;
+}) => round(Math.max(0, Number(payment?.surchargeAmount || 0)));
 
 type DiscountApplicationSummary = {
     definitionId?: string;
@@ -501,6 +506,15 @@ export const buildPaymentSummaryRows = (orders: Order[], refunds: OrderRefund[] 
                 Number(payment?.amount || 0),
                 1
             );
+            const surchargeAmount = getPaymentSurchargeAmount(payment || {});
+            if (surchargeAmount > 0) {
+                addPaymentAmount(
+                    totals,
+                    'PROCESSING_FEE_RECOVERY',
+                    surchargeAmount,
+                    1
+                );
+            }
         });
     });
 

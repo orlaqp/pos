@@ -359,6 +359,9 @@ export const getSalesCustom = /* GraphQL */ `
         payments {
             type
             amount
+            baseAmount
+            surchargeRate
+            surchargeAmount
         }
       }
       refundInfo {

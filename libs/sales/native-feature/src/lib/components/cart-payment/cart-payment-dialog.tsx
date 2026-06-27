@@ -17,6 +17,7 @@ export interface CartPaymentDialogProps {
     visible: boolean;
     cart?: CartState;
     canReceiveChecks: boolean;
+    creditCardSurchargePercent?: number;
     busy?: boolean;
     onClose: () => void;
     onPaymentEntered: (payments: ICartPayment[]) => void;
@@ -28,6 +29,7 @@ export function CartPaymentDialog({
     visible,
     cart,
     canReceiveChecks,
+    creditCardSurchargePercent = 0,
     busy = false,
     onClose,
     onPaymentEntered,
@@ -117,6 +119,9 @@ export function CartPaymentDialog({
                                 total={orderSummary.total}
                                 ebtEligibleTotal={orderSummary.ebtEligibleTotal}
                                 canReceiveChecks={canReceiveChecks}
+                                creditCardSurchargePercent={
+                                    creditCardSurchargePercent
+                                }
                                 onPaymentEntered={onPaymentEntered}
                                 layout="compact"
                                 disableSubmit={busy}

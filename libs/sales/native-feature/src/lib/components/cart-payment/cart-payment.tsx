@@ -1,4 +1,9 @@
-import type { CartPayment as ICartPayment } from '@pos/sales/data-access';
+import {
+    calculateCreditCardSurcharge,
+    enrichCreditCardPaymentsWithSurcharge,
+    getPaymentChargedAmount,
+    type CartPayment as ICartPayment,
+} from '@pos/sales/data-access';
 import { PaymentType } from '@pos/shared/api';
 import {
     UICard,
@@ -74,6 +79,7 @@ export interface CartPaymentProps {
     total: number;
     ebtEligibleTotal: number;
     canReceiveChecks: boolean;
+    creditCardSurchargePercent?: number;
     onPaymentEntered: (payments: ICartPayment[]) => void;
     footerActions?: React.ReactNode;
     disableSubmit?: boolean;
@@ -84,6 +90,7 @@ export function CartPayment({
     total,
     ebtEligibleTotal,
     canReceiveChecks,
+    creditCardSurchargePercent = 0,
     onPaymentEntered,
     footerActions,
     disableSubmit = false,
@@ -149,6 +156,22 @@ export function CartPayment({
         method: PaymentKey,
         value: PaymentInfo = form.getValues() as PaymentInfo,
     ) => !!value[getMethodEnabledKey(method)];
+
+    const activeCardBaseAmount = toNumber(watchedValues.cc);
+    const activeCardSurchargeAmount =
+        isMethodActive('cc', watchedValues) &&
+        creditCardSurchargePercent > 0
+            ? calculateCreditCardSurcharge(
+                  activeCardBaseAmount,
+                  creditCardSurchargePercent,
+              )
+            : 0;
+    const activeCardChargeAmount = getPaymentChargedAmount({
+        type: PaymentType.CC,
+        amount: activeCardBaseAmount,
+        baseAmount: activeCardBaseAmount,
+        surchargeAmount: activeCardSurchargeAmount,
+    });
 
     const setMethodActive = (method: PaymentKey, active: boolean) => {
         const currentValues = form.getValues() as PaymentInfo;
@@ -229,7 +252,12 @@ export function CartPayment({
             return;
         }
 
-        onPaymentEntered(result);
+        onPaymentEntered(
+            enrichCreditCardPaymentsWithSurcharge(
+                result,
+                creditCardSurchargePercent,
+            ),
+        );
     };
 
     useEffect(() => {
@@ -540,6 +568,44 @@ export function CartPayment({
                                 $ {roundedReceivedTotal.toFixed(2)}
                             </Text>
                         </View>
+                        {activeCardSurchargeAmount > 0 ? (
+                            <>
+                                <View
+                                    style={[
+                                        local.summaryMetaRow,
+                                        isCompact &&
+                                            local.summaryMetaRowCompact,
+                                    ]}
+                                >
+                                    <Text style={local.summaryMetaLabel}>
+                                        {t(
+                                            'PAYMENT_CreditCardSurcharge',
+                                            'Credit Card Surcharge',
+                                        )}
+                                    </Text>
+                                    <Text style={local.summaryMetaValue}>
+                                        $ {activeCardSurchargeAmount.toFixed(2)}
+                                    </Text>
+                                </View>
+                                <View
+                                    style={[
+                                        local.summaryMetaRow,
+                                        isCompact &&
+                                            local.summaryMetaRowCompact,
+                                    ]}
+                                >
+                                    <Text style={local.summaryMetaLabel}>
+                                        {t(
+                                            'PAYMENT_ChargeToCard',
+                                            'Charge to card',
+                                        )}
+                                    </Text>
+                                    <Text style={local.summaryMetaValue}>
+                                        $ {activeCardChargeAmount.toFixed(2)}
+                                    </Text>
+                                </View>
+                            </>
+                        ) : null}
                         {isExactPayment && (
                             <Text style={local.completeHint}>
                                 {t(
@@ -844,6 +910,17 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         summaryFooterRowCompact: {
             paddingVertical: 6,
         },
+        summaryMetaRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: tokens.spacing.sm,
+            paddingHorizontal: tokens.spacing.xs,
+            paddingTop: 4,
+        },
+        summaryMetaRowCompact: {
+            paddingTop: 2,
+        },
         summaryFooterRowComplete: {
             backgroundColor: `${tokens.colors.success}1f`,
             borderColor: `${tokens.colors.success}66`,
@@ -855,10 +932,26 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontWeight: '700',
             fontSize: 12,
         },
+        summaryMetaLabel: {
+            flex: 1,
+            minWidth: 0,
+            flexShrink: 1,
+            color: tokens.colors.textMuted,
+            fontSize: 12,
+            fontWeight: '600',
+            lineHeight: 16,
+        },
         summaryFooterValue: {
             color: tokens.colors.textPrimary,
             fontSize: 24,
             fontWeight: '800',
+        },
+        summaryMetaValue: {
+            color: tokens.colors.textPrimary,
+            fontSize: 14,
+            fontWeight: '700',
+            flexShrink: 0,
+            textAlign: 'right',
         },
         summaryFooterValueCompact: {
             fontSize: 20,

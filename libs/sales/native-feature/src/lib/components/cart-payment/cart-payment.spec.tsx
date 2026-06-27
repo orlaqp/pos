@@ -303,4 +303,89 @@ describe('CartPayment integration', () => {
             disabled: false,
         });
     });
+
+    it('shows credit card surcharge summary and emits enriched card payment', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId, getByText } = render(
+            <CartPayment
+                total={100}
+                ebtEligibleTotal={0}
+                canReceiveChecks={false}
+                creditCardSurchargePercent={3}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-cc'));
+
+        const surchargeLabel = getByText('Credit Card Surcharge');
+        const surchargeAmount = getByText('$ 3.00');
+        const chargeLabel = getByText('Charge to card');
+        const chargeAmount = getByText('$ 103.00');
+
+        expect(surchargeLabel).toHaveStyle({ flex: 1, minWidth: 0 });
+        expect(surchargeAmount).toHaveStyle({
+            flexShrink: 0,
+            textAlign: 'right',
+        });
+        expect(chargeLabel).toHaveStyle({ flex: 1, minWidth: 0 });
+        expect(chargeAmount).toHaveStyle({
+            flexShrink: 0,
+            textAlign: 'right',
+        });
+
+        fireEvent.press(getByTestId('payment-submit-button'));
+
+        expect(onPaymentEntered).toHaveBeenCalledWith([
+            {
+                type: 'CC',
+                amount: 100,
+                baseAmount: 100,
+                surchargeRate: 3,
+                surchargeAmount: 3,
+            },
+        ]);
+    });
+
+    it('emits split tender with surcharge metadata only on card payment', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId } = render(
+            <CartPayment
+                total={100}
+                ebtEligibleTotal={0}
+                canReceiveChecks={false}
+                creditCardSurchargePercent={3}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-cash'));
+        fireEvent.changeText(getByTestId('payment-input-cash'), '40');
+        fireEvent.press(getByTestId('payment-card-cc'));
+        fireEvent.changeText(getByTestId('payment-input-cc'), '60');
+        fireEvent.press(getByTestId('payment-submit-button'));
+
+        expect(onPaymentEntered).toHaveBeenCalledWith([
+            { type: 'CC', amount: 60, baseAmount: 60, surchargeRate: 3, surchargeAmount: 1.8 },
+            { type: 'CASH', amount: 40 },
+        ]);
+    });
+
+    it('does not show surcharge details for non-card payments', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId, queryByText } = render(
+            <CartPayment
+                total={50}
+                ebtEligibleTotal={0}
+                canReceiveChecks={false}
+                creditCardSurchargePercent={3}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-cash'));
+
+        expect(queryByText('Credit Card Surcharge')).toBeNull();
+        expect(queryByText('Charge to card')).toBeNull();
+    });
 });

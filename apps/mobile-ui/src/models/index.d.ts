@@ -374,11 +374,17 @@ export declare const OrderLine: (new (init: ModelInit<OrderLine>) => OrderLine)
 type EagerPayment = {
   readonly type: PaymentType | keyof typeof PaymentType;
   readonly amount: number;
+  readonly baseAmount?: number | null;
+  readonly surchargeRate?: number | null;
+  readonly surchargeAmount?: number | null;
 }
 
 type LazyPayment = {
   readonly type: PaymentType | keyof typeof PaymentType;
   readonly amount: number;
+  readonly baseAmount?: number | null;
+  readonly surchargeRate?: number | null;
+  readonly surchargeAmount?: number | null;
 }
 
 export declare type Payment = LazyLoading extends LazyLoadingDisabled ? EagerPayment : LazyPayment
@@ -1432,6 +1438,7 @@ type EagerGlobalSettings = {
   readonly timezone: string;
   readonly scaleBarcodePriceFormat?: string | null;
   readonly taxValue?: number | null;
+  readonly creditCardSurchargePercent?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -1443,6 +1450,7 @@ type LazyGlobalSettings = {
   readonly timezone: string;
   readonly scaleBarcodePriceFormat?: string | null;
   readonly taxValue?: number | null;
+  readonly creditCardSurchargePercent?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

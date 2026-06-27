@@ -410,6 +410,9 @@ enum PaymentType {
 type Payment {
     type: PaymentType!
     amount: Float!
+    baseAmount: Float
+    surchargeRate: Float
+    surchargeAmount: Float
 }
 
 enum OrderStatus {
@@ -548,6 +551,7 @@ type GlobalSettings @model @auth(rules: [{allow: owner, ownerField: "tenantId", 
     timezone: String! @default(value: "America/New_York")
     scaleBarcodePriceFormat: String @default(value: "LEGACY_4_DIGIT_PRICE")
     taxValue: Float @default(value: "0")
+    creditCardSurchargePercent: Float @default(value: "0")
 }
 
 type DiscountDefinition @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {
