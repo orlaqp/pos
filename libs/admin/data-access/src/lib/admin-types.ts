@@ -1,7 +1,7 @@
-import type { BrandEntity } from '../../../../brands/data-access/src/lib/brand.entity';
-import type { CategoryEntity } from '../../../../categories/data-access/src/lib/category.entity';
-import type { ProductEntity } from '../../../../products/data-access/src/lib/product.entity';
-import type { UnitOfMeasureEntity } from '../../../../unit-of-measures/data-access/src/lib/unit-of-measure.entity';
+import type { BrandEntity } from '@pos/brands/data-access/entities';
+import type { CategoryEntity } from '@pos/categories/data-access/entities';
+import type { ProductEntity } from '@pos/products/data-access/entities';
+import type { UnitOfMeasureEntity } from '@pos/unit-of-measures/data-access/entities';
 
 export type TenantSummary = {
     id: string;
@@ -32,6 +32,39 @@ export type AdminCatalogData = {
     units: UnitOfMeasureEntity[];
 };
 
+export type DirectoryContact = {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    companyId: string | null;
+    role: string | null;
+    status: 'active' | 'review';
+};
+
+export type DirectoryCompany = {
+    id: string;
+    name: string;
+    type: string | null;
+    primaryContactId: string | null;
+    status: 'active' | 'review';
+};
+
+export type CatalogVendor = {
+    id: string;
+    name: string;
+    companyId: string | null;
+    primaryContactId: string | null;
+    terms: string | null;
+    status: 'active' | 'review';
+};
+
+export type AdminDirectoryData = {
+    contacts: DirectoryContact[];
+    companies: DirectoryCompany[];
+    vendors: CatalogVendor[];
+};
+
 export type AdminDashboardData = {
     metrics: DashboardMetric[];
     recentSales: RecentSale[];
@@ -46,6 +79,7 @@ export type AdminConsoleData = {
 export type AdminTenantData = {
     dashboard: AdminDashboardData;
     catalog: AdminCatalogData;
+    directory: AdminDirectoryData;
 };
 
 export type ProductCatalogChange = {

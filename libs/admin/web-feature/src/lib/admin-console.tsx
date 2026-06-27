@@ -18,6 +18,7 @@ import { ReportingWebFeature } from '@pos/reporting/web-feature';
 import { SalesWebFeature } from '@pos/sales/web-feature';
 import { AdminLayout, EmptyState, ThemeProvider } from '@pos/shared/ui-web';
 import { UnitOfMeasuresWebFeature } from '@pos/unit-of-measures/web-feature';
+import { DirectoryWebFeature } from './directory-web-feature';
 import { adminNavSections } from './nav-config';
 import { TenantSelector } from './tenant-selector';
 
@@ -88,7 +89,14 @@ export function AdminConsole() {
                     }}
                     onSearchChange={setSearchValue}
                 >
-                    {renderRoute(activeRoute, selectedTenant.name, activeTenantData, searchValue, applyProductChange)}
+                    {renderRoute(
+                        activeRoute,
+                        selectedTenant.name,
+                        activeTenantData,
+                        searchValue,
+                        setActiveRoute,
+                        applyProductChange
+                    )}
                 </AdminLayout>
             </AuthGate>
         </ThemeProvider>
@@ -100,8 +108,24 @@ function renderRoute(
     tenantName: string,
     data: ReturnType<typeof getAdminConsoleData>['tenantData'][string],
     searchValue: string,
+    setActiveRoute: (route: AdminRouteId) => void,
     applyProductChange: (change: ProductCatalogChange) => void
 ) {
+    if (
+        activeRoute === ADMIN_ROUTES.directory ||
+        activeRoute === ADMIN_ROUTES.directoryContacts ||
+        activeRoute === ADMIN_ROUTES.directoryCompanies ||
+        activeRoute === ADMIN_ROUTES.catalogVendors
+    ) {
+        return (
+            <DirectoryWebFeature
+                directory={data.directory}
+                query={searchValue}
+                route={activeRoute}
+                onRouteChange={setActiveRoute}
+            />
+        );
+    }
     if (activeRoute === ADMIN_ROUTES.products) {
         return (
             <ProductsWebFeature

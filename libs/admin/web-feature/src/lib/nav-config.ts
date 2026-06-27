@@ -18,6 +18,7 @@ import {
     Store,
     Tag,
     Users,
+    UserRound,
 } from 'lucide-react';
 import { ADMIN_ROUTES, AdminRouteId } from '@pos/admin/data-access';
 import { NavSection } from '@pos/shared/ui-web';
@@ -52,6 +53,17 @@ export const adminNavSections: NavSection<AdminRouteId>[] = [
         items: [
             { id: ADMIN_ROUTES.employees, title: 'Employees', icon: Users },
             { id: ADMIN_ROUTES.discounts, title: 'Discounts', icon: Percent },
+            {
+                id: ADMIN_ROUTES.directory,
+                title: 'Directory',
+                icon: Users,
+                children: [
+                    { id: ADMIN_ROUTES.directory, title: 'Dashboard', icon: LayoutDashboard },
+                    { id: ADMIN_ROUTES.directoryContacts, title: 'Contacts', icon: UserRound },
+                    { id: ADMIN_ROUTES.directoryCompanies, title: 'Companies', icon: Store },
+                    { id: ADMIN_ROUTES.catalogVendors, title: 'Catalog Vendors', icon: PackageOpen },
+                ],
+            },
             {
                 id: ADMIN_ROUTES.products,
                 title: 'Catalog',

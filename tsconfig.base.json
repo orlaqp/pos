@@ -27,12 +27,18 @@
                 "libs/back-office/native-feature/src/index.ts"
             ],
             "@pos/brands/data-access": ["libs/brands/data-access/src/index.ts"],
+            "@pos/brands/data-access/entities": [
+                "libs/brands/data-access/src/lib/brand.entity.ts"
+            ],
             "@pos/brands/native-feature": [
                 "libs/brands/native-feature/src/index.ts"
             ],
             "@pos/brands/web-feature": ["libs/brands/web-feature/src/index.ts"],
             "@pos/categories/data-access": [
                 "libs/categories/data-access/src/index.ts"
+            ],
+            "@pos/categories/data-access/entities": [
+                "libs/categories/data-access/src/lib/category.entity.ts"
             ],
             "@pos/categories/native-feature": [
                 "libs/categories/native-feature/src/index.ts"
@@ -124,6 +130,9 @@
             ],
             "@pos/unit-of-measures/data-access": [
                 "libs/unit-of-measures/data-access/src/index.ts"
+            ],
+            "@pos/unit-of-measures/data-access/entities": [
+                "libs/unit-of-measures/data-access/src/lib/unit-of-measure.entity.ts"
             ],
             "@pos/unit-of-measures/native-feature": [
                 "libs/unit-of-measures/native-feature/src/index.ts"

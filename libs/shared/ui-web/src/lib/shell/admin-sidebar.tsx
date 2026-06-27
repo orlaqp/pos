@@ -19,7 +19,7 @@ export function AdminSidebar<TRoute extends string>({
     sections,
     onRouteChange,
 }: AdminSidebarProps<TRoute>) {
-    const [openGroups, setOpenGroups] = useState<string[]>(['Reports', 'Catalog']);
+    const [openGroups, setOpenGroups] = useState<string[]>(['Reports', 'Directory', 'Catalog']);
 
     const toggleGroup = (title: string) => {
         setOpenGroups((current) =>
@@ -41,14 +41,15 @@ export function AdminSidebar<TRoute extends string>({
                         <div className="flex flex-col gap-1">
                             {section.items.map((item) => {
                                 const Icon = item.icon;
-                                const isOpen = openGroups.includes(item.title);
-                                const isActive = activeRoute === item.id;
+                                const hasActiveChild = item.children?.some((child) => child.id === activeRoute) ?? false;
+                                const isOpen = openGroups.includes(item.title) || hasActiveChild;
+                                const isActive = activeRoute === item.id || hasActiveChild;
 
                                 if (item.children?.length) {
                                     return (
                                         <Collapsible key={item.id} open={isOpen} onOpenChange={() => toggleGroup(item.title)}>
                                             <CollapsibleTrigger asChild>
-                                                <Button variant="ghost" className="h-auto w-full min-w-0 justify-start px-3 py-2.5 text-sidebar-foreground">
+                                                <Button variant="ghost" className={cn('h-auto w-full min-w-0 justify-start px-3 py-2.5 text-sidebar-foreground', isActive && 'bg-sidebar-accent text-sidebar-accent-foreground')}>
                                                     <Icon className="shrink-0" />
                                                     <span className="min-w-0 flex-1 truncate text-left">{item.title}</span>
                                                     <ChevronRight className={cn('shrink-0 transition-transform', isOpen && 'rotate-90')} />
