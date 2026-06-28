@@ -97,7 +97,10 @@ export const configureDataStore = (
                 }
 
                 if (handleDataStoreUnauthorizedError('DataStore.sync', error)) {
-                    console.error('DataStore sync error', JSON.stringify(details, null, 2));
+                    console.warn(
+                        'DataStore sync unauthorized',
+                        JSON.stringify(details, null, 2)
+                    );
                     return;
                 }
 
