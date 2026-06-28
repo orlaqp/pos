@@ -115,6 +115,7 @@ export const UINumericInput = React.forwardRef<any, Props>(
                         ]}
                         inputContainerStyle={[
                             styles.inputContainerStyle,
+                            inputProps.inputContainerStyle,
                             focused
                                 ? {
                                       borderWidth: 1,
@@ -122,7 +123,7 @@ export const UINumericInput = React.forwardRef<any, Props>(
                                   }
                                 : undefined,
                         ]}
-                        inputStyle={styles.inputStyle}
+                        inputStyle={[styles.inputStyle, inputProps.inputStyle]}
                     />
                 )}
                 rules={mergedRules}

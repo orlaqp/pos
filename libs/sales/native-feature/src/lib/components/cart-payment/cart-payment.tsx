@@ -179,6 +179,9 @@ export function CartPayment({
         isMethodActive(method, formValue),
     );
     const showSplitBalanceBar = activeMethods.length === 2;
+    const activeBalanceMethods = activeMethods.filter(
+        (method) => toNumber(watchedValues[method]) > 0,
+    );
 
     const activeCardBaseAmount = toNumber(watchedValues.cc);
     const activeCardSurchargeAmount =
@@ -283,17 +286,258 @@ export function CartPayment({
 
     const getBalanceBarSegmentStyle = (method: PaymentKey) => {
         const amount = toNumber(watchedValues[method]);
-        const widthPercent =
-            roundedTotal > 0 ? Math.min(100, (amount / roundedTotal) * 100) : 0;
 
         return [
             local.balanceBarSegment,
             {
                 backgroundColor: PaymentMethodColor[method],
-                flexBasis: `${widthPercent}%`,
+                flexBasis: 0,
+                flexGrow: round2Dec(amount),
             },
         ];
     };
+
+    const rebalancePaymentMethod = useCallback(
+        (
+            paymentKey: PaymentKey,
+            raw: unknown,
+            values: PaymentInfo = form.getValues() as PaymentInfo,
+        ) => {
+            const rawText = `${raw ?? ''}`.trim();
+            if (rawText === '') return;
+
+            if (programmaticUpdates.current.has(paymentKey)) {
+                programmaticUpdates.current.delete(paymentKey);
+                return;
+            }
+
+            previousValues.current[paymentKey] = toNumber(raw);
+
+            const currentlyActiveMethods = paymentMethods.filter((method) =>
+                isMethodActive(method, values),
+            );
+
+            if (!currentlyActiveMethods.includes(paymentKey)) return;
+
+            const balance = calculateSplitPaymentBalance({
+                changedMethod: paymentKey,
+                activeMethods: currentlyActiveMethods,
+                values: {
+                    ...values,
+                    [paymentKey]: raw,
+                },
+                total,
+                ebtEligibleTotal,
+            });
+
+            cashierEnteredMethod.current = paymentKey;
+            calculatedMethod.current = balance.calculatedMethod ?? null;
+            cappedMethod.current = balance.cappedMethod ?? null;
+
+            (Object.keys(balance.values) as PaymentKey[]).forEach((method) => {
+                const nextValue = balance.values[method];
+                if (nextValue === undefined) return;
+                if (
+                    round2Dec(toNumber(values[method])) === round2Dec(nextValue)
+                ) {
+                    return;
+                }
+
+                programmaticUpdates.current.add(method);
+                form.setValue(
+                    method,
+                    formatPaymentAmount(nextValue) as PaymentInfo[typeof method],
+                    {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                        shouldValidate: true,
+                    },
+                );
+            });
+        },
+        [ebtEligibleTotal, form, isMethodActive, paymentMethods, total],
+    );
+
+
+    const renderPaymentAmountInput = (
+        method: PaymentKey,
+        compact: boolean,
+        active: boolean,
+    ) => (
+        <View
+            testID={`payment-input-wrap-${method}`}
+            style={[
+                local.methodInputWrap,
+                compact && local.methodInputWrapCompact,
+            ]}
+        >
+            <UINumericInput
+                testID={`payment-input-${method}`}
+                keyboardType="decimal-pad"
+                name={method}
+                allowDecimals={true}
+                textAlign="right"
+                lIcon="currency-usd"
+                clearTextOnFocus={false}
+                selectTextOnFocus={true}
+                onFocus={() => {
+                    const wasActive = isMethodActive(method);
+                    if (!wasActive) {
+                        setMethodActive(method, true);
+                        return;
+                    }
+
+                    previousValues.current[method] = toNumber(
+                        form.getValues(method),
+                    );
+                    form.setValue(method, '' as PaymentInfo[typeof method]);
+                }}
+                onBlur={() =>
+                    setTimeout(() => restoreIfEmpty(method), 0)
+                }
+                onEndEditing={() =>
+                    setTimeout(() => restoreIfEmpty(method), 0)
+                }
+                onChangeText={(text) => {
+                    rebalancePaymentMethod(method, text);
+                }}
+                containerStyle={
+                    compact
+                        ? local.methodInputContainerCompact
+                        : local.methodInputContainer
+                }
+                inputContainerStyle={
+                    compact ? local.methodInputInnerCompact : local.methodInputInner
+                }
+                inputStyle={[
+                    styles.inputStyle,
+                    local.methodInputText,
+                    compact && local.methodInputTextCompact,
+                    !active && local.methodInputTextInactive,
+                ]}
+            />
+        </View>
+    );
+
+    const renderPaymentMethodGrid = () => (
+        <View
+            testID="payment-methods-grid"
+            style={[local.methodsGrid, isCompact && local.methodsGridCompact]}
+        >
+            {paymentMethodRows.map((row, rowIndex) => (
+                <View key={`payment-row-${rowIndex}`} style={local.methodGridRow}>
+                    {row.map((m) => {
+                        const isSingleCard = row.length === 1;
+                        const isActive = isMethodActive(m, formValue);
+
+                        return (
+                            <Pressable
+                                key={m}
+                                testID={`payment-card-${m}`}
+                                onPress={() => setMethodActive(m, !isActive)}
+                                style={[
+                                    isSingleCard
+                                        ? local.methodCardSingle
+                                        : local.methodCardHalf,
+                                    isCompact && local.methodCardPressableCompact,
+                                ]}
+                            >
+                                {isActive ? (
+                                    <View style={local.methodCardActiveAccent} />
+                                ) : null}
+                                <UICard
+                                    tone="default"
+                                    padding={isCompact ? 'xs' : 'sm'}
+                                    radius="md"
+                                    style={[
+                                        local.methodCard,
+                                        isCompact && local.methodCardCompact,
+                                        isActive
+                                            ? local.methodCardActive
+                                            : local.methodCardInactive,
+                                    ]}
+                                >
+                                    <View
+                                        style={[
+                                            local.methodBody,
+                                            isCompact && local.methodBodyCompact,
+                                        ]}
+                                    >
+                                        <View
+                                            testID={
+                                                isCompact && isActive
+                                                    ? `payment-method-active-row-${m}`
+                                                    : undefined
+                                            }
+                                            style={[
+                                                local.methodPreviewRow,
+                                                isCompact &&
+                                                    isActive &&
+                                                    local.methodActiveCompactRow,
+                                            ]}
+                                        >
+                                            <Text
+                                                testID={`payment-method-label-${m}`}
+                                                style={[
+                                                    local.methodCaption,
+                                                    isCompact &&
+                                                        local.methodCaptionCompact,
+                                                    isActive
+                                                        ? local.methodCaptionActive
+                                                        : local.methodCaptionInactive,
+                                                ]}
+                                            >
+                                                {t(
+                                                    PaymentMethod[m].labelKey,
+                                                    PaymentMethod[m].label,
+                                                )}
+                                            </Text>
+                                            {isCompact && !isActive ? (
+                                                <Text
+                                                    testID={`payment-amount-preview-${m}`}
+                                                    style={local.methodAmountPreview}
+                                                >
+                                                    $
+                                                    {toNumber(
+                                                        watchedValues[m],
+                                                    ).toFixed(2)}
+                                                </Text>
+                                            ) : null}
+                                            {isCompact && isActive
+                                                ? renderPaymentAmountInput(
+                                                      m,
+                                                      true,
+                                                      isActive,
+                                                  )
+                                                : null}
+                                        </View>
+                                        {!isCompact
+                                            ? renderPaymentAmountInput(
+                                                  m,
+                                                  false,
+                                                  isActive,
+                                              )
+                                            : null}
+                                        {!isCompact && getMethodHelperText(m) ? (
+                                            <Text
+                                                style={[
+                                                    local.methodHelperText,
+                                                    cappedMethod.current === m &&
+                                                        local.methodHelperTextWarning,
+                                                ]}
+                                            >
+                                                {getMethodHelperText(m)}
+                                            </Text>
+                                        ) : null}
+                                    </View>
+                                </UICard>
+                            </Pressable>
+                        );
+                    })}
+                </View>
+            ))}
+        </View>
+    );
 
     const completeOrder = (info: PaymentInfo) => {
         const result: ICartPayment[] = [];
@@ -349,57 +593,11 @@ export function CartPayment({
             if (!paymentMethods.includes(paymentKey)) return;
 
             const raw = value[paymentKey];
-            const rawText = `${raw ?? ''}`.trim();
-            if (rawText === '') return;
-
-            if (programmaticUpdates.current.has(paymentKey)) {
-                programmaticUpdates.current.delete(paymentKey);
-                return;
-            }
-
-            previousValues.current[paymentKey] = toNumber(raw);
-
-            const values = value as PaymentInfo;
-            const currentlyActiveMethods = paymentMethods.filter((method) =>
-                isMethodActive(method, values),
-            );
-
-            if (!currentlyActiveMethods.includes(paymentKey)) return;
-
-            const balance = calculateSplitPaymentBalance({
-                changedMethod: paymentKey,
-                activeMethods: currentlyActiveMethods,
-                values,
-                total,
-                ebtEligibleTotal,
-            });
-
-            cashierEnteredMethod.current = paymentKey;
-            calculatedMethod.current = balance.calculatedMethod ?? null;
-            cappedMethod.current = balance.cappedMethod ?? null;
-
-            (Object.keys(balance.values) as PaymentKey[]).forEach((method) => {
-                const nextValue = balance.values[method];
-                if (nextValue === undefined) return;
-                if (round2Dec(toNumber(value[method])) === round2Dec(nextValue)) {
-                    return;
-                }
-
-                programmaticUpdates.current.add(method);
-                form.setValue(
-                    method,
-                    formatPaymentAmount(nextValue) as PaymentInfo[typeof method],
-                    {
-                        shouldDirty: true,
-                        shouldTouch: true,
-                        shouldValidate: true,
-                    },
-                );
-            });
+            rebalancePaymentMethod(paymentKey, raw, value as PaymentInfo);
         });
 
         return () => subscription.unsubscribe();
-    }, [form, paymentMethods, total, ebtEligibleTotal, isMethodActive]);
+    }, [form, paymentMethods, rebalancePaymentMethod]);
 
     return (
         <View style={local.shell}>
@@ -498,181 +696,18 @@ export function CartPayment({
                 >
                     <UIVerticalSpacer size="small" />
                 </View>
-                <ScrollView
-                    style={local.methodsScroll}
-                    contentContainerStyle={local.methodsScrollContent}
-                    showsVerticalScrollIndicator={false}
-                >
-                    <View style={local.methodsGrid}>
-                        {paymentMethodRows.map((row, rowIndex) => (
-                            <View
-                                key={`payment-row-${rowIndex}`}
-                                style={local.methodGridRow}
-                            >
-                                {row.map((m) => {
-                                    const isSingleCard = row.length === 1;
-                                    const isActive = isMethodActive(
-                                        m,
-                                        formValue,
-                                    );
-
-                                    return (
-                                        <Pressable
-                                            key={m}
-                                            testID={`payment-card-${m}`}
-                                            onPress={() =>
-                                                setMethodActive(m, !isActive)
-                                            }
-                                            style={[
-                                                isSingleCard
-                                                    ? local.methodCardSingle
-                                                    : local.methodCardHalf,
-                                            ]}
-                                        >
-                                            {isActive ? (
-                                                <View
-                                                    style={
-                                                        local.methodCardActiveAccent
-                                                    }
-                                                />
-                                            ) : null}
-                                            <UICard
-                                                tone="default"
-                                                padding={
-                                                    isCompact ? 'xs' : 'sm'
-                                                }
-                                                radius="md"
-                                                style={[
-                                                    local.methodCard,
-                                                    isCompact &&
-                                                        local.methodCardCompact,
-                                                    isActive
-                                                        ? local.methodCardActive
-                                                        : local.methodCardInactive,
-                                                ]}
-                                            >
-                                                <View style={local.methodBody}>
-                                                    <Text
-                                                        style={[
-                                                            local.methodCaption,
-                                                            isActive
-                                                                ? local.methodCaptionActive
-                                                                : local.methodCaptionInactive,
-                                                        ]}
-                                                    >
-                                                        {t(
-                                                            PaymentMethod[m]
-                                                                .labelKey,
-                                                            PaymentMethod[m]
-                                                                .label,
-                                                        )}
-                                                    </Text>
-                                                    <View
-                                                        style={
-                                                            local.methodInputWrap
-                                                        }
-                                                    >
-                                                        <UINumericInput
-                                                            testID={`payment-input-${m}`}
-                                                            keyboardType="decimal-pad"
-                                                            name={m}
-                                                            allowDecimals={true}
-                                                            textAlign="right"
-                                                            lIcon="currency-usd"
-                                                            clearTextOnFocus={
-                                                                false
-                                                            }
-                                                            selectTextOnFocus={
-                                                                true
-                                                            }
-                                                            onFocus={() => {
-                                                                const wasActive =
-                                                                    isMethodActive(
-                                                                        m,
-                                                                    );
-                                                                if (
-                                                                    !wasActive
-                                                                ) {
-                                                                    setMethodActive(
-                                                                        m,
-                                                                        true,
-                                                                    );
-                                                                    return;
-                                                                }
-
-                                                                previousValues.current[
-                                                                    m
-                                                                ] = toNumber(
-                                                                    form.getValues(
-                                                                        m,
-                                                                    ),
-                                                                );
-                                                                form.setValue(
-                                                                    m,
-                                                                    '' as PaymentInfo[typeof m],
-                                                                );
-                                                            }}
-                                                            onBlur={() =>
-                                                                setTimeout(
-                                                                    () =>
-                                                                        restoreIfEmpty(
-                                                                            m,
-                                                                        ),
-                                                                    0,
-                                                                )
-                                                            }
-                                                            onEndEditing={() =>
-                                                                setTimeout(
-                                                                    () =>
-                                                                        restoreIfEmpty(
-                                                                            m,
-                                                                        ),
-                                                                    0,
-                                                                )
-                                                            }
-                                                            containerStyle={
-                                                                isCompact
-                                                                    ? local.methodInputContainerCompact
-                                                                    : local.methodInputContainer
-                                                            }
-                                                            inputContainerStyle={
-                                                                isCompact
-                                                                    ? local.methodInputInnerCompact
-                                                                    : local.methodInputInner
-                                                            }
-                                                            inputStyle={[
-                                                                styles.inputStyle,
-                                                                local.methodInputText,
-                                                                isCompact &&
-                                                                    local.methodInputTextCompact,
-                                                                !isActive &&
-                                                                    local.methodInputTextInactive,
-                                                            ]}
-                                                        />
-                                                    </View>
-                                                    {getMethodHelperText(m) ? (
-                                                        <Text
-                                                            style={[
-                                                                local.methodHelperText,
-                                                                cappedMethod.current ===
-                                                                    m &&
-                                                                    local.methodHelperTextWarning,
-                                                            ]}
-                                                        >
-                                                            {getMethodHelperText(
-                                                                m,
-                                                            )}
-                                                        </Text>
-                                                    ) : null}
-                                                </View>
-                                            </UICard>
-                                        </Pressable>
-                                    );
-                                })}
-                            </View>
-                        ))}
-                    </View>
-                </ScrollView>
+                {isCompact ? (
+                    renderPaymentMethodGrid()
+                ) : (
+                    <ScrollView
+                        testID="payment-methods-scroll"
+                        style={local.methodsScroll}
+                        contentContainerStyle={local.methodsScrollContent}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        {renderPaymentMethodGrid()}
+                    </ScrollView>
+                )}
                 {showSplitBalanceBar ? (
                     <UICard
                         tone="muted"
@@ -684,7 +719,7 @@ export function CartPayment({
                             testID="payment-split-balance-bar"
                             style={local.balanceBarTrack}
                         >
-                            {activeMethods.map((method) => (
+                            {activeBalanceMethods.map((method) => (
                                 <View
                                     key={`payment-balance-${method}`}
                                     testID={`payment-balance-segment-${method}`}
@@ -970,6 +1005,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         methodsGrid: {
             gap: tokens.spacing.sm,
         },
+        methodsGridCompact: {
+            flexShrink: 0,
+            gap: 6,
+        },
         methodGridRow: {
             flexDirection: 'row',
             gap: tokens.spacing.sm,
@@ -989,10 +1028,13 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             overflow: 'hidden',
         },
         methodCardCompact: {
-            minHeight: 74,
+            minHeight: 66,
         },
         methodCardHalf: {
             flex: 1,
+        },
+        methodCardPressableCompact: {
+            minHeight: 66,
         },
         methodCardSingle: {
             width: '100%',
@@ -1013,6 +1055,21 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flex: 1,
             justifyContent: 'space-between',
         },
+        methodBodyCompact: {
+            gap: 4,
+            justifyContent: 'center',
+        },
+        methodPreviewRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: tokens.spacing.sm,
+        },
+        methodActiveCompactRow: {
+            width: '100%',
+            minHeight: 54,
+            alignItems: 'center',
+        },
         methodCaption: {
             textTransform: 'uppercase',
             letterSpacing: 0.9,
@@ -1020,16 +1077,30 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontSize: 10,
             marginBottom: tokens.spacing.sm,
         },
+        methodCaptionCompact: {
+            fontSize: 9,
+            marginBottom: 0,
+            paddingLeft: 10,
+        },
         methodCaptionActive: {
             color: '#B6D4FF',
         },
         methodCaptionInactive: {
             color: '#8A98AA',
         },
+        methodAmountPreview: {
+            color: tokens.colors.textMuted,
+            fontSize: 18,
+            fontWeight: '800',
+        },
         methodInputWrap: {
             width: '100%',
             justifyContent: 'center',
-            paddingHorizontal: tokens.spacing.sm,
+            paddingHorizontal: tokens.spacing.xs,
+        },
+        methodInputWrapCompact: {
+            alignSelf: 'center',
+            width: '50%',
         },
         methodInputContainer: {
             paddingHorizontal: 0,
@@ -1040,6 +1111,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             paddingHorizontal: 0,
             marginTop: 0,
             marginBottom: 0,
+            height: 46,
         },
         methodInputInner: {
             marginTop: 0,
@@ -1050,13 +1122,14 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         methodInputInnerCompact: {
             marginTop: 0,
-            minHeight: 34,
+            minHeight: 42,
+            height: 42,
             borderRadius: 10,
             paddingLeft: 8,
             paddingRight: 8,
         },
         methodInputTextCompact: {
-            fontSize: 14,
+            fontSize: 13,
         },
         methodInputText: {
             width: '100%',
@@ -1072,6 +1145,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontWeight: '700',
             marginTop: 4,
             textAlign: 'right',
+        },
+        methodHelperTextCompact: {
+            fontSize: 10,
+            marginTop: 0,
         },
         methodHelperTextWarning: {
             color: tokens.colors.warning,
