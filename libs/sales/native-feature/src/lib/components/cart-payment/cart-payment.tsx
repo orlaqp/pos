@@ -37,6 +37,13 @@ import {
 const round2Dec = (value: number) => +value.toFixed(2);
 const formatPaymentAmount = (value: number) => `${round2Dec(value)}`;
 
+const PaymentMethodColor: Record<PaymentKey, string> = {
+    cc: '#4EA3FF',
+    cash: '#4FC37B',
+    check: '#F2B84B',
+    ebt: '#9B7CFF',
+};
+
 const PaymentMethod = {
     cc: {
         labelKey: 'PAYMENT_Method_CreditCard',
@@ -281,10 +288,10 @@ export function CartPayment({
 
         return [
             local.balanceBarSegment,
-            method === 'ebt'
-                ? local.balanceBarSegmentEbt
-                : local.balanceBarSegmentDefault,
-            { flexBasis: `${widthPercent}%` },
+            {
+                backgroundColor: PaymentMethodColor[method],
+                flexBasis: `${widthPercent}%`,
+            },
         ];
     };
 
@@ -680,6 +687,7 @@ export function CartPayment({
                             {activeMethods.map((method) => (
                                 <View
                                     key={`payment-balance-${method}`}
+                                    testID={`payment-balance-segment-${method}`}
                                     style={getBalanceBarSegmentStyle(method)}
                                 />
                             ))}
@@ -691,11 +699,13 @@ export function CartPayment({
                                     style={local.balanceLegendItem}
                                 >
                                     <View
+                                        testID={`payment-balance-dot-${method}`}
                                         style={[
                                             local.balanceLegendDot,
-                                            method === 'ebt'
-                                                ? local.balanceLegendDotEbt
-                                                : local.balanceLegendDotDefault,
+                                            {
+                                                backgroundColor:
+                                                    PaymentMethodColor[method],
+                                            },
                                         ]}
                                     />
                                     <Text style={local.balanceLegendText}>
@@ -1081,16 +1091,13 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             borderColor: '#2A3442',
             backgroundColor: '#111922',
             flexDirection: 'row',
+            gap: 3,
+            padding: 2,
         },
         balanceBarSegment: {
             height: '100%',
+            borderRadius: 999,
             minWidth: 2,
-        },
-        balanceBarSegmentDefault: {
-            backgroundColor: '#4EA3FF',
-        },
-        balanceBarSegmentEbt: {
-            backgroundColor: '#6AC678',
         },
         balanceLegend: {
             flexDirection: 'row',
@@ -1109,12 +1116,6 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             height: 8,
             borderRadius: 999,
             marginRight: 6,
-        },
-        balanceLegendDotDefault: {
-            backgroundColor: '#4EA3FF',
-        },
-        balanceLegendDotEbt: {
-            backgroundColor: '#6AC678',
         },
         balanceLegendText: {
             color: tokens.colors.textMuted,

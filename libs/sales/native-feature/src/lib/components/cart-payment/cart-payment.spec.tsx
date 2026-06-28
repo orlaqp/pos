@@ -411,6 +411,15 @@ describe('CartPayment integration', () => {
         expect(getByText('Cashier-entered amount')).toBeTruthy();
         expect(getByText('Auto-calculated remaining')).toBeTruthy();
         expect(getByTestId('payment-split-balance-bar')).toBeTruthy();
+        expect(getByTestId('payment-split-balance-bar')).toHaveStyle({
+            gap: 3,
+        });
+        expect(getByTestId('payment-balance-segment-cash')).not.toHaveStyle({
+            backgroundColor: '#4EA3FF',
+        });
+        expect(getByTestId('payment-balance-dot-cash')).not.toHaveStyle({
+            backgroundColor: '#4EA3FF',
+        });
     });
 
     it('flips the calculated method when the cashier edits the calculated side', () => {
