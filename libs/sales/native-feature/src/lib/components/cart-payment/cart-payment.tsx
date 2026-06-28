@@ -131,9 +131,11 @@ export function CartPayment({
 
     const paymentMethods = useMemo(() => {
         return (Object.keys(PaymentMethod) as PaymentKey[]).filter(
-            (x) => x !== 'check' || canReceiveChecks,
+            (method) =>
+                (method !== 'check' || canReceiveChecks) &&
+                (method !== 'ebt' || round2Dec(ebtEligibleTotal) > 0),
         );
-    }, [canReceiveChecks]);
+    }, [canReceiveChecks, ebtEligibleTotal]);
     const paymentMethodRows = useMemo(() => {
         return PAYMENT_METHOD_ROWS.map((row) =>
             row.filter((method) => paymentMethods.includes(method)),

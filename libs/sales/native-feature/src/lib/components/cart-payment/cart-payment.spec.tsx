@@ -271,6 +271,31 @@ describe('CartPayment integration', () => {
         expect(getByTestId('payment-input-check')).toBeTruthy();
     });
 
+    it('only renders EBT when there is an EBT-eligible amount', () => {
+        const onPaymentEntered = jest.fn();
+        const { queryByTestId, rerender } = render(
+            <CartPayment
+                total={50}
+                ebtEligibleTotal={0}
+                canReceiveChecks={true}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        expect(queryByTestId('payment-card-ebt')).toBeNull();
+
+        rerender(
+            <CartPayment
+                total={50}
+                ebtEligibleTotal={10}
+                canReceiveChecks={true}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        expect(queryByTestId('payment-card-ebt')).not.toBeNull();
+    });
+
     it('deactivates an active payment card and resets its amount to zero', () => {
         const onPaymentEntered = jest.fn();
         const { getByTestId } = render(
