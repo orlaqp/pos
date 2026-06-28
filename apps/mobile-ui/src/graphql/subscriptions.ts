@@ -901,6 +901,9 @@ export const onCreateOrderRefund = /* GraphQL */ `subscription OnCreateOrderRefu
     refundPayments {
       type
       amount
+      baseAmount
+      surchargeRate
+      surchargeAmount
       __typename
     }
     createdByEmployeeId
@@ -938,6 +941,9 @@ export const onUpdateOrderRefund = /* GraphQL */ `subscription OnUpdateOrderRefu
     refundPayments {
       type
       amount
+      baseAmount
+      surchargeRate
+      surchargeAmount
       __typename
     }
     createdByEmployeeId
@@ -975,6 +981,9 @@ export const onDeleteOrderRefund = /* GraphQL */ `subscription OnDeleteOrderRefu
     refundPayments {
       type
       amount
+      baseAmount
+      surchargeRate
+      surchargeAmount
       __typename
     }
     createdByEmployeeId
@@ -2287,6 +2296,7 @@ export const onCreateGlobalSettings = /* GraphQL */ `subscription OnCreateGlobal
     timezone
     scaleBarcodePriceFormat
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version
@@ -2310,6 +2320,7 @@ export const onUpdateGlobalSettings = /* GraphQL */ `subscription OnUpdateGlobal
     timezone
     scaleBarcodePriceFormat
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version
@@ -2333,6 +2344,7 @@ export const onDeleteGlobalSettings = /* GraphQL */ `subscription OnDeleteGlobal
     timezone
     scaleBarcodePriceFormat
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version

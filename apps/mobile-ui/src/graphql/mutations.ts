@@ -901,6 +901,9 @@ export const createOrderRefund = /* GraphQL */ `mutation CreateOrderRefund(
     refundPayments {
       type
       amount
+      baseAmount
+      surchargeRate
+      surchargeAmount
       __typename
     }
     createdByEmployeeId
@@ -938,6 +941,9 @@ export const updateOrderRefund = /* GraphQL */ `mutation UpdateOrderRefund(
     refundPayments {
       type
       amount
+      baseAmount
+      surchargeRate
+      surchargeAmount
       __typename
     }
     createdByEmployeeId
@@ -975,6 +981,9 @@ export const deleteOrderRefund = /* GraphQL */ `mutation DeleteOrderRefund(
     refundPayments {
       type
       amount
+      baseAmount
+      surchargeRate
+      surchargeAmount
       __typename
     }
     createdByEmployeeId
@@ -2278,6 +2287,7 @@ export const createGlobalSettings = /* GraphQL */ `mutation CreateGlobalSettings
     timezone
     scaleBarcodePriceFormat
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version
@@ -2301,6 +2311,7 @@ export const updateGlobalSettings = /* GraphQL */ `mutation UpdateGlobalSettings
     timezone
     scaleBarcodePriceFormat
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version
@@ -2324,6 +2335,7 @@ export const deleteGlobalSettings = /* GraphQL */ `mutation DeleteGlobalSettings
     timezone
     scaleBarcodePriceFormat
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version

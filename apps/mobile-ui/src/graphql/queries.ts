@@ -1156,6 +1156,9 @@ export const getOrderRefund = /* GraphQL */ `query GetOrderRefund($id: ID!) {
     refundPayments {
       type
       amount
+      baseAmount
+      surchargeRate
+      surchargeAmount
       __typename
     }
     createdByEmployeeId
@@ -2507,6 +2510,7 @@ export const getGlobalSettings = /* GraphQL */ `query GetGlobalSettings($id: ID!
     timezone
     scaleBarcodePriceFormat
     taxValue
+    creditCardSurchargePercent
     createdAt
     updatedAt
     _version
@@ -2532,6 +2536,7 @@ export const listGlobalSettings = /* GraphQL */ `query ListGlobalSettings(
       timezone
       scaleBarcodePriceFormat
       taxValue
+      creditCardSurchargePercent
       createdAt
       updatedAt
       _version
@@ -2567,6 +2572,7 @@ export const syncGlobalSettings = /* GraphQL */ `query SyncGlobalSettings(
       timezone
       scaleBarcodePriceFormat
       taxValue
+      creditCardSurchargePercent
       createdAt
       updatedAt
       _version
