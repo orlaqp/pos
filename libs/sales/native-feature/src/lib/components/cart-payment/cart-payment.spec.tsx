@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
-import { Alert, Pressable, Text } from 'react-native';
+import { Alert } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 jest.mock('@pos/theme/native', () => ({
@@ -74,6 +74,7 @@ jest.mock('@pos/shared/ui-native', () => {
         onBlur,
         onEndEditing,
         disabled,
+        selectTextOnFocus,
     }: {
         name: string;
         testID?: string;
@@ -81,6 +82,7 @@ jest.mock('@pos/shared/ui-native', () => {
         onBlur?: () => void;
         onEndEditing?: () => void;
         disabled?: boolean;
+        selectTextOnFocus?: boolean;
     }) => {
         const { control } = useFormContext();
         return (
@@ -96,6 +98,7 @@ jest.mock('@pos/shared/ui-native', () => {
                         onFocus={onFocus}
                         onBlur={onBlur}
                         onEndEditing={onEndEditing}
+                        selectTextOnFocus={selectTextOnFocus}
                     />
                 )}
             />
@@ -224,7 +227,7 @@ describe('CartPayment integration', () => {
         });
     });
 
-    it('validates EBT cannot exceed eligible total', () => {
+    it('caps EBT before submit instead of showing a late validation alert', () => {
         const onPaymentEntered = jest.fn();
         const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
         const { getByTestId } = render(
@@ -239,14 +242,13 @@ describe('CartPayment integration', () => {
         fireEvent.press(getByTestId('payment-card-ebt'));
         fireEvent.changeText(getByTestId('payment-input-ebt'), '50');
         fireEvent.press(getByTestId('payment-card-cash'));
-        fireEvent.changeText(getByTestId('payment-input-cash'), '50');
         fireEvent.press(getByTestId('payment-submit-button'));
 
-        expect(alertSpy).toHaveBeenCalledWith(
-            'EBT validation failed',
-            expect.stringContaining('$50.00')
-        );
-        expect(onPaymentEntered).not.toHaveBeenCalled();
+        expect(alertSpy).not.toHaveBeenCalled();
+        expect(onPaymentEntered).toHaveBeenCalledWith([
+            { type: 'CASH', amount: 75.1 },
+            { type: 'EBT', amount: 24.9 },
+        ]);
     });
 
     it('renders check method when user can receive checks', () => {
@@ -387,5 +389,106 @@ describe('CartPayment integration', () => {
 
         expect(queryByText('Credit Card Surcharge')).toBeNull();
         expect(queryByText('Charge to card')).toBeNull();
+    });
+
+    it('rebalances the paired payment method while typing in a two-method split', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId, getByText } = render(
+            <CartPayment
+                total={100}
+                ebtEligibleTotal={0}
+                canReceiveChecks={false}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-cash'));
+        fireEvent.press(getByTestId('payment-card-cc'));
+        fireEvent.changeText(getByTestId('payment-input-cash'), '20');
+
+        expect(getByTestId('payment-input-cash')).toHaveProp('value', '20');
+        expect(getByTestId('payment-input-cc')).toHaveProp('value', '80');
+        expect(getByText('Cashier-entered amount')).toBeTruthy();
+        expect(getByText('Auto-calculated remaining')).toBeTruthy();
+        expect(getByTestId('payment-split-balance-bar')).toBeTruthy();
+    });
+
+    it('flips the calculated method when the cashier edits the calculated side', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId } = render(
+            <CartPayment
+                total={100}
+                ebtEligibleTotal={0}
+                canReceiveChecks={false}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-cash'));
+        fireEvent.press(getByTestId('payment-card-cc'));
+        fireEvent.changeText(getByTestId('payment-input-cash'), '20');
+        fireEvent.changeText(getByTestId('payment-input-cc'), '75');
+
+        expect(getByTestId('payment-input-cc')).toHaveProp('value', '75');
+        expect(getByTestId('payment-input-cash')).toHaveProp('value', '25');
+    });
+
+    it('caps EBT while typing and recalculates the paired payment method', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId, getByText } = render(
+            <CartPayment
+                total={100}
+                ebtEligibleTotal={35}
+                canReceiveChecks={false}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-ebt'));
+        fireEvent.press(getByTestId('payment-card-cash'));
+        fireEvent.changeText(getByTestId('payment-input-ebt'), '50');
+
+        expect(getByTestId('payment-input-ebt')).toHaveProp('value', '35');
+        expect(getByTestId('payment-input-cash')).toHaveProp('value', '65');
+        expect(getByText('EBT capped at eligible amount')).toBeTruthy();
+        expect(getByTestId('payment-submit-button')).toHaveProp('accessibilityState', {
+            disabled: false,
+        });
+    });
+
+    it('keeps three-method splits manual while still tracking remaining balance', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId, queryByTestId } = render(
+            <CartPayment
+                total={100}
+                ebtEligibleTotal={35}
+                canReceiveChecks={true}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-cash'));
+        fireEvent.press(getByTestId('payment-card-cc'));
+        fireEvent.press(getByTestId('payment-card-check'));
+        fireEvent.changeText(getByTestId('payment-input-cash'), '20');
+
+        expect(getByTestId('payment-input-cash')).toHaveProp('value', '20');
+        expect(getByTestId('payment-input-cc')).toHaveProp('value', '0');
+        expect(getByTestId('payment-input-check')).toHaveProp('value', '0');
+        expect(queryByTestId('payment-split-balance-bar')).toBeNull();
+    });
+
+    it('selects the full payment amount when a payment field receives focus', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId } = render(
+            <CartPayment
+                total={100}
+                ebtEligibleTotal={0}
+                canReceiveChecks={false}
+                onPaymentEntered={onPaymentEntered}
+            />
+        );
+
+        expect(getByTestId('payment-input-cash')).toHaveProp('selectTextOnFocus', true);
     });
 });

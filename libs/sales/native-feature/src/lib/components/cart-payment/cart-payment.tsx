@@ -13,10 +13,11 @@ import {
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button } from '@rneui/themed';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { translateWithFallback } from '@pos/shared/utils';
 import {
+    calculateSplitPaymentBalance,
     getAutoFillAmount,
     getRestoredValue,
     PaymentKey,
@@ -34,6 +35,7 @@ import {
 } from 'react-native';
 
 const round2Dec = (value: number) => +value.toFixed(2);
+const formatPaymentAmount = (value: number) => `${round2Dec(value)}`;
 
 const PaymentMethod = {
     cc: {
@@ -102,6 +104,10 @@ export function CartPayment({
     const t = translateWithFallback;
     const isCompact = layout === 'compact';
     const previousValues = useRef<Partial<Record<PaymentKey, number>>>({});
+    const programmaticUpdates = useRef(new Set<PaymentKey>());
+    const cashierEnteredMethod = useRef<PaymentKey | null>(null);
+    const calculatedMethod = useRef<PaymentKey | null>(null);
+    const cappedMethod = useRef<PaymentKey | null>(null);
     const form = useForm<PaymentInfo>({
         mode: 'onChange',
         defaultValues: {
@@ -149,13 +155,23 @@ export function CartPayment({
         form.setValue(method, getRestoredValue(previousValues.current[method]));
     };
 
-    const getMethodEnabledKey = (method: PaymentKey) =>
-        `with${method}` as keyof PaymentInfo;
+    const getMethodEnabledKey = useCallback(
+        (method: PaymentKey) => `with${method}` as keyof PaymentInfo,
+        [],
+    );
 
-    const isMethodActive = (
-        method: PaymentKey,
-        value: PaymentInfo = form.getValues() as PaymentInfo,
-    ) => !!value[getMethodEnabledKey(method)];
+    const isMethodActive = useCallback(
+        (
+            method: PaymentKey,
+            value: PaymentInfo = form.getValues() as PaymentInfo,
+        ) => !!value[getMethodEnabledKey(method)],
+        [form, getMethodEnabledKey],
+    );
+
+    const activeMethods = paymentMethods.filter((method) =>
+        isMethodActive(method, formValue),
+    );
+    const showSplitBalanceBar = activeMethods.length === 2;
 
     const activeCardBaseAmount = toNumber(watchedValues.cc);
     const activeCardSurchargeAmount =
@@ -187,6 +203,15 @@ export function CartPayment({
                 shouldDirty: true,
                 shouldTouch: true,
             });
+            if (cashierEnteredMethod.current === method) {
+                cashierEnteredMethod.current = null;
+            }
+            if (calculatedMethod.current === method) {
+                calculatedMethod.current = null;
+            }
+            if (cappedMethod.current === method) {
+                cappedMethod.current = null;
+            }
             return;
         }
 
@@ -212,6 +237,55 @@ export function CartPayment({
                 shouldTouch: true,
             },
         );
+    };
+
+    const getMethodHelperText = (method: PaymentKey) => {
+        if (!isMethodActive(method, watchedValues)) return null;
+        if (cappedMethod.current === method) {
+            return t(
+                'PAYMENT_EBTCappedAtEligible',
+                'EBT capped at eligible amount',
+            );
+        }
+        if (
+            method === 'ebt' &&
+            cashierEnteredMethod.current === method &&
+            !!calculatedMethod.current &&
+            round2Dec(toNumber(watchedValues.ebt)) ===
+                round2Dec(ebtEligibleTotal)
+        ) {
+            return t(
+                'PAYMENT_EBTCappedAtEligible',
+                'EBT capped at eligible amount',
+            );
+        }
+        if (calculatedMethod.current === method) {
+            return t(
+                'PAYMENT_AutoCalculatedRemaining',
+                'Auto-calculated remaining',
+            );
+        }
+        if (cashierEnteredMethod.current === method && showSplitBalanceBar) {
+            return t(
+                'PAYMENT_CashierEnteredAmount',
+                'Cashier-entered amount',
+            );
+        }
+        return null;
+    };
+
+    const getBalanceBarSegmentStyle = (method: PaymentKey) => {
+        const amount = toNumber(watchedValues[method]);
+        const widthPercent =
+            roundedTotal > 0 ? Math.min(100, (amount / roundedTotal) * 100) : 0;
+
+        return [
+            local.balanceBarSegment,
+            method === 'ebt'
+                ? local.balanceBarSegmentEbt
+                : local.balanceBarSegmentDefault,
+            { flexBasis: `${widthPercent}%` },
+        ];
     };
 
     const completeOrder = (info: PaymentInfo) => {
@@ -271,11 +345,54 @@ export function CartPayment({
             const rawText = `${raw ?? ''}`.trim();
             if (rawText === '') return;
 
+            if (programmaticUpdates.current.has(paymentKey)) {
+                programmaticUpdates.current.delete(paymentKey);
+                return;
+            }
+
             previousValues.current[paymentKey] = toNumber(raw);
+
+            const values = value as PaymentInfo;
+            const currentlyActiveMethods = paymentMethods.filter((method) =>
+                isMethodActive(method, values),
+            );
+
+            if (!currentlyActiveMethods.includes(paymentKey)) return;
+
+            const balance = calculateSplitPaymentBalance({
+                changedMethod: paymentKey,
+                activeMethods: currentlyActiveMethods,
+                values,
+                total,
+                ebtEligibleTotal,
+            });
+
+            cashierEnteredMethod.current = paymentKey;
+            calculatedMethod.current = balance.calculatedMethod ?? null;
+            cappedMethod.current = balance.cappedMethod ?? null;
+
+            (Object.keys(balance.values) as PaymentKey[]).forEach((method) => {
+                const nextValue = balance.values[method];
+                if (nextValue === undefined) return;
+                if (round2Dec(toNumber(value[method])) === round2Dec(nextValue)) {
+                    return;
+                }
+
+                programmaticUpdates.current.add(method);
+                form.setValue(
+                    method,
+                    formatPaymentAmount(nextValue) as PaymentInfo[typeof method],
+                    {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                        shouldValidate: true,
+                    },
+                );
+            });
         });
 
         return () => subscription.unsubscribe();
-    }, [form, paymentMethods]);
+    }, [form, paymentMethods, total, ebtEligibleTotal, isMethodActive]);
 
     return (
         <View style={local.shell}>
@@ -485,7 +602,7 @@ export function CartPayment({
                                                                 );
                                                                 form.setValue(
                                                                     m,
-                                                                    '' as any,
+                                                                    '' as PaymentInfo[typeof m],
                                                                 );
                                                             }}
                                                             onBlur={() =>
@@ -526,6 +643,20 @@ export function CartPayment({
                                                             ]}
                                                         />
                                                     </View>
+                                                    {getMethodHelperText(m) ? (
+                                                        <Text
+                                                            style={[
+                                                                local.methodHelperText,
+                                                                cappedMethod.current ===
+                                                                    m &&
+                                                                    local.methodHelperTextWarning,
+                                                            ]}
+                                                        >
+                                                            {getMethodHelperText(
+                                                                m,
+                                                            )}
+                                                        </Text>
+                                                    ) : null}
                                                 </View>
                                             </UICard>
                                         </Pressable>
@@ -535,6 +666,50 @@ export function CartPayment({
                         ))}
                     </View>
                 </ScrollView>
+                {showSplitBalanceBar ? (
+                    <UICard
+                        tone="muted"
+                        padding={isCompact ? 'xs' : 'sm'}
+                        radius="md"
+                        style={local.balanceCard}
+                    >
+                        <View
+                            testID="payment-split-balance-bar"
+                            style={local.balanceBarTrack}
+                        >
+                            {activeMethods.map((method) => (
+                                <View
+                                    key={`payment-balance-${method}`}
+                                    style={getBalanceBarSegmentStyle(method)}
+                                />
+                            ))}
+                        </View>
+                        <View style={local.balanceLegend}>
+                            {activeMethods.map((method) => (
+                                <View
+                                    key={`payment-balance-legend-${method}`}
+                                    style={local.balanceLegendItem}
+                                >
+                                    <View
+                                        style={[
+                                            local.balanceLegendDot,
+                                            method === 'ebt'
+                                                ? local.balanceLegendDotEbt
+                                                : local.balanceLegendDotDefault,
+                                        ]}
+                                    />
+                                    <Text style={local.balanceLegendText}>
+                                        {t(
+                                            PaymentMethod[method].labelKey,
+                                            PaymentMethod[method].label,
+                                        )}{' '}
+                                        ${toNumber(watchedValues[method]).toFixed(2)}
+                                    </Text>
+                                </View>
+                            ))}
+                        </View>
+                    </UICard>
+                ) : null}
                 <View style={local.footerRail}>
                     <UICard
                         tone="muted"
@@ -880,6 +1055,71 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         },
         methodInputTextInactive: {
             color: tokens.colors.textMuted,
+        },
+        methodHelperText: {
+            color: '#9DCCFF',
+            fontSize: 11,
+            fontWeight: '700',
+            marginTop: 4,
+            textAlign: 'right',
+        },
+        methodHelperTextWarning: {
+            color: tokens.colors.warning,
+        },
+        balanceCard: {
+            borderWidth: 1,
+            borderColor: '#26303D',
+            backgroundColor: '#0D141F',
+            marginTop: tokens.spacing.sm,
+            marginBottom: tokens.spacing.sm,
+        },
+        balanceBarTrack: {
+            height: 12,
+            borderRadius: 999,
+            overflow: 'hidden',
+            borderWidth: 1,
+            borderColor: '#2A3442',
+            backgroundColor: '#111922',
+            flexDirection: 'row',
+        },
+        balanceBarSegment: {
+            height: '100%',
+            minWidth: 2,
+        },
+        balanceBarSegmentDefault: {
+            backgroundColor: '#4EA3FF',
+        },
+        balanceBarSegmentEbt: {
+            backgroundColor: '#6AC678',
+        },
+        balanceLegend: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            gap: tokens.spacing.xs,
+            marginTop: 8,
+        },
+        balanceLegendItem: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            minWidth: 0,
+        },
+        balanceLegendDot: {
+            width: 8,
+            height: 8,
+            borderRadius: 999,
+            marginRight: 6,
+        },
+        balanceLegendDotDefault: {
+            backgroundColor: '#4EA3FF',
+        },
+        balanceLegendDotEbt: {
+            backgroundColor: '#6AC678',
+        },
+        balanceLegendText: {
+            color: tokens.colors.textMuted,
+            fontSize: 11,
+            fontWeight: '700',
         },
         footerRail: {
             borderTopWidth: 1,
