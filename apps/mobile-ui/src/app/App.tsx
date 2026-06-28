@@ -131,8 +131,13 @@ const isUnauthorizedError = (error: unknown) => {
     return message.includes('Unauthorized');
 };
 
-const logBootstrapStageError = (stage: string, error: unknown) => {
-    console.error(`App bootstrap failed during ${stage}`, error);
+const logBootstrapStageError = (
+    stage: string,
+    error: unknown,
+    options?: { fatal?: boolean }
+) => {
+    const log = options?.fatal ? console.error : console.warn;
+    log(`App bootstrap failed during ${stage}`, error);
 };
 
 const withTimeout = <T,>(
@@ -756,7 +761,7 @@ const AppContent = () => {
                 await DataStore.start();
                 finishStart();
             } catch (error) {
-                logBootstrapStageError('DataStore.start()', error);
+                logBootstrapStageError('DataStore.start()', error, { fatal: true });
                 if (!isUnauthorizedError(error)) {
                     throw error;
                 }
