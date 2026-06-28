@@ -538,6 +538,12 @@ describe('CartPayment integration', () => {
         );
 
         expect(queryByTestId('payment-methods-scroll')).toBeNull();
+        expect(getByTestId('payment-content-region')).toHaveStyle({
+            flexShrink: 1,
+        });
+        expect(getByTestId('payment-received-rail')).toHaveStyle({
+            flexShrink: 0,
+        });
         expect(getByTestId('payment-methods-grid')).toHaveStyle({
             flexShrink: 0,
         });
@@ -561,6 +567,24 @@ describe('CartPayment integration', () => {
         expect(getByTestId('payment-input-wrap-cash')).toHaveStyle({
             width: '50%',
         });
+    });
+
+    it('uses one balanced compact row when EBT is hidden and three methods are available', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId, queryByTestId } = render(
+            <CartPayment
+                total={100}
+                ebtEligibleTotal={0}
+                canReceiveChecks={true}
+                onPaymentEntered={onPaymentEntered}
+                layout="compact"
+            />
+        );
+
+        expect(queryByTestId('payment-card-ebt')).toBeNull();
+        expect(getByTestId('payment-card-cc')).toHaveStyle({ flex: 1 });
+        expect(getByTestId('payment-card-cash')).toHaveStyle({ flex: 1 });
+        expect(getByTestId('payment-card-check')).toHaveStyle({ flex: 1 });
     });
 
     it('rebalances compact payment tiles while typing in a two-method split', () => {

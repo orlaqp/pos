@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button, Dialog } from '@rneui/themed';
+import { Dialog } from '@rneui/themed';
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import type {
@@ -184,6 +184,22 @@ export function CartPaymentDialog({
                         ]}
                     >
                         <View style={styles.paymentSurface}>
+                            <Pressable
+                                testID="cart-payment-dialog-close-icon-button"
+                                accessibilityRole="button"
+                                accessibilityLabel={t(
+                                    'ORDERPAYMENT_Close',
+                                    'Close',
+                                )}
+                                disabled={busy}
+                                onPress={onClose}
+                                style={[
+                                    styles.closeIconButton,
+                                    busy && styles.closeIconButtonDisabled,
+                                ]}
+                            >
+                                <Text style={styles.closeIconText}>×</Text>
+                            </Pressable>
                             <CartPayment
                                 total={orderSummary.total}
                                 ebtEligibleTotal={orderSummary.ebtEligibleTotal}
@@ -194,28 +210,7 @@ export function CartPaymentDialog({
                                 onPaymentEntered={onPaymentEntered}
                                 layout="compact"
                                 disableSubmit={busy}
-                                footerActions={
-                                    paymentFooterActions ?? (
-                                        <View style={styles.secondaryActions}>
-                                            <Button
-                                                testID="cart-payment-dialog-close-button"
-                                                type="outline"
-                                                title={t(
-                                                    'ORDERPAYMENT_Close',
-                                                    'Close',
-                                                )}
-                                                disabled={busy}
-                                                onPress={onClose}
-                                                buttonStyle={
-                                                    styles.secondaryButton
-                                                }
-                                                titleStyle={
-                                                    styles.secondaryButtonTitle
-                                                }
-                                            />
-                                        </View>
-                                    )
-                                }
+                                footerActions={paymentFooterActions}
                             />
                         </View>
                     </View>
@@ -242,7 +237,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flexDirection: 'row',
             gap: tokens.spacing.lg,
             alignItems: 'stretch',
-            minHeight: 620,
+            minHeight: 560,
         },
         summaryColumn: {
             minHeight: 0,
@@ -267,6 +262,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         paymentSurface: {
             flex: 1,
             minHeight: 0,
+            position: 'relative',
             borderRadius: 28,
             borderWidth: 1,
             borderColor: '#C7D0DB33',
@@ -332,20 +328,28 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontWeight: '800',
             textAlign: 'center',
         },
-        secondaryActions: {
-            flexDirection: 'row',
+        closeIconButton: {
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            zIndex: 3,
+            width: 34,
+            height: 34,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: '#C7D0DB33',
+            backgroundColor: '#101721',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: tokens.spacing.sm,
+            justifyContent: 'center',
         },
-        secondaryButton: {
-            minHeight: 48,
-            borderRadius: 18,
-            borderColor: tokens.colors.border,
+        closeIconButtonDisabled: {
+            opacity: 0.45,
         },
-        secondaryButtonTitle: {
+        closeIconText: {
             color: tokens.colors.textPrimary,
-            fontWeight: '700',
+            fontSize: 22,
+            lineHeight: 24,
+            fontWeight: '800',
         },
     });
 

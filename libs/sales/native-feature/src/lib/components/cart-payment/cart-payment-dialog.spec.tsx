@@ -105,9 +105,9 @@ jest.mock('../cart/order-summary-panel', () => ({
 
 jest.mock('./cart-payment', () => ({
     __esModule: true,
-    default: () => {
+    default: ({ footerActions }: { footerActions?: React.ReactNode }) => {
         const { View } = require('react-native');
-        return <View testID="mock-cart-payment" />;
+        return <View testID="mock-cart-payment">{footerActions}</View>;
     },
 }));
 
@@ -154,5 +154,14 @@ describe('CartPaymentDialog', () => {
         expect(getByTestId('cart-payment-column')).toHaveStyle({
             flex: 7,
         });
+    });
+
+    it('uses a compact top close action instead of a footer close button', () => {
+        const { getByTestId, queryByTestId } = render(
+            <CartPaymentDialog {...baseProps} />
+        );
+
+        expect(getByTestId('cart-payment-dialog-close-icon-button')).toBeTruthy();
+        expect(queryByTestId('cart-payment-dialog-close-button')).toBeNull();
     });
 });

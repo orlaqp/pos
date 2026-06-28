@@ -137,10 +137,14 @@ export function CartPayment({
         );
     }, [canReceiveChecks, ebtEligibleTotal]);
     const paymentMethodRows = useMemo(() => {
+        if (isCompact && paymentMethods.length === 3) {
+            return [paymentMethods];
+        }
+
         return PAYMENT_METHOD_ROWS.map((row) =>
             row.filter((method) => paymentMethods.includes(method)),
         ).filter((row) => row.length > 0);
-    }, [paymentMethods]);
+    }, [isCompact, paymentMethods]);
     const watchedValues = form.watch() as PaymentInfo;
     const formValue = watchedValues;
     const receivedTotal = paymentMethods.reduce(
@@ -604,296 +608,318 @@ export function CartPayment({
     return (
         <View style={local.shell}>
             <FormProvider {...form}>
-                <UICard
-                    tone="muted"
-                    padding={isCompact ? 'sm' : 'md'}
-                    radius="lg"
-                    style={[
-                        local.summaryCard,
-                        isCompact && local.summaryCardCompact,
-                    ]}
-                >
-                    {!isCompact ? (
-                        <Text style={local.summaryEyebrow}>
-                            {t('PAYMENT_CheckoutEyebrow', 'Checkout')}
-                        </Text>
-                    ) : null}
-                    <Text
-                        style={[
-                            styles.secondaryText,
-                            local.totalLabel,
-                            isCompact && local.totalLabelCompact,
-                        ]}
-                    >
-                        {t('PAYMENT_AmountDue', 'Amount Due')}
-                    </Text>
-                    <Text
-                        style={[
-                            styles.primaryText,
-                            styles.textCenter,
-                            local.totalAmount,
-                            isCompact && local.totalAmountCompact,
-                        ]}
-                    >
-                        $ {total.toFixed(2)}
-                    </Text>
-                    {!isCompact ? (
-                        <Text style={local.summaryHint}>
-                            {t(
-                                'PAYMENT_CheckoutHint',
-                                'Activate the methods you need below and keep the received amount matched exactly.',
-                            )}
-                        </Text>
-                    ) : null}
+                <View style={local.formLayout}>
                     <View
+                        testID="payment-content-region"
                         style={[
-                            local.summaryRow,
-                            isCompact && local.summaryRowCompact,
+                            local.paymentContentRegion,
+                            isCompact && local.paymentContentRegionCompact,
                         ]}
                     >
-                        <View
+                        <UICard
+                            tone="muted"
+                            padding={isCompact ? 'sm' : 'md'}
+                            radius="lg"
                             style={[
-                                local.summaryPill,
-                                local.summaryPillSpaced,
-                                isCompact && local.summaryPillCompact,
+                                local.summaryCard,
+                                isCompact && local.summaryCardCompact,
                             ]}
                         >
-                            <Text style={local.summaryPillLabel}>
-                                {t('PAYMENT_EBTEligible', 'EBT Eligible')}
+                            {!isCompact ? (
+                                <Text style={local.summaryEyebrow}>
+                                    {t('PAYMENT_CheckoutEyebrow', 'Checkout')}
+                                </Text>
+                            ) : null}
+                            <Text
+                                style={[
+                                    styles.secondaryText,
+                                    local.totalLabel,
+                                    isCompact && local.totalLabelCompact,
+                                ]}
+                            >
+                                {t('PAYMENT_AmountDue', 'Amount Due')}
                             </Text>
                             <Text
                                 style={[
-                                    local.summaryPillValue,
-                                    isCompact && local.summaryPillValueCompact,
+                                    styles.primaryText,
+                                    styles.textCenter,
+                                    local.totalAmount,
+                                    isCompact && local.totalAmountCompact,
                                 ]}
                             >
-                                $ {ebtEligibleTotal.toFixed(2)}
+                                $ {total.toFixed(2)}
                             </Text>
-                        </View>
-                        <View
-                            style={[
-                                local.summaryPill,
-                                isCompact && local.summaryPillCompact,
-                            ]}
-                        >
-                            <Text style={local.summaryPillLabel}>
-                                {t('PAYMENT_Remaining', 'Remaining')}
-                            </Text>
-                            <Text
+                            {!isCompact ? (
+                                <Text style={local.summaryHint}>
+                                    {t(
+                                        'PAYMENT_CheckoutHint',
+                                        'Activate the methods you need below and keep the received amount matched exactly.',
+                                    )}
+                                </Text>
+                            ) : null}
+                            <View
                                 style={[
-                                    local.summaryPillValue,
-                                    isCompact && local.summaryPillValueCompact,
+                                    local.summaryRow,
+                                    isCompact && local.summaryRowCompact,
                                 ]}
                             >
-                                $ {remainingTotal.toFixed(2)}
-                            </Text>
-                        </View>
-                    </View>
-                </UICard>
-                <View
-                    style={[
-                        local.zoneSpacer,
-                        isCompact && local.zoneSpacerCompact,
-                    ]}
-                >
-                    <UIVerticalSpacer size="small" />
-                </View>
-                {isCompact ? (
-                    renderPaymentMethodGrid()
-                ) : (
-                    <ScrollView
-                        testID="payment-methods-scroll"
-                        style={local.methodsScroll}
-                        contentContainerStyle={local.methodsScrollContent}
-                        showsVerticalScrollIndicator={false}
-                    >
-                        {renderPaymentMethodGrid()}
-                    </ScrollView>
-                )}
-                {showSplitBalanceBar ? (
-                    <UICard
-                        tone="muted"
-                        padding={isCompact ? 'xs' : 'sm'}
-                        radius="md"
-                        style={local.balanceCard}
-                    >
-                        <View
-                            testID="payment-split-balance-bar"
-                            style={local.balanceBarTrack}
-                        >
-                            {activeBalanceMethods.map((method) => (
                                 <View
-                                    key={`payment-balance-${method}`}
-                                    testID={`payment-balance-segment-${method}`}
-                                    style={getBalanceBarSegmentStyle(method)}
-                                />
-                            ))}
-                        </View>
-                        <View style={local.balanceLegend}>
-                            {activeMethods.map((method) => (
-                                <View
-                                    key={`payment-balance-legend-${method}`}
-                                    style={local.balanceLegendItem}
+                                    style={[
+                                        local.summaryPill,
+                                        local.summaryPillSpaced,
+                                        isCompact && local.summaryPillCompact,
+                                    ]}
                                 >
-                                    <View
-                                        testID={`payment-balance-dot-${method}`}
+                                    <Text style={local.summaryPillLabel}>
+                                        {t('PAYMENT_EBTEligible', 'EBT Eligible')}
+                                    </Text>
+                                    <Text
                                         style={[
-                                            local.balanceLegendDot,
-                                            {
-                                                backgroundColor:
-                                                    PaymentMethodColor[method],
-                                            },
+                                            local.summaryPillValue,
+                                            isCompact && local.summaryPillValueCompact,
                                         ]}
-                                    />
-                                    <Text style={local.balanceLegendText}>
-                                        {t(
-                                            PaymentMethod[method].labelKey,
-                                            PaymentMethod[method].label,
-                                        )}{' '}
-                                        ${toNumber(watchedValues[method]).toFixed(2)}
+                                    >
+                                        $ {ebtEligibleTotal.toFixed(2)}
                                     </Text>
                                 </View>
-                            ))}
-                        </View>
-                    </UICard>
-                ) : null}
-                <View style={local.footerRail}>
-                    <UICard
-                        tone="muted"
-                        padding={isCompact ? 'xs' : 'sm'}
-                        radius="md"
-                        style={[
-                            local.footerCard,
-                            isCompact && local.footerCardCompact,
-                        ]}
-                    >
+                                <View
+                                    style={[
+                                        local.summaryPill,
+                                        isCompact && local.summaryPillCompact,
+                                    ]}
+                                >
+                                    <Text style={local.summaryPillLabel}>
+                                        {t('PAYMENT_Remaining', 'Remaining')}
+                                    </Text>
+                                    <Text
+                                        style={[
+                                            local.summaryPillValue,
+                                            isCompact && local.summaryPillValueCompact,
+                                        ]}
+                                    >
+                                        $ {remainingTotal.toFixed(2)}
+                                    </Text>
+                                </View>
+                            </View>
+                        </UICard>
                         <View
                             style={[
-                                local.summaryFooterRow,
-                                isExactPayment &&
-                                    local.summaryFooterRowComplete,
-                                isCompact && local.summaryFooterRowCompact,
+                                local.zoneSpacer,
+                                isCompact && local.zoneSpacerCompact,
                             ]}
                         >
-                            <Text style={local.summaryFooterLabel}>
-                                {t('PAYMENT_Received', 'Received')}
-                            </Text>
-                            <Text
+                            <UIVerticalSpacer size="small" />
+                        </View>
+                        {isCompact ? (
+                            renderPaymentMethodGrid()
+                        ) : (
+                            <ScrollView
+                                testID="payment-methods-scroll"
+                                style={local.methodsScroll}
+                                contentContainerStyle={local.methodsScrollContent}
+                                showsVerticalScrollIndicator={false}
+                            >
+                                {renderPaymentMethodGrid()}
+                            </ScrollView>
+                        )}
+                        {showSplitBalanceBar ? (
+                            <UICard
+                                tone="muted"
+                                padding={isCompact ? 'xs' : 'sm'}
+                                radius="md"
+                                style={local.balanceCard}
+                            >
+                                <View
+                                    testID="payment-split-balance-bar"
+                                    style={local.balanceBarTrack}
+                                >
+                                    {activeBalanceMethods.map((method) => (
+                                        <View
+                                            key={`payment-balance-${method}`}
+                                            testID={`payment-balance-segment-${method}`}
+                                            style={getBalanceBarSegmentStyle(method)}
+                                        />
+                                    ))}
+                                </View>
+                                <View style={local.balanceLegend}>
+                                    {activeMethods.map((method) => (
+                                        <View
+                                            key={`payment-balance-legend-${method}`}
+                                            style={local.balanceLegendItem}
+                                        >
+                                            <View
+                                                testID={`payment-balance-dot-${method}`}
+                                                style={[
+                                                    local.balanceLegendDot,
+                                                    {
+                                                        backgroundColor:
+                                                            PaymentMethodColor[method],
+                                                    },
+                                                ]}
+                                            />
+                                            <Text style={local.balanceLegendText}>
+                                                {t(
+                                                    PaymentMethod[method].labelKey,
+                                                    PaymentMethod[method].label,
+                                                )}{' '}
+                                                $
+                                                {toNumber(watchedValues[method]).toFixed(2)}
+                                            </Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            </UICard>
+                        ) : null}
+                    </View>
+                    <View
+                        testID="payment-received-rail"
+                        style={[
+                            local.footerRail,
+                            isCompact && local.footerRailCompact,
+                        ]}
+                    >
+                        <UICard
+                            tone="muted"
+                            padding={isCompact ? 'xs' : 'sm'}
+                            radius="md"
+                            style={[
+                                local.footerCard,
+                                isCompact && local.footerCardCompact,
+                            ]}
+                        >
+                            <View
                                 style={[
-                                    local.summaryFooterValue,
+                                    local.summaryFooterRow,
                                     isExactPayment &&
-                                        local.summaryFooterValueComplete,
-                                    isCompact &&
-                                        local.summaryFooterValueCompact,
+                                        local.summaryFooterRowComplete,
+                                    isCompact && local.summaryFooterRowCompact,
                                 ]}
                             >
-                                $ {roundedReceivedTotal.toFixed(2)}
-                            </Text>
+                                <Text style={local.summaryFooterLabel}>
+                                    {t('PAYMENT_Received', 'Received')}
+                                </Text>
+                                <Text
+                                    style={[
+                                        local.summaryFooterValue,
+                                        isExactPayment &&
+                                            local.summaryFooterValueComplete,
+                                        isCompact &&
+                                            local.summaryFooterValueCompact,
+                                    ]}
+                                >
+                                    $ {roundedReceivedTotal.toFixed(2)}
+                                </Text>
+                            </View>
+                            {activeCardSurchargeAmount > 0 ? (
+                                <>
+                                    <View
+                                        style={[
+                                            local.summaryMetaRow,
+                                            isCompact &&
+                                                local.summaryMetaRowCompact,
+                                        ]}
+                                    >
+                                        <Text style={local.summaryMetaLabel}>
+                                            {t(
+                                                'PAYMENT_CreditCardSurcharge',
+                                                'Credit Card Surcharge',
+                                            )}
+                                        </Text>
+                                        <Text style={local.summaryMetaValue}>
+                                            $ {activeCardSurchargeAmount.toFixed(2)}
+                                        </Text>
+                                    </View>
+                                    <View
+                                        style={[
+                                            local.summaryMetaRow,
+                                            isCompact &&
+                                                local.summaryMetaRowCompact,
+                                        ]}
+                                    >
+                                        <Text style={local.summaryMetaLabel}>
+                                            {t(
+                                                'PAYMENT_ChargeToCard',
+                                                'Charge to card',
+                                            )}
+                                        </Text>
+                                        <Text style={local.summaryMetaValue}>
+                                            $ {activeCardChargeAmount.toFixed(2)}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : null}
+                            {isExactPayment && (
+                                <Text style={local.completeHint}>
+                                    {t(
+                                        'PAYMENT_ReadyToFinalize',
+                                        'Ready to finalize payment',
+                                    )}
+                                </Text>
+                            )}
+                            {!isExactPayment && !isOverPayment && (
+                                <Text style={local.pendingHint}>
+                                    {t(
+                                        'PAYMENT_EnterRemaining',
+                                        'Enter remaining amount to continue',
+                                    )}
+                                </Text>
+                            )}
+                            {isOverPayment && (
+                                <Text style={local.pendingHint}>
+                                    {t(
+                                        'PAYMENT_AdjustToMatchTotal',
+                                        'Adjust payments to match the amount due',
+                                    )}
+                                </Text>
+                            )}
+                        </UICard>
+                        <View
+                            style={[
+                                local.footerSectionSpacer,
+                                isCompact && local.footerSectionSpacerCompact,
+                            ]}
+                        >
+                            <UIVerticalSpacer size="small" />
                         </View>
-                        {activeCardSurchargeAmount > 0 ? (
+                        <View
+                            style={[
+                                local.ctaWrap,
+                                isCompact && local.ctaWrapCompact,
+                            ]}
+                        >
+                            <Button
+                                testID="payment-submit-button"
+                                title={`${t('PAYMENT_ReceivePayment', 'Receive Payment')} ($${total.toFixed(2)})`}
+                                buttonStyle={[
+                                    local.ctaButton,
+                                    isCompact && local.ctaButtonCompact,
+                                ]}
+                                disabled={!isExactPayment || disableSubmit}
+                                icon={{
+                                    name: 'check',
+                                    type: 'material-community',
+                                    color: styles.primaryText.color,
+                                }}
+                                onPress={() => completeOrder(form.getValues())}
+                            />
+                        </View>
+                        {footerActions ? (
                             <>
                                 <View
                                     style={[
-                                        local.summaryMetaRow,
+                                        local.footerSectionSpacer,
                                         isCompact &&
-                                            local.summaryMetaRowCompact,
+                                            local.footerSectionSpacerCompact,
                                     ]}
                                 >
-                                    <Text style={local.summaryMetaLabel}>
-                                        {t(
-                                            'PAYMENT_CreditCardSurcharge',
-                                            'Credit Card Surcharge',
-                                        )}
-                                    </Text>
-                                    <Text style={local.summaryMetaValue}>
-                                        $ {activeCardSurchargeAmount.toFixed(2)}
-                                    </Text>
+                                    <UIVerticalSpacer size="small" />
                                 </View>
-                                <View
-                                    style={[
-                                        local.summaryMetaRow,
-                                        isCompact &&
-                                            local.summaryMetaRowCompact,
-                                    ]}
-                                >
-                                    <Text style={local.summaryMetaLabel}>
-                                        {t(
-                                            'PAYMENT_ChargeToCard',
-                                            'Charge to card',
-                                        )}
-                                    </Text>
-                                    <Text style={local.summaryMetaValue}>
-                                        $ {activeCardChargeAmount.toFixed(2)}
-                                    </Text>
+                                <View style={local.footerActionsWrap}>
+                                    {footerActions}
                                 </View>
                             </>
                         ) : null}
-                        {isExactPayment && (
-                            <Text style={local.completeHint}>
-                                {t(
-                                    'PAYMENT_ReadyToFinalize',
-                                    'Ready to finalize payment',
-                                )}
-                            </Text>
-                        )}
-                        {!isExactPayment && !isOverPayment && (
-                            <Text style={local.pendingHint}>
-                                {t(
-                                    'PAYMENT_EnterRemaining',
-                                    'Enter remaining amount to continue',
-                                )}
-                            </Text>
-                        )}
-                        {isOverPayment && (
-                            <Text style={local.pendingHint}>
-                                {t(
-                                    'PAYMENT_AdjustToMatchTotal',
-                                    'Adjust payments to match the amount due',
-                                )}
-                            </Text>
-                        )}
-                    </UICard>
-                    <View
-                        style={[
-                            local.footerSectionSpacer,
-                            isCompact && local.footerSectionSpacerCompact,
-                        ]}
-                    >
-                        <UIVerticalSpacer size="small" />
                     </View>
-                    <View style={local.ctaWrap}>
-                        <Button
-                            testID="payment-submit-button"
-                            title={`${t('PAYMENT_ReceivePayment', 'Receive Payment')} ($${total.toFixed(2)})`}
-                            buttonStyle={[
-                                local.ctaButton,
-                                isCompact && local.ctaButtonCompact,
-                            ]}
-                            disabled={!isExactPayment || disableSubmit}
-                            icon={{
-                                name: 'check',
-                                type: 'material-community',
-                                color: styles.primaryText.color,
-                            }}
-                            onPress={() => completeOrder(form.getValues())}
-                        />
-                    </View>
-                    {footerActions ? (
-                        <>
-                            <View
-                                style={[
-                                    local.footerSectionSpacer,
-                                    isCompact &&
-                                        local.footerSectionSpacerCompact,
-                                ]}
-                            >
-                                <UIVerticalSpacer size="small" />
-                            </View>
-                            <View style={local.footerActionsWrap}>
-                                {footerActions}
-                            </View>
-                        </>
-                    ) : null}
                 </View>
             </FormProvider>
         </View>
@@ -905,6 +931,18 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         shell: {
             flex: 1,
             minHeight: 0,
+        },
+        formLayout: {
+            flex: 1,
+            minHeight: 0,
+        },
+        paymentContentRegion: {
+            flex: 1,
+            minHeight: 0,
+        },
+        paymentContentRegionCompact: {
+            flexGrow: 0,
+            flexShrink: 1,
         },
         summaryCard: {
             borderWidth: 1,
@@ -1202,10 +1240,14 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             fontWeight: '700',
         },
         footerRail: {
+            flexShrink: 0,
             borderTopWidth: 1,
             borderTopColor: `${tokens.colors.border}88`,
             paddingTop: tokens.spacing.md,
             backgroundColor: '#05080C',
+        },
+        footerRailCompact: {
+            marginTop: 10,
         },
         footerCard: {
             marginTop: 0,
@@ -1296,10 +1338,13 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             marginBottom: 0,
         },
         footerSectionSpacerCompact: {
-            height: 4,
+            height: 10,
         },
         ctaWrap: {
             marginBottom: 0,
+        },
+        ctaWrapCompact: {
+            marginTop: 4,
         },
         ctaButton: {
             borderRadius: tokens.radii.lg,
