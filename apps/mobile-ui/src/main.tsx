@@ -2,7 +2,7 @@ import 'react-native-gesture-handler';
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
-import { AppRegistry } from 'react-native';
+import { AppRegistry, LogBox } from 'react-native';
 import { Amplify } from 'aws-amplify';
 import { cognitoUserPoolsTokenProvider } from 'aws-amplify/auth/cognito';
 import { defaultStorage } from 'aws-amplify/utils';
@@ -11,6 +11,10 @@ import amplifyConfig from './amplifyconfiguration.json';
 import { logStartupDiagnostics } from './app/startup-diagnostics';
 
 // Amplify.Logger.LOG_LEVEL = 'DEBUG';
+LogBox.ignoreLogs([
+    '[ERROR] DataStore - Sync processor retry error',
+    'DataStore - Sync processor retry error',
+]);
 cognitoUserPoolsTokenProvider.setKeyValueStorage(defaultStorage);
 Amplify.configure(amplifyConfig);
 const { store } = require('@pos/store');
