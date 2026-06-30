@@ -1,5 +1,15 @@
-import type { CartPayment, CartState } from '@pos/sales/data-access';
 import { OrderStatus } from '@pos/shared/models';
+
+export interface PendingOrderCartPayment {
+    type: string;
+    amount: number;
+}
+
+export interface PendingOrderCartState {
+    id?: string;
+    orderNo?: string;
+    [key: string]: unknown;
+}
 
 export type PendingOrderSyncState =
     | 'local_only'
@@ -12,8 +22,8 @@ export interface PendingOrderJournalEntry {
     orderNo?: string;
     tenantId?: string;
     statusTarget: OrderStatus | keyof typeof OrderStatus;
-    cart: CartState;
-    payments?: CartPayment[];
+    cart: PendingOrderCartState;
+    payments?: PendingOrderCartPayment[];
     employee?: {
         id?: string;
         name?: string;

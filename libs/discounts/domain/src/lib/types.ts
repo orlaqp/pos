@@ -115,6 +115,9 @@ export interface AppliedLineDiscountSummary {
   lineDiscountTotal: number;
   allocatedOrderDiscountTotal: number;
   lineTotalBeforeTax: number;
+  tax?: number;
+  lineTotalAfterTax?: number;
+  taxable?: boolean;
 }
 
 export interface AppliedDiscountSummary {
@@ -160,6 +163,7 @@ export interface PricingCartLineInput {
   unitOfMeasure: string;
   categoryId?: string | null;
   discountable?: boolean;
+  taxable?: boolean;
   minAllowedPrice?: number | null;
   maxManualDiscountPercent?: number | null;
   maxManualDiscountAmount?: number | null;
@@ -221,7 +225,9 @@ export interface PricingLineResult {
   lineDiscountTotal: number;
   allocatedOrderDiscountTotal: number;
   lineTotalBeforeTax: number;
+  tax: number;
   lineTotalAfterTax: number;
+  taxable?: boolean;
   appliedDiscounts: AppliedDiscountDetail[];
 }
 

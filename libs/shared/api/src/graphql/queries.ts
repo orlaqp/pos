@@ -59,6 +59,7 @@ export const getSales = /* GraphQL */ `query GetSales($statuses: [OrderStatus!]!
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -971,6 +972,7 @@ export const getOrder = /* GraphQL */ `query GetOrder($id: ID!) {
       lineTotalAfterTax
       categoryId
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1592,6 +1594,7 @@ export const getProduct = /* GraphQL */ `query GetProduct($id: ID!) {
     isActive
     isEBTEligible
     discountable
+    taxable
     minAllowedPrice
     maxManualDiscountPercent
     maxManualDiscountAmount
@@ -1635,6 +1638,7 @@ export const listProducts = /* GraphQL */ `query ListProducts(
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1688,6 +1692,7 @@ export const syncProducts = /* GraphQL */ `query SyncProducts(
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -1816,6 +1821,7 @@ export const getInventoryChanges = /* GraphQL */ `query GetInventoryChanges($id:
       isActive
       isEBTEligible
       discountable
+      taxable
       minAllowedPrice
       maxManualDiscountPercent
       maxManualDiscountAmount
@@ -2500,6 +2506,7 @@ export const getGlobalSettings = /* GraphQL */ `query GetGlobalSettings($id: ID!
     enforceSalesBasedOnInventory
     timezone
     scaleBarcodePriceFormat
+    taxValue
     createdAt
     updatedAt
     _version
@@ -2524,6 +2531,7 @@ export const listGlobalSettings = /* GraphQL */ `query ListGlobalSettings(
       enforceSalesBasedOnInventory
       timezone
       scaleBarcodePriceFormat
+      taxValue
       createdAt
       updatedAt
       _version
@@ -2558,6 +2566,7 @@ export const syncGlobalSettings = /* GraphQL */ `query SyncGlobalSettings(
       enforceSalesBasedOnInventory
       timezone
       scaleBarcodePriceFormat
+      taxValue
       createdAt
       updatedAt
       _version

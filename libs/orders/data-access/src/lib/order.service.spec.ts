@@ -316,6 +316,7 @@ describe('OrderService', () => {
         footer: {
           baseSubtotal: 4.59,
           subtotal: 4.59,
+          tax: 0.37,
           total: 4.59,
           lineDiscountTotal: 0,
           orderDiscountTotal: 0,
@@ -334,6 +335,8 @@ describe('OrderService', () => {
     expect(saveMock).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'PAID',
+        tax: 0.37,
+        currentTax: 0.37,
         inventoryApplyState: 'PENDING',
         inventoryApplyOperationId: 'ORDER:order-1:PAID',
         inventoryAppliedAt: null,
@@ -385,6 +388,7 @@ describe('OrderService', () => {
         footer: {
           baseSubtotal: 4.59,
           subtotal: 4.59,
+          tax: 0.37,
           total: 4.59,
           lineDiscountTotal: 0,
           orderDiscountTotal: 0,
@@ -403,6 +407,8 @@ describe('OrderService', () => {
       expect.objectContaining({
         id: 'generated-cart-id',
         status: 'PAID',
+        tax: 0.37,
+        currentTax: 0.37,
         inventoryApplyState: 'PENDING',
         inventoryApplyOperationId: 'ORDER:generated-cart-id:PAID',
       })
@@ -411,6 +417,83 @@ describe('OrderService', () => {
       expect.objectContaining({
         id: 'order-2',
         status: 'PAID',
+      })
+    );
+  });
+
+  it('persists surcharge payment snapshot fields when creating a paid order', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+
+    saveMock.mockResolvedValue({
+      id: 'order-cc-surcharge',
+      status: 'PAID',
+      orderNo: '51-25-260316-0009',
+      lines: [],
+      paymentInfo: { payments: [] },
+      inventoryApplyState: 'PENDING',
+      inventoryApplyOperationId: 'ORDER:generated-cart-id:PAID',
+    } as any);
+
+    await OrderService.createPaidOrder({
+      by: {
+        id: 'employee-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+      } as any,
+      order: {
+        id: 'generated-cart-id',
+        orderNo: '51-25-260316-0009',
+        items: [],
+        footer: {
+          baseSubtotal: 10,
+          subtotal: 10,
+          tax: 0.8,
+          total: 10.8,
+          lineDiscountTotal: 0,
+          orderDiscountTotal: 0,
+          discount: 0,
+          savingsTotal: 0,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+        },
+        promoCodes: [],
+        appliedDiscountSummary: undefined,
+      } as any,
+      payments: [
+        {
+          type: 'CC',
+          amount: 10.8,
+          baseAmount: 10,
+          surchargeRate: 0.03,
+          surchargeAmount: 0.8,
+        },
+        {
+          type: 'CASH',
+          amount: 2,
+        },
+      ],
+    });
+
+    expect(saveMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentInfo: expect.objectContaining({
+          payments: [
+            expect.objectContaining({
+              type: 'CC',
+              amount: 10.8,
+              baseAmount: 10,
+              surchargeRate: 0.03,
+              surchargeAmount: 0.8,
+            }),
+            expect.objectContaining({
+              type: 'CASH',
+              amount: 2,
+              baseAmount: undefined,
+              surchargeRate: undefined,
+              surchargeAmount: undefined,
+            }),
+          ],
+        }),
       })
     );
   });
@@ -687,6 +770,89 @@ describe('OrderService', () => {
     expect(getInventoryQuantityDelta('PAID', 3)).toBe(-3);
   });
 
+  it('persists surcharge payment snapshot fields when closing an existing order', async () => {
+    const saveMock = jest.mocked(DataStore.save);
+    const queryMock = jest.mocked(DataStore.query);
+    const existingOrder = {
+      id: 'order-close-cc',
+      status: 'OPEN',
+      tenantId: 'tenant-1',
+      paymentInfo: { payments: [] },
+      lines: [],
+    } as any;
+
+    queryMock.mockResolvedValue(existingOrder);
+    saveMock.mockResolvedValue({
+      ...existingOrder,
+      status: 'PAID',
+      paymentInfo: { payments: [] },
+    } as any);
+
+    await OrderService.closeOrder({
+      id: 'order-close-cc',
+      by: {
+        id: 'employee-1',
+        firstName: 'Orlando',
+        lastName: 'Quero',
+      } as any,
+      order: {
+        id: 'order-close-cc',
+        orderNo: '51-25-260316-0010',
+        items: [],
+        footer: {
+          baseSubtotal: 10,
+          subtotal: 10,
+          tax: 0.8,
+          total: 10.8,
+          lineDiscountTotal: 0,
+          orderDiscountTotal: 0,
+          discount: 0,
+          savingsTotal: 0,
+          pricingSource: 'OFFLINE_LOCAL',
+          reconciliationStatus: 'PENDING',
+        },
+        promoCodes: [],
+        appliedDiscountSummary: undefined,
+      } as any,
+      payments: [
+        {
+          type: 'CC',
+          amount: 10.8,
+          baseAmount: 10,
+          surchargeRate: 0.03,
+          surchargeAmount: 0.8,
+        },
+        {
+          type: 'CASH',
+          amount: 2,
+        },
+      ],
+    });
+
+    expect(saveMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentInfo: expect.objectContaining({
+          payments: [
+            expect.objectContaining({
+              type: 'CC',
+              amount: 10.8,
+              baseAmount: 10,
+              surchargeRate: 0.03,
+              surchargeAmount: 0.8,
+            }),
+            expect.objectContaining({
+              type: 'CASH',
+              amount: 2,
+              baseAmount: undefined,
+              surchargeRate: undefined,
+              surchargeAmount: undefined,
+            }),
+          ],
+        }),
+      })
+    );
+  });
+
   it('uses a positive quantity delta for refunded orders', () => {
     expect(getInventoryQuantityDelta('REFUNDED', 3)).toBe(3);
   });
@@ -708,6 +874,7 @@ describe('OrderService', () => {
         footer: {
           baseSubtotal: 0,
           subtotal: 0,
+          tax: 0.99,
           total: 0,
           lineDiscountTotal: 0,
           orderDiscountTotal: 0,
@@ -726,6 +893,8 @@ describe('OrderService', () => {
       expect.objectContaining({
         id: 'generated-cart-id',
         orderNo: '51-25-260316-0099',
+        tax: 0.99,
+        currentTax: 0.99,
       })
     );
   });
@@ -744,6 +913,7 @@ describe('OrderService', () => {
         footer: {
           baseSubtotal: 0,
           subtotal: 0,
+          tax: 0.99,
           total: 0,
           lineDiscountTotal: 0,
           orderDiscountTotal: 0,
@@ -760,6 +930,8 @@ describe('OrderService', () => {
     expect(saveMock).toHaveBeenCalledWith(
       expect.objectContaining({
         id: 'generated-order-id',
+        tax: 0.99,
+        currentTax: 0.99,
       })
     );
   });
@@ -2203,6 +2375,124 @@ describe('OrderService', () => {
       tax: 0,
       total: 15,
     });
+  });
+
+  it('prints the charged card amount and separate surcharge disclosure for credit card payments', () => {
+    const ticket = OrderService.buildPrintTicketForOrderEntitySnapshot(
+      {
+        id: 'order-ticket-cc-surcharge',
+        orderNo: '1-OWNER-260422-0002',
+        status: 'PAID',
+        baseSubtotal: 60,
+        subtotal: 60,
+        discountTotal: 0,
+        tax: 0,
+        total: 60,
+        lines: [
+          {
+            identifier: 'line-1',
+            productId: 'product-1',
+            productName: 'Rice',
+            quantity: 1,
+            price: 60,
+            unitOfMeasure: 'EA',
+            lineDiscountTotal: 0,
+            allocatedOrderDiscountTotal: 0,
+            lineTotalBeforeTax: 60,
+          },
+        ],
+        paymentInfo: {
+          payments: [{ type: 'CC', amount: 60, surchargeAmount: 1.8 }],
+        },
+        promoCodes: [],
+      } as any,
+      { copyType: 'CUSTOMER' }
+    );
+
+    expect(ticket.paymentRows).toEqual([
+      { kind: 'payment', label: 'CC', amount: 61.8 },
+      { kind: 'payment', label: 'Credit Card Surcharge', amount: 1.8 },
+    ]);
+  });
+
+  it('prints the charged card amount and discloses the surcharge when metadata is present', () => {
+    const ticket = OrderService.buildPrintTicketForOrderEntitySnapshot(
+      {
+        id: 'order-ticket-cc-surcharge-base',
+        orderNo: '1-OWNER-260422-0004',
+        status: 'PAID',
+        baseSubtotal: 10,
+        subtotal: 10,
+        discountTotal: 0,
+        tax: 0,
+        total: 10,
+        lines: [
+          {
+            identifier: 'line-1',
+            productId: 'product-1',
+            productName: 'Rice',
+            quantity: 1,
+            price: 10,
+            unitOfMeasure: 'EA',
+            lineDiscountTotal: 0,
+            allocatedOrderDiscountTotal: 0,
+            lineTotalBeforeTax: 10,
+          },
+        ],
+        paymentInfo: {
+          payments: [
+            {
+              type: 'CC',
+              amount: 10.8,
+              baseAmount: 10,
+              surchargeAmount: 0.8,
+            },
+          ],
+        },
+        promoCodes: [],
+      } as any,
+      { copyType: 'CUSTOMER' }
+    );
+
+    expect(ticket.paymentRows).toEqual([
+      { kind: 'payment', label: 'CC', amount: 10.8 },
+      { kind: 'payment', label: 'Credit Card Surcharge', amount: 0.8 },
+    ]);
+  });
+
+  it('keeps legacy credit card receipt rows unchanged when surcharge data is absent', () => {
+    const ticket = OrderService.buildPrintTicketForOrderEntitySnapshot(
+      {
+        id: 'order-ticket-legacy-cc',
+        orderNo: '1-OWNER-260422-0003',
+        status: 'PAID',
+        baseSubtotal: 60,
+        subtotal: 60,
+        discountTotal: 0,
+        tax: 0,
+        total: 60,
+        lines: [
+          {
+            identifier: 'line-1',
+            productId: 'product-1',
+            productName: 'Rice',
+            quantity: 1,
+            price: 60,
+            unitOfMeasure: 'EA',
+            lineDiscountTotal: 0,
+            allocatedOrderDiscountTotal: 0,
+            lineTotalBeforeTax: 60,
+          },
+        ],
+        paymentInfo: {
+          payments: [{ type: 'CC', amount: 60 }],
+        },
+        promoCodes: [],
+      } as any,
+      { copyType: 'CUSTOMER' }
+    );
+
+    expect(ticket.paymentRows).toEqual([{ kind: 'payment', label: 'CC', amount: 60 }]);
   });
 
   it('uses the current open balance for additional refunds when no applied discount snapshots exist', async () => {

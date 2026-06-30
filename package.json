@@ -33,6 +33,7 @@
         "migrate:develop-to-ebtdev": "ts-node --project tools/tsconfig.tools.json tools/migrate-amplify-to-tenant.ts",
         "migrate:develop-assets-to-ebtdev": "ts-node --project tools/tsconfig.tools.json tools/migrate-amplify-assets.ts",
         "seed:tenant-discounts": "ts-node --project tools/tsconfig.tools.json tools/seed-tenant-discounts.ts",
+        "maintain:broward-products": "ts-node --project tools/tsconfig.tools.json tools/broward-product-maintenance/src/index.ts",
         "coverage:discounts-sales": "node tools/run-discount-sales-coverage.js",
         "test:critical": "node tools/run-critical-tests.js",
         "test:e2e:ios:smoke": "nx run mobile-ui-e2e:test-ios-smoke",

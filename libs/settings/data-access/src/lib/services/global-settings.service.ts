@@ -3,6 +3,10 @@ import { GlobalSettings } from '@pos/shared/models';
 import { DataStore } from '@pos/shared/amplify';
 import { GlobalSettingsDTO, GlobalSettingsEntityMapper } from './../global-settings.dto';
 import { stampTenant } from '@pos/auth/data-access';
+
+const normalizePercent = (value: number) =>
+    Number.isFinite(value) ? value : 0;
+
 export class GlobalSettingsService {
 
     static async fetch() {
@@ -27,6 +31,10 @@ export class GlobalSettingsService {
                         newSettings.scaleBarcodePriceFormat ||
                         settings.scaleBarcodePriceFormat ||
                         'LEGACY_4_DIGIT_PRICE';
+                    updated.taxValue = normalizePercent(newSettings.taxValue);
+                    updated.creditCardSurchargePercent = normalizePercent(
+                        newSettings.creditCardSurchargePercent
+                    );
                     updated.timezone = newSettings.timezone || settings.timezone || 'America/New_York';
                 })
             );
@@ -35,6 +43,10 @@ export class GlobalSettingsService {
             enforceSalesBasedOnInventory: newSettings.enforceSalesBasedOnInventory || false,
             scaleBarcodePriceFormat:
                 newSettings.scaleBarcodePriceFormat || 'LEGACY_4_DIGIT_PRICE',
+            taxValue: normalizePercent(newSettings.taxValue),
+            creditCardSurchargePercent: normalizePercent(
+                newSettings.creditCardSurchargePercent
+            ),
             timezone: newSettings.timezone || 'America/New_York',
         }) as never));
     }

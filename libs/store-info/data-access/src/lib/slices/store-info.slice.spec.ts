@@ -1,7 +1,6 @@
+/* eslint-disable import/first */
 jest.mock('@pos/shared/amplify', () => ({
-  DataStore: {
-    observeQuery: jest.fn(),
-  },
+  DataStore: {},
 }));
 
 jest.mock('./store-info.service', () => ({
@@ -27,10 +26,8 @@ import {
   isStoreInfoIncomplete,
   selectPreferredStore,
 } from './store-info.entity';
-import { DataStore } from '@pos/shared/amplify';
 import { StoreInfoService } from './store-info.service';
 
-const observeQueryMock = DataStore.observeQuery as jest.Mock;
 const getStoreMock = StoreInfoService.getStore as jest.Mock;
 
 describe('storeInfo reducer', () => {
@@ -90,6 +87,24 @@ describe('storeInfo reducer', () => {
       store: expect.objectContaining({ id: 'store-1', name: 'Main Store' }),
       initialSyncComplete: true,
     });
+  });
+
+  it('returns readable errors when fetchStoreInfo receives an object-shaped failure', async () => {
+    getStoreMock.mockRejectedValue({
+      errors: [{ message: 'Store query failed' }],
+    });
+
+    const action = await fetchStoreInfo()(
+      jest.fn(),
+      jest.fn(),
+      undefined
+    );
+
+    expect(action.type).toBe('storeInfo/fetchStatus/rejected');
+    expect(action.payload).toBe('Store query failed');
+
+    const state = storeInfoReducer(undefined, action);
+    expect(state.error).toBe('Store query failed');
   });
 
   it('prefers a completed store record over a placeholder record', () => {

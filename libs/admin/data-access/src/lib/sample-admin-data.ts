@@ -40,6 +40,23 @@ const mainTenant: AdminTenantData = {
             { id: 'u2', name: 'lb', description: 'Pound' },
         ],
     },
+    directory: {
+        contacts: [
+            { id: 'ct1', name: 'Maya Rodriguez', email: 'maya@marketselect.example', phone: '(212) 555-0101', companyId: 'co1', role: 'Sales representative', status: 'active' },
+            { id: 'ct2', name: 'Daniel Kim', email: 'daniel@pantryvalue.example', phone: '(212) 555-0134', companyId: 'co2', role: 'Account manager', status: 'active' },
+            { id: 'ct3', name: 'Iris Patel', email: null, phone: '(212) 555-0198', companyId: null, role: null, status: 'review' },
+        ],
+        companies: [
+            { id: 'co1', name: 'Market Select Foods', type: 'Distributor', primaryContactId: 'ct1', status: 'active' },
+            { id: 'co2', name: 'Pantry Value Supply', type: 'Supplier', primaryContactId: 'ct2', status: 'active' },
+            { id: 'co3', name: 'Fresh North Co.', type: null, primaryContactId: null, status: 'review' },
+        ],
+        vendors: [
+            { id: 'v1', name: 'Market Select Foods', companyId: 'co1', primaryContactId: 'ct1', terms: 'Net 30', status: 'active' },
+            { id: 'v2', name: 'Pantry Value Supply', companyId: 'co2', primaryContactId: 'ct2', terms: 'COD', status: 'active' },
+            { id: 'v3', name: 'Fresh North Co.', companyId: 'co3', primaryContactId: null, terms: null, status: 'review' },
+        ],
+    },
 };
 
 const branchTenant = {
@@ -69,6 +86,12 @@ export const sampleAdminData: AdminConsoleData = {
             catalog: {
                 ...branchTenant.catalog,
                 products: branchTenant.catalog.products.slice(0, 1),
+            },
+            directory: {
+                ...branchTenant.directory,
+                contacts: branchTenant.directory.contacts.slice(0, 1),
+                companies: branchTenant.directory.companies.slice(0, 1),
+                vendors: branchTenant.directory.vendors.slice(0, 1),
             },
         },
     },

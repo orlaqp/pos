@@ -127,3 +127,4 @@ amplifytools.xcconfig
 libs/inventory/data-access/src/lib/receive/inventory-receive.service.ts
 tools-output/
 .playwright-cli/
+.superpowers/

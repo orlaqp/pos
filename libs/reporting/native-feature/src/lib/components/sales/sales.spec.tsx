@@ -11,6 +11,7 @@ describe('Sales', () => {
                     orderDate: '2026-04-21T12:00:00.000Z',
                     createdAt: '2026-04-21T12:00:00.000Z',
                     total: 58.96,
+                    tax: 4.96,
                     createdBy: { name: 'Cashier A' },
                 },
                 {
@@ -19,6 +20,7 @@ describe('Sales', () => {
                     orderDate: '2026-04-21T13:00:00.000Z',
                     createdAt: '2026-04-21T13:00:00.000Z',
                     total: 148.95,
+                    tax: 12.95,
                     employeeName: 'Cashier B',
                 },
             ] as any,
@@ -40,6 +42,7 @@ describe('Sales', () => {
             expect.objectContaining({
                 orderNo: '002',
                 employee: 'Cashier B',
+                tax: 12.95,
                 amount: 148.95,
             })
         );
@@ -47,6 +50,7 @@ describe('Sales', () => {
             expect.objectContaining({
                 orderNo: '001',
                 employee: 'Cashier A',
+                tax: 2.1,
                 amount: 24.98,
             })
         );

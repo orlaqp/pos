@@ -34,8 +34,33 @@ jest.mock('@pos/shared/models', () => {
     };
 });
 
-import { ProductService } from './product.service';
+import { ProductService, setProductTenantProvider } from './product.service';
 import { DataStore } from '@pos/shared/amplify';
+import { ProductEntityMapper } from './product.entity';
+
+describe('ProductEntityMapper', () => {
+    it('maps missing taxable values to false', () => {
+        expect(
+            ProductEntityMapper.fromProduct({
+                id: 'product-1',
+                name: 'Apple',
+                price: 5,
+                taxable: undefined,
+            } as any)
+        ).toEqual(expect.objectContaining({ taxable: false }));
+    });
+
+    it('maps persisted taxable values', () => {
+        expect(
+            ProductEntityMapper.fromProduct({
+                id: 'product-1',
+                name: 'Apple',
+                price: 5,
+                taxable: true,
+            } as any)
+        ).toEqual(expect.objectContaining({ taxable: true }));
+    });
+});
 
 describe('ProductService.search barcode handling', () => {
     const products = [
@@ -297,6 +322,10 @@ describe('ProductService.search barcode handling', () => {
 });
 
 describe('ProductService.save inventory ownership', () => {
+    beforeEach(() => {
+        setProductTenantProvider(() => undefined);
+    });
+
     const dispatch = jest.fn();
     const mockedSave = jest.mocked(DataStore.save);
     const mockedQuery = jest.mocked(DataStore.query);
@@ -333,6 +362,7 @@ describe('ProductService.save inventory ownership', () => {
                 productCategoryId: null,
                 productBrandId: null,
                 discountable: true,
+                taxable: true,
                 minAllowedPrice: null,
                 maxManualDiscountPercent: null,
                 maxManualDiscountAmount: null,
@@ -344,6 +374,7 @@ describe('ProductService.save inventory ownership', () => {
         expect(mockedSave).toHaveBeenCalledWith(
             expect.objectContaining({
                 quantity: 0,
+                taxable: true,
             })
         );
         expect(dispatch).toHaveBeenCalledWith(
@@ -351,8 +382,91 @@ describe('ProductService.save inventory ownership', () => {
                 type: 'products/add',
                 payload: expect.objectContaining({
                     quantity: 0,
+                    taxable: true,
                 }),
             })
+        );
+    });
+
+    it('creates new products as non-taxable when taxable is missing', async () => {
+        mockedSave.mockImplementation(async (value) => ({
+            ...value,
+            id: value.id || 'product-1',
+        }));
+
+        await ProductService.save(
+            dispatch,
+            {
+                id: undefined as unknown as string,
+                name: 'Apple',
+                description: 'Fresh',
+                price: 5,
+                tags: null,
+                cost: 2,
+                barcode: '111',
+                sku: 'APL-1',
+                plu: '4015',
+                quantity: 99,
+                unitOfMeasure: 'EA',
+                trackStock: true,
+                reorderPoint: 10,
+                reorderQuantity: 20,
+                picture: null,
+                productCategoryId: null,
+                productBrandId: null,
+                discountable: true,
+                minAllowedPrice: null,
+                maxManualDiscountPercent: null,
+                maxManualDiscountAmount: null,
+                isActive: true,
+                isEBTEligible: false,
+            } as any
+        );
+
+        expect(mockedSave).toHaveBeenCalledWith(
+            expect.objectContaining({
+                taxable: false,
+            })
+        );
+        expect(dispatch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'products/add',
+                payload: expect.objectContaining({
+                    taxable: false,
+                }),
+            })
+        );
+    });
+
+    it('stamps new products with the configured tenant provider', async () => {
+        setProductTenantProvider(() => 'tenant-123');
+
+        await ProductService.save(
+            jest.fn(),
+            {
+                name: 'Tenant Product',
+                description: '',
+                price: 9,
+                tags: '',
+                cost: null,
+                barcode: null,
+                unitOfMeasure: 'EA',
+                quantity: 0,
+                trackStock: false,
+                reorderPoint: null,
+                reorderQuantity: null,
+                picture: null,
+                productCategoryId: null,
+                productBrandId: null,
+                minAllowedPrice: null,
+                maxManualDiscountPercent: null,
+                maxManualDiscountAmount: null,
+                isActive: true,
+            } as any
+        );
+
+        expect(DataStore.save).toHaveBeenCalledWith(
+            expect.objectContaining({ tenantId: 'tenant-123' })
         );
     });
 
@@ -389,6 +503,7 @@ describe('ProductService.save inventory ownership', () => {
                 productCategoryId: null,
                 productBrandId: null,
                 discountable: true,
+                taxable: true,
                 minAllowedPrice: null,
                 maxManualDiscountPercent: null,
                 maxManualDiscountAmount: null,
@@ -400,6 +515,7 @@ describe('ProductService.save inventory ownership', () => {
         expect(mockedSave).toHaveBeenCalledWith(
             expect.objectContaining({
                 price: 6,
+                taxable: true,
             })
         );
         expect((mockedSave.mock.calls[0]?.[0] as any).quantity).not.toBe(999);

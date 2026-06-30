@@ -21,10 +21,6 @@ jest.mock('@pos/shared/amplify', () => ({
     syncExpression: (...args: unknown[]) => mockSyncExpression(...args),
 }));
 
-jest.mock('@pos/auth/data-access', () => ({
-    getCurrentTenantId: jest.fn(() => 'tenant-123'),
-}));
-
 const mockSubtract = jest.fn(() => ({
     toISOString: () => '2026-01-01T00:00:00.000Z',
 }));
@@ -44,6 +40,7 @@ const {
     configureDataStore,
     enableInventorySync,
     resetInventorySyncForTests,
+    setDataStoreTenantProvider,
 } = require('./config');
 
 describe('configureDataStore', () => {
@@ -57,6 +54,7 @@ describe('configureDataStore', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         resetInventorySyncForTests();
+        setDataStoreTenantProvider(() => 'tenant-123');
         mockHandleDataStoreUnauthorizedError.mockReturnValue(true);
     });
 
@@ -156,7 +154,7 @@ describe('configureDataStore', () => {
         );
     });
 
-    it('delegates unauthorized sync errors to the shared DataStore recovery handler', async () => {
+    it('delegates unauthorized sync errors to the shared DataStore recovery handler without redboxing', async () => {
         configureDataStore();
 
         const options = mockConfigure.mock.calls[0][0];
@@ -169,10 +167,11 @@ describe('configureDataStore', () => {
         await Promise.resolve();
         await Promise.resolve();
 
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-            'DataStore sync error',
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+            'DataStore sync unauthorized',
             expect.stringContaining('Unauthorized')
         );
+        expect(consoleErrorSpy).not.toHaveBeenCalled();
         expect(mockHandleDataStoreUnauthorizedError).toHaveBeenCalledWith(
             'DataStore.sync',
             expect.objectContaining({

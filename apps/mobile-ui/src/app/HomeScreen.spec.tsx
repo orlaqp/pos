@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { HomeScreen } from './HomeScreen';
+import { isStoreInfoIncomplete } from '@pos/store-info/data-access';
 
 const mockDispatch = jest.fn();
 const mockState: any = {
@@ -325,13 +326,11 @@ describe('HomeScreen', () => {
     });
 
     it('shows a confirmation before logging off from the setup wizard', async () => {
-        const { isStoreInfoIncomplete } = require('@pos/store-info/data-access');
-
         mockState.employees.loginEmployee = undefined;
         mockState.employees.all = [];
         mockState.employees.initialEmployeeSyncComplete = true;
         mockState.employees.loadingStatus = 'loaded';
-        isStoreInfoIncomplete.mockReturnValue(true);
+        (isStoreInfoIncomplete as jest.Mock).mockReturnValue(true);
 
         const navigation = {
             navigate: jest.fn(),

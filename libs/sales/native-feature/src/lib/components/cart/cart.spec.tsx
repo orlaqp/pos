@@ -12,6 +12,8 @@ let mockCartState: any;
 let mockEmployeeState: any;
 let mockStoreState: any;
 let mockStationState: any;
+let mockGlobalSettingsState: any;
+let lastCartPaymentDialogProps: any;
 
 jest.mock('react-redux', () => ({
     useDispatch: () => mockDispatch,
@@ -21,6 +23,9 @@ jest.mock('react-redux', () => ({
             employee: mockEmployeeState,
             store: mockStoreState,
             station: mockStationState,
+            settings: {
+                globalSettings: mockGlobalSettingsState,
+            },
         }),
 }));
 
@@ -82,6 +87,7 @@ jest.mock('@pos/store-info/data-access', () => ({
 
 jest.mock('@pos/settings/data-access', () => ({
     selectStation: (state: any) => state.station,
+    getGlobalSettings: (state: any) => state.settings.globalSettings,
 }));
 
 jest.mock('@pos/auth/data-access', () => ({
@@ -263,11 +269,19 @@ jest.mock('../cart-payment/cart-payment-dialog', () => ({
         visible,
         onPaymentEntered,
         onClose,
+        ...rest
     }: {
         visible: boolean;
         onPaymentEntered: (payments: any[]) => void;
         onClose: () => void;
+        creditCardSurchargePercent?: number;
     }) =>
+        ((lastCartPaymentDialogProps = {
+            visible,
+            onPaymentEntered,
+            onClose,
+            ...rest,
+        }),
         visible
             ? (() => {
                   const { Pressable, Text } = require('react-native');
@@ -292,7 +306,7 @@ jest.mock('../cart-payment/cart-payment-dialog', () => ({
                       </>
                   );
               })()
-            : null,
+            : null),
 }));
 
 const { Cart } = require('./cart');
@@ -303,6 +317,7 @@ describe('Cart', () => {
         jest.clearAllMocks();
         jest.useFakeTimers();
         jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+        lastCartPaymentDialogProps = undefined;
         mockSubscribeDefinitionChanges.mockImplementation(
             (callback: (definitions: any[]) => void) => {
                 callback([]);
@@ -347,6 +362,7 @@ describe('Cart', () => {
         };
         mockStoreState = { id: 'store-1', timezone: 'America/New_York' };
         mockStationState = { stationNumber: '25' };
+        mockGlobalSettingsState = { taxValue: 8.25 };
         DiscountService.listDefinitions.mockResolvedValue([]);
     });
 
@@ -376,6 +392,58 @@ describe('Cart', () => {
         expect(getByText('Cart is empty')).toBeTruthy();
     });
 
+    it('hides the tax totals block when the cart has no tax', () => {
+        mockCartState.footer.subtotal = 6.99;
+        mockCartState.footer.tax = 0;
+        mockCartState.footer.total = 6.99;
+        mockGlobalSettingsState = { taxValue: 7 };
+
+        const { queryByTestId, getByText } = renderCart('order', {
+            preferPayFromSalesScreen: true,
+        });
+
+        expect(queryByTestId('cart-tax-totals')).toBeNull();
+        expect(getByText('Receive Payment  •  $6.99')).toBeTruthy();
+    });
+
+    it('shows subtotal tax and total when the cart has tax', () => {
+        mockCartState.footer.subtotal = 6.99;
+        mockCartState.footer.tax = 0.49;
+        mockCartState.footer.total = 7.48;
+        mockGlobalSettingsState = { taxValue: 7 };
+
+        const { getByTestId, getByText } = renderCart('order', {
+            preferPayFromSalesScreen: true,
+        });
+
+        expect(getByTestId('cart-tax-totals')).toBeTruthy();
+        expect(getByText('Subtotal')).toBeTruthy();
+        expect(getByText('$6.99')).toBeTruthy();
+        expect(getByText('Tax (7%)')).toBeTruthy();
+        expect(getByText('$0.49')).toBeTruthy();
+        expect(getByText('Total')).toBeTruthy();
+        expect(getByText('$7.48')).toBeTruthy();
+        expect(getByText('Receive Payment  •  $7.48')).toBeTruthy();
+    });
+
+    it('uses a plain tax label when the configured tax rate is unavailable', () => {
+        mockCartState.footer.subtotal = 6.99;
+        mockCartState.footer.tax = 0.49;
+        mockCartState.footer.total = 7.48;
+        mockGlobalSettingsState = {};
+
+        const { getByTestId, getByText, queryByText } = renderCart('order', {
+            preferPayFromSalesScreen: true,
+        });
+
+        expect(getByTestId('cart-tax-totals')).toBeTruthy();
+        expect(getByText('Tax')).toBeTruthy();
+        expect(getByText('$0.49')).toBeTruthy();
+        expect(getByText('$7.48')).toBeTruthy();
+        expect(getByText('Receive Payment  •  $7.48')).toBeTruthy();
+        expect(queryByText('Tax (7%)')).toBeNull();
+    });
+
     it('uses the configured station number in pricing context', async () => {
         renderCart('order');
 
@@ -387,6 +455,7 @@ describe('Cart', () => {
                         storeId: 'store-1',
                         timezone: 'America/New_York',
                         stationId: '25',
+                        taxRate: 0.0825,
                     }),
                 }),
             ),
@@ -467,6 +536,12 @@ describe('Cart', () => {
         const { getByText, getByTestId } = renderCart('payment');
         fireEvent.press(getByText(/Receive Payment/));
         expect(mockOnInteractionComplete).not.toHaveBeenCalled();
+        expect(lastCartPaymentDialogProps).toEqual(
+            expect.objectContaining({
+                visible: true,
+                creditCardSurchargePercent: 0,
+            }),
+        );
         fireEvent.press(getByTestId('cart-payment-entered'));
         expect(mockOnSubmit).toHaveBeenCalledWith(
             mockCartState,
@@ -476,6 +551,23 @@ describe('Cart', () => {
             expect.objectContaining({ intent: 'receive_payment' }),
         );
         expect(mockOnInteractionComplete).toHaveBeenCalledTimes(1);
+    });
+
+    it('passes the global credit card surcharge percent into the payment dialog', () => {
+        mockGlobalSettingsState = {
+            ...mockGlobalSettingsState,
+            creditCardSurchargePercent: 3,
+        };
+
+        const { getByText } = renderCart('payment');
+        fireEvent.press(getByText(/Receive Payment/));
+
+        expect(lastCartPaymentDialogProps).toEqual(
+            expect.objectContaining({
+                visible: true,
+                creditCardSurchargePercent: 3,
+            }),
+        );
     });
 
     it('shows receive payment as primary and keeps save open order when pay from sales is enabled', () => {

@@ -20,6 +20,7 @@ type ProductLike = {
     isEBTEligible?: Product['isEBTEligible'];
     productCategoryId?: Product['productCategoryId'];
     discountable?: Product['discountable'];
+    taxable?: Product['taxable'];
     minAllowedPrice?: Product['minAllowedPrice'];
     maxManualDiscountPercent?: Product['maxManualDiscountPercent'];
     maxManualDiscountAmount?: Product['maxManualDiscountAmount'];
@@ -43,6 +44,7 @@ export interface CartProduct {
     unitOfMeasure: string;
     isEBTEligible?: boolean | null | undefined;
     discountable?: boolean;
+    taxable?: boolean;
     minAllowedPrice?: number | null;
     maxManualDiscountPercent?: number | null;
     maxManualDiscountAmount?: number | null;
@@ -61,6 +63,9 @@ export interface CartPromoCode {
 export interface CartPayment {
     type: string;
     amount: number;
+    baseAmount?: number | null;
+    surchargeRate?: number | null;
+    surchargeAmount?: number | null;
 }
 
 export interface CartFooter {
@@ -81,6 +86,7 @@ export interface CartPricingContext {
     timezone?: string | null;
     storeId?: string | null;
     stationId?: string | null;
+    taxRate?: number;
 }
 
 export interface CartState {
@@ -117,6 +123,7 @@ export class CartItemMapper {
                 sku: p.sku,
                 isEBTEligible: p.isEBTEligible ?? false,
                 discountable: p.discountable ?? true,
+                taxable: p.taxable ?? false,
                 minAllowedPrice: p.minAllowedPrice ?? null,
                 maxManualDiscountPercent: p.maxManualDiscountPercent ?? null,
                 maxManualDiscountAmount: p.maxManualDiscountAmount ?? null,

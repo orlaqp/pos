@@ -1,6 +1,6 @@
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
 import {
@@ -74,7 +74,11 @@ export const buildDayRange = (date: Date) => ({
 });
 
 export const getPaymentMethodsTotal = (summary: PaymentMethodsSummary) =>
-    summary.CASH + summary.CC + summary.CHECK + summary.EBT;
+    summary.CASH +
+    summary.CC +
+    summary.CHECK +
+    summary.EBT +
+    summary.PROCESSING_FEE_RECOVERY;
 
 export const formatPaymentAmount = (amount: number) =>
     `$${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
@@ -136,6 +140,7 @@ export const buildEndOfDayWidgets = (
     grossSales: number,
     discounts: number,
     refunds: number,
+    tax: number,
     netSales: number,
     summary: PaymentMethodsSummary,
     defaultBackgroundColor: string,
@@ -144,8 +149,10 @@ export const buildEndOfDayWidgets = (
         grossSales: string;
         discounts: string;
         refunds: string;
+        tax: string;
         netSales: string;
         creditCard: string;
+        processingFeeRecovery: string;
         cash: string;
         checks: string;
         ebt: string;
@@ -154,8 +161,10 @@ export const buildEndOfDayWidgets = (
         grossSales: 'Gross Sales',
         discounts: 'Discounts',
         refunds: 'Refunds',
+        tax: 'Tax',
         netSales: 'Collected Sales',
         creditCard: 'Credit Card',
+        processingFeeRecovery: 'Processing Fee Recovery',
         cash: 'Cash',
         checks: 'Checks',
         ebt: 'EBT',
@@ -186,6 +195,12 @@ export const buildEndOfDayWidgets = (
         flex: 1,
     },
     {
+        text: labels.tax,
+        value: formatPaymentAmount(tax),
+        backgroundColor: '#00796b',
+        flex: 1,
+    },
+    {
         text: labels.netSales,
         value: formatPaymentAmount(netSales),
         backgroundColor: defaultBackgroundColor,
@@ -195,6 +210,12 @@ export const buildEndOfDayWidgets = (
         text: labels.creditCard,
         value: formatPaymentAmount(summary.CC),
         backgroundColor: '#1976d2',
+        flex: 1,
+    },
+    {
+        text: labels.processingFeeRecovery,
+        value: formatPaymentAmount(summary.PROCESSING_FEE_RECOVERY),
+        backgroundColor: '#6d4c41',
         flex: 1,
     },
     {
@@ -330,6 +351,7 @@ export function EndOfDay(props: EndOfDayProps) {
             CASH: 0,
             CHECK: 0,
             EBT: 0,
+            PROCESSING_FEE_RECOVERY: 0,
         });
     const [referenceSummary, setReferenceSummary] = useState(() =>
         buildEndOfDayReferenceSummary([], [], [], {}),
@@ -353,8 +375,8 @@ export function EndOfDay(props: EndOfDayProps) {
     const [closedByValue, setClosedByValue] = useState(null);
     const [filtersCollapsed, setFiltersCollapsed] = useState(false);
     const [summaryCollapsed, setSummaryCollapsed] = useState(false);
-    const emptyOpacity = useRef(new Animated.Value(0)).current;
-    const emptyTranslateY = useRef(new Animated.Value(12)).current;
+    const [emptyOpacity] = useState(() => new Animated.Value(0));
+    const [emptyTranslateY] = useState(() => new Animated.Value(12));
     const filterConfigs = buildEndOfDayFilterConfigs({
         employeesOpen,
         employeeValue,
@@ -383,6 +405,7 @@ export function EndOfDay(props: EndOfDayProps) {
         referenceSummary.grossSales,
         referenceSummary.discounts,
         referenceSummary.refunds,
+        referenceSummary.tax,
         referenceSummary.netSales,
         paymentMethodsSummary,
         styles.dataRow.backgroundColor,
@@ -391,8 +414,13 @@ export function EndOfDay(props: EndOfDayProps) {
             grossSales: t('EOD_GrossSales', 'Gross Sales'),
             discounts: t('EOD_Discounts', 'Discounts'),
             refunds: t('EOD_Refunds', 'Refunds'),
+            tax: t('EOD_Tax', 'Tax'),
             netSales: t('EOD_NetSales', 'Collected Sales'),
             creditCard: t('EOD_CreditCard', 'Credit Card'),
+            processingFeeRecovery: t(
+                'EOD_ProcessingFeeRecovery',
+                'Processing Fee Recovery'
+            ),
             cash: t('EOD_Cash', 'Cash'),
             checks: t('EOD_Checks', 'Checks'),
             ebt: t('EOD_EBT', 'EBT'),

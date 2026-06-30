@@ -68,6 +68,10 @@ export const areDashboardRangesEqual = (left: DateRange, right: DateRange) =>
 const getDashboardLineAmount = (line: NonNullable<Order['lines']>[number]) =>
     Number(line?.lineTotalBeforeTax ?? Number(line?.price || 0) * Number(line?.quantity || 0));
 const roundMoney = (value: number) => Math.round(value * 100) / 100;
+const PROCESSING_FEE_RECOVERY_PAYMENT_TYPE = 'PROCESSING_FEE_RECOVERY';
+
+const getPaymentSurchargeAmount = (payment: { surchargeAmount?: number | null }) =>
+    roundMoney(Math.max(0, Number(payment?.surchargeAmount || 0)));
 
 const allocateRefundAcrossOrderPayments = (
     order: Order | undefined,
@@ -225,6 +229,7 @@ export const buildDashboardSupplemental = (
         [PaymentType.CC]: 0,
         [PaymentType.CHECK]: 0,
         [PaymentType.EBT]: 0,
+        [PROCESSING_FEE_RECOVERY_PAYMENT_TYPE]: 0,
     };
 
     let totalDiscounts = 0;
@@ -247,7 +252,13 @@ export const buildDashboardSupplemental = (
         (order.paymentInfo?.payments || []).forEach((payment) => {
             const type = String(payment?.type || '').toUpperCase();
             if (!type) return;
-            paymentTotals[type] = (paymentTotals[type] || 0) + Number(payment?.amount || 0);
+            paymentTotals[type] = roundMoney(
+                (paymentTotals[type] || 0) + Number(payment?.amount || 0)
+            );
+            paymentTotals[PROCESSING_FEE_RECOVERY_PAYMENT_TYPE] = roundMoney(
+                (paymentTotals[PROCESSING_FEE_RECOVERY_PAYMENT_TYPE] || 0) +
+                    getPaymentSurchargeAmount(payment || {})
+            );
         });
 
         (order.lines || []).forEach((line) => {
@@ -343,6 +354,10 @@ export const buildDashboardSupplemental = (
         { name: 'Cash', value: paymentTotals[PaymentType.CASH] || 0 },
         { name: 'EBT', value: paymentTotals[PaymentType.EBT] || 0 },
         { name: 'Checks', value: paymentTotals[PaymentType.CHECK] || 0 },
+        {
+            name: 'Processing Fee Recovery',
+            value: paymentTotals[PROCESSING_FEE_RECOVERY_PAYMENT_TYPE] || 0,
+        },
     ]
         .filter((item) => item.value > 0)
         .sort((a, b) => b.value - a.value);

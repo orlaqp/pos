@@ -57,6 +57,7 @@ import {
 } from '@pos/printings/data-access';
 import {
     ensureProductSyncHealthy,
+    setProductTenantProvider,
     subscribeToProductChanges,
 } from '@pos/products/data-access';
 import { ensureOrderSyncHealthy } from '@pos/orders/data-access';
@@ -96,6 +97,10 @@ import {
     beginAppLifecycleSession,
     recordAppLifecycleEvent,
 } from './app-lifecycle-diagnostics';
+import {
+    buildDataStoreUnauthorizedRecoveryKey,
+    shouldForceLoginAfterUnauthorizedRetry,
+} from './datastore-unauthorized-recovery';
 import { shouldValidateSessionOnForeground } from './foreground-session-guard';
 import { markAppInstallSeen } from './install-state';
 import amplifyConfig from '../amplifyconfiguration.json';
@@ -130,8 +135,13 @@ const isUnauthorizedError = (error: unknown) => {
     return message.includes('Unauthorized');
 };
 
-const logBootstrapStageError = (stage: string, error: unknown) => {
-    console.error(`App bootstrap failed during ${stage}`, error);
+const logBootstrapStageError = (
+    stage: string,
+    error: unknown,
+    options?: { fatal?: boolean }
+) => {
+    const log = options?.fatal ? console.error : console.warn;
+    log(`App bootstrap failed during ${stage}`, error);
 };
 
 const withTimeout = <T,>(
@@ -319,6 +329,7 @@ const AppContent = () => {
     const sessionExpiryAlertShownRef = useRef(false);
     const sessionValidationInFlightRef = useRef<Promise<void> | null>(null);
     const silentReauthInFlightRef = useRef<Promise<User | null> | null>(null);
+    const lastUnauthorizedRecoveryKeyRef = useRef<string | null>(null);
     const lastForegroundSessionCheckAtRef = useRef(0);
     const lastKnownAppStateRef = useRef(AppState.currentState);
     const foregroundValidationTaskRef = useRef<{ cancel?: () => void } | null>(
@@ -411,6 +422,7 @@ const AppContent = () => {
                 await DataStore.clear();
             }
         } finally {
+            lastUnauthorizedRecoveryKeyRef.current = null;
             clearCurrentTenantContext();
             dispatch(authActions.logoff());
             dispatch(tenantSessionActions.clearTenantSession());
@@ -553,6 +565,27 @@ const AppContent = () => {
 
             const restoredUser = await attemptSilentReauth();
             if (restoredUser) {
+                const recoveryKey = buildDataStoreUnauthorizedRecoveryKey({
+                    source,
+                    userId: restoredUser.id,
+                    tenantId: restoredUser.tenantId,
+                    graphqlEndpoint: getCurrentGraphqlEndpoint(),
+                });
+
+                if (
+                    shouldForceLoginAfterUnauthorizedRetry({
+                        lastRecoveryKey: lastUnauthorizedRecoveryKeyRef.current,
+                        nextRecoveryKey: recoveryKey,
+                    })
+                ) {
+                    await resetSessionState({ manual: false, destructive: true });
+                    setSessionRecoveryState('needs_reauth');
+                    setBootstrapError(message);
+                    setBootstrapStatus('ready');
+                    return;
+                }
+
+                lastUnauthorizedRecoveryKeyRef.current = recoveryKey;
                 setBootstrapError(undefined);
                 setSessionRecoveryState('healthy');
 
@@ -743,7 +776,8 @@ const AppContent = () => {
             }
 
             const finishConfigure = startSyncMeasure('app-bootstrap', 'datastore.configure');
-            configureDataStore();
+            setProductTenantProvider(() => user.tenantId);
+            configureDataStore(user.tenantId);
             finishConfigure();
             void bootstrapTenantSession(user).catch((error) => {
                 logBootstrapStageError('bootstrapTenantSession()', error);
@@ -754,7 +788,7 @@ const AppContent = () => {
                 await DataStore.start();
                 finishStart();
             } catch (error) {
-                logBootstrapStageError('DataStore.start()', error);
+                logBootstrapStageError('DataStore.start()', error, { fatal: true });
                 if (!isUnauthorizedError(error)) {
                     throw error;
                 }
@@ -800,6 +834,7 @@ const AppContent = () => {
 
             dispatch(tenantSessionActions.setBootstrapStatus('ready'));
             setBootstrapStatus('ready');
+            lastUnauthorizedRecoveryKeyRef.current = null;
             recordLifecycleEvent('bootstrap:ready', {
                 tenantId: user.tenantId,
             });

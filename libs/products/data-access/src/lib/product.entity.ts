@@ -19,6 +19,7 @@ export type ProductEntity = {
     productCategoryId: string | null | undefined;
     productBrandId: string | null | undefined;
     discountable?: boolean;
+    taxable?: boolean;
     minAllowedPrice: number | null | undefined;
     maxManualDiscountPercent: number | null | undefined;
     maxManualDiscountAmount: number | null | undefined;
@@ -49,6 +50,7 @@ export class ProductEntityMapper {
             productCategoryId: p.productCategoryId,
             productBrandId: p.productBrandId,
             discountable: p.discountable ?? true,
+            taxable: p.taxable ?? false,
             minAllowedPrice: p.minAllowedPrice,
             maxManualDiscountPercent: p.maxManualDiscountPercent,
             maxManualDiscountAmount: p.maxManualDiscountAmount,

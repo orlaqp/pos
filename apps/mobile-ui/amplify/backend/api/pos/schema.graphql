@@ -391,6 +391,7 @@ type OrderLine {
   appliedDiscounts: [AppliedDiscountDetailSnapshot!]
   categoryId: String
   discountable: Boolean
+  taxable: Boolean
   minAllowedPrice: Float
   maxManualDiscountPercent: Float
   maxManualDiscountAmount: Float
@@ -409,6 +410,9 @@ enum PaymentType {
 type Payment {
     type: PaymentType!
     amount: Float!
+    baseAmount: Float
+    surchargeRate: Float
+    surchargeAmount: Float
 }
 
 enum OrderStatus {
@@ -440,6 +444,7 @@ type Product @model @auth(rules: [{allow: owner, ownerField: "tenantId", identit
   isActive: Boolean!
   isEBTEligible: Boolean
   discountable: Boolean! @default(value: "true")
+  taxable: Boolean @default(value: "false")
   minAllowedPrice: Float
   maxManualDiscountPercent: Float
   maxManualDiscountAmount: Float
@@ -545,6 +550,8 @@ type GlobalSettings @model @auth(rules: [{allow: owner, ownerField: "tenantId", 
     enforceSalesBasedOnInventory: Boolean! @default(value: "false")
     timezone: String! @default(value: "America/New_York")
     scaleBarcodePriceFormat: String @default(value: "LEGACY_4_DIGIT_PRICE")
+    taxValue: Float @default(value: "0")
+    creditCardSurchargePercent: Float @default(value: "0")
 }
 
 type DiscountDefinition @model @auth(rules: [{allow: owner, ownerField: "tenantId", identityClaim: "sub"}]) {

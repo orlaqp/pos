@@ -298,6 +298,77 @@ describe('printing.service ticket rendering', () => {
     expect(receiptText).not.toContain('Original Payments');
   });
 
+  it('keeps surcharge rows out of the tender summary when the totals section discloses them', () => {
+    const receiptText = buildReceiptPreviewText(
+      store,
+      {
+        ...standardTicket,
+        paymentRows: [
+          { kind: 'payment' as const, label: 'CC', amount: 61.8 },
+          {
+            kind: 'payment' as const,
+            label: 'Credit Card Surcharge',
+            amount: 1.8,
+          },
+        ],
+        totals: {
+          ...standardTicket.totals,
+          total: 60,
+        },
+      },
+      new Date('2026-04-21T17:31:14.000Z')
+    );
+
+    expect(receiptText).toContain('CC: $ 61.80');
+    expect(receiptText).toContain('Credit Card Surcharge        1.80');
+    expect(receiptText).not.toContain('Credit Card Surcharge: $ 1.80');
+  });
+
+  it('includes credit card surcharge in the receipt total', () => {
+    const receiptText = buildReceiptPreviewText(
+      store,
+      {
+        ...standardTicket,
+        sections: [
+          {
+            title: 'Items',
+            emptyLabel: 'No items',
+            rows: [
+              {
+                identifier: 'line-1',
+                quantity: 1,
+                name: 'Test 1',
+                amount: 2,
+                detailRows: [],
+              },
+            ],
+            postItemDetailRows: [],
+          },
+        ],
+        paymentRows: [
+          { kind: 'payment' as const, label: 'CC', amount: 2.06 },
+          {
+            kind: 'payment' as const,
+            label: 'Credit Card Surcharge',
+            amount: 0.06,
+          },
+        ],
+        totals: {
+          subtotal: 2,
+          discount: 0,
+          tax: 0,
+          total: 2,
+        },
+      },
+      new Date('2026-06-29T16:50:50.000Z')
+    );
+
+    expect(receiptText).toContain('Total                       2.06');
+    expect(receiptText).toContain('Credit Card Surcharge        0.06');
+    expect(receiptText).toContain('CC: $ 2.06');
+    expect(receiptText).not.toContain('Credit Card Surcharge: $ 0.06');
+  });
+
   it('routes printerless previews through the registered preview handler', async () => {
     const handler = jest.fn();
     const unsubscribe = registerReceiptPreviewHandler(handler);

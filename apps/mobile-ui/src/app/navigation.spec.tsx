@@ -3,6 +3,7 @@ import { render } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider } from '@rneui/themed';
 import { theme } from '@pos/theme/native';
+import Navigation from './navigation';
 
 jest.mock('./HomeScreen', () => ({
     HomeScreen: () => null,
@@ -101,8 +102,6 @@ jest.mock('react-redux', () => ({
     useDispatch: () => jest.fn(),
     Provider: ({ children }: { children: React.ReactNode }) => children,
 }));
-
-import Navigation from './navigation';
 
 describe('Navigation', () => {
     it('should render successfully', () => {

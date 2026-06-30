@@ -22,7 +22,15 @@ export function CategoryPerformance() {
         i18next.isInitialized && i18next.exists(key) ? String(i18next.t(key)) : fallback;
 
     const headers: ReportHeader[] = [
-        { label: t('REPORT_Header_Category', 'Category'), field: 'category', width: 4 },
+        { label: t('REPORT_Header_Category', 'Category'), field: 'category', width: 3 },
+        {
+            label: t('REPORT_Header_Tax', 'Tax'),
+            field: 'tax',
+            width: 1,
+            align: 'right',
+            format: 'money',
+            sum: true,
+        },
         {
             label: t('REPORT_Header_Sales', 'Sales'),
             field: 'sales',

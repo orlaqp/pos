@@ -1995,6 +1995,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "taxable": {
+                    "name": "taxable",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "minAllowedPrice": {
                     "name": "minAllowedPrice",
                     "isArray": false,
@@ -3016,6 +3023,20 @@ export const schema = {
                     "name": "scaleBarcodePriceFormat",
                     "isArray": false,
                     "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "taxValue": {
+                    "name": "taxValue",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "creditCardSurchargePercent": {
+                    "name": "creditCardSurchargePercent",
+                    "isArray": false,
+                    "type": "Float",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -5037,6 +5058,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "taxable": {
+                    "name": "taxable",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "minAllowedPrice": {
                     "name": "minAllowedPrice",
                     "isArray": false,
@@ -5098,6 +5126,27 @@ export const schema = {
                     "isArray": false,
                     "type": "Float",
                     "isRequired": true,
+                    "attributes": []
+                },
+                "baseAmount": {
+                    "name": "baseAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "surchargeRate": {
+                    "name": "surchargeRate",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "surchargeAmount": {
+                    "name": "surchargeAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
                     "attributes": []
                 }
             }
@@ -5330,5 +5379,5 @@ export const schema = {
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "b580e4a8a0905f7145fa086e7d8724e9"
+    "version": "57863bbf1529891d6a8fab7d147db686"
 };

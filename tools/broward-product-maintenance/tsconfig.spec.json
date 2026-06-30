@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.tools.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc/tools/broward-product-maintenance",
+    "module": "commonjs",
+    "types": ["jest", "node"]
+  },
+  "include": ["src/**/*.ts"]
+}

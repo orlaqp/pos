@@ -8,6 +8,8 @@ export type GlobalSettingsDTO = {
     id: string;
     enforceSalesBasedOnInventory: boolean;
     scaleBarcodePriceFormat?: ScaleBarcodePriceFormat;
+    taxValue: number;
+    creditCardSurchargePercent: number;
     timezone?: string;
     createdAt?: string | null;
     updatedAt?: string | null;
@@ -31,6 +33,8 @@ export class GlobalSettingsEntityMapper {
             scaleBarcodePriceFormat: normalizeScaleBarcodePriceFormat(
                 p.scaleBarcodePriceFormat
             ),
+            taxValue: p.taxValue ?? 0,
+            creditCardSurchargePercent: p.creditCardSurchargePercent ?? 0,
             timezone: p.timezone,
             createdAt: p.createdAt,
             updatedAt: p.updatedAt

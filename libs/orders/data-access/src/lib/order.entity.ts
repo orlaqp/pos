@@ -61,6 +61,9 @@ export interface OrderEntity {
 export interface PaymentEntity {
   type: PaymentType | keyof typeof PaymentType;
   amount: number;
+  baseAmount?: number | null;
+  surchargeRate?: number | null;
+  surchargeAmount?: number | null;
 }
 
 export interface OrderLineEntity {
@@ -84,6 +87,7 @@ export interface OrderLineEntity {
   appliedDiscounts?: AppliedDiscountDetail[] | null;
   categoryId?: string | null;
   discountable?: boolean | null;
+  taxable?: boolean | null;
   minAllowedPrice?: number | null;
   maxManualDiscountPercent?: number | null;
   maxManualDiscountAmount?: number | null;
@@ -205,6 +209,11 @@ export class OrderEntityMapper {
             lineTotalBeforeTax: OrderEntityMapper.roundMoney(
               item.product.price * item.quantity
             ),
+            tax: 0,
+            lineTotalAfterTax: OrderEntityMapper.roundMoney(
+              item.product.price * item.quantity
+            ),
+            taxable: item.product.taxable ?? false,
           };
         }
 
@@ -226,6 +235,11 @@ export class OrderEntityMapper {
           lineTotalBeforeTax: OrderEntityMapper.roundMoney(
             source.lineTotalBeforeTax * ratio
           ),
+          tax: OrderEntityMapper.roundMoney((source.tax || 0) * ratio),
+          lineTotalAfterTax: OrderEntityMapper.roundMoney(
+            (source.lineTotalAfterTax ?? source.lineTotalBeforeTax) * ratio
+          ),
+          taxable: source.taxable ?? item.product.taxable ?? false,
         };
       });
   }
@@ -363,14 +377,19 @@ export class OrderEntityMapper {
           sku: i.sku,
           isEBTEligible: i.isEBTEligible ?? false,
           discountable: i.discountable ?? true,
+          taxable: i.taxable ?? false,
           minAllowedPrice: i.minAllowedPrice ?? null,
           maxManualDiscountPercent: i.maxManualDiscountPercent ?? null,
           maxManualDiscountAmount: i.maxManualDiscountAmount ?? null,
         },
       })) || [];
-    state.payments = o.payments?.map((p) => ({
+    const restoredPayments = o.payments || o.paymentInfo?.payments;
+    state.payments = restoredPayments?.map((p) => ({
       type: p.type,
       amount: p.amount,
+      baseAmount: p.baseAmount,
+      surchargeRate: p.surchargeRate,
+      surchargeAmount: p.surchargeAmount,
     }));
     state.promoCodes = (o.promoCodes || []).map((code) => ({ code }));
     state.appliedDiscountSummary = o.appliedDiscountSummary || undefined;
@@ -393,7 +412,7 @@ export class OrderEntityMapper {
       sku: l.sku,
       productName: OrderEntityMapper.cleanCartProductName(l.productName),
       quantity: l.quantity,
-      tax: 0,
+      tax: l.tax ?? 0,
       price: l.price,
       basePrice: l.basePrice ?? l.price,
       overridePrice: l.overridePrice ?? null,
@@ -407,6 +426,7 @@ export class OrderEntityMapper {
       unitOfMeasure: l.unitOfMeasure,
       categoryId: l.categoryId,
       discountable: l.discountable ?? true,
+      taxable: (l as OrderLine & { taxable?: boolean | null }).taxable ?? false,
       minAllowedPrice: l.minAllowedPrice ?? null,
       maxManualDiscountPercent: l.maxManualDiscountPercent ?? null,
       maxManualDiscountAmount: l.maxManualDiscountAmount ?? null,
@@ -456,6 +476,7 @@ export class OrderEntityMapper {
           sku: i.product.sku,
           isEBTEligible: i.product.isEBTEligible ?? false,
           discountable: i.product.discountable ?? true,
+          taxable: i.product.taxable ?? false,
           minAllowedPrice: i.product.minAllowedPrice ?? null,
           maxManualDiscountPercent: i.product.maxManualDiscountPercent ?? null,
           maxManualDiscountAmount: i.product.maxManualDiscountAmount ?? null,
@@ -493,7 +514,29 @@ export class OrderEntityMapper {
         0
       ) || baseSubtotal
     );
-    const tax = 0;
+    const originalTaxableSubtotal = OrderEntityMapper.roundMoney(
+      cart.items.reduce((sum, item) => {
+        if (!item.product.taxable) return sum;
+        const source = cart.appliedDiscountSummary?.lineSummaries.find(
+          (line) => line.lineId === item.identifier
+        );
+        return sum + (source?.lineTotalBeforeTax ?? item.product.price * item.quantity);
+      }, 0)
+    );
+    const remainingTaxableSubtotal = OrderEntityMapper.roundMoney(
+      state.items.reduce((sum, item) => {
+        if (!item.product.taxable) return sum;
+        const source = rebuiltSummary?.lineSummaries.find(
+          (line) => line.lineId === item.identifier
+        );
+        return sum + (source?.lineTotalBeforeTax ?? item.product.price * item.quantity);
+      }, 0)
+    );
+    const tax = originalTaxableSubtotal > 0
+      ? OrderEntityMapper.roundMoney(
+          (cart.footer.tax || 0) * (remainingTaxableSubtotal / originalTaxableSubtotal)
+        )
+      : 0;
     const total = OrderEntityMapper.roundMoney(subtotal + tax);
 
     state.footer = {
@@ -528,6 +571,9 @@ export class OrderEntityMapper {
     return {
       type: p.type,
       amount: p.amount,
+      baseAmount: (p as Payment & { baseAmount?: number | null }).baseAmount,
+      surchargeRate: (p as Payment & { surchargeRate?: number | null }).surchargeRate,
+      surchargeAmount: (p as Payment & { surchargeAmount?: number | null }).surchargeAmount,
     };
   }
 }

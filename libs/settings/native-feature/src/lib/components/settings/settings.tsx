@@ -13,7 +13,7 @@ import { UICard, UIScreen, UIStack } from '@pos/shared/ui-native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { Button, Switch, useTheme } from '@rneui/themed';
 import React from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@pos/store';
@@ -42,6 +42,22 @@ export function Settings(_props: SettingsProps) {
         EXPANDED_SCALE_PRICE_FORMAT
             ? EXPANDED_SCALE_PRICE_FORMAT
             : LEGACY_SCALE_PRICE_FORMAT;
+    const [taxInput, setTaxInput] = React.useState(
+        String(settings.globalSettings?.taxValue ?? 0)
+    );
+    const [cardSurchargeInput, setCardSurchargeInput] = React.useState(
+        String(settings.globalSettings?.creditCardSurchargePercent ?? 0)
+    );
+
+    React.useEffect(() => {
+        setTaxInput(String(settings.globalSettings?.taxValue ?? 0));
+    }, [settings.globalSettings?.taxValue]);
+
+    React.useEffect(() => {
+        setCardSurchargeInput(
+            String(settings.globalSettings?.creditCardSurchargePercent ?? 0)
+        );
+    }, [settings.globalSettings?.creditCardSurchargePercent]);
 
     const updateThemeMode = (dark: boolean) => {
         theme.updateTheme({
@@ -95,6 +111,44 @@ export function Settings(_props: SettingsProps) {
         }
 
         setScaleBarcodePriceFormat(LEGACY_SCALE_PRICE_FORMAT);
+    };
+
+    const saveTaxValue = () => {
+        if (!settings.globalSettings) return;
+
+        const parsed = Number(taxInput || 0);
+        if (!Number.isFinite(parsed) || parsed < 0 || parsed > 100) {
+            Alert.alert(
+                translate('SETTINGS_TaxPercentage'),
+                translate('SETTINGS_TaxPercentageInvalid')
+            );
+            return;
+        }
+
+        dispatch(updateGlobalSettings({
+            ...settings.globalSettings,
+            taxValue: parsed,
+        }));
+    };
+
+    const saveCardSurchargeValue = () => {
+        if (!settings.globalSettings) return;
+
+        const parsed = Number(cardSurchargeInput || 0);
+        if (!Number.isFinite(parsed) || parsed < 0 || parsed > 100) {
+            Alert.alert(
+                translate('SETTINGS_CreditCardSurchargePercentage'),
+                translate('SETTINGS_CreditCardSurchargePercentageInvalid')
+            );
+            return;
+        }
+
+        dispatch(
+            updateGlobalSettings({
+                ...settings.globalSettings,
+                creditCardSurchargePercent: parsed,
+            })
+        );
     };
 
     const setPayFromSales = (enabled: boolean) => {
@@ -237,6 +291,60 @@ export function Settings(_props: SettingsProps) {
                                         </UIStack>
                                     </UIStack>
                                 ) : null}
+
+                                <UIStack spacing="sm">
+                                    <Text style={styles.settingLabel}>
+                                        {translate('SETTINGS_TaxPercentage')}
+                                    </Text>
+                                    <UIStack
+                                        direction="horizontal"
+                                        spacing="sm"
+                                        align="center"
+                                    >
+                                        <TextInput
+                                            testID="settings-tax-percentage-input"
+                                            value={taxInput}
+                                            onChangeText={setTaxInput}
+                                            keyboardType="decimal-pad"
+                                            style={styles.taxInput}
+                                        />
+                                        <Button
+                                            testID="settings-save-tax-percentage-button"
+                                            title={translate('SETTINGS_SaveTaxPercentage')}
+                                            buttonStyle={styles.taxButton}
+                                            onPress={saveTaxValue}
+                                        />
+                                    </UIStack>
+                                </UIStack>
+
+                                <UIStack spacing="sm">
+                                    <Text style={styles.settingLabel}>
+                                        {translate(
+                                            'SETTINGS_CreditCardSurchargePercentage'
+                                        )}
+                                    </Text>
+                                    <UIStack
+                                        direction="horizontal"
+                                        spacing="sm"
+                                        align="center"
+                                    >
+                                        <TextInput
+                                            testID="settings-card-surcharge-input"
+                                            value={cardSurchargeInput}
+                                            onChangeText={setCardSurchargeInput}
+                                            keyboardType="decimal-pad"
+                                            style={styles.taxInput}
+                                        />
+                                        <Button
+                                            testID="settings-save-card-surcharge-button"
+                                            title={translate(
+                                                'SETTINGS_SaveCreditCardSurchargePercentage'
+                                            )}
+                                            buttonStyle={styles.taxButton}
+                                            onPress={saveCardSurchargeValue}
+                                        />
+                                    </UIStack>
+                                </UIStack>
 
                                 <UIStack spacing="sm">
                                     <Text style={styles.settingLabel}>
@@ -413,6 +521,20 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
         scaleButton: {
             borderRadius: tokens.radii.lg,
             minWidth: 150,
+        },
+        taxInput: {
+            minWidth: 120,
+            borderRadius: tokens.radii.lg,
+            borderWidth: 1,
+            borderColor: tokens.colors.border,
+            color: tokens.colors.textPrimary,
+            paddingHorizontal: tokens.spacing.md,
+            paddingVertical: tokens.spacing.xs,
+            fontSize: 16,
+        },
+        taxButton: {
+            borderRadius: tokens.radii.lg,
+            minWidth: 120,
         },
     });
 

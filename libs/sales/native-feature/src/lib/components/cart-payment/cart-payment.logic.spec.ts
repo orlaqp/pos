@@ -1,4 +1,5 @@
 import {
+    calculateSplitPaymentBalance,
     getAutoFillAmount,
     getRestoredValue,
     shouldRestoreValue,
@@ -111,5 +112,60 @@ describe('cart-payment.logic', () => {
         expect(toNumber('')).toBe(0);
         expect(toNumber('abc')).toBe(0);
         expect(toNumber('12.5')).toBe(12.5);
+    });
+
+    it('rebalances the other active payment method for a two-method split', () => {
+        const result = calculateSplitPaymentBalance({
+            changedMethod: 'cash',
+            activeMethods: ['cash', 'cc'],
+            values: { cash: 20, cc: 100 },
+            total: 100,
+            ebtEligibleTotal: 0,
+        });
+
+        expect(result.values).toEqual({ cash: 20, cc: 80 });
+        expect(result.calculatedMethod).toBe('cc');
+        expect(result.cappedMethod).toBeUndefined();
+    });
+
+    it('flips the calculated method when the cashier edits the other side', () => {
+        const result = calculateSplitPaymentBalance({
+            changedMethod: 'cc',
+            activeMethods: ['cash', 'cc'],
+            values: { cash: 20, cc: 75 },
+            total: 100,
+            ebtEligibleTotal: 0,
+        });
+
+        expect(result.values).toEqual({ cash: 25, cc: 75 });
+        expect(result.calculatedMethod).toBe('cash');
+    });
+
+    it('caps EBT and recalculates the paired method from the capped amount', () => {
+        const result = calculateSplitPaymentBalance({
+            changedMethod: 'ebt',
+            activeMethods: ['ebt', 'cash'],
+            values: { ebt: 50, cash: 0 },
+            total: 100,
+            ebtEligibleTotal: 35,
+        });
+
+        expect(result.values).toEqual({ ebt: 35, cash: 65 });
+        expect(result.calculatedMethod).toBe('cash');
+        expect(result.cappedMethod).toBe('ebt');
+    });
+
+    it('does not rebalance when more than two methods are active', () => {
+        const result = calculateSplitPaymentBalance({
+            changedMethod: 'cash',
+            activeMethods: ['cash', 'cc', 'ebt'],
+            values: { cash: 20, cc: 10, ebt: 5 },
+            total: 100,
+            ebtEligibleTotal: 35,
+        });
+
+        expect(result.values).toEqual({ cash: 20, cc: 10, ebt: 5 });
+        expect(result.calculatedMethod).toBeUndefined();
+        expect(result.cappedMethod).toBeUndefined();
     });
 });

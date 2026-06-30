@@ -36,7 +36,7 @@ export function UIScreen({
                 style={[styles.safeArea, { backgroundColor: tokens.colors.canvas }, style]}
             >
                 <ScrollView
-                    contentContainerStyle={[styles.content, paddingStyle, contentContainerStyle]}
+                    contentContainerStyle={[styles.scrollContent, paddingStyle, contentContainerStyle]}
                 >
                     {children}
                 </ScrollView>
@@ -49,7 +49,9 @@ export function UIScreen({
             testID={testID}
             style={[styles.safeArea, { backgroundColor: tokens.colors.canvas }, style]}
         >
-            <View style={[styles.content, paddingStyle, contentContainerStyle]}>{children}</View>
+            <View style={[styles.content, paddingStyle, contentContainerStyle]}>
+                {children}
+            </View>
         </SafeAreaView>
     );
 }
@@ -60,6 +62,9 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
     },
 });
 

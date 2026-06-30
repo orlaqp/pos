@@ -36,6 +36,7 @@ describe('CartItemMapper', () => {
         minAllowedPrice: 3,
         maxManualDiscountPercent: 5,
         maxManualDiscountAmount: 1,
+        taxable: false,
       },
     });
   });
@@ -56,5 +57,6 @@ describe('CartItemMapper', () => {
     expect(item.product.minAllowedPrice).toBeNull();
     expect(item.product.maxManualDiscountPercent).toBeNull();
     expect(item.product.maxManualDiscountAmount).toBeNull();
+    expect(item.product.taxable).toBe(false);
   });
 });

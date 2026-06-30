@@ -1,6 +1,6 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { Button, Dialog } from '@rneui/themed';
+import React, { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Dialog } from '@rneui/themed';
 import { useSharedStyles } from '@pos/theme/native';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import type {
@@ -17,6 +17,7 @@ export interface CartPaymentDialogProps {
     visible: boolean;
     cart?: CartState;
     canReceiveChecks: boolean;
+    creditCardSurchargePercent?: number;
     busy?: boolean;
     onClose: () => void;
     onPaymentEntered: (payments: ICartPayment[]) => void;
@@ -28,6 +29,7 @@ export function CartPaymentDialog({
     visible,
     cart,
     canReceiveChecks,
+    creditCardSurchargePercent = 0,
     busy = false,
     onClose,
     onPaymentEntered,
@@ -39,6 +41,7 @@ export function CartPaymentDialog({
     const summaryStyles = createCartStyles(tokens);
     const styles = useStyles(tokens);
     const t = translateWithFallback;
+    const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
     const orderSummary = cart ? buildOrderSummary(cart) : undefined;
     const discountBreakdown = buildDiscountBreakdown(
         cart?.appliedDiscountSummary,
@@ -58,90 +61,156 @@ export function CartPaymentDialog({
         >
             <View style={styles.surface} testID="cart-payment-dialog">
                 <View style={styles.columns}>
-                    <View style={styles.summaryColumn}>
-                        <OrderSummaryPanel
-                            styles={summaryStyles}
-                            orderSummary={orderSummary}
-                            discountBreakdown={discountBreakdown}
-                            title={t(
-                                'ORDERPAYMENT_SummaryTitle',
-                                'Order summary',
-                            )}
-                            hint={t(
-                                'ORDERPAYMENT_SummaryHint',
-                                'Review the order details before receiving payment.',
-                            )}
-                            scrollStyle={styles.summaryScroll}
-                            scrollContentStyle={styles.summaryScrollContent}
-                            contentTestID="cart-payment-summary"
-                            plain={true}
-                            footer={
-                                <View style={summaryStyles.summaryFooter}>
-                                    <View
-                                        style={
-                                            summaryStyles.summaryFooterTotalBlock
-                                        }
-                                    >
-                                        <Text
-                                            style={
-                                                summaryStyles.summaryFooterLabel
-                                            }
-                                        >
-                                            {t('ORDERPAYMENT_Total', 'Total')}
-                                        </Text>
-                                        <Text
-                                            style={
-                                                summaryStyles.summaryFooterValue
-                                            }
-                                        >
-                                            ${orderSummary.total.toFixed(2)}
-                                        </Text>
-                                    </View>
-                                    {summaryActions ? (
+                    <View
+                        testID="cart-payment-summary-column"
+                        style={[
+                            styles.summaryColumn,
+                            isSummaryExpanded
+                                ? styles.summaryColumnExpanded
+                                : styles.summaryColumnCollapsed,
+                        ]}
+                    >
+                        {isSummaryExpanded ? (
+                            <View style={styles.summaryExpandedContent}>
+                                <Pressable
+                                    testID="cart-payment-summary-toggle"
+                                    accessibilityRole="button"
+                                    onPress={() => setIsSummaryExpanded(false)}
+                                    style={styles.summaryCollapseButton}
+                                >
+                                    <Text style={styles.summaryCollapseText}>
+                                        {t(
+                                            'ORDERPAYMENT_CollapseSummary',
+                                            'Collapse summary',
+                                        )}
+                                    </Text>
+                                </Pressable>
+                                <OrderSummaryPanel
+                                    styles={summaryStyles}
+                                    orderSummary={orderSummary}
+                                    discountBreakdown={discountBreakdown}
+                                    title={t(
+                                        'ORDERPAYMENT_SummaryTitle',
+                                        'Order summary',
+                                    )}
+                                    hint={t(
+                                        'ORDERPAYMENT_SummaryHint',
+                                        'Review the order details before receiving payment.',
+                                    )}
+                                    scrollStyle={styles.summaryScroll}
+                                    scrollContentStyle={
+                                        styles.summaryScrollContent
+                                    }
+                                    contentTestID="cart-payment-summary"
+                                    plain={true}
+                                    footer={
                                         <View
-                                            style={
-                                                summaryStyles.summaryFooterActions
-                                            }
+                                            style={summaryStyles.summaryFooter}
                                         >
-                                            {summaryActions}
+                                            <View
+                                                style={
+                                                    summaryStyles.summaryFooterTotalBlock
+                                                }
+                                            >
+                                                <Text
+                                                    style={
+                                                        summaryStyles.summaryFooterLabel
+                                                    }
+                                                >
+                                                    {t(
+                                                        'ORDERPAYMENT_Total',
+                                                        'Total',
+                                                    )}
+                                                </Text>
+                                                <Text
+                                                    style={
+                                                        summaryStyles.summaryFooterValue
+                                                    }
+                                                >
+                                                    $
+                                                    {orderSummary.total.toFixed(
+                                                        2,
+                                                    )}
+                                                </Text>
+                                            </View>
+                                            {summaryActions ? (
+                                                <View
+                                                    style={
+                                                        summaryStyles.summaryFooterActions
+                                                    }
+                                                >
+                                                    {summaryActions}
+                                                </View>
+                                            ) : null}
                                         </View>
-                                    ) : null}
+                                    }
+                                />
+                            </View>
+                        ) : (
+                            <Pressable
+                                testID="cart-payment-summary-toggle"
+                                accessibilityRole="button"
+                                onPress={() => setIsSummaryExpanded(true)}
+                                style={styles.summaryRail}
+                            >
+                                <View
+                                    testID="cart-payment-summary-rail"
+                                    style={styles.summaryRailContent}
+                                >
+                                    <Text
+                                        testID="cart-payment-summary-rail-label"
+                                        style={styles.summaryRailLabel}
+                                    >
+                                        {t(
+                                            'ORDERPAYMENT_SummaryRailLabel',
+                                            'ORDER SUMMARY',
+                                        )}
+                                    </Text>
+                                    <Text style={styles.summaryRailChevron}>
+                                        ›
+                                    </Text>
                                 </View>
-                            }
-                        />
+                            </Pressable>
+                        )}
                     </View>
 
-                    <View style={styles.paymentColumn}>
+                    <View
+                        testID="cart-payment-column"
+                        style={[
+                            styles.paymentColumn,
+                            isSummaryExpanded
+                                ? styles.paymentColumnExpanded
+                                : styles.paymentColumnDominant,
+                        ]}
+                    >
                         <View style={styles.paymentSurface}>
+                            <Pressable
+                                testID="cart-payment-dialog-close-icon-button"
+                                accessibilityRole="button"
+                                accessibilityLabel={t(
+                                    'ORDERPAYMENT_Close',
+                                    'Close',
+                                )}
+                                disabled={busy}
+                                onPress={onClose}
+                                style={[
+                                    styles.closeIconButton,
+                                    busy && styles.closeIconButtonDisabled,
+                                ]}
+                            >
+                                <Text style={styles.closeIconText}>×</Text>
+                            </Pressable>
                             <CartPayment
                                 total={orderSummary.total}
                                 ebtEligibleTotal={orderSummary.ebtEligibleTotal}
                                 canReceiveChecks={canReceiveChecks}
+                                creditCardSurchargePercent={
+                                    creditCardSurchargePercent
+                                }
                                 onPaymentEntered={onPaymentEntered}
                                 layout="compact"
                                 disableSubmit={busy}
-                                footerActions={
-                                    paymentFooterActions ?? (
-                                        <View style={styles.secondaryActions}>
-                                            <Button
-                                                testID="cart-payment-dialog-close-button"
-                                                type="outline"
-                                                title={t(
-                                                    'ORDERPAYMENT_Close',
-                                                    'Close',
-                                                )}
-                                                disabled={busy}
-                                                onPress={onClose}
-                                                buttonStyle={
-                                                    styles.secondaryButton
-                                                }
-                                                titleStyle={
-                                                    styles.secondaryButtonTitle
-                                                }
-                                            />
-                                        </View>
-                                    )
-                                }
+                                footerActions={paymentFooterActions}
                             />
                         </View>
                     </View>
@@ -154,58 +223,138 @@ export function CartPaymentDialog({
 const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     StyleSheet.create({
         overlay: {
-            width: 1220,
-            maxWidth: '96%',
+            width: '100%',
+            maxWidth: '100%',
+            height: '100%',
+            minHeight: 720,
             padding: 0,
-            borderRadius: 28,
+            borderRadius: 0,
             overflow: 'hidden',
         },
         surface: {
+            flex: 1,
+            minHeight: 0,
             backgroundColor: '#05080C',
-            padding: tokens.spacing.lg,
+            padding: tokens.spacing.md,
         },
         columns: {
+            flex: 1,
             flexDirection: 'row',
             gap: tokens.spacing.lg,
             alignItems: 'stretch',
-            minHeight: 620,
+            minHeight: 0,
         },
         summaryColumn: {
-            flex: 1.35,
+            minHeight: 0,
+        },
+        summaryColumnCollapsed: {
+            width: 64,
+            flexGrow: 0,
+            flexShrink: 0,
+        },
+        summaryColumnExpanded: {
+            flex: 2.6,
         },
         paymentColumn: {
-            flex: 1,
             minHeight: 0,
+        },
+        paymentColumnDominant: {
+            flex: 1,
+        },
+        paymentColumnExpanded: {
+            flex: 7.4,
         },
         paymentSurface: {
             flex: 1,
             minHeight: 0,
+            position: 'relative',
             borderRadius: 28,
             borderWidth: 1,
             borderColor: '#C7D0DB33',
             backgroundColor: '#080B10',
-            padding: tokens.spacing.lg,
+            padding: tokens.spacing.md,
         },
         summaryScroll: {
-            maxHeight: 540,
+            flex: 1,
         },
         summaryScrollContent: {
             paddingBottom: tokens.spacing.sm,
         },
-        secondaryActions: {
-            flexDirection: 'row',
+        summaryExpandedContent: {
+            flex: 1,
+            minHeight: 0,
+        },
+        summaryCollapseButton: {
+            minHeight: 44,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: '#C7D0DB33',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: tokens.spacing.sm,
+            justifyContent: 'center',
+            marginBottom: tokens.spacing.sm,
+            backgroundColor: '#0F151E',
         },
-        secondaryButton: {
-            minHeight: 48,
-            borderRadius: 18,
-            borderColor: tokens.colors.border,
-        },
-        secondaryButtonTitle: {
+        summaryCollapseText: {
             color: tokens.colors.textPrimary,
-            fontWeight: '700',
+            fontWeight: '800',
+            fontSize: 13,
+        },
+        summaryRail: {
+            flex: 1,
+            minHeight: 0,
+            borderRadius: 24,
+            borderWidth: 1,
+            borderColor: '#C7D0DB33',
+            backgroundColor: '#0A0F16',
+        },
+        summaryRailContent: {
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingVertical: tokens.spacing.md,
+            paddingHorizontal: tokens.spacing.xs,
+            position: 'relative',
+        },
+        summaryRailLabel: {
+            color: tokens.colors.textMuted,
+            fontSize: 12,
+            fontWeight: '900',
+            letterSpacing: 0,
+            textTransform: 'uppercase',
+            textAlign: 'center',
+            transform: [{ rotate: '-90deg' }],
+            width: 140,
+        },
+        summaryRailChevron: {
+            position: 'absolute',
+            top: 14,
+            color: '#8FC5FF',
+            fontSize: 22,
+            fontWeight: '800',
+            textAlign: 'center',
+        },
+        closeIconButton: {
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            zIndex: 3,
+            width: 34,
+            height: 34,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: '#C7D0DB33',
+            backgroundColor: '#101721',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        closeIconButtonDisabled: {
+            opacity: 0.45,
+        },
+        closeIconText: {
+            color: tokens.colors.textPrimary,
+            fontSize: 22,
+            lineHeight: 24,
+            fontWeight: '800',
         },
     });
 

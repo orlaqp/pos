@@ -5,7 +5,6 @@ import {
     InventoryReceiveLine,
     Order,
 } from '@pos/shared/models';
-import { getCurrentTenantId } from '@pos/auth/data-access';
 import {
     DataStore,
     handleDataStoreUnauthorizedError,
@@ -13,8 +12,16 @@ import {
 } from '@pos/shared/amplify';
 import moment from 'moment';
 
+type TenantIdProvider = () => string | null | undefined;
+
 let inventorySyncEnabled = false;
 let inventorySyncPromise: Promise<void> | null = null;
+let tenantIdProvider: TenantIdProvider = () => undefined;
+let lastConfiguredTenantId: string | null | undefined;
+
+export const setDataStoreTenantProvider = (provider: TenantIdProvider) => {
+    tenantIdProvider = provider;
+};
 
 const getInventorySyncCutoff = () => {
     if (inventorySyncEnabled) {
@@ -52,11 +59,14 @@ const isConditionalConflictMessage = (message: unknown) =>
     (message.includes('ConditionalCheckFailedException') ||
         message.includes('The conditional request failed'));
 
-export const configureDataStore = () => {
-    const tenantId = getCurrentTenantId();
+export const configureDataStore = (
+    tenantId = tenantIdProvider() ?? lastConfiguredTenantId
+) => {
     if (!tenantId) {
         return;
     }
+
+    lastConfiguredTenantId = tenantId;
 
     const closedOrderSyncWindowDays = 3;
     const inventoryIsoDate = getInventorySyncCutoff();
@@ -87,7 +97,10 @@ export const configureDataStore = () => {
                 }
 
                 if (handleDataStoreUnauthorizedError('DataStore.sync', error)) {
-                    console.error('DataStore sync error', JSON.stringify(details, null, 2));
+                    console.warn(
+                        'DataStore sync unauthorized',
+                        JSON.stringify(details, null, 2)
+                    );
                     return;
                 }
 
@@ -157,4 +170,5 @@ export const enableInventorySync = async () => {
 export const resetInventorySyncForTests = () => {
     inventorySyncEnabled = false;
     inventorySyncPromise = null;
+    lastConfiguredTenantId = undefined;
 };

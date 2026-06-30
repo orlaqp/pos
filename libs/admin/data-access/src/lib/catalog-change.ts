@@ -1,4 +1,4 @@
-import type { ProductEntity } from '../../../../products/data-access/src/lib/product.entity';
+import type { ProductEntity } from '@pos/products/data-access/entities';
 import type { CatalogChangePreview, ProductCatalogChange } from './admin-types';
 
 const moneyValue = (value: number | null | undefined) =>

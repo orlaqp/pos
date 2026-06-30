@@ -279,6 +279,39 @@ describe('Dashboard', () => {
         ]);
     });
 
+    it('reports processing fee recovery separately from base card tenders', () => {
+        const supplemental = buildDashboardSupplemental(
+            [
+                {
+                    id: 'order-1',
+                    discountTotal: 0,
+                    paymentInfo: {
+                        payments: [
+                            { type: 'CC', amount: 20, surchargeAmount: 0.6 },
+                            { type: 'CASH', amount: 5 },
+                        ],
+                    },
+                    lines: [],
+                },
+            ] as any,
+            {},
+            {},
+            [] as any,
+            []
+        );
+
+        expect(supplemental.paymentMix).toEqual([
+            { name: 'Cards', value: 20 },
+            { name: 'Cash', value: 5 },
+            { name: 'Processing Fee Recovery', value: 0.6 },
+        ]);
+        expect(supplemental.paymentMixBreakdown).toEqual([
+            { name: 'Cards', value: '$20.00' },
+            { name: 'Cash', value: '$5.00' },
+            { name: 'Processing Fee Recovery', value: '$0.60' },
+        ]);
+    });
+
     it('builds dashboard summary from paid and partially refunded orders using order date', () => {
         const summary = buildDashboardSummaryFromOrders([
             {

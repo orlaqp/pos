@@ -176,6 +176,105 @@ describe('OrderEntityMapper', () => {
         ]);
     });
 
+    it('maps optional surcharge payment snapshot fields from order model', () => {
+        const orderEntity = OrderEntityMapper.fromModel({
+            id: 'o-2b',
+            orderNo: '51-TEST-0002B',
+            subtotal: 40,
+            tax: 0,
+            total: 40,
+            status: 'PAID',
+            employeeId: 'e-1',
+            employeeName: 'Tester',
+            orderDate: '2026-03-12T00:00:00.000Z',
+            createdAt: '2026-03-12T00:00:00.000Z',
+            updatedAt: '2026-03-12T00:00:00.000Z',
+            lines: [],
+            paymentInfo: {
+                employeeId: 'e-1',
+                employeeName: 'Tester',
+                payments: [
+                    {
+                        type: 'CC',
+                        amount: 10.8,
+                        baseAmount: 10,
+                        surchargeRate: 0.03,
+                        surchargeAmount: 0.8,
+                    },
+                ],
+            },
+            refundInfo: null,
+        } as any);
+
+        expect(orderEntity.paymentInfo?.payments).toEqual([
+            {
+                type: 'CC',
+                amount: 10.8,
+                baseAmount: 10,
+                surchargeRate: 0.03,
+                surchargeAmount: 0.8,
+            },
+        ]);
+    });
+
+    it('preserves optional surcharge payment fields when restoring cart payments', () => {
+        const cart = OrderEntityMapper.asCartState({
+            id: 'o-restore-1',
+            orderNo: '51-TEST-0004',
+            baseSubtotal: 10,
+            subtotal: 10,
+            lineDiscountTotal: 0,
+            orderDiscountTotal: 0,
+            discountTotal: 0,
+            savingsTotal: 0,
+            tax: 0.8,
+            total: 10.8,
+            status: 'PAID',
+            employeeId: 'e-1',
+            employeeName: 'Tester',
+            pricingSource: 'OFFLINE_LOCAL',
+            reconciliationStatus: 'PENDING',
+            orderDate: '2026-03-12T00:00:00.000Z',
+            lines: [],
+            payments: null,
+            paymentInfo: {
+                employeeId: 'e-1',
+                employeeName: 'Tester',
+                payments: [
+                    {
+                        type: 'CC',
+                        amount: 10.8,
+                        baseAmount: 10,
+                        surchargeRate: 0.03,
+                        surchargeAmount: 0.8,
+                    },
+                    {
+                        type: 'CASH',
+                        amount: 5,
+                    },
+                ],
+            },
+            refundInfo: null,
+        });
+
+        expect(cart.payments).toEqual([
+            {
+                type: 'CC',
+                amount: 10.8,
+                baseAmount: 10,
+                surchargeRate: 0.03,
+                surchargeAmount: 0.8,
+            },
+            {
+                type: 'CASH',
+                amount: 5,
+                baseAmount: undefined,
+                surchargeRate: undefined,
+                surchargeAmount: undefined,
+            },
+        ]);
+    });
+
     it('does not crash on malformed applied discount summary values', () => {
         const orderEntity = OrderEntityMapper.fromModel({
             id: 'o-3',
@@ -215,6 +314,28 @@ describe('OrderEntityMapper', () => {
         expect(line.appliedDiscounts).toEqual([]);
     });
 
+    it('preserves line tax and taxable snapshots', () => {
+        const line = OrderEntityMapper.fromLine({
+            identifier: 'line-tax',
+            productId: 'p-tax',
+            barcode: null,
+            sku: null,
+            productName: 'Coffee',
+            quantity: 2,
+            price: 10,
+            basePrice: 10,
+            tax: 1.5,
+            taxable: true,
+            lineTotalBeforeTax: 15,
+            lineTotalAfterTax: 16.5,
+            unitOfMeasure: 'EA',
+        });
+
+        expect(line.tax).toBe(1.5);
+        expect(line.taxable).toBe(true);
+        expect(line.lineTotalAfterTax).toBe(16.5);
+    });
+
     it('rebuilds refunded cart even when incoming cart header is missing', async () => {
         const refundedCart = await OrderEntityMapper.fromRefundedCart(
             {
@@ -236,6 +357,7 @@ describe('OrderEntityMapper', () => {
                             barcode: null,
                             sku: null,
                             isEBTEligible: true,
+                            taxable: true,
                         },
                     },
                 ],
@@ -279,6 +401,7 @@ describe('OrderEntityMapper', () => {
                             barcode: null,
                             sku: null,
                             isEBTEligible: true,
+                            taxable: true,
                         },
                     },
                 ],
@@ -288,9 +411,9 @@ describe('OrderEntityMapper', () => {
                     lineDiscountTotal: 2,
                     orderDiscountTotal: 3,
                     subtotal: 15,
-                    tax: 0,
+                    tax: 1.5,
                     savingsTotal: 5,
-                    total: 15,
+                    total: 16.5,
                     pricingSource: 'OFFLINE_LOCAL',
                     reconciliationStatus: 'PENDING',
                 },
@@ -358,9 +481,11 @@ describe('OrderEntityMapper', () => {
             orderDiscountTotal: 1.5,
             discount: 2.5,
             subtotal: 7.5,
-            total: 7.5,
+            tax: 0.75,
+            total: 8.25,
             savingsTotal: 2.5,
         });
+        expect(refundedCart.items[0].product.taxable).toBe(true);
         expect(refundedCart.promoCodes).toEqual([{ code: 'SAVE5' }]);
         expect(refundedCart.manualDiscounts).toEqual([
             expect.objectContaining({

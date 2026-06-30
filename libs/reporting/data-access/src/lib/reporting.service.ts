@@ -23,6 +23,35 @@ const isTransformationTooLargeError = (error: unknown) => {
     return message.includes('Transformation too large');
 };
 
+const getPartialSalesOrdersFromError = (error: unknown) => {
+    const data = (error as { data?: { getSales?: unknown } })?.data?.getSales;
+    return Array.isArray(data) ? data : undefined;
+};
+
+const sanitizeSalesOrders = (orders: unknown[]): Order[] =>
+    orders
+        .filter(Boolean)
+        .map((order) => {
+            const salesOrder = order as Order;
+            const lines = Array.isArray(salesOrder.lines)
+                ? salesOrder.lines.filter(Boolean)
+                : salesOrder.lines;
+            const payments = Array.isArray(salesOrder.paymentInfo?.payments)
+                ? salesOrder.paymentInfo.payments.filter(Boolean)
+                : salesOrder.paymentInfo?.payments;
+
+            return {
+                ...salesOrder,
+                lines,
+                paymentInfo: salesOrder.paymentInfo
+                    ? {
+                          ...salesOrder.paymentInfo,
+                          payments,
+                      }
+                    : salesOrder.paymentInfo,
+            };
+        });
+
 const canSplitSalesRange = (range: DateRange) =>
     range.startDate.clone().startOf('day').isBefore(range.endDate.clone().endOf('day'));
 
@@ -81,7 +110,7 @@ const fetchSalesChunk = async (
         },
     }) as Promise<GraphQLResult<{ getSales: Order[] }>>;
 
-    return promise.then((r) => r.data?.getSales || []);
+    return promise.then((r) => sanitizeSalesOrders(r.data?.getSales || []));
 };
 
 export const hasSummaryData = (summary?: SalesSummary) =>
@@ -195,6 +224,11 @@ export const getSalesForRange = (
 ) => {
     const normalizedStatuses = toStatusList(statuses);
     return fetchSalesChunk(normalizedStatuses, range).catch(async (error) => {
+        const partialSalesOrders = getPartialSalesOrdersFromError(error);
+        if (partialSalesOrders) {
+            return sanitizeSalesOrders(partialSalesOrders);
+        }
+
         if (isTransformationTooLargeError(error) && canSplitSalesRange(range)) {
             const [left, right] = splitDateRangeForSales(range);
             const [leftOrders, rightOrders] = await Promise.all([
@@ -245,6 +279,8 @@ export const getSalesCustom = /* GraphQL */ `
         allocatedOrderDiscountTotal
         lineTotalBeforeTax
         lineTotalAfterTax
+        tax
+        taxable
         isEBTEligible
         ebtPaidAmount
         nonEbtPaidAmount
@@ -359,6 +395,9 @@ export const getSalesCustom = /* GraphQL */ `
         payments {
             type
             amount
+            baseAmount
+            surchargeRate
+            surchargeAmount
         }
       }
       refundInfo {

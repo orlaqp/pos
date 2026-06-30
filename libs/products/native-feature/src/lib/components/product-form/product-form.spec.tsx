@@ -14,6 +14,7 @@ const mockSetValue = jest.fn();
 const mockHandleSubmit = jest.fn((fn: () => void) => fn);
 const mockGetValues = jest.fn();
 const mockFormStateErrors = jest.fn(() => ({}));
+let mockUseFormOptions: any;
 
 let mockProduct: any;
 
@@ -95,16 +96,19 @@ jest.mock('react-hook-form', () => ({
     FormProvider: ({ children }: { children: React.ReactNode }) => (
         <>{children}</>
     ),
-    useForm: () => ({
-        getValues: () => mockGetValues(),
-        setValue: (...args: unknown[]) => mockSetValue(...args),
-        handleSubmit: (...args: unknown[]) => mockHandleSubmit(...args),
-        formState: { errors: mockFormStateErrors() },
-        watch: (name: string) => {
-            const values = mockGetValues();
-            return values?.[name];
-        },
-    }),
+    useForm: (options: any) => {
+        mockUseFormOptions = options;
+        return {
+            getValues: () => mockGetValues(),
+            setValue: (...args: unknown[]) => mockSetValue(...args),
+            handleSubmit: (...args: unknown[]) => mockHandleSubmit(...args),
+            formState: { errors: mockFormStateErrors() },
+            watch: (name: string) => {
+                const values = mockGetValues();
+                return values?.[name];
+            },
+        };
+    },
 }));
 
 jest.mock('@pos/shared/ui-native', () => ({
@@ -197,9 +201,9 @@ jest.mock('@pos/shared/ui-native', () => ({
             </RNView>
         );
     },
-    UISwitch: () => {
+    UISwitch: ({ name }: { name?: string }) => {
         const { View: RNView } = require('react-native');
-        return <RNView />;
+        return <RNView testID={`switch-${name}`} />;
     },
     UIVerticalSpacer: () => {
         const { View: RNView } = require('react-native');
@@ -255,6 +259,7 @@ describe('ProductForm integration', () => {
             productBrandId: 'brand-1',
             isActive: true,
             isEBTEligible: true,
+            taxable: true,
         };
         mockGetValues.mockReturnValue({
             ...mockProduct,
@@ -280,6 +285,7 @@ describe('ProductForm integration', () => {
                     id: 'prod-1',
                     price: 12.5,
                     cost: 7.25,
+                    taxable: true,
                 }),
             );
             expect(mockProductSave.mock.calls[0][1].quantity).toBeUndefined();
@@ -298,12 +304,33 @@ describe('ProductForm integration', () => {
         expect(getByText('Clear category')).toBeTruthy();
     });
 
+    it('renders a taxable product toggle', () => {
+        const { getByTestId, getByText } = render(
+            <ProductForm navigation={{ goBack: mockGoBack } as any} />,
+        );
+
+        expect(getByText('Apply tax')).toBeTruthy();
+        expect(getByTestId('switch-taxable')).toBeTruthy();
+    });
+
+    it('defaults missing taxable values to false', () => {
+        mockProduct = {
+            ...mockProduct,
+            taxable: undefined,
+        };
+
+        render(<ProductForm navigation={{ goBack: mockGoBack } as any} />);
+
+        expect(mockUseFormOptions.defaultValues.taxable).toBe(false);
+    });
+
     it('removes id for new product before save', async () => {
         mockProduct = undefined;
         mockGetValues.mockReturnValue({
             name: 'New Product',
             price: '9.99',
             cost: null,
+            taxable: true,
         });
 
         const { getByTestId } = render(
@@ -316,6 +343,7 @@ describe('ProductForm integration', () => {
             expect(payload.id).toBeUndefined();
             expect(payload.cost).toBeNull();
             expect(payload.price).toBe(9.99);
+            expect(payload.taxable).toBe(true);
             expect(payload.quantity).toBeUndefined();
         });
     });

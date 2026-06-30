@@ -47,6 +47,62 @@ describe('PricingEngine', () => {
     expect(result.order.lines[1].allocatedOrderDiscountTotal).toBe(6.25);
   });
 
+  it('applies tax only to taxable lines after discounts', () => {
+    const result = PricingEngine.preview({
+      employee: { employeeId: 'emp-1', employeeName: 'Orlando' },
+      policy,
+      taxRate: 0.1,
+      lines: [
+        {
+          lineId: 'taxable-line',
+          productId: 'prod-1',
+          productName: 'Coffee',
+          quantity: 2,
+          baseUnitPrice: 10,
+          unitOfMeasure: 'EA',
+          discountable: true,
+          taxable: true,
+        },
+        {
+          lineId: 'non-taxable-line',
+          productId: 'prod-2',
+          productName: 'Milk',
+          quantity: 1,
+          baseUnitPrice: 20,
+          unitOfMeasure: 'EA',
+          discountable: true,
+          taxable: false,
+        },
+      ],
+      manualDiscounts: [
+        {
+          kind: 'MANUAL_DISCOUNT',
+          scope: 'ORDER',
+          method: 'AMOUNT',
+          value: 10,
+        },
+      ],
+    });
+
+    expect(result.order.subtotal).toBe(30);
+    expect(result.order.tax).toBe(1.5);
+    expect(result.order.total).toBe(31.5);
+    expect(result.order.lines[0]).toEqual(
+      expect.objectContaining({
+        lineTotalBeforeTax: 15,
+        tax: 1.5,
+        lineTotalAfterTax: 16.5,
+      })
+    );
+    expect(result.order.lines[1]).toEqual(
+      expect.objectContaining({
+        lineTotalBeforeTax: 15,
+        tax: 0,
+        lineTotalAfterTax: 15,
+      })
+    );
+  });
+
   it('keeps best price only automatic discount', () => {
     const definitions: DiscountDefinition[] = [
       {

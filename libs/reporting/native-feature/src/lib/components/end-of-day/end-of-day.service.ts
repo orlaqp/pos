@@ -35,10 +35,15 @@ export interface PaymentMethodsSummary {
     CASH: number;
     CHECK: number;
     EBT: number;
+    PROCESSING_FEE_RECOVERY: number;
 }
 
+export type OrderPaymentDetailType =
+    | keyof PaymentMethodsSummary
+    | 'Processing Fee Recovery';
+
 export interface OrderPaymentDetailRow {
-    type: keyof PaymentMethodsSummary;
+    type: OrderPaymentDetailType;
     amount: number;
     kind: 'payment' | 'refund';
 }
@@ -47,6 +52,7 @@ export interface EndOfDayReferenceSummary {
     grossSales: number;
     discounts: number;
     refunds: number;
+    tax: number;
     netSales: number;
 }
 
@@ -57,7 +63,20 @@ const createEmptyPaymentSummary = (): PaymentMethodsSummary => ({
     CASH: 0,
     CHECK: 0,
     EBT: 0,
+    PROCESSING_FEE_RECOVERY: 0,
 });
+
+const getPaymentSurchargeAmount = (payment: {
+    surchargeAmount?: number | null;
+}) => roundMoney(Math.max(0, Number(payment?.surchargeAmount || 0)));
+
+const getOrderProcessingFeeRecovery = (order: Order) =>
+    roundMoney(
+        (order.paymentInfo?.payments || []).reduce(
+            (sum, payment) => sum + getPaymentSurchargeAmount(payment || {}),
+            0
+        )
+    );
 
 const compareOrdersByTicketCreatedAtDesc = (left: Order, right: Order) => {
     const leftCreated = String(
@@ -202,6 +221,43 @@ const getLineActiveRatio = (line: Order['lines'][number], refundedQuantity: numb
 
     const remainingQuantity = Math.max(0, originalQuantity - Number(refundedQuantity || 0));
     return remainingQuantity / originalQuantity;
+};
+
+const getScopedTaxForOrder = (
+    order: Order,
+    request: OrdersFilterRequest,
+    refunds: OrderRefund[],
+    refundLines: OrderRefundLine[]
+) => {
+    if (request.productId) {
+        const refundedQuantities = buildRefundedQuantityMap(order.id, refundLines);
+        return (order.lines || [])
+            .filter((line) => line?.productId === request.productId)
+            .reduce((sum, line) => {
+                const ratio = getLineActiveRatio(
+                    line,
+                    refundedQuantities.get(String(line?.identifier || '')) || 0
+                );
+                return roundMoney(sum + Number(line?.tax || 0) * ratio);
+            }, 0);
+    }
+
+    const total = Number(order.total || 0);
+    if (total <= 0) {
+        return roundMoney(Number(order.tax || 0));
+    }
+
+    const refundedAmount = getScopedRefundAmountForOrder(
+        order.id,
+        request,
+        refunds,
+        refundLines
+    );
+    const activeRatio = Math.max(
+        0,
+        Math.min(1, (total - refundedAmount) / total)
+    );
+    return roundMoney(Number(order.tax || 0) * activeRatio);
 };
 
 const getLineTenderAmounts = (line: Order['lines'][number], ratio: number) => {
@@ -351,7 +407,12 @@ const buildOrderPaymentSummary = (
                 acc[payment.type] = roundMoney(acc[payment.type] + payment.amount);
                 return acc;
             },
-            { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+            {
+                ...createEmptyPaymentSummary(),
+                PROCESSING_FEE_RECOVERY: request.productId
+                    ? 0
+                    : getOrderProcessingFeeRecovery(order),
+            } as PaymentMethodsSummary
         );
     }
 
@@ -379,7 +440,12 @@ const buildOrderPaymentSummary = (
             acc[payment.type] = roundMoney(acc[payment.type] + payment.amount);
             return acc;
         },
-        { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+        {
+            ...createEmptyPaymentSummary(),
+            PROCESSING_FEE_RECOVERY: request.productId
+                ? 0
+                : getOrderProcessingFeeRecovery(order),
+        } as PaymentMethodsSummary
     );
 };
 
@@ -392,9 +458,12 @@ const buildOriginalPaymentSummary = (order: Order) =>
             }
 
             acc[type] = roundMoney(acc[type] + Number(payment?.amount || 0));
+            acc.PROCESSING_FEE_RECOVERY = roundMoney(
+                acc.PROCESSING_FEE_RECOVERY + getPaymentSurchargeAmount(payment || {})
+            );
             return acc;
         },
-        { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+        createEmptyPaymentSummary()
     );
 
 const buildCapturedRefundPaymentSummary = (
@@ -413,7 +482,7 @@ const buildCapturedRefundPaymentSummary = (
         );
 
     if (!refundPayments.length) {
-        return { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary;
+        return createEmptyPaymentSummary();
     }
 
     const scopedRefundAmount = request.productId
@@ -434,7 +503,7 @@ const buildCapturedRefundPaymentSummary = (
             acc[payment.type] = roundMoney(acc[payment.type] + payment.amount * ratio);
             return acc;
         },
-        { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+        createEmptyPaymentSummary()
     );
 };
 
@@ -489,22 +558,31 @@ export const buildOrderPaymentDetailRows = (
     refundLines: OrderRefundLine[] = []
 ): OrderPaymentDetailRow[] => {
     const paymentRows = (order.paymentInfo?.payments || [])
-        .map((payment) => {
+        .flatMap((payment) => {
             const type = getKnownPaymentType(payment?.type);
-            if (!type) {
-                return null;
+            const rows: OrderPaymentDetailRow[] = [];
+
+            if (type) {
+                const amount = roundMoney(Number(payment?.amount || 0));
+                if (amount > 0) {
+                    rows.push({
+                        type,
+                        amount,
+                        kind: 'payment' as const,
+                    });
+                }
             }
 
-            const amount = roundMoney(Number(payment?.amount || 0));
-            if (amount <= 0) {
-                return null;
+            const surchargeAmount = getPaymentSurchargeAmount(payment || {});
+            if (surchargeAmount > 0) {
+                rows.push({
+                    type: 'Processing Fee Recovery',
+                    amount: surchargeAmount,
+                    kind: 'payment' as const,
+                });
             }
 
-            return {
-                type,
-                amount,
-                kind: 'payment' as const,
-            };
+            return rows;
         })
         .filter((row): row is OrderPaymentDetailRow => !!row);
 
@@ -549,11 +627,17 @@ export const buildEndOfDayReferenceSummary = (
             getScopedRefundAmountForOrder(order.id, request, refunds, refundLines),
         0
     );
+    const tax = orders.reduce(
+        (sum, order) =>
+            sum + getScopedTaxForOrder(order, request, refunds, refundLines),
+        0
+    );
 
     return {
         grossSales,
         discounts,
         refunds: roundMoney(refundsTotal),
+        tax: roundMoney(tax),
         netSales: roundMoney(grossSales - discounts - refundsTotal),
     };
 };
@@ -610,7 +694,7 @@ export const filterOrders = (
 
             return acc;
         },
-        { CC: 0, CASH: 0, CHECK: 0, EBT: 0 } as PaymentMethodsSummary
+        createEmptyPaymentSummary()
     );
 
     const references = buildEndOfDayReferenceSummary(

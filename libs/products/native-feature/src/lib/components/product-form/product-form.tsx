@@ -74,6 +74,7 @@ export function ProductForm({ navigation }: ProductFormProps) {
             productBrandId: product?.productBrandId,
             isActive: product?.isActive ?? true,
             isEBTEligible: product?.isEBTEligible ?? false,
+            taxable: product?.taxable ?? false,
         },
     });
 
@@ -392,6 +393,25 @@ export function ProductForm({ navigation }: ProductFormProps) {
                                                         }
                                                     >
                                                         <UISwitch name="isEBTEligible" />
+                                                    </View>
+                                                </View>
+                                                <View style={styles.toggleItem}>
+                                                    <Text
+                                                        style={
+                                                            styles.toggleLabel
+                                                        }
+                                                    >
+                                                        {t(
+                                                            'PRODUCT_ApplyTaxLabel',
+                                                            'Apply tax',
+                                                        )}
+                                                    </Text>
+                                                    <View
+                                                        style={
+                                                            styles.toggleSwitchWrap
+                                                        }
+                                                    >
+                                                        <UISwitch name="taxable" />
                                                     </View>
                                                 </View>
                                             </View>
