@@ -1461,6 +1461,7 @@ export class OrderService {
             | Array<{
                   type?: string | null;
                   amount?: number | null;
+                  baseAmount?: number | null;
                   surchargeAmount?: number | null;
               }>
             | null
@@ -1473,9 +1474,14 @@ export class OrderService {
         const originalRows = (originalPayments || [])
             .flatMap((payment) => {
                 const label = String(payment?.type || '').trim();
-                const amount = roundMoney(Number(payment?.amount || 0));
                 const surchargeAmount = roundMoney(
                     Math.max(0, Number(payment?.surchargeAmount || 0))
+                );
+                const amount = roundMoney(
+                    label.toUpperCase() === 'CC' && surchargeAmount > 0
+                        ? Number(payment?.baseAmount ?? payment?.amount ?? 0) +
+                              surchargeAmount
+                        : Number(payment?.amount || 0)
                 );
 
                 if (!label || amount <= 0) {

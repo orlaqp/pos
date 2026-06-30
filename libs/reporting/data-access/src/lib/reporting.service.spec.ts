@@ -186,6 +186,13 @@ describe('reporting.service', () => {
         );
         expect(mockGraphql).toHaveBeenCalledWith(
             expect.objectContaining({
+                query: expect.stringContaining(`lineTotalAfterTax
+        tax
+        taxable`),
+            })
+        );
+        expect(mockGraphql).toHaveBeenCalledWith(
+            expect.objectContaining({
                 query: expect.stringContaining(`payments {
             type
             amount
@@ -219,6 +226,52 @@ describe('reporting.service', () => {
         );
         expect(Array.isArray(result)).toBe(true);
         expect(result).toHaveLength(0);
+    });
+
+    it('uses partial sales data from AppSync errors and removes null nested rows', async () => {
+        mockGraphql.mockRejectedValue({
+            data: {
+                getSales: [
+                    {
+                        id: 'o-partial',
+                        orderDate: '2026-03-10T10:00:00.000Z',
+                        lines: [
+                            null,
+                            {
+                                productId: 'p1',
+                                productName: 'Apple',
+                                quantity: 1,
+                                price: 2,
+                            },
+                        ],
+                        paymentInfo: {
+                            payments: [
+                                null,
+                                {
+                                    type: 'CC',
+                                    amount: 2,
+                                    surchargeAmount: null,
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+            errors: [{ message: 'Cannot return null for non-nullable type' }],
+        });
+
+        const result = await getSalesForRange(
+            [OrderStatus.PAID, OrderStatus.PARTIALLY_REFUNDED],
+            range
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].lines).toEqual([
+            expect.objectContaining({ productId: 'p1' }),
+        ]);
+        expect(result[0].paymentInfo?.payments).toEqual([
+            expect.objectContaining({ type: 'CC', amount: 2 }),
+        ]);
     });
 
     it('splits sales ranges recursively when AppSync reports transformation too large', async () => {

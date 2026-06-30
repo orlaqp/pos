@@ -28,6 +28,7 @@ import { selectLoginEmployee } from '@pos/employees/data-access';
 import { Role } from '@pos/auth/data-access';
 import { useDesignTokens } from '@pos/theme/native/design-tokens';
 import { translateWithFallback } from '@pos/shared/utils';
+import { getGlobalSettings } from '@pos/settings/data-access';
 
 interface OpenOrderPaymentDialogProps {
     visible: boolean;
@@ -48,6 +49,7 @@ export function OpenOrderPaymentDialog({
     const defaultPrinter = useSelector(getDefaultPrinter);
     const store = useSelector(selectStore);
     const employee = useSelector(selectLoginEmployee);
+    const globalSettings = useSelector(getGlobalSettings);
     const [busy, setBusy] = useState(false);
     const t = translateWithFallback;
 
@@ -56,6 +58,8 @@ export function OpenOrderPaymentDialog({
         [order],
     );
     const canReceiveChecks = !!employee?.roles?.includes(Role.Checks);
+    const creditCardSurchargePercent =
+        globalSettings?.creditCardSurchargePercent ?? 0;
 
     const closeDialog = () => {
         if (busy) return;
@@ -156,6 +160,7 @@ export function OpenOrderPaymentDialog({
             visible={visible}
             cart={cart}
             canReceiveChecks={canReceiveChecks}
+            creditCardSurchargePercent={creditCardSurchargePercent}
             busy={busy}
             onClose={closeDialog}
             onPaymentEntered={receivePayment}

@@ -139,21 +139,29 @@ function trimOrderForReports(order) {
                 comments: order.refundInfo.comments,
             }
             : null,
-        lines: (order.lines || []).map((line) => ({
-            identifier: line?.identifier,
-            productId: line?.productId,
-            productName: line?.productName,
-            categoryId: line?.categoryId,
-            unitOfMeasure: line?.unitOfMeasure,
-            quantity: line?.quantity,
-            price: line?.price,
-            lineDiscountTotal: line?.lineDiscountTotal,
-            allocatedOrderDiscountTotal: line?.allocatedOrderDiscountTotal,
-            lineTotalBeforeTax: line?.lineTotalBeforeTax,
-            lineTotalAfterTax: line?.lineTotalAfterTax,
-            isEBTEligible: line?.isEBTEligible,
-            ebtPaidAmount: line?.ebtPaidAmount,
-            nonEbtPaidAmount: line?.nonEbtPaidAmount,
+        lines: (order.lines || [])
+            .filter(Boolean)
+            .map((line) => ({
+                identifier: line.identifier,
+                productId: line.productId,
+                productName: line.productName,
+                categoryId: line.categoryId,
+                unitOfMeasure: line.unitOfMeasure,
+                quantity: line.quantity,
+                tax: Number(line.tax || 0),
+                price: line.price,
+                lineDiscountTotal: line.lineDiscountTotal,
+                allocatedOrderDiscountTotal: line.allocatedOrderDiscountTotal,
+                lineTotalBeforeTax: line.lineTotalBeforeTax,
+                lineTotalAfterTax: line.lineTotalAfterTax,
+                taxable: line.taxable ?? false,
+                isEBTEligible: line.isEBTEligible,
+                ebtPaidAmount: line.ebtPaidAmount,
+                nonEbtPaidAmount: line.nonEbtPaidAmount,
         })),
     };
 }
+
+exports.__private__ = {
+    trimOrderForReports,
+};

@@ -338,7 +338,7 @@ describe('CartPayment integration', () => {
 
     it('shows credit card surcharge summary and emits enriched card payment', () => {
         const onPaymentEntered = jest.fn();
-        const { getByTestId, getByText } = render(
+        const { getAllByText, getByTestId, getByText } = render(
             <CartPayment
                 total={100}
                 ebtEligibleTotal={0}
@@ -482,7 +482,7 @@ describe('CartPayment integration', () => {
 
     it('caps EBT while typing and recalculates the paired payment method', () => {
         const onPaymentEntered = jest.fn();
-        const { getByTestId, getByText } = render(
+        const { getAllByText, getByTestId, getByText } = render(
             <CartPayment
                 total={100}
                 ebtEligibleTotal={35}
@@ -539,17 +539,21 @@ describe('CartPayment integration', () => {
 
         expect(queryByTestId('payment-methods-scroll')).toBeNull();
         expect(getByTestId('payment-content-region')).toHaveStyle({
+            flexGrow: 1,
             flexShrink: 1,
+            flexBasis: 0,
         });
         expect(getByTestId('payment-received-rail')).toHaveStyle({
             flexShrink: 0,
         });
+        expect(getByTestId('payment-footer-metrics')).toBeTruthy();
         expect(getByTestId('payment-methods-grid')).toHaveStyle({
             flexShrink: 0,
         });
         expect(getByTestId('payment-card-cc')).toHaveStyle({
-            minHeight: 66,
+            minHeight: 98,
         });
+        expect(getByTestId('payment-method-label-cc')).toHaveTextContent('Card');
         expect(getByTestId('payment-amount-preview-cc')).toHaveTextContent('$0.00');
         expect(queryByTestId('payment-input-cc')).toBeNull();
         expect(getByTestId('payment-card-cash')).toBeTruthy();
@@ -558,33 +562,50 @@ describe('CartPayment integration', () => {
 
         fireEvent.press(getByTestId('payment-card-cash'));
 
-        expect(queryByTestId('payment-amount-preview-cash')).toBeNull();
         expect(queryByTestId('payment-method-active-row-cash')).not.toBeNull();
-        expect(getByTestId('payment-input-cash')).toHaveProp('value', '100');
+        expect(getByTestId('payment-amount-preview-cash')).toHaveTextContent(
+            '$100.00',
+        );
         expect(getByTestId('payment-method-label-cash')).toHaveStyle({
-            paddingLeft: 10,
+            paddingLeft: 14,
         });
-        expect(getByTestId('payment-input-wrap-cash')).toHaveStyle({
-            width: '50%',
-        });
+        expect(queryByTestId('payment-input-wrap-cash')).toBeNull();
     });
 
-    it('uses one balanced compact row when EBT is hidden and three methods are available', () => {
+    it('shows unavailable compact payment methods as disabled instead of hiding them', () => {
         const onPaymentEntered = jest.fn();
         const { getByTestId, queryByTestId } = render(
             <CartPayment
                 total={100}
                 ebtEligibleTotal={0}
-                canReceiveChecks={true}
+                canReceiveChecks={false}
                 onPaymentEntered={onPaymentEntered}
                 layout="compact"
             />
         );
 
-        expect(queryByTestId('payment-card-ebt')).toBeNull();
-        expect(getByTestId('payment-card-cc')).toHaveStyle({ flex: 1 });
-        expect(getByTestId('payment-card-cash')).toHaveStyle({ flex: 1 });
-        expect(getByTestId('payment-card-check')).toHaveStyle({ flex: 1 });
+        expect(getByTestId('payment-card-cc')).toBeTruthy();
+        expect(getByTestId('payment-card-cash')).toBeTruthy();
+        expect(getByTestId('payment-card-check')).toHaveProp(
+            'accessibilityState',
+            { disabled: true },
+        );
+        expect(getByTestId('payment-card-ebt')).toHaveProp(
+            'accessibilityState',
+            { disabled: true },
+        );
+
+        fireEvent.press(getByTestId('payment-card-ebt'));
+        fireEvent.press(getByTestId('payment-card-check'));
+
+        expect(queryByTestId('payment-tender-remove-ebt')).toBeNull();
+        expect(queryByTestId('payment-tender-remove-check')).toBeNull();
+        expect(getByTestId('payment-amount-preview-ebt')).toHaveTextContent(
+            '$0.00',
+        );
+        expect(getByTestId('payment-amount-preview-check')).toHaveTextContent(
+            '$0.00',
+        );
     });
 
     it('rebalances compact payment tiles while typing in a two-method split', () => {
@@ -599,14 +620,158 @@ describe('CartPayment integration', () => {
             />
         );
 
-        fireEvent.press(getByTestId('payment-card-cc'));
         fireEvent.press(getByTestId('payment-card-check'));
-        fireEvent.changeText(getByTestId('payment-input-cc'), '23.99');
+        fireEvent.press(getByTestId('payment-card-cc'));
+        fireEvent.press(getByTestId('payment-keypad-clear'));
+        fireEvent.press(getByTestId('payment-keypad-2'));
+        fireEvent.press(getByTestId('payment-keypad-0'));
+        fireEvent.press(getByTestId('payment-keypad-0'));
+        fireEvent.press(getByTestId('payment-keypad-0'));
 
-        expect(getByTestId('payment-input-cc')).toHaveProp('value', '23.99');
-        expect(getByTestId('payment-input-check')).toHaveProp('value', '76.01');
+        expect(getByTestId('payment-amount-preview-cc')).toHaveTextContent(
+            '$20.00',
+        );
+        expect(getByTestId('payment-amount-preview-check')).toHaveTextContent(
+            '$80.00',
+        );
         expect(queryByText('Cashier-entered amount')).toBeNull();
         expect(queryByText('Auto-calculated remaining')).toBeNull();
+    });
+
+    it('removes an applied compact payment method from the tender list', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId, queryByTestId } = render(
+            <CartPayment
+                total={100}
+                ebtEligibleTotal={0}
+                canReceiveChecks={true}
+                onPaymentEntered={onPaymentEntered}
+                layout="compact"
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-cc'));
+
+        expect(getByTestId('payment-tender-remove-cc')).toBeTruthy();
+        expect(getByTestId('payment-amount-preview-cc')).toHaveTextContent(
+            '$100.00',
+        );
+
+        fireEvent.press(getByTestId('payment-tender-remove-cc'));
+
+        expect(queryByTestId('payment-tender-remove-cc')).toBeNull();
+        expect(getByTestId('payment-amount-preview-cc')).toHaveTextContent(
+            '$0.00',
+        );
+        expect(getByTestId('payment-submit-button')).toHaveProp(
+            'accessibilityState',
+            {
+                disabled: true,
+            },
+        );
+    });
+
+    it('toggles off the currently selected compact payment tile when tapped again', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId, queryByTestId } = render(
+            <CartPayment
+                total={100}
+                ebtEligibleTotal={0}
+                canReceiveChecks={true}
+                onPaymentEntered={onPaymentEntered}
+                layout="compact"
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-cash'));
+
+        expect(getByTestId('payment-tender-remove-cash')).toBeTruthy();
+        expect(getByTestId('payment-amount-preview-cash')).toHaveTextContent(
+            '$100.00',
+        );
+
+        fireEvent.press(getByTestId('payment-card-cash'));
+
+        expect(queryByTestId('payment-tender-remove-cash')).toBeNull();
+        expect(getByTestId('payment-amount-preview-cash')).toHaveTextContent(
+            '$0.00',
+        );
+        expect(getByTestId('payment-submit-button')).toHaveProp(
+            'accessibilityState',
+            {
+                disabled: true,
+            },
+        );
+    });
+
+    it('enters compact keypad amounts as fixed two-decimal currency', () => {
+        const onPaymentEntered = jest.fn();
+        const { getByTestId } = render(
+            <CartPayment
+                total={14.99}
+                ebtEligibleTotal={0}
+                canReceiveChecks={true}
+                onPaymentEntered={onPaymentEntered}
+                layout="compact"
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-cc'));
+        fireEvent.press(getByTestId('payment-keypad-clear'));
+        fireEvent.press(getByTestId('payment-keypad-1'));
+        fireEvent.press(getByTestId('payment-keypad-4'));
+        fireEvent.press(getByTestId('payment-keypad-9'));
+        fireEvent.press(getByTestId('payment-keypad-9'));
+
+        expect(getByTestId('payment-amount-preview-cc')).toHaveTextContent(
+            '$14.99',
+        );
+        expect(getByTestId('payment-keypad-display')).toHaveTextContent(
+            '$14.99',
+        );
+        expect(getByTestId('payment-submit-button')).toHaveProp(
+            'accessibilityState',
+            {
+                disabled: false,
+            },
+        );
+
+        fireEvent.press(getByTestId('payment-submit-button'));
+
+        expect(onPaymentEntered).toHaveBeenCalledWith([
+            {
+                type: 'CC',
+                amount: 14.99,
+                baseAmount: 14.99,
+                surchargeRate: 0,
+                surchargeAmount: 0,
+            },
+        ]);
+    });
+
+    it('shows the customer total including card surcharge on the submit button', () => {
+        const onPaymentEntered = jest.fn();
+        const { getAllByText, getByTestId, getByText } = render(
+            <CartPayment
+                total={46}
+                ebtEligibleTotal={0}
+                canReceiveChecks={true}
+                creditCardSurchargePercent={3}
+                onPaymentEntered={onPaymentEntered}
+                layout="compact"
+            />
+        );
+
+        fireEvent.press(getByTestId('payment-card-cc'));
+
+        expect(getByText('Complete Payment ($47.38)')).toBeTruthy();
+        expect(getByText('Order Total')).toBeTruthy();
+        expect(getAllByText('$46.00').length).toBeGreaterThan(0);
+        expect(getByText('Card Fee')).toBeTruthy();
+        expect(getByText('$1.38')).toBeTruthy();
+        expect(getByText('Amount Paid')).toBeTruthy();
+        expect(getByText('$47.38')).toBeTruthy();
+        expect(getAllByText('Remaining').length).toBeGreaterThan(0);
     });
 
     it('flips the calculated compact payment tile when the cashier edits it', () => {
@@ -621,13 +786,26 @@ describe('CartPayment integration', () => {
             />
         );
 
-        fireEvent.press(getByTestId('payment-card-cc'));
         fireEvent.press(getByTestId('payment-card-check'));
-        fireEvent.changeText(getByTestId('payment-input-cc'), '23.99');
-        fireEvent.changeText(getByTestId('payment-input-check'), '10');
+        fireEvent.press(getByTestId('payment-card-cc'));
+        fireEvent.press(getByTestId('payment-keypad-clear'));
+        fireEvent.press(getByTestId('payment-keypad-2'));
+        fireEvent.press(getByTestId('payment-keypad-3'));
+        fireEvent.press(getByTestId('payment-keypad-9'));
+        fireEvent.press(getByTestId('payment-keypad-9'));
+        fireEvent.press(getByTestId('payment-card-check'));
+        fireEvent.press(getByTestId('payment-keypad-clear'));
+        fireEvent.press(getByTestId('payment-keypad-1'));
+        fireEvent.press(getByTestId('payment-keypad-0'));
+        fireEvent.press(getByTestId('payment-keypad-0'));
+        fireEvent.press(getByTestId('payment-keypad-0'));
 
-        expect(getByTestId('payment-input-check')).toHaveProp('value', '10');
-        expect(getByTestId('payment-input-cc')).toHaveProp('value', '14.99');
+        expect(getByTestId('payment-amount-preview-check')).toHaveTextContent(
+            '$10.00',
+        );
+        expect(getByTestId('payment-amount-preview-cc')).toHaveTextContent(
+            '$14.99',
+        );
     });
 
     it('selects the full payment amount when a payment field receives focus', () => {

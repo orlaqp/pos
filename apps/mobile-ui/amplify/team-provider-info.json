@@ -123,7 +123,7 @@
         },
         "getSales": {
           "deploymentBucketName": "amplify-pos-prod-8629e-deployment",
-          "s3Key": "amplify-builds/getSales-4675797058364b614d6d-build.zip"
+          "s3Key": "amplify-builds/getSales-70546e4352532f542b2f-build.zip"
         },
         "getSalesSummaryQuery": {
           "deploymentBucketName": "amplify-pos-prod-8629e-deployment",

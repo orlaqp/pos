@@ -2377,7 +2377,7 @@ describe('OrderService', () => {
     });
   });
 
-  it('adds a separate surcharge payment row for positive original credit card payments', () => {
+  it('prints the charged card amount and separate surcharge disclosure for credit card payments', () => {
     const ticket = OrderService.buildPrintTicketForOrderEntitySnapshot(
       {
         id: 'order-ticket-cc-surcharge',
@@ -2410,8 +2410,53 @@ describe('OrderService', () => {
     );
 
     expect(ticket.paymentRows).toEqual([
-      { kind: 'payment', label: 'CC', amount: 60 },
+      { kind: 'payment', label: 'CC', amount: 61.8 },
       { kind: 'payment', label: 'Credit Card Surcharge', amount: 1.8 },
+    ]);
+  });
+
+  it('prints the charged card amount and discloses the surcharge when metadata is present', () => {
+    const ticket = OrderService.buildPrintTicketForOrderEntitySnapshot(
+      {
+        id: 'order-ticket-cc-surcharge-base',
+        orderNo: '1-OWNER-260422-0004',
+        status: 'PAID',
+        baseSubtotal: 10,
+        subtotal: 10,
+        discountTotal: 0,
+        tax: 0,
+        total: 10,
+        lines: [
+          {
+            identifier: 'line-1',
+            productId: 'product-1',
+            productName: 'Rice',
+            quantity: 1,
+            price: 10,
+            unitOfMeasure: 'EA',
+            lineDiscountTotal: 0,
+            allocatedOrderDiscountTotal: 0,
+            lineTotalBeforeTax: 10,
+          },
+        ],
+        paymentInfo: {
+          payments: [
+            {
+              type: 'CC',
+              amount: 10.8,
+              baseAmount: 10,
+              surchargeAmount: 0.8,
+            },
+          ],
+        },
+        promoCodes: [],
+      } as any,
+      { copyType: 'CUSTOMER' }
+    );
+
+    expect(ticket.paymentRows).toEqual([
+      { kind: 'payment', label: 'CC', amount: 10.8 },
+      { kind: 'payment', label: 'Credit Card Surcharge', amount: 0.8 },
     ]);
   });
 

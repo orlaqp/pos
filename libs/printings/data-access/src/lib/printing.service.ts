@@ -298,7 +298,7 @@ export const printReceipt = async (
                 orderNo: ticket.orderNo,
                 copyType: ticket.copyType,
                 copyLabel: getReceiptCopyLabel(ticket),
-                total: ticket.totals.total,
+                total: getReceiptChargedTotal(ticket),
                 paymentSummaryText: getReceiptPaymentsText(ticket),
                 receiptText: previewReceiptText,
             });
@@ -383,7 +383,7 @@ const printSingleReceipt = async (
             orderNo: ticket.orderNo,
             copyType: ticket.copyType,
             copyLabel,
-            total: ticket.totals.total,
+            total: getReceiptChargedTotal(ticket),
             paymentSummaryText: totalPaymentsText,
             receiptText,
         });
@@ -421,7 +421,7 @@ const printSingleReceipt = async (
                         new StarXpandCommand.MagnificationParameter(2, 2)
                     )
                     .actionPrintText(
-                        `${formatReceiptCurrency(ticket.totals.total)}\n`
+                        `${formatReceiptCurrency(getReceiptChargedTotal(ticket))}\n`
                     )
             )
             .styleAlignment(StarXpandCommand.Printer.Alignment.Left)
@@ -518,12 +518,41 @@ export const print = async (
 
 const getReceiptPaymentsText = (ticket: OrderTicketPrintModel) =>
     (ticket.paymentRows || [])
+        .filter(
+            (row) =>
+                row.kind !== 'payment' ||
+                !String(row.label || '').toLowerCase().includes('surcharge')
+        )
         .map((row) =>
             row.kind === 'heading'
                 ? row.label
                 : `${row.label}: ${formatPaymentCurrency(Number(row.amount || 0))}`
         )
         .join('\n');
+
+const roundReceiptAmount = (amount: number) =>
+    Math.round(
+        ((Number.isFinite(amount) ? amount : 0) + Number.EPSILON) * 100
+    ) / 100;
+
+const getReceiptSurchargeTotal = (ticket: OrderTicketPrintModel) =>
+    roundReceiptAmount(
+        (ticket.paymentRows || []).reduce((total, row) => {
+            if (
+                row.kind !== 'payment' ||
+                !String(row.label || '').toLowerCase().includes('surcharge')
+            ) {
+                return total;
+            }
+
+            return total + Math.max(0, Number(row.amount || 0));
+        }, 0)
+    );
+
+const getReceiptChargedTotal = (ticket: OrderTicketPrintModel) =>
+    roundReceiptAmount(
+        Number(ticket.totals.total || 0) + getReceiptSurchargeTotal(ticket)
+    );
 
 const buildReceiptTotalsBreakdownText = (
     ticket: OrderTicketPrintModel,
@@ -542,6 +571,13 @@ const buildReceiptTotalsBreakdownText = (
 
     if (tax > 0) {
         rows.push(formatTotalRow('Tax', tax, layoutProfile));
+    }
+
+    const surchargeTotal = getReceiptSurchargeTotal(ticket);
+    if (surchargeTotal > 0) {
+        rows.push(
+            formatTotalRow('Credit Card Surcharge', surchargeTotal, layoutProfile)
+        );
     }
 
     return rows.join('');
@@ -569,7 +605,9 @@ const buildReceiptTotalsText = (
 ) => {
     const rows = [buildReceiptTotalsBreakdownText(ticket, layoutProfile)];
     rows.push(`${'-'.repeat(layoutProfile.totalColumns)}\n`);
-    rows.push(formatTotalRow('Total', ticket.totals.total, layoutProfile));
+    rows.push(
+        formatTotalRow('Total', getReceiptChargedTotal(ticket), layoutProfile)
+    );
 
     if (ticket.promoCodes?.length) {
         rows.push(

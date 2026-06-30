@@ -433,6 +433,9 @@ export const ordersSlice = createSlice({
                         payments: action.payload.payments.map((payment) => ({
                             type: payment.type.toUpperCase() as OrderEntity['paymentInfo']['payments'][number]['type'],
                             amount: payment.amount,
+                            baseAmount: payment.baseAmount,
+                            surchargeRate: payment.surchargeRate,
+                            surchargeAmount: payment.surchargeAmount,
                         })),
                     },
                 },

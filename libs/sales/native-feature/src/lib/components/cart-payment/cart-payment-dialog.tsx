@@ -41,7 +41,7 @@ export function CartPaymentDialog({
     const summaryStyles = createCartStyles(tokens);
     const styles = useStyles(tokens);
     const t = translateWithFallback;
-    const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+    const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
     const orderSummary = cart ? buildOrderSummary(cart) : undefined;
     const discountBreakdown = buildDiscountBreakdown(
         cart?.appliedDiscountSummary,
@@ -223,21 +223,26 @@ export function CartPaymentDialog({
 const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
     StyleSheet.create({
         overlay: {
-            width: 1220,
-            maxWidth: '96%',
+            width: '100%',
+            maxWidth: '100%',
+            height: '100%',
+            minHeight: 720,
             padding: 0,
-            borderRadius: 28,
+            borderRadius: 0,
             overflow: 'hidden',
         },
         surface: {
+            flex: 1,
+            minHeight: 0,
             backgroundColor: '#05080C',
-            padding: tokens.spacing.lg,
+            padding: tokens.spacing.md,
         },
         columns: {
+            flex: 1,
             flexDirection: 'row',
             gap: tokens.spacing.lg,
             alignItems: 'stretch',
-            minHeight: 560,
+            minHeight: 0,
         },
         summaryColumn: {
             minHeight: 0,
@@ -248,7 +253,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flexShrink: 0,
         },
         summaryColumnExpanded: {
-            flex: 3,
+            flex: 2.6,
         },
         paymentColumn: {
             minHeight: 0,
@@ -257,7 +262,7 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             flex: 1,
         },
         paymentColumnExpanded: {
-            flex: 7,
+            flex: 7.4,
         },
         paymentSurface: {
             flex: 1,
@@ -267,10 +272,10 @@ const useStyles = (tokens: ReturnType<typeof useDesignTokens>) =>
             borderWidth: 1,
             borderColor: '#C7D0DB33',
             backgroundColor: '#080B10',
-            padding: tokens.spacing.lg,
+            padding: tokens.spacing.md,
         },
         summaryScroll: {
-            maxHeight: 540,
+            flex: 1,
         },
         summaryScrollContent: {
             paddingBottom: tokens.spacing.sm,

@@ -508,6 +508,41 @@ describe('orders reducer', () => {
         );
     });
 
+    it('preserves surcharge metadata when marking an order paid optimistically', () => {
+        let state = ordersReducer(
+            undefined,
+            ordersActions.setAll([{ id: 'o1', status: 'OPEN', orderNo: 'N1' } as any])
+        );
+
+        state = ordersReducer(
+            state,
+            ordersActions.optimisticMarkPaid({
+                id: 'o1',
+                payments: [
+                    {
+                        type: 'CC',
+                        amount: 60,
+                        baseAmount: 60,
+                        surchargeRate: 3,
+                        surchargeAmount: 1.8,
+                    },
+                ] as any,
+                employeeId: 'employee-1',
+                employeeName: 'Cashier',
+            })
+        );
+
+        expect(state.entities.o1?.paymentInfo?.payments).toEqual([
+            {
+                type: 'CC',
+                amount: 60,
+                baseAmount: 60,
+                surchargeRate: 3,
+                surchargeAmount: 1.8,
+            },
+        ]);
+    });
+
     it('keeps an optimistically paid order out of OPEN even if a stale sync snapshot still says OPEN', () => {
         let state = ordersReducer(
             undefined,

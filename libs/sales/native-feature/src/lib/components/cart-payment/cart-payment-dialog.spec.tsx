@@ -126,13 +126,22 @@ describe('CartPaymentDialog', () => {
         jest.clearAllMocks();
     });
 
-    it('defaults to a collapsed order summary rail and expands to a 30/70 layout', () => {
+    it('defaults to the expanded order summary and can collapse to a rail', () => {
         const { getByTestId, queryByTestId } = render(
             <CartPaymentDialog {...baseProps} />
         );
 
+        expect(getByTestId('cart-payment-summary')).toBeTruthy();
+        expect(getByTestId('cart-payment-summary-column')).toHaveStyle({
+            flex: 2.6,
+        });
+        expect(getByTestId('cart-payment-column')).toHaveStyle({
+            flex: 7.4,
+        });
+
+        fireEvent.press(getByTestId('cart-payment-summary-toggle'));
+
         expect(queryByTestId('cart-payment-summary')).toBeNull();
-        expect(getByTestId('cart-payment-summary-rail')).toBeTruthy();
         expect(getByTestId('cart-payment-summary-rail-label')).toHaveTextContent(
             'ORDER SUMMARY'
         );
@@ -143,16 +152,6 @@ describe('CartPaymentDialog', () => {
         });
         expect(getByTestId('cart-payment-column')).toHaveStyle({
             flex: 1,
-        });
-
-        fireEvent.press(getByTestId('cart-payment-summary-toggle'));
-
-        expect(getByTestId('cart-payment-summary')).toBeTruthy();
-        expect(getByTestId('cart-payment-summary-column')).toHaveStyle({
-            flex: 3,
-        });
-        expect(getByTestId('cart-payment-column')).toHaveStyle({
-            flex: 7,
         });
     });
 

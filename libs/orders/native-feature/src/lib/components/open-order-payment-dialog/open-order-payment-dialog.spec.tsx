@@ -8,6 +8,7 @@ const mockPrintReceipt = jest.fn();
 const mockBuildPrintTicketPreview = jest.fn(() => ({ preview: true }));
 const mockGetStore = jest.fn();
 const mockGetDefaultPrinter = jest.fn();
+let lastCartPaymentDialogProps: any;
 
 const mockOrder = {
     id: 'open-1',
@@ -49,6 +50,9 @@ jest.mock('react-redux', () => ({
             printer: { default: { id: 'printer-1' } },
             storeInfo: { current: { id: 'store-1', name: 'Store' } },
             employees: { loginEmployee: { roles: ['Receive Check Payment'] } },
+            settings: {
+                globalSettings: { creditCardSurchargePercent: 3 },
+            },
         }),
 }));
 
@@ -260,16 +264,14 @@ jest.mock('@pos/sales/native-feature', () => ({
 jest.mock(
     '../../../../../../sales/native-feature/src/lib/components/cart-payment/cart-payment-dialog',
     () => ({
-        CartPaymentDialog: ({
-            visible,
-            summaryActions,
-            paymentFooterActions,
-        }: {
+        CartPaymentDialog: (props: {
             visible: boolean;
             summaryActions?: React.ReactNode;
             paymentFooterActions?: React.ReactNode;
         }) => {
+            const { visible, summaryActions, paymentFooterActions } = props;
             const { View } = require('react-native');
+            lastCartPaymentDialogProps = props;
             return visible ? (
                 <View testID="mock-cart-payment-dialog">
                     {summaryActions}
@@ -297,6 +299,10 @@ jest.mock('@pos/employees/data-access', () => ({
     selectLoginEmployee: (state: any) => state.employees.loginEmployee,
 }));
 
+jest.mock('@pos/settings/data-access', () => ({
+    getGlobalSettings: (state: any) => state.settings.globalSettings,
+}));
+
 jest.mock('@pos/auth/data-access', () => ({
     Role: { Checks: 'Receive Check Payment' },
 }));
@@ -306,6 +312,7 @@ const { OpenOrderPaymentDialog } = require('./open-order-payment-dialog');
 describe('OpenOrderPaymentDialog', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        lastCartPaymentDialogProps = undefined;
         mockDispatch.mockImplementation((action: any) =>
             Promise.resolve({ type: 'order/pay/fulfilled', payload: action }),
         );
@@ -335,6 +342,19 @@ describe('OpenOrderPaymentDialog', () => {
         });
         expect(onClose).toHaveBeenCalledTimes(1);
         expect(mockNavigate).toHaveBeenCalledWith('Sales', { mode: 'payment' });
+    });
+
+    it('passes the global card surcharge percent into the payment dialog', () => {
+        render(
+            <OpenOrderPaymentDialog
+                visible={true}
+                order={mockOrder}
+                navigation={{ navigate: mockNavigate }}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(lastCartPaymentDialogProps.creditCardSurchargePercent).toBe(3);
     });
 
     it('prints a customer reference from the payment dialog', async () => {
